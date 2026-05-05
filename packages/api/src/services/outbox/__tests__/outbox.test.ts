@@ -51,6 +51,11 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@sentry/nextjs', () => ({
+  getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+  setUser: vi.fn(),
+  setTag: vi.fn(),
+  setTags: vi.fn(),
+  setContext: vi.fn(),
   captureException: vi.fn(),
 }));
 

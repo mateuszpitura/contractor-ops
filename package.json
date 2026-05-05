@@ -27,6 +27,7 @@
     "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
     "db:generate": "turbo db:generate",
     "db:push": "turbo db:push",
+    "db:seed:dev": "pnpm -F @contractor-ops/db run db:seed:dev",
     "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger --filter=@contractor-ops/api",
     "prepare": "husky"
   },

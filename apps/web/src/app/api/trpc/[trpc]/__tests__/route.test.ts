@@ -51,6 +51,16 @@ vi.mock('@contractor-ops/logger', () => ({
 vi.mock('@sentry/nextjs', () => ({
   withIsolationScope: mockSentryScope,
   captureException: mockCaptureException,
+  getActiveSpan: vi.fn(() => undefined),
+  getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn() })),
+  setUser: vi.fn(),
+  setTag: vi.fn(),
+  setTags: vi.fn(),
+  setContext: vi.fn(),
+}));
+
+vi.mock('@contractor-ops/logger/metrics', () => ({
+  metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn(), gauge: vi.fn() },
 }));
 
 vi.mock('@trpc/server/adapters/fetch', () => ({

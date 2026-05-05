@@ -207,6 +207,11 @@ vi.mock('../../services/r2.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const span = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
+    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
     startSpan: vi.fn((_o: unknown, fn: (s: typeof span) => unknown) => fn(span)),
     captureException: vi.fn(),
   };

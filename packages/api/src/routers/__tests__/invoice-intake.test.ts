@@ -39,6 +39,7 @@ const {
   const mockPrisma: Rec = {
     invoiceIntakeRequest: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn(async () => []),
     },
     organization: {
@@ -142,6 +143,11 @@ vi.mock('../../services/r2.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
+    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
@@ -417,7 +423,7 @@ describe('invoiceIntake.listByOrg', () => {
 
 describe('invoiceIntake.getById', () => {
   it('6a. returns the intake when org matches', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () => intakeRow());
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => intakeRow());
     const caller = makeCaller();
     const result = (await caller.getById({ intakeId: INTAKE_ID })) as {
       id: string;
@@ -428,9 +434,9 @@ describe('invoiceIntake.getById', () => {
   });
 
   it('6b. cross-org access returns NOT_FOUND (not FORBIDDEN)', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () =>
-      intakeRow({ id: INTAKE_ID_B, organizationId: ORG_B }),
-    );
+    // F-DB-22: prod code pre-filters by organizationId in the where clause.
+    // Cross-org row is invisible to the caller — mock returns null.
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => null);
 
     const caller = makeCaller(USER_A, ORG_A);
     try {
@@ -449,7 +455,7 @@ describe('invoiceIntake.getById', () => {
 
 describe('invoiceIntake.getMatchCandidates', () => {
   it('7. returns ranked candidate list from matcher', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () => intakeRow());
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => intakeRow());
     mockRankIntakeCandidates.mockResolvedValueOnce([
       {
         contractorId: 'contractor_1',
@@ -572,7 +578,7 @@ describe('invoiceIntake.reject', () => {
 
 describe('invoiceIntake.downloadRawFile', () => {
   it('12. returns signed URL with ~300s expiry', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () => intakeRow());
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => intakeRow());
     const caller = makeCaller();
     const result = await caller.downloadRawFile({ intakeId: INTAKE_ID });
     expect(result.url).toMatch(/^https:\/\/r2\.test\//);
@@ -583,7 +589,7 @@ describe('invoiceIntake.downloadRawFile', () => {
 
 describe('invoiceIntake.downloadValidationReport', () => {
   it('13. returns null when no report exists', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () =>
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () =>
       intakeRow({ validationReportKey: null }),
     );
     const caller = makeCaller();
@@ -592,9 +598,8 @@ describe('invoiceIntake.downloadValidationReport', () => {
   });
 
   it('14. cross-org download returns NOT_FOUND', async () => {
-    mockPrisma.invoiceIntakeRequest.findUnique = vi.fn(async () =>
-      intakeRow({ organizationId: ORG_B }),
-    );
+    // F-DB-22: org-prefiltered findFirst returns null for cross-org row
+    mockPrisma.invoiceIntakeRequest.findFirst = vi.fn(async () => null);
     const caller = makeCaller(USER_A, ORG_A);
     try {
       await caller.downloadValidationReport({ intakeId: INTAKE_ID });

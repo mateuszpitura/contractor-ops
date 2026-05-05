@@ -43,7 +43,8 @@ vi.mock('@aws-sdk/client-s3', () => {
       return mockS3Send(command);
     }
   }
-  return { S3Client, HeadObjectCommand };
+  class S3ServiceException extends Error {}
+  return { S3Client, HeadObjectCommand, S3ServiceException };
 });
 
 interface ProbeResult {

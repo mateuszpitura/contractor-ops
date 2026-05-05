@@ -278,6 +278,11 @@ vi.mock('../../services/bank-statement.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
+    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
@@ -724,7 +729,11 @@ describe('payment router', () => {
         ],
       });
 
-      mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(run);
+      // F-DB-22: lockAndExport now does two findFirst calls (prepare + re-fetch
+      // under tx-2 lock). Mock both with the same row.
+      mockPrisma.paymentRun.findFirst
+        .mockResolvedValueOnce(run)
+        .mockResolvedValueOnce({ status: run.status });
 
       const result = await caller.payment.lockAndExport({
         runId: RUN_ID,

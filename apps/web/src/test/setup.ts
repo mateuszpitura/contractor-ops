@@ -7,6 +7,25 @@ import { vi } from 'vitest';
  * Components that use scrollspy (`privacy-notice-toc.tsx`) rely on it; the
  * polyfill is a no-op observer so `useEffect` doesn't throw at mount time.
  */
+/**
+ * `window.matchMedia` polyfill for jsdom — required by `use-reduced-motion`
+ * (and any other CSS-media-query-based hook) used in dashboard / KPI cards
+ * after S3-4 widened the visual surface relying on motion-preference checks.
+ */
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  // biome-ignore lint/suspicious/noExplicitAny: jsdom polyfill assignment
+  (window as any).matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {}, // legacy
+    removeListener: () => {}, // legacy
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
+
 if (typeof globalThis.IntersectionObserver === 'undefined') {
   class IntersectionObserverStub {
     observe(): void {

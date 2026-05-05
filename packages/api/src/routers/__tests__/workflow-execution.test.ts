@@ -169,6 +169,11 @@ vi.mock('../../services/calendar-deadline-sync.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
+    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };
@@ -801,8 +806,10 @@ describe('workflowExecutionRouter', () => {
       mockPrisma.workflowTaskRun.findMany.mockResolvedValueOnce([
         { status: 'TODO', resultJson: null },
       ]);
-      mockPrisma.workflowRun.update.mockResolvedValueOnce({});
-      mockPrisma.workflowRun.findUniqueOrThrow.mockResolvedValueOnce({
+      // F-DB-18 — `update + findUniqueOrThrow` collapsed into a single
+      // `update({ include })` call. The full row (with tasks) is returned
+      // from `update`, not refetched.
+      mockPrisma.workflowRun.update.mockResolvedValueOnce({
         id: RUN_ID,
         status: 'IN_PROGRESS',
         contractorId: CONTRACTOR_ID,

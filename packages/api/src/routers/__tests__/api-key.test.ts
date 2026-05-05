@@ -25,6 +25,7 @@ const { mockPrisma, mockGenerateApiKey } = vi.hoisted(() => {
   type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
+    auditLog: { create: vi.fn(async () => ({ id: "audit-mock" })), createMany: vi.fn(async () => ({ count: 1 })) },
     organizationApiKey: {
       create: vi.fn(),
       findMany: vi.fn(),
@@ -239,6 +240,11 @@ vi.mock('../../services/bank-statement.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
+    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
     startSpan: vi.fn((_o: unknown, fn: (span: typeof mockSpan) => unknown) => fn(mockSpan)),
     captureException: vi.fn(),
   };

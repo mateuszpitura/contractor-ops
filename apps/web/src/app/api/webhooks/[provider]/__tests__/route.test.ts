@@ -248,7 +248,10 @@ describe('POST /api/webhooks/[provider]', () => {
 
     mockOrgFindUnique.mockResolvedValue({ id: 'org-cuid-acme' });
 
-    const req = makeRequest(JSON.stringify({ data: { to: ['x@acme.contractorhub.io'] } }));
+    // F-INT-07: Resend webhook schema requires `type`
+    const req = makeRequest(
+      JSON.stringify({ type: 'email.received', data: { to: ['x@acme.contractorhub.io'] } }),
+    );
     const res = await POST(req, {
       params: Promise.resolve({ provider: 'resend' }),
     });
@@ -284,7 +287,8 @@ describe('POST /api/webhooks/[provider]', () => {
 
     mockOrgFindUnique.mockResolvedValue(null);
 
-    const req = makeRequest('{}');
+    // F-INT-07: payload must satisfy the Resend schema (`type` required)
+    const req = makeRequest(JSON.stringify({ type: 'email.received', data: {} }));
     const res = await POST(req, {
       params: Promise.resolve({ provider: 'resend' }),
     });
