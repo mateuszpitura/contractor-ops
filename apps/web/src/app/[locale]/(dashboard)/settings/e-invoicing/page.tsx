@@ -8,6 +8,7 @@
 
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useTranslations } from 'next-intl';
 import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
 import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
@@ -42,10 +43,7 @@ export default function EInvoicingSettingsPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="space-y-1">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">{t('h1')}</h1>
-        <p className="text-sm text-muted-foreground max-w-3xl">{t('subline')}</p>
-      </div>
+      <AtelierPageHeader title={t('h1')} description={t('subline')} />
 
       <div className="space-y-6">
         <PeppolParticipantCard />
