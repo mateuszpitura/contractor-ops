@@ -1,6 +1,7 @@
 'use client';
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -54,23 +55,19 @@ export default function ZatcaSettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <AnimateIn delay={0}>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            render={<Link href="/settings?tab=integrations" />}
-            aria-label="Back to integrations">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="font-display text-xl font-semibold leading-tight tracking-tight">
-              ZATCA Integration
-            </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Saudi Arabia e-invoicing compliance
-            </p>
-          </div>
-        </div>
+        <AtelierPageHeader
+          title="ZATCA Integration"
+          description="Saudi Arabia e-invoicing compliance"
+          actions={
+            <Button
+              variant="ghost"
+              size="icon"
+              render={<Link href="/settings?tab=integrations" />}
+              aria-label="Back to integrations">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          }
+        />
       </AnimateIn>
 
       {/* Not Connected State */}

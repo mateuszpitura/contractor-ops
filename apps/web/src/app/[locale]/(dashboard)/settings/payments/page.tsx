@@ -9,6 +9,7 @@
 
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { AlertTriangle, ShieldOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useFlag } from '@/components/layout/feature-flag-context';
@@ -88,12 +89,7 @@ export default function PaymentSettingsPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="space-y-1">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">
-          {t('settingsPageTitle')}
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-3xl">{t('settingsPageSubtitle')}</p>
-      </div>
+      <AtelierPageHeader title={t('settingsPageTitle')} description={t('settingsPageSubtitle')} />
 
       {!bacsEnabled && (
         <Alert variant="default" className="border-amber-300/50 bg-amber-500/5">

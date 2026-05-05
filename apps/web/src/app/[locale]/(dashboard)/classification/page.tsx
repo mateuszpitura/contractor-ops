@@ -12,6 +12,7 @@
 
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
@@ -71,12 +72,7 @@ function ClassificationDashboardContent() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 md:py-12">
-      <header className="flex flex-col gap-3">
-        <h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight">
-          {t('pageH1')}
-        </h1>
-        <p className="text-sm text-muted-foreground">{t('pageSubline')}</p>
-      </header>
+      <AtelierPageHeader title={t('pageH1')} description={t('pageSubline')} />
 
       <GlobalHeader />
 

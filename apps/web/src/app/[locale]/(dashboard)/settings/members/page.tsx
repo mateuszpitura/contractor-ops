@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -24,21 +25,18 @@ export default function MembersPage() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
-              {t('title')}
-            </h1>
-            <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-          </div>
-
-          {canInvite && (
-            <Button onClick={openInvite}>
-              <UserPlus className="me-2 h-4 w-4" />
-              {t('inviteCta')}
-            </Button>
-          )}
-        </div>
+        <AtelierPageHeader
+          title={t('title')}
+          description={t('subtitle')}
+          actions={
+            canInvite ? (
+              <Button onClick={openInvite}>
+                <UserPlus className="me-2 h-4 w-4" />
+                {t('inviteCta')}
+              </Button>
+            ) : undefined
+          }
+        />
       </AnimateIn>
 
       <AnimateIn delay={1}>

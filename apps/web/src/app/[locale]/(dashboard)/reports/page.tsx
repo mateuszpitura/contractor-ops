@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { startOfMonth, subMonths } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -89,9 +90,7 @@ function ReportsContent() {
         <div className="min-w-0 flex-1 space-y-4">
           {/* Header */}
           <AnimateIn delay={0}>
-            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
-              {t('title')}
-            </h1>
+            <AtelierPageHeader title={t('title')} />
           </AnimateIn>
 
           {/* Date range filter */}
