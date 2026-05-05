@@ -14,6 +14,7 @@ import { BreadcrumbProvider } from '@/components/layout/breadcrumb-context';
 import type { OrgInfo } from '@/components/layout/dashboard-context';
 import { DashboardProvider } from '@/components/layout/dashboard-context';
 import { FeatureFlagProvider } from '@/components/layout/feature-flag-context';
+import { IntensityRouter } from '@/components/layout/intensity-router';
 import { AppSidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { SearchProvider } from '@/components/search/search-provider';
@@ -177,24 +178,32 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           <BreadcrumbProvider>
             <SearchProvider>
               <SidebarProvider>
-                {/* Skip to content link — visible on focus for keyboard users */}
-                <a
-                  href="#main-content"
-                  className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
-                  Skip to content
-                </a>
-                <AppSidebar />
-                <SidebarInset>
-                  <TopBar />
-                  <BillingOverlay />
-                  {/* biome-ignore lint/correctness/useUniqueElementIds: skip-link anchor target — singleton layout */}
-                  <main
-                    id="main-content"
-                    className="mesh-bg grain-overlay min-w-0 flex-1 overflow-x-hidden p-6">
-                    {children}
-                    <AppFooter />
-                  </main>
-                </SidebarInset>
+                <IntensityRouter>
+                  {/* Skip to content link — visible on focus for keyboard users */}
+                  <a
+                    href="#main-content"
+                    className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
+                    Skip to content
+                  </a>
+                  <AppSidebar />
+                  <SidebarInset>
+                    <TopBar />
+                    <BillingOverlay />
+                    {/*
+                     * biome-ignore lint/correctness/useUniqueElementIds: skip-link anchor target — singleton layout
+                     *
+                     * Background treatment is intensity-aware via [data-intensity]
+                     * on <body>: workbench routes get a calm static surface, atelier
+                     * routes keep the mesh + grain ambient wash. See globals.css.
+                     */}
+                    <main
+                      id="main-content"
+                      className="atelier-main-surface min-w-0 flex-1 overflow-x-hidden p-6">
+                      {children}
+                      <AppFooter />
+                    </main>
+                  </SidebarInset>
+                </IntensityRouter>
               </SidebarProvider>
             </SearchProvider>
           </BreadcrumbProvider>

@@ -10,6 +10,7 @@ import { CommandPalette } from '@/components/search/command-palette';
 import { useSearch } from '@/components/search/search-provider';
 import {
   Breadcrumb,
+  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -91,32 +92,66 @@ export function TopBar() {
         <SidebarTrigger className="-ms-1" />
         <Separator orientation="vertical" className="!self-center me-2 h-4" />
 
-        {/* Unified breadcrumb — single source for all pages */}
-        <Breadcrumb>
-          <BreadcrumbList>
-            {segments.map((segment, index) => {
-              const isLast = index === segments.length - 1;
-              const label = breadcrumbLabel(segment);
-              const href = `/${segments.slice(0, index + 1).join('/')}`;
+        {/*
+         * Unified breadcrumb — collapses middle segments to an ellipsis when
+         * there are more than 4 segments so deep paths stay legible on
+         * narrow viewports. The first and last two segments are always
+         * visible. The ellipsis is decorative; full path is in the URL bar.
+         */}
+        <Breadcrumb className="min-w-0 flex-shrink">
+          <BreadcrumbList className="flex-nowrap">
+            {(() => {
+              const COLLAPSE_THRESHOLD = 4;
+              const shouldCollapse = segments.length > COLLAPSE_THRESHOLD;
+              const visibleSegments = shouldCollapse
+                ? [
+                    { segment: segments[0] as string, originalIndex: 0 },
+                    ...segments.slice(-2).map((segment, i) => ({
+                      segment,
+                      originalIndex: segments.length - 2 + i,
+                    })),
+                  ]
+                : segments.map((segment, index) => ({ segment, originalIndex: index }));
 
-              return (
-                // biome-ignore lint/suspicious/noArrayIndexKey: URL path segments may repeat across levels
-                <span key={`${segment}-${index}`} className="contents">
-                  {index > 0 && <BreadcrumbSeparator />}
-                  <BreadcrumbItem>
-                    {label === null ? (
-                      <Skeleton className="h-4 w-24 rounded" />
-                    ) : isLast ? (
-                      <BreadcrumbPage>{label}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink render={<BreadcrumbLinkRenderer href={href} />}>
-                        {label}
-                      </BreadcrumbLink>
+              return visibleSegments.map((entry, displayIndex) => {
+                const { segment, originalIndex } = entry;
+                const isLast = originalIndex === segments.length - 1;
+                const label = breadcrumbLabel(segment);
+                const href = `/${segments.slice(0, originalIndex + 1).join('/')}`;
+                const showEllipsisBefore =
+                  shouldCollapse && displayIndex === 1 && originalIndex > 1;
+
+                return (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: URL path segments may repeat across levels
+                  <span key={`${segment}-${originalIndex}`} className="contents">
+                    {originalIndex > 0 && <BreadcrumbSeparator />}
+                    {showEllipsisBefore && (
+                      <>
+                        <BreadcrumbItem>
+                          <BreadcrumbEllipsis />
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                      </>
                     )}
-                  </BreadcrumbItem>
-                </span>
-              );
-            })}
+                    <BreadcrumbItem className="min-w-0">
+                      {label === null ? (
+                        <Skeleton className="h-4 w-24 rounded" />
+                      ) : isLast ? (
+                        <BreadcrumbPage className="block max-w-[40ch] truncate">
+                          {label}
+                        </BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink
+                          render={<BreadcrumbLinkRenderer href={href} />}
+                          className="block max-w-[20ch] truncate">
+                          {label}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                  </span>
+                );
+              });
+            })()}
           </BreadcrumbList>
         </Breadcrumb>
 

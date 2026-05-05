@@ -1,6 +1,6 @@
 'use client';
 
-import { AtelierBackground, AtelierIntensityProvider } from '@contractor-ops/ui';
+import { AtelierBackground } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { LayoutDashboard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -156,42 +156,44 @@ function DashboardContent() {
  * Wrapped in Suspense for nuqs URL state (SpendChart).
  */
 export default function DashboardPage() {
+  // Intensity tier (atelier) is provided by the layout-level
+  // IntensityRouter, so the AtelierBackground rendered here picks up
+  // the right behavior automatically (it would self-disable on
+  // workbench routes).
   return (
-    <AtelierIntensityProvider value="atelier">
-      <div className="relative">
-        <AtelierBackground />
-        <div className="relative z-10">
-          <Suspense
-            fallback={
-              <div className="flex flex-col gap-8">
-                <div className="space-y-1">
-                  <Skeleton className="h-8 w-64 rounded-lg" />
-                  <Skeleton className="h-4 w-48 rounded-md" />
+    <div className="relative">
+      <AtelierBackground />
+      <div className="relative z-10">
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-8">
+              <div className="space-y-1">
+                <Skeleton className="h-8 w-64 rounded-lg" />
+                <Skeleton className="h-4 w-48 rounded-md" />
+              </div>
+              <Skeleton className="h-[200px] w-full rounded-2xl" />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                  <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="flex flex-col gap-6">
+                  <Skeleton className="h-[340px] rounded-xl" />
+                  <Skeleton className="h-[280px] rounded-xl" />
                 </div>
-                <Skeleton className="h-[200px] w-full rounded-2xl" />
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                    <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <div className="flex flex-col gap-6">
-                    <Skeleton className="h-[340px] rounded-xl" />
-                    <Skeleton className="h-[280px] rounded-xl" />
-                  </div>
-                  <div className="flex flex-col gap-6">
-                    <Skeleton className="h-[120px] rounded-xl" />
-                    <Skeleton className="h-[280px] rounded-xl" />
-                    <Skeleton className="h-[320px] rounded-xl" />
-                  </div>
+                <div className="flex flex-col gap-6">
+                  <Skeleton className="h-[120px] rounded-xl" />
+                  <Skeleton className="h-[280px] rounded-xl" />
+                  <Skeleton className="h-[320px] rounded-xl" />
                 </div>
               </div>
-            }>
-            <DashboardContent />
-          </Suspense>
-        </div>
+            </div>
+          }>
+          <DashboardContent />
+        </Suspense>
       </div>
-    </AtelierIntensityProvider>
+    </div>
   );
 }

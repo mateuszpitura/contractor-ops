@@ -640,6 +640,70 @@ html.theme-transition *::after {
   background-image: radial-gradient(oklch(1 0 0 / 6%) 1px, transparent 1px);
 }
 
+/* ─── Main surface — intensity-aware background ───────────────────── */
+
+/*
+ * The dashboard <main> uses .atelier-main-surface and the IntensityRouter
+ * mirrors the active tier to <body data-intensity="...">. Atelier routes
+ * (dashboard, reports) get the mesh + grain ambient wash; workbench
+ * routes (operational pages) get a calm static surface for legibility.
+ *
+ * Per docs/UI-ATELIER-WORKPLAN.md §3.3, expensive backdrop effects on
+ * dense pages are banned; the static fallback enforces that contract.
+ */
+.atelier-main-surface {
+  background: var(--surface-0);
+}
+
+body[data-intensity="atelier"] .atelier-main-surface,
+body[data-intensity="exhibition"] .atelier-main-surface {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+body[data-intensity="atelier"] .atelier-main-surface::before,
+body[data-intensity="exhibition"] .atelier-main-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.88 0.1 178 / 50%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.88 0.12 65 / 35%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.9 0.07 260 / 30%), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body[data-intensity="atelier"].dark .atelier-main-surface::before,
+body[data-intensity="exhibition"].dark .atelier-main-surface::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.22 0.08 178 / 45%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.2 0.06 65 / 30%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.18 0.05 260 / 35%), transparent 70%);
+}
+
+body[data-intensity="atelier"] .atelier-main-surface::after,
+body[data-intensity="exhibition"] .atelier-main-surface::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.045;
+  pointer-events: none;
+  z-index: -1;
+  animation: atelier-grain-drift 8s steps(10) infinite;
+}
+
+body[data-intensity="atelier"].dark .atelier-main-surface::after,
+body[data-intensity="exhibition"].dark .atelier-main-surface::after {
+  opacity: 0.06;
+}
+
 /* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
 
 /* Decorative gradient glow at top AND bottom of sidebar for depth */
