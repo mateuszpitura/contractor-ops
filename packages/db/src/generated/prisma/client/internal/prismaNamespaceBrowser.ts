@@ -1313,7 +1313,11 @@ export const WebhookDeliveryScalarFieldEnum = {
   receivedAt: 'receivedAt',
   processedAt: 'processedAt',
   errorMessage: 'errorMessage',
-  providerEventId: 'providerEventId'
+  providerEventId: 'providerEventId',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
+  lastErrorAt: 'lastErrorAt',
+  lastError: 'lastError'
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]

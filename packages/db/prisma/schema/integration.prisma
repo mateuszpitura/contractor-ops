@@ -98,6 +98,26 @@ model WebhookDelivery {
   // ingress requests for the same upstream event collapse to one row
   // (catch P2002 and 200-OK the second).
   providerEventId         String?
+  // F-INT-13 / P2-B: retry bookkeeping for the job-health reaper.
+  //
+  // - `attempts` increments on every reaper-triggered re-enqueue. The
+  //   webhook _process consumer does NOT bump this on its own runtime,
+  //   so legitimate slow handlers (Jira PR enrichment, e-sign ZIP
+  //   generation can take 20+ min) are not penalised by their own
+  //   duration.
+  // - `nextAttemptAt` is the earliest moment the reaper may re-enqueue
+  //   the row again (exponential backoff: 60s × 2^attempts, capped at 1h).
+  //   Reads are paired with `deliveryStatus` so the reaper can find
+  //   "stuck and ready to retry" rows in one index seek.
+  // - `lastErrorAt` / `lastError` capture the most recent reaper failure
+  //   reason so on-call has a fingerprint without scanning Sentry.
+  //
+  // The reaper marks a row FAILED only after `attempts >= MAX_ATTEMPTS`
+  // (5 by default), so transient stalls no longer drop legitimate work.
+  attempts                Int                   @default(0)
+  nextAttemptAt           DateTime?
+  lastErrorAt             DateTime?
+  lastError               String?
 
   organization Organization @relation(fields: [organizationId], references: [id])
 
@@ -108,6 +128,9 @@ model WebhookDelivery {
   @@unique([provider, providerEventId], map: "webhook_delivery_provider_event_uniq")
   @@index([organizationId])
   @@index([organizationId, provider, receivedAt])
+  // F-INT-13 / P2-B: reaper lookup — find PROCESSING/RECEIVED rows whose
+  // exponential backoff has elapsed in a single index seek.
+  @@index([deliveryStatus, nextAttemptAt])
 }
 
 // --- Enums ---

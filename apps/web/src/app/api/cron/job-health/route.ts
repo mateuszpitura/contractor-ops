@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { prisma } from '@contractor-ops/db';
+import { queueWebhookProcessing } from '@contractor-ops/integrations/services/webhook-dispatcher';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -19,6 +20,20 @@ const STALE_THRESHOLD_MIN = 15;
 
 /** Alert threshold: fire a Sentry alert when recent failure count exceeds this. */
 const FAILURE_ALERT_THRESHOLD = 10;
+
+/**
+ * F-INT-13 / P2-B reaper retry budget. Each reaper pass that finds a
+ * stale row bumps `attempts` and reschedules with exponential backoff
+ * (60s × 2^attempts, capped at 1h). Once `attempts >= MAX_REAPER_ATTEMPTS`
+ * the row is marked FAILED and surfaced for manual triage. 5 attempts
+ * across the backoff schedule (1m, 2m, 4m, 8m, 16m) gives roughly 30
+ * minutes of total retry coverage before declaring the row dead — long
+ * enough to absorb a Render scale-up bounce or a transient QStash outage,
+ * short enough to keep the failure signal sharp.
+ */
+const MAX_REAPER_ATTEMPTS = 5;
+const BACKOFF_BASE_SECONDS = 60;
+const BACKOFF_MAX_SECONDS = 60 * 60;
 
 // ---------------------------------------------------------------------------
 // GET /api/cron/job-health
@@ -60,32 +75,28 @@ export async function GET(request: NextRequest) {
           const staleCutoff = new Date(now.getTime() - STALE_THRESHOLD_MIN * 60_000);
           const oneHourAgo = new Date(now.getTime() - 60 * 60_000);
 
-          // 1. Find stale webhook deliveries (stuck in RECEIVED or PROCESSING).
-          //    RECEIVED stale = QStash never delivered it to _process (or
-          //    delivered but crashed pre-claim).
+          // 1. Find stale webhook deliveries (stuck in RECEIVED or PROCESSING)
+          //    whose backoff window has elapsed. RECEIVED stale = QStash never
+          //    delivered it to _process (or delivered but crashed pre-claim).
           //    PROCESSING stale = a worker claimed the row but crashed before
           //    finishing (no PROCESSED/FAILED transition).
           //
-          // F-ASYNC-05: pre-fix this just nuked PROCESSING rows to FAILED
-          // after 15min, which lost slow-but-legit handlers (Jira PR
-          // enrichment, e-sign ZIP generation can take 20+min). The right
-          // fix needs an `attempts` counter on WebhookDelivery (F-INT-13,
-          // owned by P2-B). For now the reaper:
-          //   - Keeps the timeout-and-FAIL behaviour (no regression on the
-          //     genuinely-crashed cases) so as not to leave PROCESSING rows
-          //     forever.
-          //   - Logs a Sentry capture per stale row so ops can find slow
-          //     legit cases when they happen.
-          //   - Tags with `event: 'webhook_delivery_stale'` for grep.
-          //
-          // TODO(P2-B, F-INT-13): once WebhookDelivery has `attempts` /
-          // `nextAttemptAt` / `lastErrorAt`, change this to "if attempts <
-          // maxAttempts and nextAttemptAt < now, re-enqueue PROCESSING ↺
-          // RECEIVED; only after maxAttempts mark FAILED".
+          // F-INT-13 / P2-B: with the `attempts` / `nextAttemptAt` columns
+          // landed, the reaper now distinguishes "transient stall — retry"
+          // from "definitively dead — fail". Each pass:
+          //   - Selects rows where `nextAttemptAt` is null (first stall) OR
+          //     `nextAttemptAt < now` (backoff elapsed).
+          //   - Bumps `attempts` and computes the next backoff window.
+          //   - If `attempts < MAX_REAPER_ATTEMPTS`: re-enqueues into QStash
+          //     (the existing `webhook.process` consumer dedups via the
+          //     deliveryId, so a duplicate publish from the reaper races
+          //     harmlessly with whatever was originally lost).
+          //   - Otherwise: marks FAILED and captures Sentry for triage.
           const staleDeliveries = await prisma.webhookDelivery.findMany({
             where: {
               deliveryStatus: { in: ['RECEIVED', 'PROCESSING'] },
               receivedAt: { lt: staleCutoff },
+              OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }],
             },
             select: {
               id: true,
@@ -94,28 +105,93 @@ export async function GET(request: NextRequest) {
               eventType: true,
               receivedAt: true,
               deliveryStatus: true,
+              attempts: true,
             },
           });
 
-          // 2. Mark stale deliveries as FAILED (dead letter) and surface
-          //    each one for ops follow-up.
-          if (staleDeliveries.length > 0) {
+          // 2. Bucket stale rows into "retry" vs. "give up" cohorts.
+          const toRetry: typeof staleDeliveries = [];
+          const toFail: typeof staleDeliveries = [];
+          for (const delivery of staleDeliveries) {
+            if (delivery.attempts + 1 >= MAX_REAPER_ATTEMPTS) {
+              toFail.push(delivery);
+            } else {
+              toRetry.push(delivery);
+            }
+          }
+
+          // 3. Retry cohort: bump attempts, schedule the next backoff
+          //    window, and re-publish to QStash. Per-row updates so each
+          //    `nextAttemptAt` reflects that row's specific attempt count.
+          let staleRetried = 0;
+          for (const delivery of toRetry) {
+            const nextAttempts = delivery.attempts + 1;
+            const backoffSeconds = Math.min(
+              BACKOFF_BASE_SECONDS * 2 ** delivery.attempts,
+              BACKOFF_MAX_SECONDS,
+            );
+            const nextAttemptAt = new Date(now.getTime() + backoffSeconds * 1000);
+            try {
+              await prisma.webhookDelivery.update({
+                where: { id: delivery.id },
+                data: {
+                  // Reset to RECEIVED so the consumer's compare-and-swap claim
+                  // can pick the row up again. The QStash publish below
+                  // dedups against deliveryId so we are safe against the
+                  // worker that originally claimed the row racing back.
+                  deliveryStatus: 'RECEIVED',
+                  attempts: nextAttempts,
+                  nextAttemptAt,
+                  lastErrorAt: now,
+                  lastError: `Reaper re-enqueue (attempt ${nextAttempts}/${MAX_REAPER_ATTEMPTS}) after ${STALE_THRESHOLD_MIN}min stall`,
+                },
+              });
+              await queueWebhookProcessing(delivery.id, delivery.provider.toLowerCase());
+              staleRetried++;
+            } catch (retryErr) {
+              // Don't let a single failed retry abort the whole pass — log
+              // and let the next reaper pass try again.
+              log.error(
+                {
+                  err: retryErr,
+                  deliveryId: delivery.id,
+                  provider: delivery.provider,
+                  attempts: nextAttempts,
+                },
+                'reaper retry enqueue failed',
+              );
+              Sentry.captureException(retryErr, {
+                tags: {
+                  'cron.job': 'job-health',
+                  'webhook.provider': delivery.provider,
+                  'webhook.outcome': 'reaper-retry-failed',
+                },
+                extra: { deliveryId: delivery.id, attempts: nextAttempts },
+              });
+            }
+          }
+
+          // 4. Give-up cohort: mark FAILED and surface for ops follow-up.
+          if (toFail.length > 0) {
             await prisma.webhookDelivery.updateMany({
               where: {
-                id: { in: staleDeliveries.map(d => d.id) },
+                id: { in: toFail.map(d => d.id) },
               },
               data: {
                 deliveryStatus: 'FAILED',
                 processedAt: now,
+                attempts: { increment: 1 },
+                lastErrorAt: now,
+                lastError: `Reaper exhausted ${MAX_REAPER_ATTEMPTS} attempts`,
                 errorMessage: JSON.stringify({
-                  reason: `Stale: stuck in RECEIVED/PROCESSING for >${STALE_THRESHOLD_MIN} minutes`,
+                  reason: `Stale: stuck in RECEIVED/PROCESSING beyond ${MAX_REAPER_ATTEMPTS} reaper attempts`,
                   failedByHealthCheck: true,
                   failedAt: now.toISOString(),
                 }),
               },
             });
 
-            for (const delivery of staleDeliveries) {
+            for (const delivery of toFail) {
               Sentry.captureMessage('webhook delivery stale — reaper marked FAILED', {
                 level: 'warning',
                 tags: {
@@ -128,24 +204,29 @@ export async function GET(request: NextRequest) {
                   organizationId: delivery.organizationId,
                   eventType: delivery.eventType,
                   receivedAt: delivery.receivedAt,
+                  attempts: delivery.attempts + 1,
                   ageMinutes: Math.round((now.getTime() - delivery.receivedAt.getTime()) / 60_000),
                 },
               });
             }
+          }
 
+          if (staleRetried > 0 || toFail.length > 0) {
             log.warn(
               {
-                count: staleDeliveries.length,
                 event: 'webhook_delivery_stale',
+                retried: staleRetried,
+                failed: toFail.length,
                 deliveries: staleDeliveries.map(d => ({
                   id: d.id,
                   provider: d.provider,
                   eventType: d.eventType,
                   receivedAt: d.receivedAt,
                   observedStatus: d.deliveryStatus,
+                  attempts: d.attempts,
                 })),
               },
-              'marked stale webhook deliveries as FAILED',
+              'reaper processed stale webhook deliveries',
             );
           }
 
@@ -164,10 +245,14 @@ export async function GET(request: NextRequest) {
             },
           });
 
-          // 5. Report metrics
+          // 5. Report metrics — split retried vs. failed so dashboards can
+          //    distinguish "transient stalls being absorbed by the reaper"
+          //    (healthy: retries succeeding) from "definitive dead letters"
+          //    (unhealthy: rows exhausting their attempt budget).
           metrics.gauge('jobs.webhook.pending', pendingCount);
           metrics.gauge('jobs.webhook.failures_1h', recentFailureCount);
-          metrics.gauge('jobs.webhook.stale_cleared', staleDeliveries.length);
+          metrics.gauge('jobs.webhook.stale_retried', staleRetried);
+          metrics.gauge('jobs.webhook.stale_cleared', toFail.length);
 
           // 6. Alert if failure threshold breached
           if (recentFailureCount > FAILURE_ALERT_THRESHOLD) {
@@ -176,7 +261,12 @@ export async function GET(request: NextRequest) {
             Sentry.captureMessage(alertMessage, {
               level: 'error',
               tags: { 'cron.job': 'job-health', 'alert.type': 'failure_threshold' },
-              extra: { recentFailureCount, pendingCount, staleCleared: staleDeliveries.length },
+              extra: {
+                recentFailureCount,
+                pendingCount,
+                staleRetried,
+                staleCleared: toFail.length,
+              },
             });
           }
 
@@ -195,7 +285,8 @@ export async function GET(request: NextRequest) {
             {
               pendingCount,
               recentFailureCount,
-              staleCleared: staleDeliveries.length,
+              staleRetried,
+              staleCleared: toFail.length,
             },
             'job health check completed',
           );
@@ -203,7 +294,8 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({
             pendingCount,
             recentFailureCount,
-            staleCleared: staleDeliveries.length,
+            staleRetried,
+            staleCleared: toFail.length,
             healthy: recentFailureCount <= FAILURE_ALERT_THRESHOLD && pendingCount <= 100,
           });
         } catch (error) {
