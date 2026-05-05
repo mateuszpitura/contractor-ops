@@ -1,10 +1,11 @@
 'use client';
 
+import { AtelierEmptyState } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { EmptyState } from '@/components/shared/empty-state';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -129,10 +130,11 @@ export default function PortalPaymentsPage() {
           </Table>
         </div>
       ) : (
-        <EmptyState
+        <AtelierEmptyState
           icon={Banknote}
           heading={t('payments.emptyTitle')}
           body={t('payments.emptyBody')}
+          renderAction={renderEmptyStateAction}
         />
       )}
     </div>

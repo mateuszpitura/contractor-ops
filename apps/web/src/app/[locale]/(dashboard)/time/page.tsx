@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { ClipboardList, Clock } from 'lucide-react';
@@ -8,8 +9,7 @@ import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import type { TimesheetRow } from '@/components/time/approval-queue-table';
 import { ApprovalQueueTable } from '@/components/time/approval-queue-table';
 import { ReconciliationTable } from '@/components/time/reconciliation-table';
@@ -195,7 +195,7 @@ function TimeTrackingContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <PageHeader title={t('pageTitle')} />
+        <AtelierPageHeader title={t('pageTitle')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
@@ -219,10 +219,11 @@ function TimeTrackingContent() {
             {pendingQuery.isLoading ? (
               <LoadingSkeleton />
             ) : pendingTimesheets.length === 0 ? (
-              <EmptyState
+              <AtelierEmptyState
                 icon={Clock}
                 heading={t('emptyStates.noPendingReviewsHeading')}
                 body={t('emptyStates.noPendingReviewsBody')}
+                renderAction={renderEmptyStateAction}
               />
             ) : (
               <ApprovalQueueTable
@@ -259,10 +260,11 @@ function TimeTrackingContent() {
               {allQuery.isLoading ? (
                 <LoadingSkeleton />
               ) : allTimesheets.length === 0 ? (
-                <EmptyState
+                <AtelierEmptyState
                   icon={ClipboardList}
                   heading={t('emptyStates.noTimeEntriesHeading')}
                   body={t('emptyStates.noTimeEntriesBody')}
+                  renderAction={renderEmptyStateAction}
                 />
               ) : (
                 <div className="rounded-xl border bg-background">

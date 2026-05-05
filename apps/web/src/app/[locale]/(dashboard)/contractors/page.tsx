@@ -1,6 +1,5 @@
 'use client';
 
-import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
 import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
@@ -13,22 +12,9 @@ import { ContractorDataTable } from '@/components/contractors/contractor-table/d
 import { WizardDialog } from '@/components/contractors/contractor-wizard/wizard-dialog';
 import { ImportWizardDialog } from '@/components/import/import-wizard-dialog';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
-
-/**
- * Bridge AtelierEmptyState's `renderAction` callback to the app's
- * Button. Plain onClick actions only — Link-style actions aren't used
- * by the contractors empty state.
- */
-function renderEmptyStateAction(action: AtelierEmptyStateAction, variant: 'primary' | 'secondary') {
-  return (
-    <Button variant={variant === 'secondary' ? 'outline' : 'default'} onClick={action.onClick}>
-      {action.label}
-    </Button>
-  );
-}
 
 /**
  * Inner contractor page content that uses nuqs (requires useSearchParams).

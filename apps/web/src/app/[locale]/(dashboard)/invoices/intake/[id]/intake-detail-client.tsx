@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { IntakeDetailActionsBar } from '@/components/invoices/intake/intake-detail-actions-bar';
@@ -10,7 +11,6 @@ import { IntakeDetailValidationPane } from '@/components/invoices/intake/intake-
 import type { ProfileLevel } from '@/components/invoices/intake/intake-profile-level-badge';
 import type { IntakeStatus } from '@/components/invoices/intake/intake-status-pill';
 import type { ValidationStatus } from '@/components/invoices/intake/intake-validation-status-pill';
-import { PageHeader } from '@/components/shared/page-header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // ---------------------------------------------------------------------------
@@ -67,7 +67,10 @@ export function IntakeDetailClient({ intake, pageTitle }: IntakeDetailClientProp
 
   return (
     <div className="space-y-6 pb-28 md:pb-6">
-      <PageHeader title={pageTitle} description={intake.extractedSupplierName ?? undefined} />
+      <AtelierPageHeader
+        title={pageTitle}
+        description={intake.extractedSupplierName ?? undefined}
+      />
 
       {intake.profileLevel === 'EXTENDED' && (
         <Alert variant="default" data-slot="intake-extended-banner">

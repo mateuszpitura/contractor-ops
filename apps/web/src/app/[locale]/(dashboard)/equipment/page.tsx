@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useState } from 'react';
@@ -10,7 +11,6 @@ import type { EquipmentRow } from '@/components/equipment/equipment-table/equipm
 import { EquipmentTable } from '@/components/equipment/equipment-table/equipment-table';
 import { ShipmentForm } from '@/components/equipment/shipment-form';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -120,7 +120,7 @@ function EquipmentContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <PageHeader title={t('title')} />
+        <AtelierPageHeader title={t('title')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>

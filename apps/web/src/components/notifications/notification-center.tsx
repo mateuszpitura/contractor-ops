@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -7,7 +8,7 @@ import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useId, useMemo } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -220,10 +221,11 @@ export function NotificationCenter() {
         </div>
       ) : isEmpty ? (
         /* Empty state - informational only */
-        <EmptyState
+        <AtelierEmptyState
           icon={Bell}
           heading={te('notifications.heading')}
           body={te('notifications.body')}
+          renderAction={renderEmptyStateAction}
         />
       ) : (
         <>

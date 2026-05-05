@@ -1,9 +1,10 @@
 'use client';
 
+import { AtelierEmptyState } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { EmptyState } from '@/components/shared/empty-state';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -141,10 +142,11 @@ export default function PortalDocumentsPage() {
           </Table>
         </div>
       ) : (
-        <EmptyState
+        <AtelierEmptyState
           icon={FileText}
           heading={t('documents.emptyTitle')}
           body={t('documents.emptyBody')}
+          renderAction={renderEmptyStateAction}
         />
       )}
     </div>

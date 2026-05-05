@@ -1,12 +1,13 @@
 'use client';
 
+import { AtelierEmptyState } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Clock } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { EmptyState } from '@/components/shared/empty-state';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { ContractorTimesheetReview } from '@/components/time/contractor-timesheet-review';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@/i18n/navigation';
@@ -102,11 +103,12 @@ function ContractorReviewContent() {
 
   if (!(timesheetId && timesheet)) {
     return (
-      <EmptyState
+      <AtelierEmptyState
         icon={Clock}
         heading={t('detail.notFoundHeading')}
         body={t('detail.notFoundBody')}
         primaryAction={{ label: t('detail.backToTimeTracking'), href: '/time' }}
+        renderAction={renderEmptyStateAction}
       />
     );
   }

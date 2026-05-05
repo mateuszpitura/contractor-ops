@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -11,8 +12,7 @@ import { ContractDataTable } from '@/components/contracts/contract-table/data-ta
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
 import { ImportWizardDialog } from '@/components/import/import-wizard-dialog';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
@@ -64,14 +64,15 @@ function ContractsContent() {
   if (!isCountLoading && contractTotal === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
-        <EmptyState
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierEmptyState
           icon={FileText}
           heading={te('contracts.heading')}
           body={te('contracts.body')}
           primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract }}
           prerequisiteMissing={contractorCount === 0}
           prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+          renderAction={renderEmptyStateAction}
         />
         <ContractWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
       </div>
@@ -82,7 +83,7 @@ function ContractsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Data table */}

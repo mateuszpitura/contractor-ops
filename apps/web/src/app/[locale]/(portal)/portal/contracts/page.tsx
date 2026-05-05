@@ -1,10 +1,11 @@
 'use client';
 
+import { AtelierEmptyState } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ContractCard, ContractCardSkeleton } from '@/components/portal/contract-card';
-import { EmptyState } from '@/components/shared/empty-state';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -44,10 +45,11 @@ export default function PortalContractsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState
+        <AtelierEmptyState
           icon={FileText}
           heading={t('contracts.emptyTitle')}
           body={t('contracts.emptyBody')}
+          renderAction={renderEmptyStateAction}
         />
       )}
     </div>

@@ -1,8 +1,8 @@
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import { IntakeList } from '@/components/invoices/intake/intake-list';
-import { PageHeader } from '@/components/shared/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServerFlag } from '@/lib/server-flag';
 
@@ -29,7 +29,7 @@ export default async function IntakeListPage({ searchParams }: IntakePageProps) 
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t('pageTitle')} description={t('pageSubtitle')} />
+      <AtelierPageHeader title={t('pageTitle')} description={t('pageSubtitle')} />
       <Suspense
         fallback={
           <div className="space-y-2">

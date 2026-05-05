@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckSquare, ClipboardCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -13,8 +14,7 @@ import { ApprovalQueueToolbar } from '@/components/approvals/approval-queue/data
 import { ApprovalSidePanel } from '@/components/approvals/approval-queue/side-panel';
 import { ChangeRequestDiffCard } from '@/components/settings/change-request-diff-card';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -218,10 +218,11 @@ function ApprovalsContent() {
     if (isEmpty && status === 'all' && !search) {
       // True empty state - informational only, no CTA
       return (
-        <EmptyState
+        <AtelierEmptyState
           icon={CheckSquare}
           heading={te('approvals.heading')}
           body={te('approvals.body')}
+          renderAction={renderEmptyStateAction}
         />
       );
     }
@@ -258,7 +259,7 @@ function ApprovalsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Tabs */}
@@ -299,10 +300,11 @@ function ApprovalsContent() {
                   ))}
                 </div>
               ) : changeRequests.length === 0 ? (
-                <EmptyState
+                <AtelierEmptyState
                   icon={ClipboardCheck}
                   heading={t('changeRequests.noPendingHeading')}
                   body={t('changeRequests.noPendingBody')}
+                  renderAction={renderEmptyStateAction}
                 />
               ) : (
                 <div className="space-y-4">

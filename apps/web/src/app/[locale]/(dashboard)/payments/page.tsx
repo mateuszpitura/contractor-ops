@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -13,8 +14,7 @@ import { getColumns } from '@/components/payments/payment-run-table/columns';
 import { PaymentRunDataTable } from '@/components/payments/payment-run-table/data-table';
 import { DataTableToolbar } from '@/components/payments/payment-run-table/data-table-toolbar';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
@@ -151,7 +151,7 @@ function PaymentsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader
+        <AtelierPageHeader
           title={t('title')}
           description={t('pageDescription')}
           actions={
@@ -166,13 +166,14 @@ function PaymentsContent() {
 
       {isEmpty ? (
         /* Empty state with smart sequencing */
-        <EmptyState
+        <AtelierEmptyState
           icon={CreditCard}
           heading={te('payments.heading')}
           body={te('payments.body')}
           primaryAction={{ label: te('payments.cta'), href: '/invoices' }}
           prerequisiteMissing={contractorCount === 0}
           prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+          renderAction={renderEmptyStateAction}
         />
       ) : (
         <AnimateIn delay={1}>
