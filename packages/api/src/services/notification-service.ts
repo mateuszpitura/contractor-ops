@@ -1,4 +1,5 @@
 import { prisma } from '@contractor-ops/db';
+import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -218,38 +219,25 @@ const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, st
 export async function dispatch(event: NotificationEvent): Promise<void> {
   const now = new Date();
 
-  // F-ASYNC-09 / F-SCALE-05: previously this was a serial `for await` over
-  // every recipient; at 1000 contractors × 3 admin recipients × ~150ms
-  // dispatch each that was ~7.5min — well over serverless timeout. Chunk
-  // into bounded parallel batches so a 100-recipient broadcast finishes in
-  // ~10 RTTs instead of 100.
+  // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the per-user fan-out at
+  // FANOUT_CONCURRENCY (10) so a 100-recipient broadcast completes in ~10
+  // RTTs instead of 100 while still protecting downstream providers
+  // (Resend, Slack, Teams) from being saturated by a single dispatch.
   //
-  // TODO(P2-B): replace the inline `chunked` helper with `p-limit`-based
-  // concurrency once P2-B's resilience module lands; that gives us proper
-  // per-provider bulkheads (e.g. throttle Resend independently of
-  // Slack/Teams DMs).
+  // Replaces a previous `chunked + sequential await` shape with `p-limit`,
+  // which lets every recipient slot start as soon as a previous one
+  // finishes (the chunked version waited for the slowest call in each
+  // batch before starting the next batch). For a 100-recipient broadcast
+  // where one per-user dispatch is slow, throughput improves by avoiding
+  // head-of-line blocking on each chunk boundary.
   const FANOUT_CONCURRENCY = 10;
-  const chunks = chunked(event.recipientUserIds, FANOUT_CONCURRENCY);
-  for (const chunk of chunks) {
-    await Promise.all(chunk.map(userId => dispatchToUser(userId, event, now)));
-  }
+  const limit = pLimit(FANOUT_CONCURRENCY);
+  await Promise.all(
+    event.recipientUserIds.map(userId => limit(() => dispatchToUser(userId, event, now))),
+  );
 
   // Channel alert dispatch (org-level, not per-user)
   await dispatchChannelAlerts(event);
-}
-
-/**
- * Splits an array into chunks of `size`. Tiny inline helper to avoid
- * pulling in a dep just for this; will be replaced when P2-B's resilience
- * module exposes p-limit.
- */
-function chunked<T>(items: readonly T[], size: number): T[][] {
-  if (size <= 0 || items.length === 0) return items.length ? [Array.from(items)] : [];
-  const result: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    result.push(items.slice(i, i + size));
-  }
-  return result;
 }
 
 // ---------------------------------------------------------------------------
