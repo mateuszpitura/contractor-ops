@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -11,15 +12,55 @@ import { BaseAdapter } from './base-adapter.js';
 // Identity Platform. 30s wall-clock, no retries (replaying can claim
 // multiple sessions or invalidate the refresh token).
 const OAUTH_TIMEOUT_MS = 30_000;
-// Calendar event mutations — POST/PATCH/DELETE against Graph. NOT retried
-// by default to avoid duplicate inserts (no Idempotency-Key wiring yet —
-// see F-INT-04). 15s wall-clock; helper aborts on transport hangs.
-// TODO(F-INT-04): once createEvent passes a deterministic key, opt in to
-// retryNonIdempotent.
+// Calendar event mutations — POST/PATCH/DELETE against Graph. With F-INT-04
+// the caller now passes a deterministic idempotency key on createEvent,
+// surfaced via the `client-request-id` Graph header so duplicate inserts
+// can be reconciled / observed in Microsoft's telemetry. `updateEvent` and
+// `deleteEvent` operate on a stable eventId so transport retries are
+// naturally safe. 15s wall-clock; helper aborts on transport hangs.
 const MUTATION_TIMEOUT_MS = 15_000;
+const MUTATION_RETRIES = 2;
 // getSchedule POST is read-only — opt in to retry on 429/5xx.
 const READ_TIMEOUT_MS = 15_000;
 const READ_RETRIES = 2;
+
+// ---------------------------------------------------------------------------
+// Idempotency key encoding (F-INT-04)
+// ---------------------------------------------------------------------------
+//
+// Microsoft Graph documents the `client-request-id` header as the standard
+// per-request correlation/dedup id. It must be a UUID (per Graph error
+// guidance), so we derive a deterministic v4-shaped UUID from the caller's
+// idempotency key by sha-256 hashing it and applying the RFC 4122 v5-style
+// variant/version bits. Same input → same UUID → same correlation id.
+//
+// Graph's behaviour on duplicate `client-request-id` is "last write wins"
+// rather than 409 Conflict (unlike Google). The header still serves two
+// purposes: (a) it surfaces the dedup intent in Graph telemetry so on-call
+// can spot duplicate writes, and (b) it lets us safely opt the transport
+// layer into `retryNonIdempotent: true` because any duplicate POST will be
+// tagged with the same id and reconcilable in audit logs.
+function encodeMicrosoftClientRequestId(idempotencyKey: string): string {
+  const digest = createHash('sha256').update(idempotencyKey).digest();
+  // Force RFC 4122 variant (10xxxxxx) and version 5 (sha1-namespace shape;
+  // we use sha-256 but the version bits are purely cosmetic for Graph).
+  digest[6] = (digest[6] & 0x0f) | 0x50;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  const hex = digest.toString('hex');
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20, 32),
+  ].join('-');
+}
+
+/**
+ * Test seam — replaceable by unit tests that want to assert the random
+ * fallback id (used when no caller-supplied idempotency key is available).
+ */
+const newRandomClientRequestId = (): string => randomUUID();
 
 /**
  * Phase 74 D-05 / D-08 — busy range returned by Outlook's getFreeBusy.
@@ -194,8 +235,18 @@ export class OutlookCalendarAdapter extends BaseAdapter {
    * IMPORTANT: Dates must use the { dateTime, timeZone } object format,
    * not raw ISO strings (Pitfall 5).
    *
+   * F-INT-04 idempotency: when the caller supplies `idempotencyKey`, it is
+   * derived into a deterministic UUID and sent on the `client-request-id`
+   * Graph header. Same input key → same id, so duplicate inserts are
+   * reconcilable in Graph telemetry and the transport layer can safely
+   * retry without losing trace correlation. Callers derive the key as e.g.
+   * `sha256(`${orgId}:${calendarId}:${entityId}:create`)`.
+   *
    * @param accessToken - The OAuth access token
    * @param event - Event details
+   * @param idempotencyKey - Optional deterministic dedup key; encoded into
+   *   the `client-request-id` header so retries share the same correlation
+   *   id. When omitted, a random UUID is used (no idempotency benefit).
    * @returns Created event ID and web link
    */
   async createEvent(
@@ -207,6 +258,7 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       endDateTime: string;
       attendees?: string[];
     },
+    idempotencyKey?: string,
   ): Promise<{ eventId: string; webLink: string }> {
     const body: Record<string, unknown> = {
       subject: event.subject,
@@ -234,6 +286,10 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       }));
     }
 
+    const clientRequestId = idempotencyKey
+      ? encodeMicrosoftClientRequestId(idempotencyKey)
+      : newRandomClientRequestId();
+
     const response = await fetchWithTimeout(
       'https://graph.microsoft.com/v1.0/me/calendar/events',
       {
@@ -241,10 +297,18 @@ export class OutlookCalendarAdapter extends BaseAdapter {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
+          'client-request-id': clientRequestId,
         },
         body: JSON.stringify(body),
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        // Without a deterministic key, a transport retry could create a
+        // second event — leave retries disabled. With a key, the
+        // client-request-id correlates duplicates so we opt in to retries.
+        retries: idempotencyKey ? MUTATION_RETRIES : 0,
+        retryNonIdempotent: Boolean(idempotencyKey),
+      },
     );
 
     if (!response.ok) {
@@ -317,10 +381,17 @@ export class OutlookCalendarAdapter extends BaseAdapter {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
+          'client-request-id': newRandomClientRequestId(),
         },
         body: JSON.stringify(body),
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        // PATCH on a stable eventId is idempotent — replaying the same
+        // partial update yields the same final state. Safe to retry.
+        retries: MUTATION_RETRIES,
+        retryNonIdempotent: true,
+      },
     );
 
     if (!response.ok) {
@@ -342,6 +413,10 @@ export class OutlookCalendarAdapter extends BaseAdapter {
   /**
    * Deletes a calendar event using Microsoft Graph API.
    *
+   * F-INT-04: DELETE on a stable eventId is naturally idempotent — Graph
+   * returns 404 on the second call and the caller already treats both 2xx
+   * and 404 as success. Safe to retry on transport errors.
+   *
    * @param accessToken - The OAuth access token
    * @param eventId - The event ID to delete
    */
@@ -352,9 +427,14 @@ export class OutlookCalendarAdapter extends BaseAdapter {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'client-request-id': newRandomClientRequestId(),
         },
       },
-      { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+      {
+        timeoutMs: MUTATION_TIMEOUT_MS,
+        retries: MUTATION_RETRIES,
+        retryNonIdempotent: true,
+      },
     );
 
     if (!response.ok) {

@@ -1,3 +1,4 @@
+import { getQueueDepthSnapshot } from '@contractor-ops/api/services/cron-monitor';
 import { prisma } from '@contractor-ops/db';
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
@@ -6,13 +7,15 @@ import { NextResponse } from 'next/server';
  * Real health check endpoint. Phase 2 P2-E F-OBS-07.
  *
  * Replaces the previous `SELECT 1`-only stub with an awaited
- * `Promise.allSettled` of four probes covering every external service the
- * app cannot operate without:
+ * `Promise.allSettled` of five probes covering every external service the
+ * app cannot operate without plus the QStash backpressure semaphores:
  *
  *   - Postgres (Neon)             — `prisma.$queryRaw\`SELECT 1\``
  *   - Upstash Redis               — `PING`
  *   - Upstash QStash              — HEAD on the public health URL
  *   - Cloudflare R2 (S3 API)      — HEAD on a known canary key
+ *   - QStash backpressure         — depth < 1.5x maxConcurrent per route
+ *                                   (S3-4 · F-SCALE-19)
  *
  * Each probe runs with a per-probe 1.5s soft timeout; the overall handler
  * caps at 5s so Render's healthcheck doesn't block scheduling decisions.
@@ -43,12 +46,23 @@ const R2_CANARY_KEY = process.env.R2_HEALTHCHECK_KEY ?? '_health/canary.txt';
 type ProbeStatus = 'ok' | 'fail' | 'skipped';
 
 interface ProbeResult {
-  name: 'database' | 'redis' | 'qstash' | 'r2';
+  name: 'database' | 'redis' | 'qstash' | 'r2' | 'backpressure';
   status: ProbeStatus;
   /** Wall-clock duration in ms. Always present (even for skipped probes). */
   durationMs: number;
   /** Failure reason — populated on `fail` only. */
   reason?: string;
+  /**
+   * Optional per-route diagnostic for the backpressure probe — included
+   * only when at least one route is over its threshold so a green probe
+   * stays compact.
+   */
+  saturated?: Array<{
+    routeKey: string;
+    depth: number;
+    threshold: number;
+    max: number;
+  }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -138,6 +152,40 @@ async function probeQStash(): Promise<ProbeResult> {
   }
 }
 
+async function probeBackpressure(): Promise<ProbeResult> {
+  // S3-4 · F-SCALE-19: read the per-route Redis semaphore depth and fail
+  // the probe iff any route is over `Math.floor(max * 1.5)`. Skip when
+  // Redis is unconfigured — the snapshot returns depth=0 for every route
+  // in that case so the probe is naturally green.
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!(url && token)) return skipped('backpressure');
+
+  const start = performance.now();
+  try {
+    const snapshot = await withTimeout(getQueueDepthSnapshot(), PROBE_TIMEOUT_MS);
+    const saturated = snapshot.filter(entry => entry.saturated);
+    if (saturated.length === 0) {
+      return ok('backpressure', start);
+    }
+    const result: ProbeResult = {
+      name: 'backpressure',
+      status: 'fail',
+      durationMs: Math.round(performance.now() - start),
+      reason: `routes over threshold: ${saturated.map(s => `${s.routeKey}=${s.depth}/${s.threshold}`).join(', ')}`,
+      saturated: saturated.map(s => ({
+        routeKey: s.routeKey,
+        depth: s.depth,
+        threshold: s.threshold,
+        max: s.max,
+      })),
+    };
+    return result;
+  } catch (err) {
+    return fail('backpressure', start, err);
+  }
+}
+
 async function probeR2(): Promise<ProbeResult> {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKey = process.env.R2_ACCESS_KEY_ID;
@@ -183,7 +231,13 @@ async function probeR2(): Promise<ProbeResult> {
 
 export async function GET() {
   const start = performance.now();
-  const probes = [probeDatabase(), probeRedis(), probeQStash(), probeR2()];
+  const probes = [
+    probeDatabase(),
+    probeRedis(),
+    probeQStash(),
+    probeR2(),
+    probeBackpressure(),
+  ];
 
   const settled = await withTimeout(Promise.allSettled(probes), HANDLER_TIMEOUT_MS).catch(err => {
     // If even allSettled timed out, return synthetic fail rows so we still
@@ -193,12 +247,14 @@ export async function GET() {
       { status: 'rejected' as const, reason: err },
       { status: 'rejected' as const, reason: err },
       { status: 'rejected' as const, reason: err },
+      { status: 'rejected' as const, reason: err },
     ];
   });
 
   const results: ProbeResult[] = settled.map((s, i) => {
     if (s.status === 'fulfilled') return s.value;
-    const name = (['database', 'redis', 'qstash', 'r2'] as const)[i] ?? 'database';
+    const name =
+      (['database', 'redis', 'qstash', 'r2', 'backpressure'] as const)[i] ?? 'database';
     return {
       name,
       status: 'fail',
