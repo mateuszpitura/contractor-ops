@@ -40,6 +40,7 @@
 // EconomicDependencyAlertState atomically with an upsert.
 
 import { prisma, prismaRaw } from '@contractor-ops/db';
+import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { dispatch } from './notification-service.js';
@@ -281,21 +282,23 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
     },
   });
 
-  // F-ASYNC-09 / F-SCALE-05: this used to be a serial `for await` over EVERY
-  // active DE contractor assignment cross-tenant — at 1000 assignments,
-  // that's ~1000 * (computeBillingShare + updateBandState + dispatch + RBAC
-  // lookup). Chunk into bounded parallel batches.
+  // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the cross-tenant scan fan-out at
+  // SCAN_FANOUT_CONCURRENCY (10) so a 1000-assignment scan completes in
+  // ~100 RTTs instead of 1000 while not saturating Prisma / Resend / Slack.
   //
-  // TODO(P2-B): replace the inline `chunked` helper with p-limit once that
-  // dep lands so we can throttle by downstream provider (Resend, Slack)
-  // independently and observe queue depth via opossum metrics.
+  // Replaces a previous `chunked + sequential await` shape with `p-limit`,
+  // which lets every assignment slot start as soon as a previous one
+  // finishes (the chunked version waited for the slowest call in each
+  // batch before starting the next). When a single assignment's
+  // computeBillingShare is slow, throughput improves by avoiding head-of-
+  // line blocking on each chunk boundary.
   const SCAN_FANOUT_CONCURRENCY = 10;
+  const limit = pLimit(SCAN_FANOUT_CONCURRENCY);
   const dispatchedCounter = { value: 0, crossings: 0, scanned: 0 };
 
-  const chunks = chunkAssignments(assignments, SCAN_FANOUT_CONCURRENCY);
-  for (const chunk of chunks) {
-    await Promise.all(
-      chunk.map(async assignment => {
+  await Promise.all(
+    assignments.map(assignment =>
+      limit(async () => {
         dispatchedCounter.scanned++;
         try {
           const { share } = await computeBillingShare(
@@ -359,8 +362,8 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
           );
         }
       }),
-    );
-  }
+    ),
+  );
   scanned = dispatchedCounter.scanned;
   crossings = dispatchedCounter.crossings;
   notificationsDispatched = dispatchedCounter.value;
@@ -375,19 +378,6 @@ export async function runEconomicDependencyScan(now: Date = new Date()): Promise
   );
 
   return { scanned, crossings, notificationsDispatched };
-}
-
-/**
- * Inline chunker for the F-ASYNC-09 fanout. Will be replaced by
- * `p-limit` once P2-B's resilience module lands.
- */
-function chunkAssignments<T>(items: readonly T[], size: number): T[][] {
-  if (size <= 0 || items.length === 0) return items.length ? [Array.from(items)] : [];
-  const result: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    result.push(items.slice(i, i + size));
-  }
-  return result;
 }
 
 // Re-export prisma alias for tests that need to stub it via the same path.
