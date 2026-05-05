@@ -1,5 +1,7 @@
 'use client';
 
+import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -11,10 +13,22 @@ import { ContractorDataTable } from '@/components/contractors/contractor-table/d
 import { WizardDialog } from '@/components/contractors/contractor-wizard/wizard-dialog';
 import { ImportWizardDialog } from '@/components/import/import-wizard-dialog';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
+
+/**
+ * Bridge AtelierEmptyState's `renderAction` callback to the app's
+ * Button. Plain onClick actions only — Link-style actions aren't used
+ * by the contractors empty state.
+ */
+function renderEmptyStateAction(action: AtelierEmptyStateAction, variant: 'primary' | 'secondary') {
+  return (
+    <Button variant={variant === 'secondary' ? 'outline' : 'default'} onClick={action.onClick}>
+      {action.label}
+    </Button>
+  );
+}
 
 /**
  * Inner contractor page content that uses nuqs (requires useSearchParams).
@@ -59,8 +73,8 @@ function ContractorsContent() {
   if (!isCountLoading && totalCount === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
-        <EmptyState
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierEmptyState
           icon={Users}
           heading={te('contractors.heading')}
           body={te('contractors.body')}
@@ -69,6 +83,7 @@ function ContractorsContent() {
             label: te('contractors.secondary'),
             onClick: handleOpenImportWizard,
           }}
+          renderAction={renderEmptyStateAction}
         />
         <WizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
         <ImportWizardDialog
@@ -84,7 +99,7 @@ function ContractorsContent() {
     <div className="space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       {/* Data table */}

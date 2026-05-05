@@ -54,7 +54,7 @@ function DashboardEmptyState() {
 function DashboardContent() {
   const { can } = usePermissions();
   const hasReportAccess = can('report', ['read']);
-  const lateInterestEnabled = useFlag('PAY_LATE_INTEREST_ENABLED');
+  const lateInterestEnabled = useFlag('payments.late-interest-enabled');
 
   // Fetch KPIs to check for empty state
   const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
@@ -119,7 +119,7 @@ function DashboardContent() {
           <AnimateIn delay={5}>
             <EInvoiceComplianceWidget />
           </AnimateIn>
-          <AnimateIn delay={6}>
+          <AnimateIn delay={5}>
             <TaxObligationsWidget />
           </AnimateIn>
         </div>

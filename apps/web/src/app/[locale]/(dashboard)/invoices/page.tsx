@@ -1,5 +1,7 @@
 'use client';
 
+import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Copy, Receipt } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -15,10 +17,30 @@ import { useInvoiceFilters } from '@/components/invoices/invoice-table/use-invoi
 import { InvoiceUploadArea } from '@/components/invoices/invoice-upload-area';
 import { StatusChipBar } from '@/components/invoices/status-chip-bar';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { EmptyState } from '@/components/shared/empty-state';
-import { PageHeader } from '@/components/shared/page-header';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+
+/**
+ * Bridge AtelierEmptyState's `renderAction` to the app's locale-aware
+ * Link / Button. Handles both href and onClick action variants.
+ */
+function renderEmptyStateAction(action: AtelierEmptyStateAction, variant: 'primary' | 'secondary') {
+  const buttonVariant = variant === 'secondary' ? 'outline' : 'default';
+  if (action.href) {
+    return (
+      <Button variant={buttonVariant} nativeButton={false} render={<Link href={action.href} />}>
+        {action.label}
+      </Button>
+    );
+  }
+  return (
+    <Button variant={buttonVariant} onClick={action.onClick}>
+      {action.label}
+    </Button>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Email inbox address (constructed from placeholder org slug)
@@ -107,11 +129,11 @@ function InvoicesContent() {
   if (!isCountLoading && invoiceTotal === 0) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
         {uploadOpen ? (
           <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
         ) : (
-          <EmptyState
+          <AtelierEmptyState
             icon={Receipt}
             heading={te('invoices.heading')}
             body={te('invoices.body')}
@@ -119,6 +141,7 @@ function InvoicesContent() {
             secondaryAction={{ label: te('invoices.secondary'), href: '/settings' }}
             prerequisiteMissing={contractorCount === 0}
             prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            renderAction={renderEmptyStateAction}
           />
         )}
       </div>
@@ -131,7 +154,7 @@ function InvoicesContent() {
           einvoice.import-enabled flag is on, surfaces 'Import e-invoice' as
           a secondary dropdown item alongside the primary '+ New invoice' CTA. */}
       <AnimateIn delay={0}>
-        <PageHeader
+        <AtelierPageHeader
           title={t('pageTitle')}
           description={t('pageDescription')}
           actions={<ImportSplitButton onCreateNewClick={handleUpload} />}
