@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierPageHeader } from '@contractor-ops/ui';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback } from 'react';
@@ -49,12 +50,7 @@ function SettingsContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <div>
-          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
-            {t('title')}
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
+        <AtelierPageHeader title={t('title')} description={t('subtitle')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
