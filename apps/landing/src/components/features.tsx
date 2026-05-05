@@ -108,7 +108,7 @@ export function Features() {
           staggerDelay={0.07}>
           {features.map(feature => (
             <StaggerItem key={feature.title} className={feature.span}>
-              <div className="group relative h-full rounded-2xl border border-border/50 bg-surface-1 p-6 transition-all duration-300 hover:border-border hover:shadow-md">
+              <div className="group glass-subtle relative h-full rounded-2xl p-6 transition-all duration-300 hover:border-border hover:shadow-md">
                 <div className="relative">
                   <div
                     className={`flex h-11 w-11 items-center justify-center rounded-xl ${feature.iconBg}`}>

@@ -64,7 +64,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body>
+      <body data-intensity="exhibition">
         <PostHogProvider>{children}</PostHogProvider>
       </body>
     </html>

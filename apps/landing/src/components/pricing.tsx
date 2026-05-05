@@ -31,8 +31,8 @@ export function Pricing({ plans }: { plans: PricingPlan[] }) {
           {plans.map(plan => (
             <StaggerItem key={plan.id}>
               <div
-                className={`card-glow relative flex h-full flex-col rounded-2xl border bg-surface-1/70 p-7 backdrop-blur-sm ${
-                  plan.popular ? 'border-primary/40 shadow-lg' : 'border-border/50'
+                className={`card-glow glass-medium atelier-shimmer relative flex h-full flex-col rounded-2xl p-7 ${
+                  plan.popular ? 'atelier-border-glow' : ''
                 }`}>
                 {!!plan.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-md">
