@@ -197,10 +197,13 @@ describe('webhook-dispatcher', () => {
 
       await queueWebhookProcessing('delivery-123', 'slack');
 
+      // F-INT-11: deliveryId is passed as the QStash dedup id so a
+      // re-publish of the same row collapses upstream within the 24h window.
       expect(mockPublishJSONWithContext).toHaveBeenCalledWith({
         url: 'https://app.test.com/api/webhooks/_process',
         body: { deliveryId: 'delivery-123', provider: 'slack' },
         retries: 3,
+        deduplicationId: 'delivery-123',
       });
     });
   });
