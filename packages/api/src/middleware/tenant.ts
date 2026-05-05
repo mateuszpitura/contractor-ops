@@ -2,6 +2,7 @@ import {
   createTenantClientFrom,
   getRegionalClient,
   tenantStore,
+  withRlsReads,
   withRlsTransactions,
 } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
@@ -104,26 +105,36 @@ export async function runWithTenantContext<T>(
   }
 
   const regionalPrisma = getRegionalClient(region);
-  // F-DB-04 — wrap the tenant-scoped client's `$transaction` so every
-  // interactive transaction issues `SET LOCAL app.org_id = ...` as its first
-  // statement. The wrap happens AFTER `$extends` so it sees the extended
-  // client surface (Prisma's $extends machinery is left untouched).
+  // F-DB-04 — RLS defense-in-depth, two layers:
+  //
+  //   1. `withRlsTransactions` wraps the callback overload of `$transaction`
+  //      so every interactive transaction issues `SET LOCAL app.org_id = ...`
+  //      as its first statement. Covers ALL writes that go through a tx.
+  //
+  //   2. `withRlsReads` wraps READ operations on a SCOPED set of high-blast-
+  //      radius models (Document, Invoice, Contractor, ApprovalStep,
+  //      Notification — see `RLS_READ_SCOPED_MODELS`). Each wrapped read
+  //      opens a one-shot tx so SET LOCAL is in scope on the read path too,
+  //      where the F-SEC-01 file-download IDOR risk surface lives.
+  //
+  // Trade-off (see `withRlsReads` jsdoc): wrapped reads pay +1 RTT to open a
+  // tx and +2 statements for `set_config`. We accept that cost on the chosen
+  // tables because the alternative — wrapping every read — would penalise
+  // dashboards/lists that already dominate p50 latency. Other tenant-scoped
+  // models retain the pure-read fast path (still org-scoped via the tenant
+  // Prisma extension; just no DB-level second guard until policies exist).
   //
   // The audit notes there are no DB-level RLS policies yet (deferred to a
   // separate migration); this is defense-in-depth scaffolding so a future
   // `CREATE POLICY ... USING (organization_id = current_setting('app.org_id'))`
   // migration is a no-code-change rollout.
   //
-  // TODO(F-DB-04): non-transactional `ctx.db.X.findMany()` calls still
-  // bypass `SET LOCAL` because Prisma fires those outside a tx. Once the
-  // codebase either (a) gets actual `CREATE POLICY` rules or (b) is
-  // refactored to wrap reads in tx, the protection extends to the full
-  // query surface.
+  // Order matters: `withRlsReads` MUST wrap BEFORE `withRlsTransactions` so
+  // the inner `$transaction` it opens is the unwrapped one (otherwise we'd
+  // double-issue `set_config` per nested tx — harmless but wasteful).
   const extended = withOrgCacheInvalidation(createTenantClientFrom(regionalPrisma));
-  const scopedClient = withRlsTransactions(extended, {
-    organizationId: orgId,
-    userId: userId ?? '',
-  });
+  const rlsCtx = { organizationId: orgId, userId: userId ?? '' };
+  const scopedClient = withRlsTransactions(withRlsReads(extended, rlsCtx), rlsCtx);
 
   return tenantStore.run({ organizationId: orgId, region }, () =>
     fn({ organizationId: orgId, region, db: scopedClient }),

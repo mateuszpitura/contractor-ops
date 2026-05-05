@@ -1,9 +1,19 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { Prisma } from './generated/prisma/client/client.js';
 
 export type RlsContext = {
   organizationId: string;
   userId: string;
 };
+
+/**
+ * Re-entrancy guard for {@link withRlsReads}. Set to `true` while a query is
+ * already executing inside an RLS-scoped `$transaction`, so the per-model
+ * extension hooks short-circuit instead of opening another (recursive) tx.
+ *
+ * Module-private: callers must not import this directly.
+ */
+const rlsReadActive = new AsyncLocalStorage<true>();
 
 /**
  * Sets Postgres session variables used by RLS policies.
@@ -89,4 +99,132 @@ export function withRlsTransactions<T extends PrismaWithTransaction>(
       return Reflect.get(target, prop, receiver);
     },
   }) as T;
+}
+
+// ---------------------------------------------------------------------------
+// F-DB-04 — scoped RLS read-path extension
+// ---------------------------------------------------------------------------
+
+/**
+ * The list of high-blast-radius models whose READ operations are wrapped in a
+ * one-shot `$transaction` with `SET LOCAL app.org_id = ...` so that any future
+ * Postgres RLS policy gets the org id even on plain reads.
+ *
+ * Selection rationale (locked decision — see audit `.audit-2026-05-03/01-db-performance.md`
+ * F-DB-04): these are the models where a missed `where: { organizationId }` is
+ * the highest-impact data exposure (file downloads → IDOR → cross-tenant
+ * documents; financial records; identity rows; approval state; user-targeted
+ * notifications). Other tenant-scoped models keep the pure-read fast path
+ * (still scoped via the Prisma tenant extension; just no DB-level second
+ * guard).
+ *
+ * Trade-off: each wrapped read costs +1 RTT to open a tx and +2 statements
+ * for `set_config(...)`. We accept this on these tables because the alternative
+ * — wrapping every model — adds the same cost to dashboards/lists that already
+ * dominate p50 latency, and the F-DB-03 cache work doesn't help reads that are
+ * not on the org-meta hot path.
+ *
+ * `Member` is intentionally EXCLUDED even though the audit listed it: Member
+ * is in `globalModels` (cross-org auth flows like the org-switcher list-by-user
+ * traverse it without a tenant context), so wrapping it in SET LOCAL would
+ * either no-op or — once policies exist — break legitimate global queries.
+ */
+export const RLS_READ_SCOPED_MODELS = [
+  'document',
+  'invoice',
+  'contractor',
+  'approvalStep',
+  'notification',
+] as const;
+
+export type RlsReadScopedModel = (typeof RLS_READ_SCOPED_MODELS)[number];
+
+/** READ operations we wrap (write-path is covered by `withRlsTransactions`). */
+const RLS_READ_OPERATIONS = ['findMany', 'findFirst', 'findUnique', 'count'] as const;
+
+type PrismaExtensible = {
+  // biome-ignore lint/suspicious/noExplicitAny: matches Prisma's $extends overload.
+  $extends: (...args: any[]) => unknown;
+};
+
+type AnyDelegate = Record<string, (args: unknown) => Promise<unknown>>;
+
+type TxLike = {
+  $executeRaw: (query: Prisma.Sql) => Promise<unknown>;
+} & Record<string, AnyDelegate>;
+
+interface ReadHookParams {
+  args: unknown;
+  query: (args: unknown) => Promise<unknown>;
+}
+
+/**
+ * Wraps READ operations on {@link RLS_READ_SCOPED_MODELS} so they execute
+ * inside a `$transaction` with `SET LOCAL app.org_id` (+ `app.user_id`) issued
+ * as the first statement. Defense-in-depth for the eventual Postgres RLS
+ * policies tracked by F-DB-04.
+ *
+ * Re-entrancy: when a hook fires while {@link rlsReadActive} is already set
+ * (i.e. we're already inside a wrapped tx), we short-circuit to `query(args)`
+ * — otherwise re-issuing the read against the tx would recursively re-enter
+ * this same hook and deadlock.
+ *
+ * Why a re-entrancy guard rather than just bypassing extensions on `tx`:
+ * Prisma 7's interactive `$transaction` yields an extended `tx` whose `query`
+ * hooks are still bound to this layer. Calling `tx[model][op](args)` inside
+ * the hook re-triggers the hook unless the guard is set.
+ *
+ * Test environments that pass a non-Prisma mock (no `$extends`) get a
+ * pass-through — this matches the pattern used by `withOrgCacheInvalidation`
+ * in the api package.
+ */
+export function withRlsReads<T extends PrismaExtensible & PrismaWithTransaction>(
+  prisma: T,
+  ctx: RlsContext,
+): T {
+  if (typeof (prisma as { $extends?: unknown }).$extends !== 'function') {
+    return prisma;
+  }
+
+  const makeHook = (model: RlsReadScopedModel, op: (typeof RLS_READ_OPERATIONS)[number]) => {
+    return async ({ args, query }: ReadHookParams): Promise<unknown> => {
+      // Already inside an RLS tx — don't open another. Just continue down
+      // the extension chain (tenantScope, softDelete, …).
+      if (rlsReadActive.getStore()) {
+        return query(args);
+      }
+
+      return rlsReadActive.run(true, async () =>
+        // Use the wrapped client's `$transaction` so the user gets the same
+        // tx semantics as everywhere else (pgbouncer-friendly, retries, …).
+        // Cast through unknown because Prisma's `$transaction` overload union
+        // is wider than what we exercise here.
+        (prisma as PrismaWithTransaction).$transaction(async (txUnknown: unknown) => {
+          const tx = txUnknown as TxLike;
+          await withRlsSession(tx, ctx);
+          const delegate = tx[model] as AnyDelegate | undefined;
+          if (!delegate) {
+            // Defensive: if the model delegate is somehow missing on the tx
+            // (e.g. test mocks), fall back to the original query.
+            return query(args);
+          }
+          // Re-issue the read against the tx. The extension chain re-fires
+          // but the re-entrancy guard above forwards directly to `query`.
+          return delegate[op](args);
+        }),
+      );
+    };
+  };
+
+  const queryConfig: Record<string, Record<string, unknown>> = {};
+  for (const model of RLS_READ_SCOPED_MODELS) {
+    const perModel: Record<string, unknown> = {};
+    for (const op of RLS_READ_OPERATIONS) {
+      perModel[op] = makeHook(model, op);
+    }
+    queryConfig[model] = perModel;
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: $extends config typing is generic over models.
+  return (prisma as PrismaExtensible).$extends({ query: queryConfig as any }) as T;
 }
