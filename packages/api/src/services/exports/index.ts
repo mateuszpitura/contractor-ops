@@ -35,6 +35,7 @@ import { streamCsvResponse, type CsvColumnKey } from '../../lib/csv.js';
 import { sendExportReadyEmail } from '../email/index.js';
 import { streamObjectUpload } from '../r2.js';
 
+import { iterateComplianceGaps } from './compliance-gaps.js';
 import {
   EXPORT_REGISTRY,
   type ExportType,
@@ -629,57 +630,27 @@ async function handleOverdueInvoices(input: DispatchInput): Promise<DispatchResu
 }
 
 async function handleComplianceGaps(input: DispatchInput): Promise<DispatchResult> {
-  // TODO(P2-C): once the compliance gaps query is rewritten as a streaming
-  // cursor source, swap this `findMany` for that source. P2-C owns the
-  // streaming rewrite — for now we keep the old `findMany` shape but at
-  // least move it off the request path so 5k-contractor orgs don't OOM
-  // the tRPC pod.
+  // P2-C — async-generator streaming source. Memory is O(CSV_PAGE_SIZE)
+  // regardless of org size; csv-stringify pulls one row at a time and pipes
+  // straight into the R2 multipart upload via `uploadCsvStream`.
+  // See `iterateComplianceGaps` jsdoc for the memory profile and the
+  // pending F-DB-05 SQL-side health-predicate follow-up.
   let rowCount = 0;
+  const source = iterateComplianceGaps(prisma, {
+    organizationId: input.claim.organizationId,
+    pageSize: CSV_PAGE_SIZE,
+  });
+
   async function* rowGen() {
-    let cursor: string | undefined;
-    while (true) {
-      const page = await prisma.contractor.findMany({
-        where: {
-          organizationId: input.claim.organizationId,
-          status: 'ACTIVE',
-          deletedAt: null,
-        },
-        include: {
-          complianceItems: { select: { status: true } },
-          contracts: { where: { deletedAt: null }, select: { status: true } },
-          _count: {
-            select: {
-              complianceItems: { where: { status: { in: ['MISSING', 'EXPIRED'] } } },
-            },
-          },
-        },
-        orderBy: { id: 'asc' },
-        take: CSV_PAGE_SIZE,
-        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-      });
-      if (page.length === 0) break;
-      for (const c of page) {
-        const missingOrExpired = c._count.complianceItems;
-        const hasPending = c.complianceItems.some(ci => ci.status === 'PENDING');
-        const hasActiveContract = c.contracts.some(con => con.status === 'ACTIVE');
-
-        let health: 'red' | 'yellow' | 'green' = 'green';
-        if (missingOrExpired > 0 || !hasActiveContract) health = 'red';
-        else if (hasPending) health = 'yellow';
-
-        if (health === 'green') continue;
-
-        rowCount++;
-        yield {
-          contractorName: c.legalName,
-          missingDocuments: missingOrExpired,
-          contractStatus: hasActiveContract ? 'ACTIVE' : 'NONE',
-          overdueTasks: 0,
-          health,
-        } as Record<string, unknown>;
-      }
-      cursor = page[page.length - 1]?.id;
-      if (page.length < CSV_PAGE_SIZE) break;
+    for await (const row of source) {
+      rowCount++;
+      yield {
+        contractorName: row.contractorName,
+        missingDocuments: row.missingDocuments,
+        contractStatus: row.contractStatus,
+        overdueTasks: row.overdueTasks,
+        health: row.health,
+      } as Record<string, unknown>;
     }
   }
 
