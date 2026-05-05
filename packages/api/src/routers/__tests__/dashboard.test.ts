@@ -69,6 +69,7 @@ vi.mock('@contractor-ops/auth', () => ({
 
 vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T,>(c: T) => c,
+  withRlsReads: <T,>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -79,6 +80,15 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClient: vi.fn(() => mockPrisma),
   createTenantClientFrom: vi.fn(() => mockPrisma),
   getRegionalClient: vi.fn(() => mockPrisma),
+  // F-SCALE-06 — read replica routing. The kpis procedure now opts into
+  // `readReplica`; mock both the helper and the typed `SUPPORTED_REGIONS`
+  // array used by `toDataRegion` so dashboard tests run without a real
+  // replica configured.
+  SUPPORTED_REGIONS: ['EU', 'ME'] as const,
+  readReplica: vi.fn(
+    async (_region: string, fn: (db: unknown) => Promise<unknown>) => fn(mockPrisma),
+  ),
+  getReplicaClient: vi.fn(() => mockPrisma),
 }));
 
 vi.mock('../../services/cache.js', () => ({

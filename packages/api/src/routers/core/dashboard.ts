@@ -1,9 +1,34 @@
+import {
+  type DataRegion,
+  type PrismaClient,
+  readReplica,
+  SUPPORTED_REGIONS,
+} from '@contractor-ops/db';
 import { z } from 'zod';
 import { router } from '../../init.js';
 import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { CacheKeys, CacheTTL, cached, cachedSingleflight } from '../../services/cache.js';
+
+/**
+ * Minimal client surface required by `fetchKpis`. Both the writer (`ctx.db`,
+ * `TenantScopedDb`) and the read replica (`PrismaClient` from `readReplica`)
+ * satisfy this — every predicate inside the function spells out
+ * `organizationId` + `deletedAt` explicitly so the tenant-scope extension is
+ * not required for correctness.
+ */
+type RawQueryClient = Pick<PrismaClient, '$queryRaw'>;
+
+/**
+ * Coerce `ctx.region` (string) into a typed `DataRegion`. Falls back to `'EU'`
+ * for any unexpected value so the read-replica router never throws on a
+ * misconfigured tenant — replica routing is best-effort, not a correctness
+ * primitive.
+ */
+function toDataRegion(region: string): DataRegion {
+  return SUPPORTED_REGIONS.includes(region as DataRegion) ? (region as DataRegion) : 'EU';
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -15,7 +40,7 @@ const reportRead = requirePermission({ report: ['read'] });
 // Data fetchers (extracted for caching)
 // ---------------------------------------------------------------------------
 
-async function fetchKpis(organizationId: string, db: TenantScopedDb) {
+async function fetchKpis(organizationId: string, db: RawQueryClient) {
   // F-SCALE-11 — collapse the previous 8 separate count/aggregate queries
   // into 3 single-scan queries using `FILTER (WHERE …)` aggregates. Each
   // query now scans the underlying table once and computes both the
@@ -281,12 +306,20 @@ export const dashboardRouter = router({
    * expired cache) collapses to a single Postgres run via the SETNX
    * lock. Combined with the FILTER-aggregate consolidation in
    * `fetchKpis`, this keeps writer CPU bounded under realistic load.
+   *
+   * F-SCALE-06 — first proof-of-concept consumer of `readReplica`. KPIs are
+   * aggregates over historical rows; ~50-200ms of replica lag is well
+   * within the UX tolerance (the response cache TTL is already 5s and the
+   * trend math compares "current month" to "previous month" so a single
+   * stale write is invisible). When `DATABASE_URL_<region>_RO` is unset
+   * the helper transparently routes to the writer.
    */
   kpis: tenantProcedure.use(reportRead).query(async ({ ctx }) => {
+    const region = toDataRegion(ctx.region);
     return cachedSingleflight(
       CacheKeys.dashboardKpis(ctx.organizationId),
       CacheTTL.DASHBOARD_KPIS_BURST,
-      () => fetchKpis(ctx.organizationId, ctx.db),
+      () => readReplica(region, db => fetchKpis(ctx.organizationId, db)),
     );
   }),
 
@@ -357,11 +390,15 @@ export const dashboardRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
+      // F-SCALE-06 — kpis go through the read replica when configured (see
+      // `kpis` procedure JSDoc for lag-tolerance reasoning); the rest of the
+      // bundle still hits the writer pending per-call-site lag review.
+      const region = toDataRegion(ctx.region);
       const [kpis, spendTrend, deadlines, activity] = await Promise.all([
         cachedSingleflight(
           CacheKeys.dashboardKpis(ctx.organizationId),
           CacheTTL.DASHBOARD_KPIS_BURST,
-          () => fetchKpis(ctx.organizationId, ctx.db),
+          () => readReplica(region, db => fetchKpis(ctx.organizationId, db)),
         ),
         cached(
           CacheKeys.dashboardSpend(ctx.organizationId, input.spendMonths),
