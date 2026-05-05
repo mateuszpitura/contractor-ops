@@ -31,6 +31,13 @@ vi.mock('@upstash/redis', () => ({
   },
 }));
 
+// F-SCALE-19: /api/health now has a 5th `backpressure` probe that calls
+// `getQueueDepthSnapshot()` from cron-monitor. Mock the helper so the route's
+// backpressure probe reports skipped (no UPSTASH_REDIS_* env in default test).
+vi.mock('@contractor-ops/api/services/cron-monitor', () => ({
+  getQueueDepthSnapshot: vi.fn(async () => []),
+}));
+
 vi.mock('@aws-sdk/client-s3', () => {
   class HeadObjectCommand {
     input: unknown;
@@ -119,6 +126,7 @@ describe('GET /api/health', () => {
       redis: 'skipped',
       qstash: 'skipped',
       r2: 'skipped',
+      backpressure: 'skipped',
     });
   });
 
@@ -145,6 +153,7 @@ describe('GET /api/health', () => {
       redis: 'ok',
       qstash: 'ok',
       r2: 'ok',
+      backpressure: 'ok',
     });
   });
 

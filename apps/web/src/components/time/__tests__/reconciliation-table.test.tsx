@@ -91,7 +91,9 @@ describe('ReconciliationTable', () => {
       isLoading: false,
     } as unknown as never);
     render(<ReconciliationTable />);
-    expect(screen.getByTestId('empty-state')).toHaveTextContent('No reconciliation data');
+    // AtelierEmptyState (Workbench primitive) renders the heading directly;
+    // assert by visible text rather than a data-testid that no longer exists.
+    expect(screen.getByText('No reconciliation data')).toBeInTheDocument();
   });
 
   it('renders table rows with data', () => {

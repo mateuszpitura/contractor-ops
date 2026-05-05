@@ -13,6 +13,19 @@ vi.mock('@upstash/qstash/nextjs', () => ({
   verifySignatureAppRouter: (fn: (req: NextRequest) => Promise<Response>) => fn,
 }));
 
+// F-SCALE-19 — backpressure helper reads server env at module load; bypass in tests.
+vi.mock('@contractor-ops/api/services/qstash-backpressure', () => ({
+  withBackpressure: <T,>(_routeKey: string, _max: number, fn: () => Promise<T>) => fn(),
+  BackpressureRejectedError: class BackpressureRejectedError extends Error {},
+  isBackpressureRejected: (_e: unknown) => false,
+  BackpressureRoutes: {
+    EXPORTS_PROCESS: { key: 'exports-process', max: 5 },
+    OCR_PROCESS: { key: 'ocr-process', max: 10 },
+    PEPPOL_OUTBOUND: { key: 'peppol-outbound', max: 3 },
+    LATE_INTEREST_RENDER: { key: 'late-interest-render-claim-pdf', max: 5 },
+  },
+}));
+
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     integrationConnection: {
