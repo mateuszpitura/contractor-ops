@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { ProviderHealthStatus } from '../types/health.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -78,13 +79,17 @@ export class LinearAdapter extends BaseAdapter {
       redirect_uri: redirectUri,
     });
 
-    const response = await fetch('https://api.linear.app/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await fetchWithTimeout(
+      'https://api.linear.app/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
       },
-      body: body.toString(),
-    });
+      { timeoutMs: 10_000 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -132,13 +137,17 @@ export class LinearAdapter extends BaseAdapter {
       refresh_token: credentials.refreshToken,
     });
 
-    const response = await fetch('https://api.linear.app/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+    const response = await fetchWithTimeout(
+      'https://api.linear.app/oauth/token',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
       },
-      body: body.toString(),
-    });
+      { timeoutMs: 10_000 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
@@ -319,14 +328,18 @@ export class LinearAdapter extends BaseAdapter {
       }
     }`;
 
-    const response = await fetch('https://api.linear.app/graphql', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+    const response = await fetchWithTimeout(
+      'https://api.linear.app/graphql',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query }),
       },
-      body: JSON.stringify({ query }),
-    });
+      { timeoutMs: 20_000 },
+    );
 
     if (!response.ok) {
       const text = await response.text();
