@@ -147,8 +147,17 @@ export async function getOrCreatePreferences(
 /**
  * Sends a notification email via Resend with React Email templates.
  * Looks up user email, renders the template, and sends via Resend.
+ *
+ * When `idempotencyKey` is supplied (typically the OutboxEvent.id for
+ * outbox-originated dispatches per NEW-ARCH-04), it is forwarded to
+ * `sendAppEmail` which threads it as Resend's `Idempotency-Key` so a
+ * cross-bucket re-fire of the same outbox row will not double-send.
  */
-async function sendNotificationEmail(userId: string, event: NotificationEvent): Promise<void> {
+async function sendNotificationEmail(
+  userId: string,
+  event: NotificationEvent,
+  idempotencyKey?: string,
+): Promise<void> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true },
@@ -178,6 +187,11 @@ async function sendNotificationEmail(userId: string, event: NotificationEvent): 
       'List-Unsubscribe': `<${preferencesUrl}>`,
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     },
+    // Per-recipient idempotency: append the userId so a multi-recipient
+    // outbox event still produces distinct keys for Resend (one Resend send
+    // per recipient). When undefined, sendAppEmail falls back to its own
+    // payload-digest scheme (F-INT-04).
+    idempotencyKey: idempotencyKey ? `${idempotencyKey}:${userId}` : undefined,
   });
 }
 
@@ -202,6 +216,30 @@ const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, st
 // ---------------------------------------------------------------------------
 
 /**
+ * Optional dispatch overrides — used by outbox-originated calls to thread
+ * the OutboxEvent.id as the canonical idempotency key (NEW-ARCH-04).
+ *
+ * When `outboxEventId` is set:
+ *   - `Notification.dedupKey` = `<outboxEventId>:<userId>` so the unique
+ *     `(organizationId, dedupKey)` index is the primary defense against
+ *     duplicates on a same-event re-fire (no longer relying on the per-day
+ *     bucket key, which can roll over mid-retry).
+ *   - The Resend `Idempotency-Key` is derived from the same id so a
+ *     cross-bucket retry collapses to a single email send.
+ *
+ * Direct (non-outbox) callers omit this and keep the legacy business-bucket
+ * key — backwards compatible.
+ */
+export interface NotificationDispatchOptions {
+  /**
+   * The originating OutboxEvent.id, when this dispatch was scheduled
+   * through the transactional outbox. Used as the canonical dedup key for
+   * both `Notification.dedupKey` and downstream Resend `Idempotency-Key`.
+   */
+  outboxEventId?: string;
+}
+
+/**
  * Central notification dispatcher.
  * For each recipient:
  * 1. Checks/creates preferences
@@ -216,7 +254,10 @@ const NOTIFICATION_TYPE_TO_CHANNEL_CATEGORY: Partial<Record<NotificationType, st
  * so the dispatch is durably scheduled iff the triggering tx commits.
  * Direct callers are tolerated for backwards compatibility.
  */
-export async function dispatch(event: NotificationEvent): Promise<void> {
+export async function dispatch(
+  event: NotificationEvent,
+  options: NotificationDispatchOptions = {},
+): Promise<void> {
   const now = new Date();
 
   // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the per-user fan-out at
@@ -233,7 +274,7 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
   const FANOUT_CONCURRENCY = 10;
   const limit = pLimit(FANOUT_CONCURRENCY);
   await Promise.all(
-    event.recipientUserIds.map(userId => limit(() => dispatchToUser(userId, event, now))),
+    event.recipientUserIds.map(userId => limit(() => dispatchToUser(userId, event, now, options))),
   );
 
   // Channel alert dispatch (org-level, not per-user)
@@ -244,14 +285,26 @@ export async function dispatch(event: NotificationEvent): Promise<void> {
 // Per-user dispatch
 // ---------------------------------------------------------------------------
 
-async function dispatchToUser(userId: string, event: NotificationEvent, now: Date): Promise<void> {
+async function dispatchToUser(
+  userId: string,
+  event: NotificationEvent,
+  now: Date,
+  options: NotificationDispatchOptions,
+): Promise<void> {
   const prefs = await getOrCreatePreferences(userId, event.organizationId, event.type);
 
-  // F-ASYNC-04: dedup is enforced by the DB. We attempt the insert; on
-  // unique-violation (P2002 on organizationId + dedupKey) we treat the
-  // notification as already-delivered and skip the side channels too —
-  // that's the correct semantic for retry: "another worker already did it".
-  const dedupKey = buildNotificationDedupKey(userId, event.type, event.entityId, now);
+  // F-ASYNC-04 / NEW-ARCH-04: dedup is enforced by the DB. We attempt the
+  // insert; on unique-violation (P2002 on organizationId + dedupKey) we
+  // treat the notification as already-delivered and skip the side channels
+  // too — that's the correct semantic for retry: "another worker already
+  // did it".
+  //
+  // For outbox-originated dispatches we key the dedup off the OutboxEvent.id
+  // (per-recipient suffix appended) instead of the legacy per-day bucket
+  // key. This closes the cross-bucket double-send window on outbox redrive.
+  const dedupKey = options.outboxEventId
+    ? `${options.outboxEventId}:${userId}`
+    : buildNotificationDedupKey(userId, event.type, event.entityId, now);
 
   let inserted = true;
   if (prefs.channelInApp) {
@@ -291,7 +344,7 @@ async function dispatchToUser(userId: string, event: NotificationEvent, now: Dat
   // Email notification (preference-gated)
   if (prefs.channelEmail) {
     try {
-      await sendNotificationEmail(userId, event);
+      await sendNotificationEmail(userId, event, options.outboxEventId);
     } catch (_error) {
       /* fire-and-forget */
     }

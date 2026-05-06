@@ -44,15 +44,26 @@ vi.mock('@contractor-ops/logger', () => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prismaRaw: {
+    // The drain refactor (NEW-ARCH-02 / NEW-ARCH-03) splits work across
+    // a claim transaction (uses $transaction) plus per-row finalize
+    // updates (direct $executeRawUnsafe on the raw client, NO outer tx).
     $transaction: (fn: (tx: unknown) => Promise<unknown>) => mockTransaction(fn),
+    $executeRawUnsafe: (...args: unknown[]) => mockExecuteRawUnsafe(...args),
   },
 }));
 
 vi.mock('@sentry/nextjs', () => ({
-  getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+  getCurrentScope: vi.fn(() => ({
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
+    setExtra: vi.fn(),
+    clear: vi.fn(),
+  })),
   setUser: vi.fn(),
   setTag: vi.fn(),
   setTags: vi.fn(),
@@ -235,13 +246,20 @@ describe('drainOutboxBatch', () => {
     expect(result.dispatched).toBe(0);
     expect(result.failed).toBe(0);
 
+    // NEW-ARCH-02 / NEW-ARCH-03: attempts is bumped during the CLAIM
+    // phase (a bulk UPDATE … SET "attempts" = "attempts" + 1, …) — the
+    // failure-path UPDATE only writes lastError + nextAttemptAt.
+    const claimUpdate = mockExecuteRawUnsafe.mock.calls.find(call =>
+      String(call[0]).includes('"attempts" = "attempts" + 1'),
+    );
+    expect(claimUpdate).toBeDefined();
+
     const retryCall = mockExecuteRawUnsafe.mock.calls.find(call =>
-      String(call[0]).includes('SET "attempts"'),
+      String(call[0]).includes('SET "lastError"'),
     );
     expect(retryCall).toBeDefined();
-    // attempts argument bumped to 1
-    expect(retryCall?.[2]).toBe(1);
-    expect(retryCall?.[3]).toMatch(/upstream 503/);
+    // lastError argument captures the upstream message
+    expect(retryCall?.[2]).toMatch(/upstream 503/);
   });
 
   it('marks FAILED + Sentry-captures on the final attempt', async () => {

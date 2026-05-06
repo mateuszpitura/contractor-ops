@@ -17,6 +17,26 @@
 //     same event in the same tick — but a worker that crashes mid-dispatch
 //     leaves the row PENDING and the next tick will re-dispatch.
 //
+// Drain composition (NEW-ARCH-02 / NEW-ARCH-03 fix, 2026-05-06):
+// The drain runs in three distinct phases, each with its own transactional
+// scope, so that handler side-effects (Stripe, Resend, Slack) NEVER share a
+// transaction with the row-status update:
+//
+//   1. CLAIM (short tx) — `SELECT … FOR UPDATE SKIP LOCKED` up to
+//      DRAIN_BATCH_LIMIT rows, bump `attempts` and push `nextAttemptAt`
+//      out by `CLAIM_WINDOW_MS`. Commit. A concurrent drainer's
+//      `WHERE nextAttemptAt <= NOW()` predicate now skips these rows, so
+//      we don't need an `IN_FLIGHT` enum value (avoids a schema migration).
+//      A crashed worker recycles the row naturally on the next tick once
+//      the claim window expires.
+//   2. DISPATCH (no tx) — invoke `dispatchOutboxEvent` per claimed row.
+//      Handler side-effects (Resend send, etc.) run here, OUTSIDE any
+//      outer transaction. A handler crash leaves attempts already bumped
+//      so the next attempt counts toward MAX_OUTBOX_ATTEMPTS.
+//   3. FINALIZE (one short tx per row) — on success, set DISPATCHED. On
+//      failure, either mark FAILED (if attempts hit MAX_OUTBOX_ATTEMPTS)
+//      or schedule the next retry with exponential backoff.
+//
 // Retry policy: see `scheduleNextAttempt`. Exponential backoff with jitter,
 // capped at 1 hour, max 10 attempts. After the final attempt the row is
 // marked FAILED and a Sentry capture fires.
@@ -85,6 +105,20 @@ interface OutboxEventRow {
   attempts: number;
 }
 
+/**
+ * A row that has been claimed by the current drainer (attempts already
+ * incremented, nextAttemptAt pushed out by CLAIM_WINDOW_MS). The
+ * `attemptNumber` field is the post-increment count — i.e. the attempt
+ * we're about to perform.
+ */
+interface ClaimedOutboxRow {
+  id: string;
+  organizationId: string;
+  eventType: string;
+  payloadJson: unknown;
+  attemptNumber: number;
+}
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -103,6 +137,16 @@ const BACKOFF_BASE_MS = 60 * 1000;
 
 /** Random extra jitter in (0, 30s] to spread thundering herds. */
 const JITTER_MAX_MS = 30 * 1000;
+
+/**
+ * How long a claimed row is hidden from concurrent drainers via its
+ * `nextAttemptAt` push-out. Must comfortably exceed the longest expected
+ * handler timeout (Resend ~30s, QStash publish ~10s). 5 minutes gives the
+ * dispatch + finalize phases plenty of headroom while still recycling
+ * stranded rows quickly enough to avoid stuck queues if a worker dies
+ * before the finalize tx runs.
+ */
+export const CLAIM_WINDOW_MS = 5 * 60 * 1000;
 
 // ---------------------------------------------------------------------------
 // Producer API
@@ -178,27 +222,67 @@ export async function enqueueOutboxEvent<TPayload extends Record<string, unknown
  * locks them with `FOR UPDATE SKIP LOCKED` so concurrent drain workers fan
  * out without colliding, then dispatches each through the handler registry.
  *
- * Per-event success → status='DISPATCHED'.
- * Per-event transient failure → bump attempts, schedule next attempt with
- * exponential backoff + jitter. Final attempt → status='FAILED' + Sentry
- * capture.
+ * Composition (NEW-ARCH-02 / NEW-ARCH-03 fix):
+ *   1. Claim batch in a short tx — bump attempts, push nextAttemptAt out by
+ *      CLAIM_WINDOW_MS so a parallel drainer skips the row.
+ *   2. Dispatch each claimed row OUTSIDE any tx — handler side-effects
+ *      (Resend, Slack, Stripe, …) run here, never inside a transaction.
+ *   3. Finalize each row in its own short tx — DISPATCHED on success, or
+ *      FAILED / scheduled retry on failure.
  *
- * The whole drain runs in one prismaRaw $transaction so the row locks are
- * released atomically when the function returns.
+ * Per-event success → status='DISPATCHED'.
+ * Per-event transient failure → schedule next attempt with exponential
+ * backoff + jitter. Final attempt → status='FAILED' + Sentry capture.
  */
 export async function drainOutboxBatch(): Promise<DrainBatchResult> {
-  return prismaRaw.$transaction(async tx => {
-    const result: DrainBatchResult = {
-      scanned: 0,
-      dispatched: 0,
-      failed: 0,
-      retried: 0,
-      exhausted: 0,
-    };
+  const result: DrainBatchResult = {
+    scanned: 0,
+    dispatched: 0,
+    failed: 0,
+    retried: 0,
+    exhausted: 0,
+  };
 
+  // Phase 1 — claim.
+  const claimed = await claimOutboxBatch();
+  result.scanned = claimed.length;
+  if (claimed.length === 0) return result;
+
+  // Phases 2 + 3 — dispatch each row outside any transaction, then finalize
+  // its status in its own short transaction. Sequential per row to keep
+  // serverless memory bounded; the per-row tx scope prevents one slow
+  // handler from blocking other rows' status updates.
+  for (const row of claimed) {
+    const outcome = await dispatchAndFinalize(row);
+    if (outcome === 'dispatched') result.dispatched += 1;
+    else if (outcome === 'retried') result.retried += 1;
+    else if (outcome === 'exhausted') {
+      result.failed += 1;
+      result.exhausted += 1;
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Phase 1 — claim up to DRAIN_BATCH_LIMIT rows under a short transaction.
+ *
+ * Increments `attempts` and pushes `nextAttemptAt` out by CLAIM_WINDOW_MS
+ * so a concurrent drainer's `WHERE nextAttemptAt <= NOW()` predicate won't
+ * see these rows. We commit before returning so the row locks released and
+ * the next phase runs without holding any DB lock.
+ *
+ * If the worker crashes between claim and finalize, the row stays PENDING
+ * with attempts already bumped; once the claim window expires the next
+ * drain tick picks it up naturally (counts toward MAX_OUTBOX_ATTEMPTS).
+ */
+async function claimOutboxBatch(): Promise<ClaimedOutboxRow[]> {
+  return prismaRaw.$transaction(async tx => {
     // FOR UPDATE SKIP LOCKED is the standard outbox primitive: any number of
     // workers can run this query in parallel without selecting the same
-    // row. The lock is released on tx end.
+    // row. The lock is released on tx end (immediately after the UPDATE
+    // below commits).
     const candidates = await tx.$queryRawUnsafe<OutboxEventRow[]>(
       `
       SELECT
@@ -216,107 +300,148 @@ export async function drainOutboxBatch(): Promise<DrainBatchResult> {
       DRAIN_BATCH_LIMIT,
     );
 
-    result.scanned = candidates.length;
-    if (candidates.length === 0) return result;
+    if (candidates.length === 0) return [];
 
-    for (const row of candidates) {
-      try {
-        await dispatchOutboxEvent({
-          id: row.id,
-          organizationId: row.organizationId,
-          eventType: row.eventType as OutboxEventType,
-          payload: row.payloadJson,
-        });
+    // Bulk-mark each claimed row: bump attempts and push nextAttemptAt out
+    // by CLAIM_WINDOW_MS. We use a single UPDATE … WHERE id = ANY($1) to
+    // keep the claim transaction tight (one round-trip rather than N).
+    const claimedIds = candidates.map(r => r.id);
+    await tx.$executeRawUnsafe(
+      `
+      UPDATE "OutboxEvent"
+      SET "attempts" = "attempts" + 1,
+          "nextAttemptAt" = NOW() + ($2 || ' milliseconds')::interval
+      WHERE "id" = ANY($1::text[])
+      `,
+      claimedIds,
+      String(CLAIM_WINDOW_MS),
+    );
 
-        await tx.$executeRawUnsafe(
-          `
-          UPDATE "OutboxEvent"
-          SET "status" = 'DISPATCHED',
-              "dispatchedAt" = NOW(),
-              "lastError" = NULL
-          WHERE "id" = $1
-          `,
-          row.id,
-        );
-        result.dispatched += 1;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        const truncated = message.slice(0, 1000);
-        const nextAttempts = row.attempts + 1;
-
-        if (nextAttempts >= MAX_OUTBOX_ATTEMPTS) {
-          await tx.$executeRawUnsafe(
-            `
-            UPDATE "OutboxEvent"
-            SET "status" = 'FAILED',
-                "attempts" = $2,
-                "failedAt" = NOW(),
-                "lastError" = $3
-            WHERE "id" = $1
-            `,
-            row.id,
-            nextAttempts,
-            truncated,
-          );
-
-          log.error(
-            {
-              err,
-              outboxEventId: row.id,
-              organizationId: row.organizationId,
-              eventType: row.eventType,
-              attempts: nextAttempts,
-            },
-            'outbox event exhausted retries — marked FAILED',
-          );
-          Sentry.captureException(err, {
-            tags: {
-              'outbox.event_type': row.eventType,
-              'outbox.outcome': 'exhausted',
-            },
-            extra: {
-              outboxEventId: row.id,
-              organizationId: row.organizationId,
-              attempts: nextAttempts,
-            },
-          });
-          result.failed += 1;
-          result.exhausted += 1;
-          continue;
-        }
-
-        const delayMs = computeBackoffMs(nextAttempts);
-        await tx.$executeRawUnsafe(
-          `
-          UPDATE "OutboxEvent"
-          SET "attempts" = $2,
-              "lastError" = $3,
-              "nextAttemptAt" = NOW() + ($4 || ' milliseconds')::interval
-          WHERE "id" = $1
-          `,
-          row.id,
-          nextAttempts,
-          truncated,
-          String(delayMs),
-        );
-
-        log.warn(
-          {
-            err,
-            outboxEventId: row.id,
-            organizationId: row.organizationId,
-            eventType: row.eventType,
-            attempts: nextAttempts,
-            delayMs,
-          },
-          'outbox event handler failed — scheduled retry',
-        );
-        result.retried += 1;
-      }
-    }
-
-    return result;
+    return candidates.map(r => ({
+      id: r.id,
+      organizationId: r.organizationId,
+      eventType: r.eventType,
+      payloadJson: r.payloadJson,
+      // We just bumped attempts in the UPDATE above; reflect that locally
+      // so downstream MAX_OUTBOX_ATTEMPTS comparisons see the right count.
+      attemptNumber: r.attempts + 1,
+    }));
   });
+}
+
+type RowOutcome = 'dispatched' | 'retried' | 'exhausted';
+
+/**
+ * Phases 2 + 3 — dispatch one row outside any transaction, then finalize
+ * its status in a fresh short transaction.
+ *
+ * Returns the outcome label so the caller can update its aggregate counts.
+ */
+async function dispatchAndFinalize(row: ClaimedOutboxRow): Promise<RowOutcome> {
+  try {
+    // Phase 2 — handler side-effects, NEVER inside a transaction.
+    await dispatchOutboxEvent({
+      id: row.id,
+      organizationId: row.organizationId,
+      eventType: row.eventType as OutboxEventType,
+      payload: row.payloadJson,
+    });
+  } catch (err) {
+    return finalizeFailure(row, err);
+  }
+
+  // Phase 3a — success.
+  await finalizeSuccess(row.id);
+  return 'dispatched';
+}
+
+/** Mark a row DISPATCHED in its own short transaction. */
+async function finalizeSuccess(outboxEventId: string): Promise<void> {
+  await prismaRaw.$executeRawUnsafe(
+    `
+    UPDATE "OutboxEvent"
+    SET "status" = 'DISPATCHED',
+        "dispatchedAt" = NOW(),
+        "lastError" = NULL
+    WHERE "id" = $1
+    `,
+    outboxEventId,
+  );
+}
+
+/**
+ * Mark a row FAILED (terminal) or schedule its next retry, in its own
+ * short transaction.
+ *
+ * Note: `attempts` was already incremented during the claim phase, so we
+ * do NOT bump it again here. The post-increment count is `row.attemptNumber`.
+ */
+async function finalizeFailure(row: ClaimedOutboxRow, err: unknown): Promise<RowOutcome> {
+  const message = err instanceof Error ? err.message : String(err);
+  const truncated = message.slice(0, 1000);
+
+  if (row.attemptNumber >= MAX_OUTBOX_ATTEMPTS) {
+    await prismaRaw.$executeRawUnsafe(
+      `
+      UPDATE "OutboxEvent"
+      SET "status" = 'FAILED',
+          "failedAt" = NOW(),
+          "lastError" = $2
+      WHERE "id" = $1
+      `,
+      row.id,
+      truncated,
+    );
+
+    log.error(
+      {
+        err,
+        outboxEventId: row.id,
+        organizationId: row.organizationId,
+        eventType: row.eventType,
+        attempts: row.attemptNumber,
+      },
+      'outbox event exhausted retries — marked FAILED',
+    );
+    Sentry.captureException(err, {
+      tags: {
+        'outbox.event_type': row.eventType,
+        'outbox.outcome': 'exhausted',
+      },
+      extra: {
+        outboxEventId: row.id,
+        organizationId: row.organizationId,
+        attempts: row.attemptNumber,
+      },
+    });
+    return 'exhausted';
+  }
+
+  const delayMs = computeBackoffMs(row.attemptNumber);
+  await prismaRaw.$executeRawUnsafe(
+    `
+    UPDATE "OutboxEvent"
+    SET "lastError" = $2,
+        "nextAttemptAt" = NOW() + ($3 || ' milliseconds')::interval
+    WHERE "id" = $1
+    `,
+    row.id,
+    truncated,
+    String(delayMs),
+  );
+
+  log.warn(
+    {
+      err,
+      outboxEventId: row.id,
+      organizationId: row.organizationId,
+      eventType: row.eventType,
+      attempts: row.attemptNumber,
+      delayMs,
+    },
+    'outbox event handler failed — scheduled retry',
+  );
+  return 'retried';
 }
 
 // ---------------------------------------------------------------------------

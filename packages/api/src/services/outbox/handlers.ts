@@ -56,9 +56,12 @@ type OutboxHandlerRegistry = {
 // ---------------------------------------------------------------------------
 
 const handleNotificationDispatch: OutboxHandler<'notification.dispatch'> = async (payload, ctx) => {
-  // The notification service handles its own per-recipient dedup on the
-  // (organizationId, dedupKey) Notification unique. The outbox layer just
-  // guarantees at-least-once delivery from the triggering tx.
+  // NEW-ARCH-04: thread the OutboxEvent.id through the notification
+  // service so it becomes the canonical idempotency key. The notification
+  // service uses it as the (organizationId, dedupKey) value AND threads it
+  // into Resend's `Idempotency-Key` header. This closes the cross-bucket
+  // double-send window when the outbox redrives an event whose original
+  // attempt already issued the side effect.
   log.debug(
     {
       outboxEventId: ctx.outboxEventId,
@@ -69,7 +72,7 @@ const handleNotificationDispatch: OutboxHandler<'notification.dispatch'> = async
     'dispatching notification.dispatch outbox event',
   );
 
-  await dispatchNotification(payload);
+  await dispatchNotification(payload, { outboxEventId: ctx.outboxEventId });
 };
 
 // ---------------------------------------------------------------------------
