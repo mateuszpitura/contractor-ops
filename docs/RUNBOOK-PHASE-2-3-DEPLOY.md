@@ -108,6 +108,18 @@ Run this in order before every Phase 2/3 release. Skip none.
 - [ ] Sentry DSN present in **all three runtimes** (server, client, edge) — open a 500 test page after deploy and confirm three events with matching `traceparent`
 - [ ] At least **one organization seeded with `platform_operator` role assignment** so the admin shell is reachable (without this, you cannot manage feature flags, view audit-log archive, or approve flag sign-off requests)
 - [ ] CRON jobs scheduled in Render; `CRON_SECRET` matches what scheduler hosts send
+- [ ] **QStash schedule for `/api/outbox/_drain` registered (F-ASYNC-03).** This is the *only* mechanism that drains `OutboxEvent` — without it the table fills up and no transactional side effects (welcome notification, webhook dispatch, etc.) ever leave the box. **Render's cron jobs do not cover this** because the drain endpoint authenticates via `verifySignatureAppRouter` (Upstash signature), not the Bearer `CRON_SECRET` Render sends. Steps:
+  1. **Register via Upstash console** (recommended): Upstash dashboard → QStash → Schedules → Create. Cadence: `*/30 * * * * *` (every 30 s) or `*/1 * * * *` (every 1 min — fine if the 30 s cron isn't supported on the plan tier). Destination: `https://<deploy-host>/api/outbox/_drain`. Method: `POST`. Empty body. Retries: 2.
+  2. **Or via the QStash REST API:**
+     ```bash
+     curl -X POST https://qstash.upstash.io/v2/schedules/https://<deploy-host>/api/outbox/_drain \
+       -H "Authorization: Bearer $QSTASH_TOKEN" \
+       -H "Upstash-Cron: */1 * * * *" \
+       -H "Upstash-Retries: 2"
+     ```
+     (No project script registers this — schedules created by the SDK in `packages/api/src/routers/integrations/{ksef,peppol,google-workspace}.ts` are per-tenant integration jobs, not the global outbox drain.)
+  3. **Verify** by inserting one PENDING `OutboxEvent` row (any flow that emits one — see §5.9) and confirming it transitions to `DISPATCHED` within 60 s. If it doesn't, the schedule is missing or the deploy host URL is wrong.
+  4. **Note on `render.yaml`:** the existing cron entries (`cron-token-refresh`, `cron-data-purge` at `render.yaml:492` / `:517`) are HTTP curls with `Authorization: Bearer $CRON_SECRET`. The outbox drain is **not** registered in `render.yaml` and should not be — its handler rejects anything without a valid Upstash signature. Treat **this runbook** as the single source of truth for the outbox-drain schedule.
 - [ ] Resend domain SPF / DKIM / DMARC records verified at the registrar (separate from app deploy, but emails won't deliver without it)
 
 ---
@@ -117,9 +129,27 @@ Run this in order before every Phase 2/3 release. Skip none.
 Run these as a checklist immediately after the cutover. They map 1-to-1 onto Phase 2/3 closed findings; if a step fails, the related finding has regressed.
 
 ```bash
-# 5.1 Health probe — exercises DB, Redis, QStash, R2 (F-OBS-07)
+# 5.1 Health probe — exercises DB, Redis, QStash, R2, QStash backpressure (F-OBS-07, F-SCALE-19)
 curl -fsS https://$APP_HOST/api/health | jq .
-# Expect: { status: "ok", probes: { db: ok, redis: ok, qstash: ok, r2: ok } }
+# Expect (top-level): { status: "ok", timestamp, durationMs, probes: ProbeResult[] }
+# `probes` is an ARRAY of 5 objects, one per probe, each shaped:
+#   { name, status, durationMs, reason? }
+# where `name` is one of: "database" | "redis" | "qstash" | "r2" | "backpressure"
+# and `status` is one of: "ok" | "fail" | "skipped".
+# (Verify shape against `apps/web/src/app/api/health/route.ts` lines ~48 / ~270.)
+#
+# Quick array-aware assertions:
+curl -fsS https://$APP_HOST/api/health \
+  | jq -e '.status == "ok" and ([.probes[] | select(.status == "fail")] | length) == 0'
+# Per-probe lookup (note: this is a filter on the array, NOT a nested key):
+curl -fsS https://$APP_HOST/api/health | jq '.probes[] | select(.name == "r2")'
+#
+# CAUTION — passing `r2` probe is not proof of canary upload. The probe at
+# `apps/web/src/app/api/health/route.ts` ~line 222 treats `NotFound` /
+# `NoSuchKey` (HTTP 404) as `ok` so a missing canary file does not fail
+# healthchecks. After deploy, manually confirm `R2_HEALTHCHECK_KEY` is
+# present in **each regional bucket** (see §4) — only then is a green r2
+# probe a real signal that R2 is fully wired.
 
 # 5.2 Turnstile gate — without token (F-SEC-22)
 curl -fsS -X POST https://$APP_HOST/api/auth/sign-up/email \
@@ -133,7 +163,10 @@ stripe trigger payment_intent.succeeded --override created=$(($(date +%s) - 9000
 # Expect: 200 OK + log line "F-INT-21: stripe event older than 24h, dropping"
 
 # 5.4 OAuth start mints challenge cookie (F-SEC-05)
-curl -i https://$APP_HOST/api/oauth/slack/start | grep -i 'set-cookie: oauth_state'
+# Cookie name is `__Host-oauth_state` (verified at
+# `apps/web/src/app/api/oauth/[provider]/start/route.ts:27`); grep must
+# include the `__Host-` prefix or it will silently miss.
+curl -i https://$APP_HOST/api/oauth/slack/start | grep -i 'set-cookie:.*__Host-oauth_state'
 # Expect: __Host-oauth_state=…; HttpOnly; Secure; SameSite=Lax; Path=/
 # Hit the callback with a forged state — expect 401.
 
@@ -185,21 +218,34 @@ Each Phase 2/3 commit is **atomic and revertable**. To roll back a single findin
 For 48 hours after the cutover, pay attention to:
 
 **Sentry**
-- Event types `webhook.failed`, `outbox.failed`, `backpressure.rejected` — these are new event names; baseline them on staging first. A spike in `outbox.failed` indicates either the drain consumer is down or a handler is throwing on every retry.
+- The drain handler at `apps/web/src/app/api/outbox/_drain/route.ts:63` calls `Sentry.captureException(err, { tags: { 'outbox.outcome': 'drain-error' } })` whenever a tick throws. Filter Sentry on tag `outbox.outcome:drain-error` for the canonical "outbox is broken" signal — a spike means the drain consumer is down or a handler is throwing on every retry.
+- Webhook dispatch failures and backpressure rejections surface through their own Sentry captures; baseline them on staging first by replaying a known-bad payload.
 - Beforehand, confirm the `beforeSend` PII scrub is working: search Sentry for any event containing the literal strings `bankAccount`, `taxId`, `Authorization` — there should be zero hits.
+
+**Outbox gauges (Pino / Axiom / metrics backend)**
+- The drain emits four gauges per tick from `apps/web/src/app/api/outbox/_drain/route.ts:51-54`:
+  - `outbox.drain.scanned` — rows considered this tick
+  - `outbox.drain.dispatched` — rows successfully dispatched
+  - `outbox.drain.retried` — rows requeued for another attempt
+  - `outbox.drain.exhausted` — rows that hit max attempts and moved to terminal failure (the "watch this for failures" signal)
+- A non-zero `outbox.drain.exhausted` over a 5-minute window means real, terminal dispatch failures — investigate the underlying handler. There is **no `outbox.failed` metric** (an earlier draft of this runbook referenced one; it was never implemented).
+- Queue depth is also recorded as `queue.depth queue:outbox` via `recordQueueDepth('outbox', ...)` at the top of every tick — useful for alerting on a growing backlog independent of dispatch outcomes.
 
 **Pino / Axiom**
 - Tail `traceparent` correlation across QStash producer → consumer hops — every QStash callback (ocr/_process, ksef/_sync, google-workspace/_sync, zatca/_submit, peppol/{inbound,outbound,poll}, webhooks/_process, cron/inpost-status-poll, late-interest/_render-claim-pdf) reseeds an ALS frame from `Upstash-Forward-x-request-id` and `Upstash-Forward-traceparent`. A click-to-job trace should be one continuous chain.
 - Slow-query log entries above `PRISMA_SLOW_QUERY_THRESHOLD_MS` — flag any query > 1 s for review.
 
 **Database**
-- `pg_stat_activity` — verify the new RLS sessions are actually running with `app.org_id` set on tenant-scoped transactions:
+- `pg_stat_activity` — verify the new RLS sessions are actually running with `app.org_id` set on tenant-scoped transactions. **NOTE:** Prisma does not set an `application_name` containing `"tenant"` by default, so the obvious `application_name LIKE '%tenant%'` filter returns zero rows even on a healthy deploy. Filter on the per-transaction GUC instead:
   ```sql
-  SELECT application_name, query, state
+  SELECT pid, state, query,
+         current_setting('app.org_id', true) AS org_id
   FROM pg_stat_activity
-  WHERE application_name LIKE '%tenant%'
+  WHERE current_setting('app.org_id', true) IS NOT NULL
+    AND current_setting('app.org_id', true) <> ''
   LIMIT 20;
   ```
+  (`current_setting(name, true)` returns NULL when the GUC is unset, so the filter cleanly partitions tenant-scoped sessions from connection-pool idle rows. `app.org_id` is set inside `withRlsSession` via `SET LOCAL` — see `packages/api/src/middleware/tenant.ts`.)
 - Connection-pool exhaustion (Neon Console → Monitoring → Connections). Phase 3's pagination caps and Phase 2-C's hot-path reductions should reduce sustained connection count; if it climbs, the cross-region cache layer (F-DB-03) is missing or misconfigured.
 
 **Cronitor**
