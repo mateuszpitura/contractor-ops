@@ -346,7 +346,9 @@ export default function InvoiceDetailPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold font-mono">{invoice.invoiceNumber}</h1>
+        <h1 className="font-mono text-[24px] font-semibold leading-tight tracking-tight">
+          {invoice.invoiceNumber}
+        </h1>
         <AtelierStatusPill variant={statusVariant}>
           {t(`status.${enumKey(invoice.status)}`)}
         </AtelierStatusPill>

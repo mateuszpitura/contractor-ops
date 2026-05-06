@@ -1,5 +1,7 @@
 'use client';
 
+import type { ContractStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Ban, FilePlus, MoreHorizontal, Pencil, Replace, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -15,7 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -60,34 +61,8 @@ type DetailHeaderProps = {
 };
 
 // ---------------------------------------------------------------------------
-// Status badge styles per UI-SPEC
+// Status mapping moved to @contractor-ops/ui — statusToVariant('contract', s).
 // ---------------------------------------------------------------------------
-
-const statusBadgeStyles: Record<string, string> = {
-  DRAFT: 'bg-muted text-muted-foreground border-border',
-  PENDING_SIGNATURE: 'bg-amber-500/10 text-amber-600',
-  ACTIVE: 'bg-green-600/10 text-green-600',
-  EXPIRING: 'bg-amber-500/10 text-amber-600',
-  EXPIRED: 'bg-red-500/10 text-red-500',
-  TERMINATED: 'bg-muted text-muted-foreground border-border',
-  SUPERSEDED: 'bg-muted/50 text-muted-foreground/60 border-border/50',
-  ARCHIVED: 'bg-muted text-muted-foreground border-border',
-  SIGNATURE_DECLINED: 'bg-red-500/10 text-red-500',
-  SIGNATURE_EXPIRED: 'bg-red-500/10 text-red-500',
-};
-
-const _statusLabels: Record<string, string> = {
-  DRAFT: 'Draft',
-  PENDING_SIGNATURE: 'Pending Signature',
-  ACTIVE: 'Active',
-  EXPIRING: 'Expiring',
-  EXPIRED: 'Expired',
-  TERMINATED: 'Terminated',
-  SUPERSEDED: 'Superseded',
-  ARCHIVED: 'Archived',
-  SIGNATURE_DECLINED: 'Signature Declined',
-  SIGNATURE_EXPIRED: 'Signature Expired',
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -144,13 +119,14 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-[20px] font-semibold leading-tight">
+        <div className="flex items-center gap-3">
+          <h1 className="font-display text-[20px] font-semibold leading-tight tracking-tight">
             {contract.title ?? t('untitled')}
           </h1>
-          <Badge variant="secondary" className={statusBadgeStyles[contract.status] ?? ''}>
+          <AtelierStatusPill
+            variant={statusToVariant('contract', contract.status as ContractStatusInput)}>
             {tEnum(`status.${enumKey(contract.status)}` as Parameters<typeof tEnum>[0])}
-          </Badge>
+          </AtelierStatusPill>
         </div>
         {!!contract.contractor && (
           <div className="mt-1">

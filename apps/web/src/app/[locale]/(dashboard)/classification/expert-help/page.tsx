@@ -50,18 +50,18 @@ export default async function ExpertHelpPage({
   return (
     <div className="mx-auto max-w-2xl space-y-8 py-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-2 text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       {/* Org-level custom adviser card (opt-in, D-20) */}
       {!!org?.expertReferralEmail && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-6">
+        <div className="rounded-lg border bg-card p-6">
           <h2 className="font-semibold">{t('orgAdviser.title')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t('orgAdviser.description')}</p>
           <a
             href={`mailto:${org.expertReferralEmail}${assessmentId ? `?subject=IR35 Classification Query - Assessment ${assessmentId}` : ''}`}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-amber-700 hover:text-amber-900">
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80">
             {t('orgAdviser.contact')}
             <ExternalLink className="h-4 w-4" />
           </a>

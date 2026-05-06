@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal } from 'lucide-react';
@@ -15,7 +16,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,19 +27,6 @@ import { Progress } from '@/components/ui/progress';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-
-// ---------------------------------------------------------------------------
-// Status badge colors (shared with side panel)
-// ---------------------------------------------------------------------------
-
-const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
-  IN_PROGRESS: 'bg-primary/10 text-primary',
-  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  CANCELLED: 'bg-muted text-muted-foreground border border-border',
-  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
-};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -153,12 +140,16 @@ export function RunHeader({ run }: RunHeaderProps) {
         <div className="space-y-2">
           {/* Workflow name */}
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-[20px] font-semibold leading-[1.2]">
+            <h1 className="text-[20px] font-display font-semibold leading-[1.2] tracking-tight">
               {run.workflowTemplate?.name ?? t('workflowLabel')}
             </h1>
-            <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
+            <AtelierStatusPill
+              variant={statusToVariant(
+                'workflow-run',
+                run.status as Parameters<typeof statusToVariant<'workflow-run'>>[1],
+              )}>
               {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
-            </Badge>
+            </AtelierStatusPill>
           </div>
 
           {/* Template + contractor links */}

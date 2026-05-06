@@ -122,7 +122,7 @@ export function EquipmentDetailHeader({
         <div>
           <div className="flex items-center gap-2">
             <EquipmentTypeIcon type={equipment.type} className="h-5 w-5" />
-            <h1 className="text-2xl font-semibold">{equipment.name}</h1>
+            <h1 className="font-display text-2xl font-semibold tracking-tight">{equipment.name}</h1>
           </div>
           <div className="mt-1 flex items-center gap-2">
             {!!equipment.serialNumber && (
