@@ -9,6 +9,68 @@
 // `withResilience(() => fetchWithTimeout(…), { provider: 'jira' })` and the
 // helper applies the per-provider config from `resilience-config.ts`.
 //
+// =============================================================================
+// READ THIS BEFORE TUNING `retryAttempts` (NEW-ARCH-06)
+// =============================================================================
+//
+// `withResilience` is one of THREE retry layers in the system. Every call you
+// wrap here may be re-fired by upper layers, so each retry you add multiplies
+// against the others. Engineers who tweak `retryAttempts` in
+// `resilience-config.ts` without internalising this math have, in the past,
+// driven Resend usage past the free-tier rate limit during partial outages.
+//
+// The three layers, outermost first:
+//
+//   1. QStash native retries (3-5×, plan-dependent) — re-publishes the
+//      `/api/outbox/_drain` (or per-route) callback if the HTTP handler
+//      returns 5xx. Whole-batch retry; affects every outbox row in the
+//      tick that crashed.
+//
+//   2. Outbox drain attempts (`MAX_OUTBOX_ATTEMPTS`, currently 5) — see
+//      `packages/api/src/services/outbox/index.ts`. Per-row retry with
+//      exponential backoff (4m / 8m / 16m / 32m). Counts up across drain
+//      ticks, so a flaky upstream burns one outbox attempt per tick until
+//      it stabilises or the cap trips FAILED + Sentry.
+//
+//   3. `withResilience` p-retry (this file, `retryAttempts` per provider)
+//      — innermost. Fires up to `1 + retryAttempts` concrete provider
+//      calls in immediate succession with full-jitter backoff (500ms..30s).
+//      Finishes (success or AbortError) inside a single outbox attempt.
+//
+// Worst-case provider calls per outbox row:
+//
+//   total_calls = MAX_OUTBOX_ATTEMPTS × (1 + retryAttempts)
+//
+// (QStash retries multiply the whole batch on top of that, but they only
+// fire when the HTTP route itself crashed — independent of any single row.)
+//
+// Worked example — Resend (free tier: 10 req/sec)
+// -----------------------------------------------
+// `resend` is configured here with `retryAttempts: 3`, i.e. up to 4 inner
+// provider calls per outbox attempt. With `MAX_OUTBOX_ATTEMPTS = 5`:
+//
+//   worst case = 5 × (1 + 3) = 20 Resend POSTs per single outbox row
+//
+// During a sustained partial outage (Resend returning 503 for 30 min and
+// then recovering), 20 events queued during the blip can fan out to ~400
+// concrete POSTs. At 10 req/sec that's a 40-second self-DoS window — but
+// the `concurrencyLimit: 10` bulkhead and the 4m/8m/16m/32m outbox spacing
+// keep the average burst below the rate limit. If you raise `retryAttempts`
+// for Resend to 5, the same row becomes 30 calls and the math no longer
+// fits inside the free tier — you would also need to bump `concurrencyLimit`
+// down to 5 or move to a paid plan.
+//
+// Before raising any provider's `retryAttempts`:
+//
+//   1. Confirm the upstream's documented rate limit and your current plan.
+//   2. Multiply `MAX_OUTBOX_ATTEMPTS × (1 + new retryAttempts)` and divide
+//      by `concurrencyLimit` to get the worst-case sustained burst rate.
+//   3. If the burst exceeds the upstream limit, lower `concurrencyLimit`
+//      first — it's the only knob that can absorb the multiplied total
+//      without changing the time-to-give-up budget.
+//
+// =============================================================================
+//
 // Design notes
 // ============
 //   - Per-provider state lives in module-scoped Maps. Each provider gets ONE

@@ -38,8 +38,28 @@
 //      or schedule the next retry with exponential backoff.
 //
 // Retry policy: see `scheduleNextAttempt`. Exponential backoff with jitter,
-// capped at 1 hour, max 10 attempts. After the final attempt the row is
+// capped at 1 hour, max 5 attempts. After the final attempt the row is
 // marked FAILED and a Sentry capture fires.
+//
+// Why 5 attempts (NEW-ARCH-06 fix, 2026-05-06)
+// ============================================
+// Each handler call goes through `withResilience` (packages/integrations),
+// which already applies its own p-retry budget (typically 2-3 attempts +
+// the original call) plus a circuit breaker. The outbox layer's retries
+// COMPOUND with that inner budget — every outbox attempt fires up to
+// `1 + retryAttempts` concrete provider calls.
+//
+//   Worst-case provider calls per outbox row
+//   = MAX_OUTBOX_ATTEMPTS × (1 + provider.retryAttempts)
+//
+// At the previous MAX_OUTBOX_ATTEMPTS=10 with Resend's `retryAttempts: 3`
+// (4 inner calls), one outbox row could burn 40 calls — material against
+// Resend's 10/sec free-tier rate limit. Lowering to 5 caps the worst case
+// at 5 × 4 = 20 calls per row, while still giving four exponential-backoff
+// retries to absorb a sustained transient outage.
+//
+// See `packages/integrations/src/services/resilience.ts` for the per-
+// provider math and the worked Resend example.
 
 import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
@@ -123,8 +143,15 @@ interface ClaimedOutboxRow {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** After this many attempts, mark FAILED and Sentry-capture. */
-export const MAX_OUTBOX_ATTEMPTS = 10;
+/**
+ * After this many attempts, mark FAILED and Sentry-capture.
+ *
+ * Lowered from 10 → 5 (NEW-ARCH-06, 2026-05-06): `withResilience` already
+ * absorbs transient errors with its own p-retry budget, so the outbox
+ * compounds with already-retried calls. See the docstring at the top of
+ * this file and `packages/integrations/src/services/resilience.ts`.
+ */
+export const MAX_OUTBOX_ATTEMPTS = 5;
 
 /** Per-tick batch cap. Keeps the worker bounded for serverless. */
 export const DRAIN_BATCH_LIMIT = 100;
@@ -132,8 +159,15 @@ export const DRAIN_BATCH_LIMIT = 100;
 /** Exponential backoff cap. Re-delivery of a flapping handler shouldn't drift past 1h. */
 const BACKOFF_MAX_MS = 60 * 60 * 1000;
 
-/** Base unit for exponential backoff: 60s. */
-const BACKOFF_BASE_MS = 60 * 1000;
+/**
+ * Base unit for exponential backoff: 4 minutes.
+ *
+ * Tuned in lockstep with MAX_OUTBOX_ATTEMPTS=5 so total time-to-give-up
+ * stays near the original ~1h budget:
+ *   wait_1 ≈ 4m, wait_2 ≈ 8m, wait_3 ≈ 16m, wait_4 ≈ 32m → ~60m total.
+ * (Previously 60s base × 10 attempts hit the 1h cap at attempt 7.)
+ */
+const BACKOFF_BASE_MS = 4 * 60 * 1000;
 
 /** Random extra jitter in (0, 30s] to spread thundering herds. */
 const JITTER_MAX_MS = 30 * 1000;
@@ -450,10 +484,12 @@ async function finalizeFailure(row: ClaimedOutboxRow, err: unknown): Promise<Row
 
 /**
  * Exponential backoff with jitter:
- *   base = min(60s * 2^(attempts - 1), 1h)
+ *   base = min(BACKOFF_BASE_MS * 2^(attempts - 1), 1h)
  *   delay = base + random(0, 30s]
  *
- * The first retry waits ~60s; the cap (~1h) is hit at attempts >= 7.
+ * With BACKOFF_BASE_MS=4m and MAX_OUTBOX_ATTEMPTS=5, the wait sequence is
+ * ~4m, 8m, 16m, 32m before the terminal FAILED transition — total wallclock
+ * to give up sits near 1h, matching the original retry budget.
  */
 export function computeBackoffMs(attempts: number): number {
   const exponent = Math.max(0, attempts - 1);

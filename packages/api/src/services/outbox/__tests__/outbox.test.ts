@@ -316,10 +316,11 @@ describe('drainOutboxBatch', () => {
 // ---------------------------------------------------------------------------
 
 describe('computeBackoffMs', () => {
-  it('produces ~60s base delay for the first retry', () => {
+  it('produces ~4m base delay for the first retry', () => {
+    // BACKOFF_BASE_MS=4m + jitter(0..30s) — see NEW-ARCH-06 retune.
     const delay = computeBackoffMs(1);
-    expect(delay).toBeGreaterThanOrEqual(60_000);
-    expect(delay).toBeLessThanOrEqual(60_000 + 30_000);
+    expect(delay).toBeGreaterThanOrEqual(4 * 60_000);
+    expect(delay).toBeLessThanOrEqual(4 * 60_000 + 30_000);
   });
 
   it('caps at 1h + jitter for high attempt counts', () => {
@@ -331,7 +332,7 @@ describe('computeBackoffMs', () => {
   it('grows exponentially for early attempts', () => {
     const a1 = computeBackoffMs(1);
     const a3 = computeBackoffMs(3);
-    // 60s vs 240s — even with jitter the order is preserved.
+    // 4m vs 16m — even with jitter the order is preserved.
     expect(a3).toBeGreaterThan(a1);
   });
 });
