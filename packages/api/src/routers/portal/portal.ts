@@ -813,10 +813,13 @@ export const portalRouter = router({
         netAmountMinor: z.number().int().positive(),
         grossAmountMinor: z.number().int().positive(),
         documentId: z.string(),
-        // F-SEC-01: `storageKey` accepted but IGNORED — kept optional only
-        // for back-compat with older clients during the rollout. The server
-        // recovers the trusted key from `PendingUpload`.
-        storageKey: z.string().optional(),
+        // F-SEC-01: `storageKey` is intentionally NOT part of the input
+        // contract — the server recovers the trusted key from `PendingUpload`
+        // (consumed atomically below). Older portal clients that still send
+        // `storageKey` are non-breaking: Zod's default object behaviour
+        // strips unknown keys, so the field is silently dropped at the edge.
+        // Re-introducing it here would re-open F-SEC-01 (cross-tenant IDOR
+        // via attacker-supplied storage path).
         originalFileName: z.string(),
         fileSizeBytes: z.number().int().positive(),
         checksumSha256: z.string().optional(),
@@ -852,7 +855,8 @@ export const portalRouter = router({
       });
 
       // Create document record for the uploaded PDF using the server-trusted
-      // storage key (NEVER `input.storageKey`).
+      // storage key recovered from `PendingUpload`. The input schema does not
+      // expose `storageKey` — there is no client-supplied path to fall back to.
       await ctx.db.document.create({
         data: {
           id: input.documentId,

@@ -708,7 +708,10 @@ export function InvoiceSubmitForm() {
         netAmountMinor: Math.round(parseFloat(values.netAmount) * 100),
         grossAmountMinor: Math.round(parseFloat(values.grossAmount) * 100),
         documentId: upload.documentId,
-        storageKey: upload.storageKey,
+        // F-SEC-01: `storageKey` is intentionally not sent. The server
+        // recovers the trusted storage path from the consumed `PendingUpload`
+        // row keyed by `documentId`; trusting a client-supplied path here
+        // would re-open the cross-tenant IDOR closed by F-SEC-01.
         originalFileName: upload.originalFileName,
         fileSizeBytes: upload.fileSizeBytes,
       });

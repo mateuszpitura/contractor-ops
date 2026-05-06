@@ -153,8 +153,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -170,7 +170,14 @@ vi.mock('@contractor-ops/db', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -181,11 +188,24 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+    child: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -199,14 +219,6 @@ vi.mock('@contractor-ops/logger', () => ({
   LOG_BODY_INCLUDE_PREFIXES: [],
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
-  createIntegrationLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  })),
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -821,7 +833,6 @@ describe('portal router — documents, payments, uploads', () => {
       netAmountMinor: 800_00,
       grossAmountMinor: 984_00,
       documentId: '00000000-0000-4000-8000-000000000001',
-      storageKey: 'org/org-1/doc/x.pdf',
       originalFileName: 'invoice.pdf',
       fileSizeBytes: 5000,
     });
@@ -836,6 +847,61 @@ describe('portal router — documents, payments, uploads', () => {
     });
   });
 
+  // F-SEC-01 regression — a forged `storageKey` in the request body must
+  // never reach `Document.create`. With `storageKey` removed from the input
+  // schema, Zod silently strips the unknown key, so even an attacker who
+  // hand-crafts the JSON body cannot influence where the document points.
+  // The trusted path comes exclusively from the consumed `PendingUpload`.
+  it('submitInvoice ignores attacker-supplied storageKey and uses PendingUpload path', async () => {
+    const TRUSTED_KEY = 'orgs/org-portal-main-001/documents/trusted.pdf';
+    const FORGED_KEY = 'orgs/attacker-org-id/secret.pdf';
+
+    mockPrisma.contract.findFirst.mockResolvedValueOnce({
+      id: CONTRACT_ID,
+      currency: 'PLN',
+    });
+    // Override the default findFirst to return a trusted storageKey + mimeType
+    // so we can assert the resolver writes that key into Document.create.
+    mockPrisma.pendingUpload.findFirst.mockResolvedValueOnce({
+      id: 'pending-upload-1',
+      documentId: '00000000-0000-4000-8000-000000000002',
+      organizationId: 'org-portal-main-001',
+      storageKey: TRUSTED_KEY,
+      mimeType: 'application/pdf',
+      consumedAt: new Date(),
+    });
+    mockPrisma.document.create.mockResolvedValueOnce({});
+    mockPrisma.invoice.create.mockResolvedValueOnce({
+      id: 'inv-new-2',
+      invoiceNumber: 'INV-PORT-2',
+      status: 'RECEIVED',
+    });
+    mockPrisma.invoiceFile.create.mockResolvedValueOnce({});
+
+    // Cast forces the forged field past TS — simulates a hand-crafted payload
+    // from a malicious client. Zod strips it at the procedure boundary.
+    await authedPortalCaller().submitInvoice({
+      contractId: CONTRACT_ID,
+      invoiceNumber: 'INV-PORT-2',
+      issueDate: new Date('2026-04-01'),
+      dueDate: new Date('2026-04-30'),
+      netAmountMinor: 100,
+      grossAmountMinor: 123,
+      documentId: '00000000-0000-4000-8000-000000000002',
+      originalFileName: 'invoice.pdf',
+      fileSizeBytes: 5000,
+      storageKey: FORGED_KEY,
+    } as Parameters<ReturnType<typeof authedPortalCaller>['submitInvoice']>[0]);
+
+    expect(mockPrisma.document.create).toHaveBeenCalledTimes(1);
+    const documentCreateArg = mockPrisma.document.create.mock.calls[0]?.[0] as
+      | { data: { storageKey: string } }
+      | undefined;
+    expect(documentCreateArg?.data.storageKey).toBe(TRUSTED_KEY);
+    expect(documentCreateArg?.data.storageKey).not.toBe(FORGED_KEY);
+    expect(documentCreateArg?.data.storageKey.startsWith('orgs/org-portal-main-001/')).toBe(true);
+  });
+
   it('submitInvoice throws NOT_FOUND when contract is not active for contractor', async () => {
     mockPrisma.contract.findFirst.mockResolvedValueOnce(null);
 
@@ -848,7 +914,6 @@ describe('portal router — documents, payments, uploads', () => {
         netAmountMinor: 100,
         grossAmountMinor: 123,
         documentId: 'doc-1',
-        storageKey: 'k',
         originalFileName: 'a.pdf',
         fileSizeBytes: 100,
       }),
