@@ -418,6 +418,7 @@ export const auth = betterAuth({
 
         await sendOrgInvitationEmail({
           to: data.email,
+          organizationId: data.organization.id,
           organizationName: data.organization.name,
           inviterName: data.inviter.user.name ?? null,
           inviterEmail: data.inviter.user.email ?? null,

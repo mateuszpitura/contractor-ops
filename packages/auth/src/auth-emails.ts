@@ -25,6 +25,23 @@ import { createLogger } from '@contractor-ops/logger';
 import { Resend } from 'resend';
 import { authEnv } from './env.js';
 
+// ---------------------------------------------------------------------------
+// Idempotency-key derivation (DRIFT-01)
+// ---------------------------------------------------------------------------
+//
+// `@contractor-ops/integrations/services/idempotency` is the canonical
+// `deriveIdempotencyKey` implementation. We mirror its composition locally
+// rather than importing it because pulling `@contractor-ops/integrations`
+// into `@contractor-ops/auth` would inflate the auth package's dependency
+// surface (docusign-esign, infisical, qstash, ...). The integrations-package
+// unit test pins the wire format so any future change will fail loudly
+// before drift can re-emerge.
+const GLOBAL_ORG_SENTINEL = '_global' as const;
+
+function localDeriveIdempotencyKey(orgId: string, operation: string, businessKey: string): string {
+  return createHash('sha256').update(`${orgId}:${operation}:${businessKey}`).digest('hex');
+}
+
 const log = createLogger({ service: 'auth-emails' });
 
 let resendClient: Resend | null = null;
@@ -45,6 +62,16 @@ interface SendEmailParams {
   html: string;
   /** Stable identifier for log correlation (e.g. 'verify-email', 'reset-password'). */
   template: string;
+  /**
+   * Tenant scope used for idempotency-key derivation (DRIFT-01).
+   *
+   * Most Better Auth flows (verify-email, reset-password, magic-link) fire
+   * BEFORE a user has selected an organization, so there is no real org
+   * context — those callers pass {@link GLOBAL_ORG_SENTINEL}. The
+   * organization-invitation flow has `data.organization.id` available and
+   * passes it through.
+   */
+  orgId: string;
 }
 
 /**
@@ -72,14 +99,20 @@ async function sendAuthEmail(params: SendEmailParams): Promise<void> {
 
   const resend = getResend();
   try {
-    // F-INT-04: server-derived Idempotency-Key — sha256 of template+to+body
-    // (the URL Better Auth supplies is single-use so the digest is naturally
-    // unique per send). Resend retains the key for 24h, which is wider than
-    // any retry window we operate under.
-    const idempotencyKey = `auth:${createHash('sha256')
-      .update(`${params.template}|${params.to}|${params.subject}|${params.html}`)
-      .digest('base64url')
-      .slice(0, 56)}`;
+    // F-INT-04 / DRIFT-01: server-derived Idempotency-Key. The `businessKey`
+    // hashes (template, recipient, subject, body) so a retry of the same
+    // logical send collapses to one Resend message. Resend retains the key
+    // for 24h, which is wider than any retry window we operate under. The
+    // `auth.email.<template>` operation discriminator partitions verify /
+    // reset / magic-link / invitation flows from each other.
+    const businessKey = createHash('sha256')
+      .update(`${params.to}|${params.subject}|${params.html}`)
+      .digest('hex');
+    const idempotencyKey = localDeriveIdempotencyKey(
+      params.orgId,
+      `auth.email.${params.template}`,
+      businessKey,
+    );
 
     const result = await resend.emails.send(
       {
@@ -172,6 +205,8 @@ export async function sendVerificationEmail(params: VerifyEmailParams): Promise<
     subject: 'Verify your email address',
     template: 'verify-email',
     html,
+    // No tenant context — verification fires before any org selection.
+    orgId: GLOBAL_ORG_SENTINEL,
   });
 }
 
@@ -210,6 +245,8 @@ export async function sendResetPasswordEmail(params: ResetPasswordEmailParams): 
     subject: 'Reset your Contractor Ops password',
     template: 'reset-password',
     html,
+    // Password reset can target a user across any number of orgs — global.
+    orgId: GLOBAL_ORG_SENTINEL,
   });
 }
 
@@ -245,11 +282,19 @@ export async function sendMagicLinkEmail(params: MagicLinkEmailParams): Promise<
     subject: 'Your Contractor Ops sign-in link',
     template: 'magic-link',
     html,
+    // Sign-in flow is pre-tenancy — the user has not selected an org yet.
+    orgId: GLOBAL_ORG_SENTINEL,
   });
 }
 
 interface InvitationEmailParams {
   to: string;
+  /**
+   * Tenant scope (DRIFT-01) — the inviting organization's id. Better Auth's
+   * organization plugin always supplies this in `data.organization.id` so
+   * the field is required at this entry point.
+   */
+  organizationId: string;
   organizationName: string;
   inviterName: string | null;
   inviterEmail: string | null;
@@ -289,5 +334,7 @@ export async function sendInvitationEmail(params: InvitationEmailParams): Promis
     subject: `You're invited to join ${params.organizationName} on Contractor Ops`,
     template: 'organization-invitation',
     html,
+    // Real tenant scope — invitation is always issued by an existing org.
+    orgId: params.organizationId,
   });
 }

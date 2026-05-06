@@ -124,11 +124,14 @@ export async function sendForSignature(params: SendForSignatureParams) {
   // Fetch and prepare the document
   const { document, documentBase64 } = await fetchDocumentContent(organizationId, documentId);
 
-  // Call the provider adapter to create the envelope
+  // Call the provider adapter to create the envelope.
+  // `organizationId` is plumbed through so the adapter's idempotency-key
+  // derivation (DRIFT-01) shares the canonical orgId scope.
   const result = await createProviderEnvelope({
     provider,
     connectionId,
     request: {
+      organizationId,
       documentBase64,
       documentName: document.originalFileName,
       signers: signers.map(s => ({

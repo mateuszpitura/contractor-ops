@@ -24,6 +24,11 @@
       "import": "./dist/services/concurrency.js",
       "default": "./dist/services/concurrency.js"
     },
+    "./services/idempotency": {
+      "types": "./dist/services/idempotency.d.ts",
+      "import": "./dist/services/idempotency.js",
+      "default": "./dist/services/idempotency.js"
+    },
     "./services/webhook-schemas": {
       "types": "./dist/services/webhook-schemas.d.ts",
       "import": "./dist/services/webhook-schemas.js",

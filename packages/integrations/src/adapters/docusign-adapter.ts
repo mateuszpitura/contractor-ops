@@ -4,6 +4,7 @@ import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { deriveIdempotencyKey } from '../services/idempotency.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
@@ -349,21 +350,31 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
 
     const envelope = docusign.EnvelopeDefinition.constructFromObject(envelopeDefinition);
 
-    // F-INT-04: server-derived X-DocuSign-Idempotency-Key — DocuSign documents
-    // a 24h dedup window. Hash the (connectionId, document, signers) tuple so
-    // a QStash retry of the same envelope creation collapses to one envelope
-    // rather than spawning a duplicate. The SDK has no per-call header opt,
-    // so we set it via the client's default headers; the call site is the
-    // sole caller of createEnvelope on this client instance per request.
-    const idempotencyKey = `envelope-${createHash('sha256')
+    // F-INT-04 / DRIFT-01: server-derived X-DocuSign-Idempotency-Key —
+    // DocuSign documents a 24h dedup window. The key composition goes
+    // through the canonical `deriveIdempotencyKey` helper so the same
+    // logical envelope creation, retried via any code path (direct API
+    // call, QStash callback, outbox replay), collapses to the same hash.
+    //
+    // `request.organizationId` is the tenant scope; when callers haven't
+    // plumbed it (legacy / test callers) we fall back to the connectionId
+    // — a connection is org-scoped at the database level so this remains
+    // safe partitioning. The businessKey hashes the document fingerprint
+    // (name + size + sorted signer emails) so two distinct envelope
+    // requests on the same connection don't collapse together.
+    const businessKey = createHash('sha256')
       .update(
-        `${connectionId}|${request.documentName}|${request.documentBase64.length}|${request.signers
+        `${request.documentName}|${request.documentBase64.length}|${request.signers
           .map(s => s.email)
           .sort()
           .join(',')}`,
       )
-      .digest('base64url')
-      .slice(0, 48)}`;
+      .digest('hex');
+    const idempotencyKey = deriveIdempotencyKey({
+      orgId: request.organizationId ?? connectionId,
+      operation: 'docusign.envelope.create',
+      businessKey,
+    });
     apiClient.addDefaultHeader('X-DocuSign-Idempotency-Key', idempotencyKey);
 
     const result: DocuSignEnvelopeSummary = await envelopesApi.createEnvelope(accountId, {

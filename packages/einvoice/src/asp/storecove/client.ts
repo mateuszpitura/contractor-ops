@@ -12,6 +12,25 @@ import type {
 } from './types.js';
 
 // ---------------------------------------------------------------------------
+// Idempotency-key derivation (DRIFT-01)
+// ---------------------------------------------------------------------------
+//
+// `@contractor-ops/integrations/services/idempotency` is the canonical
+// `deriveIdempotencyKey` implementation. We can't import it here because
+// `@contractor-ops/integrations` already depends on `@contractor-ops/einvoice`
+// (a reverse import would close the cycle). Instead we mirror the exact
+// `sha256(`${orgId}:${operation}:${businessKey}`)` composition; the
+// integrations-package unit test pins the wire format so any future change
+// will fail loudly there before drift can re-emerge.
+const STORECOVE_OPERATION = 'storecove.peppol.send' as const;
+
+function localDeriveIdempotencyKey(orgId: string, businessKey: string): string {
+  return createHash('sha256')
+    .update(`${orgId}:${STORECOVE_OPERATION}:${businessKey}`)
+    .digest('hex');
+}
+
+// ---------------------------------------------------------------------------
 // Storecove REST Client
 // ---------------------------------------------------------------------------
 
@@ -36,13 +55,20 @@ export class StorecoveClient {
   /**
    * Submit a UBL document for transmission via the Peppol network.
    *
-   * F-INT-04: passes an `Idempotency-Key` header derived from sha256 of the
-   * UBL document body + sender + receiver. Storecove documents this header
-   * for the document_submissions endpoint and dedupes against it for at
-   * least 24h. Critical for Peppol compliance — a duplicate transmission
-   * means the receiver gets two copies and our local lifecycle row diverges
-   * from the receiver's e-archive. Callers can override via `idempotencyKey`
-   * when they hold a stronger natural key (e.g. invoice id + revision).
+   * F-INT-04 / DRIFT-01: passes an `Idempotency-Key` header derived from
+   * the canonical `(orgId, operation, businessKey)` composition shared
+   * across every external-provider integration in this monorepo. Storecove
+   * dedupes against the header on `/document_submissions` for at least 24h.
+   * Critical for Peppol compliance — a duplicate transmission means the
+   * receiver gets two copies and our local lifecycle row diverges from the
+   * receiver's e-archive.
+   *
+   * Callers SHOULD pass `organizationId`. If absent we substitute a global
+   * sentinel that still partitions away from any future tenant-scoped key.
+   * The `businessKey` defaults to a canonical hash of (sender, receiver,
+   * UBL body) so two distinct invoices on the same connection don't
+   * collapse together. Callers holding a stronger natural key (invoice id
+   * + revision) can pass `idempotencyKey` to override.
    */
   async submitDocument(params: {
     xml: string;
@@ -50,17 +76,19 @@ export class StorecoveClient {
     receiverIdentifier: string;
     receiverScheme: string;
     documentType: string;
-    /** Server-derived; defaults to sha256(xml + sender + receiver). */
+    /** Tenant scope; falls back to the global sentinel when omitted. */
+    organizationId?: string;
+    /** Override; precomputed by the caller (e.g. invoice id + revision). */
     idempotencyKey?: string;
   }): Promise<StorecoveDocumentSubmission> {
+    const businessKey = createHash('sha256')
+      .update(
+        `${params.senderLegalEntityId}|${params.receiverScheme}:${params.receiverIdentifier}|${params.xml}`,
+      )
+      .digest('hex');
     const idempotencyKey =
       params.idempotencyKey ??
-      `peppol-${createHash('sha256')
-        .update(
-          `${params.senderLegalEntityId}|${params.receiverScheme}:${params.receiverIdentifier}|${params.xml}`,
-        )
-        .digest('base64url')
-        .slice(0, 48)}`;
+      localDeriveIdempotencyKey(params.organizationId ?? '_global', businessKey);
 
     const response = await fetch(`${this.baseUrl}/document_submissions`, {
       method: 'POST',

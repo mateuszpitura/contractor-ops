@@ -59,6 +59,9 @@ export {
   getDependencyHealth,
   getProviderHealth,
 } from './services/health-service.js';
+// Idempotency-key derivation (DRIFT-01 follow-up to F-INT-04)
+export type { IdempotencyInputs } from './services/idempotency.js';
+export { deriveIdempotencyKey, GLOBAL_ORG_SENTINEL } from './services/idempotency.js';
 export type { InfisicalConfig, ZatcaSecretName } from './services/infisical-client.js';
 // Infisical Secret Store (ZATCA certificate management)
 export {

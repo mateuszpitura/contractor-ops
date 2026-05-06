@@ -3,6 +3,7 @@ import { GoogleCalendarAdapter } from '@contractor-ops/integrations/adapters/goo
 import { OutlookCalendarAdapter } from '@contractor-ops/integrations/adapters/outlook-calendar-adapter';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
+import { deriveIdempotencyKey } from '@contractor-ops/integrations/services/idempotency';
 import { createLogger } from '@contractor-ops/logger';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
 import type { CalendarPrismaClient } from './types.js';
@@ -194,14 +195,34 @@ async function createProviderEvent(
   conn: CalendarConnection,
   input: CreateCalendarEventInput,
 ): Promise<{ eventId: string; url: string; metadata: CalendarEventMetadata }> {
+  // DRIFT-01: server-derived idempotency key for the create-event call.
+  // Composing on `(connectionId, entityType, entityId)` means a retried
+  // dual-push for the same business entity onto the same calendar
+  // connection collapses to one provider event. Google rejects the
+  // duplicate insert with 409 (its `event.id` is set from this key);
+  // Microsoft Graph correlates via `client-request-id`. Each adapter
+  // owns the wire encoding — the service supplies the canonical key.
+  const idempotencyKey = deriveIdempotencyKey({
+    orgId: input.organizationId,
+    operation:
+      conn.provider === 'GOOGLE_CALENDAR'
+        ? 'google-calendar.event.create'
+        : 'outlook-calendar.event.create',
+    businessKey: `${conn.id}:${input.entityType}:${input.entityId}`,
+  });
+
   if (conn.provider === 'GOOGLE_CALENDAR') {
-    const result = await googleAdapter.createEvent(conn.accessToken, {
-      summary: input.summary,
-      description: input.description,
-      startDateTime: input.startDateTime,
-      endDateTime: input.endDateTime,
-      attendees: input.attendees,
-    });
+    const result = await googleAdapter.createEvent(
+      conn.accessToken,
+      {
+        summary: input.summary,
+        description: input.description,
+        startDateTime: input.startDateTime,
+        endDateTime: input.endDateTime,
+        attendees: input.attendees,
+      },
+      idempotencyKey,
+    );
 
     return {
       eventId: result.eventId,
@@ -218,13 +239,17 @@ async function createProviderEvent(
     };
   }
 
-  const result = await outlookAdapter.createEvent(conn.accessToken, {
-    subject: input.summary,
-    bodyHtml: input.description,
-    startDateTime: input.startDateTime,
-    endDateTime: input.endDateTime,
-    attendees: input.attendees,
-  });
+  const result = await outlookAdapter.createEvent(
+    conn.accessToken,
+    {
+      subject: input.summary,
+      bodyHtml: input.description,
+      startDateTime: input.startDateTime,
+      endDateTime: input.endDateTime,
+      attendees: input.attendees,
+    },
+    idempotencyKey,
+  );
 
   return {
     eventId: result.eventId,

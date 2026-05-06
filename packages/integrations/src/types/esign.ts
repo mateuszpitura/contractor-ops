@@ -6,6 +6,15 @@
  * Request to create a signing envelope with one or more signers.
  */
 export interface SigningEnvelopeRequest {
+  /**
+   * Tenant scope used for idempotency-key derivation (DRIFT-01).
+   *
+   * The orchestrator (`packages/api/src/services/esign-orchestrator.ts`)
+   * always plumbs the caller's organization id; only legacy / test paths
+   * may omit it, in which case the adapter falls back to the
+   * integration connection id (already org-scoped at the DB level).
+   */
+  organizationId?: string;
   documentBase64: string;
   documentName: string;
   signers: SignerInfo[];

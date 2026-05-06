@@ -216,6 +216,10 @@ export class StorecoveAdapter implements ASPAdapter {
         receiverIdentifier: receiverIdentifier ?? params.receiverParticipantId,
         receiverScheme: receiverScheme ?? '0192',
         documentType: resolveDocumentTypeId(params),
+        // DRIFT-01: feed the organizationId into the idempotency-key
+        // derivation so retries from any code path (orchestrator, outbox,
+        // QStash retry) produce the same Storecove dedup key.
+        organizationId: params.organizationId,
       });
 
       this.emitAudit(orgId, '/document_submissions', 'POST', 200, Date.now() - startMs);
