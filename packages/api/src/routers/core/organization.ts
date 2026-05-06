@@ -1,55 +1,82 @@
 import { authApi } from '@contractor-ops/auth';
+import { getRegionalClient } from '@contractor-ops/db';
 import {
   createOrganizationSchema,
   updateOrganizationSettingsSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { publicProcedure, router } from '../../init.js';
+import { router } from '../../init.js';
+import { authedProcedure } from '../../middleware/auth.js';
+import { orgCreateRateLimitMiddleware } from '../../middleware/org-create-rate-limit.js';
 import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
 import { writeAuditLog } from '../../services/audit-writer.js';
+import { getOrgMeta } from '../../services/org-cache.js';
 import { runPostOrganizationCreateHooks } from '../../services/post-org-create-hook.js';
 
 export const organizationRouter = router({
   /**
-   * Create a new organization (used during sign-up flow).
-   * Public procedure because the user may not have an active org yet.
+   * Create a new organization (used during sign-up flow and from the
+   * org-switcher when an existing user spins up an additional workspace).
+   *
+   * Authenticated, but NOT tenant-scoped — `authedProcedure` requires a
+   * Better Auth session yet does not require an active organization on the
+   * caller's session, since this mutation is precisely how a brand-new user
+   * acquires their first org. Better Auth's `authApi.createOrganization`
+   * also enforces the same session requirement defensively.
+   *
+   * Rate-limited (NEW-SEC-05): 5 organizations per 24h per user. Closes the
+   * abuse vector where a single signed-in user spams org creation to fill
+   * the slug namespace and trigger expensive post-create hooks.
+   *
    * After creation, sets the new org as active in the session.
    */
-  create: publicProcedure.input(createOrganizationSchema).mutation(async ({ ctx, input }) => {
-    // Default language by countryCode — DE orgs get German UI by default (Phase 56 D-11).
-    // User can switch via language selector at any time.
-    const defaultLanguage =
-      input.countryCode === 'DE' ? 'de' : input.countryCode === 'GB' ? 'en' : undefined;
+  create: authedProcedure
+    .use(orgCreateRateLimitMiddleware)
+    .input(createOrganizationSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Default language by countryCode — DE orgs get German UI by default (Phase 56 D-11).
+      // User can switch via language selector at any time.
+      const defaultLanguage =
+        input.countryCode === 'DE' ? 'de' : input.countryCode === 'GB' ? 'en' : undefined;
 
-    const org = await authApi.createOrganization({
-      headers: ctx.headers,
-      body: {
-        name: input.name,
-        slug: input.name.toLowerCase().replace(/\s+/g, '-'),
-        metadata: {
-          countryCode: input.countryCode,
-          defaultCurrency: input.defaultCurrency,
-          timezone: input.timezone,
-          ...(defaultLanguage && { language: defaultLanguage }),
+      const org = await authApi.createOrganization({
+        headers: ctx.headers,
+        body: {
+          name: input.name,
+          slug: input.name.toLowerCase().replace(/\s+/g, '-'),
+          metadata: {
+            countryCode: input.countryCode,
+            defaultCurrency: input.defaultCurrency,
+            timezone: input.timezone,
+            ...(defaultLanguage && { language: defaultLanguage }),
+          },
         },
-      },
-    });
+      });
 
-    // Set the new organization as active
-    await authApi.setActiveOrganization({
-      headers: ctx.headers,
-      body: { organizationId: org.id },
-    });
+      // Set the new organization as active
+      await authApi.setActiveOrganization({
+        headers: ctx.headers,
+        body: { organizationId: org.id },
+      });
 
-    // Phase 74 — Materialise the 4 KT seed templates for the new org.
-    // Hook is fire-and-forget at the API boundary — internal failures are
-    // logged via createLogger but do NOT re-throw so org creation is robust.
-    await runPostOrganizationCreateHooks(ctx.db, org.id);
+      // Phase 74 — Materialise the 4 KT seed templates for the new org.
+      // Hook is fire-and-forget at the API boundary — internal failures are
+      // logged via createLogger but do NOT re-throw so org creation is robust.
+      //
+      // `authedProcedure` does not provide a tenant-scoped `ctx.db` (the
+      // caller may not yet have an active org), so we resolve a region-aware
+      // Prisma client directly from the freshly-created Organization row.
+      // The hook itself only needs raw Prisma access to upsert seed rows
+      // keyed by `organizationId`; it does not benefit from the tenant
+      // extension layered on top of `ctx.db`.
+      const meta = await getOrgMeta(org.id);
+      const regionalPrisma = getRegionalClient(meta?.dataRegion ?? 'EU');
+      await runPostOrganizationCreateHooks(regionalPrisma, org.id);
 
-    return org;
-  }),
+      return org;
+    }),
 
   /**
    * Get the current active organization details.
