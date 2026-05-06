@@ -1,5 +1,7 @@
 'use client';
 
+import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,18 +37,6 @@ export type ContractorRow = {
   createdAt: string | null;
   updatedAt: string | null;
   complianceHealth: 'green' | 'yellow' | 'red';
-};
-
-// ---------------------------------------------------------------------------
-// Lifecycle stage badge styling
-// ---------------------------------------------------------------------------
-
-const lifecycleBadgeColors: Record<string, string> = {
-  DRAFT: 'bg-muted text-muted-foreground border border-border',
-  ONBOARDING: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  ACTIVE: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  OFFBOARDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  ENDED: 'bg-muted text-muted-foreground border border-border',
 };
 
 // ---------------------------------------------------------------------------
@@ -119,11 +109,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       accessorKey: 'lifecycleStage',
       header: t('columns.status'),
       cell: ({ row }) => {
-        const stage = row.original.lifecycleStage;
+        const stage = row.original.lifecycleStage as ContractorLifecycleStageInput;
         return (
-          <Badge variant="secondary" className={lifecycleBadgeColors[stage] ?? ''}>
+          <AtelierStatusPill variant={statusToVariant('contractor-lifecycle', stage)}>
             {t(`lifecycle.${enumKey(stage)}`)}
-          </Badge>
+          </AtelierStatusPill>
         );
       },
     },
