@@ -185,7 +185,7 @@ export const portalRouter = router({
    */
   requestMagicLink: portalPublicProcedure
     .input(z.object({ email: z.email() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const email = input.email.toLowerCase().trim();
       const contractors = await findContractorsByEmail(email);
 
