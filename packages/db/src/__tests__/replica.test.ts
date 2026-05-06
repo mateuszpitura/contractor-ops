@@ -61,6 +61,7 @@ beforeEach(() => {
   process.env = { ...originalEnv };
   delete process.env.DATABASE_URL_EU_RO;
   delete process.env.DATABASE_URL_ME_RO;
+  delete process.env.RLS_POLICIES_ENFORCED;
 });
 
 afterEach(() => {
@@ -95,9 +96,7 @@ describe('getReplicaClient', () => {
   });
 
   it('throws on unsupported region', () => {
-    expect(() => getReplicaClient('US' as unknown as 'EU')).toThrow(
-      /Unsupported data region: US/,
-    );
+    expect(() => getReplicaClient('US' as unknown as 'EU')).toThrow(/Unsupported data region: US/);
   });
 });
 
@@ -204,5 +203,51 @@ describe('readReplica circuit breaker', () => {
     const fn = vi.fn(async (db: PrismaClient) => (db as unknown as FakeClient)._id);
     const result = await readReplica('EU', fn);
     expect(result).toBe('replica:postgresql://eu-replica/neondb');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. NEW-ARCH-01 — RLS-enforcement tripwire
+// ---------------------------------------------------------------------------
+//
+// `readReplica` (and its writer-fallback paths) hand a raw `PrismaClient` to
+// the callback — no `withRlsReads` / `withRlsTransactions` / `withTenantScope`.
+// Until `CREATE POLICY` migrations land this is masked by callers writing
+// explicit `WHERE organization_id = …` predicates. The tripwire flips the
+// latent failure into a deterministic boot-time error once policies activate.
+// See `.audit-2026-05-03/REVIEW-R3-ARCHITECTURE.md` (NEW-ARCH-01).
+
+describe('readReplica RLS tripwire (NEW-ARCH-01)', () => {
+  it('runs as before when RLS_POLICIES_ENFORCED is unset', async () => {
+    const fn = vi.fn(async (db: PrismaClient) => (db as unknown as FakeClient)._id);
+    const result = await readReplica('EU', fn);
+    expect(result).toBe('writer:EU');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs as before when RLS_POLICIES_ENFORCED is anything other than "true"', async () => {
+    process.env.RLS_POLICIES_ENFORCED = 'false';
+    const fn = vi.fn(async (db: PrismaClient) => (db as unknown as FakeClient)._id);
+    const result = await readReplica('EU', fn);
+    expect(result).toBe('writer:EU');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws with a NEW-ARCH-01 reference when RLS_POLICIES_ENFORCED=true', async () => {
+    process.env.RLS_POLICIES_ENFORCED = 'true';
+    const fn = vi.fn(async (db: PrismaClient) => (db as unknown as FakeClient)._id);
+    await expect(readReplica('EU', fn)).rejects.toThrow(/NEW-ARCH-01/);
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it('throws even when a replica URL is configured (covers replica + writer-fallback paths)', async () => {
+    process.env.DATABASE_URL_EU_RO = 'postgresql://eu-replica/neondb';
+    process.env.RLS_POLICIES_ENFORCED = 'true';
+    const fn = vi.fn(async (db: PrismaClient) => (db as unknown as FakeClient)._id);
+    await expect(readReplica('EU', fn)).rejects.toThrow(/NEW-ARCH-01/);
+    // Tripwire fires at function entry — neither the replica client nor the
+    // writer fallback should have been touched.
+    expect(fn).not.toHaveBeenCalled();
+    expect(createPrismaClientForUrl).not.toHaveBeenCalled();
   });
 });

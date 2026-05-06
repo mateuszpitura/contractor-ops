@@ -75,6 +75,36 @@ const REPLICA_ENV_MAP: Record<DataRegion, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// NEW-ARCH-01 — RLS bypass tripwire
+// ---------------------------------------------------------------------------
+//
+// `readReplica` (and its writer-fallback paths) hand a raw `PrismaClient` to
+// the callback — there is no `withRlsReads` / `withRlsTransactions` /
+// `withTenantScope` wrapper. Today this is masked because no `CREATE POLICY`
+// migrations exist; consumers (currently only `dashboard.kpis`) compensate by
+// writing explicit `WHERE organization_id = …` predicates.
+//
+// The moment Postgres RLS policies activate, the replica connection will have
+// no `SET LOCAL app.org_id`, so `current_setting('app.org_id')` returns NULL
+// and policies either deny all reads or read with NULL. This tripwire flips
+// that latent failure into a loud, deterministic error at boot/test time —
+// surfaced via `RLS_POLICIES_ENFORCED=true` once the migration deploys.
+//
+// See `.audit-2026-05-03/REVIEW-R3-ARCHITECTURE.md` (NEW-ARCH-01) for the
+// rationale and the durable fix (a `withReplicaRlsReads` wrapper).
+const RLS_ENFORCEMENT_FLAG = 'RLS_POLICIES_ENFORCED';
+
+function assertRlsCompatibleOrThrow(): void {
+  if (process.env[RLS_ENFORCEMENT_FLAG] === 'true') {
+    throw new Error(
+      'NEW-ARCH-01: readReplica() bypasses RLS scoping. Once RLS policies are enforced, ' +
+        'replica routes must use a wrapped client. Either pass ctx.db (writer-scoped) or ' +
+        'build withReplicaRlsReads. See .audit-2026-05-03/REVIEW-R3-ARCHITECTURE.md NEW-ARCH-01.',
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Pool of replica clients (cached on globalThis for HMR safety)
 // ---------------------------------------------------------------------------
 
@@ -246,6 +276,11 @@ export async function readReplica<T>(
   region: DataRegion,
   fn: (db: PrismaClient) => Promise<T>,
 ): Promise<T> {
+  // NEW-ARCH-01: tripwire — refuse to run when RLS policies are enforced.
+  // Both replica and writer-fallback paths return raw clients with no
+  // `SET LOCAL app.org_id`, so policy-protected reads would silently fail.
+  assertRlsCompatibleOrThrow();
+
   if (!SUPPORTED_REGIONS.includes(region)) {
     throw new Error(
       `Unsupported data region: ${region}. Supported: ${SUPPORTED_REGIONS.join(', ')}`,
@@ -277,9 +312,9 @@ export async function readReplica<T>(
     // Wrap the replica call in `breaker.fire(...)` so the breaker observes
     // success/failure. Casting through `unknown` because opossum's generic
     // ergonomics are awkward when the action takes one arg.
-    const result = await breaker.fire(
-      (() => fn(replica)) as unknown as (...args: unknown[]) => Promise<unknown>,
-    );
+    const result = await breaker.fire((() => fn(replica)) as unknown as (
+      ...args: unknown[]
+    ) => Promise<unknown>);
     return result as T;
   } catch (err) {
     // Replica failed (or was rejected by breaker after this branch checked).
