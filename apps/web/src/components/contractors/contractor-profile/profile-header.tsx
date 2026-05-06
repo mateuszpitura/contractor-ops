@@ -1,5 +1,7 @@
 'use client';
 
+import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FilePlus, MoreHorizontal, Pencil, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -31,14 +33,6 @@ type ProfileHeaderProps = {
     lifecycleStage: string;
     owner: { id: string; name: string | null; image: string | null } | null;
   };
-};
-
-const lifecycleBadgeStyles: Record<string, string> = {
-  DRAFT: 'bg-muted text-muted-foreground border-border',
-  ONBOARDING: 'bg-blue-500/10 text-blue-500',
-  ACTIVE: 'bg-green-600/10 text-green-600',
-  OFFBOARDING: 'bg-amber-500/10 text-amber-600',
-  ENDED: 'bg-muted text-muted-foreground border-border',
 };
 
 // Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
@@ -155,10 +149,16 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       <div className="flex items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-semibold leading-tight">{contractor.displayName}</h1>
-            <Badge variant="secondary" className={lifecycleBadgeStyles[stage] ?? ''}>
+            <h1 className="font-display text-[24px] font-semibold leading-tight tracking-tight">
+              {contractor.displayName}
+            </h1>
+            <AtelierStatusPill
+              variant={statusToVariant(
+                'contractor-lifecycle',
+                stage satisfies ContractorLifecycleStageInput,
+              )}>
               {t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0]) ?? stage}
-            </Badge>
+            </AtelierStatusPill>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
               {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
             </Badge>
