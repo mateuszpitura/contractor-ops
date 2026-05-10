@@ -137,36 +137,6 @@ function getNumericFieldMinor(
 }
 
 // ---------------------------------------------------------------------------
-// Cascade animation for field pre-fill
-// ---------------------------------------------------------------------------
-
-const PREFILL_FIELDS = [
-  'invoiceNumber',
-  'issueDate',
-  'dueDate',
-  'netAmount',
-  'grossAmount',
-] as const;
-
-function usePrefillCascade(active: boolean) {
-  const [visible, setVisible] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!active) {
-      setVisible(new Set());
-      return;
-    }
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    PREFILL_FIELDS.forEach((field, i) => {
-      timers.push(setTimeout(() => setVisible(prev => new Set([...prev, field])), i * 50));
-    });
-    return () => timers.forEach(clearTimeout);
-  }, [active]);
-
-  return visible;
-}
-
-// ---------------------------------------------------------------------------
 // Upload section sub-component
 // ---------------------------------------------------------------------------
 
@@ -593,6 +563,354 @@ function useOcrPrefill(
 }
 
 // ---------------------------------------------------------------------------
+// Contract auto-selection hook
+// ---------------------------------------------------------------------------
+
+type ContractOption = {
+  id: string;
+  title: string;
+  rateValueMinor: number | null;
+  currency: string;
+  rateType: string | null;
+  billingModel: string | null;
+};
+
+function useAutoSelectSingleContract(
+  contracts: ContractOption[] | undefined,
+  selectedContractId: string,
+  setValue: (key: 'contractId', value: string, opts?: { shouldValidate: boolean }) => void,
+) {
+  useEffect(() => {
+    if (!contracts || contracts.length !== 1 || selectedContractId) return;
+    const onlyContract = contracts[0];
+    if (onlyContract) {
+      setValue('contractId', onlyContract.id, { shouldValidate: true });
+    }
+  }, [contracts, selectedContractId, setValue]);
+}
+
+// ---------------------------------------------------------------------------
+// Invoice submission hook (tRPC mutation + success/error handling)
+// ---------------------------------------------------------------------------
+
+function useInvoiceSubmission(t: (key: string) => string, upload: UploadState) {
+  const router = useRouter();
+  const submitInvoice = useMutation(portalTrpc.portal.submitInvoice.mutationOptions());
+
+  const onSubmit = useCallback(
+    async (values: InvoiceSubmitValues) => {
+      if (upload.status !== 'uploaded') {
+        toast.error(t('errors.uploadFirst'));
+        return;
+      }
+
+      try {
+        const result = await submitInvoice.mutateAsync({
+          contractId: values.contractId,
+          invoiceNumber: values.invoiceNumber,
+          issueDate: new Date(values.issueDate),
+          dueDate: new Date(values.dueDate),
+          netAmountMinor: Math.round(parseFloat(values.netAmount) * 100),
+          grossAmountMinor: Math.round(parseFloat(values.grossAmount) * 100),
+          documentId: upload.documentId,
+          // F-SEC-01: `storageKey` is intentionally not sent. The server
+          // recovers the trusted storage path from the consumed `PendingUpload`
+          // row keyed by `documentId`; trusting a client-supplied path here
+          // would re-open the cross-tenant IDOR closed by F-SEC-01.
+          originalFileName: upload.originalFileName,
+          fileSizeBytes: upload.fileSizeBytes,
+        });
+
+        router.push(
+          `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
+        );
+      } catch {
+        toast.error(t('errors.submitFailed'));
+      }
+    },
+    [router, submitInvoice, t, upload],
+  );
+
+  return { onSubmit, isPending: submitInvoice.isPending };
+}
+
+// ---------------------------------------------------------------------------
+// Contract selection sub-component
+// ---------------------------------------------------------------------------
+
+type ContractItem = { value: string; label: string };
+
+function ContractSelectionSection({
+  contractsLoading,
+  contractItems,
+  selectedContractId,
+  selectedContract,
+  onContractChange,
+  errorMessage,
+  t,
+}: {
+  contractsLoading: boolean;
+  contractItems: ContractItem[];
+  selectedContractId: string;
+  selectedContract: ContractOption | null | undefined;
+  onContractChange: (val: string | null) => void;
+  errorMessage: string | undefined;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
+}) {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-sm font-semibold">{t('contract')}</h2>
+      <div className="space-y-2">
+        <Label htmlFor="contractId" className="text-[13px]">
+          {t('selectContract')}
+        </Label>
+        {contractsLoading ? (
+          <div className="h-8 animate-pulse rounded-lg bg-muted" />
+        ) : (
+          <Select value={selectedContractId} onValueChange={onContractChange} items={contractItems}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t('contractPlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {contractItems.map(item => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {!!errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+        {!!selectedContract && (
+          <p className="text-[13px] text-muted-foreground">
+            {t('expectedAmount', {
+              amount: ((selectedContract.rateValueMinor ?? 0) / 100).toFixed(0),
+              currency: selectedContract.currency,
+              model: selectedContract.billingModel?.toLowerCase() ?? '',
+            })}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Invoice metadata fields sub-component
+// ---------------------------------------------------------------------------
+
+type InvoiceFieldErrors = {
+  invoiceNumber?: { message?: string };
+  issueDate?: { message?: string };
+  dueDate?: { message?: string };
+  netAmount?: { message?: string };
+  grossAmount?: { message?: string };
+};
+
+function InvoiceMetadataSection({
+  idPrefix,
+  register,
+  errors,
+  ocrPopulated,
+  resultJson,
+  isOcrProcessing,
+  selectedContract,
+  t,
+}: {
+  idPrefix: string;
+  register: ReturnType<typeof useForm<InvoiceSubmitValues>>['register'];
+  errors: InvoiceFieldErrors;
+  ocrPopulated: boolean;
+  resultJson: OcrExtractionResult | null | undefined;
+  isOcrProcessing: boolean;
+  selectedContract: ContractOption | null | undefined;
+  t: (key: string) => string;
+}) {
+  const fields = resultJson?.fields;
+  const netLabel = `${t('netAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`;
+  const grossLabel = `${t('grossAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`;
+
+  return (
+    <div className="relative space-y-4">
+      {!!isOcrProcessing && <OcrProcessingOverlay />}
+
+      <h2 className="text-sm font-semibold">{t('details')}</h2>
+
+      <div className="space-y-2">
+        <OcrLabel
+          htmlFor={`${idPrefix}-invoiceNumber`}
+          label={t('invoiceNumber')}
+          ocrPopulated={ocrPopulated}
+          fields={fields}
+          fieldKey="invoiceNumber"
+        />
+        <Input
+          id={`${idPrefix}-invoiceNumber`}
+          type="text"
+          placeholder={t('invoicePlaceholder')}
+          {...register('invoiceNumber')}
+        />
+        {!!errors.invoiceNumber && (
+          <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>
+        )}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <OcrLabel
+            htmlFor={`${idPrefix}-issueDate`}
+            label={t('issueDate')}
+            ocrPopulated={ocrPopulated}
+            fields={fields}
+            fieldKey="issueDate"
+          />
+          <Input id={`${idPrefix}-issueDate`} type="date" {...register('issueDate')} />
+          {!!errors.issueDate && (
+            <p className="text-sm text-destructive">{errors.issueDate.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <OcrLabel
+            htmlFor={`${idPrefix}-dueDate`}
+            label={t('dueDate')}
+            ocrPopulated={ocrPopulated}
+            fields={fields}
+            fieldKey="dueDate"
+          />
+          <Input id={`${idPrefix}-dueDate`} type="date" {...register('dueDate')} />
+          {!!errors.dueDate && <p className="text-sm text-destructive">{errors.dueDate.message}</p>}
+        </div>
+      </div>
+
+      {/* NIP fields shown when extraction provides them */}
+      {!!ocrPopulated && !!resultJson && <NipFieldsSection resultJson={resultJson} t={t} />}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <OcrLabel
+            htmlFor={`${idPrefix}-netAmount`}
+            label={netLabel}
+            ocrPopulated={ocrPopulated}
+            fields={fields}
+            fieldKey="totalNet"
+          />
+          <Input
+            id={`${idPrefix}-netAmount`}
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder={t('amountPlaceholder')}
+            {...register('netAmount')}
+          />
+          {!!errors.netAmount && (
+            <p className="text-sm text-destructive">{errors.netAmount.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <OcrLabel
+            htmlFor={`${idPrefix}-grossAmount`}
+            label={grossLabel}
+            ocrPopulated={ocrPopulated}
+            fields={fields}
+            fieldKey="totalGross"
+          />
+          <Input
+            id={`${idPrefix}-grossAmount`}
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder={t('amountPlaceholder')}
+            {...register('grossAmount')}
+          />
+          {!!errors.grossAmount && (
+            <p className="text-sm text-destructive">{errors.grossAmount.message}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// OCR status banner (extraction status bar + pre-fill notice)
+// ---------------------------------------------------------------------------
+
+function OcrStatusBanner({
+  extractionStatus,
+  fieldCount,
+  totalFields,
+  resultJson,
+  ocrPopulated,
+  t,
+}: {
+  extractionStatus: string | null;
+  fieldCount: number;
+  totalFields: number;
+  resultJson: OcrExtractionResult | null | undefined;
+  ocrPopulated: boolean;
+  t: (key: string) => string;
+}) {
+  const showStatusBar = !!extractionStatus && extractionStatus !== 'PENDING';
+
+  return (
+    <>
+      {!!showStatusBar && (
+        <ExtractionStatusBar
+          status={extractionStatus as 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
+          fieldCount={fieldCount}
+          totalFields={totalFields}
+          errorMessage={resultJson?.errorMessage}
+        />
+      )}
+      {!!ocrPopulated && (
+        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <p className="text-sm text-blue-800 dark:text-blue-200">{t('ocrPrefillBanner')}</p>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Submit button sub-component
+// ---------------------------------------------------------------------------
+
+function SubmitInvoiceButton({
+  disabled,
+  isPending,
+  t,
+}: {
+  disabled: boolean;
+  isPending: boolean;
+  t: (key: string) => string;
+}) {
+  return (
+    <Button type="submit" className="w-full md:w-auto" disabled={disabled}>
+      {isPending ? (
+        <>
+          <Loader2 className="me-2 h-4 w-4 animate-spin" />
+          {t('submitting')}
+        </>
+      ) : (
+        t('submit')
+      )}
+    </Button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+function buildContractItems(contracts: ContractOption[] | undefined): ContractItem[] {
+  return (contracts ?? []).map(contract => ({
+    value: contract.id,
+    label: `${contract.title} (${((contract.rateValueMinor ?? 0) / 100).toFixed(0)} ${contract.currency}/${contract.rateType?.toLowerCase()})`,
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -625,11 +943,6 @@ export function InvoiceSubmitForm() {
     portalTrpc.portal.getActiveContracts.queryOptions(),
   );
 
-  const submitInvoice = useMutation(portalTrpc.portal.submitInvoice.mutationOptions());
-
-  // Cascade animation
-  const visibleFields = usePrefillCascade(ocrPopulated);
-
   // Form
   const {
     register,
@@ -657,21 +970,11 @@ export function InvoiceSubmitForm() {
   const netAmount = watch('netAmount');
   const grossAmount = watch('grossAmount');
 
-  // Auto-select if only 1 active contract
-  useEffect(() => {
-    if (contracts && contracts.length === 1 && !selectedContractId) {
-      const onlyContract = contracts[0];
-      if (onlyContract) {
-        setValue('contractId', onlyContract.id, { shouldValidate: true });
-      }
-    }
-  }, [contracts, selectedContractId, setValue]);
-
-  // Pre-fill form from OCR extraction
+  useAutoSelectSingleContract(contracts, selectedContractId, setValue);
   useOcrPrefill(resultJson, ocrPopulated, setOcrPopulated, setValue as never, t);
 
-  // Selected contract info
   const selectedContract = contracts?.find(c => c.id === selectedContractId);
+  const { onSubmit, isPending: isSubmitting } = useInvoiceSubmission(t, upload);
 
   const navigateToBilling = useCallback(() => {
     router.push('/settings?tab=billing');
@@ -692,100 +995,23 @@ export function InvoiceSubmitForm() {
     disabled: upload.status === 'uploading',
   });
 
-  // Submit handler
-  const onSubmit = async (values: InvoiceSubmitValues) => {
-    if (upload.status !== 'uploaded') {
-      toast.error(t('errors.uploadFirst'));
-      return;
-    }
-
-    try {
-      const result = await submitInvoice.mutateAsync({
-        contractId: values.contractId,
-        invoiceNumber: values.invoiceNumber,
-        issueDate: new Date(values.issueDate),
-        dueDate: new Date(values.dueDate),
-        netAmountMinor: Math.round(parseFloat(values.netAmount) * 100),
-        grossAmountMinor: Math.round(parseFloat(values.grossAmount) * 100),
-        documentId: upload.documentId,
-        // F-SEC-01: `storageKey` is intentionally not sent. The server
-        // recovers the trusted storage path from the consumed `PendingUpload`
-        // row keyed by `documentId`; trusting a client-supplied path here
-        // would re-open the cross-tenant IDOR closed by F-SEC-01.
-        originalFileName: upload.originalFileName,
-        fileSizeBytes: upload.fileSizeBytes,
-      });
-
-      router.push(
-        `/portal/invoices/submit/success?invoiceId=${result.invoiceId}&invoiceNumber=${encodeURIComponent(result.invoiceNumber)}`,
-      );
-    } catch {
-      toast.error(t('errors.submitFailed'));
-    }
-  };
-
-  const contractItems = (contracts ?? []).map(contract => ({
-    value: contract.id,
-    label: `${contract.title} (${((contract.rateValueMinor ?? 0) / 100).toFixed(0)} ${contract.currency}/${contract.rateType?.toLowerCase()})`,
-  }));
-
-  const canSubmit = isValid && upload.status === 'uploaded' && !submitInvoice.isPending;
-
-  // Helper for cascade animation style
-  const _fieldStyle = (key: string) =>
-    ocrPopulated
-      ? {
-          opacity: visibleFields.has(key) ? 1 : 0,
-          transition: 'opacity 200ms ease-in-out',
-        }
-      : undefined;
+  const contractItems = buildContractItems(contracts);
+  const canSubmit = isValid && upload.status === 'uploaded' && !isSubmitting;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      {/* Section 1: Contract Selection */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold">{t('contract')}</h2>
-        <div className="space-y-2">
-          <Label htmlFor="contractId" className="text-[13px]">
-            {t('selectContract')}
-          </Label>
-          {contractsLoading ? (
-            <div className="h-8 animate-pulse rounded-lg bg-muted" />
-          ) : (
-            <Select
-              value={selectedContractId}
-              onValueChange={handleContractChange}
-              items={contractItems}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('contractPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {contractItems.map(item => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {!!errors.contractId && (
-            <p className="text-sm text-destructive">{errors.contractId.message}</p>
-          )}
-          {selectedContract && (
-            <p className="text-[13px] text-muted-foreground">
-              {t('expectedAmount', {
-                amount: ((selectedContract.rateValueMinor ?? 0) / 100).toFixed(0),
-                currency: selectedContract.currency,
-                model: selectedContract.billingModel?.toLowerCase() ?? '',
-              })}
-            </p>
-          )}
-        </div>
-      </div>
+      <ContractSelectionSection
+        contractsLoading={contractsLoading}
+        contractItems={contractItems}
+        selectedContractId={selectedContractId}
+        selectedContract={selectedContract}
+        onContractChange={handleContractChange}
+        errorMessage={errors.contractId?.message}
+        t={t}
+      />
 
       <Separator />
 
-      {/* Section 2: Upload */}
       <UploadSection
         upload={upload}
         isDragActive={isDragActive}
@@ -802,128 +1028,28 @@ export function InvoiceSubmitForm() {
 
       <Separator />
 
-      {/* OCR Extraction Status */}
-      {extractionStatus && extractionStatus !== 'PENDING' && (
-        <ExtractionStatusBar
-          status={extractionStatus as 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
-          fieldCount={fieldCount}
-          totalFields={totalFields}
-          errorMessage={resultJson?.errorMessage}
-        />
-      )}
+      <OcrStatusBanner
+        extractionStatus={extractionStatus}
+        fieldCount={fieldCount}
+        totalFields={totalFields}
+        resultJson={resultJson}
+        ocrPopulated={ocrPopulated}
+        t={t}
+      />
 
-      {/* OCR Pre-fill Banner */}
-      {!!ocrPopulated && (
-        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
-          <p className="text-sm text-blue-800 dark:text-blue-200">{t('ocrPrefillBanner')}</p>
-        </div>
-      )}
-
-      {/* Section 3: Metadata (with OCR processing overlay) */}
-      <div className="relative space-y-4">
-        {!!isOcrProcessing && <OcrProcessingOverlay />}
-
-        <h2 className="text-sm font-semibold">{t('details')}</h2>
-
-        <div className="space-y-2">
-          <OcrLabel
-            htmlFor={`${id}-invoiceNumber`}
-            label={t('invoiceNumber')}
-            ocrPopulated={ocrPopulated}
-            fields={resultJson?.fields}
-            fieldKey="invoiceNumber"
-          />
-          <Input
-            id={`${id}-invoiceNumber`}
-            type="text"
-            placeholder={t('invoicePlaceholder')}
-            {...register('invoiceNumber')}
-          />
-          {!!errors.invoiceNumber && (
-            <p className="text-sm text-destructive">{errors.invoiceNumber.message}</p>
-          )}
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <OcrLabel
-              htmlFor={`${id}-issueDate`}
-              label={t('issueDate')}
-              ocrPopulated={ocrPopulated}
-              fields={resultJson?.fields}
-              fieldKey="issueDate"
-            />
-            <Input id={`${id}-issueDate`} type="date" {...register('issueDate')} />
-            {!!errors.issueDate && (
-              <p className="text-sm text-destructive">{errors.issueDate.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <OcrLabel
-              htmlFor={`${id}-dueDate`}
-              label={t('dueDate')}
-              ocrPopulated={ocrPopulated}
-              fields={resultJson?.fields}
-              fieldKey="dueDate"
-            />
-            <Input id={`${id}-dueDate`} type="date" {...register('dueDate')} />
-            {!!errors.dueDate && (
-              <p className="text-sm text-destructive">{errors.dueDate.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* NIP fields shown when extraction provides them */}
-        {!!ocrPopulated && !!resultJson && <NipFieldsSection resultJson={resultJson} t={t} />}
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <OcrLabel
-              htmlFor={`${id}-netAmount`}
-              label={`${t('netAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`}
-              ocrPopulated={ocrPopulated}
-              fields={resultJson?.fields}
-              fieldKey="totalNet"
-            />
-            <Input
-              id={`${id}-netAmount`}
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder={t('amountPlaceholder')}
-              {...register('netAmount')}
-            />
-            {!!errors.netAmount && (
-              <p className="text-sm text-destructive">{errors.netAmount.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <OcrLabel
-              htmlFor={`${id}-grossAmount`}
-              label={`${t('grossAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`}
-              ocrPopulated={ocrPopulated}
-              fields={resultJson?.fields}
-              fieldKey="totalGross"
-            />
-            <Input
-              id={`${id}-grossAmount`}
-              type="number"
-              step="0.01"
-              min="0.01"
-              placeholder={t('amountPlaceholder')}
-              {...register('grossAmount')}
-            />
-            {!!errors.grossAmount && (
-              <p className="text-sm text-destructive">{errors.grossAmount.message}</p>
-            )}
-          </div>
-        </div>
-      </div>
+      <InvoiceMetadataSection
+        idPrefix={id}
+        register={register}
+        errors={errors}
+        ocrPopulated={ocrPopulated}
+        resultJson={resultJson}
+        isOcrProcessing={isOcrProcessing}
+        selectedContract={selectedContract}
+        t={t}
+      />
 
       <Separator />
 
-      {/* Section 4: Review Summary */}
       <ReviewSummary
         invoiceNumber={invoiceNumber}
         selectedContract={selectedContract}
@@ -935,17 +1061,7 @@ export function InvoiceSubmitForm() {
         t={t}
       />
 
-      {/* Submit button */}
-      <Button type="submit" className="w-full md:w-auto" disabled={!canSubmit}>
-        {submitInvoice.isPending ? (
-          <>
-            <Loader2 className="me-2 h-4 w-4 animate-spin" />
-            {t('submitting')}
-          </>
-        ) : (
-          t('submit')
-        )}
-      </Button>
+      <SubmitInvoiceButton disabled={!canSubmit} isPending={isSubmitting} t={t} />
     </form>
   );
 }
