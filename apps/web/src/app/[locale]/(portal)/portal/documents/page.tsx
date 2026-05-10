@@ -1,9 +1,10 @@
 'use client';
 
-import { AtelierEmptyState } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, AtelierTableShell } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -64,91 +65,99 @@ export default function PortalDocumentsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">{t('documents.title')}</h1>
+      <AnimateIn delay={0}>
+        <AtelierPageHeader title={t('documents.title')} />
+      </AnimateIn>
 
-      {isLoading ? (
-        <div className="mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('documents.columns.documentName')}</TableHead>
-                <TableHead>{t('documents.columns.type')}</TableHead>
-                <TableHead>{t('documents.columns.dateAdded')}</TableHead>
-                <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 3 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skel-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-48" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-20 rounded-full" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-28" />
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Skeleton className="ms-auto h-7 w-24" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : documents && documents.length > 0 ? (
-        <div className="mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('documents.columns.documentName')}</TableHead>
-                <TableHead>{t('documents.columns.type')}</TableHead>
-                <TableHead>{t('documents.columns.dateAdded')}</TableHead>
-                <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {documents.map(doc => (
-                <TableRow key={doc.id}>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm font-medium">{doc.name}</p>
-                      <p className="text-[13px] text-muted-foreground">
-                        {formatFileSize(doc.sizeBytes)}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">
-                      {formatDocType(doc.type ?? t('documents.documentFallback'))}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{formatDate(doc.addedAt)}</TableCell>
-                  <TableCell className="text-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      // biome-ignore lint/nursery/noJsxPropsBind: dynamic URL per list item
-                      onClick={() => window.open(doc.downloadUrl, '_blank')}>
-                      <Download className="me-1 h-4 w-4" />
-                      {t('documents.download')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <AtelierEmptyState
-          icon={FileText}
-          heading={t('documents.emptyTitle')}
-          body={t('documents.emptyBody')}
-          renderAction={renderEmptyStateAction}
-        />
-      )}
+      <AnimateIn delay={1}>
+        {isLoading ? (
+          <div className="mt-6">
+            <AtelierTableShell isLoading>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('documents.columns.documentName')}</TableHead>
+                    <TableHead>{t('documents.columns.type')}</TableHead>
+                    <TableHead>{t('documents.columns.dateAdded')}</TableHead>
+                    <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                    <TableRow key={`skel-${i}`}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-48" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell className="text-end">
+                        <Skeleton className="ms-auto h-7 w-24" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AtelierTableShell>
+          </div>
+        ) : documents && documents.length > 0 ? (
+          <div className="mt-6">
+            <AtelierTableShell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('documents.columns.documentName')}</TableHead>
+                    <TableHead>{t('documents.columns.type')}</TableHead>
+                    <TableHead>{t('documents.columns.dateAdded')}</TableHead>
+                    <TableHead className="text-end">{t('documents.columns.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {documents.map(doc => (
+                    <TableRow key={doc.id}>
+                      <TableCell>
+                        <div>
+                          <p className="text-sm font-medium">{doc.name}</p>
+                          <p className="text-[13px] text-muted-foreground">
+                            {formatFileSize(doc.sizeBytes)}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {formatDocType(doc.type ?? t('documents.documentFallback'))}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{formatDate(doc.addedAt)}</TableCell>
+                      <TableCell className="text-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          // biome-ignore lint/nursery/noJsxPropsBind: dynamic URL per list item
+                          onClick={() => window.open(doc.downloadUrl, '_blank')}>
+                          <Download className="me-1 h-4 w-4" />
+                          {t('documents.download')}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AtelierTableShell>
+          </div>
+        ) : (
+          <AtelierEmptyState
+            icon={FileText}
+            heading={t('documents.emptyTitle')}
+            body={t('documents.emptyBody')}
+            renderAction={renderEmptyStateAction}
+          />
+        )}
+      </AnimateIn>
     </div>
   );
 }

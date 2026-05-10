@@ -1,12 +1,17 @@
 'use client';
 
-import { AtelierEmptyState } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  AtelierStatusPill,
+  AtelierTableShell,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -64,79 +69,89 @@ export default function PortalPaymentsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">{t('payments.title')}</h1>
+      <AnimateIn delay={0}>
+        <AtelierPageHeader title={t('payments.title')} />
+      </AnimateIn>
 
-      {isLoading ? (
-        <div className="mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
-                <TableHead>{t('payments.columns.amount')}</TableHead>
-                <TableHead>{t('payments.columns.paymentDate')}</TableHead>
-                <TableHead>{t('payments.columns.status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 3 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skel-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-28" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-12 rounded-full" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : payments && payments.length > 0 ? (
-        <div className="mt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
-                <TableHead>{t('payments.columns.amount')}</TableHead>
-                <TableHead>{t('payments.columns.paymentDate')}</TableHead>
-                <TableHead>{t('payments.columns.status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {payments.map(payment => (
-                <TableRow
-                  key={payment.id}
-                  className="cursor-pointer"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => router.push(`/portal/invoices/${payment.id}`)}>
-                  <TableCell className="text-sm font-medium">{payment.invoiceNumber}</TableCell>
-                  <TableCell className="text-sm">
-                    {formatAmount(payment.amountMinor, payment.currency)}
-                  </TableCell>
-                  <TableCell className="text-sm">{formatDate(payment.paidAt)}</TableCell>
-                  <TableCell>
-                    <Badge variant="default">{t('payments.paid')}</Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <AtelierEmptyState
-          icon={Banknote}
-          heading={t('payments.emptyTitle')}
-          body={t('payments.emptyBody')}
-          renderAction={renderEmptyStateAction}
-        />
-      )}
+      <AnimateIn delay={1}>
+        {isLoading ? (
+          <div className="mt-6">
+            <AtelierTableShell isLoading>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
+                    <TableHead>{t('payments.columns.amount')}</TableHead>
+                    <TableHead>{t('payments.columns.paymentDate')}</TableHead>
+                    <TableHead>{t('payments.columns.status')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                    <TableRow key={`skel-${i}`}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-12 rounded-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AtelierTableShell>
+          </div>
+        ) : payments && payments.length > 0 ? (
+          <div className="mt-6">
+            <AtelierTableShell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('payments.columns.invoiceNumber')}</TableHead>
+                    <TableHead>{t('payments.columns.amount')}</TableHead>
+                    <TableHead>{t('payments.columns.paymentDate')}</TableHead>
+                    <TableHead>{t('payments.columns.status')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments.map(payment => (
+                    <TableRow
+                      key={payment.id}
+                      className="cursor-pointer"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                      onClick={() => router.push(`/portal/invoices/${payment.id}`)}>
+                      <TableCell className="text-sm font-medium">{payment.invoiceNumber}</TableCell>
+                      <TableCell className="text-sm">
+                        {formatAmount(payment.amountMinor, payment.currency)}
+                      </TableCell>
+                      <TableCell className="text-sm">{formatDate(payment.paidAt)}</TableCell>
+                      <TableCell>
+                        <AtelierStatusPill variant="success">
+                          {t('payments.paid')}
+                        </AtelierStatusPill>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AtelierTableShell>
+          </div>
+        ) : (
+          <AtelierEmptyState
+            icon={Banknote}
+            heading={t('payments.emptyTitle')}
+            body={t('payments.emptyBody')}
+            renderAction={renderEmptyStateAction}
+          />
+        )}
+      </AnimateIn>
     </div>
   );
 }

@@ -1,11 +1,13 @@
 'use client';
 
+import { AtelierPageHeader, AtelierTableShell } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
 import { Clock, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { AnimateIn } from '@/components/shared/animate-in';
 import { ExternalSyncButton } from '@/components/time/external-sync-button';
 import { SingleEntryForm } from '@/components/time/single-entry-form';
 import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge';
@@ -245,143 +247,166 @@ export default function PortalTimePage() {
 
   return (
     <div className="space-y-8">
-      {/* Page heading */}
-      <h1 className="text-xl font-semibold">{t('title')}</h1>
-
-      {/* 1. Summary stats */}
-      <TimeSummaryStats
-        currentWeekMinutes={currentWeekMinutes}
-        pendingCount={pendingCount}
-        approvedMonthMinutes={approvedMonthMinutes}
-        isLoading={isLoading}
-      />
-
-      {/* 2. Timesheet header */}
-      {isLoading ? (
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-10 w-40" />
-        </div>
-      ) : (
-        <TimesheetHeader
-          weekStartDate={currentWeekStart}
-          status={timesheetStatus}
-          totalMinutes={timesheet?.totalMinutes ?? 0}
-          onWeekChange={handleWeekChange}
-          onSubmit={handleSubmitTimesheet}
-          isSubmitting={submitMutation.isPending}
-        />
-      )}
-
-      {/* 3. Timesheet grid */}
-      {isLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : (
-        <TimesheetGrid
-          weekStartDate={currentWeekStart}
-          entries={timesheet?.entries ?? []}
-          contracts={contracts}
-          timesheetId={timesheet?.id ?? ''}
-          disabled={isDisabled}
-          rejectionReason={
-            timesheetStatus === 'REJECTED'
-              ? ((timesheet as Record<string, unknown>)?.rejectionReason as string | null)
-              : null
+      {/* Page header */}
+      <AnimateIn delay={0}>
+        <AtelierPageHeader
+          title={t('title')}
+          actions={
+            isDisabled ? null : (
+              <Button variant="outline" onClick={openSingleEntry} className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t('addEntry')}
+              </Button>
+            )
           }
-          onSave={handleSaveEntries}
         />
-      )}
+      </AnimateIn>
 
-      {/* 4. Add Entry button */}
-      {!isDisabled && (
-        <Button variant="outline" onClick={openSingleEntry} className="gap-2">
-          <Plus className="h-4 w-4" />
-          {t('addEntry')}
-        </Button>
-      )}
+      {/* Summary stats */}
+      <AnimateIn delay={1}>
+        <TimeSummaryStats
+          currentWeekMinutes={currentWeekMinutes}
+          pendingCount={pendingCount}
+          approvedMonthMinutes={approvedMonthMinutes}
+          isLoading={isLoading}
+        />
+      </AnimateIn>
 
-      {/* 5. External sync buttons */}
-      {(connectedProviders.has('CLOCKIFY') || connectedProviders.has('JIRA')) && (
-        <div className="flex flex-wrap gap-3">
-          {connectedProviders.has('CLOCKIFY') && (
-            <ExternalSyncButton
-              provider="CLOCKIFY"
-              connected={true}
-              onSync={handleSync('CLOCKIFY')}
-              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'CLOCKIFY'}
+      {/* Current week: header + grid */}
+      <AnimateIn delay={2}>
+        <div className="space-y-8">
+          {isLoading ? (
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-10 w-40" />
+            </div>
+          ) : (
+            <TimesheetHeader
+              weekStartDate={currentWeekStart}
+              status={timesheetStatus}
+              totalMinutes={timesheet?.totalMinutes ?? 0}
+              onWeekChange={handleWeekChange}
+              onSubmit={handleSubmitTimesheet}
+              isSubmitting={submitMutation.isPending}
             />
           )}
-          {connectedProviders.has('JIRA') && (
-            <ExternalSyncButton
-              provider="JIRA"
-              connected={true}
-              onSync={handleSync('JIRA')}
-              isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'JIRA'}
+
+          {isLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <TimesheetGrid
+              weekStartDate={currentWeekStart}
+              entries={timesheet?.entries ?? []}
+              contracts={contracts}
+              timesheetId={timesheet?.id ?? ''}
+              disabled={isDisabled}
+              rejectionReason={
+                timesheetStatus === 'REJECTED'
+                  ? ((timesheet as Record<string, unknown>)?.rejectionReason as string | null)
+                  : null
+              }
+              onSave={handleSaveEntries}
             />
           )}
         </div>
+      </AnimateIn>
+
+      {/* External sync buttons */}
+      {(connectedProviders.has('CLOCKIFY') || connectedProviders.has('JIRA')) && (
+        <AnimateIn delay={3}>
+          <div className="flex flex-wrap gap-3">
+            {connectedProviders.has('CLOCKIFY') && (
+              <ExternalSyncButton
+                provider="CLOCKIFY"
+                connected={true}
+                onSync={handleSync('CLOCKIFY')}
+                isSyncing={
+                  syncMutation.isPending && syncMutation.variables?.provider === 'CLOCKIFY'
+                }
+              />
+            )}
+            {connectedProviders.has('JIRA') && (
+              <ExternalSyncButton
+                provider="JIRA"
+                connected={true}
+                onSync={handleSync('JIRA')}
+                isSyncing={syncMutation.isPending && syncMutation.variables?.provider === 'JIRA'}
+              />
+            )}
+          </div>
+        </AnimateIn>
       )}
 
-      {/* 6. Time entry history */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">{t('pastTimesheets')}</h2>
-        {historyQuery.isPending ? (
-          <div className="space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <Skeleton key={`skel-${i}`} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : !historyQuery.data?.items || historyQuery.data.items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Clock className="h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 font-display text-[20px] font-semibold">{t('noEntriesHeading')}</h3>
-            <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('noEntriesBody')}</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('columns.period')}</TableHead>
-                <TableHead>{t('columns.totalHours')}</TableHead>
-                <TableHead>{t('columns.status')}</TableHead>
-                <TableHead>{t('columns.submitted')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {historyQuery.data.items.map(ts => (
-                <TableRow
-                  key={ts.id}
-                  className="cursor-pointer"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => {
-                    const d = new Date(ts.weekStartDate);
-                    setCurrentWeekStart(startOfISOWeek(d));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}>
-                  <TableCell className="font-medium">{formatWeekRange(ts.weekStartDate)}</TableCell>
-                  <TableCell>{minutesToHoursDisplay(ts.totalMinutes)}</TableCell>
-                  <TableCell>
-                    <TimeEntryStatusBadge
-                      status={ts.status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'}
-                    />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {ts.submittedAt
-                      ? format(new Date(ts.submittedAt as unknown as string), 'MMM d, yyyy')
-                      : '-'}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+      {/* Time entry history */}
+      <AnimateIn delay={4}>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">{t('pastTimesheets')}</h2>
+          {historyQuery.isPending ? (
+            <AtelierTableShell isLoading>
+              <div className="space-y-2 p-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                  <Skeleton key={`skel-${i}`} className="h-10 w-full" />
+                ))}
+              </div>
+            </AtelierTableShell>
+          ) : !historyQuery.data?.items || historyQuery.data.items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Clock className="h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 font-display text-[20px] font-semibold">
+                {t('noEntriesHeading')}
+              </h3>
+              <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('noEntriesBody')}</p>
+            </div>
+          ) : (
+            <AtelierTableShell isLoading={historyQuery.isPending}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('columns.period')}</TableHead>
+                    <TableHead>{t('columns.totalHours')}</TableHead>
+                    <TableHead>{t('columns.status')}</TableHead>
+                    <TableHead>{t('columns.submitted')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {historyQuery.data.items.map(ts => (
+                    <TableRow
+                      key={ts.id}
+                      className="cursor-pointer"
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                      onClick={() => {
+                        const d = new Date(ts.weekStartDate);
+                        setCurrentWeekStart(startOfISOWeek(d));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}>
+                      <TableCell className="font-medium">
+                        {formatWeekRange(ts.weekStartDate)}
+                      </TableCell>
+                      <TableCell>{minutesToHoursDisplay(ts.totalMinutes)}</TableCell>
+                      <TableCell>
+                        <TimeEntryStatusBadge
+                          status={ts.status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'}
+                        />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {ts.submittedAt
+                          ? format(new Date(ts.submittedAt as unknown as string), 'MMM d, yyyy')
+                          : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </AtelierTableShell>
+          )}
+        </div>
+      </AnimateIn>
 
       {/* Single entry dialog */}
       <SingleEntryForm

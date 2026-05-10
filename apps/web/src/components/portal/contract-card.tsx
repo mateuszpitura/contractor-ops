@@ -1,6 +1,7 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+import type { ContractStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
@@ -70,22 +71,6 @@ function ratePeriodLabel(rateType: string): string {
   }
 }
 
-/**
- * Map contract status to badge variant.
- */
-function statusBadgeVariant(status: string) {
-  switch (status) {
-    case 'ACTIVE':
-      return 'default' as const;
-    case 'EXPIRING':
-      return 'outline' as const;
-    case 'EXPIRED':
-      return 'secondary' as const;
-    default:
-      return 'secondary' as const;
-  }
-}
-
 // ---------------------------------------------------------------------------
 // ContractCard
 // ---------------------------------------------------------------------------
@@ -118,9 +103,10 @@ export function ContractCard({ contract, className }: ContractCardProps) {
                 <p className="text-[13px] text-muted-foreground">{contract.contractNumber}</p>
               )}
             </div>
-            <Badge variant={statusBadgeVariant(contract.status)}>
+            <AtelierStatusPill
+              variant={statusToVariant('contract', contract.status as ContractStatusInput)}>
               {contract.status.charAt(0) + contract.status.slice(1).toLowerCase()}
-            </Badge>
+            </AtelierStatusPill>
           </div>
           <div className="flex items-center justify-between text-[13px] text-muted-foreground">
             <span>{dateRange}</span>
