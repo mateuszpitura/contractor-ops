@@ -41,8 +41,8 @@ vi.mock('@contractor-ops/logger', () => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     integrationConnection: {
       findMany: vi.fn(),
@@ -250,9 +250,8 @@ describe('TeamsMessagingProvider.sendChannelAlert', () => {
 
     // The method will try to use CloudAdapter.continueConversationAsync
     // which we can't fully mock at module level, so we verify the DB lookup
-    // by checking it doesn't warn about missing ref
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    // by checking it doesn't warn about missing ref via the Pino logger.
+    mockLogWarn.mockClear();
 
     try {
       await teamsProvider.sendChannelAlert({
@@ -270,12 +269,12 @@ describe('TeamsMessagingProvider.sendChannelAlert', () => {
       // we're testing the ref lookup path, not the adapter call
     }
 
-    // Key assertion: the "No ConversationReference" warning should NOT fire
-    // because channelRef was found via teamRefs[params.channelId]
-    expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('No ConversationReference'));
-
-    warnSpy.mockRestore();
-    logSpy.mockRestore();
+    // Key assertion: the "no ConversationReference" warning should NOT fire
+    // because channelRef was found via teamRefs[params.channelId].
+    expect(mockLogWarn).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.stringContaining('no ConversationReference'),
+    );
   });
 
   it('warns when no channel ref found for given channelId', async () => {

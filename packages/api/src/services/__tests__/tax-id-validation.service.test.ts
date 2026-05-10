@@ -75,6 +75,12 @@ const baseInputDE: TaxIdValidationInput = {
 
 const NOW = new Date('2026-04-13T10:00:00Z');
 
+// PII safety guard (T-57-03-02): the orchestrator must never write the raw
+// `taxIdValue` to console — it relies on Pino redact paths in
+// @contractor-ops/logger for structured bodies and never calls console.*
+// directly. We spy on console regardless so the regression test below can
+// verify the invariant even if a future change accidentally introduces
+// `console.log(input)`.
 let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
@@ -84,8 +90,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  consoleLogSpy.mockRestore();
-  consoleErrorSpy.mockRestore();
   vi.restoreAllMocks();
 });
 

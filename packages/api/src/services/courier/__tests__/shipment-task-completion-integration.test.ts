@@ -107,9 +107,6 @@ function createIntegrationMockDb(opts: {
 describe('Shipment Task Completion Integration', () => {
   beforeEach(() => {
     mockInPostGetStatus.mockReset();
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   it('webhook path -- InPost DELIVERED triggers task completion end-to-end', async () => {

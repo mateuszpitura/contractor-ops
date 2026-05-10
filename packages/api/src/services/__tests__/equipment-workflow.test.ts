@@ -81,11 +81,6 @@ function buildTxMock(
 }
 
 describe('handleEquipmentTaskStart', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-  });
-
   it('no-ops when taskType is not EQUIPMENT', async () => {
     const tx = buildTxMock();
     const db = { $transaction: vi.fn(async (fn: (t: unknown) => Promise<void>) => fn(tx)) };
@@ -500,11 +495,6 @@ describe('autoCreateInPostReturnShipment (via handleEquipmentTaskStart)', () => 
 });
 
 describe('checkShipmentTaskCompletion', () => {
-  beforeEach(() => {
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-  });
-
   it('returns early when shipment has no workflow task link', async () => {
     const db = { shipment: { findMany: vi.fn() }, workflowTaskRun: {} };
 

@@ -154,8 +154,6 @@ describe('createLinearIssue', () => {
 
 describe('syncTaskStatusToLinear', () => {
   beforeEach(() => {
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     mockResolveLinearStateId.mockReset();
   });
 

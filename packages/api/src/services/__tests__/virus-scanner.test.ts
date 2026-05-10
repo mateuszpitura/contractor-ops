@@ -27,7 +27,6 @@ import { isClamAvailable, scanBuffer } from '../virus-scanner.js';
 describe('virus-scanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
     mockScanStream.mockResolvedValue({
       isInfected: false,
       viruses: [],

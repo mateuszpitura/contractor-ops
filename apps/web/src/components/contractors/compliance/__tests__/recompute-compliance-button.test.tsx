@@ -66,16 +66,14 @@ describe('RecomputeComplianceButton — Phase 71 D-13 admin UI', () => {
     expect(typeof mutateMock).toBe('function');
   });
 
-  it('shows success toast with affected-row count', () => {
-    // The dialog computes: updated = sum(waivedCount + insertedCount for r where !noop && !error)
-    // Toast message uses i18n key 'toast.success' with {updated}
-    expect(true).toBe(true);
-  });
+  // The two it.todo cases below cover toast side-effects that are downstream
+  // of a Radix-Select reason pick + AlertDialog Confirm click. Driving that
+  // flow reliably in jsdom is brittle (Radix portals + pointer-events shims),
+  // so these are deferred to the Playwright e2e suite that already exercises
+  // the full recompute flow end-to-end.
+  it.todo('shows success toast with affected-row count (covered by Playwright e2e)');
 
-  it('shows error toast on mutation failure', () => {
-    // The mutationOptions onError calls toast.error(err.message ?? t('toast.error'))
-    expect(true).toBe(true);
-  });
+  it.todo('shows error toast on mutation failure (covered by Playwright e2e)');
 });
 
 describe('RecomputeComplianceBulkAction — Phase 71 D-13 contractors-list bulk action', () => {
@@ -103,9 +101,17 @@ describe('RecomputeComplianceBulkAction — Phase 71 D-13 contractors-list bulk 
     expect(screen.getByText(/3 contractors/i)).toBeInTheDocument();
   });
 
-  it('calls mutation with all selected contractorIds', () => {
-    // Mutation contract is verified by the dialog — when confirmed, mutate({contractorIds, reason}) fires
-    // with the exact array passed in. Tested via component prop drilling integrity.
-    expect(true).toBe(true);
+  it('forwards every selected contractorId to the dialog', () => {
+    const ids = ['ctr-1', 'ctr-2', 'ctr-3', 'ctr-4', 'ctr-5'];
+    render(
+      <RecomputeComplianceBulkAction contractorIds={ids} open={true} onOpenChange={vi.fn()} />,
+    );
+    // The bulk title is rendered by the dialog with `count: contractorIds.length`,
+    // so seeing the exact selected count in the DOM is direct evidence that the
+    // entire array was forwarded (not a single id, not an empty array).
+    expect(screen.getByText(new RegExp(`${ids.length} contractors`, 'i'))).toBeInTheDocument();
+    // Confirm button is present (proves the dialog mounted with our props,
+    // not just a stale render of the previous test).
+    expect(screen.getByTestId('recompute-compliance-confirm')).toBeInTheDocument();
   });
 });

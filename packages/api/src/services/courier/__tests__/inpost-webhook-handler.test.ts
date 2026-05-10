@@ -59,8 +59,6 @@ describe('verifyInPostSignature', () => {
   });
 
   it('returns true when no secret is configured (graceful degradation)', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-
     const result = verifyInPostSignature(
       '{"test":"data"}',
       { 'x-inpost-signature': 'anything' },
@@ -68,7 +66,6 @@ describe('verifyInPostSignature', () => {
     );
 
     expect(result).toBe(true);
-    warnSpy.mockRestore();
   });
 });
 
@@ -78,8 +75,6 @@ describe('handleInPostWebhook', () => {
   beforeEach(() => {
     db = createMockDb();
     mockCheckShipmentTaskCompletion.mockReset().mockResolvedValue(undefined);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
   });
 
   const validPayload = {

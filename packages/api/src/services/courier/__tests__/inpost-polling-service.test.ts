@@ -60,9 +60,6 @@ describe('pollInPostShipmentStatuses', () => {
     mockGetStatus.mockReset();
     mockCheckShipmentTaskCompletion.mockReset().mockResolvedValue(undefined);
     mockDispatchShipmentNotification.mockReset().mockResolvedValue(undefined);
-    vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   it('fetches all active InPost shipments (not DELIVERED/FAILED/RETURNED)', async () => {
