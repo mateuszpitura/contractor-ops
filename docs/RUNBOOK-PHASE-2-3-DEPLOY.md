@@ -123,6 +123,16 @@ Run this in order before every Phase 2/3 release. Skip none.
   3. **Verify** by inserting one PENDING `OutboxEvent` row (any flow that emits one — see §5.9) and confirming it transitions to `DISPATCHED` within 60 s. If it doesn't, the schedule is missing or the deploy host URL is wrong.
   4. **Note on `render.yaml`:** the existing cron entries (`cron-token-refresh`, `cron-data-purge` at `render.yaml:492` / `:517`) are HTTP curls with `Authorization: Bearer $CRON_SECRET`. The outbox drain is **not** registered in `render.yaml` and should not be — its handler rejects anything without a valid Upstash signature. Treat **this runbook** as the single source of truth for the outbox-drain schedule.
 - [ ] Resend domain SPF / DKIM / DMARC records verified at the registrar (separate from app deploy, but emails won't deliver without it)
+- [ ] **(Only when deploying commit `3d412c41` or later for the first time)** Purge in-flight `OAuthChallenge` rows so the HMAC pepper switch doesn't strand mid-flow users. Run in the final minute before pushing the new image:
+  ```bash
+  psql "$DATABASE_URL" -f scripts/predeploy-purge-oauth-challenges.sql
+  ```
+  Subsequent deploys do NOT need this step — the table no longer contains plain-sha256 rows. See the script header for the rationale.
+- [ ] **(Only when deploying commit `ce8b26f4` or later for the first time)** Activate the advisory-lock dual-hold transition shim so pre-refactor in-flight holders serialize correctly against post-refactor callers:
+  1. Set `ADVISORY_LOCK_TRANSITION_DUAL_HOLD=true` in the Render env (or Infisical) **before** pushing the new image.
+  2. Roll the deploy normally. Every new advisory-lock helper invocation now acquires both the legacy single-arg lock AND the new two-arg lock.
+  3. After at least 24 h (one full deploy cycle — all instances have rotated), **unset** the env var. The shim adds one extra Postgres round-trip per lock acquisition; long-term overhead is undesirable.
+  4. Follow-up cleanup: remove the shim code itself by searching `packages/api/src/lib/advisory-lock.ts` for `TODO(advisory-lock-transition)` and dropping every guarded block. Tracked as a Tier-2 follow-up in §9.
 
 ---
 
@@ -301,6 +311,7 @@ Three audit items intentionally **scoped only** in the May 2026 work and now nee
 | **F-SCALE-06** | Read-replica routing per region | Scaffolded by B-B2 (env vars `DATABASE_URL_EU_RO` / `DATABASE_URL_ME_RO` plumbed; routing helper behind a flag) | When read p95 on the primary climbs above 100 ms sustained, OR a region reports cross-region tail latency > 250 ms |
 | **F-DB-04** | Defense-in-depth RLS coverage | B-A2 wired `withRlsSession` into the tenant tRPC middleware (`SET LOCAL app.org_id`); coverage is partial | When a real Postgres `CREATE POLICY` migration is approved by a DB engineer + DPO; needs auth-side schema review |
 | **F-INT-05** | Circuit-breaker rollout to all 14 adapters | P2-B foundation in place (`opossum` 9 + `p-retry` + `p-limit`, per-provider config table, helper exported) | Mechanical rollout — wire `withResilience(call, …)` around the 10 adapters that don't yet use it. ~1 day's work under one fixer; needs no design |
+| **advisory-lock transition cleanup** | Remove the dual-hold shim in `packages/api/src/lib/advisory-lock.ts` (search `TODO(advisory-lock-transition)`) | Shim active while `ADVISORY_LOCK_TRANSITION_DUAL_HOLD=true` during the deploy that ships commit `ce8b26f4` | After the env var has been **unset** for one full deploy cycle (i.e. every running instance is using only the two-arg form). The shim adds one Postgres round-trip per lock acquisition; not worth keeping permanently |
 
 Owner / sequencing decisions live in `.audit-2026-05-03/NEXT-PHASE-PLAN.md` § Recommended sequencing.
 
