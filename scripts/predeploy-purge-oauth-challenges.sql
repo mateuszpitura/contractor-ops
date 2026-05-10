@@ -1,0 +1,42 @@
+-- ---------------------------------------------------------------------------
+-- Pre-deploy purge of in-flight OAuthChallenge rows
+-- ---------------------------------------------------------------------------
+--
+-- Run this against the production database in the final minute BEFORE
+-- pushing a deploy that includes the HMAC pepper change for
+-- `OAuthChallenge.stateHash` (commit 3d412c41 / R1 NEW-SEC-03).
+--
+-- Why:
+--   Pre-refactor rows were hashed with plain `sha256(state)`.
+--   Post-refactor rows are hashed with `hmac-sha256(BETTER_AUTH_SECRET|label,
+--   state)`. A user mid-OAuth-flow at the moment of deploy redirects back
+--   from the provider with a `state` value that the post-refactor callback
+--   cannot resolve against either form, so the flow fails with the
+--   generic "challenge expired/invalid" error. The TTL is 10 min, so users
+--   would have a 10-min annoying-but-survivable window where some OAuth
+--   sign-ins fail-and-retry.
+--
+--   Purging the table beforehand removes all in-flight rows, so anyone
+--   mid-redirect simply gets the same "expired" error a moment EARLIER —
+--   no extra user-visible failure, and post-deploy traffic starts from a
+--   clean state.
+--
+-- Safety:
+--   - Only deletes UNCONSUMED rows (`consumedAt IS NULL`). Consumed-and-
+--     pending-purge rows are kept so audit trails / forensic inspection
+--     stay intact.
+--   - The cron `purgeExpiredOAuthChallenges` runs daily anyway (see
+--     apps/web/src/app/api/cron/data-purge/route.ts, commit 3d412c41)
+--     so worst case this script is redundant.
+--
+-- Usage (example for Neon):
+--   psql "$DATABASE_URL" -f scripts/predeploy-purge-oauth-challenges.sql
+--
+-- Or with a one-liner:
+--   psql "$DATABASE_URL" -c 'DELETE FROM "OAuthChallenge" WHERE "consumedAt" IS NULL;'
+--
+-- Re-deploys after the HMAC change has been live for >10 min do NOT need
+-- to re-run this script — the table no longer contains plain-sha256 rows.
+-- ---------------------------------------------------------------------------
+
+DELETE FROM "OAuthChallenge" WHERE "consumedAt" IS NULL;
