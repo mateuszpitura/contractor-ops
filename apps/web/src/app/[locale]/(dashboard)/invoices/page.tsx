@@ -1,6 +1,6 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Check, Copy, Receipt } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -170,10 +170,16 @@ function InvoicesContent() {
         </div>
       )}
 
-      {/* Data table */}
-      <div data-slot="invoices-table-region">
-        <InvoiceDataTable onRowClick={handleRowClick} onUpload={handleUpload} />
-      </div>
+      {/* Directory section */}
+      <AnimateIn delay={4}>
+        <section
+          data-slot="invoices-table-region"
+          aria-label={t('pageTitle')}
+          className="space-y-3">
+          <SectionLabel icon={Receipt}>{t('pageTitle')}</SectionLabel>
+          <InvoiceDataTable onRowClick={handleRowClick} onUpload={handleUpload} />
+        </section>
+      </AnimateIn>
 
       {/* Side panel */}
       <InvoiceSidePanel
@@ -206,12 +212,12 @@ function InvoicesLoading() {
           <Skeleton className="h-9 w-80" />
           <Skeleton className="h-9 w-24" />
         </div>
-        <div className="rounded-xl border bg-background">
+        <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-28" />
               <Skeleton className="h-4 w-32" />
