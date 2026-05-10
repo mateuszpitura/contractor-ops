@@ -6,8 +6,9 @@
  *   - rejection with `BackpressureRejectedError` at capacity
  *   - DECR on success, throw, and rejection paths (no slot leaks)
  *   - per-route counter isolation (different routeKeys are independent)
- *   - fail-OPEN on Redis errors (deliberate, see qstash-backpressure.ts:158-161)
- *   - TTL leak guard via EXPIRE on every INCR
+ *   - fail-OPEN on Redis errors (deliberate, see qstash-backpressure.ts)
+ *   - Atomic slot acquisition via Lua EVAL: INCR + EXPIRE-on-n==1 in one round trip,
+ *     so EXPIRE is NOT re-armed on every call (hot-route TTL leak fix).
  *
  * The Sentry escalation path in `onRejected` is exercised indirectly (it's an
  * internal observability detail) — the focus here is the request-path
@@ -19,19 +20,57 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 // Hoisted mock state — Redis client + Sentry capture
 // ---------------------------------------------------------------------------
+//
+// `mockEval` simulates the production Lua script (INCR + EXPIRE-on-n==1)
+// against an in-memory key->slot map. Tests can override the next slot count
+// via `mockEval.mockResolvedValueOnce(n)` for scenarios that need a specific
+// value (e.g. over-cap = 11). Otherwise the default implementation
+// increments the in-memory counter and conditionally invokes `mockExpire` so
+// EXPIRE-emission tests can still observe it.
 
-const { mockIncr, mockDecr, mockExpire, mockGet, mockCaptureMessage, mockMetricsIncrement } =
-  vi.hoisted(() => ({
+const {
+  evalState,
+  mockEval,
+  mockIncr,
+  mockDecr,
+  mockExpire,
+  mockGet,
+  mockCaptureMessage,
+  mockMetricsIncrement,
+} = vi.hoisted(() => {
+  const counters = new Map<string, number>();
+
+  const mockExpire = vi.fn().mockResolvedValue(1);
+
+  const mockEval = vi
+    .fn<(script: string, keys: string[], args: string[]) => Promise<number>>()
+    .mockImplementation(async (_script, keys, args) => {
+      const key = keys[0];
+      if (!key) throw new Error('mockEval: missing key');
+      const next = (counters.get(key) ?? 0) + 1;
+      counters.set(key, next);
+      if (next === 1) {
+        const ttlSec = Number(args[0] ?? 60);
+        await mockExpire(key, ttlSec);
+      }
+      return next;
+    });
+
+  return {
+    evalState: { counters },
+    mockEval,
     mockIncr: vi.fn(),
     mockDecr: vi.fn().mockResolvedValue(0),
-    mockExpire: vi.fn().mockResolvedValue(1),
+    mockExpire,
     mockGet: vi.fn().mockResolvedValue(null),
     mockCaptureMessage: vi.fn(),
     mockMetricsIncrement: vi.fn(),
-  }));
+  };
+});
 
 vi.mock('@upstash/redis', () => {
   class MockRedis {
+    eval = mockEval;
     incr = mockIncr;
     decr = mockDecr;
     expire = mockExpire;
@@ -85,7 +124,21 @@ import {
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-  // Reset only mock call history — keep default resolved values.
+  // Reset call history. Then restore the in-memory eval simulator so tests
+  // that don't override `mockEval` still get the realistic INCR+EXPIRE-on-1
+  // behaviour rather than `undefined`.
+  evalState.counters.clear();
+  mockEval.mockReset().mockImplementation(async (_script, keys, args) => {
+    const key = keys[0];
+    if (!key) throw new Error('mockEval: missing key');
+    const next = (evalState.counters.get(key) ?? 0) + 1;
+    evalState.counters.set(key, next);
+    if (next === 1) {
+      const ttlSec = Number(args[0] ?? 60);
+      await mockExpire(key, ttlSec);
+    }
+    return next;
+  });
   mockIncr.mockReset();
   mockDecr.mockReset().mockResolvedValue(0);
   mockExpire.mockReset().mockResolvedValue(1);
@@ -140,27 +193,73 @@ describe('BackpressureRejectedError', () => {
 
 describe('withBackpressure: under capacity', () => {
   it('executes fn and returns the inner result when slot <= maxConcurrent', async () => {
-    mockIncr.mockResolvedValueOnce(1);
+    mockEval.mockResolvedValueOnce(1);
     const fn = vi.fn().mockResolvedValue({ ok: true, value: 42 });
 
     const result = await withBackpressure('ocr-process', 10, fn);
 
     expect(result).toEqual({ ok: true, value: 42 });
     expect(fn).toHaveBeenCalledOnce();
-    expect(mockIncr).toHaveBeenCalledWith('qstash:backpressure:ocr-process');
+    expect(mockEval).toHaveBeenCalledWith(
+      expect.stringContaining("redis.call('INCR', KEYS[1])"),
+      ['qstash:backpressure:ocr-process'],
+      ['60'],
+    );
+    // Raw INCR is NOT used for slot acquisition — that path was the bug.
+    expect(mockIncr).not.toHaveBeenCalledWith('qstash:backpressure:ocr-process');
   });
 
-  it('always sets EXPIRE after INCR (TTL leak guard for crashed pods)', async () => {
-    mockIncr.mockResolvedValueOnce(3);
+  it('runs the atomic Lua script: INCR + conditional EXPIRE on n == 1', async () => {
+    // Default in-memory simulator yields n == 1 for the first call, so
+    // EXPIRE must fire exactly once via the script's conditional branch.
     const fn = vi.fn().mockResolvedValue('ok');
 
     await withBackpressure('ocr-process', 10, fn);
 
+    expect(mockEval).toHaveBeenCalledOnce();
+    const [scriptArg, keysArg, argsArg] = mockEval.mock.calls[0]!;
+    expect(scriptArg).toContain("redis.call('INCR', KEYS[1])");
+    expect(scriptArg).toContain('if n == 1 then');
+    expect(scriptArg).toContain("redis.call('EXPIRE', KEYS[1], ARGV[1])");
+    expect(keysArg).toEqual(['qstash:backpressure:ocr-process']);
+    expect(argsArg).toEqual(['60']);
+
+    // The script ran the EXPIRE branch on n == 1 (first acquisition).
+    expect(mockExpire).toHaveBeenCalledOnce();
+    expect(mockExpire).toHaveBeenCalledWith('qstash:backpressure:ocr-process', 60);
+  });
+
+  it('does NOT re-arm EXPIRE on subsequent acquisitions of the same key', async () => {
+    // Regression guard for the hot-route TTL leak: the pre-fix code reset
+    // EXPIRE on every successful INCR, so a continuously-busy route could
+    // keep an orphan slot alive past the 60s safety window. The fix sets
+    // EXPIRE only on the first INCR (n == 1).
+    const fn = vi.fn().mockResolvedValue('ok');
+
+    await withBackpressure('ocr-process', 10, fn);
+    await withBackpressure('ocr-process', 10, fn);
+
+    expect(mockEval).toHaveBeenCalledTimes(2);
+    // Both EVALs targeted the same key with the same script + TTL arg.
+    expect(mockEval).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("redis.call('INCR', KEYS[1])"),
+      ['qstash:backpressure:ocr-process'],
+      ['60'],
+    );
+    expect(mockEval).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("redis.call('INCR', KEYS[1])"),
+      ['qstash:backpressure:ocr-process'],
+      ['60'],
+    );
+    // EXPIRE only fired on the first acquisition (n == 1 branch).
+    expect(mockExpire).toHaveBeenCalledOnce();
     expect(mockExpire).toHaveBeenCalledWith('qstash:backpressure:ocr-process', 60);
   });
 
   it('releases the slot via DECR after fn resolves', async () => {
-    mockIncr.mockResolvedValueOnce(1);
+    mockEval.mockResolvedValueOnce(1);
     const fn = vi.fn().mockResolvedValue('done');
 
     await withBackpressure('ocr-process', 10, fn);
@@ -170,7 +269,7 @@ describe('withBackpressure: under capacity', () => {
   });
 
   it('passes through at exactly the capacity boundary (slot == maxConcurrent)', async () => {
-    mockIncr.mockResolvedValueOnce(10);
+    mockEval.mockResolvedValueOnce(10);
     const fn = vi.fn().mockResolvedValue('boundary');
 
     const result = await withBackpressure('ocr-process', 10, fn);
@@ -188,7 +287,7 @@ describe('withBackpressure: under capacity', () => {
 
 describe('withBackpressure: inner fn throws', () => {
   it('still DECRs the slot when fn rejects, and propagates the original error', async () => {
-    mockIncr.mockResolvedValueOnce(2);
+    mockEval.mockResolvedValueOnce(2);
     const innerErr = new Error('downstream provider failed');
     const fn = vi.fn().mockRejectedValue(innerErr);
 
@@ -199,7 +298,7 @@ describe('withBackpressure: inner fn throws', () => {
   });
 
   it('does not swallow inner errors when DECR also fails on cleanup', async () => {
-    mockIncr.mockResolvedValueOnce(2);
+    mockEval.mockResolvedValueOnce(2);
     mockDecr.mockRejectedValueOnce(new Error('redis down on cleanup'));
     const innerErr = new Error('inner failure');
     const fn = vi.fn().mockRejectedValue(innerErr);
@@ -216,7 +315,7 @@ describe('withBackpressure: inner fn throws', () => {
 
 describe('withBackpressure: over capacity', () => {
   it('throws BackpressureRejectedError when slot > maxConcurrent', async () => {
-    mockIncr.mockResolvedValueOnce(11); // Cap is 10.
+    mockEval.mockResolvedValueOnce(11); // Cap is 10.
     const fn = vi.fn();
 
     await expect(withBackpressure('ocr-process', 10, fn)).rejects.toBeInstanceOf(
@@ -227,7 +326,7 @@ describe('withBackpressure: over capacity', () => {
   });
 
   it('attaches the routeKey to the rejection (so route 429 handler can log it)', async () => {
-    mockIncr.mockResolvedValueOnce(4);
+    mockEval.mockResolvedValueOnce(4);
     const fn = vi.fn();
 
     await expect(withBackpressure('peppol-outbound', 3, fn)).rejects.toMatchObject({
@@ -238,7 +337,7 @@ describe('withBackpressure: over capacity', () => {
   });
 
   it('DECRs the speculatively-claimed slot when rejecting (no phantom slot)', async () => {
-    mockIncr.mockResolvedValueOnce(11);
+    mockEval.mockResolvedValueOnce(11);
     const fn = vi.fn();
 
     await withBackpressure('ocr-process', 10, fn).catch(() => {
@@ -246,17 +345,37 @@ describe('withBackpressure: over capacity', () => {
     });
 
     // Two writes to the slot key happen during a rejection:
-    //   1. INCR (claim)
+    //   1. EVAL (INCR + maybe EXPIRE) to claim
     //   2. DECR (release the over-cap claim)
     // Plus a separate INCR to the per-minute rejection counter (different key).
     expect(mockDecr).toHaveBeenCalledWith('qstash:backpressure:ocr-process');
     expect(mockDecr).toHaveBeenCalledOnce();
   });
 
+  it('still sets a TTL on the rejection-counter key (Sentry-window leak guard)', async () => {
+    // Slot acquisition uses the atomic Lua EVAL, but the rejection counter
+    // (`qstash:backpressure:rej:<route>:<minute>`) still uses raw INCR +
+    // EXPIRE inside `onRejected`. Make sure that EXPIRE assertion is
+    // preserved so the per-minute counter can't leak.
+    mockEval.mockResolvedValueOnce(11);
+    mockIncr.mockResolvedValueOnce(1); // rejection-counter INCR
+    const fn = vi.fn();
+
+    await withBackpressure('ocr-process', 10, fn).catch(() => {
+      /* expected reject */
+    });
+
+    // Counter key follows `qstash:backpressure:rej:<route>:<minuteEpoch>`.
+    // (SENTRY_ALERT_WINDOW_MIN + 1) * 60 = 360s
+    expect(mockExpire).toHaveBeenCalledWith(
+      expect.stringMatching(/^qstash:backpressure:rej:ocr-process:\d+$/),
+      360,
+    );
+  });
+
   it('emits a `backpressure.rejected` metric with the route tag', async () => {
-    mockIncr
-      .mockResolvedValueOnce(11) // slot acquisition (over cap)
-      .mockResolvedValueOnce(1); // rejection-counter INCR
+    mockEval.mockResolvedValueOnce(11); // slot acquisition (over cap)
+    mockIncr.mockResolvedValueOnce(1); // rejection-counter INCR
     const fn = vi.fn();
 
     await withBackpressure('ocr-process', 10, fn).catch(() => {
@@ -269,7 +388,7 @@ describe('withBackpressure: over capacity', () => {
   });
 
   it('does not run fn when rejected', async () => {
-    mockIncr.mockResolvedValueOnce(50); // Way over cap.
+    mockEval.mockResolvedValueOnce(50); // Way over cap.
     const fn = vi.fn().mockResolvedValue('should never run');
 
     await expect(withBackpressure('exports-process', 5, fn)).rejects.toBeInstanceOf(
@@ -285,21 +404,31 @@ describe('withBackpressure: over capacity', () => {
 
 describe('withBackpressure: per-route isolation', () => {
   it('uses independent Redis keys per routeKey (no cross-route starvation)', async () => {
-    mockIncr.mockResolvedValueOnce(5).mockResolvedValueOnce(2);
+    mockEval.mockResolvedValueOnce(5).mockResolvedValueOnce(2);
 
     await withBackpressure('ocr-process', 10, async () => 'a');
     await withBackpressure('peppol-outbound', 3, async () => 'b');
 
-    expect(mockIncr).toHaveBeenNthCalledWith(1, 'qstash:backpressure:ocr-process');
-    expect(mockIncr).toHaveBeenNthCalledWith(2, 'qstash:backpressure:peppol-outbound');
+    expect(mockEval).toHaveBeenNthCalledWith(
+      1,
+      expect.any(String),
+      ['qstash:backpressure:ocr-process'],
+      ['60'],
+    );
+    expect(mockEval).toHaveBeenNthCalledWith(
+      2,
+      expect.any(String),
+      ['qstash:backpressure:peppol-outbound'],
+      ['60'],
+    );
   });
 
   it('a saturated route does not affect calls to a different route', async () => {
     // Route A is over-cap; route B is healthy.
-    mockIncr
+    mockEval
       .mockResolvedValueOnce(11) // ocr-process slot (over cap)
-      .mockResolvedValueOnce(1) // ocr rejection-counter INCR
       .mockResolvedValueOnce(2); // peppol-outbound slot (under cap)
+    mockIncr.mockResolvedValueOnce(1); // ocr rejection-counter INCR
 
     const fnA = vi.fn();
     const fnB = vi.fn().mockResolvedValue('peppol-ok');
@@ -320,14 +449,14 @@ describe('withBackpressure: per-route isolation', () => {
 // ---------------------------------------------------------------------------
 
 describe('withBackpressure: fail-OPEN on Redis errors', () => {
-  it('passes the call through when INCR throws (Redis unreachable)', async () => {
-    mockIncr.mockRejectedValueOnce(new Error('ECONNREFUSED'));
+  it('passes the call through when EVAL throws (Redis unreachable)', async () => {
+    mockEval.mockRejectedValueOnce(new Error('ECONNREFUSED'));
     const fn = vi.fn().mockResolvedValue('passthrough-result');
 
     const result = await withBackpressure('ocr-process', 10, fn);
 
-    // Documented contract at qstash-backpressure.ts:158-161: failing closed
-    // would amplify a cache outage into a QStash backlog. Don't break this.
+    // Documented contract: failing closed would amplify a cache outage into
+    // a QStash backlog. Don't break this.
     expect(result).toBe('passthrough-result');
     expect(fn).toHaveBeenCalledOnce();
     // Cleanup DECR is skipped because no slot was successfully claimed.
@@ -335,7 +464,7 @@ describe('withBackpressure: fail-OPEN on Redis errors', () => {
   });
 
   it('does not throw BackpressureRejectedError when Redis is unavailable', async () => {
-    mockIncr.mockRejectedValueOnce(new Error('Redis timeout'));
+    mockEval.mockRejectedValueOnce(new Error('Redis timeout'));
     const fn = vi.fn().mockResolvedValue('still-served');
 
     await expect(withBackpressure('ocr-process', 10, fn)).resolves.toBe('still-served');
@@ -371,6 +500,7 @@ describe('withBackpressure: no Redis configured', () => {
     vi.doMock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
     vi.doMock('@upstash/redis', () => {
       class MockRedis {
+        eval = vi.fn();
         incr = vi.fn();
         decr = vi.fn();
         expire = vi.fn();

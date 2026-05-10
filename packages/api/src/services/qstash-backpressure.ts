@@ -15,8 +15,12 @@
  *
  * Mechanism:
  *   - `qstash:backpressure:<routeKey>` is an INCR'd integer.
- *   - We INCR (claim a slot), then EXPIRE 60s as a leak guard so a crashed
- *     pod can't permanently strand a slot.
+ *   - We claim a slot via a single atomic Lua EVAL that INCRs the key and
+ *     conditionally sets EXPIRE only on the FIRST increment (when n == 1).
+ *     Doing INCR + EXPIRE atomically prevents an OOM-killed worker from
+ *     stranding a counter without a TTL. Setting EXPIRE only on the first
+ *     INCR also stops a hot route from indefinitely re-arming the leak
+ *     guard, so an orphan slot is reclaimed within `SAFETY_TTL_SEC`.
  *   - If the post-INCR value exceeds `maxConcurrent`, we return a 429 with
  *     `Retry-After: 5` so QStash backs off and retries.
  *   - The slot is always DECR'd in `finally`, even on rejection.
@@ -105,8 +109,7 @@ export const BackpressureRoutes = {
   LATE_INTEREST_RENDER: { key: 'late-interest-render-claim-pdf', max: 5 },
 } as const satisfies Record<string, { key: string; max: number }>;
 
-export type BackpressureRoute =
-  (typeof BackpressureRoutes)[keyof typeof BackpressureRoutes];
+export type BackpressureRoute = (typeof BackpressureRoutes)[keyof typeof BackpressureRoutes];
 
 /**
  * BackpressureRejectedError is thrown when the semaphore is full.
@@ -138,6 +141,28 @@ const SAFETY_TTL_SEC = 60;
 /** Sentry alert threshold: rejections per minute, sustained for 5 minutes. */
 const SENTRY_ALERT_RATE_PER_MIN = 10;
 const SENTRY_ALERT_WINDOW_MIN = 5;
+
+/**
+ * Atomic slot-acquisition script.
+ *
+ * INCR + (EXPIRE on first increment only) in a single round-trip. This
+ * fixes two pre-existing hazards:
+ *   1. OOM-kill between separate INCR and EXPIRE calls would strand a
+ *      slot without any TTL, leaking capacity until manual intervention.
+ *   2. Re-arming EXPIRE on every successful acquisition allowed a
+ *      continuously-hot route to keep an orphan slot alive past the
+ *      60s leak guard. Setting TTL only on the first INCR (n == 1)
+ *      means the leak guard is a hard upper bound from key creation.
+ *
+ * Returns the post-INCR slot count (>= 1).
+ */
+const ACQUIRE_SLOT_SCRIPT = `
+local n = redis.call('INCR', KEYS[1])
+if n == 1 then
+  redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return n
+`;
 
 /**
  * Wraps a QStash consumer's inner work with a fleet-wide concurrency cap.
@@ -175,15 +200,14 @@ export async function withBackpressure<T>(
 
   let slot: number;
   try {
-    slot = await client.incr(lockKey);
-    // Always refresh the safety TTL so a crashed pod can't permanently
-    // strand the counter. Race-safe: even if EXPIRE arrives before another
-    // INCR, the counter remains correct.
-    await client.expire(lockKey, SAFETY_TTL_SEC);
+    // Atomic INCR-and-set-TTL-on-first-increment. See ACQUIRE_SLOT_SCRIPT
+    // for the rationale (OOM-kill leak guard + hot-route TTL re-arm fix).
+    const result = await client.eval(ACQUIRE_SLOT_SCRIPT, [lockKey], [String(SAFETY_TTL_SEC)]);
+    slot = Number(result);
   } catch (err) {
     log.warn(
       { err, routeKey },
-      'backpressure INCR failed — failing open and passing call through',
+      'backpressure slot acquisition failed — failing open and passing call through',
     );
     return fn();
   }
