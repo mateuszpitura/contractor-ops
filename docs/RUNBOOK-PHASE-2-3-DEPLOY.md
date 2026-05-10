@@ -1,6 +1,6 @@
 # Runbook — Phase 2/3 Audit Deploy
 
-**Last updated:** 2026-05-05
+**Last updated:** 2026-05-06
 **Owner:** Platform / on-call
 **Companion docs:**
 - [`/contractor-ops-launch-checklist.md`](../contractor-ops-launch-checklist.md) — product launch gates (multi-tenancy, GDPR, payments)
@@ -256,24 +256,39 @@ For 48 hours after the cutover, pay attention to:
 
 ---
 
-## 8. Known TODOs in code
+## 8. F-XXX traceability breadcrumbs in code
 
-The following deferred items remain in HEAD as `TODO(F-XXX)` annotations. Each has a documented reason for deferral; they are NOT pre-deploy blockers but are tracked.
+> **Verified 2026-05-06.** Earlier revisions of this section described the
+> items below as `TODO(F-XXX)` annotations. A line-by-line audit shows that
+> none of the cited locations contain a `TODO(F-…)` comment — and an
+> exhaustive `grep -rEn "TODO.*F-[A-Z]+-[0-9]+"` across `packages/` and
+> `apps/` returns zero matches. What the source actually contains are
+> **F-XXX breadcrumb comments next to the implemented fix**, not pending
+> TODOs. R5's "zero source-resident F-XXX-NN traceability" finding (LOW)
+> was therefore literally correct about the absence of `TODO(F-…)`
+> annotations; R2's DEAD-03 "clean" verdict was correct that the F-XXX
+> strings exist in source, but conflated breadcrumb tags with TODO
+> markers. The list below is preserved as a code-reading aid: each entry
+> points at the F-XXX comment in HEAD that documents the implemented
+> behaviour for that audit ID. The one genuine deferral (F-DB-04 partial
+> coverage) is owned in §9 as a Tier-2 follow-up, not here.
+
+Each bullet points at the F-XXX breadcrumb in source. Status is "implemented" unless noted otherwise; partial-coverage and deferred-by-design items are flagged explicitly.
 
 **Resilience / integrations**
-- `packages/integrations/src/adapters/google-calendar-adapter.ts:17` — `TODO(F-INT-04)`: opt-in to Idempotency-Key once createEvent passes a deterministic key.
-- `packages/integrations/src/adapters/outlook-calendar-adapter.ts:17` — same for Outlook calendar.
-- `packages/integrations/src/services/webhook-dispatcher.ts:78` — `TODO(F-INT-11, coord with P2-A)`: pass `Upstash-Deduplication-Id` once the canonical typed enqueue helper is everywhere.
+- `packages/integrations/src/adapters/google-calendar-adapter.ts:15-20` — F-INT-04 idempotency comment. **Implemented**: `createEvent` accepts an `idempotencyKey` argument and encodes it as the Google event `id` (see method jsdoc at :236), so duplicate inserts return 409. `updateEvent` / `deleteEvent` are naturally idempotent on the stable eventId.
+- `packages/integrations/src/adapters/outlook-calendar-adapter.ts:15-20` — F-INT-04 idempotency comment for the Outlook adapter. **Implemented**: same shape as Google; the deterministic key is surfaced via the Graph `client-request-id` header (see :238).
+- `packages/integrations/src/services/webhook-dispatcher.ts:71-76` — F-INT-11 dedup-id comment on `queueWebhookProcessing`. **Implemented**: the function passes `deliveryId` as the QStash `deduplicationId` (see :89), collapsing re-publishes of the same `WebhookDelivery` row inside Upstash's 24h dedup window.
 
 **Scalability**
-- `packages/integrations/src/adapters/register-all.ts:66` — `TODO(F-SCALE-14 follow-up)`: convert to per-adapter dynamic import so adapter cold-start cost stays bounded as we add providers.
-- `apps/web/src/middleware.ts:529` — `F-SCALE-19 — QStash queue-depth backpressure (deferred — TODO)`. Documented decision; revisit when queue depth p95 sustains > 50.
+- `packages/integrations/src/adapters/register-all.ts:7-49` — F-SCALE-14 cold-start tiering comment. **Implemented**: ESSENTIAL adapters (Slack, Resend, KSeF, OCR) register eagerly; HEAVY adapters (DocuSign, Google Workspace, Jira, Notion, etc.) load via dynamic `import()` (see `startHeavyLoad` at :64) so Next.js / Webpack splits them into separate server chunks.
+- `apps/web/src/middleware.ts:537-546` — F-SCALE-19 backpressure breadcrumb. **Implemented**: per-topic concurrency caps + per-pod Redis semaphores live in `packages/api/src/services/qstash-backpressure.ts`; the queue-depth probe ships through `/api/health` and warns to Sentry above the configured threshold.
 
 **Defense-in-depth**
-- `packages/api/src/middleware/tenant.ts:117` — `TODO(F-DB-04)`: non-transactional `ctx.db.X.findMany()` calls still bypass the RLS session SET; full coverage requires either wrapping every read in a tenant tx or moving to real Postgres `CREATE POLICY`. Tier-2 work.
+- `packages/api/src/middleware/tenant.ts:108-134` — F-DB-04 RLS scaffolding comment. **Partial — see §9**. The tenant tRPC middleware wraps interactive transactions (`withRlsTransactions`) and a scoped set of high-blast-radius reads (`withRlsReads` over Document / Invoice / Contractor / ApprovalStep / Notification). Unwrapped `findMany` on other tenant-scoped models still only relies on the Prisma extension's org-scope rewrite — no DB-level `CREATE POLICY` exists yet. Full coverage is the Tier-2 item tracked in §9 under F-DB-04.
 
 **Observability**
-- `apps/web/src/app/api/cron/job-health/route.ts:81` — `TODO(P2-B, F-INT-13)`: once `WebhookDelivery.attempts` is consistently populated by every dispatcher, switch the alert threshold logic from queue-depth to per-row attempt count.
+- `apps/web/src/app/api/cron/job-health/route.ts:84-89` — F-INT-13 / P2-B reaper-retry comment. **Implemented**: with the `attempts` / `nextAttemptAt` columns landed, the reaper distinguishes "transient stall — retry" from "definitively dead — fail" each pass (see the schema comment at :25 for the retry-budget contract).
 
 ---
 
