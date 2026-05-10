@@ -5,7 +5,8 @@
  * `packages/integrations/src/services/oauth-state.ts`. The HMAC continues to
  * encode `(provider, orgId, userId, ts)` and acts as the value sent to the
  * IdP. We additionally:
- *   1. Persist an `OAuthChallenge` row keyed on `sha256(state)` at flow start.
+ *   1. Persist an `OAuthChallenge` row keyed on `hmac(state)` at flow start
+ *      (HMAC keyed off `BETTER_AUTH_SECRET` — see {@link hashOAuthState}).
  *   2. Set a `__Host-oauth_state` cookie holding the same `state` value
  *      (httpOnly, secure, sameSite=lax, Path=/api/oauth, Max-Age=10m).
  *   3. On callback, hash the cookie value, atomically flip `consumedAt` via
@@ -21,7 +22,8 @@
  *     guarantees single-use semantics even under concurrent callback delivery.
  */
 
-import { createHash, randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
+import { getServerEnv } from '@contractor-ops/validators';
 
 /** 10-minute challenge expiry — matches the HMAC state freshness tolerance. */
 const OAUTH_CHALLENGE_EXPIRY_MS = 10 * 60 * 1000;
@@ -35,12 +37,28 @@ export const OAUTH_STATE_COOKIE_NAME = '__Host-oauth_state';
 export const OAUTH_STATE_COOKIE_MAX_AGE_SECONDS = 10 * 60;
 
 /**
+ * Domain-separator label for the HMAC keying material — bumped versions
+ * invalidate every in-flight challenge, which is acceptable here because
+ * OAuth challenges expire after 10 minutes anyway.
+ */
+const OAUTH_STATE_HMAC_LABEL = 'oauth-state-v1';
+
+/**
  * Hash the user-facing `state` value for use as the row's primary lookup key.
- * We never persist the raw state itself — only its SHA-256 digest — so a
- * leaked DB snapshot does not enable replay against the live IdP.
+ *
+ * We never persist the raw state itself — only its HMAC digest — so a leaked
+ * DB snapshot does not enable replay against the live IdP. Using HMAC keyed
+ * off `BETTER_AUTH_SECRET` (rather than plain SHA-256) ensures a read-only
+ * disclosure of the `OAuthChallenge` table cannot be correlated against
+ * candidate state values offline without also leaking the app secret.
+ *
+ * Mirrors the `signPortalSessionToken` pattern in
+ * `packages/api/src/routers/portal/portal.ts` — both derive a per-purpose key
+ * by appending a `|<label>-vN` domain separator to the shared secret.
  */
 export function hashOAuthState(state: string): string {
-  return createHash('sha256').update(state).digest('hex');
+  const secret = getServerEnv().BETTER_AUTH_SECRET;
+  return createHmac('sha256', `${secret}|${OAUTH_STATE_HMAC_LABEL}`).update(state).digest('hex');
 }
 
 interface OAuthChallengeRow {

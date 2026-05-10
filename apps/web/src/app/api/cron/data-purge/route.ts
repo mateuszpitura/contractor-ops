@@ -192,6 +192,43 @@ export async function GET(request: NextRequest) {
 
           Object.assign(results, txResults);
 
+          // 4. Purge ephemeral security/upload tables. These are independent
+          //    of the soft-delete retention sweep (no `deletedAt` cutoff —
+          //    they self-expire via `expiresAt`). Each helper runs in its own
+          //    try/catch so a failure in one does not abort the other; we
+          //    surface row counts to metrics + logs so growth can be alerted.
+          try {
+            const { purgeExpiredOAuthChallenges } = await import(
+              '@contractor-ops/api/services/oauth-challenge'
+            );
+            const oauthPurged = await purgeExpiredOAuthChallenges(prisma);
+            results.oauthChallenges = oauthPurged;
+            metrics.gauge('cron.data_purge.oauth_challenges', oauthPurged);
+            log.info({ count: oauthPurged }, 'expired oauth challenges purged');
+          } catch (err) {
+            log.error({ err }, 'failed to purge expired oauth challenges');
+            Sentry.captureException(err, {
+              tags: { 'cron.job': 'data-purge', 'purge.target': 'oauth_challenges' },
+            });
+            results.oauthChallenges = 0;
+          }
+
+          try {
+            const { purgeExpiredPendingUploads } = await import(
+              '@contractor-ops/api/services/pending-upload'
+            );
+            const pendingPurged = await purgeExpiredPendingUploads(prisma);
+            results.pendingUploads = pendingPurged;
+            metrics.gauge('cron.data_purge.pending_uploads', pendingPurged);
+            log.info({ count: pendingPurged }, 'expired pending uploads purged');
+          } catch (err) {
+            log.error({ err }, 'failed to purge expired pending uploads');
+            Sentry.captureException(err, {
+              tags: { 'cron.job': 'data-purge', 'purge.target': 'pending_uploads' },
+            });
+            results.pendingUploads = 0;
+          }
+
           const totalPurged = Object.values(results).reduce((sum, v) => sum + v, 0);
 
           log.info(

@@ -74,6 +74,7 @@ interface PendingUploadDelegate {
   // findUnique (Prisma requires the where clause to match a unique key
   // exactly, and there's no `(documentId, organizationId)` composite).
   findFirst: (args: { where: { documentId: string } }) => Promise<PendingUploadRow | null>;
+  deleteMany: (args: { where: Record<string, unknown> }) => Promise<{ count: number }>;
 }
 
 export type PendingUploadDb = {
@@ -216,4 +217,24 @@ export async function consumePendingUpload(
     fileSizeBytesMax: row.fileSizeBytesMax,
     purpose: row.purpose,
   };
+}
+
+/**
+ * Hygiene helper — delete expired pending uploads. Called from the data-purge
+ * cron schedule to keep the table from growing unbounded with abandoned flows
+ * (browsers that never came back to call `submitInvoice` / `confirmUpload`).
+ *
+ * Safe to run concurrently because it only targets rows whose `expiresAt` is
+ * already in the past — by definition they cannot be consumed any more, so
+ * we are not racing a legitimate consumer.
+ *
+ * IMPORTANT: pass the GLOBAL prisma client here, not a tenant-scoped one —
+ * this purge cuts across organizations, and the tenant extension would inject
+ * an `organizationId` filter that nukes the cross-tenant sweep.
+ */
+export async function purgeExpiredPendingUploads(db: unknown): Promise<number> {
+  const result = await delegate(db).deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
+  return result.count;
 }

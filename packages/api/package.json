@@ -46,6 +46,11 @@
       "import": "./src/services/oauth-challenge.ts",
       "default": "./src/services/oauth-challenge.ts"
     },
+    "./services/pending-upload": {
+      "types": "./src/services/pending-upload.ts",
+      "import": "./src/services/pending-upload.ts",
+      "default": "./src/services/pending-upload.ts"
+    },
     "./services/esign-orchestrator": {
       "types": "./src/services/esign-orchestrator.ts",
       "import": "./src/services/esign-orchestrator.ts",
@@ -205,6 +210,11 @@
       "types": "./src/services/qstash-backpressure.ts",
       "import": "./src/services/qstash-backpressure.ts",
       "default": "./src/services/qstash-backpressure.ts"
+    },
+    "./lib/advisory-lock": {
+      "types": "./src/lib/advisory-lock.ts",
+      "import": "./src/lib/advisory-lock.ts",
+      "default": "./src/lib/advisory-lock.ts"
     }
   },
   "scripts": {
