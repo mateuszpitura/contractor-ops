@@ -1,5 +1,7 @@
 'use client';
 
+import type { ContractStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { differenceInDays, isPast } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -32,21 +34,6 @@ export type ContractRow = {
     id: string;
     name: string | null;
   } | null;
-};
-
-// ---------------------------------------------------------------------------
-// Status badge styling per UI-SPEC
-// ---------------------------------------------------------------------------
-
-const statusBadgeColors: Record<string, string> = {
-  DRAFT: 'bg-muted text-muted-foreground border border-border',
-  PENDING_SIGNATURE: 'bg-muted text-muted-foreground border border-border',
-  ACTIVE: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  EXPIRING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  EXPIRED: 'bg-red-500/10 text-red-600 dark:text-red-400',
-  TERMINATED: 'bg-muted text-muted-foreground border border-border',
-  SUPERSEDED: 'bg-muted/50 text-muted-foreground/60 border border-border/50',
-  ARCHIVED: 'bg-muted text-muted-foreground border border-border',
 };
 
 // ---------------------------------------------------------------------------
@@ -138,11 +125,11 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
       accessorKey: 'status',
       header: t('columns.status'),
       cell: ({ row }) => {
-        const status = row.original.status;
+        const status = row.original.status as ContractStatusInput;
         return (
-          <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
+          <AtelierStatusPill variant={statusToVariant('contract', status)}>
             {t(`status.${enumKey(status)}`)}
-          </Badge>
+          </AtelierStatusPill>
         );
       },
     },

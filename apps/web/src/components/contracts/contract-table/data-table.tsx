@@ -1,9 +1,10 @@
 'use client';
 
+import { AtelierTableShell } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -270,15 +271,22 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
       {/* Bulk actions bar */}
       <DataTableBulkActions table={table} />
 
-      {/* Table */}
-      <div className="relative rounded-xl border bg-background">
-        {/* Refetch overlay */}
-        {!!isRefetching && (
-          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          </div>
-        )}
-        <div className="flex items-center justify-end border-b px-4 py-2">
+      {/* Workbench-tier table chrome */}
+      <AtelierTableShell
+        isLoading={isRefetching}
+        footer={
+          !isLoading && totalRows > 0 ? (
+            <DataTablePagination
+              table={table}
+              totalRows={totalRows}
+              pageSize={filters.pageSize}
+              currentPage={filters.page}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          ) : undefined
+        }>
+        <div className="flex items-center justify-end border-b border-border/50 px-4 py-2">
           <DataTableColumnToggle table={table} />
         </div>
 
@@ -317,19 +325,7 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
             onClearFilters={clearFilters}
           />
         </Table>
-
-        {/* Pagination */}
-        {!isLoading && totalRows > 0 && (
-          <DataTablePagination
-            table={table}
-            totalRows={totalRows}
-            pageSize={filters.pageSize}
-            currentPage={filters.page}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        )}
-      </div>
+      </AtelierTableShell>
     </div>
   );
 }

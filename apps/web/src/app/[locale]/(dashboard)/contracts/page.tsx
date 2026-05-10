@@ -1,6 +1,6 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -86,13 +86,16 @@ function ContractsContent() {
         <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
-      {/* Data table */}
+      {/* Contracts section */}
       <AnimateIn delay={1}>
-        <ContractDataTable
-          onRowClick={handleRowClick}
-          onNewContract={handleNewContract}
-          onImport={handleOpenImportWizard}
-        />
+        <section aria-label={t('pageTitle')} className="space-y-3">
+          <SectionLabel icon={FileText}>{t('pageTitle')}</SectionLabel>
+          <ContractDataTable
+            onRowClick={handleRowClick}
+            onNewContract={handleNewContract}
+            onImport={handleOpenImportWizard}
+          />
+        </section>
       </AnimateIn>
 
       {/* Side panel */}
@@ -127,12 +130,12 @@ function ContractsLoading() {
           <Skeleton className="h-9 w-80" />
           <Skeleton className="h-9 w-24" />
         </div>
-        <div className="rounded-xl border bg-background">
+        <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
               key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-24" />
