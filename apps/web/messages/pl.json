@@ -2879,7 +2879,104 @@
       "completed": "Zakończone",
       "cancelled": "Anulowane"
     },
-    "newPaymentRun": "Nowy przebieg płatności"
+    "newPaymentRun": "Nowy przebieg płatności",
+    "bacs": {
+      "settingsPageTitle": "Ustawienia eksportu płatności",
+      "settingsPageSubtitle": "Skonfiguruj dane nadawcy dla brytyjskiego BACS i unijnego SEPA wykorzystywane podczas eksportu przebiegów płatności",
+      "sectionHeading": "Nadawca BACS Standard 18 (UK)",
+      "sunLabel": "Numer użytkownika usługi (SUN)",
+      "sunHelper": "6-cyfrowy numer Service User Number wydany przez bank sponsorujący BACS",
+      "sortCodeLabel": "Sort code nadawcy",
+      "accountNumberLabel": "Numer rachunku nadawcy",
+      "submitterNameLabel": "Nazwa nadawcy (maks. 18 znaków ASCII)",
+      "saveSubmitter": "Zapisz dane nadawcy",
+      "savedToast": "Dane nadawcy BACS zapisane",
+      "featureFlagOffBanner": "Eksport BACS jest wyłączony. Włącz go we flagach funkcjonalności, aby korzystać z BACS Std 18.",
+      "previewCardTitle": "Podgląd BACS Std 18",
+      "previewAction": "Podejrzyj plik BACS",
+      "downloadAction": "Pobierz plik BACS",
+      "transliterationWarning": "Przekonwertowano {count} znak(ów) do zestawu znaków BACS. Sprawdź podgląd przed pobraniem.",
+      "unmappableError": "Nie udało się przekonwertować {count} znak(ów) — BACS odrzuci ten plik. Popraw nazwę kontrahenta i spróbuj ponownie.",
+      "modulusWarningTitle": "Weryfikacja sort code",
+      "emptyState": "Brak pozycji kwalifikujących się do BACS w tym przebiegu. Dodaj brytyjskich kontrahentów z fakturami w GBP, aby wygenerować plik BACS.",
+      "submitterNotConfigured": "Dane nadawcy BACS są wymagane. Skonfiguruj je w Ustawienia → Płatności.",
+      "generateFailure": "Nie udało się wygenerować pliku BACS. Spróbuj ponownie lub skontaktuj się z pomocą, jeśli problem się powtórzy."
+    },
+    "ukBank": {
+      "sortCodeLabel": "Brytyjski sort code",
+      "sortCodeHelper": "6 cyfr, myślniki dodawane automatycznie",
+      "accountNumberLabel": "Brytyjski numer rachunku",
+      "accountNumberHelper": "8 cyfr",
+      "validateButton": "Zweryfikuj sort code",
+      "validationSuccess": "Sort code przeszedł kontrolę modulo",
+      "validationWarn": "Sort code znajduje się w zakresie wyjątków — kontrola modulo nie jest rozstrzygająca. Kontynuuj, jeśli bank potwierdzi ten rachunek.",
+      "validationFail": "Nieprawidłowy format sort code — wymagane 6 cyfr"
+    },
+    "lateInterest": {
+      "sectionHeading": "Ustawowe odsetki za opóźnienie w płatności",
+      "explanationTooltip": "Naliczane zgodnie z Late Payment of Commercial Debts (Interest) Act 1998. Stopa = stopa bazowa Bank of England + 8%, ustalana ostatniego dnia poprzedzającego 6-miesięcznego okresu ustawowego (30 czerwca lub 31 grudnia).",
+      "b2cBanner": "Odsetki ustawowe nie mają zastosowania (transakcja B2C).",
+      "principalOutstanding": "Należność główna",
+      "daysOverdue": "Dni opóźnienia",
+      "rateUsed": "Zastosowana stopa",
+      "dailyAccrual": "Naliczanie dzienne",
+      "interestAccrued": "Naliczone odsetki",
+      "fixedCompensation": "Rekompensata stała",
+      "totalStatutoryClaim": "Łączne roszczenie ustawowe",
+      "claimCta": "Żądaj odsetek ustawowych",
+      "claimSecondaryOption": "Wystaw roszczenie jako fakturę dodatkową",
+      "claimDialogTitle": "Zgłosić roszczenie o odsetki ustawowe?",
+      "claimDialogBody": "Spowoduje to utrwalenie bieżących kwot odsetek i rekompensaty, wygenerowanie pisma roszczenia w PDF oraz (opcjonalnie) wystawienie faktury dodatkowej na kwotę roszczenia. Migawka jest niezmienna — dalsze naliczanie nie zostanie dodane.",
+      "downloadClaimPdf": "Pobierz pismo roszczenia",
+      "claimedBanner": "Migawka roszczenia z dnia {date} — £{amount}. Dalsze odsetki nie są naliczane od tego roszczenia.",
+      "waiveCta": "Zrzeknij się odsetek",
+      "waiveDialogTitle": "Zrzec się odsetek ustawowych?",
+      "waiveReasonPlaceholder": "Powód (wymagany, min. 10 znaków) — np. klient wynegocjował ugodę, gest dobrej woli, błąd administracyjny",
+      "waiveTypeInterestOnly": "Tylko odsetki",
+      "waiveTypeCompensationOnly": "Tylko rekompensata",
+      "waiveTypeBoth": "Oba",
+      "waiveConfirm": "Zrzeknij się odsetek",
+      "waivedBanner": "Odsetki zrzeczone {date} przez {name}. {revokeLink}",
+      "revokeWaiverCta": "Cofnij zrzeczenie",
+      "revokeReasonPlaceholder": "Powód cofnięcia (wymagany) — np. klient odmówił ugody"
+    },
+    "overdueInterest": {
+      "columnHeader": "Odsetki za opóźnienie",
+      "filterChip": "Przeterminowane",
+      "emptyState": "Brak przeterminowanych faktur B2B w Wielkiej Brytanii"
+    },
+    "dashboardTile": {
+      "title": "Przeterminowane należności (UK)",
+      "subline": "{principal} pozostaje do zapłaty — +{interest} naliczonych odsetek",
+      "clickThrough": "Zobacz przeterminowane faktury →"
+    },
+    "skonto": {
+      "sectionHeading": "Rabat za wcześniejszą płatność (Skonto)",
+      "useDefaultPill": "Domyślne dla kontrahenta: {percent}% / {discountDays} dni / netto {netDays} dni",
+      "customizeToggle": "Dostosuj dla tej faktury",
+      "discountPercentLabel": "Rabat %",
+      "discountPeriodLabel": "Okres rabatu (dni)",
+      "netPeriodLabel": "Okres netto (dni)",
+      "previewLineEn": "Rabat {percent}% przy płatności w ciągu {discountDays} dni, w przeciwnym razie netto {netDays} dni",
+      "saveTerm": "Zapisz warunek Skonto",
+      "deleteInvoiceSpecific": "Przywróć domyślne dla kontrahenta",
+      "validationPercentRange": "Rabat musi mieścić się w zakresie od 0 do 50%",
+      "validationDaysOrdering": "Okres rabatu musi być krótszy niż okres netto",
+      "eligibleBanner": "Zaoszczędź {discountAmount} przy zapłacie do {date} — kwota po rabacie {discountedTotal}",
+      "windowExpiredBanner": "Okno rabatowe wygasło {date}",
+      "takenBanner": "Skonto zastosowane przy płatności: zaoszczędzono {discountAmount} dnia {paidDate}",
+      "notTakenBanner": "Zapłacono po upływie okna rabatowego — Skonto nie zostało zastosowane",
+      "defaultSectionHeading": "Domyślny rabat za wcześniejszą płatność",
+      "defaultHelper": "Stosowany automatycznie do nowych niemieckich faktur dla tego kontrahenta. Można nadpisać dla pojedynczej faktury.",
+      "saveDefault": "Zapisz domyślne Skonto",
+      "clearDefault": "Usuń domyślne Skonto",
+      "lineCheckboxLabel": "Zastosuj Skonto {percent}% — oszczędność {discountAmount}",
+      "outsideWindowHelper": "Okno rabatowe wygasło ({date}) — obowiązuje pełna kwota",
+      "snapshotToast": "Skonto zastosowane do przebiegu — {count} faktur(a) z rabatem, zaoszczędzono {totalSavings}",
+      "columnHeader": "Skonto",
+      "emptyCell": "—",
+      "cellFormat": "{percent}% {discountDays}/{netDays}"
+    }
   },
   "Reports": {
     "title": "Raporty",
@@ -4076,6 +4173,10 @@
         "contact": {
           "heading": "10. Kontakt",
           "body": "W przypadku pytań dotyczących niniejszego Regulaminu, skontaktuj się z nami pod adresem legal@contractorops.com."
+        },
+        "softwareNotLegalAdvice": {
+          "heading": "Oprogramowanie — nie stanowi porady prawnej ani profesjonalnej",
+          "subheading": "Istotne ograniczenia dotyczące charakteru wyników platformy"
         }
       }
     },
@@ -4215,6 +4316,29 @@
           "body": "Aby zgłosić podejrzenie naruszenia danych lub w przypadku pytań dotyczących tej procedury, skontaktuj się z naszym zespołem ds. bezpieczeństwa pod adresem security@contractorops.com. W sprawach ogólnych dotyczących prywatności, skontaktuj się pod adresem privacy@contractorops.com."
         }
       }
+    },
+    "TermsModal": {
+      "title": "Zaktualizowane Warunki Świadczenia Usług",
+      "description": "Nasze Warunki Świadczenia Usług zostały zaktualizowane (wersja {version}). Zapoznaj się z nimi i zaakceptuj, aby kontynuować korzystanie z platformy.",
+      "readFull": "Przeczytaj pełne",
+      "termsLink": "Warunki Świadczenia Usług",
+      "accept": "Akceptuję Warunki Świadczenia Usług",
+      "accepting": "Zapisywanie akceptacji..."
+    },
+    "SdsApproval": {
+      "gateTitle": "Zatwierdzenie klienta wymagane przed wygenerowaniem SDS",
+      "clientNameLabel": "Nazwa klienta",
+      "clientNamePlaceholder": "Wprowadź nazwę firmy końcowego zleceniodawcy",
+      "confirmApproval": "Potwierdź zatwierdzenie i kontynuuj",
+      "confirmingApproval": "Potwierdzanie...",
+      "approved": "Zatwierdzone — możesz teraz wygenerować SDS"
+    },
+    "DrvUpload": {
+      "uploadDecisionLetter": "Prześlij pismo decyzyjne DRV",
+      "uploading": "Przesyłanie...",
+      "uploadedAt": "Przesłano {date} przez {user}",
+      "downloadLetter": "Pobierz pismo decyzyjne",
+      "fileTooLarge": "Plik za duży (maks. 10 MB)"
     }
   },
   "Consent": {
@@ -5034,6 +5158,61 @@
         "emptyNoAssessmentsHeading": "Brak ukończonych ocen",
         "emptyNoAssessmentsBody": "Przeprowadź ocenę IR35 lub Scheinselbständigkeit dla zaangażowania, aby wypełnić ten widok."
       }
+    },
+    "documents": {
+      "title": "Dokumenty klasyfikacji",
+      "subtitle": "Wygeneruj wymagane prawem oświadczenie o statusie (SDS) oraz pakiet obrony audytowej.",
+      "generateSds": "Wygeneruj SDS",
+      "generateDisabled": "Ukończ ocenę klasyfikacji IR35, aby wygenerować SDS.",
+      "generateDrvBundle": "Wygeneruj pakiet obrony DRV",
+      "drvDisabledNeedAssessment": "Ukończ ocenę klasyfikacji Scheinselbständigkeit, aby wygenerować pakiet obrony DRV.",
+      "drvDisabledNeedAttestation": "Zarejestruj poniżej oświadczenie o innych klientach przed wygenerowaniem pakietu obrony DRV.",
+      "generating": "Generowanie…",
+      "documentHistory": "Historia dokumentów",
+      "emptyState": "Nie wygenerowano jeszcze żadnych dokumentów.",
+      "download": "Pobierz",
+      "generatedOn": "Wygenerowano {date}",
+      "byteSize": "{kb} KB",
+      "toastSdsGenerated": "SDS wygenerowane — otwieram pobieranie…",
+      "errorGenericTitle": "Nie udało się wygenerować dokumentu",
+      "kindSds": "Oświadczenie o statusie (SDS)",
+      "kindDrvDefenseBundle": "Pakiet obrony audytowej DRV"
+    },
+    "AdvisoryBanner": {
+      "label": "Informacja prawna"
+    },
+    "ExpertHelp": {
+      "title": "Uzyskaj pomoc eksperta",
+      "subtitle": "Skontaktuj się z wykwalifikowanymi doradcami w sprawach klasyfikacji.",
+      "orgAdviser": {
+        "title": "Doradca Twojej organizacji",
+        "description": "Twoja organizacja wyznaczyła doradcę do spraw klasyfikacji.",
+        "contact": "Skontaktuj się z doradcą"
+      },
+      "gb": {
+        "title": "Doradcy IR35 (Wielka Brytania)",
+        "description": "Skontaktuj się z doradcami podatkowymi akredytowanymi przez CIOT lub ATT, specjalizującymi się w IR35.",
+        "ciot": {
+          "title": "CIOT — wyszukiwarka doradców podatkowych",
+          "description": "Katalog członków Chartered Institute of Taxation"
+        },
+        "hmrc": {
+          "title": "HMRC Employment Status Manual",
+          "description": "Oficjalne wytyczne HMRC dotyczące IR35 i statusu zatrudnienia"
+        }
+      },
+      "de": {
+        "title": "Steuerberater für Scheinselbständigkeit",
+        "description": "Spezialisierte Beratung zur Scheinselbständigkeit und DRV-Statusfeststellung.",
+        "steuerberater": {
+          "title": "Steuerberaterkammer — Mitgliedssuche",
+          "description": "Regionale Steuerberaterkammern der Bundessteuerberaterkammer"
+        },
+        "drv": {
+          "title": "DRV Statusfeststellungsverfahren",
+          "description": "Offizielle DRV-Informationen zum Statusfeststellungsverfahren nach § 7a SGB IV"
+        }
+      }
     }
   },
   "EInvoice": {
@@ -5428,6 +5607,78 @@
       "autoSelectHint": "Wybrano automatycznie na podstawie roli kontraktora: {roleName}",
       "manualOverrideHint": "Wybierz inny szablon…",
       "cta": "Rozpocznij offboarding"
+    }
+  },
+  "Ir35Chain": {
+    "title": "Łańcuch IR35",
+    "subtitle": "Śledź łańcuch klient → agencja → PSC → wykonawca oraz dostarczenie/potwierdzenie SDS dla każdego ogniwa.",
+    "emptyState": "Brak uczestników łańcucha.",
+    "addParticipant": "Dodaj uczestnika",
+    "addParticipantTitle": "Dodaj uczestnika łańcucha",
+    "addParticipantHint": "Dodaj agencję lub spółkę osobistą (PSC) do łańcucha tego zlecenia.",
+    "displayName": "Nazwa wyświetlana",
+    "roleLabel": "Rola",
+    "contactEmail": "E-mail kontaktowy",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "saving": "Zapisywanie…",
+    "confirm": "Potwierdź",
+    "noteLabel": "Notatka (opcjonalna)",
+    "markDelivered": "Oznacz jako dostarczone",
+    "markAcknowledged": "Oznacz jako potwierdzone",
+    "markDeliveredTitle": "Oznacz SDS jako dostarczone",
+    "markAcknowledgedTitle": "Oznacz SDS jako potwierdzone",
+    "remove": "Usuń",
+    "notDelivered": "Nie dostarczone",
+    "notAcknowledged": "Nie potwierdzone",
+    "columnRole": "Rola",
+    "columnDisplayName": "Nazwa",
+    "columnDelivered": "Dostarczone",
+    "columnAcknowledged": "Potwierdzone",
+    "columnActions": "Akcje",
+    "role": {
+      "CLIENT": "Klient",
+      "AGENCY": "Agencja",
+      "PSC": "PSC",
+      "WORKER": "Wykonawca"
+    }
+  },
+  "OtherClientAttestation": {
+    "title": "Oświadczenie o innych klientach",
+    "subtitle": "Potwierdź, czy ten kontrahent współpracuje z innymi klientami — wykorzystywane do wsparcia pakietu obrony audytowej DRV.",
+    "statementLabel": "Oświadczenie",
+    "statementHint": "Opisz swoich pozostałych aktywnych klientów. Maksymalnie {max} znaków.",
+    "signedNameLabel": "Imię i nazwisko podpisującego",
+    "submit": "Złóż oświadczenie",
+    "update": "Zaktualizuj oświadczenie",
+    "saving": "Zapisywanie…"
+  },
+  "Admin": {
+    "BoeRate": {
+      "pageTitle": "Historia stopy bazowej Bank of England",
+      "pageSubtitle": "Dane referencyjne zasilające obliczenia ustawowych odsetek za opóźnienie w UK",
+      "colEffectiveFrom": "Obowiązuje od",
+      "colRatePercent": "Stopa %",
+      "colSource": "Źródło",
+      "colRecordedBy": "Zapisane przez",
+      "colRecordedAt": "Zapisane",
+      "colNotes": "Uwagi",
+      "sourceBoeApi": "API BOE",
+      "sourceManual": "Ręcznie",
+      "addCta": "+ Dodaj stopę",
+      "addDialogTitle": "Dodaj wpis stopy bazowej BoE",
+      "deleteDialogTitle": "Usunąć wpis stopy BoE?",
+      "deleteDialogBody": "Usunięcie historycznej stopy zmienia obliczenia odsetek dla wszystkich faktur, które stały się przeterminowane w okresie jej obowiązywania. Kontynuuj wyłącznie wtedy, gdy wpis został wprowadzony błędnie.",
+      "pollerSuccess": "Ostatnie odpytanie API BOE: {date} — stopa bez zmian / zapisano nową stopę {percent}%",
+      "pollerFailure": "Ostatnie odpytanie API BOE nie powiodło się dnia {date}. Wpis ręczny nadal możliwy; mechanizm ponowi próbę przy kolejnym zaplanowanym uruchomieniu."
+    },
+    "ClassificationEngineFlag": {
+      "title": "Status flagi Classification Engine",
+      "subtitle": "Status wyłącznika module.classification-engine oraz rejestr zatwierdzeń klauzul.",
+      "appSideValue": "Wartość po stronie aplikacji (co widzą użytkownicy)",
+      "signoffRegistry": "Rejestr zatwierdzeń",
+      "pendingGate": "Flaga włączona w Unleash, ale zablokowana w aplikacji — {count} klauzul(a) OCZEKUJĄCYCH.",
+      "pendingGateResolution": "Rozwiąż, przesyłając PR aktualizujący packages/validators/src/legal/signoff-registry.json"
     }
   }
 }

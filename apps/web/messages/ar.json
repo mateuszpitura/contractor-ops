@@ -796,6 +796,25 @@
       "inviteFailed": "Failed to send invite",
       "deactivateFailed": "Failed to deactivate member",
       "reminderDefaultsFailed": "Failed to update reminder defaults"
+    },
+    "WorkflowRoles": {
+      "heading": "أدوار سير العمل",
+      "subtitle": "إدارة قوالب مهام نقل المعرفة لكل دور مقاول.",
+      "addCta": "إضافة قالب دور",
+      "emptyHeading": "لا توجد قوالب أدوار مخصصة",
+      "emptyBody": "القوالب الأربعة المدمجة (مهندس برمجيات، مصمم، مدير منتج، مستشار عام) متاحة دائمًا. أضف قالبًا مخصصًا لتوسيع تصنيف الأدوار لفريقك.",
+      "copyFromEnglish": "نسخ من الإنجليزية",
+      "taskTitleLabel": "عنوان المهمة",
+      "taskDescriptionLabel": "الوصف",
+      "dueDayLabel": "الاستحقاق بعد N يومًا من البدء",
+      "saveCta": "حفظ القالب",
+      "savingCta": "جارٍ الحفظ…"
+    },
+    "PtoKeywords": {
+      "heading": "الكلمات المفتاحية لإجازات التقويم",
+      "subtitle": "أضف كلمات مفتاحية خاصة بكل لغة. تُعامَل أحداث التقويم التي تتطابق عناوينها مع هذه الكلمات باعتبارها إجازة مدفوعة.",
+      "empty": "لا توجد كلمات مفتاحية إضافية. الكلمات المدمجة لا تزال فعّالة.",
+      "addCta": "إضافة كلمة مفتاحية"
     }
   },
   "Users": {
@@ -2860,7 +2879,104 @@
       "completed": "مكتمل",
       "cancelled": "ملغى"
     },
-    "newPaymentRun": "New payment run"
+    "newPaymentRun": "New payment run",
+    "bacs": {
+      "settingsPageTitle": "إعدادات تصدير المدفوعات",
+      "settingsPageSubtitle": "تكوين بيانات المُرسِل لتصدير دفعات BACS في المملكة المتحدة و SEPA في الاتحاد الأوروبي",
+      "sectionHeading": "مُرسِل BACS Standard 18 (المملكة المتحدة)",
+      "sunLabel": "رقم مستخدم الخدمة (SUN)",
+      "sunHelper": "رقم مستخدم خدمة BACS المكوّن من 6 أرقام والصادر عن البنك الراعي",
+      "sortCodeLabel": "رمز الفرز للحساب المُصدِر",
+      "accountNumberLabel": "رقم الحساب المُصدِر",
+      "submitterNameLabel": "اسم المُرسِل (بحد أقصى 18 حرفًا ASCII)",
+      "saveSubmitter": "حفظ بيانات المُرسِل",
+      "savedToast": "تم حفظ بيانات مُرسِل BACS",
+      "featureFlagOffBanner": "تصدير BACS معطّل. فعّله في إعدادات الميزات لاستخدام BACS Std 18.",
+      "previewCardTitle": "معاينة BACS Std 18",
+      "previewAction": "معاينة ملف BACS",
+      "downloadAction": "تنزيل ملف BACS",
+      "transliterationWarning": "تم تحويل {count} حرفًا إلى مجموعة أحرف BACS. راجع المعاينة قبل التنزيل.",
+      "unmappableError": "تعذّر تحويل {count} حرفًا — سيرفض BACS هذا الملف. عدّل اسم/أسماء المقاولين وحاول مجددًا.",
+      "modulusWarningTitle": "فحوصات رمز الفرز",
+      "emptyState": "لا توجد عناصر مؤهلة لـ BACS في هذه الدفعة. أضف مقاولين من المملكة المتحدة بفواتير بالجنيه الإسترليني لتوليد ملف BACS.",
+      "submitterNotConfigured": "بيانات مُرسِل BACS مطلوبة. كوّنها في الإعدادات ← المدفوعات.",
+      "generateFailure": "فشل توليد ملف BACS. حاول مجددًا أو تواصل مع الدعم إذا استمرت المشكلة."
+    },
+    "ukBank": {
+      "sortCodeLabel": "رمز الفرز البريطاني",
+      "sortCodeHelper": "6 أرقام، تُضاف الشرطات تلقائيًا",
+      "accountNumberLabel": "رقم الحساب البريطاني",
+      "accountNumberHelper": "8 أرقام",
+      "validateButton": "التحقق من رمز الفرز",
+      "validationSuccess": "اجتاز رمز الفرز فحص المُعامل (modulus)",
+      "validationWarn": "رمز الفرز ضمن نطاق استثنائي — فحص المُعامل غير حاسم. تابع إذا أكد البنك صحة هذا الحساب.",
+      "validationFail": "صيغة رمز الفرز غير صالحة — مطلوب 6 أرقام"
+    },
+    "lateInterest": {
+      "sectionHeading": "الفائدة القانونية على التأخر في السداد",
+      "explanationTooltip": "تُحتسب بموجب Late Payment of Commercial Debts (Interest) Act 1998. المعدّل = معدّل بنك إنجلترا الأساسي + 8%، يُثبَّت في آخر يوم من فترة الستة أشهر القانونية السابقة (30 يونيو أو 31 ديسمبر).",
+      "b2cBanner": "الفائدة القانونية غير مطبّقة (معاملة B2C).",
+      "principalOutstanding": "أصل المبلغ المستحق",
+      "daysOverdue": "أيام التأخر",
+      "rateUsed": "المعدّل المستخدم",
+      "dailyAccrual": "الاستحقاق اليومي",
+      "interestAccrued": "الفائدة المستحقة",
+      "fixedCompensation": "التعويض الثابت",
+      "totalStatutoryClaim": "إجمالي المطالبة القانونية",
+      "claimCta": "المطالبة بالفائدة القانونية",
+      "claimSecondaryOption": "إصدار المطالبة كفاتورة ثانوية",
+      "claimDialogTitle": "المطالبة بالفائدة القانونية؟",
+      "claimDialogBody": "سيؤدي هذا إلى تثبيت المبالغ الحالية للفائدة والتعويض، وتوليد ملف PDF لخطاب المطالبة، وإصدار فاتورة ثانوية بمبلغ المطالبة (اختياريًا). اللقطة غير قابلة للتعديل — لن يُضاف إليها أي استحقاق لاحق.",
+      "downloadClaimPdf": "تنزيل خطاب المطالبة",
+      "claimedBanner": "تم تثبيت لقطة المطالبة في {date} — £{amount}. لا تُحتسب فائدة إضافية على هذه المطالبة.",
+      "waiveCta": "التنازل عن الفائدة",
+      "waiveDialogTitle": "التنازل عن الفائدة القانونية؟",
+      "waiveReasonPlaceholder": "السبب (مطلوب، 10 أحرف على الأقل) — مثلاً: تسوية متفاوض عليها مع العميل، بادرة حسن نيّة، خطأ إداري",
+      "waiveTypeInterestOnly": "الفائدة فقط",
+      "waiveTypeCompensationOnly": "التعويض فقط",
+      "waiveTypeBoth": "كلاهما",
+      "waiveConfirm": "التنازل عن الفائدة",
+      "waivedBanner": "تم التنازل عن الفائدة في {date} بواسطة {name}. {revokeLink}",
+      "revokeWaiverCta": "إلغاء التنازل",
+      "revokeReasonPlaceholder": "سبب الإلغاء (مطلوب) — مثلاً: رفض العميل التسوية"
+    },
+    "overdueInterest": {
+      "columnHeader": "فائدة التأخر",
+      "filterChip": "متأخر",
+      "emptyState": "لا توجد فواتير B2B بريطانية متأخرة"
+    },
+    "dashboardTile": {
+      "title": "الذمم المتأخرة (المملكة المتحدة)",
+      "subline": "{principal} مستحق — +{interest} فائدة مستحقة",
+      "clickThrough": "عرض الفواتير المتأخرة ←"
+    },
+    "skonto": {
+      "sectionHeading": "خصم السداد المبكر (Skonto)",
+      "useDefaultPill": "يستخدم الإعداد الافتراضي للمقاول: {percent}% / {discountDays} يومًا / صافي {netDays} يومًا",
+      "customizeToggle": "تخصيص لهذه الفاتورة",
+      "discountPercentLabel": "نسبة الخصم %",
+      "discountPeriodLabel": "فترة الخصم (أيام)",
+      "netPeriodLabel": "الفترة الصافية (أيام)",
+      "previewLineEn": "خصم {percent}% عند السداد خلال {discountDays} يومًا، وإلا صافي {netDays} يومًا",
+      "saveTerm": "حفظ شروط Skonto",
+      "deleteInvoiceSpecific": "إعادة التعيين إلى افتراضي المقاول",
+      "validationPercentRange": "يجب أن يكون الخصم بين 0 و 50%",
+      "validationDaysOrdering": "يجب أن تكون فترة الخصم أقصر من الفترة الصافية",
+      "eligibleBanner": "وفّر {discountAmount} عند السداد بحلول {date} — الإجمالي بعد الخصم {discountedTotal}",
+      "windowExpiredBanner": "انتهت نافذة الخصم في {date}",
+      "takenBanner": "تم تطبيق Skonto عند السداد: تم توفير {discountAmount} في {paidDate}",
+      "notTakenBanner": "تم السداد بعد نافذة الخصم — لم يُطبَّق Skonto",
+      "defaultSectionHeading": "خصم السداد المبكر الافتراضي",
+      "defaultHelper": "يُطبَّق تلقائيًا على فواتير DE الجديدة لهذا المقاول. ويمكن تجاوزه لكل فاتورة على حدة.",
+      "saveDefault": "حفظ Skonto الافتراضي",
+      "clearDefault": "إزالة Skonto الافتراضي",
+      "lineCheckboxLabel": "تطبيق Skonto بنسبة {percent}% — توفير {discountAmount}",
+      "outsideWindowHelper": "انتهت نافذة الخصم ({date}) — يُطبَّق المبلغ الكامل",
+      "snapshotToast": "تم تطبيق Skonto على الدفعة — {count} فاتورة مخصومة، تم توفير {totalSavings}",
+      "columnHeader": "Skonto",
+      "emptyCell": "—",
+      "cellFormat": "{percent}% {discountDays}/{netDays}"
+    }
   },
   "Reports": {
     "title": "التقارير",
@@ -4057,6 +4173,10 @@
         "contact": {
           "heading": "10. Contact",
           "body": "For questions about these Terms, contact us at legal@contractorops.com."
+        },
+        "softwareNotLegalAdvice": {
+          "heading": "البرنامج — ليس استشارة قانونية أو مهنية",
+          "subheading": "قيود مهمة على طبيعة مخرجات هذه المنصة"
         }
       }
     },
@@ -4196,6 +4316,29 @@
           "body": "To report a suspected data breach or for questions about this procedure, contact our security team at security@contractorops.com. For general privacy inquiries, contact privacy@contractorops.com."
         }
       }
+    },
+    "SdsApproval": {
+      "gateTitle": "موافقة العميل مطلوبة قبل توليد SDS",
+      "clientNameLabel": "اسم العميل",
+      "clientNamePlaceholder": "أدخل اسم الشركة المتعاقِدة النهائية",
+      "confirmApproval": "تأكيد الموافقة والمتابعة",
+      "confirmingApproval": "جارٍ التأكيد...",
+      "approved": "تمت الموافقة — يمكنك الآن توليد SDS"
+    },
+    "DrvUpload": {
+      "uploadDecisionLetter": "رفع خطاب قرار DRV",
+      "uploading": "جارٍ الرفع...",
+      "uploadedAt": "تم الرفع في {date} بواسطة {user}",
+      "downloadLetter": "تنزيل خطاب القرار",
+      "fileTooLarge": "الملف كبير جدًا (بحد أقصى 10 ميغابايت)"
+    },
+    "TermsModal": {
+      "title": "شروط الخدمة المُحدّثة",
+      "description": "تم تحديث شروط الخدمة لدينا (الإصدار {version}). يُرجى مراجعتها وقبولها لمتابعة استخدام المنصة.",
+      "readFull": "اقرأ النص الكامل لـ",
+      "termsLink": "شروط الخدمة",
+      "accept": "أوافق على شروط الخدمة",
+      "accepting": "جارٍ تسجيل القبول..."
     }
   },
   "Consent": {
@@ -5015,6 +5158,61 @@
         "emptyNoAssessmentsHeading": "لا توجد تقييمات مكتملة بعد",
         "emptyNoAssessmentsBody": "أجرِ تقييم IR35 أو Scheinselbständigkeit من أي ارتباط لملء هذا العرض."
       }
+    },
+    "documents": {
+      "title": "مستندات التصنيف",
+      "subtitle": "توليد بيان تحديد الحالة المطلوب قانونيًا وحزمة الدفاع للتدقيق.",
+      "generateSds": "توليد SDS",
+      "generateDisabled": "أكمل تقييم تصنيف IR35 لتوليد SDS.",
+      "generateDrvBundle": "توليد حزمة دفاع DRV",
+      "drvDisabledNeedAssessment": "أكمل تقييم تصنيف Scheinselbständigkeit لتوليد حزمة دفاع DRV.",
+      "drvDisabledNeedAttestation": "سجّل إقرار العملاء الآخرين أدناه قبل توليد حزمة دفاع DRV.",
+      "generating": "جارٍ التوليد…",
+      "documentHistory": "سجل المستندات",
+      "emptyState": "لم يتم توليد أي مستندات بعد.",
+      "download": "تنزيل",
+      "generatedOn": "تم التوليد في {date}",
+      "byteSize": "{kb} كيلوبايت",
+      "toastSdsGenerated": "تم توليد SDS — يجري فتح التنزيل…",
+      "errorGenericTitle": "تعذّر توليد المستند",
+      "kindSds": "بيان تحديد الحالة (Status Determination Statement)",
+      "kindDrvDefenseBundle": "حزمة دفاع تدقيق DRV"
+    },
+    "AdvisoryBanner": {
+      "label": "إشعار قانوني"
+    },
+    "ExpertHelp": {
+      "title": "احصل على مساعدة متخصصة",
+      "subtitle": "تواصل مع مستشارين مؤهلين للإجابة عن استفسارات التصنيف.",
+      "orgAdviser": {
+        "title": "مستشار مؤسستك",
+        "description": "عيّنت مؤسستك مستشارًا للإجابة عن استفسارات التصنيف.",
+        "contact": "التواصل مع المستشار"
+      },
+      "gb": {
+        "title": "مستشارو IR35 في المملكة المتحدة",
+        "description": "تواصل مع مستشاري ضرائب معتمدين من CIOT أو ATT متخصصين في IR35.",
+        "ciot": {
+          "title": "CIOT — البحث عن مستشار ضرائب",
+          "description": "دليل أعضاء Chartered Institute of Taxation"
+        },
+        "hmrc": {
+          "title": "دليل HMRC لحالة التوظيف",
+          "description": "الإرشادات الرسمية من HMRC حول IR35 وحالة التوظيف"
+        }
+      },
+      "de": {
+        "title": "Steuerberater للتعامل مع Scheinselbständigkeit",
+        "description": "استشارات متخصصة حول Scheinselbständigkeit وإجراءات تحديد الحالة لدى DRV.",
+        "steuerberater": {
+          "title": "Steuerberaterkammer — البحث عن عضو",
+          "description": "غرف Steuerberater الإقليمية التابعة لـ Bundessteuerberaterkammer"
+        },
+        "drv": {
+          "title": "إجراء تحديد الحالة لدى DRV (Statusfeststellungsverfahren)",
+          "description": "المعلومات الرسمية من DRV حول إجراء تحديد الحالة وفق § 7a SGB IV"
+        }
+      }
     }
   },
   "EInvoice": {
@@ -5252,6 +5450,235 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       }
+    }
+  },
+  "Ir35Chain": {
+    "title": "سلسلة IR35",
+    "subtitle": "تتبّع سلسلة العميل ← الوكالة ← PSC ← العامل، وحالة تسليم/استلام SDS لكل حلقة.",
+    "emptyState": "لا يوجد مشاركون في السلسلة بعد.",
+    "addParticipant": "إضافة مشارك",
+    "addParticipantTitle": "إضافة مشارك في السلسلة",
+    "addParticipantHint": "أضف وكالة أو شركة خدمة شخصية إلى سلسلة هذا التعاقد.",
+    "displayName": "الاسم المعروض",
+    "roleLabel": "الدور",
+    "contactEmail": "البريد الإلكتروني لجهة الاتصال",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "confirm": "تأكيد",
+    "noteLabel": "ملاحظة (اختياري)",
+    "markDelivered": "تحديد كمُسلَّم",
+    "markAcknowledged": "تحديد كمُستلَم",
+    "markDeliveredTitle": "تحديد SDS كمُسلَّم",
+    "markAcknowledgedTitle": "تحديد SDS كمُستلَم",
+    "remove": "إزالة",
+    "notDelivered": "لم يُسلَّم",
+    "notAcknowledged": "لم يُستلَم",
+    "columnRole": "الدور",
+    "columnDisplayName": "الاسم",
+    "columnDelivered": "تم التسليم",
+    "columnAcknowledged": "تم الاستلام",
+    "columnActions": "الإجراءات",
+    "role": {
+      "CLIENT": "العميل",
+      "AGENCY": "الوكالة",
+      "PSC": "PSC",
+      "WORKER": "العامل"
+    }
+  },
+  "OtherClientAttestation": {
+    "title": "إقرار بوجود عملاء آخرين",
+    "subtitle": "أكّد ما إذا كان هذا المقاول مرتبطًا بعملاء آخرين — يُستخدم لدعم حزمة دفاع تدقيق DRV.",
+    "statementLabel": "الإقرار",
+    "statementHint": "صِف عملاءك النشطين الآخرين. بحد أقصى {max} حرفًا.",
+    "signedNameLabel": "الاسم الموقِّع",
+    "submit": "إرسال الإقرار",
+    "update": "تحديث الإقرار",
+    "saving": "جارٍ الحفظ…"
+  },
+  "Admin": {
+    "BoeRate": {
+      "pageTitle": "سجل المعدّل الأساسي لبنك إنجلترا",
+      "pageSubtitle": "بيانات مرجعية تدعم حسابات الفائدة القانونية على التأخر في السداد في المملكة المتحدة",
+      "colEffectiveFrom": "سارٍ من",
+      "colRatePercent": "المعدّل %",
+      "colSource": "المصدر",
+      "colRecordedBy": "سُجِّل بواسطة",
+      "colRecordedAt": "تاريخ التسجيل",
+      "colNotes": "ملاحظات",
+      "sourceBoeApi": "BOE API",
+      "sourceManual": "يدوي",
+      "addCta": "+ إضافة معدّل",
+      "addDialogTitle": "إضافة سجل معدّل أساسي لبنك إنجلترا",
+      "deleteDialogTitle": "حذف سجل معدّل BoE؟",
+      "deleteDialogBody": "حذف معدّل تاريخي يُغيّر حسابات الفائدة لأي فواتير أصبحت متأخرة خلال فترة سريانه. تابع فقط إذا تم إدخال هذا السجل بالخطأ.",
+      "pollerSuccess": "آخر استعلام لـ BoE API: {date} — المعدّل دون تغيير / تم تسجيل معدّل جديد {percent}%",
+      "pollerFailure": "فشل آخر استعلام لـ BoE API في {date}. لا يزال الإدخال اليدوي ممكنًا؛ سيُعاد المحاولة في التشغيل المجدول التالي."
+    },
+    "ClassificationEngineFlag": {
+      "title": "حالة علم محرّك التصنيف",
+      "subtitle": "حالة مفتاح إيقاف module.classification-engine وسجل توقيعات الإقرار.",
+      "appSideValue": "القيمة على جانب التطبيق (ما يراه المستخدمون)",
+      "signoffRegistry": "سجل التوقيعات",
+      "pendingGate": "العَلم مُفعَّل في Unleash ولكنه مُقيَّد على مستوى التطبيق — {count} إقرار(ات) قيد الانتظار.",
+      "pendingGateResolution": "حلّ المشكلة بإرسال PR يُحدّث packages/validators/src/legal/signoff-registry.json"
+    }
+  },
+  "Offboarding": {
+    "Templates": {
+      "SoftwareEngineer": {
+        "displayName": "مهندس برمجيات",
+        "handoverDocs": {
+          "title": "تسليم الوثائق التقنية",
+          "description": "سلِّم مخططات البنية، وأدلة التشغيل، وأي وثائق تقنية داخلية يمتلكها المقاول."
+        },
+        "codeWalkthrough": {
+          "title": "إرشاد الخلف عبر قاعدة الكود",
+          "description": "اعقد جلسة تعاون مع الخلف لجولة موجَّهة عبر الخدمات والمستودعات وسير عمل CI التي كان المقاول مسؤولًا عنها."
+        },
+        "openPRs": {
+          "title": "إغلاق أو تسليم طلبات السحب المفتوحة",
+          "description": "أغلِق أو ادمج أو انقل ملكية كل طلب سحب مفتوح أنشأه المقاول."
+        },
+        "deploymentRunbook": {
+          "title": "تحديث دليل تشغيل النشر",
+          "description": "وثِّق في دليل تشغيل النشر المعرفة الضمنية لدى المقاول — الخصوصيات ومسارات التصعيد وفحوصات ما بعد النشر."
+        },
+        "onCallRotation": {
+          "title": "إزالة من جدول المناوبات",
+          "description": "استبدل المقاول في جداول PagerDuty / Opsgenie وأبلِغ بقية المناوبين."
+        },
+        "architectureNotes": {
+          "title": "تسجيل قرارات البنية المعمارية",
+          "description": "وثِّق أي قرارات معمارية قيد التنفيذ كان المقاول يقودها."
+        },
+        "knownIssues": {
+          "title": "توثيق المشكلات المعروفة والإصلاحات قيد العمل",
+          "description": "اذكر المشكلات المعروفة في الإنتاج التي كان المقاول يتابعها وحالة أي إصلاحات جارية."
+        }
+      },
+      "Designer": {
+        "displayName": "مصمم",
+        "designSystemHandover": {
+          "title": "تسليم ملكية نظام التصميم",
+          "description": "انقل ملكية مكوّنات نظام التصميم والرموز (tokens) وأنماط المساهمة إلى الخلف."
+        },
+        "figmaTransfer": {
+          "title": "نقل ملكية مشاريع Figma",
+          "description": "انقل ملفات Figma الخاصة بالمقاول إلى مكتبة الفريق وأعِد توزيع مقاعد المحرّرين."
+        },
+        "assetLibraryAccess": {
+          "title": "تحديث صلاحيات مكتبة الأصول",
+          "description": "أزِل المقاول من مكتبات الأصول المشتركة وأعِد توزيع مهام الإشراف."
+        },
+        "activeProjects": {
+          "title": "تسليم مشاريع التصميم النشطة",
+          "description": "أرشِد الخلف عبر كل مشروع تصميم قيد التنفيذ — النطاق والقيود والقرارات المفتوحة."
+        },
+        "brandGuidelinesUpdate": {
+          "title": "تحديث صاحب إرشادات العلامة التجارية",
+          "description": "استبدل المقاول كجهة تأليف إرشادات العلامة التجارية وأعِد تشغيل سير عمل النشر."
+        },
+        "researchArchive": {
+          "title": "أرشفة مخرجات أبحاث تجربة المستخدم",
+          "description": "انقل ملاحظات وأبحاث ومستندات تركيب المعلومات الخاصة بالمقاول إلى أرشيف الفريق."
+        }
+      },
+      "ProductManager": {
+        "displayName": "مدير منتج",
+        "roadmapTransfer": {
+          "title": "نقل ملكية خارطة الطريق",
+          "description": "سلِّم مستند خارطة الطريق وأي لوحات تخطيط إلى الخلف أو المالك المؤقت."
+        },
+        "stakeholderIntros": {
+          "title": "تعريف أصحاب المصلحة بالخلف",
+          "description": "حدّد مكالمات تعارف بين أصحاب المصلحة الرئيسيين والخلف أو المالك المؤقت."
+        },
+        "activeInitiatives": {
+          "title": "تسليم المبادرات النشطة",
+          "description": "اطلع الخلف على كل مبادرة قيد التنفيذ — النطاق والعوائق والمراحل التالية."
+        },
+        "metricsContext": {
+          "title": "توثيق تعريفات المقاييس وسجلّها",
+          "description": "وثِّق سبب تتبّع كل مقياس وأي تحفظات يحتاجها الخلف لتفسيره بشكل صحيح."
+        },
+        "researchInsights": {
+          "title": "أرشفة رؤى البحث",
+          "description": "احفظ رؤى أبحاث المستخدمين، ومحاضر المقابلات، ومستندات تركيب المعلومات في مكتبة الفريق."
+        },
+        "vendorRelationships": {
+          "title": "إعادة توزيع علاقات المورّدين",
+          "description": "أبلِغ المورّدين الخارجيين بتغيير جهة الاتصال وأعِد تعيين المالك من جانب الفريق لكل عقد."
+        }
+      },
+      "GenericConsultant": {
+        "displayName": "مستشار عام",
+        "handoverDocs": {
+          "title": "تسليم وثائق التعاقد",
+          "description": "جمِّع حزمة تسليم واحدة تغطي النطاق والمخرجات والقرارات والمخاطر العالقة."
+        },
+        "activeProjectStatus": {
+          "title": "توثيق حالة المشاريع النشطة",
+          "description": "سجّل لقطة لحالة كل مشروع نشط — المُنجز والقيد التنفيذ والمعرَّض للخطر."
+        },
+        "clientStakeholderHandover": {
+          "title": "تسليم علاقات العملاء وأصحاب المصلحة",
+          "description": "اطلع الخلف على كل عميل وأصحاب المصلحة الرئيسيين، بما في ذلك تفضيلات التواصل والسياق السياسي."
+        },
+        "deliverableArchive": {
+          "title": "أرشفة المخرجات والملفات المصدر",
+          "description": "ارفع المخرجات النهائية والملفات المصدر (عروض تقديمية، جداول، مسودات) إلى مستودع الفريق."
+        },
+        "knowledgeRepoIndex": {
+          "title": "فهرسة المساهمات في قاعدة المعرفة",
+          "description": "فهرِس مساهمات المقاول في قاعدة معرفة الفريق لتسهيل الوصول إليها."
+        },
+        "contactDirectory": {
+          "title": "تسليم دليل جهات الاتصال",
+          "description": "شارك قائمة جهات الاتصال المنسَّقة للمقاول (العملاء، المورّدون، المستشارون) مع الخلف."
+        }
+      }
+    },
+    "OverrideDialog": {
+      "title": "تجاوز حظر التحقق من الملكية الفكرية",
+      "description": "يمكن للمالكين إكمال عملية الإنهاء دون التحقق من الملكية الفكرية. التجاوز دائم ومُسجَّل في سجل التدقيق.",
+      "reasonLabel": "سبب التجاوز",
+      "reasonPlaceholder": "صِف سبب تجاوز التحقق من الملكية الفكرية (20 حرفًا كحد أدنى).",
+      "reasonClientError": "قدّم ما لا يقل عن 20 حرفًا تشرح فيها التجاوز.",
+      "reasonServerError": "يجب ألا يقل السبب عن 20 حرفًا وأن يتضمن شرحًا جوهريًا.",
+      "acknowledgement": "أؤكّد أن التحقق من الملكية الفكرية يُتجاوَز عمدًا وأتحمّل مسؤولية أي فجوة امتثال.",
+      "cta": "تجاوز",
+      "ctaLoading": "جارٍ تسجيل التجاوز…",
+      "cancel": "إلغاء",
+      "discardConfirm": {
+        "title": "تجاهل سبب التجاوز؟",
+        "body": "لقد كتبت سبب تجاوز. إغلاق النافذة الآن سيؤدي إلى تجاهله.",
+        "confirm": "تجاهل",
+        "cancel": "متابعة التحرير"
+      }
+    },
+    "OverrideBadge": {
+      "label": "تم تجاوز التحقق من الملكية الفكرية",
+      "tooltipReason": "السبب: {reason}",
+      "tooltipActor": "تم التجاوز بواسطة {name} في {date}",
+      "tooltipBlockedTask": "المهمة المحظورة: IP_VERIFICATION"
+    },
+    "PtoBadge": {
+      "label": "لا يوجد معتمِد احتياطي — المدير في إجازة",
+      "tooltip": "قم بتكوين معتمِد احتياطي في الإعدادات ← الفرق لتفادي التوجيه إلى مالكي المؤسسة افتراضيًا."
+    },
+    "LocaleFallback": {
+      "suffix": " (بالإنجليزية)",
+      "srDescription": "لم تتم ترجمة حقل القالب هذا إلى {targetLocale}؛ يُعرض النص الإنجليزي كقيمة احتياطية."
+    }
+  },
+  "Workflow": {
+    "Start": {
+      "heading": "بدء عملية إنهاء التعاقد مع {contractor}",
+      "templateLabel": "قالب نقل المعرفة",
+      "autoSelectHint": "تم التحديد تلقائيًا من دور المقاول: {roleName}",
+      "manualOverrideHint": "اختر قالبًا مختلفًا…",
+      "cta": "بدء عملية إنهاء التعاقد"
     }
   }
 }
