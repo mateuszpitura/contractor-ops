@@ -40,13 +40,16 @@ export function SocialButtons() {
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">{t('socialDivider')}</span>
-        </div>
+      {/* Editorial divider — gradient lines fade into the label so it reads
+          cleanly on solid, glass, or aurora surfaces in either color mode.
+          Replaces the prior bg-card-masked border-t, which showed as an
+          opaque rectangle over the glass-medium login card. */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border/50" />
+        <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+          {t('socialDivider')}
+        </span>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-border/50" />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
