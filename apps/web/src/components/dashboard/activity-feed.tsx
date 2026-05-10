@@ -37,6 +37,19 @@ interface GroupedActivities {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Audit-log actions are stored as compound `resource.verb` strings
+ * (e.g. `'invoice.approve'`, `'contractor.create'`). The i18n `actions`
+ * map is keyed by the verb alone, so the resource prefix has to be
+ * stripped before resolving the translation; otherwise next-intl
+ * interprets the dot as a nested-path separator and throws
+ * MISSING_MESSAGE.
+ */
+function actionVerb(action: string): string {
+  const lastDot = action.lastIndexOf('.');
+  return lastDot >= 0 ? action.slice(lastDot + 1) : action;
+}
+
 function getEntityHref(resourceType: string, resourceId: string): string {
   switch (resourceType) {
     case 'CONTRACTOR':
@@ -163,7 +176,7 @@ export function ActivityFeed() {
                             </span>{' '}
                             <span className="font-semibold">
                               {t(
-                                `activity.actions.${enumKey(item.action)}` as Parameters<
+                                `activity.actions.${enumKey(actionVerb(item.action))}` as Parameters<
                                   typeof t
                                 >[0],
                               )}
