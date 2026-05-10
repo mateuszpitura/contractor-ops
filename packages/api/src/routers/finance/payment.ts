@@ -61,10 +61,153 @@ const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
 // Payment run helpers
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// createPaymentRun — composable helpers
+//
+// The `create` mutation's transaction body was previously a 100+ line block
+// mixing input fetch, validation, currency grouping, lock acquisition, and
+// per-group run creation. Each concern is now extracted into a thin helper
+// below so the top-level $transaction callback reads as a flat sequence of
+// well-named steps. Helpers are intentionally local to this file — they
+// share the `paymentRunCreateSchema` input shape and have no other call site.
+// ---------------------------------------------------------------------------
+
 /**
- * Generates the sequential run number for a payment run (e.g., PR-2026-001).
+ * Shape of an invoice loaded for payment-run creation. Captured as a type
+ * alias so helpers can express intent without re-deriving the Prisma include
+ * payload at every signature.
  */
-async function _generateRunNumber(tx: TxClient, organizationId: string): Promise<string> {
+type EligibleInvoice = Awaited<ReturnType<TxClient['invoice']['findMany']>>[number] & {
+  billingProfile: { id: string; preferredCurrency: string } | null;
+};
+
+/**
+ * Fetches all invoices in the given id list scoped to the organization,
+ * pulling the minimum data needed for downstream validation + item seeding.
+ */
+async function loadEligibleInvoices(
+  tx: TxClient,
+  organizationId: string,
+  invoiceIds: readonly string[],
+): Promise<EligibleInvoice[]> {
+  return (await tx.invoice.findMany({
+    where: {
+      id: { in: [...invoiceIds] },
+      organizationId,
+      deletedAt: null,
+    },
+    include: {
+      billingProfile: { select: { id: true, preferredCurrency: true } },
+    },
+  })) as EligibleInvoice[];
+}
+
+/**
+ * Validates that the loaded invoices are usable for a new payment run.
+ * Throws TRPCError on any failure; returns void on success.
+ *
+ * Checks (in this order, matching the original inline flow):
+ *   1. Every invoice must have `paymentStatus === 'READY'`.
+ *   2. Every requested id must be present (no missing/cross-tenant rows).
+ */
+function validateInvoicesForRun(
+  invoices: EligibleInvoice[],
+  requestedIds: readonly string[],
+): void {
+  if (invoices.some(inv => inv.paymentStatus !== 'READY')) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.PAYMENT_INVOICES_NOT_READY,
+    });
+  }
+
+  if (invoices.length !== requestedIds.length) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: E.PAYMENT_INVOICES_NOT_FOUND,
+    });
+  }
+}
+
+/**
+ * Partitions invoices into per-currency groups when `groupByCurrency` is set,
+ * otherwise returns a single group keyed on the explicit currency override
+ * (falling back to the invoices' shared currency). Throws BAD_REQUEST when
+ * invoices span multiple currencies and grouping is disabled.
+ */
+function groupInvoicesByCurrency(
+  invoices: EligibleInvoice[],
+  options: { groupByCurrency: boolean; currencyOverride?: string },
+): Map<string, EligibleInvoice[]> {
+  const groups = new Map<string, EligibleInvoice[]>();
+
+  if (options.groupByCurrency) {
+    for (const inv of invoices) {
+      const bucket = groups.get(inv.currency) ?? [];
+      bucket.push(inv);
+      groups.set(inv.currency, bucket);
+    }
+    return groups;
+  }
+
+  const currencies = new Set(invoices.map(inv => inv.currency));
+  if (currencies.size > 1) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: E.PAYMENT_MIXED_CURRENCIES,
+    });
+  }
+
+  const currency = options.currencyOverride ?? invoices[0]?.currency ?? 'PLN';
+  groups.set(currency, invoices);
+  return groups;
+}
+
+/**
+ * Persists payment-run items for the given run and flips the source invoices
+ * to `IN_RUN`. Also applies WHT calculations when the organization is in a
+ * jurisdiction that requires it (Saudi cross-border).
+ *
+ * All writes are routed through `tx` so they participate in the caller's
+ * transaction — no behavior change from the previous inline implementation.
+ */
+async function seedRunItems(
+  tx: TxClient,
+  args: {
+    organizationId: string;
+    runId: string;
+    invoices: EligibleInvoice[];
+  },
+): Promise<void> {
+  await tx.paymentRunItem.createMany({
+    data: args.invoices.map(inv => ({
+      organizationId: args.organizationId,
+      paymentRunId: args.runId,
+      invoiceId: inv.id,
+      contractorId: inv.contractorId as string,
+      billingProfileId: inv.billingProfileId ?? null,
+      amountMinor: inv.amountToPayMinor,
+      currency: inv.currency,
+      status: 'PENDING' as const,
+    })),
+  });
+
+  // WHT calculations must run after items exist (they update items in-place).
+  await _applyWhtIfSaudi(tx, args.organizationId, args.runId);
+
+  await tx.invoice.updateMany({
+    where: { id: { in: args.invoices.map(inv => inv.id) } },
+    data: { paymentStatus: 'IN_RUN' },
+  });
+}
+
+/**
+ * Allocates the next sequential run number for a payment run within the
+ * current year (e.g., `PR-2026-001`). Caller MUST hold the per-org payment
+ * advisory lock before invoking — the read-then-format pattern is not safe
+ * under concurrent allocation otherwise.
+ */
+async function allocateRunNumber(tx: TxClient, organizationId: string): Promise<string> {
   const year = new Date().getFullYear();
   const prefix = `PR-${year}-`;
 
@@ -367,55 +510,13 @@ export const paymentRouter = router({
       let result: PaymentRun[];
       try {
         result = await ctx.db.$transaction(async tx => {
-          // Fetch all invoices with their data
-          const invoices = await tx.invoice.findMany({
-            where: {
-              id: { in: input.invoiceIds },
-              organizationId: ctx.organizationId,
-              deletedAt: null,
-            },
-            include: {
-              billingProfile: { select: { id: true, preferredCurrency: true } },
-            },
+          const invoices = await loadEligibleInvoices(tx, ctx.organizationId, input.invoiceIds);
+          validateInvoicesForRun(invoices, input.invoiceIds);
+
+          const groups = groupInvoicesByCurrency(invoices, {
+            groupByCurrency: input.groupByCurrency,
+            currencyOverride: input.currency,
           });
-
-          // Verify all invoices have paymentStatus READY
-          const notReady = invoices.filter(inv => inv.paymentStatus !== 'READY');
-          if (notReady.length > 0) {
-            throw new TRPCError({
-              code: 'BAD_REQUEST',
-              message: E.PAYMENT_INVOICES_NOT_READY,
-            });
-          }
-
-          if (invoices.length !== input.invoiceIds.length) {
-            throw new TRPCError({
-              code: 'NOT_FOUND',
-              message: E.PAYMENT_INVOICES_NOT_FOUND,
-            });
-          }
-
-          // Group invoices by currency if requested
-          const groups: Map<string, typeof invoices> = new Map();
-          if (input.groupByCurrency) {
-            for (const inv of invoices) {
-              const curr = inv.currency;
-              if (!groups.has(curr)) groups.set(curr, []);
-              groups.get(curr)?.push(inv);
-            }
-          } else {
-            // Validate all invoices share the same currency
-            const currencies = new Set(invoices.map(inv => inv.currency));
-            if (currencies.size > 1) {
-              throw new TRPCError({
-                code: 'BAD_REQUEST',
-                message: E.PAYMENT_MIXED_CURRENCIES,
-              });
-            }
-            groups.set(input.currency ?? invoices[0]?.currency ?? 'PLN', invoices);
-          }
-
-          const runs: PaymentRun[] = [];
 
           // Per-org payment-run serialization. Namespace `'payment'`
           // partitions the keyspace from cron / org / sync locks; the org id
@@ -426,30 +527,11 @@ export const paymentRouter = router({
             ctx.organizationId,
           );
 
+          const runs: PaymentRun[] = [];
           for (const [currency, groupInvoices] of groups) {
-            // Generate sequential run number
-            const year = new Date().getFullYear();
-            const prefix = `PR-${year}-`;
-
-            const lastRun = await tx.paymentRun.findFirst({
-              where: {
-                organizationId: ctx.organizationId,
-                runNumber: { startsWith: prefix },
-              },
-              orderBy: { runNumber: 'desc' },
-              select: { runNumber: true },
-            });
-
-            const seq = lastRun?.runNumber
-              ? parseInt(lastRun.runNumber.replace(prefix, ''), 10) + 1
-              : 1;
-
-            const runNumber = `${prefix}${String(seq).padStart(3, '0')}`;
-
-            // Calculate totals
+            const runNumber = await allocateRunNumber(tx, ctx.organizationId);
             const totalMinor = groupInvoices.reduce((sum, inv) => sum + inv.amountToPayMinor, 0);
 
-            // Create the run
             const run = await tx.paymentRun.create({
               data: {
                 organizationId: ctx.organizationId,
@@ -464,26 +546,10 @@ export const paymentRouter = router({
               },
             });
 
-            // Batch-create items and update invoice statuses
-            await tx.paymentRunItem.createMany({
-              data: groupInvoices.map(inv => ({
-                organizationId: ctx.organizationId,
-                paymentRunId: run.id,
-                invoiceId: inv.id,
-                contractorId: inv.contractorId as string,
-                billingProfileId: inv.billingProfileId ?? null,
-                amountMinor: inv.amountToPayMinor,
-                currency: inv.currency,
-                status: 'PENDING' as const,
-              })),
-            });
-
-            // Apply WHT calculations for Saudi orgs on cross-border payments
-            await _applyWhtIfSaudi(tx, ctx.organizationId, run.id);
-
-            await tx.invoice.updateMany({
-              where: { id: { in: groupInvoices.map(inv => inv.id) } },
-              data: { paymentStatus: 'IN_RUN' },
+            await seedRunItems(tx, {
+              organizationId: ctx.organizationId,
+              runId: run.id,
+              invoices: groupInvoices,
             });
 
             runs.push(run);
