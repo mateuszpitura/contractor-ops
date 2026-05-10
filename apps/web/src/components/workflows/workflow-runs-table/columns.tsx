@@ -1,5 +1,7 @@
 'use client';
 
+import type { WorkflowRunStatusInput } from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -30,19 +32,6 @@ export type WorkflowRunRow = {
     percent: number;
   };
   tasks: Array<{ status: string; resultJson?: unknown }>;
-};
-
-// ---------------------------------------------------------------------------
-// Status badge styling per UI-SPEC
-// ---------------------------------------------------------------------------
-
-const statusBadgeColors: Record<string, string> = {
-  NOT_STARTED: 'bg-muted text-muted-foreground border border-border',
-  IN_PROGRESS: 'bg-primary/10 text-primary',
-  COMPLETED: 'bg-green-500/10 text-green-600 dark:text-green-400',
-  CANCELLED: 'bg-muted text-muted-foreground border border-border',
-  BLOCKED: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
 // ---------------------------------------------------------------------------
@@ -143,9 +132,10 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
       cell: ({ row }) => {
         const status = row.original.status;
         return (
-          <Badge variant="secondary" className={statusBadgeColors[status] ?? ''}>
+          <AtelierStatusPill
+            variant={statusToVariant('workflow-run', status as WorkflowRunStatusInput)}>
             {t(`runStatus.${enumKey(status)}`)}
-          </Badge>
+          </AtelierStatusPill>
         );
       },
     },

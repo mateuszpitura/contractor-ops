@@ -1,9 +1,10 @@
 'use client';
 
+import { AtelierTableShell } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { GitBranch, Loader2 } from 'lucide-react';
+import { GitBranch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -200,14 +201,21 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
         onFiltersChange={handleFiltersChange}
       />
 
-      {/* Table */}
-      <div className="relative rounded-xl border bg-background">
-        {/* Refetch overlay */}
-        {!!isRefetching && (
-          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          </div>
-        )}
+      {/* Workbench-tier table chrome */}
+      <AtelierTableShell
+        isLoading={isRefetching}
+        footer={
+          !isLoading && totalRows > 0 ? (
+            <DataTablePagination
+              table={table}
+              totalRows={totalRows}
+              pageSize={filters.pageSize}
+              currentPage={filters.page}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          ) : undefined
+        }>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -244,19 +252,7 @@ export function WorkflowRunsDataTable({ onRowClick, onStartWorkflow }: WorkflowR
             onClearFilters={clearFilters}
           />
         </Table>
-
-        {/* Pagination */}
-        {!isLoading && totalRows > 0 && (
-          <DataTablePagination
-            table={table}
-            totalRows={totalRows}
-            pageSize={filters.pageSize}
-            currentPage={filters.page}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        )}
-      </div>
+      </AtelierTableShell>
     </div>
   );
 }
