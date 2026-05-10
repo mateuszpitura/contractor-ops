@@ -107,7 +107,7 @@ import { GET } from '../route';
 function installTransactionPassThrough(acquired = true) {
   mockTxQueryRawUnsafe.mockResolvedValue([{ acquired }]);
   mockTransaction.mockImplementation(
-    async <T,>(fn: (tx: { $queryRawUnsafe: typeof mockTxQueryRawUnsafe }) => Promise<T>) => {
+    async <T>(fn: (tx: { $queryRawUnsafe: typeof mockTxQueryRawUnsafe }) => Promise<T>) => {
       return fn({ $queryRawUnsafe: mockTxQueryRawUnsafe });
     },
   );
@@ -169,9 +169,12 @@ describe('GET /api/cron/reminders', () => {
       skipped: false,
     });
     // Advisory lock query must be issued exactly once per tick.
+    // Two-arg form: class_id=1 ('cron' namespace) + key 'reminders'.
+    // See packages/api/src/lib/advisory-lock.ts.
     expect(mockTxQueryRawUnsafe).toHaveBeenCalledWith(
       expect.stringContaining('pg_try_advisory_xact_lock'),
-      'cron:reminders',
+      1,
+      'reminders',
     );
   });
 

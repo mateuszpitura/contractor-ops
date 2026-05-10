@@ -1,3 +1,4 @@
+import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
 import { sendAppEmail } from '@contractor-ops/api/services/app-email';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
@@ -13,7 +14,10 @@ const log = createCronLogger('trial-notifications');
 // F-ASYNC-07 — advisory lock prevents two overlapping ticks (timezone shift,
 // scheduler retry, manual re-trigger) from both fanning out to every
 // TRIALING subscription.
-const TRIAL_NOTIFICATIONS_LOCK_KEY = 'cron:trial-notifications';
+//
+// Lock key under the `'cron'` namespace (see packages/api/src/lib/advisory-lock.ts).
+// The namespace partitions the keyspace from per-org / payment / sync locks.
+const TRIAL_NOTIFICATIONS_LOCK_KEY = 'trial-notifications';
 
 function buildBillingUrl(): string {
   const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -145,11 +149,7 @@ async function handleTrialNotifications() {
     // queued tick from stacking.
     const result = await prismaRaw.$transaction(
       async tx => {
-        const lockRows = (await tx.$queryRawUnsafe(
-          'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
-          TRIAL_NOTIFICATIONS_LOCK_KEY,
-        )) as Array<{ acquired?: boolean }>;
-        const acquired = Boolean(lockRows?.[0]?.acquired);
+        const acquired = await tryAcquireXactLock(tx, 'cron', TRIAL_NOTIFICATIONS_LOCK_KEY);
         if (!acquired) {
           log.info('another trial-notifications tick is in flight; skipping');
           metrics.increment('cron.trial_notifications.skipped_locked');

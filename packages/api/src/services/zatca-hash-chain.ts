@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import crypto from 'node:crypto';
+import { acquireXactLock } from '../lib/advisory-lock.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -61,14 +62,20 @@ const GENESIS_PIH = crypto.createHash('sha256').update('0').digest('hex');
 /**
  * Acquire an advisory lock scoped to the organization.
  *
- * Uses `pg_advisory_xact_lock(hashtext(organizationId))` which is
- * transaction-scoped — automatically released on commit or rollback.
+ * Uses the two-arg `pg_advisory_xact_lock(class_id, hashtext($1))` form via
+ * the shared helper, namespaced under `'org'` so collisions stay
+ * subsystem-local (see `lib/advisory-lock.ts`). Transaction-scoped —
+ * automatically released on commit or rollback.
  *
  * Must be called within a Prisma interactive transaction (`$transaction`).
  * T-48-10: Combined with @@unique([orgId, icv]) prevents concurrent/duplicate entries.
  */
 export async function acquireChainLock(prisma: PrismaLike, organizationId: string): Promise<void> {
-  await prisma.$executeRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', organizationId);
+  await acquireXactLock(
+    prisma as unknown as Parameters<typeof acquireXactLock>[0],
+    'org',
+    organizationId,
+  );
 }
 
 /**

@@ -74,7 +74,7 @@ import { GET } from '../route';
 function installTransactionPassThrough(acquired = true) {
   mockTxQueryRawUnsafe.mockResolvedValue([{ acquired }]);
   mockTransaction.mockImplementation(
-    async <T,>(fn: (tx: { $queryRawUnsafe: typeof mockTxQueryRawUnsafe }) => Promise<T>) => {
+    async <T>(fn: (tx: { $queryRawUnsafe: typeof mockTxQueryRawUnsafe }) => Promise<T>) => {
       return fn({ $queryRawUnsafe: mockTxQueryRawUnsafe });
     },
   );
@@ -124,9 +124,12 @@ describe('GET /api/cron/trial-notifications', () => {
     });
     expect(mockSubscriptionFindMany).toHaveBeenCalled();
     // Advisory lock query must be issued exactly once per tick.
+    // Two-arg form: class_id=1 ('cron' namespace) + key 'trial-notifications'.
+    // See packages/api/src/lib/advisory-lock.ts.
     expect(mockTxQueryRawUnsafe).toHaveBeenCalledWith(
       expect.stringContaining('pg_try_advisory_xact_lock'),
-      'cron:trial-notifications',
+      1,
+      'trial-notifications',
     );
   });
 

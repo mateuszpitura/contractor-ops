@@ -211,7 +211,10 @@ export async function processKsefSync(params: {
     let duplicatesFound = 0;
     const errors: string[] = [];
     let client: KsefApiClient | null = null;
-    const lockKey = `ksef-sync:${params.connectionId}`;
+    // Per-connection sync lock under the `'sync'` namespace (see
+    // lib/advisory-lock.ts). The connection id is the natural key — we
+    // serialize syncs per integration connection, not per org.
+    const lockKey = `ksef:${params.connectionId}`;
     let lockAcquired = false;
 
     const syncLog = await db.integrationSyncLog.create({
@@ -227,7 +230,7 @@ export async function processKsefSync(params: {
 
     try {
       // Prevent overlapping syncs for the same connection (QStash retries + manual triggers).
-      lockAcquired = await tryAcquireAdvisoryLock(db as unknown as AdvisoryLockDb, lockKey);
+      lockAcquired = await tryAcquireAdvisoryLock(db as unknown as AdvisoryLockDb, 'sync', lockKey);
       if (!lockAcquired) {
         await db.integrationSyncLog.update({
           where: { id: syncLog.id },
@@ -373,7 +376,9 @@ export async function processKsefSync(params: {
       }
 
       if (lockAcquired) {
-        await releaseAdvisoryLock(db as unknown as AdvisoryLockDb, lockKey).catch(() => undefined);
+        await releaseAdvisoryLock(db as unknown as AdvisoryLockDb, 'sync', lockKey).catch(
+          () => undefined,
+        );
       }
     }
   });

@@ -92,7 +92,8 @@ const { mockPrisma } = vi.hoisted(() => {
       findUniqueOrThrow: vi.fn(async () => ({
         id: 'org-1',
         name: 'Test Org',
-        dataRegion: 'EU', status: 'ACTIVE',
+        dataRegion: 'EU',
+        status: 'ACTIVE',
         settingsJson: {
           paymentTransferTitleTemplate: '{invoice_number}',
           bankAccount: { iban: 'PL00000000000000000000000000', bic: 'BREXPLPW' },
@@ -129,8 +130,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -219,8 +220,6 @@ vi.mock('../../services/billing-service.js', () => ({
 vi.mock('../../services/cache.js', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -279,7 +278,14 @@ vi.mock('../../services/bank-statement.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -290,11 +296,29 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+    child: vi.fn(),
+  })),
+  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createWebhookLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
+  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  createIntegrationLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -304,31 +328,15 @@ vi.mock('@contractor-ops/logger', () => ({
   buildContextFromHeaders: vi.fn(() => ({})),
   getOutboundHeaders: vi.fn(() => ({})),
   generateRequestId: vi.fn(() => 'test-request-id'),
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
-  LOG_BODY_INCLUDE_PREFIXES: [],
-  PII_MASK_KEYWORDS: [],
-  PII_MASK_PATHS: [],
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
-  createWebhookLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  })),
-  createIntegrationLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  })),
   logger: Object.assign(
     { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
     {
       child: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }),
     },
   ),
+  LOG_BODY_INCLUDE_PREFIXES: [],
+  PII_MASK_KEYWORDS: [],
+  PII_MASK_PATHS: [],
 }));
 
 vi.mock('@contractor-ops/logger/metrics', () => ({
@@ -558,9 +566,12 @@ describe('payment router', () => {
 
       await caller.payment.create({ invoiceIds: [INVOICE_ID_1] });
 
+      // Two-arg form: class_id=3 ('payment' namespace) + hashtext(orgId).
+      // See packages/api/src/lib/advisory-lock.ts.
       expect(mockPrisma.$executeRawUnsafe).toHaveBeenCalledWith(
-        'SELECT pg_advisory_xact_lock(hashtext($1))',
-        `payment-run:${ORG_ID}`,
+        'SELECT pg_advisory_xact_lock($1, hashtext($2))',
+        3,
+        ORG_ID,
       );
     });
 

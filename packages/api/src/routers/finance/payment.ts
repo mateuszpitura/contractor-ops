@@ -15,6 +15,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors.js';
 import { router } from '../../init.js';
+import { acquireXactLock } from '../../lib/advisory-lock.js';
 import {
   clear as clearIdempotency,
   complete as completeIdempotency,
@@ -416,9 +417,13 @@ export const paymentRouter = router({
 
           const runs: PaymentRun[] = [];
 
-          await tx.$executeRawUnsafe(
-            'SELECT pg_advisory_xact_lock(hashtext($1))',
-            `payment-run:${ctx.organizationId}`,
+          // Per-org payment-run serialization. Namespace `'payment'`
+          // partitions the keyspace from cron / org / sync locks; the org id
+          // is the natural key because run numbers are allocated per-org.
+          await acquireXactLock(
+            tx as unknown as Parameters<typeof acquireXactLock>[0],
+            'payment',
+            ctx.organizationId,
           );
 
           for (const [currency, groupInvoices] of groups) {

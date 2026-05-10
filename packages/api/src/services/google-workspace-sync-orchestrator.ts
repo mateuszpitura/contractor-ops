@@ -50,8 +50,11 @@ export async function processDirectorySync(params: {
     },
   });
 
-  const lockKey = `google-workspace-sync:${connectionId}`;
-  const lockAcquired = await tryAcquireAdvisoryLock(prisma, lockKey);
+  // Per-connection sync lock under the `'sync'` namespace (see
+  // packages/api/src/lib/advisory-lock.ts). The connection id is the natural
+  // key — we serialize syncs per integration connection, not per org.
+  const lockKey = `google-workspace:${connectionId}`;
+  const lockAcquired = await tryAcquireAdvisoryLock(prisma, 'sync', lockKey);
   if (!lockAcquired) {
     await prisma.integrationSyncLog.update({
       where: { id: syncLog.id },
@@ -275,7 +278,7 @@ export async function processDirectorySync(params: {
     throw error;
   } finally {
     // Best-effort unlock; the lock is connection-scoped so it is safe to ignore unlock failures.
-    await releaseAdvisoryLock(prisma, lockKey).catch(() => undefined);
+    await releaseAdvisoryLock(prisma, 'sync', lockKey).catch(() => undefined);
   }
 }
 

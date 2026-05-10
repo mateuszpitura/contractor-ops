@@ -1,3 +1,4 @@
+import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
@@ -392,7 +393,10 @@ async function resolveRecipients(
 // holds the lock; the lock is released automatically on tx end. The whole
 // cron handler runs inside one prismaRaw $transaction so the lock spans the
 // rule walk + dispatches.
-const REMINDERS_LOCK_KEY = 'cron:reminders';
+// Lock key under the `'cron'` namespace (see packages/api/src/lib/advisory-lock.ts).
+// The namespace partitions the keyspace from per-org / payment / sync locks so
+// `pg_locks` rows are unambiguously attributable to a subsystem.
+const REMINDERS_LOCK_KEY = 'reminders';
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
@@ -412,11 +416,7 @@ export async function GET(request: NextRequest) {
           // frequency; 10 s `maxWait` keeps a queued tick from stacking.
           const result = await prismaRaw.$transaction(
             async tx => {
-              const lockRows = (await tx.$queryRawUnsafe(
-                'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
-                REMINDERS_LOCK_KEY,
-              )) as Array<{ acquired?: boolean }>;
-              const acquired = Boolean(lockRows?.[0]?.acquired);
+              const acquired = await tryAcquireXactLock(tx, 'cron', REMINDERS_LOCK_KEY);
 
               if (!acquired) {
                 log.info('another reminders cron tick is in flight; skipping');

@@ -29,14 +29,18 @@ describe('acquireChainLock', () => {
     vi.clearAllMocks();
   });
 
-  it('executes pg_advisory_xact_lock with the organizationId', async () => {
+  it('executes namespaced pg_advisory_xact_lock with the organizationId', async () => {
+    // The 'org' namespace maps to class_id=2 in lib/advisory-lock.ts.
+    // The two-arg form partitions the keyspace from cron / payment / sync
+    // locks so cross-subsystem hashtext collisions can't deadlock.
     mockExecuteRawUnsafe.mockResolvedValue(undefined);
 
     await acquireChainLock(mockPrisma as unknown as PrismaLike, 'org_test');
 
     expect(mockExecuteRawUnsafe).toHaveBeenCalledTimes(1);
     expect(mockExecuteRawUnsafe).toHaveBeenCalledWith(
-      'SELECT pg_advisory_xact_lock(hashtext($1))',
+      'SELECT pg_advisory_xact_lock($1, hashtext($2))',
+      2,
       'org_test',
     );
   });
