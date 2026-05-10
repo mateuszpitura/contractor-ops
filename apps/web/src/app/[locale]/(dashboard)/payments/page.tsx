@@ -1,6 +1,6 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -177,27 +177,31 @@ function PaymentsContent() {
         />
       ) : (
         <AnimateIn delay={1}>
-          {/* Toolbar */}
-          <DataTableToolbar
-            activeStatus={status}
-            onStatusChange={handleStatusChange}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onDateFromChange={handleDateFromChange}
-            onDateToChange={handleDateToChange}
-          />
+          <section aria-label={t('title')} className="space-y-3">
+            <SectionLabel icon={CreditCard}>{t('title')}</SectionLabel>
 
-          {/* Table */}
-          <PaymentRunDataTable
-            data={data}
-            columns={columns}
-            isLoading={isLoading}
-            hasNextPage={!!nextCursor}
-            hasPreviousPage={cursors.length > 0}
-            onNextPage={handleNextPage}
-            onPreviousPage={handlePreviousPage}
-            onRowClick={handleRowClick}
-          />
+            {/* Toolbar */}
+            <DataTableToolbar
+              activeStatus={status}
+              onStatusChange={handleStatusChange}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateFromChange={handleDateFromChange}
+              onDateToChange={handleDateToChange}
+            />
+
+            {/* Table */}
+            <PaymentRunDataTable
+              data={data}
+              columns={columns}
+              isLoading={isLoading}
+              hasNextPage={!!nextCursor}
+              hasPreviousPage={cursors.length > 0}
+              onNextPage={handleNextPage}
+              onPreviousPage={handlePreviousPage}
+              onRowClick={handleRowClick}
+            />
+          </section>
         </AnimateIn>
       )}
 
@@ -258,12 +262,12 @@ function PaymentsLoading() {
         ))}
       </div>
       {/* Table skeleton */}
-      <div className="rounded-xl border bg-background">
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
             key={`skel-${i}`}
-            className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+            className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
             <Skeleton className="h-4 w-24" />
             <Skeleton className="h-4 w-20" />
             <Skeleton className="h-4 w-16" />

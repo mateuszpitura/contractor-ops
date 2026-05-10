@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierTableShell } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -58,7 +59,26 @@ export function PaymentRunDataTable({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-background">
+      <AtelierTableShell
+        isLoading={isLoading}
+        footer={
+          !isLoading && (hasPreviousPage || hasNextPage) ? (
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onPreviousPage}
+                disabled={!hasPreviousPage}>
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" onClick={onNextPage} disabled={!hasNextPage}>
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : undefined
+        }>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -102,21 +122,7 @@ export function PaymentRunDataTable({
                 : null}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      {!isLoading && (hasPreviousPage || hasNextPage) && (
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onPreviousPage} disabled={!hasPreviousPage}>
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button variant="outline" size="sm" onClick={onNextPage} disabled={!hasNextPage}>
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+      </AtelierTableShell>
     </div>
   );
 }
