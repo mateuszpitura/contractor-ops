@@ -75,6 +75,7 @@ async function handler(_request: NextRequest) {
  */
 async function getPendingCount(): Promise<number | null> {
   try {
+    // safe-raw-sql: queue.depth gauge is a global system metric across all tenants — intentionally not org-scoped.
     const rows = await prismaRaw.$queryRawUnsafe<Array<{ count: bigint | number }>>(
       `SELECT COUNT(*)::bigint AS count FROM "OutboxEvent" WHERE "status" = 'PENDING' AND "nextAttemptAt" <= NOW()`,
     );

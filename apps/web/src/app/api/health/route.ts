@@ -105,6 +105,7 @@ function skipped(name: ProbeResult['name']): ProbeResult {
 async function probeDatabase(): Promise<ProbeResult> {
   const start = performance.now();
   try {
+    // safe-raw-sql: database liveness probe — `SELECT 1` has no tenant dimension.
     await withTimeout(prisma.$queryRaw`SELECT 1`, PROBE_TIMEOUT_MS);
     return ok('database', start);
   } catch (err) {
@@ -231,13 +232,7 @@ async function probeR2(): Promise<ProbeResult> {
 
 export async function GET() {
   const start = performance.now();
-  const probes = [
-    probeDatabase(),
-    probeRedis(),
-    probeQStash(),
-    probeR2(),
-    probeBackpressure(),
-  ];
+  const probes = [probeDatabase(), probeRedis(), probeQStash(), probeR2(), probeBackpressure()];
 
   const settled = await withTimeout(Promise.allSettled(probes), HANDLER_TIMEOUT_MS).catch(err => {
     // If even allSettled timed out, return synthetic fail rows so we still
@@ -253,8 +248,7 @@ export async function GET() {
 
   const results: ProbeResult[] = settled.map((s, i) => {
     if (s.status === 'fulfilled') return s.value;
-    const name =
-      (['database', 'redis', 'qstash', 'r2', 'backpressure'] as const)[i] ?? 'database';
+    const name = (['database', 'redis', 'qstash', 'r2', 'backpressure'] as const)[i] ?? 'database';
     return {
       name,
       status: 'fail',

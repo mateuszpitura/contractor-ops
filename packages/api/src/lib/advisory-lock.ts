@@ -81,6 +81,7 @@ export async function tryAcquireAdvisoryLock(
   key: string,
 ): Promise<boolean> {
   const classId = classIdFor(namespace);
+  // safe-raw-sql: pg_try_advisory_lock is a Postgres session primitive with no tenant column; namespacing is encoded in classId/key.
   const rows = (await db.$queryRawUnsafe(
     'SELECT pg_try_advisory_lock($1, hashtext($2)) AS acquired',
     classId,
@@ -132,6 +133,7 @@ export async function tryAcquireXactLock(
   key: string,
 ): Promise<boolean> {
   const classId = classIdFor(namespace);
+  // safe-raw-sql: pg_try_advisory_xact_lock is a Postgres tx-scoped primitive with no tenant column; namespacing is encoded in classId/key.
   const rows = (await tx.$queryRawUnsafe(
     'SELECT pg_try_advisory_xact_lock($1, hashtext($2)) AS acquired',
     classId,

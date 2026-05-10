@@ -16,6 +16,7 @@
     "check:no-process-env": "node scripts/check-no-process-env.mjs",
     "lint:schema": "tsx scripts/lint-schema.mjs",
     "lint:logs": "tsx scripts/lint-logs.mjs",
+    "lint:raw-sql": "tsx scripts/check-raw-sql-tenant-scoped.ts",
     "i18n:parity": "tsx scripts/i18n-parity.mjs",
     "test": "turbo test",
     "test:coverage": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger && vitest run --coverage",

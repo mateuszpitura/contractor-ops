@@ -338,6 +338,7 @@ export const auth = betterAuth({
           // crosses the threshold; otherwise it leaves the existing value alone
           // (so a stale lock window from a previous run is not extended).
           const lockUntil = new Date(Date.now() + LOCKOUT_DURATION_MIN * 60_000);
+          // safe-raw-sql: User table is global identity (keyed by email, not org-scoped); sign-in lockout has no tenant dimension.
           const rows = await prisma.$queryRaw<
             Array<{ failedLoginAttempts: number; lockedUntil: Date | null }>
           >`

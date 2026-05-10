@@ -167,6 +167,7 @@ async function withProbeTimeout<T>(promise: Promise<T>, ms: number, label: strin
 async function probeDatabase(): Promise<DependencyProbe> {
   const start = Date.now();
   try {
+    // safe-raw-sql: database liveness probe — `SELECT 1` has no tenant dimension.
     await withProbeTimeout(
       prisma.$queryRaw`SELECT 1` as Promise<unknown>,
       PROBE_TIMEOUT_MS,
@@ -329,8 +330,7 @@ function probeIntegrations(): DependencyProbe {
   const snapshots = getBreakerSnapshots();
   const open = snapshots.filter(s => s.state === 'OPEN');
   const halfOpen = snapshots.filter(s => s.state === 'HALF_OPEN');
-  const status: DependencyHealthStatus =
-    open.length > 0 || halfOpen.length > 0 ? 'DEGRADED' : 'OK';
+  const status: DependencyHealthStatus = open.length > 0 || halfOpen.length > 0 ? 'DEGRADED' : 'OK';
   return {
     name: 'integrations',
     status,
