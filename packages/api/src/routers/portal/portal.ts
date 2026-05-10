@@ -7,6 +7,7 @@ import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import type { TenantScopedDb } from '../../lib/tenant-db.js';
 import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-auth.js';
+import { writeAuditLog } from '../../services/audit-writer.js';
 import { encryptBankAccount } from '../../services/bank-account-crypto.js';
 import {
   assertValidContractorTaxId,
@@ -1404,21 +1405,23 @@ export const portalRouter = router({
           data: { status: 'RETURN_REQUESTED' },
         });
 
-        // Audit log
-        await tx.auditLog.create({
-          data: {
-            organizationId: ctx.organizationId,
-            actorType: 'CONTRACTOR',
-            actorId: ctx.contractorId,
-            actorName: ctx.contractor?.email ?? 'contractor',
-            action: 'returnRequest.create',
-            resourceType: 'RETURN_REQUEST',
-            resourceId: returnRequest.id,
-            newValuesJson: {
-              targetPointId: input.targetPointId,
-              targetPointName: input.targetPointName,
-              equipmentCount: equipmentIds.length,
-            },
+        // Audit log — DRIFT-03: route through shared writer so portal audit
+        // rows share the same shape (oldValues / newValues / metadata
+        // discipline) as core mutations.
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'CONTRACTOR',
+          actorId: ctx.contractorId,
+          actorName: ctx.contractor?.email ?? 'contractor',
+          action: 'returnRequest.create',
+          resourceType: 'RETURN_REQUEST',
+          resourceId: returnRequest.id,
+          oldValues: null,
+          newValues: {
+            targetPointId: input.targetPointId,
+            targetPointName: input.targetPointName,
+            equipmentCount: equipmentIds.length,
           },
         });
 
@@ -1495,18 +1498,18 @@ export const portalRouter = router({
           data: { status: 'ASSIGNED' },
         });
 
-        // Audit log
-        await tx.auditLog.create({
-          data: {
-            organizationId: ctx.organizationId,
-            actorType: 'CONTRACTOR',
-            actorId: ctx.contractorId,
-            actorName: ctx.contractor?.email ?? 'contractor',
-            action: 'returnRequest.cancel',
-            resourceType: 'RETURN_REQUEST',
-            resourceId: input.id,
-            newValuesJson: { status: 'CANCELLED' },
-          },
+        // Audit log — DRIFT-03: route through shared writer.
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'CONTRACTOR',
+          actorId: ctx.contractorId,
+          actorName: ctx.contractor?.email ?? 'contractor',
+          action: 'returnRequest.cancel',
+          resourceType: 'RETURN_REQUEST',
+          resourceId: input.id,
+          oldValues: { status: returnRequest.status },
+          newValues: { status: 'CANCELLED' },
         });
 
         return updated;

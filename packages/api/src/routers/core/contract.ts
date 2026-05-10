@@ -15,7 +15,7 @@ import * as E from '../../errors.js';
 import { router } from '../../init.js';
 import { requirePermission } from '../../middleware/rbac.js';
 import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
+import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer.js';
 import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync.js';
 import { deleteCalendarEvent } from '../../services/calendar-event-service.js';
 
@@ -726,28 +726,29 @@ export const contractRouter = router({
           });
 
           // F-DB-07 — batch the per-row audit inserts into a single
-          // `auditLog.createMany`. Phase 60 CLASS-08 still wants one audit
-          // row per transitioned contract so the reassessment scan can
-          // detect each status change individually; we just write them all
-          // in one round-trip instead of N inside the transaction.
-          const auditRows = valid.map(id => {
-            const prev = oldStatusById.get(id);
-            return {
-              organizationId: ctx.organizationId,
-              actorType: 'USER' as const,
-              actorId: ctx.user?.id ?? null,
-              actorName: ctx.user?.name ?? null,
-              action: 'STATUS_TRANSITION',
-              resourceType: 'CONTRACT' as const,
-              resourceId: id,
-              resourceName: prev?.title ?? null,
-              oldValuesJson: { status: prev?.status ?? null },
-              newValuesJson: { status: input.targetStatus },
-            };
-          });
-
-          await tx.auditLog.createMany({
-            data: auditRows as Parameters<typeof tx.auditLog.createMany>[0]['data'],
+          // `auditLog.createMany` via the shared writer. Phase 60 CLASS-08
+          // still wants one audit row per transitioned contract so the
+          // reassessment scan can detect each status change individually;
+          // `writeAuditLogMany` writes them all in one round-trip while
+          // applying the same before/after JSON discipline as the single-row
+          // helper (DRIFT-03).
+          await writeAuditLogMany({
+            tx,
+            rows: valid.map(id => {
+              const prev = oldStatusById.get(id);
+              return {
+                organizationId: ctx.organizationId,
+                actorType: 'USER',
+                actorId: ctx.user?.id ?? null,
+                actorName: ctx.user?.name ?? null,
+                action: 'STATUS_TRANSITION',
+                resourceType: 'CONTRACT',
+                resourceId: id,
+                resourceName: prev?.title ?? null,
+                oldValues: { status: prev?.status ?? null },
+                newValues: { status: input.targetStatus },
+              };
+            }),
           });
         });
       }

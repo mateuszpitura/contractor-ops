@@ -45,12 +45,16 @@ export type AuditEntityType =
 
 /**
  * Thin shape accepted for `tx` — any Prisma client (base or transactional)
- * that exposes `auditLog.create` suffices. We keep it structural so both the
- * tenant-extended client and raw `$transaction` tx accept cleanly.
+ * that exposes `auditLog.create` / `auditLog.createMany` suffices. We keep it
+ * structural so both the tenant-extended client and raw `$transaction` tx
+ * accept cleanly.
  */
 export interface AuditWriterClient {
   auditLog: {
     create: (args: { data: Prisma.AuditLogUncheckedCreateInput }) => Promise<unknown>;
+    createMany: (args: {
+      data: Prisma.AuditLogUncheckedCreateInput[];
+    }) => Promise<{ count: number }>;
   };
 }
 
@@ -73,11 +77,12 @@ export interface WriteAuditLogInput {
 }
 
 /**
- * Writes a single AuditLog row. Throws when organizationId or resourceId are
- * missing (invalid by construction); the thrown error surfaces to the calling
- * mutation so the outer transaction rolls back.
+ * Pure row-shaper: validates required keys and applies the shared
+ * before/after JSON discipline + actor-type defaults that every audit-log
+ * write must obey. Both `writeAuditLog` and `writeAuditLogMany` route through
+ * this so the persisted row shape is identical regardless of call style.
  */
-export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
+function buildAuditLogRow(input: WriteAuditLogInput): Prisma.AuditLogUncheckedCreateInput {
   if (!input.organizationId) {
     throw new Error('writeAuditLog: organizationId is required');
   }
@@ -85,29 +90,37 @@ export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
     throw new Error('writeAuditLog: resourceId is required');
   }
 
+  return {
+    organizationId: input.organizationId,
+    actorType: input.actorType as Prisma.AuditLogUncheckedCreateInput['actorType'],
+    actorId: input.actorId ?? null,
+    actorName: input.actorName ?? null,
+    action: input.action,
+    resourceType: input.resourceType as Prisma.AuditLogUncheckedCreateInput['resourceType'],
+    resourceId: input.resourceId,
+    resourceName: input.resourceName ?? null,
+    oldValuesJson: (input.oldValues ??
+      undefined) as Prisma.AuditLogUncheckedCreateInput['oldValuesJson'],
+    newValuesJson: (input.newValues ??
+      undefined) as Prisma.AuditLogUncheckedCreateInput['newValuesJson'],
+    metadataJson: (input.metadata ??
+      undefined) as Prisma.AuditLogUncheckedCreateInput['metadataJson'],
+    ipAddress: input.ipAddress ?? null,
+    userAgent: input.userAgent ?? null,
+  };
+}
+
+/**
+ * Writes a single AuditLog row. Throws when organizationId or resourceId are
+ * missing (invalid by construction); the thrown error surfaces to the calling
+ * mutation so the outer transaction rolls back.
+ */
+export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
+  const data = buildAuditLogRow(input);
   const client: AuditWriterClient = input.tx ?? (prisma as unknown as AuditWriterClient);
 
   try {
-    await client.auditLog.create({
-      data: {
-        organizationId: input.organizationId,
-        actorType: input.actorType as Prisma.AuditLogUncheckedCreateInput['actorType'],
-        actorId: input.actorId ?? null,
-        actorName: input.actorName ?? null,
-        action: input.action,
-        resourceType: input.resourceType as Prisma.AuditLogUncheckedCreateInput['resourceType'],
-        resourceId: input.resourceId,
-        resourceName: input.resourceName ?? null,
-        oldValuesJson: (input.oldValues ??
-          undefined) as Prisma.AuditLogUncheckedCreateInput['oldValuesJson'],
-        newValuesJson: (input.newValues ??
-          undefined) as Prisma.AuditLogUncheckedCreateInput['newValuesJson'],
-        metadataJson: (input.metadata ??
-          undefined) as Prisma.AuditLogUncheckedCreateInput['metadataJson'],
-        ipAddress: input.ipAddress ?? null,
-        userAgent: input.userAgent ?? null,
-      },
-    });
+    await client.auditLog.create({ data });
   } catch (err) {
     log.error(
       {
@@ -118,6 +131,56 @@ export async function writeAuditLog(input: WriteAuditLogInput): Promise<void> {
         action: input.action,
       },
       'writeAuditLog failed',
+    );
+    throw err;
+  }
+}
+
+/**
+ * Per-row payload accepted by `writeAuditLogMany`. Identical to
+ * {@link WriteAuditLogInput} minus the transaction client — that is supplied
+ * once at the batch level so every row commits in the same transaction.
+ */
+export type WriteAuditLogManyRow = Omit<WriteAuditLogInput, 'tx'>;
+
+export interface WriteAuditLogManyInput {
+  /** Audit rows to insert. Each row is validated independently. */
+  rows: ReadonlyArray<WriteAuditLogManyRow>;
+  /**
+   * Optional Prisma transaction client — when supplied the batch insert joins
+   * the caller's transaction. Defaults to the shared `prisma` client.
+   */
+  tx?: AuditWriterClient;
+}
+
+/**
+ * Bulk variant of {@link writeAuditLog}. Forwards to `auditLog.createMany`
+ * after applying the same validation + before/after JSON discipline to every
+ * row, so callers writing N audit events in a single mutation get one
+ * round-trip without losing the centralised shape.
+ *
+ * Empty `rows` is a no-op so callers can pass filtered arrays without an
+ * outer guard.
+ */
+export async function writeAuditLogMany(input: WriteAuditLogManyInput): Promise<void> {
+  if (input.rows.length === 0) {
+    return;
+  }
+
+  const data = input.rows.map(buildAuditLogRow);
+  const client: AuditWriterClient = input.tx ?? (prisma as unknown as AuditWriterClient);
+
+  try {
+    await client.auditLog.createMany({ data });
+  } catch (err) {
+    log.error(
+      {
+        err,
+        rowCount: data.length,
+        organizationId: data[0]?.organizationId,
+        resourceType: data[0]?.resourceType,
+      },
+      'writeAuditLogMany failed',
     );
     throw err;
   }
