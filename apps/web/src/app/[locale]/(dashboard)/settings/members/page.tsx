@@ -1,7 +1,7 @@
 'use client';
 
-import { AtelierPageHeader } from '@contractor-ops/ui';
-import { UserPlus } from 'lucide-react';
+import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import { UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { InviteDialog } from '@/components/settings/invite-dialog';
@@ -40,7 +40,10 @@ export default function MembersPage() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
-        <UsersTable />
+        <section aria-label={t('title')} className="space-y-3">
+          <SectionLabel icon={Users}>{t('title')}</SectionLabel>
+          <UsersTable />
+        </section>
       </AnimateIn>
 
       <InviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />

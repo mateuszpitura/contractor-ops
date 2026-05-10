@@ -1,7 +1,7 @@
 'use client';
 
 import type { MemberStatusInput } from '@contractor-ops/ui';
-import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
+import { AtelierStatusPill, AtelierTableShell, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -135,7 +135,7 @@ export function UsersTable() {
 
   if (membersQuery.isLoading) {
     return (
-      <div className="rounded-xl border bg-background">
+      <AtelierTableShell>
         <Table>
           <TableHeader>
             <TableRow>
@@ -173,13 +173,13 @@ export function UsersTable() {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </AtelierTableShell>
     );
   }
 
   if (members.length === 0) {
     return (
-      <div className="rounded-xl border bg-background py-16 text-center">
+      <div className="overflow-hidden rounded-xl border border-border/50 bg-card py-16 text-center">
         <h3 className="text-[16px] font-medium">{t('emptyState.heading')}</h3>
         <p className="mt-1 text-sm text-muted-foreground">{t('emptyState.body')}</p>
       </div>
@@ -194,7 +194,7 @@ export function UsersTable() {
 
   return (
     <>
-      <div className="rounded-xl border bg-background">
+      <AtelierTableShell isLoading={membersQuery.isFetching && !membersQuery.isLoading}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -296,7 +296,7 @@ export function UsersTable() {
             })}
           </TableBody>
         </Table>
-      </div>
+      </AtelierTableShell>
 
       {!!deactivateTarget && (
         <DeactivateDialog
