@@ -1,3 +1,14 @@
+// ---------------------------------------------------------------------------
+// Cache helper policy
+// ---------------------------------------------------------------------------
+// Two cache-aside helpers ship from this module — pick based on contention:
+//   • cachedSingleflight() — hot path / dashboard / fan-in-heavy reads.
+//     Redis SETNX-backed cross-instance singleflight prevents thundering-herd
+//     on cold cache when N pods miss simultaneously.
+//   • cached() — cool path / low-contention reads. In-process singleflight
+//     only; cheaper, no extra Redis round-trip for the lock.
+// ---------------------------------------------------------------------------
+
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { Redis } from '@upstash/redis';
