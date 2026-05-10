@@ -17,6 +17,8 @@ type AdvisoryLockDb = {
   $executeRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;
 };
 
+type TenantDb = ReturnType<typeof createTenantClientFrom>;
+
 const log = createLogger({ service: 'ksef-sync-orchestrator' });
 
 // ---------------------------------------------------------------------------
@@ -27,7 +29,7 @@ const log = createLogger({ service: 'ksef-sync-orchestrator' });
  * Updates the IntegrationConnection status after a sync cycle completes.
  */
 async function updateConnectionAfterSync(
-  db: ReturnType<typeof createTenantClientFrom>,
+  db: TenantDb,
   connectionId: string,
   errors: string[],
 ): Promise<void> {
@@ -49,7 +51,7 @@ async function updateConnectionAfterSync(
  * Dispatches a batch notification to admin/finance users after KSeF sync.
  */
 async function dispatchKsefSyncNotification(
-  db: ReturnType<typeof createTenantClientFrom>,
+  db: TenantDb,
   organizationId: string,
   connectionId: string,
   invoicesCreated: number,
@@ -96,7 +98,7 @@ async function dispatchKsefSyncNotification(
  * or 'created' on success.
  */
 async function processSingleKsefInvoice(
-  db: ReturnType<typeof createTenantClientFrom>,
+  db: TenantDb,
   client: KsefApiClient,
   organizationId: string,
   ksefReferenceNumber: string,
@@ -170,6 +172,298 @@ async function processSingleKsefInvoice(
 }
 
 // ---------------------------------------------------------------------------
+// Sync phase helpers — extracted to keep `processKsefSync` cognitively cheap.
+// All run inside the tenantStore.run + advisory-lock boundary established by
+// the caller. They must NOT change RLS context or lock scope.
+// ---------------------------------------------------------------------------
+
+interface SyncTotals {
+  invoicesCreated: number;
+  duplicatesFound: number;
+  errors: string[];
+}
+
+type KsefSyncResult =
+  | { kind: 'skipped' }
+  | { kind: 'ran'; connectionId: string; nip: string; totals: SyncTotals };
+
+/**
+ * Records the STARTED sync log row and attempts to acquire the connection's
+ * sync advisory lock under the `'sync'` namespace. If another worker already
+ * holds the lock, the sync log is marked SUCCESS with `skipped` metadata.
+ *
+ * Returns the sync log id and whether the lock was acquired.
+ */
+async function openSyncLogAndAcquireLock(
+  db: TenantDb,
+  organizationId: string,
+  connectionId: string,
+  lockKey: string,
+): Promise<{ syncLogId: string; lockAcquired: boolean }> {
+  const syncLog = await db.integrationSyncLog.create({
+    data: {
+      organizationId,
+      integrationConnectionId: connectionId,
+      direction: 'INBOUND',
+      syncType: 'ksef_invoice_fetch',
+      status: 'STARTED',
+      startedAt: new Date(),
+    },
+  });
+
+  // Prevent overlapping syncs for the same connection (QStash retries + manual triggers).
+  const lockAcquired = await tryAcquireAdvisoryLock(
+    db as unknown as AdvisoryLockDb,
+    'sync',
+    lockKey,
+  );
+
+  if (!lockAcquired) {
+    await db.integrationSyncLog.update({
+      where: { id: syncLog.id },
+      data: {
+        status: 'SUCCESS',
+        completedAt: new Date(),
+        responsePayloadJson: { skipped: true, reason: 'already-running' },
+      },
+    });
+  }
+
+  return { syncLogId: syncLog.id, lockAcquired };
+}
+
+/**
+ * Loads + ownership-checks the integration connection row.
+ */
+async function loadKsefConnection(
+  db: TenantDb,
+  organizationId: string,
+  connectionId: string,
+): Promise<Awaited<ReturnType<TenantDb['integrationConnection']['findUniqueOrThrow']>>> {
+  const connection = await db.integrationConnection.findUniqueOrThrow({
+    where: { id: connectionId },
+  });
+  if (connection.organizationId !== organizationId) {
+    throw new Error('Connection does not belong to the specified organization');
+  }
+  return connection;
+}
+
+/**
+ * Constructs a KSeF API client and authenticates it using either certificate
+ * or token-based auth. The returned client has an active KSeF session and
+ * must be terminated by the caller.
+ */
+async function authenticateKsefClient(
+  connection: { configJson: unknown; credentialsRef: string },
+  nip: string,
+): Promise<KsefApiClient> {
+  const credentials = decryptCredentials(connection.credentialsRef, 'ksef');
+  const config = ksefConnectionConfigSchema.parse(connection.configJson);
+
+  const client = new KsefApiClient(config.environment ?? 'prod');
+
+  if (config.authMethod === 'certificate') {
+    await client.authenticateWithCertificate(
+      credentials.extra?.certificateBase64 as string,
+      credentials.extra?.certificatePassword as string | undefined,
+      nip,
+    );
+  } else {
+    await client.authenticate(credentials.accessToken, nip);
+  }
+
+  return client;
+}
+
+/**
+ * Asserts the org NIP is configured. Centralized so the orchestrator can
+ * raise the same domain error from inside the tenantStore.run / sync-log
+ * boundary as the pre-refactor code did.
+ */
+function assertNip(nip: string | undefined): asserts nip is string {
+  if (!nip) {
+    throw new Error('Organization NIP not configured. Set it in Organization Settings.');
+  }
+}
+
+/**
+ * Returns ISO `YYYY-MM-DD` strings for the KSeF query window. Defaults to the
+ * last successful sync (incremental) or the last 90 days for a first sync.
+ */
+function resolveDateRange(lastSuccessAt: Date | null): { dateFrom: string; dateTo: string } {
+  const dateFrom = lastSuccessAt
+    ? (lastSuccessAt.toISOString().split('T')[0] ?? '')
+    : (new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split('T')[0] ?? '');
+  const dateTo = new Date().toISOString().split('T')[0] ?? '';
+  return { dateFrom, dateTo };
+}
+
+/**
+ * Iterates the upstream KSeF metadata list and processes each invoice.
+ * Per-invoice failures are captured in `totals.errors` rather than aborting
+ * the whole sync — matches pre-refactor semantics.
+ */
+async function ingestKsefInvoices(
+  db: TenantDb,
+  client: KsefApiClient,
+  organizationId: string,
+  metadataList: Array<{ ksefReferenceNumber: string }>,
+): Promise<SyncTotals> {
+  const totals: SyncTotals = { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
+
+  for (const metadata of metadataList) {
+    try {
+      const outcome = await processSingleKsefInvoice(
+        db,
+        client,
+        organizationId,
+        metadata.ksefReferenceNumber,
+      );
+      if (outcome === 'skipped') continue;
+      totals.invoicesCreated++;
+      if (outcome === 'duplicate') totals.duplicatesFound++;
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      totals.errors.push(`Failed to process invoice ${metadata.ksefReferenceNumber}: ${msg}`);
+    }
+  }
+
+  return totals;
+}
+
+/**
+ * Finalizes a successful sync run: updates the connection row, marks the sync
+ * log SUCCESS, and dispatches the admin notification.
+ */
+async function finalizeSyncSuccess(
+  db: TenantDb,
+  organizationId: string,
+  connectionId: string,
+  syncLogId: string,
+  totals: SyncTotals,
+): Promise<void> {
+  await updateConnectionAfterSync(db, connectionId, totals.errors);
+
+  await db.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: {
+      status: 'SUCCESS',
+      completedAt: new Date(),
+      responsePayloadJson: {
+        invoicesCreated: totals.invoicesCreated,
+        duplicatesFound: totals.duplicatesFound,
+        errors: totals.errors,
+      },
+    },
+  });
+
+  await dispatchKsefSyncNotification(
+    db,
+    organizationId,
+    connectionId,
+    totals.invoicesCreated,
+    totals.duplicatesFound,
+  );
+}
+
+/**
+ * Marks the sync log FAILED and flips the connection into ERROR state.
+ */
+async function recordKsefSyncFailure(
+  db: TenantDb,
+  connectionId: string,
+  syncLogId: string,
+  error: unknown,
+): Promise<void> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+
+  await db.integrationSyncLog.update({
+    where: { id: syncLogId },
+    data: {
+      status: 'FAILED',
+      completedAt: new Date(),
+      errorMessage,
+    },
+  });
+
+  await db.integrationConnection.update({
+    where: { id: connectionId },
+    data: {
+      lastSyncAt: new Date(),
+      lastErrorAt: new Date(),
+      lastErrorMessage: errorMessage,
+      status: 'ERROR',
+    },
+  });
+}
+
+/**
+ * Inner body of the tenantStore.run boundary. Owns the advisory-lock lifecycle,
+ * the KSeF session lifecycle, and the SUCCESS/FAILED accounting. Lives as a
+ * dedicated function so the top-level `processKsefSync` stays a thin shell
+ * around the regional-client + tenant-context wiring.
+ */
+async function runKsefSyncForConnection(
+  db: TenantDb,
+  organizationId: string,
+  connectionId: string,
+  nip: string | undefined,
+): Promise<KsefSyncResult> {
+  const lockKey = `ksef:${connectionId}`;
+  let client: KsefApiClient | null = null;
+  let lockAcquired = false;
+
+  const { syncLogId, lockAcquired: acquired } = await openSyncLogAndAcquireLock(
+    db,
+    organizationId,
+    connectionId,
+    lockKey,
+  );
+  lockAcquired = acquired;
+  if (!lockAcquired) {
+    return { kind: 'skipped' };
+  }
+
+  try {
+    const connection = await loadKsefConnection(db, organizationId, connectionId);
+
+    // D-03: org NIP must be set before any KSeF call. Validated inside the
+    // sync-log + lock boundary so failures route through `recordKsefSyncFailure`.
+    assertNip(nip);
+
+    client = await authenticateKsefClient(connection, nip);
+
+    const { dateFrom, dateTo } = resolveDateRange(connection.lastSuccessAt ?? null);
+    const result = await client.queryInvoices(nip, dateFrom, dateTo);
+
+    const totals = await ingestKsefInvoices(db, client, organizationId, result.invoiceMetadataList);
+
+    await finalizeSyncSuccess(db, organizationId, connectionId, syncLogId, totals);
+
+    return { kind: 'ran', connectionId, nip, totals };
+  } catch (error) {
+    await recordKsefSyncFailure(db, connectionId, syncLogId, error);
+    throw error;
+  } finally {
+    // Always terminate KSeF session
+    if (client) {
+      try {
+        await client.terminateSession();
+      } catch {
+        // Swallow session termination errors
+      }
+    }
+
+    if (lockAcquired) {
+      await releaseAdvisoryLock(db as unknown as AdvisoryLockDb, 'sync', lockKey).catch(
+        () => undefined,
+      );
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // KSeF Sync Orchestrator
 // ---------------------------------------------------------------------------
 
@@ -207,179 +501,15 @@ export async function processKsefSync(params: {
   const nip = settingsJson.taxId as string | undefined;
 
   return tenantStore.run({ organizationId: params.organizationId, region }, async () => {
-    let invoicesCreated = 0;
-    let duplicatesFound = 0;
-    const errors: string[] = [];
-    let client: KsefApiClient | null = null;
-    // Per-connection sync lock under the `'sync'` namespace (see
-    // lib/advisory-lock.ts). The connection id is the natural key — we
-    // serialize syncs per integration connection, not per org.
-    const lockKey = `ksef:${params.connectionId}`;
-    let lockAcquired = false;
-
-    const syncLog = await db.integrationSyncLog.create({
-      data: {
-        organizationId: params.organizationId,
-        integrationConnectionId: params.connectionId,
-        direction: 'INBOUND',
-        syncType: 'ksef_invoice_fetch',
-        status: 'STARTED',
-        startedAt: new Date(),
-      },
-    });
-
-    try {
-      // Prevent overlapping syncs for the same connection (QStash retries + manual triggers).
-      lockAcquired = await tryAcquireAdvisoryLock(db as unknown as AdvisoryLockDb, 'sync', lockKey);
-      if (!lockAcquired) {
-        await db.integrationSyncLog.update({
-          where: { id: syncLog.id },
-          data: {
-            status: 'SUCCESS',
-            completedAt: new Date(),
-            responsePayloadJson: { skipped: true, reason: 'already-running' },
-          },
-        });
-        return { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
-      }
-
-      // -----------------------------------------------------------------------
-      // Step 1: Load connection and decrypt credentials
-      // -----------------------------------------------------------------------
-
-      const connection = await db.integrationConnection.findUniqueOrThrow({
-        where: { id: params.connectionId },
-      });
-
-      if (connection.organizationId !== params.organizationId) {
-        throw new Error('Connection does not belong to the specified organization');
-      }
-
-      const credentials = decryptCredentials(connection.credentialsRef, 'ksef');
-      const config = ksefConnectionConfigSchema.parse(connection.configJson);
-
-      // -----------------------------------------------------------------------
-      // Step 2: Organization NIP (per D-03) — loaded from primary `org` above
-      // -----------------------------------------------------------------------
-
-      if (!nip) {
-        throw new Error('Organization NIP not configured. Set it in Organization Settings.');
-      }
-
-      // -----------------------------------------------------------------------
-      // Step 3: Authenticate with KSeF
-      // -----------------------------------------------------------------------
-
-      client = new KsefApiClient(config.environment ?? 'prod');
-
-      if (config.authMethod === 'certificate') {
-        await client.authenticateWithCertificate(
-          credentials.extra?.certificateBase64 as string,
-          credentials.extra?.certificatePassword as string | undefined,
-          nip,
-        );
-      } else {
-        await client.authenticate(credentials.accessToken, nip);
-      }
-
-      // -----------------------------------------------------------------------
-      // Step 4: Determine date range (last sync or 90 days for first sync)
-      // -----------------------------------------------------------------------
-
-      const dateFrom = connection.lastSuccessAt
-        ? (connection.lastSuccessAt.toISOString().split('T')[0] ?? '')
-        : (new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString().split('T')[0] ?? '');
-      const dateTo = new Date().toISOString().split('T')[0] ?? '';
-
-      // -----------------------------------------------------------------------
-      // Step 5: Query invoices from KSeF
-      // -----------------------------------------------------------------------
-
-      const result = await client.queryInvoices(nip, dateFrom, dateTo);
-
-      // -----------------------------------------------------------------------
-      // Step 6: Process each invoice
-      // -----------------------------------------------------------------------
-
-      for (const metadata of result.invoiceMetadataList) {
-        try {
-          const outcome = await processSingleKsefInvoice(
-            db,
-            client,
-            params.organizationId,
-            metadata.ksefReferenceNumber,
-          );
-          if (outcome === 'skipped') continue;
-          invoicesCreated++;
-          if (outcome === 'duplicate') duplicatesFound++;
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          errors.push(`Failed to process invoice ${metadata.ksefReferenceNumber}: ${msg}`);
-        }
-      }
-
-      // -----------------------------------------------------------------------
-      // Step 7-9: Finalize sync — update connection, sync log, notify
-      // -----------------------------------------------------------------------
-
-      await updateConnectionAfterSync(db, params.connectionId, errors);
-
-      await db.integrationSyncLog.update({
-        where: { id: syncLog.id },
-        data: {
-          status: 'SUCCESS',
-          completedAt: new Date(),
-          responsePayloadJson: { invoicesCreated, duplicatesFound, errors },
-        },
-      });
-
-      await dispatchKsefSyncNotification(
-        db,
-        params.organizationId,
-        params.connectionId,
-        invoicesCreated,
-        duplicatesFound,
-      );
-
-      return { invoicesCreated, duplicatesFound, errors };
-    } catch (error) {
-      // Update sync log to FAILED
-      await db.integrationSyncLog.update({
-        where: { id: syncLog.id },
-        data: {
-          status: 'FAILED',
-          completedAt: new Date(),
-          errorMessage: error instanceof Error ? error.message : String(error),
-        },
-      });
-
-      // Update connection to ERROR
-      await db.integrationConnection.update({
-        where: { id: params.connectionId },
-        data: {
-          lastSyncAt: new Date(),
-          lastErrorAt: new Date(),
-          lastErrorMessage: error instanceof Error ? error.message : String(error),
-          status: 'ERROR',
-        },
-      });
-
-      throw error;
-    } finally {
-      // Always terminate KSeF session
-      if (client) {
-        try {
-          await client.terminateSession();
-        } catch {
-          // Swallow session termination errors
-        }
-      }
-
-      if (lockAcquired) {
-        await releaseAdvisoryLock(db as unknown as AdvisoryLockDb, 'sync', lockKey).catch(
-          () => undefined,
-        );
-      }
+    const result = await runKsefSyncForConnection(
+      db,
+      params.organizationId,
+      params.connectionId,
+      nip,
+    );
+    if (result.kind === 'skipped') {
+      return { invoicesCreated: 0, duplicatesFound: 0, errors: [] };
     }
+    return result.totals;
   });
 }
