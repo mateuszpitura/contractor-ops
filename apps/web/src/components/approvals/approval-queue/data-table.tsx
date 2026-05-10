@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierTableShell } from '@contractor-ops/ui';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
@@ -101,8 +102,51 @@ export function ApprovalQueueTable({
 
   return (
     <div className="space-y-0">
-      {/* Table */}
-      <div className="rounded-xl border bg-background">
+      {/* Workbench-tier table chrome */}
+      <AtelierTableShell
+        isLoading={isLoading}
+        footer={
+          !isLoading && totalPages > 0 ? (
+            <div className="flex items-center justify-between px-2 py-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
+                <select
+                  value={pageSize}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                  onChange={e => onPageSizeChange(Number(e.target.value))}
+                  className="h-8 w-16 rounded-md border bg-background px-2 text-sm">
+                  {PAGE_SIZE_OPTIONS.map(size => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {t('pagination.pageOf', { current: page, total: totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => onPageChange(page - 1)}>
+                  {t('pagination.previous')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => onPageChange(page + 1)}>
+                  {t('pagination.next')}
+                </Button>
+              </div>
+            </div>
+          ) : undefined
+        }>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -159,49 +203,7 @@ export function ApprovalQueueTable({
                 : null}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      {!isLoading && totalPages > 0 && (
-        <div className="flex items-center justify-between px-2 py-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
-            <select
-              value={pageSize}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => onPageSizeChange(Number(e.target.value))}
-              className="h-8 w-16 rounded-md border bg-background px-2 text-sm">
-              {PAGE_SIZE_OPTIONS.map(size => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {t('pagination.pageOf', { current: page, total: totalPages })}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onPageChange(page - 1)}>
-              {t('pagination.previous')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onPageChange(page + 1)}>
-              {t('pagination.next')}
-            </Button>
-          </div>
-        </div>
-      )}
+      </AtelierTableShell>
     </div>
   );
 }
