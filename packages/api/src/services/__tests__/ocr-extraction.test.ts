@@ -21,8 +21,8 @@ const {
 const mockGetQStashClient = vi.hoisted(() => vi.fn(() => ({ publishJSON: mockPublishJSON })));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     ocrExtraction: {
       create: mockCreate,
@@ -33,11 +33,9 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -65,7 +63,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 }));
 
 vi.mock('@sentry/nextjs', () => ({
-  getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+  getCurrentScope: vi.fn(() => ({
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
+    setExtra: vi.fn(),
+    clear: vi.fn(),
+  })),
   setUser: vi.fn(),
   setTag: vi.fn(),
   setTags: vi.fn(),
@@ -77,11 +82,11 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
   getQStashClient: mockGetQStashClient,
 }));
 
-vi.mock('../credit-service.js', () => ({
+vi.mock('../credit-service', () => ({
   checkAndDeductCredit: mockCheckCredit,
 }));
 
-vi.mock('../r2.js', () => ({
+vi.mock('../r2', () => ({
   createPresignedDownloadUrl: mockPresignedUrl,
 }));
 
@@ -94,7 +99,7 @@ import {
   getExtractionResult,
   processOcrExtraction,
   triggerOcrExtraction,
-} from '../ocr-extraction.js';
+} from '../ocr-extraction';
 
 describe('ocr-extraction', () => {
   beforeEach(() => {

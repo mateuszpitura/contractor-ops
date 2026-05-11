@@ -7,7 +7,7 @@ import type {
   LabelFormat,
   ShipmentParams,
   UPSShipmentParams,
-} from './courier-client.js';
+} from './courier-client';
 
 // ---------------------------------------------------------------------------
 // UPS REST API Client

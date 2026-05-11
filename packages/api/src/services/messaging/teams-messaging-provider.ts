@@ -11,16 +11,16 @@ import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import type { ConversationReference, TurnContext } from 'botbuilder';
 import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
-import { buildActivityAlertCard } from '../teams/cards/activity-alert-card.js';
-import { buildApprovalCard } from '../teams/cards/approval-card.js';
-import { buildApprovalReminderCard } from '../teams/cards/approval-reminder-card.js';
-import { getConversationReference } from '../teams/teams-bot-handler.js';
+import { buildActivityAlertCard } from '../teams/cards/activity-alert-card';
+import { buildApprovalCard } from '../teams/cards/approval-card';
+import { buildApprovalReminderCard } from '../teams/cards/approval-reminder-card';
+import { getConversationReference } from '../teams/teams-bot-handler';
 import type {
   ApprovalCardParams,
   ChannelAlertParams,
   MessagingProvider,
   ReminderDMParams,
-} from './types.js';
+} from './types';
 
 const log = createLogger({ service: 'teams-messaging-provider' });
 

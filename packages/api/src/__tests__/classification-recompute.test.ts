@@ -15,8 +15,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import '@contractor-ops/compliance-policy';
 import { z } from 'zod';
-import type { SupersessionClient } from '../services/compliance-supersession.js';
-import { supersedeAndMaterialise } from '../services/compliance-supersession.js';
+import type { SupersessionClient } from '../services/compliance-supersession';
+import { supersedeAndMaterialise } from '../services/compliance-supersession';
 
 // Mirror the input schema from classification.ts so we test the same Zod contract.
 const recreateComplianceAssessmentInput = z.object({

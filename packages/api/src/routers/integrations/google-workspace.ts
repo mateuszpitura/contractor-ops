@@ -14,11 +14,11 @@ import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/valida
 import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
 
 const log = createLogger({ service: 'google-workspace-router' });
 
@@ -344,9 +344,9 @@ export const googleWorkspaceRouter = router({
             return { email: user.email, role };
           }),
         );
-        for (let j = 0; j < results.length; j += 1) {
-          const r = results[j]!;
-          const user = slice[j]!;
+        for (const [j, r] of results.entries()) {
+          const user = slice[j];
+          if (!user) continue;
           if (r.status === 'fulfilled') {
             succeeded.push(r.value);
           } else {

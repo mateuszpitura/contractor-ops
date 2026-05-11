@@ -1,12 +1,12 @@
 import { TRPCError } from '@trpc/server';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import type { CourierClient } from './courier-client.js';
-import type { DPDClientConfig } from './dpd-client.js';
-import { DPDClient } from './dpd-client.js';
-import type { InPostClientConfig } from './inpost-client.js';
-import { InPostClient } from './inpost-client.js';
-import type { UPSClientConfig } from './ups-client.js';
-import { UPSClient } from './ups-client.js';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import type { CourierClient } from './courier-client';
+import type { DPDClientConfig } from './dpd-client';
+import { DPDClient } from './dpd-client';
+import type { InPostClientConfig } from './inpost-client';
+import { InPostClient } from './inpost-client';
+import type { UPSClientConfig } from './ups-client';
+import { UPSClient } from './ups-client';
 
 /** Carrier identifiers persisted in `CourierConfig.carrier` (lower-case). */
 export type CarrierId = 'inpost' | 'dpd' | 'ups';

@@ -5,8 +5,8 @@
  */
 
 import { minorToDecimalStr } from '@contractor-ops/shared';
-import { convertAmount } from './exchange-rate.js';
-import type { DbClient } from './types.js';
+import { convertAmount } from './exchange-rate';
+import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Types

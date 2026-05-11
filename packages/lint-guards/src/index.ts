@@ -2,25 +2,25 @@
 // Plans 02 (schema-guard) populates the schema exports below.
 // Plans 03 (logs-guard) and 04 (i18n-parity) extend this surface.
 
-export { formatI18nParityOffences } from './i18n-parity/format-offence.js';
+export { formatI18nParityOffences } from './i18n-parity/format-offence';
 export {
   type I18nParityOffence,
   type I18nParityOptions,
   runI18nParity,
-} from './i18n-parity/run-guard.js';
-export { formatLogsOffences } from './logs-guard/format-offence.js';
+} from './i18n-parity/run-guard';
+export { formatLogsOffences } from './logs-guard/format-offence';
 export {
   type LogsGuardOffence,
   type LogsGuardOptions,
   runLogsGuard,
-} from './logs-guard/run-guard.js';
-export { formatSchemaOffences } from './schema-guard/format-offence.js';
+} from './logs-guard/run-guard';
+export { formatSchemaOffences } from './schema-guard/format-offence';
 export {
   GLOBAL_LOOKUP_MODELS_ALLOWLIST,
   type GlobalLookupModel,
-} from './schema-guard/global-lookup-allowlist.js';
+} from './schema-guard/global-lookup-allowlist';
 export {
   runSchemaGuard,
   type SchemaGuardOffence,
   type SchemaGuardOptions,
-} from './schema-guard/run-guard.js';
+} from './schema-guard/run-guard';

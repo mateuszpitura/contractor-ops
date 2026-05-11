@@ -1,8 +1,8 @@
 import type { SubscriptionTier } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
-import { t } from '../init.js';
-import { getSubscription } from '../services/billing-service.js';
-import { tenantProcedure } from './tenant.js';
+import { t } from '../init';
+import { getSubscription } from '../services/billing-service';
+import { tenantProcedure } from './tenant';
 
 // ---------------------------------------------------------------------------
 // Tier ranking for comparison

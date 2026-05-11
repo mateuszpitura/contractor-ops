@@ -3,13 +3,13 @@ import {
   getSlackUserIdForUser,
   sendApprovalCard as slackSendApprovalCard,
   sendReminderDM as slackSendReminderDM,
-} from '../slack-client.js';
+} from '../slack-client';
 import type {
   ApprovalCardParams,
   ChannelAlertParams,
   MessagingProvider,
   ReminderDMParams,
-} from './types.js';
+} from './types';
 
 // ---------------------------------------------------------------------------
 // SlackMessagingProvider

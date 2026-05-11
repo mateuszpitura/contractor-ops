@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { TeamsBotHandler } from '../teams-bot-handler.js';
+import { TeamsBotHandler } from '../teams-bot-handler';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     externalLink: {
       findFirst: vi.fn(),
@@ -53,21 +53,21 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../cards/approval-result-card.js', () => ({
+vi.mock('../cards/approval-result-card', () => ({
   buildApprovalResultCard: vi.fn(() => ({
     type: 'AdaptiveCard',
     body: [{ type: 'TextBlock', text: 'Result' }],
   })),
 }));
 
-vi.mock('../cards/reject-modal-card.js', () => ({
+vi.mock('../cards/reject-modal-card', () => ({
   buildRejectModalCard: vi.fn(() => ({
     type: 'AdaptiveCard',
     body: [{ type: 'TextBlock', text: 'Reject Modal' }],
   })),
 }));
 
-vi.mock('../../approval-engine.js', () => ({
+vi.mock('../../approval-engine', () => ({
   advanceFlow: vi.fn(() => ({ completed: false })),
 }));
 
@@ -206,7 +206,7 @@ describe('TeamsBotHandler', () => {
 
     it('calls advanceFlow for approve_invoice with valid data and linked user', async () => {
       const { prisma } = await import('@contractor-ops/db');
-      const { advanceFlow } = await import('../../approval-engine.js');
+      const { advanceFlow } = await import('../../approval-engine');
 
       // Mock user resolution
       vi.mocked(prisma.externalLink.findFirst).mockResolvedValue({

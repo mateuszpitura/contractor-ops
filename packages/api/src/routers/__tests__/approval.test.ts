@@ -82,8 +82,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -96,11 +96,9 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/cache.js', () => ({
+vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -120,18 +118,18 @@ vi.mock('../../services/cache.js', () => ({
   },
 }));
 
-vi.mock('../../services/approval-engine.js', () => ({
+vi.mock('../../services/approval-engine', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => ({ completed: false })),
   computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/calendar-deadline-sync.js', () => ({
+vi.mock('../../services/calendar-deadline-sync', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
@@ -139,7 +137,14 @@ vi.mock('../../services/calendar-deadline-sync.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -150,11 +155,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -182,12 +184,12 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-import { createCallerFactory } from '../../init.js';
-import { advanceFlow, createApprovalFlow, routeToChain } from '../../services/approval-engine.js';
-import { invalidateByPrefix } from '../../services/cache.js';
-import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync.js';
-import { dispatch } from '../../services/notification-service.js';
-import { approvalRouter } from '../core/approval.js';
+import { createCallerFactory } from '../../init';
+import { advanceFlow, createApprovalFlow, routeToChain } from '../../services/approval-engine';
+import { invalidateByPrefix } from '../../services/cache';
+import { syncPaymentDueDeadline } from '../../services/calendar-deadline-sync';
+import { dispatch } from '../../services/notification-service';
+import { approvalRouter } from '../core/approval';
 
 const createCaller = createCallerFactory(approvalRouter);
 
@@ -229,7 +231,11 @@ const caller = makeCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' });
+  mockPrisma.organization.findUnique.mockResolvedValue({
+    id: 'org-mock',
+    dataRegion: 'EU',
+    status: 'ACTIVE',
+  });
   mockPrisma.approvalChainConfig.findMany.mockResolvedValue([]);
   mockPrisma.approvalChainConfig.findFirst.mockResolvedValue(null);
   mockPrisma.approvalFlow.findFirst.mockResolvedValue(null);

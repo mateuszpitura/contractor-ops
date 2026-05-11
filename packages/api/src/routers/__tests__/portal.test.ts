@@ -127,14 +127,14 @@ const {
   };
 });
 
-vi.mock('../../services/portal-magic-link.js', () => ({
+vi.mock('../../services/portal-magic-link', () => ({
   findContractorsByEmail: mockFindContractorsByEmail,
   createMagicLinkToken: mockCreateMagicLinkToken,
   verifyMagicLinkToken: mockVerifyMagicLinkToken,
   sendPortalMagicLink: mockSendPortalMagicLink,
 }));
 
-vi.mock('../../services/portal-session.js', () => ({
+vi.mock('../../services/portal-session', () => ({
   validatePortalSession: mockValidatePortalSession,
   createPortalSession: mockCreatePortalSession,
   deletePortalSession: mockDeletePortalSession,
@@ -225,7 +225,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedDownloadUrl: mockCreatePresignedDownloadUrl,
@@ -233,7 +233,7 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: mockGenerateStorageKey,
 }));
 
-vi.mock('../../services/regional-storage.js', () => ({
+vi.mock('../../services/regional-storage', () => ({
   createRegionalPresignedDownloadUrl: async (key: string) => mockCreatePresignedDownloadUrl(key),
   createRegionalPresignedUploadUrl: async (key: string, contentType: string) =>
     mockCreatePresignedUploadUrl(key, contentType),
@@ -247,16 +247,16 @@ vi.mock('node:crypto', async importOriginal => {
   };
 });
 
-vi.mock('../../services/portal-change-request.js', () => ({
+vi.mock('../../services/portal-change-request', () => ({
   createChangeRequest: mockCreateChangeRequest,
 }));
 
-vi.mock('../../services/bank-account-crypto.js', () => ({
+vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: (s: string) => mockEncryptBankAccount(s),
 }));
 
-import { createCallerFactory } from '../../init.js';
-import { portalRouter } from '../portal/portal.js';
+import { createCallerFactory } from '../../init';
+import { portalRouter } from '../portal/portal';
 
 const createCaller = createCallerFactory(portalRouter);
 

@@ -17,7 +17,7 @@ import {
   TASK_TRANSITIONS,
   validateTransition,
   WORKFLOW_TEMPLATE_KEYS,
-} from '../workflow/workflow-shared.js';
+} from '../workflow/workflow-shared';
 
 // ===========================================================================
 // addDays()

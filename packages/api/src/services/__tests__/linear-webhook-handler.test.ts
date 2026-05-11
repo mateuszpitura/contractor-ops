@@ -68,11 +68,11 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   })),
 }));
 
-vi.mock('../linear-status-mapping.js', () => ({
+vi.mock('../linear-status-mapping', () => ({
   resolveInternalStatus: mockResolveInternalStatus,
 }));
 
-vi.mock('../linear-issue-sync.js', () => ({
+vi.mock('../linear-issue-sync', () => ({
   linearGraphQL: mockLinearGraphQL,
 }));
 
@@ -80,7 +80,7 @@ import {
   deregisterLinearWebhook,
   processLinearWebhook,
   registerLinearWebhook,
-} from '../linear-webhook-handler.js';
+} from '../linear-webhook-handler';
 
 describe('processLinearWebhook', () => {
   beforeEach(() => {

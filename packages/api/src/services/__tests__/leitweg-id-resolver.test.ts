@@ -11,8 +11,8 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ResolvedLeitwegId } from '../leitweg-id-resolver.js';
-import { resolveLeitwegIdForInvoice } from '../leitweg-id-resolver.js';
+import type { ResolvedLeitwegId } from '../leitweg-id-resolver';
+import { resolveLeitwegIdForInvoice } from '../leitweg-id-resolver';
 
 // ---------------------------------------------------------------------------
 // Constants

@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { processJiraWebhook } from '../jira-webhook-handler.js';
+import { processJiraWebhook } from '../jira-webhook-handler';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -13,13 +13,13 @@ vi.mock('@contractor-ops/validators', () => ({
   jiraWebhookPayloadSchema: { safeParse: vi.fn() },
 }));
 
-vi.mock('../jira-status-mapping.js', () => ({
+vi.mock('../jira-status-mapping', () => ({
   lookupWorkflowStatus: vi.fn(),
 }));
 
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { jiraWebhookPayloadSchema } from '@contractor-ops/validators';
-import { lookupWorkflowStatus } from '../jira-status-mapping.js';
+import { lookupWorkflowStatus } from '../jira-status-mapping';
 
 const mockDecryptCredentials = vi.mocked(decryptCredentials);
 const mockPayloadParse = vi.mocked(jiraWebhookPayloadSchema.safeParse);

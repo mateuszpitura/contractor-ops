@@ -66,17 +66,17 @@ const {
   };
 });
 
-vi.mock('../../services/time-entry.js', () => ({
+vi.mock('../../services/time-entry', () => ({
   getOrCreateTimesheet: mockGetOrCreateTimesheet,
   saveDraftEntries: mockSaveDraftEntries,
   submitTimesheet: mockSubmitTimesheet,
 }));
 
-vi.mock('../../services/clockify-sync.js', () => ({
+vi.mock('../../services/clockify-sync', () => ({
   syncClockifyEntries: mockSyncClockify,
 }));
 
-vi.mock('../../services/jira-worklog-sync.js', () => ({
+vi.mock('../../services/jira-worklog-sync', () => ({
   syncJiraWorklogs: mockSyncJira,
 }));
 
@@ -93,8 +93,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -107,7 +107,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/portal-session.js', () => ({
+vi.mock('../../services/portal-session', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== SESSION_TOKEN) return null;
     return {
@@ -121,11 +121,8 @@ vi.mock('../../services/portal-session.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -156,7 +153,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -166,8 +170,8 @@ vi.mock('@sentry/nextjs', () => {
   };
 });
 
-import { createCallerFactory } from '../../init.js';
-import { portalTimeRouter } from '../portal/portal-time.js';
+import { createCallerFactory } from '../../init';
+import { portalTimeRouter } from '../portal/portal-time';
 
 const createCaller = createCallerFactory(portalTimeRouter);
 

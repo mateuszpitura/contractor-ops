@@ -18,13 +18,13 @@
 
 import type { XRechnungValidationReport } from '@contractor-ops/einvoice';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { R2Service } from '../einvoice-finalize.js';
+import type { R2Service } from '../einvoice-finalize';
 import {
   EInvoiceAlreadyFinalizedError,
   EInvoiceInvoiceNotFoundError,
   FINALIZE_MAX_XML_BYTES,
   finalizeEInvoice,
-} from '../einvoice-finalize.js';
+} from '../einvoice-finalize';
 
 // ---------------------------------------------------------------------------
 // In-memory fake Prisma surface (only the delegates the service touches).
@@ -174,7 +174,7 @@ function makeDb(seed?: {
     }),
   };
 
-  function findLifecycle(organizationId: string, invoiceId: string) {
+  function _findLifecycle(organizationId: string, invoiceId: string) {
     return (
       lifecycles.find(r => r.organizationId === organizationId && r.invoiceId === invoiceId) ?? null
     );

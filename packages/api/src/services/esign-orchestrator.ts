@@ -8,8 +8,8 @@ import {
   voidSigningEnvelope as voidProviderEnvelope,
 } from '@contractor-ops/integrations/services/esign-service';
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { createPresignedDownloadUrl, createPresignedUploadUrl, generateStorageKey } from './r2.js';
+import * as E from '../errors';
+import { createPresignedDownloadUrl, createPresignedUploadUrl, generateStorageKey } from './r2';
 
 // ---------------------------------------------------------------------------
 // Types

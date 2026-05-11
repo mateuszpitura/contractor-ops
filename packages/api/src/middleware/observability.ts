@@ -2,7 +2,7 @@ import { createTrpcLogger, generateRequestId, runWithRequestContext } from '@con
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { AnyMiddlewareFunction } from '@trpc/server';
-import type { Context } from '../context.js';
+import type { Context } from '../context';
 
 // ---------------------------------------------------------------------------
 // PII-sensitive procedure prefixes — never log input/output bodies for these

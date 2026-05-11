@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getFlagClient, setFlagClientForTesting, shutdownFlagClients } from '../client.js';
-import { evaluate } from '../evaluator.js';
-import { buildFlagBag, emptyFlagBag } from '../flag-bag.js';
-import { FLAG_KEYS, FLAGS } from '../registry.js';
-import type { EvalContext } from '../schemas.js';
+import { getFlagClient, setFlagClientForTesting, shutdownFlagClients } from '../client';
+import { evaluate } from '../evaluator';
+import { buildFlagBag, emptyFlagBag } from '../flag-bag';
+import { FLAG_KEYS, FLAGS } from '../registry';
+import type { EvalContext } from '../schemas';
 
 const euCtx: EvalContext = {
   organizationId: 'org_eu',
@@ -210,7 +210,7 @@ describe('flag bag prototype safety', () => {
     // materialization. Prototype safety is therefore verified through the
     // isEnabled boundary — a sneaky inherited key like 'constructor' must
     // resolve to false, mirroring the eager bag's `=== true` discipline.
-    const { lazyFlagBag } = await import('../flag-bag.js');
+    const { lazyFlagBag } = await import('../flag-bag');
     setFlagClientForTesting('EU', { isEnabled: (_n, _c, fb) => fb });
     const bag = lazyFlagBag(euCtx);
     const sneakyKey = 'constructor' as unknown as Parameters<typeof bag.isEnabled>[0];

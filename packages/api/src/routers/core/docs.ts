@@ -1,14 +1,14 @@
 import { attachDocInputSchema, docSearchInputSchema } from '@contractor-ops/validators';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
+import { router } from '../../init';
+import { tenantProcedure } from '../../middleware/tenant';
 import {
   attachDocLink,
   detachDocLink,
   getDocLinks,
   refreshDocMetadata,
   searchDocs,
-} from '../../services/doc-link-service.js';
+} from '../../services/doc-link-service';
 
 // ---------------------------------------------------------------------------
 // Helpers

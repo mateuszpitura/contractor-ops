@@ -89,8 +89,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -158,7 +158,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -168,18 +175,18 @@ vi.mock('@sentry/nextjs', () => {
   };
 });
 
-vi.mock('../../services/boe-rate-cache.js', () => ({
+vi.mock('../../services/boe-rate-cache', () => ({
   loadBoeRateHistory: mockLoadBoeRateHistory,
   invalidateBoeRateCache: vi.fn(),
   __resetBoeRateCacheForTests: vi.fn(),
 }));
 
-vi.mock('../../services/late-payment-interest.js', () => ({
+vi.mock('../../services/late-payment-interest', () => ({
   calculateLateInterest: mockCalculateLateInterest,
   getCompensationTier: mockGetCompensationTier,
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   signExistingDownload: mockSignExistingDownload,
@@ -195,8 +202,8 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from '../../init.js';
-import { latePaymentInterestRouter } from '../finance/late-payment-interest.js';
+import { createCallerFactory } from '../../init';
+import { latePaymentInterestRouter } from '../finance/late-payment-interest';
 
 // ---------------------------------------------------------------------------
 // Caller helper

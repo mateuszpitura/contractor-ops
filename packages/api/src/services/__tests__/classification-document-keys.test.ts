@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildClassificationDocumentKey,
   CLASSIFICATION_DOCUMENT_KEY_REGEX,
-} from '../classification-document-keys.js';
+} from '../classification-document-keys';
 
 const VALID_SHA = 'a1b2c3d4e5f6789001a2b3c4d5e6f70811223344556677889900aabbccddeeff';
 

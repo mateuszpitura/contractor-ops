@@ -31,7 +31,7 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
 
 import { describe, expect, it } from 'vitest';
 
-import { classificationDocumentRouter } from '../compliance/classification-document.js';
+import { classificationDocumentRouter } from '../compliance/classification-document';
 
 describe('classificationDocument router (Phase 59 · CLASS-03, CLASS-06)', () => {
   it('exposes generateSds / generateDrvDefenseBundle / getDownloadUrl / listByEngagement procedures', () => {

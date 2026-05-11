@@ -14,7 +14,9 @@ const { ORG_ID, USER_ID, mockPrisma, mockLinearGraphQL, mockRegisterLinearWebhoo
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockPrisma: Record<string, unknown> = {
       organization: {
-        findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
       },
       integrationConnection: {
         findFirst: vi.fn(),
@@ -63,8 +65,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -80,7 +82,14 @@ vi.mock('@contractor-ops/db', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -91,11 +100,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -127,11 +133,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('../../services/cache.js', () => ({
+vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -147,20 +151,20 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   decryptCredentials: vi.fn(() => ({ accessToken: 'lin-token' })),
 }));
 
-vi.mock('../../services/linear-issue-sync.js', async importOriginal => {
-  const actual = await importOriginal<typeof import('../../services/linear-issue-sync.js')>();
+vi.mock('../../services/linear-issue-sync', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/linear-issue-sync')>();
   return {
     ...actual,
     linearGraphQL: mockLinearGraphQL,
   };
 });
 
-vi.mock('../../services/linear-webhook-handler.js', () => ({
+vi.mock('../../services/linear-webhook-handler', () => ({
   registerLinearWebhook: mockRegisterLinearWebhook,
 }));
 
-import { createCallerFactory } from '../../init.js';
-import { linearRouter } from '../integrations/linear.js';
+import { createCallerFactory } from '../../init';
+import { linearRouter } from '../integrations/linear';
 
 const createCaller = createCallerFactory(linearRouter);
 
@@ -515,7 +519,7 @@ describe('linearRouter', () => {
       const sourceDir = path.resolve(import.meta.dirname, '../../routers');
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/linear.ts'), 'utf-8');
 
-      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier'");
       expect(source).toContain("requireTier('PRO')");
 
       const matches = source.match(/\.use\(requireTier\('PRO'\)\)/g);

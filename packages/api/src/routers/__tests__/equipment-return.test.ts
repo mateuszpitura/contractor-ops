@@ -126,8 +126,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -140,7 +140,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/portal-session.js', () => ({
+vi.mock('../../services/portal-session', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== SESSION_TOKEN) return null;
     return {
@@ -153,14 +153,14 @@ vi.mock('../../services/portal-session.js', () => ({
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock('../../services/portal-magic-link.js', () => ({
+vi.mock('../../services/portal-magic-link', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
@@ -168,15 +168,15 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock('../../services/portal-change-request.js', () => ({
+vi.mock('../../services/portal-change-request', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock('../../services/bank-account-crypto.js', () => ({
+vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock('../../services/stripe-client.js', () => ({
+vi.mock('../../services/stripe-client', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -187,11 +187,11 @@ vi.mock('../../services/stripe-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/courier/inpost-client.js', () => ({
+vi.mock('../../services/courier/inpost-client', () => ({
   InPostClient: class MockInPostClient {
     createShipment = mockInPostClient.createShipment;
     getLabel = mockInPostClient.getLabel;
@@ -200,7 +200,7 @@ vi.mock('../../services/courier/inpost-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/courier/dpd-client.js', () => ({
+vi.mock('../../services/courier/dpd-client', () => ({
   DPDClient: class MockDPDClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -209,7 +209,7 @@ vi.mock('../../services/courier/dpd-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/courier/ups-client.js', () => ({
+vi.mock('../../services/courier/ups-client', () => ({
   UPSClient: class MockUPSClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -219,11 +219,8 @@ vi.mock('../../services/courier/ups-client.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -254,7 +251,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -285,8 +289,8 @@ vi.mock('botframework-connector', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from '../../init.js';
-import { portalAppRouter } from '../../portal-root.js';
+import { createCallerFactory } from '../../init';
+import { portalAppRouter } from '../../portal-root';
 
 // ---------------------------------------------------------------------------
 // Caller setup
@@ -518,7 +522,7 @@ describe('Offboarding return skips approval', () => {
 
   it('creates ReturnRequest with SHIPMENT_CREATED status when org has InPost config', async () => {
     // Import the workflow service to test directly
-    const { handleEquipmentTaskStart } = await import('../../services/equipment-workflow.js');
+    const { handleEquipmentTaskStart } = await import('../../services/equipment-workflow');
 
     // Mock: assignments with equipment
     mockPrisma.equipmentAssignment.findMany.mockResolvedValueOnce([

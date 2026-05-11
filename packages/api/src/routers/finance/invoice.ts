@@ -7,22 +7,22 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { getHmrcVatClient, getViesClient } from '../../gov-api-clients.js';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { CacheKeys, invalidateByPrefix } from '../../services/cache.js';
-import { deleteCalendarEvent } from '../../services/calendar-event-service.js';
-import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-matching.js';
-import { applyKleinunternehmerOverride } from '../../services/kleinunternehmer.service.js';
-import { dispatch } from '../../services/notification-service.js';
-import type { DE13bServiceType } from '../../services/reverse-charge.service.js';
-import { applyReverseCharge, detectReverseCharge } from '../../services/reverse-charge.service.js';
-import { sanitizeStrings } from '../../services/sanitize.js';
-import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service.js';
-import { getDefaultRateCode } from '../../services/tax-rate.service.js';
+import * as E from '../../errors';
+import { getHmrcVatClient, getViesClient } from '../../gov-api-clients';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { deleteCalendarEvent } from '../../services/calendar-event-service';
+import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-matching';
+import { applyKleinunternehmerOverride } from '../../services/kleinunternehmer.service';
+import { dispatch } from '../../services/notification-service';
+import type { DE13bServiceType } from '../../services/reverse-charge.service';
+import { applyReverseCharge, detectReverseCharge } from '../../services/reverse-charge.service';
+import { sanitizeStrings } from '../../services/sanitize';
+import { isValidationFresh, validateTaxId } from '../../services/tax-id-validation.service';
+import { getDefaultRateCode } from '../../services/tax-rate.service';
 
 // ---------------------------------------------------------------------------
 // Finance team helper

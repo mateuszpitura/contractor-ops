@@ -27,7 +27,7 @@ import {
   CAPABILITY_CACHE_TTL_MS,
   getCapabilitiesWithCache,
   supportsXRechnungCii,
-} from '../peppol-capability.js';
+} from '../peppol-capability';
 
 // ---------------------------------------------------------------------------
 // Fixture helpers

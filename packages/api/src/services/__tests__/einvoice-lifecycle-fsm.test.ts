@@ -19,7 +19,7 @@ import type {
   EInvoiceValidationStatus,
 } from '@contractor-ops/db/generated/prisma/client';
 import { describe, expect, it } from 'vitest';
-import type { TransmissionEvent, ValidationEvent } from '../einvoice-lifecycle-fsm.js';
+import type { TransmissionEvent, ValidationEvent } from '../einvoice-lifecycle-fsm';
 import {
   IllegalFsmTransitionError,
   isTerminalTransmissionStatus,
@@ -27,7 +27,7 @@ import {
   transitionTransmission,
   transitionValidation,
   VALIDATION_EVENTS,
-} from '../einvoice-lifecycle-fsm.js';
+} from '../einvoice-lifecycle-fsm';
 
 const ALL_VALIDATION_STATES: EInvoiceValidationStatus[] = [
   'NOT_VALIDATED',

@@ -4,8 +4,8 @@ import { ArrowRight, FileSignature, Receipt, Send, UserPlus, Zap } from 'lucide-
 import { useCallback, useMemo, useState } from 'react';
 import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
-import type { CreditPack } from '@/lib/stripe';
-import { formatPrice } from '@/lib/stripe';
+import type { CreditPack } from '@/lib/pricing-types';
+import { formatPrice } from '@/lib/pricing-types';
 
 const creditCosts = [
   {

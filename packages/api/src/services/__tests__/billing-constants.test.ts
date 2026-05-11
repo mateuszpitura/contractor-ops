@@ -25,7 +25,7 @@ import {
   resolveTopUpCredits,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
-} from '../billing-constants.js';
+} from '../billing-constants';
 
 // ---------------------------------------------------------------------------
 // Constants

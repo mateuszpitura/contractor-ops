@@ -50,17 +50,15 @@ const { mockPrisma, mockR2, mockRenderer } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -95,16 +93,16 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   },
 }));
 
-vi.mock('../r2.js', () => mockR2);
+vi.mock('../r2', () => mockR2);
 
 vi.mock('@react-pdf/renderer', () => mockRenderer);
 
-vi.mock('../../pdf-templates/late-payment-claim.js', () => ({
+vi.mock('../../pdf-templates/late-payment-claim', () => ({
   LatePaymentClaimTemplate: vi.fn(() => ({ _template: 'late-payment-claim' })),
 }));
 
 // Imported after mocks are registered.
-const { renderClaimPdf } = await import('../late-payment-claim-pdf.js');
+const { renderClaimPdf } = await import('../late-payment-claim-pdf');
 
 const CLAIM_ID = 'clclaim00000000000000000001';
 const ORG_ID = 'clorg00000000000000000001';

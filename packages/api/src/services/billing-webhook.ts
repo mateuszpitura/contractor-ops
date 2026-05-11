@@ -6,18 +6,18 @@ import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
 import type Stripe from 'stripe';
-import { sendAppEmail } from './app-email.js';
+import { sendAppEmail } from './app-email';
 import {
   resolveTierFromPriceId,
   resolveTopUpCredits,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
-} from './billing-constants.js';
-import { CacheKeys, invalidate } from './cache.js';
-import type { NotificationEvent } from './notification-service.js';
-import { dispatch } from './notification-service.js';
-import { stripe } from './stripe-client.js';
-import type { DbClient } from './types.js';
+} from './billing-constants';
+import { CacheKeys, invalidate } from './cache';
+import type { NotificationEvent } from './notification-service';
+import { dispatch } from './notification-service';
+import { stripe } from './stripe-client';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'billing-webhook' });
 

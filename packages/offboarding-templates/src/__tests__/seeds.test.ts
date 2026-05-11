@@ -1,8 +1,8 @@
 // Phase 74 Plan 02 — GREEN tests for OFFBOARDING_TEMPLATE_SEEDS shape contract.
 
 import { describe, expect, it } from 'vitest';
-import { OFFBOARDING_TEMPLATE_SEEDS } from '../seeds.js';
-import type { OffboardingTemplateSeedRole } from '../types.js';
+import { OFFBOARDING_TEMPLATE_SEEDS } from '../seeds';
+import type { OffboardingTemplateSeedRole } from '../types';
 
 const EXPECTED_ROLES: readonly OffboardingTemplateSeedRole[] = [
   'software_engineer',

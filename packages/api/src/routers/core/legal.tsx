@@ -16,9 +16,9 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requestExport } from '../../services/exports/index.js';
+import { router } from '../../init';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requestExport } from '../../services/exports/index';
 
 export const legalRouter = router({
   /**

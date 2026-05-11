@@ -7,15 +7,11 @@ import {
   syncExternalEntriesSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { router } from '../../init.js';
-import { portalProcedure } from '../../middleware/portal-auth.js';
-import { syncClockifyEntries } from '../../services/clockify-sync.js';
-import { syncJiraWorklogs } from '../../services/jira-worklog-sync.js';
-import {
-  getOrCreateTimesheet,
-  saveDraftEntries,
-  submitTimesheet,
-} from '../../services/time-entry.js';
+import { router } from '../../init';
+import { portalProcedure } from '../../middleware/portal-auth';
+import { syncClockifyEntries } from '../../services/clockify-sync';
+import { syncJiraWorklogs } from '../../services/jira-worklog-sync';
+import { getOrCreateTimesheet, saveDraftEntries, submitTimesheet } from '../../services/time-entry';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -1,17 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ParsedTransaction } from '../bank-statement.js';
+import type { ParsedTransaction } from '../bank-statement';
 import {
   matchStatementToRun,
   parseBankStatement,
   parseCsvStatement,
   parseMt940,
-} from '../bank-statement.js';
-import type {
-  BacsExportItem,
-  BacsOrgBankInfo,
-  ExportItem,
-  OrgBankInfo,
-} from '../payment-export.js';
+} from '../bank-statement';
+import type { BacsExportItem, BacsOrgBankInfo, ExportItem, OrgBankInfo } from '../payment-export';
 import {
   escapeXml,
   formatMultiline,
@@ -21,7 +16,7 @@ import {
   generateSepaXml,
   resolveTransferTitle,
   stripDiacritics,
-} from '../payment-export.js';
+} from '../payment-export';
 
 // The source uses require("mt940js") which bypasses vi.mock ESM interception.
 // We spy on the real Parser prototype instead.

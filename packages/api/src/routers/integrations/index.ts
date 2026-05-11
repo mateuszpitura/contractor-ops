@@ -2,9 +2,9 @@
 // Intra-folder helpers (types, constants, shared utilities) are imported directly
 // via relative paths (e.g. `./equipment-shared.js`), not through this barrel.
 
-export { googleWorkspaceRouter } from './google-workspace.js';
-export { jiraRouter } from './jira.js';
-export { ksefRouter } from './ksef.js';
-export { linearRouter } from './linear.js';
-export { peppolRouter } from './peppol.js';
-export { teamsRouter } from './teams.js';
+export { googleWorkspaceRouter } from './google-workspace';
+export { jiraRouter } from './jira';
+export { ksefRouter } from './ksef';
+export { linearRouter } from './linear';
+export { peppolRouter } from './peppol';
+export { teamsRouter } from './teams';

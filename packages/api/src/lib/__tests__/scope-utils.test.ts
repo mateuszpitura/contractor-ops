@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PUBLIC_API_SCOPES, permissionToScopes } from '../scope-utils.js';
+import { PUBLIC_API_SCOPES, permissionToScopes } from '../scope-utils';
 
 // ---------------------------------------------------------------------------
 // permissionToScopes

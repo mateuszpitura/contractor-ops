@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getAllPurposeCodes, getPurposeCode, isValidPurposeCode } from '../purpose-codes.js';
+import { getAllPurposeCodes, getPurposeCode, isValidPurposeCode } from '../purpose-codes';
 
 // ---------------------------------------------------------------------------
 // getPurposeCode

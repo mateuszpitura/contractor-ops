@@ -1,4 +1,4 @@
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Cross-Source Duplicate Detection

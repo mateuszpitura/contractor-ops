@@ -1,11 +1,11 @@
 import { createLogger } from '@contractor-ops/logger';
-import { InPostClient } from './inpost-client.js';
-import { mapInPostStatus } from './inpost-status-mapper.js';
+import { InPostClient } from './inpost-client';
+import { mapInPostStatus } from './inpost-status-mapper';
 import {
   isEventDuplicate,
   processShipmentStatusChange,
   TERMINAL_STATUSES,
-} from './shipment-processing.js';
+} from './shipment-processing';
 
 // ---------------------------------------------------------------------------
 // InPost Polling Service
@@ -14,7 +14,7 @@ import {
 // Fetches all active InPost shipments and creates missing ShipmentEvents.
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from '../types.js';
+import type { DbClient } from '../types';
 
 const log = createLogger({ service: 'inpost-polling-service' });
 

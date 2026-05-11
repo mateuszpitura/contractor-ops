@@ -1,11 +1,11 @@
 import type { ReactElement } from 'react';
 import { createElement } from 'react';
-import { ApprovalDecisionEmail } from '../emails/approval-decision.js';
-import { ApprovalRequestEmail } from '../emails/approval-request.js';
-import { ContractExpiringEmail } from '../emails/contract-expiring.js';
-import { InvoiceReceivedEmail } from '../emails/invoice-received.js';
-import { TaskAssignedEmail } from '../emails/task-assigned.js';
-import { TaskOverdueEmail } from '../emails/task-overdue.js';
+import { ApprovalDecisionEmail } from '../emails/approval-decision';
+import { ApprovalRequestEmail } from '../emails/approval-request';
+import { ContractExpiringEmail } from '../emails/contract-expiring';
+import { InvoiceReceivedEmail } from '../emails/invoice-received';
+import { TaskAssignedEmail } from '../emails/task-assigned';
+import { TaskOverdueEmail } from '../emails/task-overdue';
 
 // ---------------------------------------------------------------------------
 // i18n subject key constants

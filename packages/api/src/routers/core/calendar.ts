@@ -1,10 +1,10 @@
 import { calendarTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
 
 // ---------------------------------------------------------------------------
 // Constants

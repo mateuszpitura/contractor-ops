@@ -14,33 +14,27 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import type { TxClient } from '../../services/approval-engine.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import type { TxClient } from '../../services/approval-engine';
 import {
   advanceFlow,
   computeSlaStatus,
   createApprovalFlow,
   routeToChain,
-} from '../../services/approval-engine.js';
-import {
-  CacheKeys,
-  CacheTTL,
-  cached,
-  invalidate,
-  invalidateByPrefix,
-} from '../../services/cache.js';
+} from '../../services/approval-engine';
+import { writeAuditLog } from '../../services/audit-writer';
+import { CacheKeys, CacheTTL, cached, invalidate, invalidateByPrefix } from '../../services/cache';
 import {
   syncApprovalSlaDeadline,
   syncPaymentDueDeadline,
-} from '../../services/calendar-deadline-sync.js';
-import { dispatch } from '../../services/notification-service.js';
-import type { ApprovalQueueStepRow } from './approval-types.js';
-import { approvalStepQueueInclude } from './approval-types.js';
+} from '../../services/calendar-deadline-sync';
+import { dispatch } from '../../services/notification-service';
+import type { ApprovalQueueStepRow } from './approval-types';
+import { approvalStepQueueInclude } from './approval-types';
 
 // ---------------------------------------------------------------------------
 // Helpers

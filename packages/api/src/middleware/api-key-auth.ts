@@ -1,9 +1,9 @@
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { publicProcedure, t } from '../init.js';
-import { resolveApiKey, touchLastUsed } from '../services/api-key-service.js';
-import { runWithTenantContext } from './tenant.js';
-import { requireTier } from './tier.js';
+import * as E from '../errors';
+import { publicProcedure, t } from '../init';
+import { resolveApiKey, touchLastUsed } from '../services/api-key-service';
+import { runWithTenantContext } from './tenant';
+import { requireTier } from './tier';
 
 // ---------------------------------------------------------------------------
 // API Key authentication middleware

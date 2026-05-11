@@ -6,9 +6,9 @@ import {
   notificationPreferenceUpdateSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { router } from '../../init.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { getOrCreatePreferences } from '../../services/notification-service.js';
+import { router } from '../../init';
+import { tenantProcedure } from '../../middleware/tenant';
+import { getOrCreatePreferences } from '../../services/notification-service';
 
 // ---------------------------------------------------------------------------
 // Helpers

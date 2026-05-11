@@ -193,18 +193,15 @@ mockPrismaRaw.organization = {
 mockPrisma.reassessmentTrigger = mockPrismaRaw.reassessmentTrigger;
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   prismaRaw: mockPrismaRaw,
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -242,15 +239,15 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: mockMetricsGauge, increment: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('../notification-service.js', () => ({
+vi.mock('../notification-service', () => ({
   dispatch: mockDispatch,
 }));
 
-vi.mock('../rbac-recipients.js', () => ({
+vi.mock('../rbac-recipients', () => ({
   resolveRbacRecipients: mockResolveRbac,
 }));
 
-import { runReassessmentTriggerScan } from '../reassessment-trigger-scan.js';
+import { runReassessmentTriggerScan } from '../reassessment-trigger-scan';
 
 function resetState() {
   state.audits.length = 0;

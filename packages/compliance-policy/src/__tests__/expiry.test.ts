@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isExpired } from '../expiry.js';
+import { isExpired } from '../expiry';
 
 describe('isExpired — TZ-aware expiry boundary (D-07 / ROADMAP success criterion #2)', () => {
   it('Riyadh contractor: expiresAt = today, now = today 00:30 UTC (= 03:30 Riyadh) → NOT expired', () => {

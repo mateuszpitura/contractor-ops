@@ -14,11 +14,8 @@ vi.mock('@contractor-ops/feature-flags', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -61,7 +58,14 @@ vi.mock('@sentry/nextjs', () => {
     end: vi.fn(),
   };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -81,8 +85,8 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: { organizationId: string; region: string }, fn: () => unknown) => fn(),
@@ -92,9 +96,9 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn((client: unknown) => client),
 }));
 
-import { t } from '../../init.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../feature-flag.js';
-import { tenantProcedure } from '../tenant.js';
+import { t } from '../../init';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../feature-flag';
+import { tenantProcedure } from '../tenant';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -206,7 +210,11 @@ describe('tenantFlaggedProcedure', () => {
     const mockBag = { isEnabled: vi.fn().mockReturnValue(true) };
     mockLazyFlagBag.mockReturnValue(mockBag);
 
-    mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-mock', dataRegion: 'ME', status: 'ACTIVE' });
+    mockPrisma.organization.findUnique.mockResolvedValue({
+      id: 'org-mock',
+      dataRegion: 'ME',
+      status: 'ACTIVE',
+    });
 
     const router = t.router({
       ping: tenantFlaggedProcedure.query(() => 'ok'),

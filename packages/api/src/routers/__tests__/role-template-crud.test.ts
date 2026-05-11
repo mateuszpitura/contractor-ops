@@ -68,20 +68,19 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: { run: (_ctx: unknown, fn: () => unknown) => fn() },
 }));
 
-vi.mock('../../middleware/rbac.js', () => ({
+vi.mock('../../middleware/rbac', () => ({
   requirePermission: () => (next: unknown) => next,
 }));
 
-vi.mock('../../middleware/tenant.js', async () => {
-  const actual = await vi.importActual<typeof import('../../middleware/tenant.js')>(
-    '../../middleware/tenant.js',
-  );
+vi.mock('../../middleware/tenant', async () => {
+  const actual =
+    await vi.importActual<typeof import('../../middleware/tenant')>('../../middleware/tenant');
   return {
     ...actual,
     tenantProcedure: {

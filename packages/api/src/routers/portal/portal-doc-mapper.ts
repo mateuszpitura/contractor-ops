@@ -1,5 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
-import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage.js';
+import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage';
 
 /**
  * Shared Prisma include shape for DocumentLink rows surfaced to the portal.

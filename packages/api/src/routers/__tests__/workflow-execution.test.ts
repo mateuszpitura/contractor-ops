@@ -28,7 +28,9 @@ const { mockPrisma, ORG_ID, USER_ID, RUN_ID, TASK_RUN_ID, TEMPLATE_ID, CONTRACTO
 
     const mockPrisma: Rec = {
       organization: {
-        findUnique: vi.fn().mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
+        findUnique: vi
+          .fn()
+          .mockResolvedValue({ id: 'org-mock', dataRegion: 'EU', status: 'ACTIVE' }),
       },
       workflowTemplate: {
         findFirst: vi.fn(),
@@ -104,8 +106,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -120,7 +122,7 @@ vi.mock('@contractor-ops/db', () => ({
 
 // F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
 // does not throw orgSuspended.
-vi.mock('../../services/org-cache.js', () => ({
+vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
     dataRegion: 'EU',
@@ -132,20 +134,18 @@ vi.mock('../../services/org-cache.js', () => ({
   orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/equipment-workflow.js', () => ({
+vi.mock('../../services/equipment-workflow', () => ({
   checkShipmentTaskCompletion: vi.fn(async () => undefined),
   handleEquipmentTaskStart: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache.js', () => ({
+vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -153,24 +153,31 @@ vi.mock('../../services/cache.js', () => ({
   CacheTTL: {},
 }));
 
-vi.mock('../../services/jira-issue-sync.js', () => ({
+vi.mock('../../services/jira-issue-sync', () => ({
   createJiraIssue: vi.fn(async () => undefined),
   transitionJiraIssue: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/linear-issue-sync.js', () => ({
+vi.mock('../../services/linear-issue-sync', () => ({
   createLinearIssue: vi.fn(async () => undefined),
   syncTaskStatusToLinear: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/calendar-deadline-sync.js', () => ({
+vi.mock('../../services/calendar-deadline-sync', () => ({
   createTaskCalendarEvent: vi.fn(async () => undefined),
 }));
 
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -181,11 +188,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -217,8 +221,8 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from '../../init.js';
-import { workflowExecutionRouter } from '../workflow/workflow-execution.js';
+import { createCallerFactory } from '../../init';
+import { workflowExecutionRouter } from '../workflow/workflow-execution';
 
 // ---------------------------------------------------------------------------
 // Caller helper

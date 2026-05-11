@@ -45,8 +45,8 @@ import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 // Pre-flight validators — canonical Phase 56 implementations. These run
 // BEFORE any network I/O (RESEARCH Pattern 3).
 import { isValidGbVat, isValidUstIdNr } from '@contractor-ops/validators';
-import { maskTaxId } from './tax-id-pii.js';
-import type { TaxValidationDb } from './types.js';
+import { maskTaxId } from './tax-id-pii';
+import type { TaxValidationDb } from './types';
 
 /**
  * `TaxValidationDb` is a union (tenant + primary). Prisma’s delegate types

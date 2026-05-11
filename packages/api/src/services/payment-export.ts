@@ -8,7 +8,7 @@
 import { createLogger } from '@contractor-ops/logger';
 import { minorToDecimalStr, transliterateToBacs } from '@contractor-ops/shared';
 import { modulusCheck, VOCALINK_MODULUS_TABLE_V840 } from '@contractor-ops/validators';
-import { getPurposeCode } from './purpose-codes.js';
+import { getPurposeCode } from './purpose-codes';
 
 const log = createLogger({ service: 'payment-export' });
 

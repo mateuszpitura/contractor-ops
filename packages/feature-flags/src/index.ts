@@ -4,14 +4,14 @@ export {
   type Region,
   setFlagClientForTesting,
   shutdownFlagClients,
-} from './client.js';
+} from './client';
 export {
   type EvalReason,
   type EvalResult,
   evaluate,
   evaluateAgainst,
   registerClassificationDisclaimerGate,
-} from './evaluator.js';
+} from './evaluator';
 export {
   buildFlagBag,
   emptyFlagBag,
@@ -19,7 +19,7 @@ export {
   type FlagValues,
   type LazyFlagBag,
   lazyFlagBag,
-} from './flag-bag.js';
+} from './flag-bag';
 export {
   assertFlagSignoffsOrExit,
   CLASSIFICATION_ENGINE_FLAG,
@@ -28,7 +28,7 @@ export {
   FLAGS,
   type FlagKey,
   getFlagDefinition,
-} from './registry.js';
+} from './registry';
 export {
   type EvalContext,
   evalContextSchema,
@@ -39,17 +39,17 @@ export {
   type Jurisdiction,
   jurisdictionSchema,
   regionSchema,
-} from './schemas.js';
+} from './schemas';
 export {
   GATED_FLAG_NAMESPACE_PREFIXES,
   getAllPendingFlags,
   getFlagSignoff,
   isFlagSignoffSatisfied,
   isGatedFlag,
-} from './signoff-registry-flags.js';
+} from './signoff-registry-flags';
 export type {
   FlagApproverRole,
   FlagSignoffEntry,
   FlagSignoffRegistry,
   FlagSignoffStatus,
-} from './signoff-registry-flags-schema.js';
+} from './signoff-registry-flags-schema';

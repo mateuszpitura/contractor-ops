@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import { createLogger } from '@contractor-ops/logger';
 import { inpostWebhookPayloadSchema } from '@contractor-ops/validators';
-import { mapInPostStatus } from './inpost-status-mapper.js';
-import { isEventDuplicate, processShipmentStatusChange } from './shipment-processing.js';
+import { mapInPostStatus } from './inpost-status-mapper';
+import { isEventDuplicate, processShipmentStatusChange } from './shipment-processing';
 
 const log = createLogger({ service: 'inpost-webhook-handler' });
 
@@ -18,7 +18,7 @@ const log = createLogger({ service: 'inpost-webhook-handler' });
 // - Fires workflow task completion check
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from '../types.js';
+import type { DbClient } from '../types';
 
 type PrismaClient = DbClient;
 

@@ -6,14 +6,14 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { authedProcedure } from '../../middleware/auth.js';
-import { orgCreateRateLimitMiddleware } from '../../middleware/org-create-rate-limit.js';
-import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { getOrgMeta } from '../../services/org-cache.js';
-import { runPostOrganizationCreateHooks } from '../../services/post-org-create-hook.js';
+import { router } from '../../init';
+import { authedProcedure } from '../../middleware/auth';
+import { orgCreateRateLimitMiddleware } from '../../middleware/org-create-rate-limit';
+import { adminProcedure, requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { getOrgMeta } from '../../services/org-cache';
+import { runPostOrganizationCreateHooks } from '../../services/post-org-create-hook';
 
 export const organizationRouter = router({
   /**

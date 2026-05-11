@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildActivityAlertCard } from '../cards/activity-alert-card.js';
-import { buildApprovalCard } from '../cards/approval-card.js';
-import { buildApprovalReminderCard } from '../cards/approval-reminder-card.js';
-import { buildApprovalResultCard } from '../cards/approval-result-card.js';
-import { buildRejectModalCard } from '../cards/reject-modal-card.js';
+import { buildActivityAlertCard } from '../cards/activity-alert-card';
+import { buildApprovalCard } from '../cards/approval-card';
+import { buildApprovalReminderCard } from '../cards/approval-reminder-card';
+import { buildApprovalResultCard } from '../cards/approval-result-card';
+import { buildRejectModalCard } from '../cards/reject-modal-card';
 
 // ---------------------------------------------------------------------------
 // Shared assertions

@@ -8,7 +8,7 @@ import type {
   InPostShipmentParams,
   LabelFormat,
   ShipmentParams,
-} from './courier-client.js';
+} from './courier-client';
 
 // ---------------------------------------------------------------------------
 // InPost ShipX API Client

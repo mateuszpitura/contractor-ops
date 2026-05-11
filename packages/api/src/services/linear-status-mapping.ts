@@ -2,7 +2,7 @@ import { createLogger } from '@contractor-ops/logger';
 import type { LinearStatusMappingEntry } from '@contractor-ops/validators';
 import { linearStatusMappingEntrySchema } from '@contractor-ops/validators';
 import { z } from 'zod';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'linear-status-mapping' });
 

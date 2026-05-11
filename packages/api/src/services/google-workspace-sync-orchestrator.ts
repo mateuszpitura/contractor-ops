@@ -4,8 +4,8 @@ import type {
   GoogleDirectoryUser,
   GoogleWorkspaceAdapter,
 } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
-import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock.js';
-import { dispatch } from './notification-service.js';
+import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock';
+import { dispatch } from './notification-service';
 
 // ---------------------------------------------------------------------------
 // Google Workspace Directory Sync Orchestrator

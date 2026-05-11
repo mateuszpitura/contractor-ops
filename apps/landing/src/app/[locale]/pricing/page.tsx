@@ -8,7 +8,7 @@ import { PricingFAQ } from '@/components/pricing/pricing-faq';
 import { PricingHero } from '@/components/pricing/pricing-hero';
 import type { Locale } from '@/i18n';
 import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
-import type { CreditPack, PricingPlan } from '@/lib/stripe';
+import type { CreditPack, PricingPlan } from '@/lib/pricing-types';
 import { fetchCreditPacks, fetchPricingPlans } from '@/lib/stripe';
 
 const log = createLogger({ service: 'landing-pricing-page' });

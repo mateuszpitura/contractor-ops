@@ -22,7 +22,7 @@ import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 
-import { putObjectAndSignDownload } from './r2.js';
+import { putObjectAndSignDownload } from './r2';
 
 const log = createLogger({ service: 'late-payment-claim-pdf' });
 
@@ -84,7 +84,7 @@ export async function renderClaimPdf(claimId: string): Promise<RenderClaimPdfRes
 
   try {
     const { renderToBuffer } = await import('@react-pdf/renderer');
-    const { LatePaymentClaimTemplate } = await import('../pdf-templates/late-payment-claim.js');
+    const { LatePaymentClaimTemplate } = await import('../pdf-templates/late-payment-claim');
 
     const pdfBuffer = await renderToBuffer(
       LatePaymentClaimTemplate({

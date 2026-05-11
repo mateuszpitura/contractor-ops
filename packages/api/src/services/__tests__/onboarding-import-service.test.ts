@@ -13,15 +13,15 @@ const { mockLinearGraphQL } = vi.hoisted(() => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     workflowTemplate: { create: vi.fn() },
     workflowTaskTemplate: { createMany: vi.fn() },
   },
 }));
 
-vi.mock('../linear-issue-sync.js', () => ({
+vi.mock('../linear-issue-sync', () => ({
   linearGraphQL: mockLinearGraphQL,
 }));
 
@@ -30,12 +30,12 @@ vi.mock('../linear-issue-sync.js', () => ({
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import type { SourcePerson } from '../onboarding-import-service.js';
+import type { SourcePerson } from '../onboarding-import-service';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
-} from '../onboarding-import-service.js';
+} from '../onboarding-import-service';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

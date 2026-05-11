@@ -5,8 +5,8 @@
 // wires the boot-time gate that consumes the helpers here.
 
 import rawRegistry from './signoff-registry-flags.json' with { type: 'json' };
-import type { FlagSignoffEntry, FlagSignoffRegistry } from './signoff-registry-flags-schema.js';
-import { FlagSignoffRegistrySchema } from './signoff-registry-flags-schema.js';
+import type { FlagSignoffEntry, FlagSignoffRegistry } from './signoff-registry-flags-schema';
+import { FlagSignoffRegistrySchema } from './signoff-registry-flags-schema';
 
 // ---------------------------------------------------------------------------
 // Boot-time validation — abort module load on malformed JSON.

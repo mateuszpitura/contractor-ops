@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { decryptBankAccount, encryptBankAccount } from '../bank-account-crypto.js';
+import { decryptBankAccount, encryptBankAccount } from '../bank-account-crypto';
 
 const TEST_KEY = randomBytes(32).toString('hex');
 

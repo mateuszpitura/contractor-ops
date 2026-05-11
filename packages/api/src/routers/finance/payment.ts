@@ -13,29 +13,29 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { acquireXactLock } from '../../lib/advisory-lock.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { acquireXactLock } from '../../lib/advisory-lock';
 import {
   clear as clearIdempotency,
   complete as completeIdempotency,
   reserve as reserveIdempotency,
-} from '../../lib/idempotency.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement.js';
-import type { ExportItem, OrgBankInfo } from '../../services/payment-export.js';
+} from '../../lib/idempotency';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement';
+import type { ExportItem, OrgBankInfo } from '../../services/payment-export';
 import {
   generateCsv,
   generateElixir,
   generateSepaXml,
   generateSwiftXml,
   resolveTransferTitle,
-} from '../../services/payment-export.js';
-import { detectFormat } from '../../services/payment-format-detection.js';
-import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto.js';
-import { calculateWht } from '../../services/tax-rate.service.js';
-import type { DbClient } from '../../services/types.js';
+} from '../../services/payment-export';
+import { detectFormat } from '../../services/payment-format-detection';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto';
+import { calculateWht } from '../../services/tax-rate.service';
+import type { DbClient } from '../../services/types';
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];

@@ -56,12 +56,12 @@ import type {
   XRechnungValidationReport,
 } from '@contractor-ops/einvoice';
 import { KOSIT_RULE_SET_VERSION, XRECHNUNG_DE_PROFILE_ID } from '@contractor-ops/einvoice';
-import type { ValidationEvent } from './einvoice-lifecycle-fsm.js';
-import { transitionValidation } from './einvoice-lifecycle-fsm.js';
-import type { ResolvedLeitwegId } from './leitweg-id-resolver.js';
-import { resolveLeitwegIdForInvoice } from './leitweg-id-resolver.js';
-import type { SkontoTermData } from './skonto.js';
-import { resolveSkontoTerm } from './skonto.js';
+import type { ValidationEvent } from './einvoice-lifecycle-fsm';
+import { transitionValidation } from './einvoice-lifecycle-fsm';
+import type { ResolvedLeitwegId } from './leitweg-id-resolver';
+import { resolveLeitwegIdForInvoice } from './leitweg-id-resolver';
+import type { SkontoTermData } from './skonto';
+import { resolveSkontoTerm } from './skonto';
 
 // ---------------------------------------------------------------------------
 // Error codes / warning codes surfaced to Plan 07 UI (kept in lockstep with

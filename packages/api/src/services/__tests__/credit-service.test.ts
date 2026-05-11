@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     subscription: { findUnique: vi.fn() },
     ocrCreditLedger: { aggregate: vi.fn(), create: vi.fn() },
@@ -15,7 +15,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../stripe-client.js', () => ({
+vi.mock('../stripe-client', () => ({
   stripe: {
     billing: { meterEvents: { create: vi.fn() } },
   },
@@ -25,18 +25,18 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn() },
 }));
 
-vi.mock('../notification-service.js', () => ({
+vi.mock('../notification-service', () => ({
   dispatch: vi.fn(),
 }));
 
-vi.mock('../cache.js', () => ({
+vi.mock('../cache', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(),
   CacheKeys: { creditBalance: (id: string) => `credit:${id}` },
   CacheTTL: { CREDIT_BALANCE: 300 },
 }));
 
-vi.mock('../billing-constants.js', () => ({
+vi.mock('../billing-constants', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
 }));
@@ -46,9 +46,9 @@ vi.mock('../billing-constants.js', () => ({
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import { invalidate } from '../cache.js';
-import { allocateTopUpCredits, checkAndDeductCredit, getCreditBalance } from '../credit-service.js';
-import { stripe } from '../stripe-client.js';
+import { invalidate } from '../cache';
+import { allocateTopUpCredits, checkAndDeductCredit, getCreditBalance } from '../credit-service';
+import { stripe } from '../stripe-client';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

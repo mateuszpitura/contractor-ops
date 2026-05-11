@@ -9,12 +9,12 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import type { SkontoTermData } from '../../services/skonto.js';
-import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto.js';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
+import { requirePermission } from '../../middleware/rbac';
+import type { SkontoTermData } from '../../services/skonto';
+import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto';
 
 const log = createLogger({ service: 'skonto-router' });
 

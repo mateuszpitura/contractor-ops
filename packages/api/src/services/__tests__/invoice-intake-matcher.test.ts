@@ -18,7 +18,7 @@ import {
   SCORE_FUZZY_BASE,
   SCORE_LEITWEG_ID,
   SCORE_VAT_ID,
-} from '../invoice-intake-matcher.js';
+} from '../invoice-intake-matcher';
 
 interface FakeContractor {
   id: string;

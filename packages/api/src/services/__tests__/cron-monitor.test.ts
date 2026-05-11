@@ -1,6 +1,6 @@
 import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CronMonitors, withCronMonitor } from '../cron-monitor.js';
+import { CronMonitors, withCronMonitor } from '../cron-monitor';
 
 describe('cron-monitor', () => {
   const fetchMock = vi.fn();

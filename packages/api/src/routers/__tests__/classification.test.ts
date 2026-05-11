@@ -189,8 +189,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -228,7 +228,14 @@ vi.hoisted(() => {
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -239,11 +246,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -302,18 +306,15 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
 // ---------------------------------------------------------------------------
 
 import { auth, authApi } from '@contractor-ops/auth';
-import { createCallerFactory } from '../../init.js';
+import { createCallerFactory } from '../../init';
 import {
   __getClassificationRateLimitMaxForTests,
   __resetClassificationRateLimitForTests,
-} from '../../middleware/classification-rate-limit.js';
+} from '../../middleware/classification-rate-limit';
 // Grep-assertable import: verifies observability body-exclusion list exists
 // with `classification.*` coverage (PII-1 / T-58-PII / ASVS V8).
-import {
-  isBodyLoggingExcluded,
-  LOG_BODY_EXCLUDE_PREFIXES,
-} from '../../middleware/observability.js';
-import { appRouter } from '../../root.js';
+import { isBodyLoggingExcluded, LOG_BODY_EXCLUDE_PREFIXES } from '../../middleware/observability';
+import { appRouter } from '../../root';
 
 const createCaller = createCallerFactory(appRouter);
 

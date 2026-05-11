@@ -19,7 +19,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { tenantStore } from '@contractor-ops/db';
 import type { ServerEnv } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
-import { createR2Client } from './r2.js';
+import { createR2Client } from './r2';
 
 // ---------------------------------------------------------------------------
 // Region → bucket (validated env)
@@ -85,7 +85,7 @@ export async function createRegionalPresignedUploadUrl(
     Bucket: bucket,
     Key: key,
     ContentType: contentType,
-    ...(maxBytes !== undefined ? { ContentLength: maxBytes } : {}),
+    ...(maxBytes === undefined ? {} : { ContentLength: maxBytes }),
   });
   return getSignedUrl(client, command, { expiresIn });
 }

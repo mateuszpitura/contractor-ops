@@ -3,7 +3,7 @@
 // In-process cache for Bank of England base rate history (global reference data).
 // Invalidated on admin CRUD; poller may leave cache stale until TTL — see invalidateBoeRateCache.
 
-import type { RateHistoryEntry } from './late-payment-interest.js';
+import type { RateHistoryEntry } from './late-payment-interest';
 
 /**
  * Structural shape required by loadBoeRateHistory — narrow enough to accept

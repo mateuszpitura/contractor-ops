@@ -1,6 +1,6 @@
 // Phase 70 D-03 structured-diff formatter for i18n-parity offences.
 
-import type { I18nParityOffence } from './run-guard.js';
+import type { I18nParityOffence } from './run-guard';
 
 export function formatI18nParityOffences(offences: readonly I18nParityOffence[]): string {
   if (offences.length === 0) return '';

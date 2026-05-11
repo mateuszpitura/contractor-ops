@@ -26,7 +26,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { t } from '../init.js';
+import { t } from '../init';
 
 const log = createLogger({ service: 'api', component: 'org-create-rate-limit' });
 

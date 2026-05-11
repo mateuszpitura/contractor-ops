@@ -7,8 +7,8 @@ import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
-import { checkAndDeductCredit } from './credit-service.js';
-import { createPresignedDownloadUrl } from './r2.js';
+import { checkAndDeductCredit } from './credit-service';
+import { createPresignedDownloadUrl } from './r2';
 
 const log = createLogger({ service: 'ocr' });
 

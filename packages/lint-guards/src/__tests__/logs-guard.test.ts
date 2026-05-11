@@ -3,8 +3,7 @@
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-03
-import { runLogsGuard } from '../logs-guard/run-guard.js';
+import { runLogsGuard } from '../logs-guard/run-guard';
 
 const FX = join(__dirname, '..', '__fixtures__');
 const INCLUDE_PREFIXES: readonly string[] = []; // empty default

@@ -4,7 +4,7 @@ import {
   lookupJiraTransitionId,
   lookupWorkflowStatus,
   saveStatusMapping,
-} from '../jira-status-mapping.js';
+} from '../jira-status-mapping';
 
 const mockPrisma = {
   integrationConnection: {

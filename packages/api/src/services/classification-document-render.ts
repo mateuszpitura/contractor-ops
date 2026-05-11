@@ -30,14 +30,14 @@ import {
   RENDERER_SLUG as DRV_RENDERER_SLUG,
   TEMPLATE_VERSION as DRV_TEMPLATE_VERSION,
   DRVDefenseBundleDocument,
-} from '../pdf-templates/drv-defense-bundle.js';
+} from '../pdf-templates/drv-defense-bundle';
 import {
   IR35SDSDocument,
   RENDERER_SLUG as SDS_RENDERER_SLUG,
   TEMPLATE_VERSION as SDS_TEMPLATE_VERSION,
-} from '../pdf-templates/ir35-sds.js';
-import { buildClassificationDocumentKey } from './classification-document-keys.js';
-import { deleteObject } from './r2.js';
+} from '../pdf-templates/ir35-sds';
+import { buildClassificationDocumentKey } from './classification-document-keys';
+import { deleteObject } from './r2';
 
 const log = createLogger({ service: 'classification-document-render' });
 
@@ -145,9 +145,7 @@ export async function renderSdsPdfBuffer(params: RenderSdsParams): Promise<Rende
   });
   const rendererVersion = `@react-pdf/renderer@${REACT_PDF_VERSION}+${SDS_RENDERER_SLUG}@${SDS_TEMPLATE_VERSION}`;
 
-  const downloadFilename = sanitizeFilename(
-    `SDS-${contractor.displayName}-${engagement.id}.pdf`,
-  );
+  const downloadFilename = sanitizeFilename(`SDS-${contractor.displayName}-${engagement.id}.pdf`);
 
   let documentId = params.classificationDocumentId;
   if (!documentId) {
@@ -235,7 +233,9 @@ export async function renderDrvDefenseBundlePdfBuffer(
     where: { contractorAssignmentId: assessment.contractorAssignmentId },
   });
   if (!attestation?.signedAt) {
-    throw new Error('Signed other-client attestation is required before generating a DRV defense bundle.');
+    throw new Error(
+      'Signed other-client attestation is required before generating a DRV defense bundle.',
+    );
   }
 
   const crossReference = await prisma.contractorAssignment.findMany({

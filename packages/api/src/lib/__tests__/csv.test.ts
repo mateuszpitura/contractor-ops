@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../csv.js';
+import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../csv';
 
 // ---------------------------------------------------------------------------
 // escapeCsvField — core behaviour

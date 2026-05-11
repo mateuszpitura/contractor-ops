@@ -2,8 +2,8 @@ import { createLogger } from '@contractor-ops/logger';
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
-import type { Context } from './context.js';
-import { observabilityMiddleware } from './middleware/observability.js';
+import type { Context } from './context';
+import { observabilityMiddleware } from './middleware/observability';
 
 // ---------------------------------------------------------------------------
 // F-SEC-20 — Global tRPC error formatter

@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyKleinunternehmerOverride,
   shouldSuppressVatBreakdown,
-} from '../kleinunternehmer.service.js';
+} from '../kleinunternehmer.service';
 
 describe('applyKleinunternehmerOverride', () => {
   it('DE org + isKleinunternehmer=true + vatRate=19 → forces KU with §19 reason', () => {

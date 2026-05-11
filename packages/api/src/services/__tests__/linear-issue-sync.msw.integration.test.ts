@@ -5,7 +5,7 @@
 import { createMockServer, HttpResponse, http, selectHandlers } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
-import { linearGraphQL } from '../linear-issue-sync.js';
+import { linearGraphQL } from '../linear-issue-sync';
 
 const { server } = createMockServer({
   handlersOnly: true,

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { deleteCalendarEvent } from '../calendar-event-service.js';
+import { deleteCalendarEvent } from '../calendar-event-service';
 
 describe('deleteCalendarEvent', () => {
   const mockFindMany = vi.fn();

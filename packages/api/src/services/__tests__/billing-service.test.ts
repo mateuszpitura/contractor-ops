@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     subscription: {
       findUnique: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../stripe-client.js', () => ({
+vi.mock('../stripe-client', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -22,7 +22,7 @@ vi.mock('../stripe-client.js', () => ({
   },
 }));
 
-vi.mock('../cache.js', () => ({
+vi.mock('../cache', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   CacheKeys: { subscription: (id: string) => `sub:${id}` },
   CacheTTL: { SUBSCRIPTION: 900 },
@@ -38,8 +38,8 @@ import {
   getSubscription,
   syncSeatCountForOrg,
   updateSubscriptionSeatCount,
-} from '../billing-service.js';
-import { stripe } from '../stripe-client.js';
+} from '../billing-service';
+import { stripe } from '../stripe-client';
 
 const mockPrisma = prisma as unknown as {
   subscription: {

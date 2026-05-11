@@ -64,7 +64,7 @@ const { mockPrisma, mockDocLink } = vi.hoisted(() => {
   return { mockPrisma, mockDocLink };
 });
 
-vi.mock('../../services/doc-link-service.js', () => mockDocLink);
+vi.mock('../../services/doc-link-service', () => mockDocLink);
 
 vi.mock('@contractor-ops/auth', () => ({
   auth: {
@@ -79,8 +79,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -93,13 +93,13 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/teams/teams-graph-client.js', () => ({
+vi.mock('../../services/teams/teams-graph-client', () => ({
   getTeamsChannels: vi.fn(async () => []),
   getJoinedTeams: vi.fn(async () => []),
   getUserByEmail: vi.fn(async () => null),
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
   getOrCreatePreferences: vi.fn(async (_uid: string, _oid: string, type: string) => ({
     notificationType: type,
@@ -109,7 +109,7 @@ vi.mock('../../services/notification-service.js', () => ({
   })),
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({
@@ -122,11 +122,9 @@ vi.mock('../../services/r2.js', () => ({
   deleteObject: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/cache.js', () => ({
+vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -140,40 +138,40 @@ vi.mock('../../services/cache.js', () => ({
   CacheTTL: { ORG_SETTINGS: 300, ORG_SETTINGS_JSON: 300, ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock('../../services/invoice-matching.js', () => ({
+vi.mock('../../services/invoice-matching', () => ({
   computeDuplicateCheckHash: vi.fn(() => 'hash'),
   runAutoMatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/bank-account-crypto.js', () => ({
+vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock('../../services/sanitize.js', () => ({
+vi.mock('../../services/sanitize', () => ({
   sanitizeStrings: vi.fn(<T>(v: T) => v),
 }));
 
-vi.mock('../../services/approval-engine.js', () => ({
+vi.mock('../../services/approval-engine', () => ({
   routeToChain: vi.fn(async () => null),
   createApprovalFlow: vi.fn(async () => ({})),
   advanceFlow: vi.fn(async () => undefined),
   computeSlaStatus: vi.fn(() => 'ON_TIME'),
 }));
 
-vi.mock('../../services/calendar-event-service.js', () => ({
+vi.mock('../../services/calendar-event-service', () => ({
   deleteCalendarEvent: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/calendar-deadline-sync.js', () => ({
+vi.mock('../../services/calendar-deadline-sync', () => ({
   syncPaymentDueDeadline: vi.fn(async () => undefined),
   syncApprovalSlaDeadline: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/report-export.js', () => ({
+vi.mock('../../services/report-export', () => ({
   generateAuditCsv: vi.fn(async () => ({ base64: 'bW9jaw==', filename: 'audit.csv' })),
 }));
 
-vi.mock('../../services/billing-service.js', () => ({
+vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
   getSubscription: vi.fn(async () => null),
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
@@ -184,29 +182,29 @@ vi.mock('../../services/billing-service.js', () => ({
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/billing-constants.js', () => ({
+vi.mock('../../services/billing-constants', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
   KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly']),
   KNOWN_TOPUP_PRICE_IDS: new Set(['price_topup_10']),
 }));
 
-vi.mock('../../services/portal-change-request.js', () => ({
+vi.mock('../../services/portal-change-request', () => ({
   approveChangeRequest: vi.fn(async () => undefined),
   rejectChangeRequest: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/mime-validator.js', () => ({
+vi.mock('../../services/mime-validator', () => ({
   isAllowedMimeType: vi.fn(() => true),
   validateMimeType: vi.fn(async () => ({ valid: true })),
 }));
 
-vi.mock('../../services/virus-scanner.js', () => ({
+vi.mock('../../services/virus-scanner', () => ({
   isClamAvailable: vi.fn(async () => false),
   scanBuffer: vi.fn(async () => ({ clean: true })),
 }));
 
-vi.mock('../../services/stripe-client.js', () => ({
+vi.mock('../../services/stripe-client', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -216,7 +214,7 @@ vi.mock('../../services/stripe-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/credit-service.js', () => ({
+vi.mock('../../services/credit-service', () => ({
   deductCredits: vi.fn(async () => undefined),
   getBalance: vi.fn(async () => ({ credits: 0 })),
   getCreditBalance: vi.fn(async () => ({ credits: 0 })),
@@ -224,22 +222,22 @@ vi.mock('../../services/credit-service.js', () => ({
   checkAndDeductCredit: vi.fn(async () => true),
 }));
 
-vi.mock('../../services/ocr-extraction.js', () => ({
+vi.mock('../../services/ocr-extraction', () => ({
   extractInvoiceData: vi.fn(async () => ({})),
 }));
 
-vi.mock('../../services/billing-webhook.js', () => ({
+vi.mock('../../services/billing-webhook', () => ({
   handleStripeWebhook: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/payment-export.js', () => ({
+vi.mock('../../services/payment-export', () => ({
   generateCsv: vi.fn(async () => Buffer.from('csv-data')),
   generateElixir: vi.fn(() => Buffer.from('elixir-data')),
   generateSepaXml: vi.fn(() => Buffer.from('sepa-data')),
   resolveTransferTitle: vi.fn(() => 'FV/2025/001'),
 }));
 
-vi.mock('../../services/bank-statement.js', () => ({
+vi.mock('../../services/bank-statement', () => ({
   parseBankStatement: vi.fn(() => []),
   matchStatementToRun: vi.fn(() => []),
 }));
@@ -247,7 +245,14 @@ vi.mock('../../services/bank-statement.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -258,11 +263,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -290,8 +292,8 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
+import { createCallerFactory } from '../../init';
+import { appRouter } from '../../root';
 
 const createCaller = createCallerFactory(appRouter);
 

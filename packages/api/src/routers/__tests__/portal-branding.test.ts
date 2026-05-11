@@ -20,7 +20,10 @@ const { ORG_ID, USER_ID, PORTAL_SESSION_TOKEN, CONTRACTOR_ID, mockPrisma } = vi.
   type Rec = Record<string, unknown>;
 
   const mockPrisma: Rec = {
-    auditLog: { create: vi.fn(async () => ({ id: "audit-mock" })), createMany: vi.fn(async () => ({ count: 1 })) },
+    auditLog: {
+      create: vi.fn(async () => ({ id: 'audit-mock' })),
+      createMany: vi.fn(async () => ({ count: 1 })),
+    },
     organization: {
       findUnique: vi.fn(),
       update: vi.fn(),
@@ -54,8 +57,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -72,7 +75,7 @@ vi.mock('@contractor-ops/db', () => ({
 // individual tests can override `prisma.organization.findUnique` for the
 // HANDLER's own DB lookup without inadvertently failing the F-SEC-12
 // suspended-org gate.
-vi.mock('../../services/org-cache.js', () => ({
+vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async () => ({
     id: 'org-branding-001',
     dataRegion: 'EU',
@@ -84,7 +87,7 @@ vi.mock('../../services/org-cache.js', () => ({
   orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
@@ -92,11 +95,9 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock('../../services/cache.js', () => ({
+vi.mock('../../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -108,7 +109,7 @@ vi.mock('../../services/cache.js', () => ({
   CacheTTL: { ORG_BRANDING: 300, APPROVAL_CHAINS: 300 },
 }));
 
-vi.mock('../../services/portal-session.js', () => ({
+vi.mock('../../services/portal-session', () => ({
   validatePortalSession: vi.fn(async (token: string) => {
     if (token !== PORTAL_SESSION_TOKEN) return null;
     return {
@@ -126,30 +127,30 @@ vi.mock('../../services/portal-session.js', () => ({
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock('../../services/portal-magic-link.js', () => ({
+vi.mock('../../services/portal-magic-link', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock('../../services/bank-account-crypto.js', () => ({
+vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
-vi.mock('../../services/portal-change-request.js', () => ({
+vi.mock('../../services/portal-change-request', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/billing-service.js', () => ({
+vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/stripe-client.js', () => ({
+vi.mock('../../services/stripe-client', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -159,11 +160,8 @@ vi.mock('../../services/stripe-client.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -194,7 +192,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -204,7 +209,7 @@ vi.mock('@sentry/nextjs', () => {
   };
 });
 
-vi.mock('../../services/teams/teams-graph-client.js', () => ({
+vi.mock('../../services/teams/teams-graph-client', () => ({
   getTeamsChannels: vi.fn(),
   getJoinedTeams: vi.fn(),
   getUserByEmail: vi.fn(),
@@ -214,9 +219,9 @@ vi.mock('../../services/teams/teams-graph-client.js', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from '../../init.js';
-import { portalAppRouter } from '../../portal-root.js';
-import { appRouter } from '../../root.js';
+import { createCallerFactory } from '../../init';
+import { portalAppRouter } from '../../portal-root';
+import { appRouter } from '../../root';
 
 // ---------------------------------------------------------------------------
 // Caller setup — admin tenant caller (appRouter) + portal caller (portalAppRouter)

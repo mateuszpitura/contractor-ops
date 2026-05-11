@@ -100,18 +100,13 @@ const {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {},
   prismaRaw: mockPrismaRaw,
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -125,10 +120,17 @@ vi.mock('@contractor-ops/logger', () => ({
   LOG_BODY_INCLUDE_PREFIXES: [],
   PII_MASK_KEYWORDS: [],
   PII_MASK_PATHS: [],
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
+  createLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+    child: vi.fn(),
+  })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -142,11 +144,11 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { gauge: mockMetricsGauge, increment: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('../notification-service.js', () => ({
+vi.mock('../notification-service', () => ({
   dispatch: mockDispatch,
 }));
 
-vi.mock('../rbac-recipients.js', () => ({
+vi.mock('../rbac-recipients', () => ({
   resolveRbacRecipients: mockResolveRecipients,
 }));
 
@@ -158,7 +160,7 @@ import {
   runEconomicDependencyScan,
   updateBandState,
   WARNING_THRESHOLD,
-} from '../economic-dependency-scan.js';
+} from '../economic-dependency-scan';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const _ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';

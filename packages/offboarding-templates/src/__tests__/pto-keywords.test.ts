@@ -1,7 +1,7 @@
 // Phase 74 Plan 02 — GREEN tests for PTO_KEYWORDS typed-const (D-08).
 
 import { describe, expect, it } from 'vitest';
-import { PTO_KEYWORDS } from '../pto-keywords.js';
+import { PTO_KEYWORDS } from '../pto-keywords';
 
 describe('PTO_KEYWORDS — D-08 typed-const', () => {
   it('has en/de/pl keys; no ar', () => {

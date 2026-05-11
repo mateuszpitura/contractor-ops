@@ -12,7 +12,7 @@
 
 import { readFile } from 'node:fs/promises';
 
-import { GLOBAL_LOOKUP_MODELS_ALLOWLIST } from './global-lookup-allowlist.js';
+import { GLOBAL_LOOKUP_MODELS_ALLOWLIST } from './global-lookup-allowlist';
 
 export interface SchemaGuardOptions {
   files: readonly string[];

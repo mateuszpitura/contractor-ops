@@ -1,5 +1,5 @@
-import { router } from './init.js';
-import { portalRouter, portalTimeRouter } from './routers/portal/index.js';
+import { router } from './init';
+import { portalRouter, portalTimeRouter } from './routers/portal/index';
 
 /**
  * Separate tRPC router for the contractor portal.

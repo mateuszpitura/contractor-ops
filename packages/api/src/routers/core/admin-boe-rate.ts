@@ -6,10 +6,10 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { invalidateBoeRateCache } from '../../services/boe-rate-cache.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { invalidateBoeRateCache } from '../../services/boe-rate-cache';
 
 const log = createLogger({ service: 'admin-boe-rate-router' });
 

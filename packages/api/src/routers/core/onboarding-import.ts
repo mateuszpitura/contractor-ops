@@ -11,16 +11,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { linearGraphQL } from '../../services/linear-issue-sync.js';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { linearGraphQL } from '../../services/linear-issue-sync';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
   mergeByEmail,
-} from '../../services/onboarding-import-service.js';
+} from '../../services/onboarding-import-service';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -256,9 +256,9 @@ async function processPeopleImport(
         return person;
       }),
     );
-    for (let j = 0; j < results.length; j += 1) {
-      const r = results[j]!;
-      const person = slice[j]!;
+    for (const [j, r] of results.entries()) {
+      const person = slice[j];
+      if (!person) continue;
       if (r.status === 'fulfilled') {
         job.completedItems++;
       } else {

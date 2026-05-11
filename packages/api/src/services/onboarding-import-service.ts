@@ -1,6 +1,6 @@
 import { prisma } from '@contractor-ops/db';
 import type { MergedPerson } from '@contractor-ops/validators';
-import { linearGraphQL } from './linear-issue-sync.js';
+import { linearGraphQL } from './linear-issue-sync';
 
 // ---------------------------------------------------------------------------
 // Types

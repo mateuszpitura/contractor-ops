@@ -19,7 +19,7 @@ import {
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
-} from '../equipment/equipment-shared.js';
+} from '../equipment/equipment-shared';
 
 // `plain()` was removed from equipment-shared (replaced by inline structuredClone
 // at call sites). The legacy test suite for it has been deleted.

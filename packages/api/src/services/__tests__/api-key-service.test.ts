@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     organizationApiKey: {
       findMany: vi.fn(),
@@ -23,7 +23,7 @@ vi.stubEnv('API_KEY_HMAC_SECRET', 'test-hmac-secret-that-is-at-least-32-chars-lo
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import { generateApiKey, PREFIX_LENGTH, resolveApiKey, touchLastUsed } from '../api-key-service.js';
+import { generateApiKey, PREFIX_LENGTH, resolveApiKey, touchLastUsed } from '../api-key-service';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

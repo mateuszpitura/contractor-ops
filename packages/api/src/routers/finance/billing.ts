@@ -1,16 +1,16 @@
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { adminProcedure } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
+import { router } from '../../init';
+import { adminProcedure } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import {
   KNOWN_SUBSCRIPTION_PRICE_IDS,
   KNOWN_TOPUP_PRICE_IDS,
   TIER_CREDIT_ALLOWANCE,
   TRIAL_CREDIT_ALLOWANCE,
-} from '../../services/billing-constants.js';
+} from '../../services/billing-constants';
 import {
   createCheckoutSession,
   createPortalSession,
@@ -19,8 +19,8 @@ import {
   getProrationPreview,
   getSubscription,
   updateSubscriptionSeatCount,
-} from '../../services/billing-service.js';
-import { getCreditBalance } from '../../services/credit-service.js';
+} from '../../services/billing-service';
+import { getCreditBalance } from '../../services/credit-service';
 
 // ---------------------------------------------------------------------------
 // Static plan configuration (D-01 through D-06)

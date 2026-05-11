@@ -21,12 +21,8 @@ import {
   fixtureCrossReference,
   fixturePriorHistory,
   fixtureScheinRed,
-} from '../__fixtures__/drv-fixtures.js';
-import {
-  DRVDefenseBundleDocument,
-  RENDERER_SLUG,
-  TEMPLATE_VERSION,
-} from '../drv-defense-bundle.js';
+} from '../__fixtures__/drv-fixtures';
+import { DRVDefenseBundleDocument, RENDERER_SLUG, TEMPLATE_VERSION } from '../drv-defense-bundle';
 
 function collectText(node: ReactNode): string[] {
   const out: string[] = [];

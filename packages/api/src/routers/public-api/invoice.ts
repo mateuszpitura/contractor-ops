@@ -1,10 +1,10 @@
 import type { Prisma } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { apiKeyTenantProcedure } from '../../middleware/api-key-auth.js';
-import { requirePermission } from '../../middleware/rbac.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { apiKeyTenantProcedure } from '../../middleware/api-key-auth';
+import { requirePermission } from '../../middleware/rbac';
 
 // ---------------------------------------------------------------------------
 // Input schemas

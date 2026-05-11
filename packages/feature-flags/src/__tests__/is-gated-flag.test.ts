@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { GATED_FLAG_NAMESPACE_PREFIXES, isGatedFlag } from '../signoff-registry-flags.js';
+import { GATED_FLAG_NAMESPACE_PREFIXES, isGatedFlag } from '../signoff-registry-flags';
 
 describe('isGatedFlag (FOUND6-04 — D-11)', () => {
   it('matches every prefix in GATED_FLAG_NAMESPACE_PREFIXES', () => {

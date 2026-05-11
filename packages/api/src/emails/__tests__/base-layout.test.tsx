@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { BaseLayout } from '../base-layout.js';
+import { BaseLayout } from '../base-layout';
 
 // ---------------------------------------------------------------------------
 // Helpers — walk the React tree to extract text (same pattern as ir35-sds tests)

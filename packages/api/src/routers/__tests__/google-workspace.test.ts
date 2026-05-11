@@ -121,8 +121,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -138,7 +138,14 @@ vi.mock('@contractor-ops/db', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -149,11 +156,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -181,7 +185,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('../../services/billing-service.js', () => ({
+vi.mock('../../services/billing-service', () => ({
   syncSeatCountForOrg: vi.fn(async () => undefined),
   getSubscription: mockGetSubscription,
   createCheckoutSession: vi.fn(async () => ({ url: 'https://stripe.test/checkout' })),
@@ -192,7 +196,7 @@ vi.mock('../../services/billing-service.js', () => ({
   updateSubscriptionSeatCount: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/stripe-client.js', () => ({
+vi.mock('../../services/stripe-client', () => ({
   stripe: {
     subscriptions: { retrieve: vi.fn(), update: vi.fn(), list: vi.fn(async () => ({ data: [] })) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
@@ -202,7 +206,7 @@ vi.mock('../../services/stripe-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/billing-constants.js', () => ({
+vi.mock('../../services/billing-constants', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
   KNOWN_SUBSCRIPTION_PRICE_IDS: new Set(['price_starter_monthly']),
@@ -210,8 +214,8 @@ vi.mock('../../services/billing-constants.js', () => ({
   PRICE_TO_TIER_MAP: {},
 }));
 
-import { createCallerFactory } from '../../init.js';
-import { googleWorkspaceRouter } from '../integrations/google-workspace.js';
+import { createCallerFactory } from '../../init';
+import { googleWorkspaceRouter } from '../integrations/google-workspace';
 
 const createCaller = createCallerFactory(googleWorkspaceRouter);
 

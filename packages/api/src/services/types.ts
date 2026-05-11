@@ -1,7 +1,7 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
-import type { TenantScopedDb } from '../lib/tenant-db.js';
+import type { TenantScopedDb } from '../lib/tenant-db';
 
-export type { TenantScopedDb } from '../lib/tenant-db.js';
+export type { TenantScopedDb } from '../lib/tenant-db';
 
 /** Primary, interactive transaction, or tenant-scoped client — for calendar/deadline sync entrypoints. */
 export type CalendarPrismaClient = PrismaClient | Prisma.TransactionClient | TenantScopedDb;

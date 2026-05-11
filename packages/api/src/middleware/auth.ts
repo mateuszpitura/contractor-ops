@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { publicProcedure, t } from '../init.js';
+import { publicProcedure, t } from '../init';
 
 /**
  * Auth middleware: requires an authenticated session.

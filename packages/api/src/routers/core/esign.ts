@@ -1,15 +1,15 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { portalProcedure } from '../../middleware/portal-auth.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
+import { router } from '../../init';
+import { portalProcedure } from '../../middleware/portal-auth';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
 import {
   getSigningUrl,
   resendToRecipient,
   sendForSignature,
   voidEnvelope,
-} from '../../services/esign-orchestrator.js';
+} from '../../services/esign-orchestrator';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -26,13 +26,13 @@ vi.mock('@contractor-ops/db', () => {
       taxRate: { findMany, findFirst },
       withholdingTaxRate: { findFirst: vi.fn() },
     },
-    withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
   };
 });
 
 import { prisma } from '@contractor-ops/db';
-import { getDefaultRateCode, getTaxRatesForCountry } from '../tax-rate.service.js';
+import { getDefaultRateCode, getTaxRatesForCountry } from '../tax-rate.service';
 
 const mockTaxRate = vi.mocked(prisma.taxRate);
 

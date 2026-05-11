@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { ExportItem } from '../payment-export.js';
-import type { Destination } from '../payment-format-detection.js';
+import type { ExportItem } from '../payment-export';
+import type { Destination } from '../payment-format-detection';
 import {
   detectFormat,
   detectFormatForDestination,
   EU_IBAN_COUNTRIES,
   groupItemsByFormat,
-} from '../payment-format-detection.js';
+} from '../payment-format-detection';
 
 describe('EU_IBAN_COUNTRIES', () => {
   it('contains all 27 EU + 3 EEA country codes (30 total)', () => {

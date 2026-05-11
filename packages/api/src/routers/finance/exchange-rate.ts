@@ -4,10 +4,10 @@ import {
   exchangeRateLatestSchema,
   exchangeRateQuerySchema,
 } from '@contractor-ops/validators';
-import { router } from '../../init.js';
-import { cronProcedure } from '../../middleware/cron-trpc.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { convertAmount, fetchAndStoreRates, getRate } from '../../services/exchange-rate.js';
+import { router } from '../../init';
+import { cronProcedure } from '../../middleware/cron-trpc';
+import { tenantProcedure } from '../../middleware/tenant';
+import { convertAmount, fetchAndStoreRates, getRate } from '../../services/exchange-rate';
 
 export const exchangeRateRouter = router({
   /**

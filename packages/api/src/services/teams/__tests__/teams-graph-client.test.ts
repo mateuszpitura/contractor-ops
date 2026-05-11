@@ -15,7 +15,7 @@ vi.mock('@microsoft/microsoft-graph-client', () => ({
   },
 }));
 
-import { getJoinedTeams, getTeamsChannels } from '../teams-graph-client.js';
+import { getJoinedTeams, getTeamsChannels } from '../teams-graph-client';
 
 describe('teams-graph-client', () => {
   beforeEach(() => {

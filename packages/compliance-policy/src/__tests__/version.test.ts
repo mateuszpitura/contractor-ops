@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { POLICY_RULE_SET_VERSION } from '../version.js';
+import { POLICY_RULE_SET_VERSION } from '../version';
 
 describe('POLICY_RULE_SET_VERSION', () => {
   it('matches package.json version with v prefix', () => {

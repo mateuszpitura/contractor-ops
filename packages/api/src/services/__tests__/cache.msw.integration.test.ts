@@ -22,7 +22,7 @@ afterEach(() => {
 afterAll(() => server.close());
 
 async function withFreshCacheModule<T>(
-  run: (mod: typeof import('../cache.js')) => Promise<T>,
+  run: (mod: typeof import('../cache')) => Promise<T>,
 ): Promise<T> {
   const prevUrl = process.env.UPSTASH_REDIS_REST_URL;
   const prevToken = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -32,7 +32,7 @@ async function withFreshCacheModule<T>(
   });
   vi.resetModules();
   try {
-    const mod = await import('../cache.js');
+    const mod = await import('../cache');
     return await run(mod);
   } finally {
     if (prevUrl === undefined) delete process.env.UPSTASH_REDIS_REST_URL;

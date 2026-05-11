@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { InvoiceReceivedEmail } from '../invoice-received.js';
+import { InvoiceReceivedEmail } from '../invoice-received';
 
 function collectText(node: ReactNode): string[] {
   const out: string[] = [];

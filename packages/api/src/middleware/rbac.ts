@@ -1,10 +1,10 @@
 import type { Permission } from '@contractor-ops/auth';
 import { authApi } from '@contractor-ops/auth';
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { t } from '../init.js';
-import { permissionToScopes } from '../lib/scope-utils.js';
-import { tenantProcedure } from './tenant.js';
+import * as E from '../errors';
+import { t } from '../init';
+import { permissionToScopes } from '../lib/scope-utils';
+import { tenantProcedure } from './tenant';
 
 /**
  * RBAC middleware factory: creates a middleware that checks if the current

@@ -1,11 +1,11 @@
 import { createLogger } from '@contractor-ops/logger';
-import { DPDClient } from './dpd-client.js';
-import { mapDpdStatus } from './dpd-status-mapper.js';
+import { DPDClient } from './dpd-client';
+import { mapDpdStatus } from './dpd-status-mapper';
 import {
   isEventDuplicate,
   processShipmentStatusChange,
   TERMINAL_STATUSES,
-} from './shipment-processing.js';
+} from './shipment-processing';
 
 // ---------------------------------------------------------------------------
 // DPD Polling Service
@@ -13,7 +13,7 @@ import {
 // QStash-triggered fallback for catching missed DPD status updates.
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from '../types.js';
+import type { DbClient } from '../types';
 
 const log = createLogger({ service: 'dpd-polling-service' });
 

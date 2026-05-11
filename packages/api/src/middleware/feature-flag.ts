@@ -2,9 +2,9 @@ import type { FlagKey, LazyFlagBag } from '@contractor-ops/feature-flags';
 import { lazyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
-import { t } from '../init.js';
-import { apiKeyTenantProcedure } from './api-key-auth.js';
-import { tenantProcedure } from './tenant.js';
+import { t } from '../init';
+import { apiKeyTenantProcedure } from './api-key-auth';
+import { tenantProcedure } from './tenant';
 
 const log = createLogger({ service: 'feature-flags' });
 

@@ -60,8 +60,8 @@ vi.mock('@contractor-ops/logger', () => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     notification: {
       findFirst: mockFindFirst,
@@ -81,11 +81,11 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../app-email.js', () => ({
+vi.mock('../app-email', () => ({
   sendAppEmail: (...args: unknown[]) => mockSendAppEmail(...args),
 }));
 
-vi.mock('../email-templates.js', () => ({
+vi.mock('../email-templates', () => ({
   renderNotificationEmail: vi.fn().mockReturnValue({
     subject: 'Test Subject',
     react: '<div>test</div>',
@@ -94,15 +94,15 @@ vi.mock('../email-templates.js', () => ({
 
 // messaging/index.js uses prisma.integrationConnection.findMany (mocked above)
 // slack-client.js is imported by SlackMessagingProvider
-vi.mock('../slack-client.js', () => ({
+vi.mock('../slack-client', () => ({
   getSlackClient: vi.fn().mockResolvedValue(null),
   getSlackUserIdForUser: vi.fn().mockResolvedValue(null),
   sendApprovalCard: vi.fn().mockResolvedValue(undefined),
   sendReminderDM: vi.fn().mockResolvedValue(undefined),
 }));
 
-import type { NotificationEvent } from '../notification-service.js';
-import { dispatch, getOrCreatePreferences } from '../notification-service.js';
+import type { NotificationEvent } from '../notification-service';
+import { dispatch, getOrCreatePreferences } from '../notification-service';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -284,7 +284,7 @@ describe('dispatch', () => {
 
     // Mock the TeamsMessagingProvider that gets instantiated
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
       mockSendChannelAlert,
@@ -335,7 +335,7 @@ describe('dispatch', () => {
       .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
 
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
       mockSendChannelAlert,
@@ -364,7 +364,7 @@ describe('dispatch', () => {
       .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
 
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockRejectedValue(
       new Error('Teams API unavailable'),
@@ -481,7 +481,7 @@ describe('dispatch', () => {
       .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
 
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
       mockSendChannelAlert,
@@ -514,7 +514,7 @@ describe('dispatch', () => {
       .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
 
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
       mockSendChannelAlert,
@@ -566,7 +566,7 @@ describe('dispatch', () => {
       .mockResolvedValueOnce([{ provider: 'MICROSOFT_TEAMS' }]); // channel alert
 
     const { TeamsMessagingProvider } = await import(
-      '../../services/messaging/teams-messaging-provider.js'
+      '../../services/messaging/teams-messaging-provider'
     );
     vi.spyOn(TeamsMessagingProvider.prototype, 'sendChannelAlert').mockImplementation(
       mockSendChannelAlert,

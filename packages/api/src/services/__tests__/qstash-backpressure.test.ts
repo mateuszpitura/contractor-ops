@@ -117,7 +117,7 @@ import {
   backpressureKey,
   isBackpressureRejected,
   withBackpressure,
-} from '../qstash-backpressure.js';
+} from '../qstash-backpressure';
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -509,7 +509,7 @@ describe('withBackpressure: no Redis configured', () => {
       return { Redis: MockRedis };
     });
 
-    const { withBackpressure: withBackpressureNoRedis } = await import('../qstash-backpressure.js');
+    const { withBackpressure: withBackpressureNoRedis } = await import('../qstash-backpressure');
     const fn = vi.fn().mockResolvedValue('no-redis-passthrough');
 
     const result = await withBackpressureNoRedis('ocr-process', 10, fn);

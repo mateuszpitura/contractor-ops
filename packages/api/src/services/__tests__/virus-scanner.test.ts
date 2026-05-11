@@ -22,7 +22,7 @@ vi.mock('clamscan', () => ({
   },
 }));
 
-import { isClamAvailable, scanBuffer } from '../virus-scanner.js';
+import { isClamAvailable, scanBuffer } from '../virus-scanner';
 
 describe('virus-scanner', () => {
   beforeEach(() => {

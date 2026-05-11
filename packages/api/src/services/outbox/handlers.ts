@@ -12,8 +12,8 @@
 
 import { createLogger } from '@contractor-ops/logger';
 
-import type { NotificationEvent } from '../notification-service.js';
-import { dispatch as dispatchNotification } from '../notification-service.js';
+import type { NotificationEvent } from '../notification-service';
+import { dispatch as dispatchNotification } from '../notification-service';
 
 const log = createLogger({ service: 'outbox-handlers' });
 

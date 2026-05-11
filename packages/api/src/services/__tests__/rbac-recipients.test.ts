@@ -15,8 +15,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { mockFindMany } = vi.hoisted(() => ({ mockFindMany: vi.fn() }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {}, // stubbed — @contractor-ops/auth/config.ts imports this at module init
   prismaRaw: {
     member: {
@@ -28,7 +28,7 @@ vi.mock('@contractor-ops/db', () => ({
 // Imported AFTER the db mock so better-auth's adapter init doesn't crash.
 import { roles as authRoles } from '@contractor-ops/auth';
 
-import { resolveRbacRecipients, __testables as testables } from '../rbac-recipients.js';
+import { resolveRbacRecipients, __testables as testables } from '../rbac-recipients';
 
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';

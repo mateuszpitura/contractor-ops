@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { triggerReasonSchema, triggerReasonsSchema } from '../reassessment-trigger-reason.js';
+import { triggerReasonSchema, triggerReasonsSchema } from '../reassessment-trigger-reason';
 
 describe('triggerReasonSchema', () => {
   it('parses a well-formed reason (happy path)', () => {

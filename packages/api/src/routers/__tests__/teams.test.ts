@@ -19,17 +19,15 @@ const { teamCtxDb, mockFindFirst, mockUpdate } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: teamCtxDb,
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -58,7 +56,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   })),
 }));
 
-vi.mock('../../services/teams/teams-graph-client.js', () => ({
+vi.mock('../../services/teams/teams-graph-client', () => ({
   getTeamsChannels: vi.fn(() =>
     Promise.resolve([
       { id: 'ch-1', displayName: 'General' },
@@ -74,7 +72,7 @@ vi.mock('../../services/teams/teams-graph-client.js', () => ({
 }));
 
 // Mock tRPC init to avoid full server setup
-vi.mock('../../init.js', () => {
+vi.mock('../../init', () => {
   return {
     router: vi.fn(routes => routes),
     publicProcedure: {
@@ -86,7 +84,7 @@ vi.mock('../../init.js', () => {
   };
 });
 
-vi.mock('../../middleware/tenant.js', () => ({
+vi.mock('../../middleware/tenant', () => ({
   tenantProcedure: {
     use: vi.fn().mockReturnThis(),
     input: vi.fn().mockReturnThis(),
@@ -95,11 +93,11 @@ vi.mock('../../middleware/tenant.js', () => ({
   },
 }));
 
-vi.mock('../../middleware/rbac.js', () => ({
+vi.mock('../../middleware/rbac', () => ({
   requirePermission: vi.fn(() => vi.fn()),
 }));
 
-vi.mock('../../middleware/tier.js', () => ({
+vi.mock('../../middleware/tier', () => ({
   requireTier: vi.fn(() => vi.fn()),
 }));
 
@@ -127,7 +125,7 @@ describe('teamsRouter', () => {
       mockUpdate.mockResolvedValue({});
 
       // Import the router — with our mocks the procedures are just functions
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
 
       // The saveChannelMapping procedure is a mutation function
       const handler = teamsRouter.saveChannelMapping as unknown as (params: {
@@ -176,7 +174,7 @@ describe('teamsRouter', () => {
         },
       });
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
 
       const handler = teamsRouter.getChannelMapping as unknown as (params: {
         ctx: { organizationId: string };
@@ -196,7 +194,7 @@ describe('teamsRouter', () => {
         configJson: {},
       });
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
 
       const handler = teamsRouter.getChannelMapping as unknown as (params: {
         ctx: { organizationId: string };
@@ -214,7 +212,7 @@ describe('teamsRouter', () => {
     it('returns null when no connection exists', async () => {
       mockFindFirst.mockResolvedValue(null);
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
 
       const handler = teamsRouter.connectionStatus as unknown as (params: {
         ctx: { organizationId: string };
@@ -234,7 +232,7 @@ describe('teamsRouter', () => {
         configJson: { channelMapping: {} },
       });
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
 
       const handler = teamsRouter.connectionStatus as unknown as (params: {
         ctx: { organizationId: string };
@@ -259,7 +257,7 @@ describe('teamsRouter', () => {
   describe('getTeams', () => {
     it('throws NOT_FOUND when no CONNECTED Teams integration', async () => {
       mockFindFirst.mockResolvedValue(null);
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
       const handler = teamsRouter.getTeams as unknown as (params: {
         ctx: { organizationId: string };
       }) => Promise<unknown>;
@@ -278,7 +276,7 @@ describe('teamsRouter', () => {
         configJson: {},
       });
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
       const handler = teamsRouter.getTeams as unknown as (params: {
         ctx: { organizationId: string };
       }) => Promise<Array<{ id: string; displayName: string }>>;
@@ -297,7 +295,7 @@ describe('teamsRouter', () => {
   describe('getChannels', () => {
     it('throws NOT_FOUND when no CONNECTED Teams integration', async () => {
       mockFindFirst.mockResolvedValue(null);
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
       const handler = teamsRouter.getChannels as unknown as (params: {
         ctx: { organizationId: string };
         input: { teamId: string };
@@ -315,7 +313,7 @@ describe('teamsRouter', () => {
         configJson: {},
       });
 
-      const { teamsRouter } = await import('../../routers/integrations/teams.js');
+      const { teamsRouter } = await import('../../routers/integrations/teams');
       const handler = teamsRouter.getChannels as unknown as (params: {
         ctx: { organizationId: string };
         input: { teamId: string };
@@ -341,7 +339,7 @@ describe('teamsRouter', () => {
       const source = fs.readFileSync(path.join(sourceDir, 'integrations/teams.ts'), 'utf-8');
 
       // Verify import exists
-      expect(source).toContain("import { requireTier } from '../../middleware/tier.js'");
+      expect(source).toContain("import { requireTier } from '../../middleware/tier'");
 
       // Verify saveChannelMapping has requireTier
       expect(source).toContain("requireTier('PRO')");

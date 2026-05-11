@@ -7,7 +7,7 @@
 // Plan 75 will hook IP_ASSIGNMENT into the `requiredDocs` arrays where each
 // seed currently declares HANDOVER_DOCUMENT.
 
-import type { Seed } from './types.js';
+import type { Seed } from './types';
 
 export const OFFBOARDING_TEMPLATE_SEEDS: readonly Seed[] = [
   {

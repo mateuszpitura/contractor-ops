@@ -3,7 +3,7 @@ import {
   createJiraIssue,
   detectScopeExpansionNeeded,
   transitionJiraIssue,
-} from '../jira-issue-sync.js';
+} from '../jira-issue-sync';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -17,13 +17,13 @@ vi.mock('@contractor-ops/validators', () => ({
   jiraTaskConfigSchema: { safeParse: vi.fn() },
 }));
 
-vi.mock('../jira-status-mapping.js', () => ({
+vi.mock('../jira-status-mapping', () => ({
   lookupJiraTransitionId: vi.fn(),
 }));
 
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { jiraTaskConfigSchema } from '@contractor-ops/validators';
-import { lookupJiraTransitionId } from '../jira-status-mapping.js';
+import { lookupJiraTransitionId } from '../jira-status-mapping';
 
 const mockDecryptCredentials = vi.mocked(decryptCredentials);
 const mockJiraConfigParse = vi.mocked(jiraTaskConfigSchema.safeParse);

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeTimeReconciliation } from '../time-reconciliation.js';
+import { computeTimeReconciliation } from '../time-reconciliation';
 
 const mockPrisma = {
   contract: { findFirst: vi.fn() },

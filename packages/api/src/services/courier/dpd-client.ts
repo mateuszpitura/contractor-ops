@@ -7,7 +7,7 @@ import type {
   DPDShipmentParams,
   LabelFormat,
   ShipmentParams,
-} from './courier-client.js';
+} from './courier-client';
 
 // ---------------------------------------------------------------------------
 // DPD Package API Client

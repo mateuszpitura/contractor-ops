@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   tenantStore: {
     getStore: vi.fn(() => null),
   },
@@ -24,7 +24,7 @@ vi.mock('@contractor-ops/validators', async importOriginal => {
   };
 });
 
-vi.mock('../r2.js', () => ({
+vi.mock('../r2', () => ({
   createR2Client: vi.fn(() => ({
     send: vi.fn(async () => ({ ContentLength: 1024 })),
   })),
@@ -47,7 +47,7 @@ import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
   getRegionalBucket,
-} from '../regional-storage.js';
+} from '../regional-storage';
 
 // ---------------------------------------------------------------------------
 // Tests

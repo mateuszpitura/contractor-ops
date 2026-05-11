@@ -3,8 +3,8 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { lookupWorkflowStatus } from './jira-status-mapping.js';
-import type { DbClient } from './types.js';
+import { lookupWorkflowStatus } from './jira-status-mapping';
+import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
 

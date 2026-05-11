@@ -1,5 +1,5 @@
 import type { JiraStatusMappingEntry } from '@contractor-ops/validators';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
 

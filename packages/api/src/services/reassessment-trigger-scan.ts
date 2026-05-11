@@ -19,10 +19,10 @@
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import type { TriggerReason } from '../schemas/reassessment-trigger-reason.js';
-import { triggerReasonsSchema } from '../schemas/reassessment-trigger-reason.js';
-import { dispatch } from './notification-service.js';
-import { resolveRbacRecipients } from './rbac-recipients.js';
+import type { TriggerReason } from '../schemas/reassessment-trigger-reason';
+import { triggerReasonsSchema } from '../schemas/reassessment-trigger-reason';
+import { dispatch } from './notification-service';
+import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('classification-reassessment-triggers');
 

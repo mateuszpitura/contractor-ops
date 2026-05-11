@@ -11,7 +11,7 @@
 
 import { prisma } from '@contractor-ops/db';
 import { getServerEnv } from '@contractor-ops/validators';
-import { getCurrentConsent } from './consent-record.js';
+import { getCurrentConsent } from './consent-record';
 
 // ---------------------------------------------------------------------------
 // Cross-border transfer detection

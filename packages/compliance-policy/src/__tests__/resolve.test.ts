@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import '../index.js';
-import { resolvePolicyRules } from '../registry.js';
-import type { EngagementContext } from '../types.js';
+import '../index';
+import { resolvePolicyRules } from '../registry';
+import type { EngagementContext } from '../types';
 
 describe('resolvePolicyRules — ROADMAP success criteria fixtures', () => {
   it('UK B2B classified IR35-INSIDE materialises 4 rows (RTW + UTR + business-registration + SDS)', () => {

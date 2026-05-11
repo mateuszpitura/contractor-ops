@@ -37,7 +37,7 @@ vi.mock('@contractor-ops/logger', () => {
   };
 });
 
-import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from '../equipment-workflow.js';
+import { checkShipmentTaskCompletion, handleEquipmentTaskStart } from '../equipment-workflow';
 
 const ORG_ID = 'org-eq-001';
 const TASK_ID = 'task-eq-001';
@@ -207,7 +207,7 @@ const { mockCreateShipment } = vi.hoisted(() => ({
   mockCreateShipment: vi.fn(),
 }));
 
-vi.mock('../courier/inpost-client.js', () => {
+vi.mock('../courier/inpost-client', () => {
   const MockInPostClient = vi.fn().mockImplementation(function (this: {
     createShipment: typeof mockCreateShipment;
   }) {

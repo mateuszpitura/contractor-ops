@@ -1,7 +1,7 @@
 // Phase 71 D-01 — Registry of compliance policy rules.
 
-import { deepFreeze } from './freeze.js';
-import type { EngagementContext, ParsedPolicyRuleId, PolicyRule, PolicyRuleId } from './types.js';
+import { deepFreeze } from './freeze';
+import type { EngagementContext, ParsedPolicyRuleId, PolicyRule, PolicyRuleId } from './types';
 
 const REGISTRY: PolicyRule[] = [];
 const REGISTERED_IDS = new Set<PolicyRuleId>();

@@ -6,7 +6,7 @@
  * Per D-06: ExchangeRate table with QStash daily cron.
  */
 
-import type { DbClient, PrimaryPrismaClient } from './types.js';
+import type { DbClient, PrimaryPrismaClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants

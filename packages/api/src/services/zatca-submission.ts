@@ -31,8 +31,8 @@ import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/inte
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
-import type { PrismaLike } from './zatca-hash-chain.js';
-import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain.js';
+import type { PrismaLike } from './zatca-hash-chain';
+import { acquireChainLock, getNextChainEntry, recordChainEntry } from './zatca-hash-chain';
 
 const log = createLogger({ service: 'zatca-submission' });
 

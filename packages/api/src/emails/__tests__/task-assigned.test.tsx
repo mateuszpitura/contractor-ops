@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { TaskAssignedEmail } from '../task-assigned.js';
+import { TaskAssignedEmail } from '../task-assigned';
 
 function collectText(node: ReactNode): string[] {
   const out: string[] = [];

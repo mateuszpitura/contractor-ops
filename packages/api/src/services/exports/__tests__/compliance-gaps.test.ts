@@ -9,7 +9,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { iterateComplianceGaps } from '../compliance-gaps.js';
+import { iterateComplianceGaps } from '../compliance-gaps';
 
 type ContractorPage = Array<{
   id: string;

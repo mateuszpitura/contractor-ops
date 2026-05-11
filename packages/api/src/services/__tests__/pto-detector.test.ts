@@ -1,8 +1,8 @@
 // Phase 74 Plan 06 — GREEN tests for resolveAssigneeWithPto.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CalendarAdapter } from '../pto-detector.js';
-import { isManagerOnPto, resolveAssigneeWithPto } from '../pto-detector.js';
+import type { CalendarAdapter } from '../pto-detector';
+import { isManagerOnPto, resolveAssigneeWithPto } from '../pto-detector';
 
 const TODAY = new Date('2026-05-10T12:00:00Z');
 

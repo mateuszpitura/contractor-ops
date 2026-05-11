@@ -1,8 +1,8 @@
 import type { ReactElement, ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import type { GdprPrivacyNoticeTemplateProps } from '../gdpr-privacy-notice.js';
-import { GdprPrivacyNoticeTemplate } from '../gdpr-privacy-notice.js';
+import type { GdprPrivacyNoticeTemplateProps } from '../gdpr-privacy-notice';
+import { GdprPrivacyNoticeTemplate } from '../gdpr-privacy-notice';
 
 // ---------------------------------------------------------------------------
 // Helper — walk the React tree to extract text strings (same approach as

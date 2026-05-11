@@ -2,8 +2,8 @@ import { resetServerEnvCacheForTesting } from '@contractor-ops/validators';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     organization: {
       findUniqueOrThrow: vi.fn(),
@@ -19,11 +19,7 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 import { prisma } from '@contractor-ops/db';
-import {
-  detectCrossBorderTransfer,
-  generateDPA,
-  generateSCC,
-} from '../legal-document-generation.js';
+import { detectCrossBorderTransfer, generateDPA, generateSCC } from '../legal-document-generation';
 
 const mockPrisma = prisma as unknown as {
   organization: {

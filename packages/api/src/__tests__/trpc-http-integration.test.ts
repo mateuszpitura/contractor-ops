@@ -100,8 +100,8 @@ vi.mock('@contractor-ops/classification', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -114,24 +114,22 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../services/portal-session.js', () => ({
+vi.mock('../services/portal-session', () => ({
   validatePortalSession: mockValidatePortalSession,
 }));
 
-vi.mock('../services/api-key-service.js', () => ({
+vi.mock('../services/api-key-service', () => ({
   resolveApiKey: mockResolveApiKey,
   touchLastUsed: vi.fn(),
 }));
 
-vi.mock('../services/billing-service.js', () => ({
+vi.mock('../services/billing-service', () => ({
   getSubscription: mockGetSubscription,
 }));
 
-vi.mock('../services/cache.js', () => ({
+vi.mock('../services/cache', () => ({
   cacheKey: vi.fn((...s: string[]) => s.join(':')),
   cachedSingleflight: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
-  CacheKeys: {},
-  CacheTTL: {},
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   invalidate: vi.fn(async () => undefined),
   invalidateByPrefix: vi.fn(async () => undefined),
@@ -142,7 +140,14 @@ vi.mock('../services/cache.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -154,11 +159,8 @@ vi.mock('@sentry/nextjs', () => {
 });
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -192,9 +194,9 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import superjson from 'superjson';
-import { createContext } from '../context.js';
-import { portalAppRouter } from '../portal-root.js';
-import { appRouter } from '../root.js';
+import { createContext } from '../context';
+import { portalAppRouter } from '../portal-root';
+import { appRouter } from '../root';
 
 // ---------------------------------------------------------------------------
 // HTTP helper

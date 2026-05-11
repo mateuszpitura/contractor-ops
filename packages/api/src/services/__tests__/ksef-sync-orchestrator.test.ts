@@ -28,8 +28,8 @@ const { mockKsefClient, mockTenantDb } = vi.hoisted(() => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     organization: { findUniqueOrThrow: vi.fn() },
   },
@@ -70,26 +70,26 @@ vi.mock('@contractor-ops/integrations', () => ({
   decryptCredentials: vi.fn().mockReturnValue({ accessToken: 'token' }),
 }));
 
-vi.mock('../invoice-matching.js', () => ({
+vi.mock('../invoice-matching', () => ({
   computeDuplicateCheckHash: vi.fn().mockReturnValue('hash-123'),
   computeDuplicateCheckHashForInvoice: vi.fn().mockReturnValue('hash-123'),
   runAutoMatch: vi.fn(),
 }));
 
-vi.mock('../ksef-duplicate-detection.js', () => ({
+vi.mock('../ksef-duplicate-detection', () => ({
   checkCrossSourceDuplicate: vi.fn().mockResolvedValue({ isDuplicate: false }),
   linkDuplicateInvoices: vi.fn(),
 }));
 
-vi.mock('../notification-service.js', () => ({ dispatch: vi.fn() }));
+vi.mock('../notification-service', () => ({ dispatch: vi.fn() }));
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import { processKsefSync } from '../ksef-sync-orchestrator.js';
-import { dispatch } from '../notification-service.js';
+import { processKsefSync } from '../ksef-sync-orchestrator';
+import { dispatch } from '../notification-service';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles
@@ -111,7 +111,8 @@ const CONN_ID = 'conn-1';
 function makeOrg(overrides: Record<string, unknown> = {}) {
   return {
     id: ORG_ID,
-    dataRegion: 'EU', status: 'ACTIVE',
+    dataRegion: 'EU',
+    status: 'ACTIVE',
     settingsJson: { taxId: '1234567890' },
     ...overrides,
   };

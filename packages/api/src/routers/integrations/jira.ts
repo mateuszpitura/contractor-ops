@@ -7,19 +7,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { detectScopeExpansionNeeded } from '../../services/jira-issue-sync.js';
-import { getStatusMapping, saveStatusMapping } from '../../services/jira-status-mapping.js';
-import {
-  deregisterJiraWebhooks,
-  registerJiraWebhooks,
-} from '../../services/jira-webhook-handler.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { writeAuditLog } from '../../services/audit-writer';
+import { detectScopeExpansionNeeded } from '../../services/jira-issue-sync';
+import { getStatusMapping, saveStatusMapping } from '../../services/jira-status-mapping';
+import { deregisterJiraWebhooks, registerJiraWebhooks } from '../../services/jira-webhook-handler';
 
 const log = createLogger({ service: 'jira-router' });
 

@@ -4,8 +4,7 @@
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-02
-import { runSchemaGuard } from '../schema-guard/run-guard.js';
+import { runSchemaGuard } from '../schema-guard/run-guard';
 
 const FX = join(__dirname, '..', '__fixtures__');
 const ALLOWLIST = ['Country'] as const;

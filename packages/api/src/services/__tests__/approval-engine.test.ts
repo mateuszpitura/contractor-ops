@@ -5,7 +5,7 @@ import {
   createApprovalFlow,
   evaluateConditions,
   routeToChain,
-} from '../approval-engine.js';
+} from '../approval-engine';
 
 // ---------------------------------------------------------------------------
 // Mock transaction client

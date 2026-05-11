@@ -17,12 +17,12 @@ import { createHash } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { classificationProcedure } from '../../middleware/require-classification-flag.js';
-import { buildClassificationDocumentKey } from '../../services/classification-document-keys.js';
-import { requestExport } from '../../services/exports/index.js';
-import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../../services/r2.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { buildClassificationDocumentKey } from '../../services/classification-document-keys';
+import { requestExport } from '../../services/exports/index';
+import { deleteObject, putObjectAndSignDownload, signExistingDownload } from '../../services/r2';
 
 const PDF_TTL_SECONDS = 300;
 

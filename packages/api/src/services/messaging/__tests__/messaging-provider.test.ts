@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SlackMessagingProvider } from '../slack-messaging-provider.js';
-import { TeamsMessagingProvider } from '../teams-messaging-provider.js';
-import type { MessagingProvider } from '../types.js';
+import { SlackMessagingProvider } from '../slack-messaging-provider';
+import { TeamsMessagingProvider } from '../teams-messaging-provider';
+import type { MessagingProvider } from '../types';
 
 // ---------------------------------------------------------------------------
 // Mock dependencies
@@ -54,7 +54,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../../slack-client.js', () => ({
+vi.mock('../../slack-client', () => ({
   getSlackClient: vi.fn().mockResolvedValue(null),
   getSlackUserIdForUser: vi.fn().mockResolvedValue('U_SLACK_123'),
   sendApprovalCard: vi.fn().mockResolvedValue(undefined),
@@ -74,29 +74,29 @@ vi.mock('botbuilder', () => ({
 }));
 
 // Override the module-level adapter singleton
-vi.mock('../teams-messaging-provider.js', async importOriginal => {
+vi.mock('../teams-messaging-provider', async importOriginal => {
   const mod = (await importOriginal()) as Record<string, unknown>;
   return {
     ...mod,
   };
 });
 
-vi.mock('../../teams/cards/activity-alert-card.js', () => ({
+vi.mock('../../teams/cards/activity-alert-card', () => ({
   buildActivityAlertCard: vi.fn(() => ({
     type: 'AdaptiveCard',
     body: [{ type: 'TextBlock', text: 'Alert' }],
   })),
 }));
 
-vi.mock('../../teams/teams-bot-handler.js', () => ({
+vi.mock('../../teams/teams-bot-handler', () => ({
   getConversationReference: vi.fn(),
 }));
 
-vi.mock('../../teams/cards/approval-card.js', () => ({
+vi.mock('../../teams/cards/approval-card', () => ({
   buildApprovalCard: vi.fn(),
 }));
 
-vi.mock('../../teams/cards/approval-reminder-card.js', () => ({
+vi.mock('../../teams/cards/approval-reminder-card', () => ({
   buildApprovalReminderCard: vi.fn(),
 }));
 
@@ -122,14 +122,14 @@ describe('SlackMessagingProvider', () => {
   });
 
   it('getUserId delegates to getSlackUserIdForUser', async () => {
-    const { getSlackUserIdForUser } = await import('../../slack-client.js');
+    const { getSlackUserIdForUser } = await import('../../slack-client');
     const result = await provider.getUserId('org-1', 'user-1');
     expect(getSlackUserIdForUser).toHaveBeenCalledWith('org-1', 'user-1');
     expect(result).toBe('U_SLACK_123');
   });
 
   it('sendApprovalCard delegates to slack-client sendApprovalCard', async () => {
-    const { sendApprovalCard } = await import('../../slack-client.js');
+    const { sendApprovalCard } = await import('../../slack-client');
     await provider.sendApprovalCard({
       organizationId: 'org-1',
       recipientId: 'U_SLACK_123',
@@ -155,7 +155,7 @@ describe('SlackMessagingProvider', () => {
   });
 
   it('sendReminderDM delegates to slack-client sendReminderDM', async () => {
-    const { sendReminderDM } = await import('../../slack-client.js');
+    const { sendReminderDM } = await import('../../slack-client');
     await provider.sendReminderDM({
       organizationId: 'org-1',
       recipientId: 'U_SLACK_123',
@@ -184,7 +184,7 @@ describe('SlackMessagingProvider', () => {
   });
 
   it('sendChannelAlert posts to channel when Slack client is available', async () => {
-    const { getSlackClient } = await import('../../slack-client.js');
+    const { getSlackClient } = await import('../../slack-client');
     const mockPostMessage = vi.fn().mockResolvedValue({ ok: true });
     vi.mocked(getSlackClient).mockResolvedValueOnce({
       chat: { postMessage: mockPostMessage },
@@ -344,7 +344,7 @@ describe('getConnectedMessagingProviders', () => {
     const { prisma } = await import('@contractor-ops/db');
     vi.mocked(prisma.integrationConnection.findMany).mockResolvedValue([]);
 
-    const { getConnectedMessagingProviders } = await import('../index.js');
+    const { getConnectedMessagingProviders } = await import('../index');
     const providers = await getConnectedMessagingProviders('org-1');
     expect(providers).toEqual([]);
   });
@@ -355,7 +355,7 @@ describe('getConnectedMessagingProviders', () => {
       { provider: 'SLACK' } as never,
     ]);
 
-    const { getConnectedMessagingProviders } = await import('../index.js');
+    const { getConnectedMessagingProviders } = await import('../index');
     const providers = await getConnectedMessagingProviders('org-1');
     expect(providers).toHaveLength(1);
     expect(providers[0]?.platform).toBe('slack');
@@ -368,7 +368,7 @@ describe('getConnectedMessagingProviders', () => {
       { provider: 'MICROSOFT_TEAMS' } as never,
     ]);
 
-    const { getConnectedMessagingProviders } = await import('../index.js');
+    const { getConnectedMessagingProviders } = await import('../index');
     const providers = await getConnectedMessagingProviders('org-1');
     expect(providers).toHaveLength(1);
     expect(providers[0]?.platform).toBe('teams');

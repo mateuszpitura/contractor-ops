@@ -64,8 +64,8 @@
 import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/nextjs';
-import type { OutboxEventType } from './handlers.js';
-import { dispatchOutboxEvent } from './handlers.js';
+import type { OutboxEventType } from './handlers';
+import { dispatchOutboxEvent } from './handlers';
 
 const log = createLogger({ service: 'outbox' });
 
@@ -513,5 +513,5 @@ function newOutboxId(): string {
 // Re-exports
 // ---------------------------------------------------------------------------
 
-export type { OutboxEventType } from './handlers.js';
-export { dispatchOutboxEvent } from './handlers.js';
+export type { OutboxEventType } from './handlers';
+export { dispatchOutboxEvent } from './handlers';

@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import { CacheKeys, CacheTTL, cached } from './cache.js';
-import { stripe } from './stripe-client.js';
+import { CacheKeys, CacheTTL, cached } from './cache';
+import { stripe } from './stripe-client';
 
 // ---------------------------------------------------------------------------
 // Idempotency-Key derivation (F-INT-04)

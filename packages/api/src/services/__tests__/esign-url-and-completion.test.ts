@@ -5,22 +5,19 @@ import {
   voidSigningEnvelope,
 } from '@contractor-ops/integrations/services/esign-service';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as E from '../../errors.js';
+import * as E from '../../errors';
 import {
   getSigningUrl,
   handleSigningCompletion,
   resendToRecipient,
   voidEnvelope,
-} from '../esign-orchestrator.js';
-import { createPresignedUploadUrl } from '../r2.js';
+} from '../esign-orchestrator';
+import { createPresignedUploadUrl } from '../r2';
 
 const {
   mockSigningEnvelopeFindFirst,
   mockDocumentFindUnique,
   mockSigningEventCreate,
-  mockSigningEnvelopeUpdate,
-  mockContractFindUnique,
-  mockContractUpdate,
   mockTx,
   mockTransaction,
 } = vi.hoisted(() => {
@@ -36,17 +33,14 @@ const {
     mockSigningEnvelopeFindFirst: vi.fn(),
     mockDocumentFindUnique: vi.fn(),
     mockSigningEventCreate: vi.fn().mockResolvedValue({}),
-    mockSigningEnvelopeUpdate: vi.fn().mockResolvedValue({}),
-    mockContractFindUnique: vi.fn(),
-    mockContractUpdate: vi.fn().mockResolvedValue({}),
     mockTx,
     mockTransaction,
   };
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     signingEnvelope: {
       findFirst: mockSigningEnvelopeFindFirst,
@@ -69,7 +63,7 @@ vi.mock('@contractor-ops/integrations/services/esign-service', () => ({
   resendSigningNotification: vi.fn(),
 }));
 
-vi.mock('../r2.js', () => ({
+vi.mock('../r2', () => ({
   createPresignedDownloadUrl: vi.fn(),
   createPresignedUploadUrl: vi.fn(),
   generateStorageKey: vi.fn(() => 'orgs/o1/esign/key.pdf'),

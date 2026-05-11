@@ -6,7 +6,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { deriveIdempotencyKey } from '@contractor-ops/integrations/services/idempotency';
 import { createLogger } from '@contractor-ops/logger';
 import type { CalendarEventMetadata } from '@contractor-ops/validators';
-import type { CalendarPrismaClient } from './types.js';
+import type { CalendarPrismaClient } from './types';
 
 const log = createLogger({ service: 'calendar-event-service' });
 

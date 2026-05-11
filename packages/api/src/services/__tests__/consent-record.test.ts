@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     consentRecord: {
       create: vi.fn(),
@@ -21,7 +21,7 @@ import {
   grantConsent,
   hasRequiredConsents,
   revokeConsent,
-} from '../consent-record.js';
+} from '../consent-record';
 
 const mockPrisma = prisma as unknown as {
   consentRecord: {

@@ -2,7 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { t } from '../init.js';
+import { t } from '../init';
 
 const log = createLogger({ service: 'cron-trpc-middleware' });
 

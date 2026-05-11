@@ -1,5 +1,5 @@
 import { buildFlagBag } from '@contractor-ops/feature-flags';
-import { router } from './init.js';
+import { router } from './init';
 import {
   classificationDashboardRouter,
   classificationDocumentRouter,
@@ -12,7 +12,7 @@ import {
   reassessmentTriggerRouter,
   statusfeststellungsverfahrenRouter,
   zatcaRouter,
-} from './routers/compliance/index.js';
+} from './routers/compliance/index';
 import {
   adminBoeRateRouter,
   apiKeyRouter,
@@ -43,8 +43,8 @@ import {
   taxRouter,
   timeRouter,
   userRouter,
-} from './routers/core/index.js';
-import { equipmentRouter } from './routers/equipment/index.js';
+} from './routers/core/index';
+import { equipmentRouter } from './routers/equipment/index';
 import {
   bacsRouter,
   billingRouter,
@@ -54,7 +54,7 @@ import {
   latePaymentInterestRouter,
   paymentRouter,
   skontoRouter,
-} from './routers/finance/index.js';
+} from './routers/finance/index';
 import {
   googleWorkspaceRouter,
   jiraRouter,
@@ -62,10 +62,10 @@ import {
   linearRouter,
   peppolRouter,
   teamsRouter,
-} from './routers/integrations/index.js';
+} from './routers/integrations/index';
 // portalRouter and portalTimeRouter are exposed via `portalAppRouter` (see ./portal-root.ts)
 // at the /api/trpc/portal endpoint — kept out of `appRouter` to reduce TS inference cost.
-import { workflowRolesRouter, workflowRouter } from './routers/workflow/index.js';
+import { workflowRolesRouter, workflowRouter } from './routers/workflow/index';
 
 /**
  * Root tRPC router merging all sub-routers.

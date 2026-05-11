@@ -19,7 +19,7 @@ vi.mock('@contractor-ops/validators', () => ({
   }),
 }));
 
-vi.mock('../calendar-event-service.js', () => ({
+vi.mock('../calendar-event-service', () => ({
   createCalendarEvent: mockCreateCalendarEvent,
   updateCalendarEvent: mockUpdateCalendarEvent,
 }));
@@ -33,7 +33,7 @@ import {
   syncApprovalSlaDeadline,
   syncContractExpiryDeadline,
   syncPaymentDueDeadline,
-} from '../calendar-deadline-sync.js';
+} from '../calendar-deadline-sync';
 
 // ---------------------------------------------------------------------------
 // Helpers

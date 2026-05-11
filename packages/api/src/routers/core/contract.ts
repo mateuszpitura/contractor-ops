@@ -11,13 +11,13 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer.js';
-import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync.js';
-import { deleteCalendarEvent } from '../../services/calendar-event-service.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
+import { syncContractExpiryDeadline } from '../../services/calendar-deadline-sync';
+import { deleteCalendarEvent } from '../../services/calendar-event-service';
 
 const log = createLogger({ service: 'contract-router' });
 

@@ -1,7 +1,7 @@
 import { createLogger } from '@contractor-ops/logger';
-import type { InPostClientConfig } from './courier/inpost-client.js';
-import { InPostClient } from './courier/inpost-client.js';
-import type { DbClient } from './types.js';
+import type { InPostClientConfig } from './courier/inpost-client';
+import { InPostClient } from './courier/inpost-client';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'equipment-workflow' });
 

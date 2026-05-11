@@ -1,5 +1,5 @@
-import type { FlagDefinition } from './schemas.js';
-import { getFlagSignoff, isGatedFlag } from './signoff-registry-flags.js';
+import type { FlagDefinition } from './schemas';
+import { getFlagSignoff, isGatedFlag } from './signoff-registry-flags';
 
 /**
  * Deep-freezes an object tree. Runtime complement to `as const` — prevents

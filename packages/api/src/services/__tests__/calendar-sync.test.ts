@@ -4,14 +4,14 @@ import {
   syncApprovalSlaDeadline,
   syncContractExpiryDeadline,
   syncPaymentDueDeadline,
-} from '../calendar-deadline-sync.js';
+} from '../calendar-deadline-sync';
 
-vi.mock('../calendar-event-service.js', () => ({
+vi.mock('../calendar-event-service', () => ({
   createCalendarEvent: vi.fn(),
   updateCalendarEvent: vi.fn(),
 }));
 
-import { createCalendarEvent, updateCalendarEvent } from '../calendar-event-service.js';
+import { createCalendarEvent, updateCalendarEvent } from '../calendar-event-service';
 
 const mockCreateCalendarEvent = vi.mocked(createCalendarEvent);
 const mockUpdateCalendarEvent = vi.mocked(updateCalendarEvent);

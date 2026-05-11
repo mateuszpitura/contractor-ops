@@ -28,16 +28,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { decryptBankAccount, encryptBankAccount } from '../../services/bank-account-crypto.js';
-import type { BacsExportItem, BacsOrgBankInfo } from '../../services/payment-export.js';
-import { generateBacsStandard18 } from '../../services/payment-export.js';
-import { deleteObject, putObjectAndSignDownload } from '../../services/r2.js';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { decryptBankAccount, encryptBankAccount } from '../../services/bank-account-crypto';
+import type { BacsExportItem, BacsOrgBankInfo } from '../../services/payment-export';
+import { generateBacsStandard18 } from '../../services/payment-export';
+import { deleteObject, putObjectAndSignDownload } from '../../services/r2';
 
 const log = createLogger({ service: 'bacs-router' });
 

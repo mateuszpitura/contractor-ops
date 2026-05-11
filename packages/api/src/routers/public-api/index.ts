@@ -1,9 +1,9 @@
-import { router } from '../../init.js';
-import { publicContractRouter } from './contract.js';
-import { publicContractorRouter } from './contractor.js';
-import { publicDocumentRouter } from './document.js';
-import { publicFeatureFlagsRouter } from './feature-flags.js';
-import { publicInvoiceRouter } from './invoice.js';
+import { router } from '../../init';
+import { publicContractRouter } from './contract';
+import { publicContractorRouter } from './contractor';
+import { publicDocumentRouter } from './document';
+import { publicFeatureFlagsRouter } from './feature-flags';
+import { publicInvoiceRouter } from './invoice';
 
 /**
  * Public API router — subset of procedures exposed via the Enterprise REST API.

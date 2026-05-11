@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { FlagClient } from '../client.js';
-import { setFlagClientForTesting, shutdownFlagClients } from '../client.js';
+import type { FlagClient } from '../client';
+import { setFlagClientForTesting, shutdownFlagClients } from '../client';
 import {
   __resetClassificationDisclaimerGateForTesting,
   evaluate,
   evaluateAgainst,
   registerClassificationDisclaimerGate,
-} from '../evaluator.js';
-import { buildFlagBag } from '../flag-bag.js';
-import { FLAG_KEYS, FLAGS } from '../registry.js';
-import type { EvalContext, FlagDefinition } from '../schemas.js';
-import { flagDefinitionSchema } from '../schemas.js';
+} from '../evaluator';
+import { buildFlagBag } from '../flag-bag';
+import { FLAG_KEYS, FLAGS } from '../registry';
+import type { EvalContext, FlagDefinition } from '../schemas';
+import { flagDefinitionSchema } from '../schemas';
 
 function fakeClient(overrides: Partial<Record<string, boolean>> = {}): FlagClient {
   return {
@@ -215,7 +215,7 @@ describe('evaluate — classification disclaimer gate override', () => {
 
 describe('evaluateAgainst — killWhenUnknown', () => {
   it('returns enabled:false reason:kill-when-unknown for stub clients', async () => {
-    const { getFlagClient } = await import('../client.js');
+    const { getFlagClient } = await import('../client');
     // Force the stub path by clearing env vars and shutting down singletons.
     const original = {
       url: process.env.UNLEASH_URL_EU,
@@ -264,7 +264,7 @@ describe('evaluateAgainst — killWhenUnknown', () => {
   });
 
   it('flag without killWhenUnknown still receives the code default through a stub', async () => {
-    const { getFlagClient } = await import('../client.js');
+    const { getFlagClient } = await import('../client');
     const original = {
       url: process.env.UNLEASH_URL_EU,
       token: process.env.UNLEASH_API_TOKEN_EU,

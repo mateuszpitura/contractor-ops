@@ -4,8 +4,8 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { resolveLinearStateId } from './linear-status-mapping.js';
-import type { DbClient } from './types.js';
+import { resolveLinearStateId } from './linear-status-mapping';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'linear-issue-sync' });
 

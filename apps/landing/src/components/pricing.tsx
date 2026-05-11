@@ -2,8 +2,8 @@
 
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import { useLocale } from '@/i18n';
-import type { PricingPlan } from '@/lib/stripe';
-import { formatPrice } from '@/lib/stripe';
+import type { PricingPlan } from '@/lib/pricing-types';
+import { formatPrice } from '@/lib/pricing-types';
 import { TrackClick } from './analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from './motion-wrapper';
 

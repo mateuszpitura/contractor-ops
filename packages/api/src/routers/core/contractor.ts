@@ -10,18 +10,18 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { getHmrcVatClient, getViesClient } from '../../gov-api-clients.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { encryptBankAccount } from '../../services/bank-account-crypto.js';
-import { syncSeatCountForOrg } from '../../services/billing-service.js';
-import { CacheKeys, invalidateByPrefix } from '../../services/cache.js';
-import { sanitizeStrings } from '../../services/sanitize.js';
-import { validateTaxId } from '../../services/tax-id-validation.service.js';
-import type { DbClient } from '../../services/types.js';
+import * as E from '../../errors';
+import { getHmrcVatClient, getViesClient } from '../../gov-api-clients';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { encryptBankAccount } from '../../services/bank-account-crypto';
+import { syncSeatCountForOrg } from '../../services/billing-service';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { sanitizeStrings } from '../../services/sanitize';
+import { validateTaxId } from '../../services/tax-id-validation.service';
+import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
 // Lifecycle transition map

@@ -8,8 +8,8 @@ const { mockCreate, mockFindUniqueOrThrow, mockUpdate, mockSyncLogUpdate } = vi.
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     integrationSyncLog: {
       create: mockCreate,
@@ -25,7 +25,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-import { processDirectorySync } from '../google-workspace-sync-orchestrator.js';
+import { processDirectorySync } from '../google-workspace-sync-orchestrator';
 
 describe('processDirectorySync', () => {
   beforeEach(() => {

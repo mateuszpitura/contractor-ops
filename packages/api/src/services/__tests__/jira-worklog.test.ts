@@ -93,12 +93,12 @@ function makeWorklogResponse(
 // ---------------------------------------------------------------------------
 
 describe('jira-worklog', () => {
-  let syncJiraWorklogs: typeof import('../../services/jira-worklog-sync.js').syncJiraWorklogs;
+  let syncJiraWorklogs: typeof import('../../services/jira-worklog-sync').syncJiraWorklogs;
 
   beforeEach(async () => {
     vi.resetModules();
     vi.stubGlobal('fetch', vi.fn());
-    const mod = await import('../../services/jira-worklog-sync.js');
+    const mod = await import('../../services/jira-worklog-sync');
     syncJiraWorklogs = mod.syncJiraWorklogs;
   });
 

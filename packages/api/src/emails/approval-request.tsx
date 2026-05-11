@@ -1,5 +1,5 @@
 import { Text } from 'react-email';
-import { BaseLayout } from './base-layout.js';
+import { BaseLayout } from './base-layout';
 
 interface ApprovalRequestLabels {
   invoice?: string;

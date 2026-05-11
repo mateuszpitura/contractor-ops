@@ -12,18 +12,15 @@ import {
 } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
-import * as E from '../../errors.js';
+import * as E from '../../errors';
 
 const log = createLogger({ service: 'peppol-router' });
 
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory.js';
-import {
-  getCapabilitiesWithCache,
-  supportsXRechnungCii,
-} from '../../services/peppol-capability.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory';
+import { getCapabilitiesWithCache, supportsXRechnungCii } from '../../services/peppol-capability';
 
 // ---------------------------------------------------------------------------
 // Helpers

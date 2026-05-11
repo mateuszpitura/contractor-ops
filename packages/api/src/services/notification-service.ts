@@ -3,9 +3,9 @@ import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
-import { sendAppEmail } from './app-email.js';
-import { renderNotificationEmail } from './email-templates.js';
-import { getConnectedMessagingProviders } from './messaging/index.js';
+import { sendAppEmail } from './app-email';
+import { renderNotificationEmail } from './email-templates';
+import { getConnectedMessagingProviders } from './messaging/index';
 
 const log = createLogger({ service: 'notification-service' });
 

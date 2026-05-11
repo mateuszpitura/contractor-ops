@@ -6,7 +6,7 @@ import { encryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createMockServer, selectHandlers } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { encryptToken, sendReminderDM, syncWorkspaceUsers } from '../slack-client.js';
+import { encryptToken, sendReminderDM, syncWorkspaceUsers } from '../slack-client';
 
 const ORG_ID = 'org-msw-slack';
 const CONN_ID = 'conn-msw-slack';
@@ -28,8 +28,8 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 

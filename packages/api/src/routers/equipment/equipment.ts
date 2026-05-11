@@ -16,19 +16,19 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { mergeRouters, router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { equipmentCouriersRouter } from './equipment-couriers.js';
-import { equipmentReturnsRouter } from './equipment-returns.js';
+import { mergeRouters, router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { equipmentCouriersRouter } from './equipment-couriers';
+import { equipmentReturnsRouter } from './equipment-returns';
 import {
   CONTRACTOR_NOT_FOUND,
   EQUIPMENT_CURRENTLY_ASSIGNED,
   EQUIPMENT_NOT_ASSIGNED,
   EQUIPMENT_NOT_AVAILABLE,
   EQUIPMENT_NOT_FOUND,
-} from './equipment-shared.js';
-import { equipmentShipmentsRouter } from './equipment-shipments.js';
+} from './equipment-shared';
+import { equipmentShipmentsRouter } from './equipment-shipments';
 
 // ---------------------------------------------------------------------------
 // Core equipment router (CRUD + assignments)

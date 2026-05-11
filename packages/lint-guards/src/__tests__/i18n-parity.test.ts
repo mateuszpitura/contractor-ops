@@ -4,8 +4,7 @@
 
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-04
-import { runI18nParity } from '../i18n-parity/run-guard.js';
+import { runI18nParity } from '../i18n-parity/run-guard';
 
 const FX = join(__dirname, '..', '__fixtures__', 'messages');
 

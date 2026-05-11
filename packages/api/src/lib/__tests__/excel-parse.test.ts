@@ -75,7 +75,7 @@ vi.mock('exceljs', () => {
 });
 
 // Must import AFTER the mock is registered
-const { parseSpreadsheetBuffer } = await import('../excel-parse.js');
+const { parseSpreadsheetBuffer } = await import('../excel-parse');
 
 // ---------------------------------------------------------------------------
 // Helper

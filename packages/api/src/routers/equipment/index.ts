@@ -2,7 +2,7 @@
 // Intra-folder helpers (types, constants, shared utilities) are imported directly
 // via relative paths (e.g. `./equipment-shared.js`), not through this barrel.
 
-export { equipmentRouter } from './equipment.js';
-export { equipmentCouriersRouter } from './equipment-couriers.js';
-export { equipmentReturnsRouter } from './equipment-returns.js';
-export { equipmentShipmentsRouter } from './equipment-shipments.js';
+export { equipmentRouter } from './equipment';
+export { equipmentCouriersRouter } from './equipment-couriers';
+export { equipmentReturnsRouter } from './equipment-returns';
+export { equipmentShipmentsRouter } from './equipment-shipments';

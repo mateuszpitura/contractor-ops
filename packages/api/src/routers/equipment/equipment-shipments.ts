@@ -5,17 +5,17 @@
 import { shipmentCreateSchema, shipmentEventCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { checkShipmentTaskCompletion } from '../../services/equipment-workflow.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
   SHIPMENT_CANNOT_DELETE,
   SHIPMENT_NOT_FOUND,
   SHIPMENT_TO_EQUIPMENT_STATUS,
-} from './equipment-shared.js';
+} from './equipment-shared';
 
 // ---------------------------------------------------------------------------
 // Equipment Shipments sub-router

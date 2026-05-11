@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { maskTaxId } from '../tax-id-pii.js';
+import { maskTaxId } from '../tax-id-pii';
 
 describe('maskTaxId', () => {
   it("returns '[empty]' for null/undefined/empty input", () => {

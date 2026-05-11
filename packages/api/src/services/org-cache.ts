@@ -25,7 +25,7 @@
 
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import { cached, cacheKey, invalidate } from './cache.js';
+import { cached, cacheKey, invalidate } from './cache';
 
 const log = createLogger({ service: 'org-cache' });
 

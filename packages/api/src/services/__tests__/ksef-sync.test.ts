@@ -28,8 +28,8 @@ vi.mock('@contractor-ops/db', () => {
       run: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
     },
     withTenantScope: vi.fn((_ctx: unknown, fn: () => unknown) => fn()),
-    withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+    withRlsTransactions: <T>(c: T) => c,
+    withRlsReads: <T>(c: T) => c,
   };
 });
 
@@ -77,26 +77,26 @@ vi.mock('@contractor-ops/validators', () => ({
   },
 }));
 
-vi.mock('../invoice-matching.js', () => ({
+vi.mock('../invoice-matching', () => ({
   computeDuplicateCheckHash: vi.fn().mockReturnValue('hash123'),
   computeDuplicateCheckHashForInvoice: vi.fn().mockReturnValue('hash123'),
   runAutoMatch: vi.fn(),
 }));
 
-vi.mock('../ksef-duplicate-detection.js', () => ({
+vi.mock('../ksef-duplicate-detection', () => ({
   checkCrossSourceDuplicate: vi.fn().mockResolvedValue({ isDuplicate: false }),
   linkDuplicateInvoices: vi.fn(),
 }));
 
-vi.mock('../notification-service.js', () => ({ dispatch: vi.fn() }));
+vi.mock('../notification-service', () => ({ dispatch: vi.fn() }));
 
 // ---------------------------------------------------------------------------
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import { processKsefSync } from '../ksef-sync-orchestrator.js';
-import { dispatch } from '../notification-service.js';
+import { processKsefSync } from '../ksef-sync-orchestrator';
+import { dispatch } from '../notification-service';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

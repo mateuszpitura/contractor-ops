@@ -14,12 +14,12 @@ const { mockR2Send, mockAttachmentsGet, mockFetch } = vi.hoisted(() => ({
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('../r2.js', () => ({
+vi.mock('../r2', () => ({
   createR2Client: vi.fn().mockReturnValue({ send: mockR2Send }),
   getR2BucketName: vi.fn().mockReturnValue('test-bucket'),
 }));
 
-vi.mock('../resend-client.js', () => ({
+vi.mock('../resend-client', () => ({
   getResend: vi.fn().mockReturnValue({
     emails: {
       receiving: {
@@ -43,7 +43,7 @@ import {
   processResendEmailReceivedAttachments,
   processResendWebhookDelivery,
   RESEND_EMAIL_RATE_MAX_PER_HOUR,
-} from '../resend-email-intake.js';
+} from '../resend-email-intake';
 
 // ---------------------------------------------------------------------------
 // Helpers

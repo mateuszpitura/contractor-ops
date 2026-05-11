@@ -18,7 +18,7 @@ import {
   isAllowedMimeType,
   MAX_FILE_SIZE_BYTES,
   validateMimeType,
-} from '../mime-validator.js';
+} from '../mime-validator';
 
 // ---------------------------------------------------------------------------
 // Constants

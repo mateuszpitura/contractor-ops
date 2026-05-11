@@ -3,9 +3,9 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { linearGraphQL } from './linear-issue-sync.js';
-import { resolveInternalStatus } from './linear-status-mapping.js';
-import type { DbClient } from './types.js';
+import { linearGraphQL } from './linear-issue-sync';
+import { resolveInternalStatus } from './linear-status-mapping';
+import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
 

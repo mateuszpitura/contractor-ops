@@ -3,9 +3,9 @@ import {
   isEventDuplicate,
   processShipmentStatusChange,
   TERMINAL_STATUSES,
-} from './shipment-processing.js';
-import { UPSClient } from './ups-client.js';
-import { mapUpsStatus } from './ups-status-mapper.js';
+} from './shipment-processing';
+import { UPSClient } from './ups-client';
+import { mapUpsStatus } from './ups-status-mapper';
 
 // ---------------------------------------------------------------------------
 // UPS Polling Service
@@ -13,7 +13,7 @@ import { mapUpsStatus } from './ups-status-mapper.js';
 // QStash-triggered fallback for catching missed UPS status updates.
 // ---------------------------------------------------------------------------
 
-import type { DbClient } from '../types.js';
+import type { DbClient } from '../types';
 
 const log = createLogger({ service: 'ups-polling-service' });
 

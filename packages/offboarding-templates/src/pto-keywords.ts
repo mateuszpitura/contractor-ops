@@ -3,7 +3,7 @@
 // Ops-extension (admin-managed per-locale additions) lands in Plan 74-07
 // Settings UI; this file is the static seed that bootstraps detection.
 
-import type { PtoKeywords } from './types.js';
+import type { PtoKeywords } from './types';
 
 export const PTO_KEYWORDS: PtoKeywords = {
   en: ['PTO', 'OOO', 'Out of Office', 'Vacation'],

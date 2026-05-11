@@ -71,7 +71,7 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: vi.fn(),
 }));
 
-vi.mock('../../notification-service.js', () => ({
+vi.mock('../../notification-service', () => ({
   dispatch: (...args: unknown[]) => mockDispatchNotification(...args),
 }));
 
@@ -80,7 +80,7 @@ import {
   drainOutboxBatch,
   enqueueOutboxEvent,
   MAX_OUTBOX_ATTEMPTS,
-} from '../index.js';
+} from '../index';
 
 // ---------------------------------------------------------------------------
 // Setup

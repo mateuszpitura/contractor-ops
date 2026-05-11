@@ -6,23 +6,23 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import type { DbClient } from '../../services/types.js';
+import * as E from '../../errors';
+import type { DbClient } from '../../services/types';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
 import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
-} from '../../services/contractor-tax-id.js';
+} from '../../services/contractor-tax-id';
 import {
   autoMapColumns,
   parseImportFile,
   processImportFile,
-} from '../../services/import-processor.js';
+} from '../../services/import-processor';
 
 // ---------------------------------------------------------------------------
 // Commit helpers

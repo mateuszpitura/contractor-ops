@@ -9,15 +9,15 @@ export {
   applyKleinunternehmerOverride,
   type KleinunternehmerOverrideResult,
   shouldSuppressVatBreakdown,
-} from './kleinunternehmer.service.js';
+} from './kleinunternehmer.service';
 export {
   applyReverseCharge,
   DE_13B_SERVICE_TYPES,
   type DE13bServiceType,
   detectReverseCharge,
   type ReverseChargeResult,
-} from './reverse-charge.service.js';
-export { maskTaxId } from './tax-id-pii.js';
+} from './reverse-charge.service';
+export { maskTaxId } from './tax-id-pii';
 export {
   getLatestValidation,
   isValidationFresh,
@@ -27,4 +27,4 @@ export {
   type TaxIdValidationInput,
   type TaxIdValidationResult,
   validateTaxId,
-} from './tax-id-validation.service.js';
+} from './tax-id-validation.service';

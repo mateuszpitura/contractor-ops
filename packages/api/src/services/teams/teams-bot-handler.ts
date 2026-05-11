@@ -22,9 +22,9 @@ import type {
 } from 'botbuilder';
 import { CardFactory, TeamsActivityHandler, TurnContext } from 'botbuilder';
 import { z } from 'zod';
-import { advanceFlow } from '../approval-engine.js';
-import { buildApprovalResultCard } from './cards/approval-result-card.js';
-import { buildRejectModalCard } from './cards/reject-modal-card.js';
+import { advanceFlow } from '../approval-engine';
+import { buildApprovalResultCard } from './cards/approval-result-card';
+import { buildRejectModalCard } from './cards/reject-modal-card';
 
 const log = createLogger({ service: 'teams-bot-handler' });
 

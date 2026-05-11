@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     contractorChangeRequest: {
       findFirst: vi.fn(),
@@ -22,7 +22,7 @@ import {
   approveChangeRequest,
   createChangeRequest,
   rejectChangeRequest,
-} from '../portal-change-request.js';
+} from '../portal-change-request';
 
 const mockPrisma = prisma as unknown;
 

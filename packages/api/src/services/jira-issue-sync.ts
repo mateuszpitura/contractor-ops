@@ -2,8 +2,8 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { JiraIssueMetadata, JiraTaskConfig } from '@contractor-ops/validators';
 import { jiraTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import { lookupJiraTransitionId } from './jira-status-mapping.js';
-import type { DbClient } from './types.js';
+import { lookupJiraTransitionId } from './jira-status-mapping';
+import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
 

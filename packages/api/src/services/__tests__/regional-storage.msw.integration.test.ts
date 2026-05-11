@@ -25,8 +25,8 @@ afterAll(() => server.close());
 
 describe('regional-storage + MSW (R2)', () => {
   it('headRegionalObject and deleteRegionalObject hit mock R2 after PUT', async () => {
-    const { createR2Client } = await import('../r2.js');
-    const { deleteRegionalObject, headRegionalObject } = await import('../regional-storage.js');
+    const { createR2Client } = await import('../r2');
+    const { deleteRegionalObject, headRegionalObject } = await import('../regional-storage');
 
     const client = createR2Client();
     const key = 'msw-integration/org/doc.txt';

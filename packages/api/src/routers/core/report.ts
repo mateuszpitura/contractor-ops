@@ -1,10 +1,10 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requestExport } from '../../services/exports/index.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requestExport } from '../../services/exports/index';
 
 // ---------------------------------------------------------------------------
 // Helpers

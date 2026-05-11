@@ -20,11 +20,11 @@
 //     `ctx.db` (tenant extension) suffices. prismaRaw is NOT imported here.
 
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../../lib/csv.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { classificationProcedure } from '../../middleware/require-classification-flag.js';
-import { putObjectAndSignDownload } from '../../services/r2.js';
+import { router } from '../../init';
+import { encodeCsvUtf8Bom, escapeCsvField, UTF8_BOM } from '../../lib/csv';
+import { requirePermission } from '../../middleware/rbac';
+import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { putObjectAndSignDownload } from '../../services/r2';
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -334,10 +334,10 @@ export const classificationDashboardRouter = router({
     const candidates = [lastEconomicScan?.lastScannedAt, cronScan?.lastScanCompletedAt].filter(
       (d): d is Date => d instanceof Date,
     );
-    const lastScannedAt =
-      candidates.length > 0
-        ? candidates.reduce((acc, d) => (d > acc ? d : acc), candidates[0]!)
-        : null;
+    const [firstCandidate, ...restCandidates] = candidates;
+    const lastScannedAt = firstCandidate
+      ? restCandidates.reduce((acc, d) => (d > acc ? d : acc), firstCandidate)
+      : null;
 
     return {
       totalContractors,

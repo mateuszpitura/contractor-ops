@@ -1,6 +1,7 @@
 import { createLogger } from '@contractor-ops/logger';
 import Stripe from 'stripe';
 import { CREDIT_PACK_CONTENT, PLAN_CONTENT } from './pricing-content';
+import type { CreditPack, PricingPlan } from './pricing-types';
 
 const log = createLogger({ service: 'landing-stripe' });
 
@@ -33,39 +34,6 @@ function getStripeClient() {
 function resolvePrice(defaultPrice: string | Stripe.Price | null | undefined): Stripe.Price | null {
   if (!defaultPrice || typeof defaultPrice === 'string') return null;
   return defaultPrice;
-}
-
-// ─── Types ──────────────────────────────────────────────────────────
-
-export interface PricingPlan {
-  id: string;
-  name: string;
-  /** Marketing description — from local config */
-  description: string;
-  /** Feature list — from local config, NOT Stripe metadata */
-  features: string[];
-  monthlyPrice: number | null;
-  annualPrice: number | null;
-  currency: string;
-  /** CTA destination — always your app's signup route */
-  ctaHref: string;
-  popular: boolean;
-  order: number;
-}
-
-export interface CreditPack {
-  id: string;
-  name: string;
-  /** Marketing description — from local config */
-  description: string;
-  credits: number;
-  price: number;
-  currency: string;
-  perCredit: number;
-  /** CTA destination — always your app's signup/billing route */
-  ctaHref: string;
-  popular: boolean;
-  order: number;
 }
 
 // ─── Fetchers ───────────────────────────────────────────────────────
@@ -169,20 +137,6 @@ export async function fetchCreditPacks(): Promise<CreditPack[]> {
     .sort((a, b) => a.order - b.order);
 
   return packs;
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────
-
-export function formatPrice(amount: number | null, currency: string): string {
-  if (amount === null) return 'Custom';
-  if (amount === 0) return 'Free';
-
-  return new Intl.NumberFormat('pl-PL', {
-    style: 'currency',
-    currency: currency.toUpperCase(),
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 // ─── Static Fallbacks (dev without STRIPE_SECRET_KEY) ───────────────

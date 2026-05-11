@@ -41,8 +41,8 @@ const { mockPrisma, mockDecryptCredentials } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 
@@ -50,7 +50,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   decryptCredentials: mockDecryptCredentials,
 }));
 
-import { syncJiraWorklogs } from '../jira-worklog-sync.js';
+import { syncJiraWorklogs } from '../jira-worklog-sync';
 
 // ---------------------------------------------------------------------------
 // Helpers

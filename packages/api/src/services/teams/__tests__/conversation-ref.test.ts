@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getConversationReference, storeConversationReference } from '../teams-bot-handler.js';
+import { getConversationReference, storeConversationReference } from '../teams-bot-handler';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -11,8 +11,8 @@ const { mockFindFirst, mockUpdate } = vi.hoisted(() => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     integrationConnection: {
       findFirst: mockFindFirst,
@@ -22,15 +22,15 @@ vi.mock('@contractor-ops/db', () => ({
 }));
 
 // Mock card imports to prevent missing module errors
-vi.mock('../cards/approval-result-card.js', () => ({
+vi.mock('../cards/approval-result-card', () => ({
   buildApprovalResultCard: vi.fn(),
 }));
 
-vi.mock('../cards/reject-modal-card.js', () => ({
+vi.mock('../cards/reject-modal-card', () => ({
   buildRejectModalCard: vi.fn(),
 }));
 
-vi.mock('../../approval-engine.js', () => ({
+vi.mock('../../approval-engine', () => ({
   advanceFlow: vi.fn(),
 }));
 

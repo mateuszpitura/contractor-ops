@@ -43,8 +43,8 @@ import { prisma, prismaRaw } from '@contractor-ops/db';
 import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import { dispatch } from './notification-service.js';
-import { resolveRbacRecipients } from './rbac-recipients.js';
+import { dispatch } from './notification-service';
+import { resolveRbacRecipients } from './rbac-recipients';
 
 const log = createCronLogger('classification-economic-dependency');
 

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { computeTimeReconciliation } from './time-reconciliation.js';
-import type { DbClient } from './types.js';
+import { computeTimeReconciliation } from './time-reconciliation';
+import type { DbClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -17,8 +17,8 @@ const mockPrisma = {
   },
 };
 
-import type { ChainEntry, PrismaLike, RecordChainData } from '../zatca-hash-chain.js';
-import { acquireChainLock, getNextChainEntry, recordChainEntry } from '../zatca-hash-chain.js';
+import type { ChainEntry, PrismaLike, RecordChainData } from '../zatca-hash-chain';
+import { acquireChainLock, getNextChainEntry, recordChainEntry } from '../zatca-hash-chain';
 
 // ---------------------------------------------------------------------------
 // Tests

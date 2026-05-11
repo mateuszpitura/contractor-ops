@@ -22,16 +22,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { CacheKeys, invalidateByPrefix } from '../../services/cache.js';
-import { handleEquipmentTaskStart } from '../../services/equipment-workflow.js';
-import { dispatch } from '../../services/notification-service.js';
-import type { DbClient } from '../../services/types.js';
-import type { ConditionGroup } from './workflow-shared.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { handleEquipmentTaskStart } from '../../services/equipment-workflow';
+import { dispatch } from '../../services/notification-service';
+import type { DbClient } from '../../services/types';
+import type { ConditionGroup } from './workflow-shared';
 import {
   addDays,
   addHours,
@@ -40,7 +40,7 @@ import {
   resolveAssignee,
   unblockDependentsAndRecomputeRun,
   validateTransition,
-} from './workflow-shared.js';
+} from './workflow-shared';
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -130,7 +130,7 @@ function syncTaskToExternalSystems(
   if (task.externalRefType === 'JIRA_ISSUE' && task.externalRefId) {
     void (async () => {
       try {
-        const { transitionJiraIssue } = await import('../../services/jira-issue-sync.js');
+        const { transitionJiraIssue } = await import('../../services/jira-issue-sync');
         const connection = await db.integrationConnection.findFirst({
           where: { organizationId, provider: 'JIRA', status: 'CONNECTED' },
           select: { id: true },
@@ -147,7 +147,7 @@ function syncTaskToExternalSystems(
   if (task.externalRefType === 'LINEAR_ISSUE' && task.externalRefId) {
     void (async () => {
       try {
-        const { syncTaskStatusToLinear } = await import('../../services/linear-issue-sync.js');
+        const { syncTaskStatusToLinear } = await import('../../services/linear-issue-sync');
         await syncTaskStatusToLinear(db, task.id, targetStatus);
       } catch (_err) {
         /* fire-and-forget */
@@ -345,7 +345,7 @@ async function syncJiraTasksAfterStart(
   if (todoTasks.length === 0) return;
 
   try {
-    const { createJiraIssue } = await import('../../services/jira-issue-sync.js');
+    const { createJiraIssue } = await import('../../services/jira-issue-sync');
     const connection = await db.integrationConnection.findFirst({
       where: { organizationId, provider: 'JIRA', status: 'CONNECTED' },
       select: { id: true },
@@ -375,7 +375,7 @@ async function syncLinearTasksAfterStart(
   if (todoTasks.length === 0) return;
 
   try {
-    const { createLinearIssue } = await import('../../services/linear-issue-sync.js');
+    const { createLinearIssue } = await import('../../services/linear-issue-sync');
     const linearConnection = await db.integrationConnection.findFirst({
       where: { organizationId, provider: 'LINEAR', status: 'CONNECTED' },
       select: { id: true },
@@ -421,7 +421,7 @@ async function syncCalendarTasksAfterStart(
   if (todoTasks.length === 0) return;
 
   try {
-    const { createTaskCalendarEvent } = await import('../../services/calendar-deadline-sync.js');
+    const { createTaskCalendarEvent } = await import('../../services/calendar-deadline-sync');
     for (const task of todoTasks) {
       const config = calendarConfigMap.get(task.id);
       if (!config) continue;

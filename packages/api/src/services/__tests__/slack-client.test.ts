@@ -48,8 +48,8 @@ vi.mock('@slack/web-api', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 
@@ -63,7 +63,7 @@ import {
   getSlackUserIdForUser,
   sendReminderDM,
   syncWorkspaceUsers,
-} from '../slack-client.js';
+} from '../slack-client';
 
 describe('slack-client', () => {
   beforeEach(() => {

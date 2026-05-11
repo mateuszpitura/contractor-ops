@@ -7,15 +7,15 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { sensitiveActionProcedure } from '../../middleware/sensitive.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../../services/cache.js';
-import { approveChangeRequest, rejectChangeRequest } from '../../services/portal-change-request.js';
-import { createRegionalPresignedUploadUrl } from '../../services/regional-storage.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { sensitiveActionProcedure } from '../../middleware/sensitive';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { CacheKeys, CacheTTL, cached, invalidateByPrefix } from '../../services/cache';
+import { approveChangeRequest, rejectChangeRequest } from '../../services/portal-change-request';
+import { createRegionalPresignedUploadUrl } from '../../services/regional-storage';
 
 export const settingsRouter = router({
   /**

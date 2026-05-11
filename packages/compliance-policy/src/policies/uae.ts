@@ -4,7 +4,7 @@
 //  1. uae.emirates_id@v1 — Emirates ID (BLOCKING)
 //  2. uae.free_zone_license@v1 — Free-zone trade license (WARNING; annually renewed)
 
-import { registerPolicyRule } from '../registry.js';
+import { registerPolicyRule } from '../registry';
 
 registerPolicyRule({
   policyRuleId: 'uae.emirates_id@v1',

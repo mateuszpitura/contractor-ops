@@ -5,7 +5,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import type { DocSearchResult } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'doc-link-service' });
 

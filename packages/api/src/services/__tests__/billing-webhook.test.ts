@@ -26,31 +26,31 @@ const {
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {},
 }));
 
-vi.mock('../stripe-client.js', () => ({
+vi.mock('../stripe-client', () => ({
   stripe: { subscriptions: { retrieve: mockStripeSubscriptionsRetrieve } },
 }));
 
-vi.mock('../billing-constants.js', () => ({
+vi.mock('../billing-constants', () => ({
   TIER_CREDIT_ALLOWANCE: { STARTER: 20, PRO: 100, ENTERPRISE: 500 },
   TRIAL_CREDIT_ALLOWANCE: 5,
   resolveTierFromPriceId: mockResolveTierFromPriceId,
   resolveTopUpCredits: mockResolveTopUpCredits,
 }));
 
-vi.mock('../credit-service.js', () => ({
+vi.mock('../credit-service', () => ({
   allocateTopUpCredits: vi.fn(),
 }));
 
-vi.mock('../notification-service.js', () => ({
+vi.mock('../notification-service', () => ({
   dispatch: mockDispatch,
 }));
 
-vi.mock('../cache.js', () => ({
+vi.mock('../cache', () => ({
   invalidate: mockInvalidate,
   CacheKeys: {
     subscription: (id: string) => `sub:${id}`,
@@ -59,11 +59,9 @@ vi.mock('../cache.js', () => ({
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
   createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -94,7 +92,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn() },
 }));
 
-vi.mock('../app-email.js', () => ({
+vi.mock('../app-email', () => ({
   sendAppEmail: (...args: unknown[]) => mockEmailSend(...args),
 }));
 
@@ -102,7 +100,7 @@ vi.mock('../app-email.js', () => ({
 // Import after mocks
 // ---------------------------------------------------------------------------
 
-import { dispatchStripeWebhookNotifications, routeStripeEvent } from '../billing-webhook.js';
+import { dispatchStripeWebhookNotifications, routeStripeEvent } from '../billing-webhook';
 
 /**
  * Phase-2 wrapper: `routeStripeEvent` now returns a `NotificationEvent[]`

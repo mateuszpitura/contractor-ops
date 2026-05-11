@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderNotificationEmail } from '../email-templates.js';
+import { renderNotificationEmail } from '../email-templates';
 
 describe('renderNotificationEmail', () => {
   it('builds subject for APPROVAL_REQUEST', () => {

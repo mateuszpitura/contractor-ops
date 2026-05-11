@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ParsedTransaction } from '../bank-statement.js';
+import type { ParsedTransaction } from '../bank-statement';
 import {
   matchStatementToRun,
   parseBankStatement,
   parseCsvStatement,
   parseMt940,
-} from '../bank-statement.js';
+} from '../bank-statement';
 
 /** Minimal MT940 snippet compatible with mt940js Parser */
 const SAMPLE_MT940 = `:20:12345

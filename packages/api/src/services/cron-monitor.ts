@@ -205,10 +205,7 @@ export function recordQueueDepth(
  * This wrapper does NOT call Cronitor; it's strictly metrics. Cronitor
  * heartbeats remain a Bearer-secret cron concern via `withCronMonitor`.
  */
-export async function withQueueObservability<T>(
-  jobName: string,
-  fn: () => Promise<T>,
-): Promise<T> {
+export async function withQueueObservability<T>(jobName: string, fn: () => Promise<T>): Promise<T> {
   const start = performance.now();
   try {
     const result = await fn();
@@ -270,7 +267,7 @@ export async function getQueueDepthSnapshot(): Promise<QueueDepthSnapshotEntry[]
   // Lazy-imported to keep the cron-monitor module free of the
   // qstash-backpressure module's @sentry/nextjs dep on cold-start paths
   // that only need duration helpers.
-  const { getAllQueueDepths } = await import('./qstash-backpressure.js');
+  const { getAllQueueDepths } = await import('./qstash-backpressure');
   const raw = await getAllQueueDepths();
 
   const entries: QueueDepthSnapshotEntry[] = Object.entries(raw).map(

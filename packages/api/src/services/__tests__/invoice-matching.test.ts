@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { computeDuplicateCheckHash, runAutoMatch } from '../invoice-matching.js';
+import { computeDuplicateCheckHash, runAutoMatch } from '../invoice-matching';
 
 const { mockComputeTimeReconciliation } = vi.hoisted(() => ({
   mockComputeTimeReconciliation: vi.fn(),
 }));
 
-vi.mock('../time-reconciliation.js', () => ({
+vi.mock('../time-reconciliation', () => ({
   computeTimeReconciliation: mockComputeTimeReconciliation,
 }));
 

@@ -9,8 +9,8 @@
 
 import { roles } from '@contractor-ops/auth';
 import { createLogger } from '@contractor-ops/logger';
-import { router } from '../../init.js';
-import { authedProcedure } from '../../middleware/auth.js';
+import { router } from '../../init';
+import { authedProcedure } from '../../middleware/auth';
 
 const logger = createLogger({ service: 'auth-permissions' });
 

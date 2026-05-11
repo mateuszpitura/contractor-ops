@@ -16,7 +16,7 @@ vi.mock('@contractor-ops/integrations/adapters/clockify-adapter', () => ({
   },
 }));
 
-import { parseDurationToMinutes, syncClockifyEntries } from '../clockify-sync.js';
+import { parseDurationToMinutes, syncClockifyEntries } from '../clockify-sync';
 
 // ---------------------------------------------------------------------------
 // Prisma mock builder

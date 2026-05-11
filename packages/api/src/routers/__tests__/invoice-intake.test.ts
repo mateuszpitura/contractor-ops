@@ -80,8 +80,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -96,7 +96,7 @@ vi.mock('@contractor-ops/db', () => ({
 
 // F-DB-03 / F-SEC-12 — org-cache must report ACTIVE so tenant middleware
 // does not throw orgSuspended.
-vi.mock('../../services/org-cache.js', () => ({
+vi.mock('../../services/org-cache', () => ({
   getOrgMeta: vi.fn(async (orgId: string) => ({
     id: orgId,
     dataRegion: 'EU',
@@ -108,7 +108,7 @@ vi.mock('../../services/org-cache.js', () => ({
   orgMetaKey: (orgId: string) => `org:${orgId}:meta`,
 }));
 
-vi.mock('../../services/invoice-intake-service.js', () => ({
+vi.mock('../../services/invoice-intake-service', () => ({
   uploadAndPersist: mockUploadAndPersist,
   confirmMatch: mockConfirmMatch,
   acknowledgeValidation: mockAcknowledgeValidation,
@@ -116,11 +116,11 @@ vi.mock('../../services/invoice-intake-service.js', () => ({
   reject: mockReject,
 }));
 
-vi.mock('../../services/invoice-intake-matcher.js', () => ({
+vi.mock('../../services/invoice-intake-matcher', () => ({
   rankIntakeCandidates: mockRankIntakeCandidates,
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   signExistingDownload: mockSignExistingDownload,
@@ -144,7 +144,14 @@ vi.mock('../../services/r2.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -194,8 +201,8 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 // ---------------------------------------------------------------------------
 
 import { TRPCError } from '@trpc/server';
-import { createCallerFactory } from '../../init.js';
-import { invoiceIntakeRouter } from '../finance/invoice-intake.js';
+import { createCallerFactory } from '../../init';
+import { invoiceIntakeRouter } from '../finance/invoice-intake';
 
 const createCaller = createCallerFactory(invoiceIntakeRouter);
 

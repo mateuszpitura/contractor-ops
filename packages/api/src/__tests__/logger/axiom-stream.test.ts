@@ -1,6 +1,6 @@
 import { Writable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
-import { createAxiomStream } from '../../../../logger/src/axiom-stream.js';
+import { createAxiomStream } from '../../../../logger/src/axiom-stream';
 
 describe('@contractor-ops/logger createAxiomStream', () => {
   it('returns a Writable stream', () => {

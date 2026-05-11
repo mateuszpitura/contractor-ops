@@ -3,29 +3,29 @@ import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '
 import { getServerEnv, returnRequestCreateSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-auth.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { encryptBankAccount } from '../../services/bank-account-crypto.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { portalProcedure, portalPublicProcedure } from '../../middleware/portal-auth';
+import { writeAuditLog } from '../../services/audit-writer';
+import { encryptBankAccount } from '../../services/bank-account-crypto';
 import {
   assertValidContractorTaxId,
   normalizeContractorTaxId,
-} from '../../services/contractor-tax-id.js';
-import { loadCourierClient } from '../../services/courier/carrier-factory.js';
-import { dispatch } from '../../services/notification-service.js';
-import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload.js';
-import { createChangeRequest } from '../../services/portal-change-request.js';
+} from '../../services/contractor-tax-id';
+import { loadCourierClient } from '../../services/courier/carrier-factory';
+import { dispatch } from '../../services/notification-service';
+import { consumePendingUpload, createPendingUpload } from '../../services/pending-upload';
+import { createChangeRequest } from '../../services/portal-change-request';
 import {
   createMagicLinkToken,
   findContractorsByEmail,
   sendPortalMagicLink,
   verifyMagicLinkToken,
-} from '../../services/portal-magic-link.js';
-import { createPortalSession, deletePortalSession } from '../../services/portal-session.js';
-import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage.js';
-import { mapPortalDocLink, portalDocLinkInclude } from './portal-doc-mapper.js';
+} from '../../services/portal-magic-link';
+import { createPortalSession, deletePortalSession } from '../../services/portal-session';
+import { createRegionalPresignedDownloadUrl } from '../../services/regional-storage';
+import { mapPortalDocLink, portalDocLinkInclude } from './portal-doc-mapper';
 
 // ---------------------------------------------------------------------------
 // Helpers

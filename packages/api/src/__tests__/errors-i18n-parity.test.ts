@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import * as ApiErrors from '../errors.js';
+import * as ApiErrors from '../errors';
 
 /**
  * Every string exported from errors.ts that looks like an API error code

@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.node.json",
   "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "tsBuildInfoFile": "node_modules/.cache/tsc/tsconfig.tsbuildinfo",
     "composite": false,
     "declaration": false,

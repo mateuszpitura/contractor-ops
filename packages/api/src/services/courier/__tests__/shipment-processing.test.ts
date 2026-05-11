@@ -24,7 +24,7 @@ import {
   processShipmentStatusChange,
   SHIPMENT_TO_EQUIPMENT_STATUS,
   TERMINAL_STATUSES,
-} from '../shipment-processing.js';
+} from '../shipment-processing';
 
 // ---------------------------------------------------------------------------
 // Helpers

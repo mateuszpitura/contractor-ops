@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkCrossSourceDuplicate, linkDuplicateInvoices } from '../ksef-duplicate-detection.js';
+import { checkCrossSourceDuplicate, linkDuplicateInvoices } from '../ksef-duplicate-detection';
 
 // ---------------------------------------------------------------------------
 // Mock DB client (passed as argument, no module mock needed)

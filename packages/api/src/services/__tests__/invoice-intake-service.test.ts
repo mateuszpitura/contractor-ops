@@ -9,7 +9,7 @@
 import { createHash } from 'node:crypto';
 import type { ParsedZugferd, XRechnungValidationReport } from '@contractor-ops/einvoice';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { IntakeServiceDeps } from '../invoice-intake-service.js';
+import type { IntakeServiceDeps } from '../invoice-intake-service';
 import {
   acknowledgeValidation,
   confirmMatch,
@@ -17,7 +17,7 @@ import {
   INTAKE_MAX_FILE_BYTES,
   reject,
   uploadAndPersist,
-} from '../invoice-intake-service.js';
+} from '../invoice-intake-service';
 import {
   buildHappyPathPdfBase64,
   buildMinimalInvoice,
@@ -27,7 +27,7 @@ import {
   FIXTURE_SUPPLIER_NAME,
   FIXTURE_SUPPLIER_VAT,
   padBase64BufferTo,
-} from './fixtures/intake-fixtures.js';
+} from './fixtures/intake-fixtures';
 
 // ---------------------------------------------------------------------------
 // In-memory Prisma surface

@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {},
 }));
 
@@ -40,7 +40,7 @@ vi.mock('@contractor-ops/einvoice', () => {
   };
 });
 
-vi.mock('../invoice-matching.js', () => ({
+vi.mock('../invoice-matching', () => ({
   computeDuplicateCheckHash: vi.fn().mockReturnValue('dup-hash-123'),
 }));
 
@@ -48,7 +48,7 @@ vi.mock('../invoice-matching.js', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { PeppolOrchestrator } from '../peppol-orchestrator.js';
+import { PeppolOrchestrator } from '../peppol-orchestrator';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -10,12 +10,12 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { loadCourierClient } from '../../services/courier/carrier-factory.js';
-import { dispatch } from '../../services/notification-service.js';
-import { NOTIFICATION_KEYS } from './equipment-shared.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { loadCourierClient } from '../../services/courier/carrier-factory';
+import { dispatch } from '../../services/notification-service';
+import { NOTIFICATION_KEYS } from './equipment-shared';
 
 // ---------------------------------------------------------------------------
 // Equipment Returns sub-router

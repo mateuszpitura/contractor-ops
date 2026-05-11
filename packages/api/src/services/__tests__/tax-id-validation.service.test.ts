@@ -11,8 +11,8 @@
 import type { HmrcVatClient, ViesClient } from '@contractor-ops/gov-api';
 import { HmrcApiError, ViesApiError } from '@contractor-ops/gov-api';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TaxIdValidationInput } from '../tax-id-validation.service.js';
-import { isValidationFresh, validateTaxId } from '../tax-id-validation.service.js';
+import type { TaxIdValidationInput } from '../tax-id-validation.service';
+import { isValidationFresh, validateTaxId } from '../tax-id-validation.service';
 
 // ---------------------------------------------------------------------------
 // Prisma stub — per-test fresh fakes

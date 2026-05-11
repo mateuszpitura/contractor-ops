@@ -42,7 +42,7 @@ describe('signoff-registry-flags.json — Phase 71 compliance-policy-engine entr
     // Phase 70 D-10 boot gate iterates FLAG_KEYS; if these keys appear in the runtime registry
     // AND match the gated namespace prefix `compliance-`, the boot gate trips for missing approval.
     // We assert that compliance-policy-engine.* keys are NOT in FLAGS to avoid that trip.
-    const { FLAGS } = await import('../registry.js');
+    const { FLAGS } = await import('../registry');
     const flagKeys = Object.keys(FLAGS);
     for (const key of EXPECTED_KEYS) {
       expect(

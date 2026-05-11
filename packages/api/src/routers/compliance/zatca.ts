@@ -8,9 +8,9 @@
 
 import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
 import {
   exchangeProductionCertificate,
   generateAndStoreCsr,
@@ -18,8 +18,8 @@ import {
   requestComplianceCsid,
   runComplianceChecks,
   saveTaxDetails,
-} from '../../services/zatca-onboarding.js';
-import { queueZatcaSubmission } from '../../services/zatca-submission.js';
+} from '../../services/zatca-onboarding';
+import { queueZatcaSubmission } from '../../services/zatca-submission';
 
 // ---------------------------------------------------------------------------
 // ZATCA Router

@@ -24,24 +24,20 @@
  * mutation that calls `requestExport`.
  */
 
+import type { Readable } from 'node:stream';
 import { prisma } from '@contractor-ops/db';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
-import { Readable } from 'node:stream';
+import type { CsvColumnKey } from '../../lib/csv';
+import { streamCsvResponse } from '../../lib/csv';
+import { sendExportReadyEmail } from '../email/index';
+import { streamObjectUpload } from '../r2';
 
-import { streamCsvResponse, type CsvColumnKey } from '../../lib/csv.js';
-import { sendExportReadyEmail } from '../email/index.js';
-import { streamObjectUpload } from '../r2.js';
-
-import { iterateComplianceGaps } from './compliance-gaps.js';
-import {
-  EXPORT_REGISTRY,
-  type ExportType,
-  getExportDefinition,
-  parseExportParams,
-} from './registry.js';
+import { iterateComplianceGaps } from './compliance-gaps';
+import type { ExportType } from './registry';
+import { getExportDefinition, parseExportParams } from './registry';
 
 const log = createLogger({ service: 'exports' });
 
@@ -337,8 +333,8 @@ async function dispatchHandler(input: DispatchInput): Promise<DispatchResult> {
     default: {
       // Exhaustiveness check — adding a new ExportType without a case
       // here is a compile error.
-      const _never: never = input.claim.type;
-      throw new Error(`No handler for export type: ${String(_never)}`);
+      const Never: never = input.claim.type;
+      throw new Error(`No handler for export type: ${String(Never)}`);
     }
   }
 }
@@ -670,7 +666,7 @@ async function handleComplianceGaps(input: DispatchInput): Promise<DispatchResul
 // ---------------------------------------------------------------------------
 
 async function handleClassificationDocumentSds(input: DispatchInput): Promise<DispatchResult> {
-  const { renderSdsPdfBuffer } = await import('../classification-document-render.js');
+  const { renderSdsPdfBuffer } = await import('../classification-document-render');
   const params = input.params as {
     classificationAssessmentId: string;
     classificationDocumentId?: string;
@@ -694,9 +690,7 @@ async function handleClassificationDocumentSds(input: DispatchInput): Promise<Di
 }
 
 async function handleDrvDefenseBundle(input: DispatchInput): Promise<DispatchResult> {
-  const { renderDrvDefenseBundlePdfBuffer } = await import(
-    '../classification-document-render.js'
-  );
+  const { renderDrvDefenseBundlePdfBuffer } = await import('../classification-document-render');
   const params = input.params as {
     classificationAssessmentId: string;
     classificationDocumentId?: string;
@@ -720,7 +714,7 @@ async function handleDrvDefenseBundle(input: DispatchInput): Promise<DispatchRes
 }
 
 async function handleGdprPrivacyNotice(input: DispatchInput): Promise<DispatchResult> {
-  const { renderGdprPrivacyNoticePdfBuffer } = await import('../privacy-notice.js');
+  const { renderGdprPrivacyNoticePdfBuffer } = await import('../privacy-notice');
   const { buffer } = await renderGdprPrivacyNoticePdfBuffer({
     organizationId: input.claim.organizationId,
   });
@@ -739,5 +733,5 @@ async function handleGdprPrivacyNotice(input: DispatchInput): Promise<DispatchRe
 // Re-exports
 // ---------------------------------------------------------------------------
 
-export { EXPORT_REGISTRY, getExportDefinition, parseExportParams } from './registry.js';
-export type { ExportDefinition, ExportType } from './registry.js';
+export type { ExportDefinition, ExportType } from './registry';
+export { EXPORT_REGISTRY, getExportDefinition, parseExportParams } from './registry';

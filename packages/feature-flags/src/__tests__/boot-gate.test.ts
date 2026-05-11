@@ -19,10 +19,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
 
   beforeEach(() => {
     vi.resetModules();
-    exitSpy = vi
-      .spyOn(process, 'exit')
-      // biome-ignore lint/suspicious/noExplicitAny: process.exit return type
-      .mockImplementation((() => undefined) as any);
+    exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => undefined) as any);
     stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
     originalBypass = process.env.FLAG_SIGNOFF_BYPASS;
     delete process.env.FLAG_SIGNOFF_BYPASS;
@@ -43,7 +40,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
     // script, a sibling-package test, a CLI tool — must never have its
     // process killed by the boot gate. The check fires only when the app
     // explicitly invokes assertFlagSignoffsOrExit().
-    await import('../registry.js');
+    await import('../registry');
     expect(exitSpy).not.toHaveBeenCalled();
     const flagSignoffCalls = stderrSpy.mock.calls
       .map(c => String(c[0]))
@@ -52,20 +49,20 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
   });
 
   it('assertFlagSignoffsOrExit() does not exit when no FLAGS are in a gated namespace (current Phase 70 baseline)', async () => {
-    const { assertFlagSignoffsOrExit } = await import('../registry.js');
+    const { assertFlagSignoffsOrExit } = await import('../registry');
     assertFlagSignoffsOrExit();
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
   it('assertFlagSignoffsOrExit() does NOT exit when FLAG_SIGNOFF_BYPASS=local is set', async () => {
     process.env.FLAG_SIGNOFF_BYPASS = 'local';
-    const { assertFlagSignoffsOrExit } = await import('../registry.js');
+    const { assertFlagSignoffsOrExit } = await import('../registry');
     assertFlagSignoffsOrExit();
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
   it('assertFlagSignoffsOrExit() uses [FLAG-SIGNOFF] prefix in stderr (matches D-10 wording contract)', async () => {
-    const { assertFlagSignoffsOrExit } = await import('../registry.js');
+    const { assertFlagSignoffsOrExit } = await import('../registry');
     assertFlagSignoffsOrExit();
     const calls = stderrSpy.mock.calls.map(c => String(c[0]));
     const flagSignoffCalls = calls.filter(c => c.includes('[FLAG-SIGNOFF]'));
@@ -79,7 +76,7 @@ describe('feature-flags boot-time signoff gate (FOUND6-04 — D-10)', () => {
     // Instead, we assert the helpers that the gate consumes report the
     // right verdict for a synthetic gated key — guaranteeing the gate would
     // fire if the key were present in FLAGS.
-    const { isGatedFlag, getFlagSignoff } = await import('../signoff-registry-flags.js');
+    const { isGatedFlag, getFlagSignoff } = await import('../signoff-registry-flags');
     const SYNTHETIC = 'compliance-portal-self-service';
     expect(isGatedFlag(SYNTHETIC)).toBe(true);
     expect(getFlagSignoff(SYNTHETIC)).toBeUndefined();

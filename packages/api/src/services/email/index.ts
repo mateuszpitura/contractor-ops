@@ -10,11 +10,9 @@
 
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
-import { sendAppEmail } from '../app-email.js';
-import {
-  ExportReadyEmail,
-  type ExportReadyEmailProps,
-} from './templates/export-ready.js';
+import { sendAppEmail } from '../app-email';
+import type { ExportReadyEmailProps } from './templates/export-ready';
+import { ExportReadyEmail } from './templates/export-ready';
 
 const log = createLogger({ service: 'email' });
 

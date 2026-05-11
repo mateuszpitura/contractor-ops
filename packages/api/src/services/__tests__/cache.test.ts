@@ -26,7 +26,7 @@ vi.mock('@upstash/redis', () => {
 process.env.UPSTASH_REDIS_REST_URL = 'https://fake-redis.upstash.io';
 process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
 
-import { CacheKeys, CacheTTL, cached, cacheKey, invalidate, invalidateByPrefix } from '../cache.js';
+import { CacheKeys, CacheTTL, cached, cacheKey, invalidate, invalidateByPrefix } from '../cache';
 
 // ---------------------------------------------------------------------------
 // Setup

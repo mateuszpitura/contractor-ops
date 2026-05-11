@@ -4,8 +4,8 @@ import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
 import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import { useLocale } from '@/i18n';
-import type { PricingPlan } from '@/lib/stripe';
-import { formatPrice } from '@/lib/stripe';
+import type { PricingPlan } from '@/lib/pricing-types';
+import { formatPrice } from '@/lib/pricing-types';
 
 export function PricingHero({ plans }: { plans: PricingPlan[] }) {
   const locale = useLocale();

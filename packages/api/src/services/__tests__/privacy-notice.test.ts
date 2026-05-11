@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     privacyNotice: {
       findFirst: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../cache.js', () => ({
+vi.mock('../cache', () => ({
   cached: vi.fn(async (_k: string, _t: number, fn: () => Promise<unknown>) => fn()),
   CacheKeys: {},
   CacheTTL: { ORG_SETTINGS: 900 },
@@ -22,11 +22,7 @@ vi.mock('../cache.js', () => ({
 }));
 
 import { prisma } from '@contractor-ops/db';
-import {
-  createPrivacyNotice,
-  getDefaultNoticeContent,
-  getPrivacyNotice,
-} from '../privacy-notice.js';
+import { createPrivacyNotice, getDefaultNoticeContent, getPrivacyNotice } from '../privacy-notice';
 
 const mockPrisma = prisma as unknown as {
   privacyNotice: {

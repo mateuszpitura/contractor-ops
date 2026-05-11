@@ -1,6 +1,6 @@
 import { createLogger } from '@contractor-ops/logger';
-import { dispatch } from '../notification-service.js';
-import type { DbClient } from '../types.js';
+import { dispatch } from '../notification-service';
+import type { DbClient } from '../types';
 
 const log = createLogger({ service: 'shipment-notification' });
 

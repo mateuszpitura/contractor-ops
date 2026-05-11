@@ -39,8 +39,8 @@ const { mockFindUnique } = vi.hoisted(() => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     organization: {
       findUnique: mockFindUnique,
@@ -52,7 +52,7 @@ vi.mock('@contractor-ops/db', () => ({
 process.env.UPSTASH_REDIS_REST_URL = 'https://fake-redis.upstash.io';
 process.env.UPSTASH_REDIS_REST_TOKEN = 'fake-token';
 
-import { getOrgMeta, invalidateOrgMeta, ORG_META_TTL_SECONDS, orgMetaKey } from '../org-cache.js';
+import { getOrgMeta, invalidateOrgMeta, ORG_META_TTL_SECONDS, orgMetaKey } from '../org-cache';
 
 // ---------------------------------------------------------------------------
 // Setup

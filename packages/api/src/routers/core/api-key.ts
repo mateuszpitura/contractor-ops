@@ -1,12 +1,12 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { PUBLIC_API_SCOPES } from '../../lib/scope-utils.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { generateApiKey } from '../../services/api-key-service.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
+import { router } from '../../init';
+import { PUBLIC_API_SCOPES } from '../../lib/scope-utils';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { generateApiKey } from '../../services/api-key-service';
+import { writeAuditLog } from '../../services/audit-writer';
 
 // ---------------------------------------------------------------------------
 // Input schemas

@@ -10,21 +10,21 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator.js';
-import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
+import { writeAuditLog } from '../../services/audit-writer';
+import { isAllowedMimeType, validateMimeType } from '../../services/mime-validator';
+import { generateStorageKey, getR2BucketName, maxBytesForMime } from '../../services/r2';
 import {
   createRegionalPresignedDownloadUrl,
   createRegionalPresignedUploadUrl,
   deleteRegionalObject,
   headRegionalObject,
-} from '../../services/regional-storage.js';
-import { isClamAvailable, scanBuffer } from '../../services/virus-scanner.js';
+} from '../../services/regional-storage';
+import { isClamAvailable, scanBuffer } from '../../services/virus-scanner';
 
 const log = createLogger({ service: 'document-router' });
 
@@ -45,7 +45,7 @@ const log = createLogger({ service: 'document-router' });
  */
 async function sniffStoredMime(storageKey: string): Promise<string | null> {
   const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-  const { createR2Client } = await import('../../services/r2.js');
+  const { createR2Client } = await import('../../services/r2');
   const client = createR2Client();
 
   const response = await client.send(
@@ -83,7 +83,7 @@ async function scanAndUpdate(
   try {
     // Fetch first 4100 bytes for MIME validation (magic bytes are in the header)
     const { GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { createR2Client } = await import('../../services/r2.js');
+    const { createR2Client } = await import('../../services/r2');
     const client = createR2Client();
 
     const getCmd = new GetObjectCommand({
@@ -312,10 +312,7 @@ export const documentRouter = router({
           'confirmUpload rejected: mime mismatch',
         );
         await deleteRegionalObject(doc.storageKey).catch(err =>
-          log.error(
-            { err, storageKey: doc.storageKey },
-            'failed to delete mime-mismatched object',
-          ),
+          log.error({ err, storageKey: doc.storageKey }, 'failed to delete mime-mismatched object'),
         );
         throw new TRPCError({
           code: 'BAD_REQUEST',

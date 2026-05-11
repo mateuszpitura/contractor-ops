@@ -18,13 +18,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { collectStreamToBuffer, streamCsvResponse, UTF8_BOM } from '../../../lib/csv.js';
-import {
-  EXPORT_REGISTRY,
-  defineExport,
-  getExportDefinition,
-  parseExportParams,
-} from '../registry.js';
+import { collectStreamToBuffer, streamCsvResponse, UTF8_BOM } from '../../../lib/csv';
+import { defineExport, EXPORT_REGISTRY, getExportDefinition, parseExportParams } from '../registry';
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -94,7 +89,7 @@ describe('streamCsvResponse', () => {
     { key: 'amount', header: 'Amount' },
   ];
 
-  async function* rows(input: Array<Record<string, unknown>>) {
+  async function* rows(input: Record<string, unknown>[]) {
     for (const r of input) yield r;
   }
 
@@ -207,7 +202,7 @@ describe('claimExport at-most-once semantics', () => {
       },
     }));
 
-    const { claimExport } = await import('../index.js');
+    const { claimExport } = await import('../index');
 
     const first = await claimExport('exp_1');
     expect(first?.alreadyProcessed).toBe(false);

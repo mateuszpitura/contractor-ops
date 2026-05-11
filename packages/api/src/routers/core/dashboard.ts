@@ -1,15 +1,11 @@
-import {
-  type DataRegion,
-  type PrismaClient,
-  readReplica,
-  SUPPORTED_REGIONS,
-} from '@contractor-ops/db';
+import type { DataRegion, PrismaClient } from '@contractor-ops/db';
+import { readReplica, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { CacheKeys, CacheTTL, cached, cachedSingleflight } from '../../services/cache.js';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { CacheKeys, CacheTTL, cached, cachedSingleflight } from '../../services/cache';
 
 /**
  * Minimal client surface required by `fetchKpis`. Both the writer (`ctx.db`,

@@ -7,7 +7,7 @@ import {
   headObject,
   putObjectAndSignDownload,
   signExistingDownload,
-} from '../r2.js';
+} from '../r2';
 
 describe('r2 generateStorageKey', () => {
   it('builds org-scoped path with extension', () => {

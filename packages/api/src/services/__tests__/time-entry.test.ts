@@ -9,7 +9,7 @@ import {
   rejectTimesheet,
   saveDraftEntries,
   submitTimesheet,
-} from '../time-entry.js';
+} from '../time-entry';
 
 // ---------------------------------------------------------------------------
 // Mock Prisma factory

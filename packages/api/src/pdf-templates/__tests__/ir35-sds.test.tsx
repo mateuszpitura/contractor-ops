@@ -23,8 +23,8 @@ import {
   SDS_FIXTURE_ENGAGEMENT,
   SDS_FIXTURE_ORGANIZATION,
   SDS_FIXTURE_RENDERED_AT,
-} from '../__fixtures__/sds-fixtures.js';
-import { IR35SDSDocument, RENDERER_SLUG, TEMPLATE_VERSION } from '../ir35-sds.js';
+} from '../__fixtures__/sds-fixtures';
+import { IR35SDSDocument, RENDERER_SLUG, TEMPLATE_VERSION } from '../ir35-sds';
 
 function collectText(node: ReactNode): string[] {
   const out: string[] = [];

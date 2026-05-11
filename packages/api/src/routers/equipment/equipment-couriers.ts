@@ -14,18 +14,18 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { adminProcedure, requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { getCourierClient, loadCourierClient } from '../../services/courier/carrier-factory.js';
-import { checkShipmentTaskCompletion } from '../../services/equipment-workflow.js';
+import { router } from '../../init';
+import { adminProcedure, requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { getCourierClient, loadCourierClient } from '../../services/courier/carrier-factory';
+import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
   EQUIPMENT_NOT_ASSIGNED,
   EQUIPMENT_NOT_FOUND,
   EQUIPMENT_STATUS_TRANSITIONS,
   SHIPMENT_NOT_FOUND,
-} from './equipment-shared.js';
+} from './equipment-shared';
 
 // ---------------------------------------------------------------------------
 // Equipment Couriers sub-router

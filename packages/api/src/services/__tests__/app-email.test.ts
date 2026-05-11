@@ -14,13 +14,13 @@ vi.mock('nodemailer', () => ({
 }));
 
 const mockResendSend = vi.fn().mockResolvedValue({ id: 're_1' });
-vi.mock('../resend-client.js', () => ({
+vi.mock('../resend-client', () => ({
   getResend: () => ({
     emails: { send: (...args: unknown[]) => mockResendSend(...args) },
   }),
 }));
 
-import { sendAppEmail } from '../app-email.js';
+import { sendAppEmail } from '../app-email';
 
 describe('sendAppEmail', () => {
   beforeEach(() => {

@@ -9,16 +9,16 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
 import {
   approveTimesheet,
   bulkApproveTimesheets,
   bulkRejectTimesheets,
   rejectTimesheet,
-} from '../../services/time-entry.js';
-import { computeTimeReconciliation } from '../../services/time-reconciliation.js';
+} from '../../services/time-entry';
+import { computeTimeReconciliation } from '../../services/time-reconciliation';
 
 // ---------------------------------------------------------------------------
 // Helpers

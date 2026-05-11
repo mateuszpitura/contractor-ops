@@ -8,14 +8,14 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import type { TenantScopedDb } from '../../lib/tenant-db.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { linearGraphQL } from '../../services/linear-issue-sync.js';
-import { registerLinearWebhook } from '../../services/linear-webhook-handler.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import type { TenantScopedDb } from '../../lib/tenant-db';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { linearGraphQL } from '../../services/linear-issue-sync';
+import { registerLinearWebhook } from '../../services/linear-webhook-handler';
 
 const log = createLogger({ service: 'linear-router' });
 

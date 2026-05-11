@@ -43,8 +43,8 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 
@@ -56,7 +56,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 }));
 
 // Import after mocks are defined
-const { syncJiraWorklogs } = await import('../jira-worklog-sync.js');
+const { syncJiraWorklogs } = await import('../jira-worklog-sync');
 
 // ---------------------------------------------------------------------------
 // MSW Server

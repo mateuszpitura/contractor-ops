@@ -21,7 +21,7 @@ async function readRouter(name: string): Promise<string> {
 describe('Classification flag coverage (Phase 64 D-07)', () => {
   it('classification.ts imports classificationProcedure and not tenantProcedure directly', async () => {
     const src = await readRouter('classification.ts');
-    expect(src).toContain("from '../../middleware/require-classification-flag.js'");
+    expect(src).toContain("from '../../middleware/require-classification-flag'");
     expect(src).toContain('classificationProcedure');
     expect(src).not.toMatch(/import.*tenantProcedure.*from.*tenant/);
   });

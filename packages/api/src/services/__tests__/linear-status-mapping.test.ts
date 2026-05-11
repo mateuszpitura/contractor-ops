@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getStatusMapping, saveStatusMapping } from '../linear-status-mapping.js';
+import { getStatusMapping, saveStatusMapping } from '../linear-status-mapping';
 
 describe('linear-status-mapping', () => {
   const mockFindUnique = vi.fn();

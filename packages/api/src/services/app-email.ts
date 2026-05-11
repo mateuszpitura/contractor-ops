@@ -3,7 +3,7 @@ import { getServerEnv } from '@contractor-ops/validators';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
 import { render } from 'react-email';
-import { getResend } from './resend-client.js';
+import { getResend } from './resend-client';
 
 export type SendAppEmailParams = {
   from: string;

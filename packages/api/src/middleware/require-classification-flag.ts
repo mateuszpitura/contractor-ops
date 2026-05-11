@@ -17,7 +17,7 @@
 import { evaluate } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
-import { tenantProcedure } from './tenant.js';
+import { tenantProcedure } from './tenant';
 
 const log = createLogger({ service: 'classification-flag-guard' });
 

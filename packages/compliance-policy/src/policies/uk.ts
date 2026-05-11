@@ -10,7 +10,7 @@
 // Production wording flips PENDING→APPROVED via post-deploy PR per
 // `packages/feature-flags/src/signoff-registry-flags.json`.
 
-import { registerPolicyRule } from '../registry.js';
+import { registerPolicyRule } from '../registry';
 
 registerPolicyRule({
   policyRuleId: 'uk.right_to_work@v1',

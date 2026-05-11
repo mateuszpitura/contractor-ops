@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ExportItem, OrgBankInfo } from '../payment-export.js';
-import { generateSwiftXml } from '../payment-export.js';
-import { getAllPurposeCodes, getPurposeCode, isValidPurposeCode } from '../purpose-codes.js';
+import type { ExportItem, OrgBankInfo } from '../payment-export';
+import { generateSwiftXml } from '../payment-export';
+import { getAllPurposeCodes, getPurposeCode, isValidPurposeCode } from '../purpose-codes';
 
 // ---------------------------------------------------------------------------
 // Purpose Code Tests

@@ -10,9 +10,9 @@ import { randomUUID } from 'node:crypto';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { createLogger } from '@contractor-ops/logger';
 import type { Resend } from 'resend';
-import { createR2Client, getR2BucketName } from './r2.js';
-import { getResend } from './resend-client.js';
-import type { DbClient } from './types.js';
+import { createR2Client, getR2BucketName } from './r2';
+import { getResend } from './resend-client';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'resend-email-intake' });
 

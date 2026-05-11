@@ -6,7 +6,7 @@ import {
   generateInvoicesCsv,
   generateReportCsv,
   generateSpendCsv,
-} from '../report-export.js';
+} from '../report-export';
 
 describe('report-export', () => {
   describe('generateReportCsv', () => {

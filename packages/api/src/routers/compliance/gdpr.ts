@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { deleteRegionalObject } from '../../services/regional-storage.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { deleteRegionalObject } from '../../services/regional-storage';
 
 // ---------------------------------------------------------------------------
 // Bulk delete / soft-delete helpers

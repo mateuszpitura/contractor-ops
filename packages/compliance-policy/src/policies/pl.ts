@@ -4,7 +4,7 @@
 //  1. pl.zus_a1@v1 — ZUS A1 (BLOCKING; 12-month max per PL implementation)
 //  2. pl.udt@v1 — UDT certification (WARNING; conditional on regulated equipment)
 
-import { registerPolicyRule } from '../registry.js';
+import { registerPolicyRule } from '../registry';
 
 registerPolicyRule({
   policyRuleId: 'pl.zus_a1@v1',

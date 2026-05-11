@@ -45,7 +45,7 @@ describe('getResend', () => {
   });
 
   it('returns a Resend instance', async () => {
-    const { getResend } = await import('../resend-client.js');
+    const { getResend } = await import('../resend-client');
     const client = getResend();
 
     expect(client).toBeDefined();
@@ -54,7 +54,7 @@ describe('getResend', () => {
   });
 
   it('returns the same instance on subsequent calls (singleton)', async () => {
-    const { getResend } = await import('../resend-client.js');
+    const { getResend } = await import('../resend-client');
     const first = getResend();
     const second = getResend();
 
@@ -66,7 +66,7 @@ describe('getResend', () => {
   it('reads RESEND_API_KEY from server env', async () => {
     mockGetServerEnv.mockReturnValue({ RESEND_API_KEY: 're_custom_key' });
 
-    const { getResend } = await import('../resend-client.js');
+    const { getResend } = await import('../resend-client');
     getResend();
 
     expect(mockGetServerEnv).toHaveBeenCalled();

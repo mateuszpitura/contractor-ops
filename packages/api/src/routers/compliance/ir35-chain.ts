@@ -10,8 +10,8 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { router } from '../../init.js';
-import { classificationProcedure } from '../../middleware/require-classification-flag.js';
+import { router } from '../../init';
+import { classificationProcedure } from '../../middleware/require-classification-flag';
 
 const chainRoleSchema = z.enum(['CLIENT', 'AGENCY', 'PSC', 'WORKER']);
 

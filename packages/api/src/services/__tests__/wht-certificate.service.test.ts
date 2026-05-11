@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     paymentRunItem: { findUnique: vi.fn() },
     whtCertificate: { count: vi.fn(), create: vi.fn(), findMany: vi.fn() },
@@ -18,7 +18,7 @@ vi.mock('@contractor-ops/db', () => ({
 // ---------------------------------------------------------------------------
 
 import { prisma } from '@contractor-ops/db';
-import { createWhtCertificate, listWhtCertificates } from '../wht-certificate.service.js';
+import { createWhtCertificate, listWhtCertificates } from '../wht-certificate.service';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

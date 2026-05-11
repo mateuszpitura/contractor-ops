@@ -25,7 +25,7 @@ let reserve: <T>(
 ) => Promise<{ kind: 'MISS' } | { kind: 'PENDING' } | { kind: 'HIT'; result: T }>;
 
 beforeAll(async () => {
-  const mod = await import('../idempotency.js');
+  const mod = await import('../idempotency');
   ResetIdempotencyForTests = mod.__resetIdempotencyForTests;
   clear = mod.clear;
   complete = mod.complete;

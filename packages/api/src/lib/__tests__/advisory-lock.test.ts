@@ -29,7 +29,7 @@ function makeDb(): MockDb {
 
 async function importHelpers() {
   vi.resetModules();
-  return await import('../advisory-lock.js');
+  return await import('../advisory-lock');
 }
 
 describe('advisory-lock — transition shim disabled (env unset)', () => {

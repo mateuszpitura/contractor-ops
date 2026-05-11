@@ -4,10 +4,10 @@ import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason } from '@contractor-ops/validators';
-import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants.js';
-import { CacheKeys, CacheTTL, cached, invalidate } from './cache.js';
-import { dispatch } from './notification-service.js';
-import { stripe } from './stripe-client.js';
+import { TIER_CREDIT_ALLOWANCE, TRIAL_CREDIT_ALLOWANCE } from './billing-constants';
+import { CacheKeys, CacheTTL, cached, invalidate } from './cache';
+import { dispatch } from './notification-service';
+import { stripe } from './stripe-client';
 
 const log = createLogger({ service: 'credit-service' });
 

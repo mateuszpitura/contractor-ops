@@ -1,7 +1,7 @@
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
-import { publicProcedure, t } from '../init.js';
-import { validatePortalSession } from '../services/portal-session.js';
+import { publicProcedure, t } from '../init';
+import { validatePortalSession } from '../services/portal-session';
 
 // ---------------------------------------------------------------------------
 // Cookie parsing

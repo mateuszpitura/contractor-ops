@@ -4,9 +4,9 @@
 // plans can import-resolve. Wave 1 Plan 74-02 fills the seed/keyword constants,
 // Wave 2 Plan 74-05 fills `upsertSeedTemplates` against the real PrismaClient.
 
-export { PTO_KEYWORDS } from './pto-keywords.js';
+export { PTO_KEYWORDS } from './pto-keywords';
 
-export { OFFBOARDING_TEMPLATE_SEEDS } from './seeds.js';
+export { OFFBOARDING_TEMPLATE_SEEDS } from './seeds';
 export type {
   DocumentType,
   OffboardingTemplateSeedRole,
@@ -15,5 +15,5 @@ export type {
   Seed,
   SupportedLocale,
   TaskItem,
-} from './types.js';
-export { upsertSeedTemplates } from './upsert-on-boot.js';
+} from './types';
+export { upsertSeedTemplates } from './upsert-on-boot';

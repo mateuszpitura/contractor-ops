@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import crypto from 'node:crypto';
-import { acquireXactLock } from '../lib/advisory-lock.js';
+import { acquireXactLock } from '../lib/advisory-lock';
 
 // ---------------------------------------------------------------------------
 // Types

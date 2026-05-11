@@ -27,8 +27,8 @@
 
 import { randomUUID } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
-import { generateStorageKey } from './r2.js';
-import { createRegionalPresignedUploadUrl } from './regional-storage.js';
+import { generateStorageKey } from './r2';
+import { createRegionalPresignedUploadUrl } from './regional-storage';
 
 /** 15-minute upload window — matches the magic-link token expiry. */
 const PENDING_UPLOAD_EXPIRY_MS = 15 * 60 * 1000;

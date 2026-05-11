@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import XLSX from 'xlsx';
-import * as E from '../../errors.js';
+import * as E from '../../errors';
 import {
   autoMapColumns,
   normalizeHeader,
   processImportFile,
   validateContractorRow,
   validateContractRow,
-} from '../import-processor.js';
+} from '../import-processor';
 
 const { mockContractorFindMany } = vi.hoisted(() => ({
   mockContractorFindMany: vi.fn(),
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     contractor: {
       findMany: mockContractorFindMany,

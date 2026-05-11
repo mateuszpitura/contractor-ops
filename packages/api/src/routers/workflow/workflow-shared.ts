@@ -4,8 +4,8 @@
  */
 import type { Prisma } from '@contractor-ops/db';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
-import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector.js';
-import { resolveAssigneeWithPto } from '../../services/pto-detector.js';
+import type { ResolveAssigneeWithPtoArgs } from '../../services/pto-detector';
+import { resolveAssigneeWithPto } from '../../services/pto-detector';
 
 // Re-export for Plan 74-08 (overrideBlockingTask + startOffboardingRun) and
 // any other workflow-execution code that needs PTO-aware assignee resolution.

@@ -5,7 +5,7 @@
  * Per D-03: payment run picks format based on currency/destination.
  */
 
-import type { ExportItem } from './payment-export.js';
+import type { ExportItem } from './payment-export';
 
 // ---------------------------------------------------------------------------
 // Constants

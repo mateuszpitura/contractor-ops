@@ -1,9 +1,9 @@
 import type { Prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import { checkShipmentTaskCompletion } from '../equipment-workflow.js';
-import type { DbClient } from '../types.js';
-import { NOTIFICATION_STATUSES } from './inpost-status-mapper.js';
-import { dispatchShipmentNotification } from './shipment-notification.js';
+import { checkShipmentTaskCompletion } from '../equipment-workflow';
+import type { DbClient } from '../types';
+import { NOTIFICATION_STATUSES } from './inpost-status-mapper';
+import { dispatchShipmentNotification } from './shipment-notification';
 
 const log = createLogger({ service: 'shipment-processing' });
 

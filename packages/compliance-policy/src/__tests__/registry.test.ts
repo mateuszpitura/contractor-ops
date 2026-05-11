@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { listPolicyRules } from '../registry.js';
-import '../index.js'; // triggers module-import side effects (Plan 71-02 registers rules on import)
+import { listPolicyRules } from '../registry';
+import '../index'; // triggers module-import side effects (Plan 71-02 registers rules on import)
 
 describe('compliance-policy registry', () => {
   it('registers all 13 baseline policy rules across 5 jurisdictions', () => {

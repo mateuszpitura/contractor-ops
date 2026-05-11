@@ -55,7 +55,7 @@ import {
 } from '@contractor-ops/einvoice';
 import { createLogger } from '@contractor-ops/logger';
 
-import { putObjectAndSignDownload, putObjectString } from './r2.js';
+import { putObjectAndSignDownload, putObjectString } from './r2';
 
 // ---------------------------------------------------------------------------
 // Public types

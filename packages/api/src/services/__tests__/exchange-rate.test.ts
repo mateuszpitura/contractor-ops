@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deriveAedRate, deriveSarRate, parseEcbXml } from '../exchange-rate.js';
+import { deriveAedRate, deriveSarRate, parseEcbXml } from '../exchange-rate';
 
 // Sample ECB XML fragment for testing
 const SAMPLE_ECB_XML = `<?xml version="1.0" encoding="UTF-8"?>

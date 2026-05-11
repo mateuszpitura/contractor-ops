@@ -2,7 +2,7 @@ import type { Prisma } from '@contractor-ops/db';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 const log = createLogger({ service: 'jira-worklog-sync' });
 

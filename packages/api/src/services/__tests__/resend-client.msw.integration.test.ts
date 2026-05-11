@@ -25,7 +25,7 @@ describe('resend-client + MSW', () => {
   });
 
   it('emails.send receives mock id from MSW', async () => {
-    const { getResend } = await import('../resend-client.js');
+    const { getResend } = await import('../resend-client');
     const res = await getResend().emails.send({
       from: 'onboarding@resend.dev',
       to: ['ops@example.com'],

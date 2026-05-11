@@ -1,8 +1,8 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { CalendarTaskConfig } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
-import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service.js';
-import type { CalendarPrismaClient } from './types.js';
+import { createCalendarEvent, updateCalendarEvent } from './calendar-event-service';
+import type { CalendarPrismaClient } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants

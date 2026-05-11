@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { getServerEnv } from '@contractor-ops/validators';
-import { sendAppEmail } from './app-email.js';
+import { sendAppEmail } from './app-email';
 
 // ---------------------------------------------------------------------------
 // Constants

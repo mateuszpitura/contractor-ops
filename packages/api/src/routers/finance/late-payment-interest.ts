@@ -10,16 +10,13 @@ import { createLogger } from '@contractor-ops/logger';
 import { LPCDA_SECTION_REF } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { loadBoeRateHistory } from '../../services/boe-rate-cache.js';
-import {
-  calculateLateInterest,
-  getCompensationTier,
-} from '../../services/late-payment-interest.js';
-import { signExistingDownload } from '../../services/r2.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
+import { requirePermission } from '../../middleware/rbac';
+import { loadBoeRateHistory } from '../../services/boe-rate-cache';
+import { calculateLateInterest, getCompensationTier } from '../../services/late-payment-interest';
+import { signExistingDownload } from '../../services/r2';
 
 const log = createLogger({ service: 'late-payment-interest-router' });
 

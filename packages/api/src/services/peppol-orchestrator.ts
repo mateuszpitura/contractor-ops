@@ -6,7 +6,7 @@ import {
   PeppolAEQRCode,
   PINT_AE_DOCUMENT_TYPE_ID,
 } from '@contractor-ops/einvoice';
-import { computeDuplicateCheckHash } from './invoice-matching.js';
+import { computeDuplicateCheckHash } from './invoice-matching';
 
 // ---------------------------------------------------------------------------
 // Peppol Orchestrator

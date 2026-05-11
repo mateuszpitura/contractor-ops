@@ -9,13 +9,13 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import '@contractor-ops/compliance-policy'; // register all 13 policy rules
-import type { SupersessionClient } from '../services/compliance-supersession.js';
+import type { SupersessionClient } from '../services/compliance-supersession';
 import {
   extractOutcomeKind,
   materialiseFromPolicy,
   outcomesEqualForPolicyResolution,
   supersedeAndMaterialise,
-} from '../services/compliance-supersession.js';
+} from '../services/compliance-supersession';
 
 // ---------------------------------------------------------------------------
 // Mock client — in-memory ContractorComplianceItem store

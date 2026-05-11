@@ -6,8 +6,8 @@
  */
 
 import { prisma } from '@contractor-ops/db';
-import * as E from '../errors.js';
-import { isValidContractorTaxId, normalizeContractorTaxId } from './contractor-tax-id.js';
+import * as E from '../errors';
+import { isValidContractorTaxId, normalizeContractorTaxId } from './contractor-tax-id';
 
 // ---------------------------------------------------------------------------
 // Types

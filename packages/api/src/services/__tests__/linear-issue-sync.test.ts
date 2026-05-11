@@ -15,7 +15,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
   })),
 }));
 
-vi.mock('../linear-status-mapping.js', () => ({
+vi.mock('../linear-status-mapping', () => ({
   resolveLinearStateId: mockResolveLinearStateId,
 }));
 
@@ -24,7 +24,7 @@ import {
   detectScopeExpansionNeeded,
   linearGraphQL,
   syncTaskStatusToLinear,
-} from '../linear-issue-sync.js';
+} from '../linear-issue-sync';
 
 const ORG_ID = 'org-linear-sync-001';
 const CONN_ID = 'conn-linear-sync-001';

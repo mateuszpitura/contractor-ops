@@ -7,10 +7,10 @@ import {
 } from '@contractor-ops/einvoice';
 import { decryptCredentials } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
-import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock.js';
-import { computeDuplicateCheckHashForInvoice, runAutoMatch } from './invoice-matching.js';
-import { checkCrossSourceDuplicate, linkDuplicateInvoices } from './ksef-duplicate-detection.js';
-import { dispatch } from './notification-service.js';
+import { releaseAdvisoryLock, tryAcquireAdvisoryLock } from '../lib/advisory-lock';
+import { computeDuplicateCheckHashForInvoice, runAutoMatch } from './invoice-matching';
+import { checkCrossSourceDuplicate, linkDuplicateInvoices } from './ksef-duplicate-detection';
+import { dispatch } from './notification-service';
 
 type AdvisoryLockDb = {
   $queryRawUnsafe: (query: string, ...args: unknown[]) => Promise<unknown>;

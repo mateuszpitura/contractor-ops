@@ -30,7 +30,7 @@ vi.mock('stripe', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { stripe } from '../stripe-client.js';
+import { stripe } from '../stripe-client';
 
 // ---------------------------------------------------------------------------
 // Tests

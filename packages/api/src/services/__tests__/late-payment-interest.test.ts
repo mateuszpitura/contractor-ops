@@ -16,12 +16,12 @@
 //   5. Active waivers zero out the waived component.
 
 import { describe, expect, it } from 'vitest';
-import type { LateInterestInput, RateHistoryEntry } from '../late-payment-interest.js';
+import type { LateInterestInput, RateHistoryEntry } from '../late-payment-interest';
 import {
   calculateLateInterest,
   getCompensationTier,
   resolveStatutoryRate,
-} from '../late-payment-interest.js';
+} from '../late-payment-interest';
 
 // ---------------------------------------------------------------------------
 // Fixtures — BoE rate history covering the test scenarios

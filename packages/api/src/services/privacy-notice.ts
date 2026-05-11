@@ -20,7 +20,7 @@ import {
   gbPrivacyNotice,
   resolveJurisdiction as resolveJurisdictionImpl,
 } from '@contractor-ops/validators';
-import { CacheTTL, cached, cacheKey } from './cache.js';
+import { CacheTTL, cached, cacheKey } from './cache';
 
 // Re-export the pure jurisdiction resolver from validators so existing callers
 // that import from this service continue to work. Client components should
@@ -281,7 +281,7 @@ export async function renderGdprPrivacyNoticePdfBuffer(params: {
 
   const [{ renderToBuffer }, { GdprPrivacyNoticeTemplate }] = await Promise.all([
     import('@react-pdf/renderer'),
-    import('../pdf-templates/gdpr-privacy-notice.js'),
+    import('../pdf-templates/gdpr-privacy-notice'),
   ]);
 
   const buffer = await renderToBuffer(

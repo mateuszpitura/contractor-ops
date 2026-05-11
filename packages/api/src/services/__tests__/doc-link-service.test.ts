@@ -29,7 +29,7 @@ vi.mock('@contractor-ops/integrations/adapters/confluence-adapter', () => {
   };
 });
 
-import { attachDocLink, detachDocLink, getDocLinks, searchDocs } from '../doc-link-service.js';
+import { attachDocLink, detachDocLink, getDocLinks, searchDocs } from '../doc-link-service';
 
 const mockPrisma = {
   externalLink: {

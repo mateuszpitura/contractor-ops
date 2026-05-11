@@ -5,7 +5,7 @@
 //  2. de.aufenthaltstitel@v1 — Aufenthaltstitel residence permit (BLOCKING; conditional on non-EU nationality)
 //  3. de.eight_b_estg@v1 — §48b EStG Freistellungsbescheinigung (BLOCKING; conditional on construction sector)
 
-import { registerPolicyRule } from '../registry.js';
+import { registerPolicyRule } from '../registry';
 
 const EU_NATIONALITIES = new Set([
   'AT',

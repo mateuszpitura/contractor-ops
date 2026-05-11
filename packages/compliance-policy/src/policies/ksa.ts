@@ -4,7 +4,7 @@
 //  1. ksa.iqama@v1 — Iqama residency permit (BLOCKING; 1-year max per Saudi MOI)
 //  2. ksa.work_permit_qiwa@v1 — Work permit + Qiwa portal authorisation (BLOCKING)
 
-import { registerPolicyRule } from '../registry.js';
+import { registerPolicyRule } from '../registry';
 
 registerPolicyRule({
   policyRuleId: 'ksa.iqama@v1',

@@ -1,6 +1,6 @@
 import { FLAG_KEYS, FLAGS } from '@contractor-ops/feature-flags';
-import { router } from '../../init.js';
-import { apiKeyTenantFlaggedProcedure } from '../../middleware/feature-flag.js';
+import { router } from '../../init';
+import { apiKeyTenantFlaggedProcedure } from '../../middleware/feature-flag';
 
 /**
  * Public API feature flag introspection.

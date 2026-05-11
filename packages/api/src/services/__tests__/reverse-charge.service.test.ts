@@ -5,8 +5,8 @@
 // against drift.
 
 import { describe, expect, it } from 'vitest';
-import type { DE13bServiceType } from '../reverse-charge.service.js';
-import { DE_13B_SERVICE_TYPES, detectReverseCharge } from '../reverse-charge.service.js';
+import type { DE13bServiceType } from '../reverse-charge.service';
+import { DE_13B_SERVICE_TYPES, detectReverseCharge } from '../reverse-charge.service';
 
 describe('reverse-charge.service — gb_eu_post_brexit_b2b (D-12 rule 1)', () => {
   it('GB seller + EU (DE) buyer, both VAT-registered B2B → reverse charge', () => {

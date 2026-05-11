@@ -22,8 +22,8 @@ const { mockSecretStore, mockZatcaApiClient } = vi.hoisted(() => ({
 // ---------------------------------------------------------------------------
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     integrationConnection: {
       findFirst: vi.fn(),
@@ -102,7 +102,7 @@ import {
   requestComplianceCsid,
   runComplianceChecks,
   saveTaxDetails,
-} from '../zatca-onboarding.js';
+} from '../zatca-onboarding';
 
 // ---------------------------------------------------------------------------
 // Typed mock handles

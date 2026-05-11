@@ -21,8 +21,8 @@ const { mockPrisma } = vi.hoisted(() => {
 });
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
 }));
 
@@ -104,17 +104,13 @@ vi.mock('@contractor-ops/validators', () => ({
   }),
 }));
 
-vi.mock('../zatca-hash-chain.js', () => ({
+vi.mock('../zatca-hash-chain', () => ({
   acquireChainLock: vi.fn().mockResolvedValue(undefined),
   getNextChainEntry: vi.fn().mockResolvedValue({ icv: 1, pih: 'genesis-hash' }),
   recordChainEntry: vi.fn().mockResolvedValue({ id: 'chain_1' }),
 }));
 
-import {
-  handleZatcaSubmissionJob,
-  queueZatcaSubmission,
-  submitToZatca,
-} from '../zatca-submission.js';
+import { handleZatcaSubmissionJob, queueZatcaSubmission, submitToZatca } from '../zatca-submission';
 
 // ---------------------------------------------------------------------------
 // Helpers

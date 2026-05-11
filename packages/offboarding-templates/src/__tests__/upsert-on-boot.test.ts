@@ -2,8 +2,8 @@
 // Uses vitest mocks (no live DB) to track call counts and shape.
 
 import { describe, expect, it, vi } from 'vitest';
-import { OFFBOARDING_TEMPLATE_SEEDS } from '../seeds.js';
-import { upsertSeedTemplates } from '../upsert-on-boot.js';
+import { OFFBOARDING_TEMPLATE_SEEDS } from '../seeds';
+import { upsertSeedTemplates } from '../upsert-on-boot';
 
 interface FakeRow {
   id: string;
@@ -51,10 +51,10 @@ describe('upsertSeedTemplates — first-boot idempotency', () => {
     expect(prisma._spies.taskUpsert.mock.calls.length).toBe(firstTaskCalls * 2);
 
     // The compound unique key is consistent across calls (same organizationId+role)
-    const firstCallWhere = (prisma._spies.templateUpsert.mock.calls[0]![0] as { where: unknown })
+    const firstCallWhere = (prisma._spies.templateUpsert.mock.calls[0]?.[0] as { where: unknown })
       .where;
     const secondPassFirstCallWhere = (
-      prisma._spies.templateUpsert.mock.calls[firstTemplateCalls]![0] as { where: unknown }
+      prisma._spies.templateUpsert.mock.calls[firstTemplateCalls]?.[0] as { where: unknown }
     ).where;
     expect(firstCallWhere).toEqual(secondPassFirstCallWhere);
   });

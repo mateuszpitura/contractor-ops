@@ -6,10 +6,10 @@ import {
   withRlsTransactions,
 } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
-import * as E from '../errors.js';
-import { t } from '../init.js';
-import { getOrgMeta, invalidateOrgMeta } from '../services/org-cache.js';
-import { authedProcedure } from './auth.js';
+import * as E from '../errors';
+import { t } from '../init';
+import { getOrgMeta, invalidateOrgMeta } from '../services/org-cache';
+import { authedProcedure } from './auth';
 
 // ---------------------------------------------------------------------------
 // Org-meta cache invalidation — F-DB-03 — wraps the tenant-scoped client with

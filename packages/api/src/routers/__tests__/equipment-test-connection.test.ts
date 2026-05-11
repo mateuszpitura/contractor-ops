@@ -91,8 +91,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -105,23 +105,23 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('../../services/notification-service.js', () => ({
+vi.mock('../../services/notification-service', () => ({
   dispatch: vi.fn(async () => undefined),
 }));
 
-vi.mock('../../services/equipment-workflow.js', () => ({
+vi.mock('../../services/equipment-workflow', () => ({
   checkShipmentTaskCompletion: vi.fn(),
 }));
 
-vi.mock('../../services/courier/carrier-factory.js', async importOriginal => {
-  const actual = await importOriginal<typeof import('../../services/courier/carrier-factory.js')>();
+vi.mock('../../services/courier/carrier-factory', async importOriginal => {
+  const actual = await importOriginal<typeof import('../../services/courier/carrier-factory')>();
   return {
     ...actual,
     getCourierClient: vi.fn(() => mockCourierClient),
   };
 });
 
-vi.mock('../../services/courier/inpost-client.js', () => ({
+vi.mock('../../services/courier/inpost-client', () => ({
   InPostClient: class MockInPostClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -130,7 +130,7 @@ vi.mock('../../services/courier/inpost-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/courier/dpd-client.js', () => ({
+vi.mock('../../services/courier/dpd-client', () => ({
   DPDClient: class MockDPDClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -139,7 +139,7 @@ vi.mock('../../services/courier/dpd-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/courier/ups-client.js', () => ({
+vi.mock('../../services/courier/ups-client', () => ({
   UPSClient: class MockUPSClient {
     createShipment = vi.fn();
     getLabel = vi.fn();
@@ -148,7 +148,7 @@ vi.mock('../../services/courier/ups-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/stripe-client.js', () => ({
+vi.mock('../../services/stripe-client', () => ({
   stripe: {
     checkout: { sessions: { create: vi.fn() } },
     billingPortal: { sessions: { create: vi.fn() } },
@@ -159,7 +159,7 @@ vi.mock('../../services/stripe-client.js', () => ({
   },
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   createPresignedUploadUrl: vi.fn(async () => ({ url: 'https://r2.test/upload', key: 'k' })),
@@ -167,33 +167,30 @@ vi.mock('../../services/r2.js', () => ({
   generateStorageKey: vi.fn(() => 'mock-key'),
 }));
 
-vi.mock('../../services/portal-session.js', () => ({
+vi.mock('../../services/portal-session', () => ({
   validatePortalSession: vi.fn(async () => null),
   createPortalSession: vi.fn(),
   deletePortalSession: vi.fn(),
 }));
 
-vi.mock('../../services/portal-magic-link.js', () => ({
+vi.mock('../../services/portal-magic-link', () => ({
   createMagicLinkToken: vi.fn(),
   verifyMagicLinkToken: vi.fn(),
   findContractorsByEmail: vi.fn(),
   sendPortalMagicLink: vi.fn(),
 }));
 
-vi.mock('../../services/portal-change-request.js', () => ({
+vi.mock('../../services/portal-change-request', () => ({
   createChangeRequest: vi.fn(),
 }));
 
-vi.mock('../../services/bank-account-crypto.js', () => ({
+vi.mock('../../services/bank-account-crypto', () => ({
   encryptBankAccount: vi.fn((v: string) => `encrypted:${v}`),
 }));
 
 vi.mock('@contractor-ops/logger', () => ({
-  createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn(), fatal: vi.fn(), trace: vi.fn(), child: vi.fn() })),
-  createTrpcLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createWebhookLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() })),
-  createIntegrationLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
   withBodyLogging: vi.fn((_o, fn) => fn),
   logIntegrationCall: vi.fn(),
   subscribeOpossumEvents: vi.fn(),
@@ -224,7 +221,14 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 vi.mock('@sentry/nextjs', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -254,9 +258,9 @@ vi.mock('botframework-connector', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
-import { createCallerFactory } from '../../init.js';
-import { appRouter } from '../../root.js';
-import { getCourierClient } from '../../services/courier/carrier-factory.js';
+import { createCallerFactory } from '../../init';
+import { appRouter } from '../../root';
+import { getCourierClient } from '../../services/courier/carrier-factory';
 
 // ---------------------------------------------------------------------------
 // Caller setup — admin caller

@@ -15,12 +15,12 @@ import {
   slackUserUnlinkSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
-import * as E from '../../errors.js';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
-import { syncWorkspaceUsers } from '../../services/slack-client.js';
+import * as E from '../../errors';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { syncWorkspaceUsers } from '../../services/slack-client';
 
 // Ensure all provider adapters are registered before any procedure runs
 registerAllAdapters();

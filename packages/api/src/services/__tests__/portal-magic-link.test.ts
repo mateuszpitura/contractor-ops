@@ -15,8 +15,8 @@ const {
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     portalMagicToken: {
       create: mockPortalCreate,
@@ -29,7 +29,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../app-email.js', () => ({
+vi.mock('../app-email', () => ({
   sendAppEmail: (...args: unknown[]) => mockResendSend(...args),
 }));
 
@@ -39,7 +39,7 @@ import {
   findContractorsByEmail,
   sendPortalMagicLink,
   verifyMagicLinkToken,
-} from '../portal-magic-link.js';
+} from '../portal-magic-link';
 
 describe('createMagicLinkToken', () => {
   beforeEach(() => {

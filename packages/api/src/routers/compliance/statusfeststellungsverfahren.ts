@@ -17,10 +17,10 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { classificationProcedure } from '../../middleware/require-classification-flag.js';
-import { writeAuditLog } from '../../services/audit-writer.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { classificationProcedure } from '../../middleware/require-classification-flag';
+import { writeAuditLog } from '../../services/audit-writer';
 
 const cuid = z.string().min(1);
 

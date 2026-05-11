@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as E from '../../errors.js';
-import { sendForSignature } from '../esign-orchestrator.js';
-import { createPresignedDownloadUrl } from '../r2.js';
+import * as E from '../../errors';
+import { sendForSignature } from '../esign-orchestrator';
+import { createPresignedDownloadUrl } from '../r2';
 
 const { mockDocumentFindFirst, mockTx, mockTransaction, mockCreateSigningEnvelope } = vi.hoisted(
   () => {
@@ -32,8 +32,8 @@ const { mockDocumentFindFirst, mockTx, mockTransaction, mockCreateSigningEnvelop
 );
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: {
     document: {
       findFirst: mockDocumentFindFirst,
@@ -50,7 +50,7 @@ vi.mock('@contractor-ops/integrations/services/esign-service', () => ({
   resendSigningNotification: vi.fn(),
 }));
 
-vi.mock('../r2.js', () => ({
+vi.mock('../r2', () => ({
   createPresignedDownloadUrl: vi.fn(),
   createPresignedUploadUrl: vi.fn(),
   generateStorageKey: vi.fn(),

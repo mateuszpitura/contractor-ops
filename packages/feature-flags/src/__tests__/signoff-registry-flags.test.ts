@@ -3,8 +3,7 @@
 // `signoff-registry-flags-schema.ts`.
 
 import { describe, expect, it } from 'vitest';
-// biome-ignore lint/correctness/noUnresolvedImports: target of Plan 70-05
-import { FlagSignoffEntrySchema } from '../signoff-registry-flags-schema.js';
+import { FlagSignoffEntrySchema } from '../signoff-registry-flags-schema';
 
 describe('FlagSignoffEntrySchema (FOUND6-04)', () => {
   it('accepts a minimal PENDING entry', () => {

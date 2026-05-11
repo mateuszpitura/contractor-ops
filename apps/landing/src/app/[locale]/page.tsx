@@ -13,7 +13,7 @@ import { SocialProof } from '@/components/social-proof';
 import { StructuredData } from '@/components/structured-data';
 import type { Locale } from '@/i18n';
 import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
-import type { PricingPlan } from '@/lib/stripe';
+import type { PricingPlan } from '@/lib/pricing-types';
 import { fetchPricingPlans } from '@/lib/stripe';
 
 const log = createLogger({ service: 'landing-home-page' });

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getOrCreateTimesheet, submitTimesheet } from '../time-entry.js';
+import { getOrCreateTimesheet, submitTimesheet } from '../time-entry';
 
 const mockPrisma = {
   timesheet: {

@@ -3,7 +3,7 @@ import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clock
 import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { TRPCError } from '@trpc/server';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
 

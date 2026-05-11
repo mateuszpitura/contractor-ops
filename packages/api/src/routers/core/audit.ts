@@ -1,11 +1,11 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
-import { router } from '../../init.js';
-import { requirePermission } from '../../middleware/rbac.js';
-import { tenantProcedure } from '../../middleware/tenant.js';
-import { requireTier } from '../../middleware/tier.js';
-import { generateAuditCsv } from '../../services/report-export.js';
+import { router } from '../../init';
+import { requirePermission } from '../../middleware/rbac';
+import { tenantProcedure } from '../../middleware/tenant';
+import { requireTier } from '../../middleware/tier';
+import { generateAuditCsv } from '../../services/report-export';
 
 // ---------------------------------------------------------------------------
 // Helpers

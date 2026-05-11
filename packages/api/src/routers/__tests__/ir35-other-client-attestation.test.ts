@@ -23,7 +23,7 @@ vi.mock('@contractor-ops/feature-flags', async importOriginal => {
 // Phase 59 Plan 59-03 Task 2 — ir35Attestation router contract tests.
 import { describe, expect, it } from 'vitest';
 
-import { ir35AttestationRouter } from '../compliance/ir35-other-client-attestation.js';
+import { ir35AttestationRouter } from '../compliance/ir35-other-client-attestation';
 
 describe('ir35Attestation router (Phase 59 · CLASS-06 support)', () => {
   it('exposes the 3 required procedures', () => {

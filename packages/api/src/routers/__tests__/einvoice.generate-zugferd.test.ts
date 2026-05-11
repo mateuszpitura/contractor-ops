@@ -115,8 +115,8 @@ vi.mock('@contractor-ops/auth', () => ({
 }));
 
 vi.mock('@contractor-ops/db', () => ({
-  withRlsTransactions: <T,>(c: T) => c,
-  withRlsReads: <T,>(c: T) => c,
+  withRlsTransactions: <T>(c: T) => c,
+  withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
@@ -164,7 +164,7 @@ vi.mock('@contractor-ops/einvoice', () => {
   };
 });
 
-vi.mock('../../services/einvoice-finalize.js', () => ({
+vi.mock('../../services/einvoice-finalize', () => ({
   mapPrismaInvoiceToEInvoice: mockMapPrismaInvoiceToEInvoice,
   finalizeEInvoice: vi.fn(),
   EInvoiceInvoiceNotFoundError: class extends Error {
@@ -175,23 +175,23 @@ vi.mock('../../services/einvoice-finalize.js', () => ({
   },
 }));
 
-vi.mock('../../services/einvoice-lifecycle-fsm.js', () => ({
+vi.mock('../../services/einvoice-lifecycle-fsm', () => ({
   IllegalFsmTransitionError: class extends Error {},
   transitionTransmission: vi.fn(),
 }));
 
-vi.mock('../../services/peppol-adapter-factory.js', () => ({
+vi.mock('../../services/peppol-adapter-factory', () => ({
   buildStorecoveAdapterForOrg: vi.fn(),
 }));
 
-vi.mock('../../services/peppol-capability.js', () => ({
+vi.mock('../../services/peppol-capability', () => ({
   assertReceiverAcceptsXRechnung: vi.fn(),
   assertSenderParticipantActive: vi.fn(),
   PARTICIPANT_NOT_REACHABLE: 'participant-not-reachable',
   PEPPOL_PARTICIPANT_NOT_ACTIVE: 'participant-not-active',
 }));
 
-vi.mock('../../services/r2.js', () => ({
+vi.mock('../../services/r2', () => ({
   maxBytesForMime: vi.fn(() => 10485760),
   MAX_BYTES_BY_MIME: { 'application/pdf': 52428800 },
   signExistingDownload: mockSignExistingDownload,
@@ -208,7 +208,14 @@ vi.mock('../../services/r2.js', () => ({
 vi.mock('@sentry/nextjs', () => {
   const span = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
-    getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn(), setExtra: vi.fn(), clear: vi.fn() })),
+    getCurrentScope: vi.fn(() => ({
+      setUser: vi.fn(),
+      setTag: vi.fn(),
+      setTags: vi.fn(),
+      setContext: vi.fn(),
+      setExtra: vi.fn(),
+      clear: vi.fn(),
+    })),
     setUser: vi.fn(),
     setTag: vi.fn(),
     setTags: vi.fn(),
@@ -261,8 +268,8 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
 import { createHash } from 'node:crypto';
 
 import { TRPCError } from '@trpc/server';
-import { createCallerFactory } from '../../init.js';
-import { einvoiceRouter } from '../core/einvoice.js';
+import { createCallerFactory } from '../../init';
+import { einvoiceRouter } from '../core/einvoice';
 
 const createCaller = createCallerFactory(einvoiceRouter);
 
@@ -312,8 +319,8 @@ function invoiceRow(overrides: Record<string, unknown> = {}) {
     organizationId: ORG_A,
     eInvoiceLifecycle: null,
     // Phase 68 D-06 cascade defaults — empty arrays mean no Skonto.
-    skontoTerms: [] as Array<unknown>,
-    contractor: { id: 'ctr_default', billingProfiles: [] as Array<unknown> },
+    skontoTerms: [] as unknown[],
+    contractor: { id: 'ctr_default', billingProfiles: [] as unknown[] },
     ...overrides,
   };
 }

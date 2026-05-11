@@ -1,6 +1,6 @@
 import type { TimeEntry } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
-import type { DbClient } from './types.js';
+import type { DbClient } from './types';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
 

@@ -1,6 +1,6 @@
 // Phase 70 D-03 structured-diff formatter for logs-guard offences.
 
-import type { LogsGuardOffence } from './run-guard.js';
+import type { LogsGuardOffence } from './run-guard';
 
 export function formatLogsOffences(offences: readonly LogsGuardOffence[]): string {
   if (offences.length === 0) return '';
