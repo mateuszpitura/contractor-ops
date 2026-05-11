@@ -1037,7 +1037,7 @@
       "yellow": "Ostrzeżenie",
       "red": "Krytyczne",
       "caution": "Caution",
-      "atRisk": "At Risk"
+      "atRisk": "Zagrożony"
     },
     "lifecycle": {
       "draft": "Szkic",
@@ -1121,14 +1121,14 @@
         "ended": "Ended"
       },
       "emptyState": {
-        "heading": "No contractors yet",
-        "body": "Add your first contractor to start managing contracts, invoices, and payments.",
-        "addContractor": "Add contractor",
+        "heading": "Brak kontrahentów",
+        "body": "Dodaj pierwszego kontrahenta, aby rozpocząć zarządzanie umowami, fakturami i płatnościami.",
+        "addContractor": "Dodaj kontrahenta",
         "import": "Import"
       },
-      "noMatch": "No contractors match your filters",
-      "clearAllFilters": "Clear all filters",
-      "searchPlaceholder": "Search contractors...",
+      "noMatch": "Żaden kontrahent nie pasuje do filtrów",
+      "clearAllFilters": "Wyczyść wszystkie filtry",
+      "searchPlaceholder": "Szukaj kontrahentów...",
       "updating": "Updating...",
       "paginationOf": "of"
     },
@@ -2411,10 +2411,10 @@
       "decisionDelegated": "Delegowano"
     },
     "pageDescription": "Przeglądaj i zatwierdzaj oczekujące elementy",
-    "tabProfileChanges": "Profile Changes",
+    "tabProfileChanges": "Zmiany profilu",
     "changeRequests": {
-      "noPendingHeading": "No Pending Change Requests",
-      "noPendingBody": "Profile change requests from contractors will appear here when submitted."
+      "noPendingHeading": "Brak oczekujących wniosków o zmianę",
+      "noPendingBody": "Wnioski kontrahentów o zmianę profilu pojawią się tutaj po przesłaniu."
     }
   },
   "Notifications": {
@@ -2446,7 +2446,7 @@
       "invoiceReceived": "Nowa faktura: {invoiceNumber}"
     },
     "itemBody": {
-      "approvalRequest": "{contractorName} - {amount} {currency}. SLA: {slaHours}h",
+      "approvalRequest": "{contractorName} – {amount} {currency}. SLA: {slaHours}h",
       "approvalApproved": "Zaakceptowana przez {approverName}",
       "approvalRejected": "Odrzucona przez {approverName}: {comment}",
       "taskAssigned": "Workflow: {workflowName} dla {contractorName}",
@@ -3602,12 +3602,12 @@
         "uploadFailed": "Nie udało się przesłać pliku. Sprawdź połączenie i spróbuj ponownie.",
         "submitFailed": "Nie udało się złożyć faktury. Dane zostały zapisane. Spróbuj ponownie."
       },
-      "ocrExtracted": "Invoice data extracted -- please review before submitting",
-      "ocrFailed": "Invoice extraction failed. Please try again or enter data manually.",
-      "ocrPrefillBanner": "We've pre-filled some fields from your invoice. Please review before submitting.",
-      "viewPdf": "View PDF",
-      "sellerNip": "Seller NIP",
-      "buyerNip": "Buyer NIP"
+      "ocrExtracted": "Dane faktury odczytane — sprawdź przed wysłaniem",
+      "ocrFailed": "Odczytanie faktury nie powiodło się. Spróbuj ponownie lub wprowadź dane ręcznie.",
+      "ocrPrefillBanner": "Część pól została wstępnie wypełniona z Twojej faktury. Sprawdź dane przed wysłaniem.",
+      "viewPdf": "Zobacz PDF",
+      "sellerNip": "NIP sprzedawcy",
+      "buyerNip": "NIP nabywcy"
     },
     "submitSuccess": {
       "title": "Faktura złożona",
@@ -3771,22 +3771,22 @@
       "megabytes": "{size} MB"
     },
     "timeTracking": {
-      "title": "Time Entries",
-      "pastTimesheets": "Past Timesheets",
-      "addEntry": "Add Entry",
-      "noEntriesHeading": "No time entries yet",
-      "noEntriesBody": "Start logging hours using the timesheet grid above, or add a single entry.",
+      "title": "Wpisy czasu pracy",
+      "pastTimesheets": "Poprzednie karty pracy",
+      "addEntry": "Dodaj wpis",
+      "noEntriesHeading": "Brak wpisów czasu pracy",
+      "noEntriesBody": "Rozpocznij rejestrowanie godzin w siatce karty pracy powyżej lub dodaj pojedynczy wpis.",
       "columns": {
         "period": "Period",
-        "totalHours": "Total Hours",
+        "totalHours": "Łącznie godzin",
         "status": "Status",
         "submitted": "Submitted"
       },
       "toast": {
-        "entryAdded": "Time entry added",
-        "entryAddFailed": "Failed to add time entry",
-        "timesheetSubmitted": "Timesheet submitted for review",
-        "timesheetSubmitFailed": "Failed to submit timesheet"
+        "entryAdded": "Wpis czasu pracy dodany",
+        "entryAddFailed": "Nie udało się dodać wpisu czasu pracy",
+        "timesheetSubmitted": "Karta pracy przesłana do przeglądu",
+        "timesheetSubmitFailed": "Nie udało się przesłać karty pracy"
       }
     }
   },
@@ -4546,32 +4546,32 @@
       "buyMore": "Kup wiecej"
     },
     "topUp": {
-      "title": "Buy OCR Credits",
-      "description": "Select a credit bundle. You will be redirected to Stripe to complete the purchase.",
-      "selectPlaceholder": "Select bundle size",
-      "priceNote": "Exact price will be confirmed on the Stripe checkout page.",
+      "title": "Kup kredyty OCR",
+      "description": "Wybierz pakiet kredytów. Zostaniesz przekierowany do Stripe w celu sfinalizowania zakupu.",
+      "selectPlaceholder": "Wybierz rozmiar pakietu",
+      "priceNote": "Dokładna cena zostanie potwierdzona na stronie płatności Stripe.",
       "cancel": "Cancel",
-      "confirm": "Continue to checkout",
+      "confirm": "Przejdź do płatności",
       "errors": {
-        "checkoutFailed": "Failed to start checkout. Please try again.",
-        "priceNotConfigured": "Top-up price not configured."
+        "checkoutFailed": "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
+        "priceNotConfigured": "Cena doładowania nie została skonfigurowana."
       }
     },
     "overlay": {
-      "paymentFailed": "Payment failed.",
-      "paymentFailedBody": "Update your payment method to avoid service interruption.",
-      "goToBilling": "Go to billing"
+      "paymentFailed": "Płatność nie powiodła się.",
+      "paymentFailedBody": "Zaktualizuj metodę płatności, aby uniknąć przerwy w działaniu usługi.",
+      "goToBilling": "Przejdź do rozliczeń"
     }
   },
   "Time": {
-    "pageTitle": "Time Tracking",
+    "pageTitle": "Rejestracja czasu pracy",
     "tabs": {
-      "pendingReviews": "Pending Reviews",
-      "allEntries": "All Entries",
+      "pendingReviews": "Oczekujące do przeglądu",
+      "allEntries": "Wszystkie wpisy",
       "reconciliation": "Reconciliation"
     },
     "filters": {
-      "allStatuses": "All Statuses",
+      "allStatuses": "Wszystkie statusy",
       "draft": "Draft",
       "submitted": "Submitted",
       "approved": "Approved",
@@ -4581,121 +4581,121 @@
     "columns": {
       "contractor": "Contractor",
       "period": "Period",
-      "totalHours": "Total Hours",
+      "totalHours": "Łącznie godzin",
       "status": "Status"
     },
     "emptyStates": {
-      "noPendingReviewsHeading": "No pending reviews",
-      "noPendingReviewsBody": "All timesheets have been reviewed. Check back when contractors submit new entries.",
-      "noTimeEntriesHeading": "No time entries",
-      "noTimeEntriesBody": "Time entries will appear here once contractors start logging hours."
+      "noPendingReviewsHeading": "Brak oczekujących przeglądów",
+      "noPendingReviewsBody": "Wszystkie karty pracy zostały przejrzane. Wróć tutaj, gdy kontrahenci prześlą nowe wpisy.",
+      "noTimeEntriesHeading": "Brak wpisów czasu pracy",
+      "noTimeEntriesBody": "Wpisy czasu pracy pojawią się tutaj, gdy kontrahenci zaczną rejestrować godziny."
     },
     "toast": {
-      "approved": "Timesheet approved",
-      "rejected": "Timesheet rejected",
-      "bulkApproved": "{count} timesheet(s) approved",
-      "bulkRejected": "{count} timesheet(s) rejected"
+      "approved": "Karta pracy zaakceptowana",
+      "rejected": "Karta pracy odrzucona",
+      "bulkApproved": "{count, plural, one {# karta pracy zaakceptowana} few {# karty pracy zaakceptowane} many {# kart pracy zaakceptowanych} other {# kart pracy zaakceptowanych}}",
+      "bulkRejected": "{count, plural, one {# karta pracy odrzucona} few {# karty pracy odrzucone} many {# kart pracy odrzuconych} other {# kart pracy odrzuconych}}"
     },
     "errors": {
-      "failedToApprove": "Failed to approve timesheet",
-      "failedToReject": "Failed to reject timesheet",
-      "failedToApproveTimesheets": "Failed to approve timesheets",
-      "failedToRejectTimesheets": "Failed to reject timesheets"
+      "failedToApprove": "Nie udało się zaakceptować karty pracy",
+      "failedToReject": "Nie udało się odrzucić karty pracy",
+      "failedToApproveTimesheets": "Nie udało się zaakceptować kart pracy",
+      "failedToRejectTimesheets": "Nie udało się odrzucić kart pracy"
     },
     "detail": {
-      "notFoundHeading": "Timesheet not found",
-      "notFoundBody": "The requested timesheet could not be found. It may have been removed or the URL is incorrect.",
-      "backToTimeTracking": "Back to Time Tracking"
+      "notFoundHeading": "Nie znaleziono karty pracy",
+      "notFoundBody": "Nie można znaleźć żądanej karty pracy. Mogła zostać usunięta lub adres URL jest nieprawidłowy.",
+      "backToTimeTracking": "Powrót do rejestracji czasu pracy"
     }
   },
   "Zatca": {
     "onboarding": {
-      "title": "ZATCA Onboarding",
+      "title": "Wdrożenie ZATCA",
       "steps": {
-        "taxDetails": "Tax Details",
+        "taxDetails": "Dane podatkowe",
         "taxDetailsShort": "Tax",
-        "csrGeneration": "CSR Generation",
+        "csrGeneration": "Generowanie CSR",
         "csrGenerationShort": "CSR",
         "complianceCsid": "Compliance CSID",
         "complianceCsidShort": "CSID",
-        "complianceChecks": "Compliance Checks",
+        "complianceChecks": "Testy zgodności",
         "complianceChecksShort": "Checks",
-        "productionCertificate": "Production Certificate",
+        "productionCertificate": "Certyfikat produkcyjny",
         "productionCertificateShort": "Cert"
       }
     },
     "csrGeneration": {
-      "title": "Step 2 of 5: Generate Certificate Request",
-      "description": "A Certificate Signing Request will be generated using your tax details from Step 1.",
-      "keyType": "Key Type:",
-      "keyTypeValue": "ECDSA P-256 (recommended by ZATCA)",
-      "privateKeyNote": "The private key will be stored securely in your organization's secret vault. It never leaves the server.",
-      "csrPreviewLabel": "CSR Preview (read-only)",
+      "title": "Krok 2 z 5: Wygeneruj wniosek o certyfikat",
+      "description": "Wniosek o podpisanie certyfikatu (CSR) zostanie wygenerowany na podstawie danych podatkowych z kroku 1.",
+      "keyType": "Typ klucza:",
+      "keyTypeValue": "ECDSA P-256 (zalecane przez ZATCA)",
+      "privateKeyNote": "Klucz prywatny zostanie bezpiecznie zapisany w sejfie sekretów Twojej organizacji. Nie opuszcza serwera.",
+      "csrPreviewLabel": "Podgląd CSR (tylko do odczytu)",
       "back": "Back",
       "next": "Next",
-      "generateCsr": "Generate CSR",
+      "generateCsr": "Wygeneruj CSR",
       "toast": {
-        "success": "CSR generated successfully",
-        "error": "Failed to generate CSR"
+        "success": "CSR wygenerowane pomyślnie",
+        "error": "Nie udało się wygenerować CSR"
       }
     },
     "complianceChecks": {
-      "title": "Step 4 of 5: Run Compliance Checks",
+      "title": "Krok 4 z 5: Uruchom testy zgodności",
       "description": "6 test invoices will be submitted to ZATCA's sandbox to verify your setup.",
-      "runChecks": "Run Compliance Checks",
-      "resultsLabel": "Compliance check results",
+      "runChecks": "Uruchom testy zgodności",
+      "resultsLabel": "Wyniki testów zgodności",
       "back": "Back",
       "next": "Next",
       "testLabels": {
-        "standardTaxInvoice": "Standard tax invoice",
-        "standardCreditNote": "Standard credit note",
-        "standardDebitNote": "Standard debit note",
-        "simplifiedInvoice": "Simplified invoice",
-        "simplifiedCreditNote": "Simplified credit note",
-        "simplifiedDebitNote": "Simplified debit note"
+        "standardTaxInvoice": "Standardowa faktura podatkowa",
+        "standardCreditNote": "Standardowa nota kredytowa",
+        "standardDebitNote": "Standardowa nota debetowa",
+        "simplifiedInvoice": "Faktura uproszczona",
+        "simplifiedCreditNote": "Uproszczona nota kredytowa",
+        "simplifiedDebitNote": "Uproszczona nota debetowa"
       },
       "toast": {
-        "allPassed": "All 6 compliance checks passed. Your setup is ready for production.",
-        "someFailed": "Compliance check failed: {failedCount} test(s) did not pass. Review your tax details and try again.",
-        "error": "Failed to run compliance checks"
+        "allPassed": "Wszystkie 6 testów zgodności zakończonych powodzeniem. Konfiguracja jest gotowa do produkcji.",
+        "someFailed": "Testy zgodności nieudane: {failedCount} test(y) nie przeszły. Sprawdź dane podatkowe i spróbuj ponownie.",
+        "error": "Nie udało się uruchomić testów zgodności"
       }
     }
   },
   "Peppol": {
     "statusCard": {
-      "title": "Peppol Network",
-      "notConnected": "Not connected to Peppol",
-      "connectDescription": "Connect to the Peppol network to send and receive e-invoices with UAE trading partners. You will need your TRN and ASP credentials.",
-      "connect": "Connect to Peppol",
-      "participantId": "Participant ID",
-      "aspProvider": "ASP Provider",
-      "lastSync": "Last Sync",
+      "title": "Sieć Peppol",
+      "notConnected": "Brak połączenia z Peppol",
+      "connectDescription": "Połącz się z siecią Peppol, aby wysyłać i odbierać e-faktury z partnerami handlowymi w ZEA. Potrzebne będą dane TRN oraz uwierzytelniające ASP.",
+      "connect": "Połącz z Peppol",
+      "participantId": "ID uczestnika",
+      "aspProvider": "Dostawca ASP",
+      "lastSync": "Ostatnia synchronizacja",
       "sent": "Sent",
       "received": "Received",
       "failed": "Failed",
       "settings": "Settings",
       "disconnect": "Disconnect",
-      "disconnectTitle": "Disconnect Peppol",
-      "disconnectDescription": "Your Participant ID will be deregistered and you will not be able to send or receive Peppol invoices. Continue?",
+      "disconnectTitle": "Rozłącz Peppol",
+      "disconnectDescription": "Twój identyfikator uczestnika zostanie wyrejestrowany i nie będziesz w stanie wysyłać ani odbierać faktur Peppol. Kontynuować?",
       "disconnectCancel": "Cancel",
       "disconnectConfirm": "Disconnect",
       "disconnecting": "Disconnecting...",
       "toast": {
-        "disconnected": "Disconnected from Peppol network",
-        "disconnectError": "Failed to disconnect"
+        "disconnected": "Rozłączono z siecią Peppol",
+        "disconnectError": "Nie udało się rozłączyć"
       }
     },
     "transmission": {
-      "title": "Peppol Transmission",
+      "title": "Transmisja Peppol",
       "created": "Created",
       "transmitted": "Transmitted",
       "delivered": "Delivered",
-      "aspRef": "ASP Ref:",
+      "aspRef": "Ref. ASP:",
       "retrying": "Retrying...",
-      "retryTransmission": "Retry Transmission",
+      "retryTransmission": "Ponów transmisję",
       "toast": {
-        "retryQueued": "Transmission queued for retry",
-        "retryFailed": "Retry failed"
+        "retryQueued": "Transmisja zakolejkowana do ponowienia",
+        "retryFailed": "Ponowienie nie powiodło się"
       }
     }
   },
@@ -4708,40 +4708,40 @@
     },
     "jira": {
       "taskConfig": {
-        "configSaved": "Jira task configuration saved",
-        "configSaveFailed": "Failed to save Jira task configuration",
-        "enableToggle": "Create Jira issue when task activates",
-        "notConfigured": "Not configured",
-        "configure": "Configure Jira"
+        "configSaved": "Konfiguracja zadania Jira zapisana",
+        "configSaveFailed": "Nie udało się zapisać konfiguracji zadania Jira",
+        "enableToggle": "Utwórz zgłoszenie Jira po aktywacji zadania",
+        "notConfigured": "Nie skonfigurowano",
+        "configure": "Konfiguruj Jira"
       },
       "statusMapping": {
-        "title": "Status Mapping",
-        "description": "Map workflow task statuses to Jira transitions for {projectName}.",
-        "descriptionDefault": "Map workflow task statuses to Jira transitions.",
-        "jiraProject": "Jira Project",
-        "selectProject": "Select a project",
-        "workflowStatus": "Workflow Status",
-        "jiraTransition": "Jira Transition",
-        "notMapped": "Not mapped",
-        "unmappedTooltip": "Not mapped -- status changes for this state will be ignored",
-        "discardChanges": "Discard Changes",
-        "saveMapping": "Save Mapping",
+        "title": "Mapowanie statusów",
+        "description": "Zmapuj statusy zadań workflow na przejścia Jira dla {projectName}.",
+        "descriptionDefault": "Zmapuj statusy zadań workflow na przejścia Jira.",
+        "jiraProject": "Projekt Jira",
+        "selectProject": "Wybierz projekt",
+        "workflowStatus": "Status workflow",
+        "jiraTransition": "Przejście Jira",
+        "notMapped": "Niezmapowane",
+        "unmappedTooltip": "Niezmapowane — zmiany statusu dla tego stanu będą ignorowane",
+        "discardChanges": "Odrzuć zmiany",
+        "saveMapping": "Zapisz mapowanie",
         "toast": {
-          "saved": "Status mapping saved",
-          "saveFailed": "Failed to save status mapping"
+          "saved": "Mapowanie statusów zapisane",
+          "saveFailed": "Nie udało się zapisać mapowania statusów"
         }
       }
     },
     "linear": {
       "taskConfig": {
-        "configSaved": "Linear task configuration saved",
-        "configSaveFailed": "Failed to save Linear task configuration",
-        "notConfigured": "Not configured"
+        "configSaved": "Konfiguracja zadania Linear zapisana",
+        "configSaveFailed": "Nie udało się zapisać konfiguracji zadania Linear",
+        "notConfigured": "Nie skonfigurowano"
       },
       "statusMapping": {
         "toast": {
-          "saved": "Status mapping saved",
-          "saveFailed": "Failed to save status mapping. Please try again."
+          "saved": "Mapowanie statusów zapisane",
+          "saveFailed": "Nie udało się zapisać mapowania statusów. Spróbuj ponownie."
         }
       }
     }
@@ -4749,19 +4749,19 @@
   "Api": {
     "email": {
       "subject": {
-        "approvalRequest": "Action required: Approve invoice {invoiceNumber}",
-        "approvalDecision": "Invoice {invoiceNumber} {decision}",
-        "taskAssigned": "New task assigned: {taskName}",
-        "taskOverdue": "Overdue: {taskName} is past due",
-        "contractExpiring": "Contract expiring soon: {contractTitle}",
-        "invoiceReceived": "New invoice received from {contractorName}"
+        "approvalRequest": "Wymagane działanie: zaakceptuj fakturę {invoiceNumber}",
+        "approvalDecision": "Faktura {invoiceNumber} {decision}",
+        "taskAssigned": "Nowe przypisane zadanie: {taskName}",
+        "taskOverdue": "Przeterminowane: {taskName} po terminie",
+        "contractExpiring": "Umowa wkrótce wygasa: {contractTitle}",
+        "invoiceReceived": "Nowa faktura otrzymana od {contractorName}"
       },
       "labels": {
-        "viewInApp": "View in Contractor Ops",
-        "managePrefs": "Manage notification preferences",
+        "viewInApp": "Zobacz w Contractor Ops",
+        "managePrefs": "Zarządzaj preferencjami powiadomień",
         "unsubscribe": "Unsubscribe",
-        "footerText": "Contractor Ops - Contractor operations platform",
-        "reviewAndApprove": "Review & Approve",
+        "footerText": "Contractor Ops – Platforma operacyjna dla kontrahentów",
+        "reviewAndApprove": "Przejrzyj i zaakceptuj",
         "invoice": "Invoice",
         "contractor": "Contractor",
         "amount": "Amount",
@@ -4771,7 +4771,7 @@
         "task": "Task",
         "workflow": "Workflow",
         "due": "Due",
-        "wasDue": "Was due",
+        "wasDue": "Termin minął",
         "contract": "Contract",
         "expires": "Expires",
         "from": "From"
@@ -4780,66 +4780,66 @@
     "notifications": {
       "equipment": {
         "returnApproved": {
-          "title": "Return request approved",
-          "body": "Your return request has been approved. A shipping label has been generated."
+          "title": "Wniosek o zwrot zatwierdzony",
+          "body": "Twój wniosek o zwrot został zatwierdzony. Etykieta wysyłkowa została wygenerowana."
         },
         "returnRejected": {
-          "title": "Return request rejected",
-          "body": "Your return request was rejected."
+          "title": "Wniosek o zwrot odrzucony",
+          "body": "Twój wniosek o zwrot został odrzucony."
         },
         "returnRequested": {
-          "title": "New equipment return request",
-          "body": "A contractor requested an equipment return."
+          "title": "Nowy wniosek o zwrot sprzętu",
+          "body": "Kontrahent zgłosił zwrot sprzętu."
         }
       }
     },
     "workflow": {
       "templates": {
         "onboarding": {
-          "collectNda": "Collect NDA",
-          "signContract": "Sign contract",
-          "setupItAccess": "Set up IT access",
-          "setupFinance": "Set up finance",
-          "provisionEquipment": "Provision equipment",
-          "teamIntroMeeting": "Team introduction meeting",
-          "knowledgeTransfer": "Knowledge transfer"
+          "collectNda": "Zbierz NDA",
+          "signContract": "Podpisz umowę",
+          "setupItAccess": "Skonfiguruj dostęp IT",
+          "setupFinance": "Skonfiguruj dane finansowe",
+          "provisionEquipment": "Przydziel sprzęt",
+          "teamIntroMeeting": "Spotkanie zapoznawcze z zespołem",
+          "knowledgeTransfer": "Przekazanie wiedzy"
         },
         "offboarding": {
-          "knowledgeTransfer": "Knowledge transfer",
-          "revokeItAccess": "Revoke IT access",
-          "returnEquipment": "Return equipment",
-          "financeWrapUp": "Finance wrap-up",
-          "finalDocumentation": "Final documentation"
+          "knowledgeTransfer": "Przekazanie wiedzy",
+          "revokeItAccess": "Odbierz dostęp IT",
+          "returnEquipment": "Zwróć sprzęt",
+          "financeWrapUp": "Zamknięcie spraw finansowych",
+          "finalDocumentation": "Końcowa dokumentacja"
         }
       }
     },
     "errors": {
       "tenant": {
-        "noActiveOrganization": "No active organization. Please select an organization first."
+        "noActiveOrganization": "Brak aktywnej organizacji. Najpierw wybierz organizację."
       },
       "upload": {
-        "rateLimitExceeded": "Upload rate limit exceeded. Maximum 10 uploads per minute. Try again shortly."
+        "rateLimitExceeded": "Przekroczono limit przesyłania plików. Maksymalnie 10 przesyłań na minutę. Spróbuj ponownie za chwilę."
       },
       "zatca": {
-        "apiClientUnavailable": "ZATCA API client not available. Ensure e-invoicing engine is configured.",
-        "taxDetailsRequired": "Tax details must be saved before generating CSR.",
-        "csrRequired": "CSR must be generated before requesting compliance CSID.",
-        "taxDetailsRequiredForCompliance": "Tax details required for compliance checks.",
-        "complianceCsidRequired": "Compliance CSID must be obtained before running compliance checks.",
-        "complianceChecksMustPass": "Compliance checks must pass before requesting production certificate."
+        "apiClientUnavailable": "Klient API ZATCA niedostępny. Upewnij się, że silnik e-fakturowania jest skonfigurowany.",
+        "taxDetailsRequired": "Dane podatkowe muszą zostać zapisane przed wygenerowaniem CSR.",
+        "csrRequired": "CSR musi zostać wygenerowane przed wnioskiem o compliance CSID.",
+        "taxDetailsRequiredForCompliance": "Dane podatkowe są wymagane do testów zgodności.",
+        "complianceCsidRequired": "Compliance CSID musi zostać uzyskane przed uruchomieniem testów zgodności.",
+        "complianceChecksMustPass": "Testy zgodności muszą zakończyć się powodzeniem przed wnioskiem o certyfikat produkcyjny."
       },
       "timesheet": {
-        "weekStartDateMustBeMonday": "Week start date must be a Monday.",
-        "notFound": "Timesheet not found.",
-        "canOnlyEditDraftOrRejected": "Can only edit DRAFT or REJECTED timesheets.",
-        "entryNotFound": "Time entry not found.",
-        "cannotEditImportedEntries": "Cannot edit imported entries.",
-        "cannotSubmit": "Timesheet cannot be submitted (wrong status or not found).",
-        "cannotApprove": "Timesheet cannot be approved (must be SUBMITTED).",
-        "cannotReject": "Timesheet cannot be rejected (must be SUBMITTED)."
+        "weekStartDateMustBeMonday": "Data początku tygodnia musi być poniedziałkiem.",
+        "notFound": "Nie znaleziono karty pracy.",
+        "canOnlyEditDraftOrRejected": "Można edytować wyłącznie karty pracy o statusie DRAFT lub REJECTED.",
+        "entryNotFound": "Nie znaleziono wpisu czasu pracy.",
+        "cannotEditImportedEntries": "Nie można edytować zaimportowanych wpisów.",
+        "cannotSubmit": "Karty pracy nie można wysłać (nieprawidłowy status lub nie znaleziono).",
+        "cannotApprove": "Karty pracy nie można zaakceptować (musi mieć status SUBMITTED).",
+        "cannotReject": "Karty pracy nie można odrzucić (musi mieć status SUBMITTED)."
       },
       "approval": {
-        "noUserWithRole": "No user with the required role found."
+        "noUserWithRole": "Nie znaleziono użytkownika z wymaganą rolą."
       }
     }
   },
@@ -4882,7 +4882,7 @@
     }
   },
   "Classification": {
-    "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
+    "_NOTE": "Frazy prawne (legal-locked) znajdują się w packages/validators/src/legal/{de,disclaimers}.ts. Nie duplikuj wartości CLASSIFICATION_* ani DISCLAIMER_* w tym pliku.",
     "pageTitle": "Ocena klasyfikacji",
     "pageSubtitle": "Oceń ryzyko statusu zatrudnienia dla tego zlecenia.",
     "start": "Uruchom ocenę klasyfikacji",
@@ -5220,30 +5220,30 @@
     "Settings": {
       "_NOTE": "AI-first-pass translation pending review",
       "h1": "E-invoicing",
-      "subline": "Manage your Peppol participant registration, Leitweg-IDs for German public-sector invoicing, and e-invoice compliance settings.",
+      "subline": "Zarządzaj rejestracją uczestnika Peppol, identyfikatorami Leitweg-ID dla niemieckich faktur sektora publicznego oraz ustawieniami zgodności e-faktur.",
       "PeppolCard": {
-        "ctaNotRegistered": "Register Peppol participant",
-        "ctaRegistered": "Manage participant",
-        "emptyHeading": "Not registered on Peppol",
-        "emptyBody": "Register your organisation once to send XRechnung e-invoices to UK public-sector buyers and receive delivery acknowledgements."
+        "ctaNotRegistered": "Zarejestruj uczestnika Peppol",
+        "ctaRegistered": "Zarządzaj uczestnikiem",
+        "emptyHeading": "Brak rejestracji w Peppol",
+        "emptyBody": "Zarejestruj organizację jednorazowo, aby wysyłać e-faktury XRechnung do brytyjskich nabywców z sektora publicznego i odbierać potwierdzenia dostarczenia."
       },
       "LeitwegIdCard": {
-        "ctaCreate": "Create Leitweg-ID",
-        "emptyHeading": "No Leitweg-IDs registered",
-        "emptyBody": "Add a Leitweg-ID for each German public-sector buyer you invoice. You can set defaults per contractor and per-contract overrides."
+        "ctaCreate": "Utwórz Leitweg-ID",
+        "emptyHeading": "Brak zarejestrowanych Leitweg-ID",
+        "emptyBody": "Dodaj Leitweg-ID dla każdego niemieckiego nabywcy z sektora publicznego, któremu wystawiasz faktury. Możesz ustawić wartości domyślne na poziomie kontrahenta oraz nadpisania per umowa."
       }
     },
     "InvoicesList": {
       "_NOTE": "AI-first-pass translation pending review",
       "SummaryTile": {
-        "heading": "E-invoicing compliance",
-        "bodyPattern": "{validCount} of {totalCount} invoices are EN 16931 compliant.",
-        "ctaNeedsAttention": "Review {needsAttentionCount} invoice(s)"
+        "heading": "Zgodność e-fakturowania",
+        "bodyPattern": "{validCount} z {totalCount} faktur jest zgodnych z EN 16931.",
+        "ctaNeedsAttention": "Przejrzyj {needsAttentionCount} faktur(ę)"
       },
       "Filter": {
-        "label": "Filter by compliance",
+        "label": "Filtruj wg zgodności",
         "all": "All",
-        "notGenerated": "Not generated",
+        "notGenerated": "Nie wygenerowano",
         "valid": "Valid",
         "warnings": "Warnings",
         "invalid": "Invalid",
@@ -5252,7 +5252,7 @@
       },
       "Cell": {
         "columnHeader": "E-invoice",
-        "notGenerated": "Not generated",
+        "notGenerated": "Nie wygenerowano",
         "valid": "Valid",
         "warnings": "Warnings",
         "invalid": "Invalid",
@@ -5260,151 +5260,151 @@
         "failed": "Failed"
       },
       "Empty": {
-        "heading": "No invoices in this state",
-        "body": "Try a different filter or clear filters to see all invoices."
+        "heading": "Brak faktur w tym stanie",
+        "body": "Spróbuj innego filtra lub wyczyść filtry, aby zobaczyć wszystkie faktury."
       }
     },
     "InvoiceTab": {
       "_NOTE": "AI-first-pass translation pending review",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
-      "generationNotGeneratedBody": "No XRechnung XML has been generated for this invoice yet.",
-      "generateCta": "Generate XML",
-      "finalizeCta": "Finalize + validate",
-      "generationCaptionPattern": "Generated {relativeTime} · Rule set {ruleSetVersion} · SHA-256 {hashPrefix8}…",
-      "downloadXmlButton": "Download XML",
-      "downloadXmlHelper": "Expires in 5 minutes — generate a fresh link if needed.",
+      "generationNotGeneratedBody": "Dla tej faktury nie wygenerowano jeszcze XML w formacie XRechnung.",
+      "generateCta": "Wygeneruj XML",
+      "finalizeCta": "Sfinalizuj i waliduj",
+      "generationCaptionPattern": "Wygenerowano {relativeTime} · Zestaw reguł {ruleSetVersion} · SHA-256 {hashPrefix8}…",
+      "downloadXmlButton": "Pobierz XML",
+      "downloadXmlHelper": "Wygasa za 5 minut — wygeneruj nowy link, jeśli potrzeba.",
       "validationHeading": "Validation",
-      "validationNotValidatedBody": "Validation has not run yet. Finalize the invoice to validate against KoSIT.",
-      "validationCta": "Validate now",
-      "layer1Label": "Layer 1 — XSD schema",
-      "layer2Label": "Layer 2 — EN 16931 Schematron",
-      "layer3Label": "Layer 3 — XRechnung CIUS Schematron",
+      "validationNotValidatedBody": "Walidacja jeszcze nie uruchomiona. Sfinalizuj fakturę, aby zwalidować ją wobec KoSIT.",
+      "validationCta": "Waliduj teraz",
+      "layer1Label": "Warstwa 1 — schemat XSD",
+      "layer2Label": "Warstwa 2 — Schematron EN 16931",
+      "layer3Label": "Warstwa 3 — Schematron XRechnung CIUS",
       "layerResultPass": "Passed",
-      "layerResultWarningsPattern": "{count} warning(s)",
-      "layerResultFailPattern": "{count} error(s)",
+      "layerResultWarningsPattern": "{count, plural, one {# ostrzeżenie} few {# ostrzeżenia} many {# ostrzeżeń} other {# ostrzeżeń}}",
+      "layerResultFailPattern": "{count, plural, one {# błąd} few {# błędy} many {# błędów} other {# błędów}}",
       "svrlIssueListHeading": "Issues",
-      "svrlIssueRowPattern": "[{severity}] {ruleId} — {message} at {xpath}",
-      "downloadReportButton": "Download full report",
-      "downloadReportHelper": "Opens the full KoSIT HTML report with rule highlighting.",
+      "svrlIssueRowPattern": "[{severity}] {ruleId} — {message} w {xpath}",
+      "downloadReportButton": "Pobierz pełny raport",
+      "downloadReportHelper": "Otwiera pełny raport HTML KoSIT z podświetleniem reguł.",
       "transmissionHeading": "Transmission",
-      "transmissionNotSentBody": "This e-invoice has not been transmitted.",
-      "sendCta": "Send via Peppol",
-      "transmittedCaptionPattern": "Transmitted {relativeTime} · Message {transmissionId}",
-      "deliveryAckPattern": "Delivered {relativeTime}",
-      "transmissionHistoryHeading": "Transmission history",
+      "transmissionNotSentBody": "Ta e-faktura nie została jeszcze wysłana.",
+      "sendCta": "Wyślij przez Peppol",
+      "transmittedCaptionPattern": "Wysłano {relativeTime} · Wiadomość {transmissionId}",
+      "deliveryAckPattern": "Dostarczono {relativeTime}",
+      "transmissionHistoryHeading": "Historia transmisji",
       "transmissionEventPattern": "{occurredAt} — {eventType} {detailsOneLiner}",
-      "leitwegResolvedPattern": "Resolved Leitweg-ID: {leitwegIdValue} ({source})",
-      "leitwegSourceContract": "from contract override",
-      "leitwegSourceContractorDefault": "from contractor default",
-      "leitwegMissingWarningHeading": "Leitweg-ID missing for German public-sector buyer",
-      "leitwegMissingWarningBody": "This buyer is marked as public-sector. Add a Leitweg-ID to this contractor or contract before sending."
+      "leitwegResolvedPattern": "Rozwiązany Leitweg-ID: {leitwegIdValue} ({source})",
+      "leitwegSourceContract": "z nadpisania umowy",
+      "leitwegSourceContractorDefault": "z wartości domyślnej kontrahenta",
+      "leitwegMissingWarningHeading": "Brak Leitweg-ID dla niemieckiego nabywcy z sektora publicznego",
+      "leitwegMissingWarningBody": "Ten nabywca jest oznaczony jako sektor publiczny. Przed wysyłką dodaj Leitweg-ID do kontrahenta lub umowy."
     },
     "LeitwegIdDialog": {
       "_NOTE": "AI-first-pass translation pending review",
-      "headingCreate": "Create Leitweg-ID",
-      "headingEdit": "Edit Leitweg-ID",
+      "headingCreate": "Utwórz Leitweg-ID",
+      "headingEdit": "Edytuj Leitweg-ID",
       "valueLabel": "Leitweg-ID",
-      "valueHelper": "Format: coarse digits (2–12) + optional refinement (up to 30 uppercase alphanumerics) + 2-digit check digit. Example: 1234567890-AGENCY-56.",
-      "descriptionLabel": "Description (optional)",
-      "descriptionHelper": "Internal label — e.g. “Bundesministerium für Finanzen, Abt. IV”.",
-      "contractorLabel": "Assign to contractor",
-      "contractLabel": "Or assign to a specific contract (overrides contractor default)",
-      "defaultToggle": "Set as default for this contractor",
-      "validFromLabel": "Valid from (optional)",
-      "validToLabel": "Valid until (optional)",
-      "notesLabel": "Notes (optional)",
-      "saveButton": "Save Leitweg-ID",
-      "errorInvalidCheckDigit": "This Leitweg-ID's check digit doesn't match the coarse + refinement parts. Please double-check with your public-sector buyer.",
-      "errorInvalidFormat": "Leitweg-ID must be 2–12 digits, optionally followed by `-<up to 30 uppercase alphanumerics>`, then `-<2-digit check digit>`.",
-      "errorDuplicate": "This Leitweg-ID is already registered in your organisation."
+      "valueHelper": "Format: cyfry zgrubne (2–12) + opcjonalne dookreślenie (do 30 znaków alfanumerycznych wielkich liter) + 2-cyfrowa suma kontrolna. Przykład: 1234567890-AGENCY-56.",
+      "descriptionLabel": "Opis (opcjonalnie)",
+      "descriptionHelper": "Etykieta wewnętrzna — np. „Bundesministerium für Finanzen, Abt. IV”.",
+      "contractorLabel": "Przypisz do kontrahenta",
+      "contractLabel": "Lub przypisz do konkretnej umowy (nadpisuje wartość domyślną kontrahenta)",
+      "defaultToggle": "Ustaw jako domyślny dla tego kontrahenta",
+      "validFromLabel": "Ważny od (opcjonalnie)",
+      "validToLabel": "Ważny do (opcjonalnie)",
+      "notesLabel": "Notatki (opcjonalnie)",
+      "saveButton": "Zapisz Leitweg-ID",
+      "errorInvalidCheckDigit": "Suma kontrolna tego Leitweg-ID nie zgadza się z częścią zgrubną i dookreśleniem. Zweryfikuj wartość z nabywcą z sektora publicznego.",
+      "errorInvalidFormat": "Leitweg-ID musi składać się z 2–12 cyfr, opcjonalnie z `-<do 30 znaków alfanumerycznych wielkich liter>`, następnie `-<2-cyfrowa suma kontrolna>`.",
+      "errorDuplicate": "Ten Leitweg-ID jest już zarejestrowany w Twojej organizacji."
     },
     "PeppolDialog": {
       "_NOTE": "AI-first-pass translation pending review",
-      "registerHeading": "Register Peppol participant",
-      "registerBody": "Registering enables sending XRechnung e-invoices to UK public-sector buyers via Peppol. Your participant ID will be listed in the Peppol SML.",
-      "schemeLabel": "Identifier scheme",
+      "registerHeading": "Zarejestruj uczestnika Peppol",
+      "registerBody": "Rejestracja umożliwia wysyłanie e-faktur XRechnung do brytyjskich nabywców z sektora publicznego przez Peppol. Twój identyfikator uczestnika zostanie wpisany do Peppol SML.",
+      "schemeLabel": "Schemat identyfikatora",
       "schemeHelper": "`0060` = UK Companies House, `0088` = GLN, `0106` = Dun & Bradstreet.",
-      "valueLabel": "Identifier value",
-      "valueHelper": "Companies House number, GLN, or DUNS — whatever your scheme requires.",
-      "registerButton": "Register participant",
-      "pendingHeading": "Registration pending",
-      "pendingBody": "Storecove is registering your participant with the Peppol SML. This typically takes a few minutes. We'll update the status automatically.",
-      "activeHeading": "Registered on Peppol",
-      "activeBodyPattern": "Participant {schemeId}:{value} · Status {status} · Registered {relativeTime}",
-      "deregisterButton": "Deregister participant"
+      "valueLabel": "Wartość identyfikatora",
+      "valueHelper": "Numer Companies House, GLN lub DUNS — zgodnie z wybranym schematem.",
+      "registerButton": "Zarejestruj uczestnika",
+      "pendingHeading": "Rejestracja w toku",
+      "pendingBody": "Storecove rejestruje Twojego uczestnika w Peppol SML. Zwykle trwa to kilka minut. Status zaktualizujemy automatycznie.",
+      "activeHeading": "Zarejestrowano w Peppol",
+      "activeBodyPattern": "Uczestnik {schemeId}:{value} · Status {status} · Zarejestrowano {relativeTime}",
+      "deregisterButton": "Wyrejestruj uczestnika"
     },
     "Errors": {
       "_NOTE": "AI-first-pass translation pending review",
-      "LEITWEG_ID_MISSING": "Leitweg-ID missing for this German public-sector buyer. Add one to the contractor or contract before sending via Peppol.",
-      "PARTICIPANT_NOT_REACHABLE": "The recipient isn't registered on Peppol or doesn't support XRechnung. Confirm the buyer's Peppol ID and try again.",
-      "KOSIT_VALIDATION_FAILED": "This e-invoice didn't pass KoSIT validation. Review the validation report and re-finalize after correcting the invoice data.",
-      "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Register your organisation on Peppol before sending e-invoices. Go to Settings → E-invoicing to start.",
-      "STORECOVE_TRANSMISSION_FAILED": "Peppol transmission failed. We'll retry automatically — you can also retry manually from the E-invoice tab.",
-      "Generic": "Something went wrong. Try refreshing or contact support if this persists."
+      "LEITWEG_ID_MISSING": "Brak Leitweg-ID dla tego niemieckiego nabywcy z sektora publicznego. Dodaj wartość do kontrahenta lub umowy przed wysłaniem przez Peppol.",
+      "PARTICIPANT_NOT_REACHABLE": "Odbiorca nie jest zarejestrowany w Peppol lub nie obsługuje XRechnung. Potwierdź ID Peppol nabywcy i spróbuj ponownie.",
+      "KOSIT_VALIDATION_FAILED": "Ta e-faktura nie przeszła walidacji KoSIT. Przejrzyj raport walidacji i sfinalizuj ponownie po skorygowaniu danych faktury.",
+      "PEPPOL_PARTICIPANT_NOT_ACTIVE": "Zarejestruj organizację w Peppol przed wysyłką e-faktur. Przejdź do Ustawienia → E-fakturowanie, aby rozpocząć.",
+      "STORECOVE_TRANSMISSION_FAILED": "Transmisja Peppol nie powiodła się. Spróbujemy ponownie automatycznie — możesz też ponowić ręcznie z zakładki E-faktura.",
+      "Generic": "Coś poszło nie tak. Spróbuj odświeżyć stronę lub skontaktuj się z pomocą, jeśli problem się utrzymuje."
     },
     "intake": {
       "_NOTE": "AI-first-pass translation pending review — EN placeholders",
-      "splitButtonPrimary": "+ New invoice",
-      "splitButtonImport": "Import e-invoice",
+      "splitButtonPrimary": "+ Nowa faktura",
+      "splitButtonImport": "Importuj e-fakturę",
       "sidebarImports": "Imports",
-      "pageTitle": "Invoice imports",
-      "pageSubtitle": "Inbound XRechnung and ZUGFeRD invoices awaiting review",
-      "uploadDialogTitle": "Import an e-invoice",
-      "dropZonePrimary": "Drop an XRechnung XML or ZUGFeRD PDF here",
-      "dropZoneSecondary": "or click to choose a file (max 5 MB, .xml or .pdf)",
+      "pageTitle": "Importy faktur",
+      "pageSubtitle": "Przychodzące faktury XRechnung i ZUGFeRD oczekujące na przegląd",
+      "uploadDialogTitle": "Importuj e-fakturę",
+      "dropZonePrimary": "Upuść tutaj plik XML XRechnung lub PDF ZUGFeRD",
+      "dropZoneSecondary": "lub kliknij, aby wybrać plik (maks. 5 MB, .xml lub .pdf)",
       "uploadValidating": "Validating…",
-      "uploadTryAnother": "Try another file",
-      "uploadSuccessToast": "Imported — review at /invoices/intake/{id}",
-      "uploadDedupToast": "Already imported — opening existing intake",
-      "uploadNetworkError": "Upload failed. Check your connection and try again.",
-      "uploadWrongType": "Only .xml or .pdf files are accepted.",
-      "ctaConvert": "Convert to invoice",
-      "ctaConfirmMatch": "Confirm match",
-      "ctaAcceptDespiteIssues": "Accept despite issues",
-      "ctaCreateContractor": "Create new contractor from this data",
-      "ctaUseThisContractor": "Use this contractor",
-      "ctaDownloadZugferd": "Download ZUGFeRD PDF",
-      "ctaRejectImport": "Reject import",
-      "emptyStateHeading": "No imports yet",
-      "emptyStateBody": "Inbound XRechnung XML and ZUGFeRD PDF files appear here. Use 'Import e-invoice' from the invoices page to upload one.",
-      "errorXsdReject": "The XML does not conform to the CII schema — ask the sender to re-issue. First errors: {errors}",
-      "errorNoXmlAttachment": "This PDF does not contain an embedded XRechnung/ZUGFeRD XML attachment. Only ZUGFeRD-conformant PDFs can be imported.",
-      "errorLevelTooLow": "This invoice uses the {level} ZUGFeRD profile, which lacks line-item data. Ask the sender to provide a COMFORT or XRECHNUNG profile.",
-      "errorFileTooLarge": "File exceeds 5 MB. Ask the sender for a smaller file.",
-      "errorGeneric": "The file could not be imported. Please try again or contact support.",
-      "bannerExtendedBestEffort": "This invoice uses the EXTENDED ZUGFeRD profile. Some sender-specific fields could not be mapped. Review the data carefully before converting.",
-      "tooltipConvertDisabledNeedsAck": "Acknowledge validation issues first",
-      "tooltipConvertDisabledNeedsMatch": "Match a contractor before converting",
-      "matchReasonVat": "VAT ID match",
-      "matchReasonLeitweg": "Leitweg-ID match",
-      "matchReasonExactName": "Exact name match",
-      "matchReasonFuzzyName": "Fuzzy name match (distance {n})",
-      "rejectDialogTitle": "Reject this import?",
-      "rejectDialogBody": "Rejected imports remain in the audit log but cannot be converted to an invoice. This action cannot be undone.",
-      "rejectDialogConfirm": "Reject import",
+      "uploadTryAnother": "Wypróbuj inny plik",
+      "uploadSuccessToast": "Zaimportowano — przejrzyj w /invoices/intake/{id}",
+      "uploadDedupToast": "Już zaimportowano — otwieram istniejący import",
+      "uploadNetworkError": "Przesyłanie nie powiodło się. Sprawdź połączenie i spróbuj ponownie.",
+      "uploadWrongType": "Akceptowane są wyłącznie pliki .xml lub .pdf.",
+      "ctaConvert": "Konwertuj na fakturę",
+      "ctaConfirmMatch": "Potwierdź dopasowanie",
+      "ctaAcceptDespiteIssues": "Zaakceptuj mimo problemów",
+      "ctaCreateContractor": "Utwórz nowego kontrahenta z tych danych",
+      "ctaUseThisContractor": "Użyj tego kontrahenta",
+      "ctaDownloadZugferd": "Pobierz PDF ZUGFeRD",
+      "ctaRejectImport": "Odrzuć import",
+      "emptyStateHeading": "Brak importów",
+      "emptyStateBody": "Przychodzące pliki XML XRechnung oraz PDF ZUGFeRD pojawiają się tutaj. Aby przesłać plik, użyj opcji „Importuj e-fakturę” ze strony Faktury.",
+      "errorXsdReject": "XML nie jest zgodny ze schematem CII — poproś nadawcę o ponowne wystawienie. Pierwsze błędy: {errors}",
+      "errorNoXmlAttachment": "Ten PDF nie zawiera osadzonego załącznika XML XRechnung/ZUGFeRD. Importować można wyłącznie pliki PDF zgodne z ZUGFeRD.",
+      "errorLevelTooLow": "Ta faktura używa profilu ZUGFeRD {level}, który nie zawiera danych pozycji. Poproś nadawcę o profil COMFORT lub XRECHNUNG.",
+      "errorFileTooLarge": "Plik przekracza 5 MB. Poproś nadawcę o mniejszy plik.",
+      "errorGeneric": "Nie udało się zaimportować pliku. Spróbuj ponownie lub skontaktuj się z pomocą.",
+      "bannerExtendedBestEffort": "Ta faktura używa profilu EXTENDED ZUGFeRD. Niektóre pola specyficzne dla nadawcy nie mogły zostać zmapowane. Dokładnie sprawdź dane przed konwersją.",
+      "tooltipConvertDisabledNeedsAck": "Najpierw potwierdź problemy walidacji",
+      "tooltipConvertDisabledNeedsMatch": "Dopasuj kontrahenta przed konwersją",
+      "matchReasonVat": "Zgodny numer VAT",
+      "matchReasonLeitweg": "Zgodny Leitweg-ID",
+      "matchReasonExactName": "Dokładna zgodność nazwy",
+      "matchReasonFuzzyName": "Przybliżona zgodność nazwy (odległość {n})",
+      "rejectDialogTitle": "Odrzucić ten import?",
+      "rejectDialogBody": "Odrzucone importy pozostają w dzienniku audytu, lecz nie mogą zostać przekonwertowane na fakturę. Tej operacji nie można cofnąć.",
+      "rejectDialogConfirm": "Odrzuć import",
       "rejectDialogCancel": "Cancel",
-      "rejectReasonPlaceholder": "Reason (required) — e.g., duplicate, wrong recipient, sender mistake",
-      "rejectReasonTooShort": "Please provide at least 3 characters.",
-      "genFailureToast": "ZUGFeRD generation failed. Please try again or contact support if the problem persists.",
-      "genSuccessToast": "ZUGFeRD PDF ready — download started.",
+      "rejectReasonPlaceholder": "Powód (wymagany) — np. duplikat, błędny odbiorca, pomyłka nadawcy",
+      "rejectReasonTooShort": "Podaj przynajmniej 3 znaki.",
+      "genFailureToast": "Generowanie ZUGFeRD nie powiodło się. Spróbuj ponownie lub skontaktuj się z pomocą, jeśli problem się powtarza.",
+      "genSuccessToast": "PDF ZUGFeRD gotowy — pobieranie rozpoczęte.",
       "generatingLabel": "Generating…",
-      "notYetGenerated": "Not yet generated",
-      "generatedOnPattern": "Generated on {date}",
+      "notYetGenerated": "Jeszcze nie wygenerowano",
+      "generatedOnPattern": "Wygenerowano {date}",
       "zugferdSectionHeading": "ZUGFeRD",
-      "zugferdSectionBody": "Generate a PDF/A-3 invoice with an embedded XRechnung CII XML attachment.",
-      "skipPreview": "Skip preview",
-      "openFullReport": "Open full report",
-      "reportNotAvailable": "No report available",
-      "issuesAcceptedPattern": "Issues accepted on {date}",
-      "advancedSectionHeading": "Advanced / technical",
-      "unmappedFieldsHeading": "Unmapped sender-specific fields",
-      "noMatchCandidatesHeading": "No candidates",
-      "noMatchCandidatesBody": "No existing contractor matches this supplier. Create a new one from the parsed data.",
-      "loadMore": "Load more",
+      "zugferdSectionBody": "Wygeneruj fakturę PDF/A-3 z osadzonym załącznikiem XML XRechnung CII.",
+      "skipPreview": "Pomiń podgląd",
+      "openFullReport": "Otwórz pełny raport",
+      "reportNotAvailable": "Raport niedostępny",
+      "issuesAcceptedPattern": "Problemy zaakceptowano {date}",
+      "advancedSectionHeading": "Zaawansowane / techniczne",
+      "unmappedFieldsHeading": "Niezmapowane pola specyficzne dla nadawcy",
+      "noMatchCandidatesHeading": "Brak kandydatów",
+      "noMatchCandidatesBody": "Żaden istniejący kontrahent nie pasuje do tego dostawcy. Utwórz nowego na podstawie sparsowanych danych.",
+      "loadMore": "Załaduj więcej",
       "column": {
         "supplier": "Supplier",
-        "invoiceNumber": "Invoice #",
+        "invoiceNumber": "Nr faktury",
         "date": "Date",
         "total": "Total",
         "level": "Profile",
@@ -5412,26 +5412,26 @@
         "validation": "Validation"
       },
       "field": {
-        "supplierName": "Supplier name",
+        "supplierName": "Nazwa dostawcy",
         "vatId": "VAT ID",
         "leitwegId": "Leitweg-ID",
-        "invoiceNumber": "Invoice number",
-        "date": "Invoice date",
+        "invoiceNumber": "Numer faktury",
+        "date": "Data faktury",
         "currency": "Currency",
-        "totalGross": "Total (gross)",
-        "lineCount": "Line count",
-        "profileLevel": "ZUGFeRD profile"
+        "totalGross": "Suma (brutto)",
+        "lineCount": "Liczba pozycji",
+        "profileLevel": "Profil ZUGFeRD"
       },
       "filter": {
         "all": "All",
-        "needsReview": "Needs review",
+        "needsReview": "Wymaga przeglądu",
         "matched": "Matched",
         "converted": "Converted",
         "rejected": "Rejected"
       },
       "status": {
         "PARSED": "Parsed",
-        "NEEDS_REVIEW": "Needs review",
+        "NEEDS_REVIEW": "Wymaga przeglądu",
         "MATCHED": "Matched",
         "CONVERTED": "Converted",
         "REJECTED": "Rejected"
@@ -5440,7 +5440,7 @@
         "VALID": "Valid",
         "WARNINGS": "Warnings",
         "INVALID": "Invalid",
-        "issuesCountPattern": "{count, plural, one {# issue} other {# issues}}"
+        "issuesCountPattern": "{count, plural, one {# problem} few {# problemy} many {# problemów} other {# problemów}}"
       },
       "level": {
         "COMFORT": "COMFORT",
