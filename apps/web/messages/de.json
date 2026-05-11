@@ -221,7 +221,9 @@
     "templates": "Vorlagen",
     "new": "Neu",
     "unauthorized": "Nicht autorisiert",
-    "equipment": "Ausstattung"
+    "equipment": "Ausstattung",
+    "time": "Zeiterfassung",
+    "classification": "Klassifizierung"
   },
   "TopBar": {
     "addContractor": "Auftragnehmer hinzufügen",

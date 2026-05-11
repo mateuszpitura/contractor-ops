@@ -79,7 +79,9 @@
     "templates": "Templates",
     "new": "New",
     "unauthorized": "Unauthorized",
-    "equipment": "Equipment"
+    "equipment": "Equipment",
+    "time": "Time",
+    "classification": "Classification"
   },
   "TopBar": {
     "addContractor": "Add contractor",

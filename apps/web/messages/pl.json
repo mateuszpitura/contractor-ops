@@ -63,7 +63,7 @@
     "contracts": "Umowy",
     "workflows": "Procesy",
     "invoices": "Faktury",
-    "imports": "Imports",
+    "imports": "Importy",
     "approvals": "Zatwierdzenia",
     "payments": "Płatności",
     "reports": "Raporty",
@@ -79,7 +79,9 @@
     "templates": "Szablony",
     "new": "Nowy",
     "unauthorized": "Brak dostępu",
-    "equipment": "Sprzet"
+    "equipment": "Sprzęt",
+    "time": "Czas",
+    "classification": "Klasyfikacja"
   },
   "TopBar": {
     "addContractor": "Dodaj kontrahenta",

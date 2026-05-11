@@ -63,7 +63,7 @@
     "contracts": "العقود",
     "workflows": "سير العمل",
     "invoices": "الفواتير",
-    "imports": "Imports",
+    "imports": "الاستيرادات",
     "approvals": "الموافقات",
     "payments": "المدفوعات",
     "reports": "التقارير",
@@ -79,7 +79,9 @@
     "templates": "القوالب",
     "new": "جديد",
     "unauthorized": "غير مصرح",
-    "equipment": "المعدات"
+    "equipment": "المعدات",
+    "time": "تتبع الوقت",
+    "classification": "التصنيف"
   },
   "TopBar": {
     "addContractor": "إضافة مقاول",
