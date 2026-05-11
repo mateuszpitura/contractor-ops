@@ -96,21 +96,21 @@ function NavItemsContent() {
         // Hide groups with no visible items
         if (visibleItems.length === 0) return null;
 
-        // The first group ("overview" with just Dashboard) renders without a label
-        const showLabel = group.key !== 'overview';
-
+        // The first group ("overview" with just Dashboard) renders without a label.
+        // Inline the narrowing so TS knows group.key is a valid groups.* key
+        // inside the SidebarGroupLabel branch (drops the prior `as` casts).
         return (
-          <SidebarGroup key={group.key} className={showLabel ? undefined : 'pb-0'}>
-            {showLabel && (
+          <SidebarGroup key={group.key} className={group.key === 'overview' ? 'pb-0' : undefined}>
+            {group.key !== 'overview' && (
               <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                {t(`groups.${group.key}` as Parameters<typeof t>[0])}
+                {t(`groups.${group.key}`)}
               </SidebarGroupLabel>
             )}
             <SidebarMenu>
               {visibleItems.map(item => {
                 const isActive = isNavItemActive(pathname, searchParams, item);
 
-                const label = t(item.key as Parameters<typeof t>[0]);
+                const label = t(item.key);
 
                 return (
                   <SidebarMenuItem key={item.key} className="relative">

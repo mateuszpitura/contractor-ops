@@ -17,13 +17,32 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import type { LeafKeysOf } from '@/types/next-intl';
+import type messages from '../../messages/en.json';
+
+/**
+ * Translation keys valid for sidebar nav items — string-leaf keys of the
+ * `Navigation` namespace, excluding the nested `groups` sub-object. Anchoring
+ * `NavItem.key` to this union means adding a nav item without a matching
+ * Navigation.<key> string in en.json fails tsc rather than throwing
+ * MISSING_MESSAGE at runtime.
+ *
+ * Derived directly from `typeof messages.Navigation` (no module
+ * augmentation needed); the audit-i18n-code-coverage.ts auditor handles
+ * the broader "is every t() call resolvable" question across the codebase.
+ */
+export type NavItemKey = LeafKeysOf<typeof messages.Navigation>;
+
+/** Translation keys valid for sidebar group labels. */
+export type NavGroupKey = Extract<keyof typeof messages.Navigation.groups, string> | 'overview';
 
 /**
  * Navigation item definition for the sidebar.
  * Each item has a permission requirement for visibility filtering.
  */
 export interface NavItem {
-  key: string;
+  /** Must resolve to a string leaf under `Navigation.<key>` in en.json. */
+  key: NavItemKey;
   label: string;
   href: string;
   icon: LucideIcon;
@@ -42,7 +61,8 @@ export interface NavItem {
  * Items within each group are filtered by the user's role permissions.
  */
 export interface NavGroup {
-  key: string;
+  /** Either the literal "overview" (label-less first group) or a key under `Navigation.groups`. */
+  key: NavGroupKey;
   items: NavItem[];
 }
 

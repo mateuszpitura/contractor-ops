@@ -56,6 +56,21 @@ jobs:
       - name: Verify i18n message-key parity (FOUND6-03 / P29)
         run: pnpm run i18n:parity
 
+      # Strict gate: every t(`key`) / t(`prefix.${…}`) reference in
+      # apps/web source must resolve to a leaf (or namespace) in every
+      # locale JSON. Fails CI on the first missing key — prevents
+      # runtime MISSING_MESSAGE bugs reaching users.
+      - name: Verify i18n source-code ↔ locale coverage
+        run: pnpm run i18n:code-coverage
+
+      # Advisory: surfaces untranslated values (en-byte-identical in
+      # non-en locales) and ICU placeholder drift. Doesn't fail the
+      # build — there's a ~99-entry intentional brand/legal-name
+      # floor — but the report is captured per-run for review.
+      - name: i18n quality audit (advisory)
+        run: pnpm run i18n:quality
+        continue-on-error: true
+
       - name: Build packages
         run: pnpm run build
 
