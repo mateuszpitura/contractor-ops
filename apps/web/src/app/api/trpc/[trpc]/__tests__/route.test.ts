@@ -52,7 +52,12 @@ vi.mock('@sentry/nextjs', () => ({
   withIsolationScope: mockSentryScope,
   captureException: mockCaptureException,
   getActiveSpan: vi.fn(() => undefined),
-  getCurrentScope: vi.fn(() => ({ setUser: vi.fn(), setTag: vi.fn(), setTags: vi.fn(), setContext: vi.fn() })),
+  getCurrentScope: vi.fn(() => ({
+    setUser: vi.fn(),
+    setTag: vi.fn(),
+    setTags: vi.fn(),
+    setContext: vi.fn(),
+  })),
   setUser: vi.fn(),
   setTag: vi.fn(),
   setTags: vi.fn(),
@@ -71,7 +76,7 @@ vi.mock('@trpc/server/adapters/fetch', () => ({
 // Import under test (after mocks)
 // ---------------------------------------------------------------------------
 
-import { GET, POST } from '../route.js';
+import { GET, POST } from '../route';
 
 // ---------------------------------------------------------------------------
 // Helpers

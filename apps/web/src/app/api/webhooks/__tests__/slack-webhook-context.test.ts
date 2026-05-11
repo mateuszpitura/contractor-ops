@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 import { describe, expect, it } from 'vitest';
-import { extractSlackTeamId } from '../slack-webhook-context.js';
+import { extractSlackTeamId } from '../slack-webhook-context';
 
 describe('extractSlackTeamId', () => {
   it('reads team.id from interactivity payload', () => {

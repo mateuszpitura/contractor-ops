@@ -57,7 +57,7 @@ vi.mock('@trpc/server/adapters/fetch', () => ({
 // Import under test (after mocks)
 // ---------------------------------------------------------------------------
 
-import { GET, POST } from '../route.js';
+import { GET, POST } from '../route';
 
 // ---------------------------------------------------------------------------
 // Helpers

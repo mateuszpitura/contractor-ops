@@ -50,7 +50,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('../../slack-webhook-context.js', () => ({
+vi.mock('../../slack-webhook-context', () => ({
   extractSlackTeamId: (...a: unknown[]) =>
     (mockExtractSlackTeamId as (...a: unknown[]) => unknown)(...a),
   resolveSlackConnectionByTeamId: (...a: unknown[]) =>

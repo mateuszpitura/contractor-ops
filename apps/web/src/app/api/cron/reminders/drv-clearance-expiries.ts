@@ -2,7 +2,7 @@ import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { resolveRbacRecipients } from '@contractor-ops/api/services/rbac-recipients';
 import { prismaRaw } from '@contractor-ops/db';
 
-import { addDays, claimCronNotificationDedup, startOfDay } from './reminders-shared.js';
+import { addDays, claimCronNotificationDedup, startOfDay } from './reminders-shared';
 
 // ---------------------------------------------------------------------------
 // Phase 60 · CLASS-09 — DRV § 7a SGB IV clearance expiry detector.

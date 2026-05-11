@@ -64,7 +64,7 @@ describe('Classification layout flag gate (Phase 64 D-02)', () => {
   it('calls notFound() when flag is disabled', async () => {
     mockEvaluate.mockReturnValue({ enabled: false, reason: 'unleash' });
 
-    const { default: ClassificationLayout } = await import('../layout.js');
+    const { default: ClassificationLayout } = await import('../layout');
 
     await ClassificationLayout({ children: null }).catch(() => {
       /* ignore notFound() throw */
@@ -76,7 +76,7 @@ describe('Classification layout flag gate (Phase 64 D-02)', () => {
   it('does not call notFound() when flag is enabled', async () => {
     mockEvaluate.mockReturnValue({ enabled: true, reason: 'unleash' });
 
-    const { default: ClassificationLayout } = await import('../layout.js');
+    const { default: ClassificationLayout } = await import('../layout');
 
     await ClassificationLayout({ children: null }).catch(() => {
       /* ignore notFound() throw */
@@ -88,7 +88,7 @@ describe('Classification layout flag gate (Phase 64 D-02)', () => {
   it('calls notFound() when session has no activeOrganizationId', async () => {
     mockAuth.mockResolvedValue({ session: { activeOrganizationId: null }, user: { id: 'u' } });
 
-    const { default: ClassificationLayout } = await import('../layout.js');
+    const { default: ClassificationLayout } = await import('../layout');
     await ClassificationLayout({ children: null }).catch(() => {
       /* ignore notFound() throw */
     });
@@ -99,7 +99,7 @@ describe('Classification layout flag gate (Phase 64 D-02)', () => {
   it('evaluate is called with module.classification-engine key', async () => {
     mockEvaluate.mockReturnValue({ enabled: true, reason: 'unleash' });
 
-    const { default: ClassificationLayout } = await import('../layout.js');
+    const { default: ClassificationLayout } = await import('../layout');
     await ClassificationLayout({ children: null }).catch(() => {
       /* ignore notFound() throw */
     });

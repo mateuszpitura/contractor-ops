@@ -16,7 +16,7 @@ async function readPageSource() {
 describe('ClassificationEngineFlagPage (smoke)', () => {
   it('page module exports a default async function', async () => {
     // Basic structural check — full integration requires Next.js runtime
-    const mod = await import('../page.js');
+    const mod = await import('../page');
     expect(typeof mod.default).toBe('function');
   });
 

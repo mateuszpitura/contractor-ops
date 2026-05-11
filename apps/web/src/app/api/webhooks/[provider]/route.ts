@@ -12,7 +12,7 @@ import {
   extractSlackTeamId,
   resolveOrgIdBySlug,
   resolveSlackConnectionByTeamId,
-} from '../slack-webhook-context.js';
+} from '../slack-webhook-context';
 
 const log = createWebhookLogger('generic');
 
