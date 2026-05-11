@@ -205,7 +205,9 @@
       "notifications": "الإشعارات",
       "integrations": "التكاملات",
       "auditLog": "سجل التدقيق",
-      "billing": "الفوترة"
+      "billing": "الفوترة",
+      "apiKeys": "مفاتيح API",
+      "privacy": "الخصوصية"
     },
     "saveCta": "حفظ التغييرات",
     "saving": "جارٍ الحفظ...",
@@ -591,7 +593,11 @@
         "categoryContracts": "العقود",
         "categoryTasks": "المهام",
         "categoryEquipment": "المعدات"
-      }
+      },
+      "syncFailedToast": "فشلت المزامنة. يرجى المحاولة مرة أخرى.",
+      "syncNow": "المزامنة الآن",
+      "syncSuccessToast": "{count, plural, =0 {اكتملت المزامنة} one {اكتملت المزامنة — # تغيير} other {اكتملت المزامنة — # تغييرات}}",
+      "syncing": "جارٍ المزامنة…"
     },
     "provider": {
       "connectCta": "توصيل {provider}",
@@ -889,7 +895,12 @@
       "body": "حدث خطأ غير متوقع. يرجى المحاولة مجد��ًا أو التواصل مع الدعم.",
       "cta": "حاول مجددًا"
     },
-    "unauthorized": "أنت غير مفوّض لتنفيذ هذا الإجراء.",
+    "unauthorized": {
+      "body": "ليس لديك إذن لعرض هذه الصفحة. إذا كنت تعتقد أن هذا خطأ، تواصل مع المسؤول.",
+      "code": "403",
+      "cta": "العودة إلى لوحة التحكم",
+      "heading": "تم رفض الوصول"
+    },
     "forbidden": "تم رفض الوصول.",
     "accountBanned": "تم إلغاء تنشيط حسابك. يرجى التواصل مع مسؤول مؤسستك.",
     "accountLocked": "محاولات تسجيل دخول فاشلة كثيرة. تم قفل حسابك مؤقتًا. يرجى المحاولة لاحقًا.",
@@ -2940,7 +2951,51 @@
       "waiveConfirm": "التنازل عن الفائدة",
       "waivedBanner": "تم التنازل عن الفائدة في {date} بواسطة {name}. {revokeLink}",
       "revokeWaiverCta": "إلغاء التنازل",
-      "revokeReasonPlaceholder": "سبب الإلغاء (مطلوب) — مثلاً: رفض العميل التسوية"
+      "revokeReasonPlaceholder": "سبب الإلغاء (مطلوب) — مثلاً: رفض العميل التسوية",
+      "b2cNotApplicable": "لا تنطبق الفوائد القانونية على معاملات الأفراد (B2C).",
+      "downloadClaimLetter": "تنزيل خطاب المطالبة",
+      "heading": "الفوائد القانونية على التأخر في السداد",
+      "notYetOverdue": "الفاتورة ليست متأخرة بعد. ستبدأ الفوائد بالتراكم بعد انتهاء شروط السداد.",
+      "rateTooltipAriaLabel": "إظهار تفاصيل احتساب الفائدة",
+      "rateTooltipExplanation": "يُحدد المعدل وفقًا للقانون البريطاني Late Payment of Commercial Debts (Interest) Act 1998: معدل Bank of England الأساسي + 8%، ويُثبَّت في آخر يوم من الفترة القانونية السابقة البالغة 6 أشهر (30 يونيو أو 31 ديسمبر).",
+      "waiveReason": "سبب التنازل",
+      "claim": {
+        "cancel": "إلغاء",
+        "confirm": "المطالبة بالفوائد",
+        "confirming": "جارٍ تقديم المطالبة…",
+        "description": "سيؤدي ذلك إلى تثبيت مبالغ الفوائد والتعويض الحالية وإنشاء خطاب مطالبة بصيغة PDF واختياريًا إصدار فاتورة ثانوية بقيمة المطالبة. اللقطة غير قابلة للتعديل — ولن تتراكم فوائد إضافية على هذه المطالبة.",
+        "issueSecondaryInvoice": "إصدار المطالبة كفاتورة ثانوية",
+        "successToast": "تم تقديم مطالبة بالفوائد القانونية",
+        "title": "هل تريد المطالبة بالفوائد القانونية؟"
+      },
+      "revokeWaiver": {
+        "cancel": "إلغاء",
+        "confirm": "سحب التنازل",
+        "confirming": "جارٍ السحب…",
+        "description": "سيؤدي سحب هذا التنازل إلى استئناف احتساب الفوائد من تاريخ الاستحقاق الأصلي. يرجى ذكر السبب لسجل التدقيق.",
+        "reasonLabel": "سبب السحب",
+        "reasonMinLength": "يجب أن يتكون السبب من 10 أحرف على الأقل.",
+        "reasonPlaceholder": "مثال: رفض العميل التسوية المتفاوض عليها",
+        "successToast": "تم سحب التنازل — استؤنف احتساب الفوائد",
+        "title": "هل تريد سحب التنازل عن الفوائد؟"
+      },
+      "waive": {
+        "cancel": "إلغاء",
+        "confirm": "التنازل عن الفوائد",
+        "confirming": "جارٍ التنازل…",
+        "description": "يؤدي التنازل إلى إيقاف احتساب الفوائد وإزالة المطالبة القانونية. تُسجَّل هذه العملية في سجل التدقيق ويمكن سحبها لاحقًا.",
+        "reasonLabel": "سبب التنازل",
+        "reasonMinLength": "يجب أن يتكون السبب من 10 أحرف على الأقل.",
+        "reasonPlaceholder": "مثال: تسوية متفاوض عليها مع العميل، مجاملة، خطأ إداري",
+        "successToast": "تم التنازل عن الفوائد",
+        "title": "هل تريد التنازل عن الفوائد القانونية؟",
+        "typeLabel": "العنصر المراد التنازل عنه",
+        "types": {
+          "STATUTORY_INTEREST": "الفوائد القانونية فقط",
+          "COMPENSATION": "التعويض الثابت فقط",
+          "BOTH": "الفوائد والتعويض معًا"
+        }
+      }
     },
     "overdueInterest": {
       "columnHeader": "فائدة التأخر",
@@ -2977,7 +3032,56 @@
       "snapshotToast": "تم تطبيق Skonto على الدفعة — {count} فاتورة مخصومة، تم توفير {totalSavings}",
       "columnHeader": "Skonto",
       "emptyCell": "—",
-      "cellFormat": "{percent}% {discountDays}/{netDays}"
+      "cellFormat": "{percent}% {discountDays}/{netDays}",
+      "billingProfile": {
+        "deletedToast": "تمت إزالة Skonto الافتراضي",
+        "discountPercentLabel": "نسبة الخصم %",
+        "discountPeriodLabel": "فترة الخصم (أيام)",
+        "heading": "خصم السداد المبكر الافتراضي",
+        "netPeriodLabel": "فترة الصافي (أيام)",
+        "removeDefault": "إزالة Skonto الافتراضي",
+        "saveTerm": "حفظ Skonto الافتراضي",
+        "savedToast": "تم حفظ Skonto الافتراضي",
+        "saving": "جارٍ الحفظ…",
+        "validation": {
+          "daysOrdering": "يجب أن تكون فترة الخصم أقصر من فترة الصافي.",
+          "invalidDays": "أدخل عددًا صحيحًا من الأيام (1 أو أكثر).",
+          "percentOutOfRange": "يجب أن تتراوح نسبة الخصم بين 0 و50%."
+        }
+      },
+      "form": {
+        "addSkonto": "إضافة Skonto",
+        "customizeToggle": "تخصيص لهذه الفاتورة",
+        "deletedToast": "تمت إزالة Skonto الخاص بالفاتورة",
+        "discountPercentLabel": "نسبة الخصم %",
+        "discountPeriodLabel": "فترة الخصم (أيام)",
+        "heading": "خصم السداد المبكر (Skonto)",
+        "netPeriodLabel": "فترة الصافي (أيام)",
+        "previewLine": "خصم {percent}% عند السداد خلال {discountDays} يومًا، وإلا الصافي {netDays} يومًا",
+        "removeSkonto": "إزالة Skonto",
+        "resetToDefault": "إعادة الضبط إلى الافتراضي للمقاول",
+        "saveTerm": "حفظ شرط Skonto",
+        "savedToast": "تم حفظ Skonto",
+        "saving": "جارٍ الحفظ…",
+        "useDefaultPill": "الافتراضي للمقاول: {percent}% / {discountDays} يومًا / صافي {netDays} يومًا",
+        "validation": {
+          "daysOrdering": "يجب أن تكون فترة الخصم أقصر من فترة الصافي.",
+          "invalidDays": "أدخل عددًا صحيحًا من الأيام (1 أو أكثر).",
+          "percentOutOfRange": "يجب أن تتراوح نسبة الخصم بين 0 و50%."
+        }
+      },
+      "paymentRun": {
+        "applyDescription": "تطبيق Skonto بنسبة {percent}% — توفير {amount}",
+        "applyLabel": "تطبيق Skonto بنسبة {percent}%، توفير {amount}",
+        "newAmount": "المبلغ الجديد: {amount}",
+        "pastWindowDescription": "انتهت نافذة الخصم بتاريخ {date} — يُطبَّق المبلغ الكامل",
+        "pastWindowLabel": "Skonto غير متاح — انتهت نافذة الخصم"
+      }
+    },
+    "dashboard": {
+      "overdueClickThrough": "عرض الفواتير المتأخرة",
+      "overdueSubline": "{principal} مستحقة — +{interest} فوائد متراكمة",
+      "overdueTitle": "الذمم المتأخرة (المملكة المتحدة)"
     }
   },
   "Reports": {
@@ -3886,7 +3990,8 @@
     "notConfigured": "غير مكوّن",
     "configureButton": "Configure",
     "orgCalendarDescription": "ستُنشر الأحداث إلى هذا التقويم المشترك للمؤسسة بأكملها.",
-    "calendarSectionTitle": "Calendar"
+    "calendarSectionTitle": "Calendar",
+    "connectFailedToast": "تعذر ربط التقويم. يرجى المحاولة مرة أخرى."
   },
   "Equipment": {
     "title": "المعدات",
@@ -4358,6 +4463,60 @@
     "privacyAcknowledgement": {
       "label": "لقد قرأت وفهمت <link>إشعار الخصوصية</link>.",
       "error": "يرجى تأكيد قراءتك لإشعار الخصوصية للمتابعة."
+    },
+    "optional": "اختياري",
+    "required": "إلزامي",
+    "settings": {
+      "consentHistory": "سجل الموافقات",
+      "consentUpdated": "تم تحديث تفضيلات الموافقة",
+      "crossBorderDetected": "تم اكتشاف نقل بيانات عبر الحدود",
+      "crossBorderInfo": "تتم معالجة بيانات مؤسستك في {orgRegion} واستضافتها في {hostingRegion}. يحمي هذا النقل بنود تعاقدية معيارية (SCC).",
+      "crossBorderTitle": "نقل البيانات عبر الحدود",
+      "downloadDPA": "تنزيل DPA",
+      "downloadSCC": "تنزيل SCC",
+      "dpaDescription": "اتفاقية معالجة البيانات (DPA) التي تحكم كيفية معالجة البيانات الشخصية نيابةً عن مؤسستك.",
+      "dpaDownloaded": "تم تنزيل DPA",
+      "dpaTitle": "اتفاقية معالجة البيانات (DPA)",
+      "granted": "ممنوحة",
+      "historyAction": "الإجراء",
+      "historyDate": "التاريخ",
+      "historyPurpose": "الغرض",
+      "historyVersion": "الإصدار",
+      "legalDocuments": "المستندات القانونية",
+      "noCrossBorder": "لم يتم اكتشاف أي عمليات نقل للبيانات عبر الحدود لمؤسستك.",
+      "notRequired": "إدارة الموافقات غير مطلوبة في نطاقك القضائي.",
+      "revoked": "تم السحب",
+      "sccDescription": "بنود تعاقدية معيارية مطلوبة عند نقل البيانات الشخصية خارج منطقتك الأصلية.",
+      "sccDownloaded": "تم تنزيل SCC",
+      "sccNotRequired": "لا تُطلب بنود SCC — لم يتم اكتشاف نقل عبر الحدود.",
+      "sccTitle": "البنود التعاقدية المعيارية (SCC)",
+      "yourConsents": "موافقاتك"
+    },
+    "purposes": {
+      "contractor-data-processing": {
+        "label": "معالجة بيانات المقاول",
+        "description": "معالجة بيانات ملف المقاول (الاسم وجهات الاتصال والمعرفات الضريبية والمصرفية) لإدارة العقود والمدفوعات."
+      },
+      "invoice-payment-processing": {
+        "label": "معالجة الفواتير والمدفوعات",
+        "description": "استلام فواتير المقاولين والتحقق منها وسدادها، بما في ذلك تنفيذ التحويلات المصرفية والإقرارات الضريبية."
+      },
+      "analytics-reporting": {
+        "label": "التحليلات والتقارير",
+        "description": "إنشاء تحليلات استخدام مجمعة ومقاييس لتحسين المنتج. لا تتم مشاركة أي بيانات مع أطراف ثالثة."
+      },
+      "cross-border-transfer": {
+        "label": "نقل البيانات عبر الحدود",
+        "description": "نقل البيانات الشخصية خارج منطقتك الأصلية لتقديم الخدمة، مع الحماية ببنود تعاقدية معيارية."
+      },
+      "integration-data-sharing": {
+        "label": "مشاركة البيانات مع التكاملات",
+        "description": "مشاركة البيانات المطلوبة مع الخدمات المتصلة (مثل المحاسبة وكشوف المرتبات والتقويم والمراسلة) التي قمت بترخيصها."
+      },
+      "communication-notifications": {
+        "label": "الاتصالات والإشعارات",
+        "description": "إرسال إشعارات الخدمة الأساسية (الموافقات وحالة الدفع وتنبيهات الأمان) عبر البريد الإلكتروني أو داخل التطبيق."
+      }
     }
   },
   "CookieConsent": {
@@ -5215,7 +5374,8 @@
           "description": "المعلومات الرسمية من DRV حول إجراء تحديد الحالة وفق § 7a SGB IV"
         }
       }
-    }
+    },
+    "loading": "جارٍ تحميل التصنيف…"
   },
   "EInvoice": {
     "_NOTE": "AI-first-pass translation pending review",
@@ -5227,7 +5387,8 @@
         "ctaNotRegistered": "تسجيل مشارك Peppol",
         "ctaRegistered": "إدارة المشارك",
         "emptyHeading": "غير مسجّل في Peppol",
-        "emptyBody": "سجّل مؤسستك لمرّة واحدة لإرسال فواتير XRechnung الإلكترونية إلى المشترين الحكوميين في المملكة المتحدة وتلقّي إقرارات التسليم."
+        "emptyBody": "سجّل مؤسستك لمرّة واحدة لإرسال فواتير XRechnung الإلكترونية إلى المشترين الحكوميين في المملكة المتحدة وتلقّي إقرارات التسليم.",
+        "pendingHeading": "التسجيل قيد الانتظار"
       },
       "LeitwegIdCard": {
         "ctaCreate": "إنشاء Leitweg-ID",
@@ -5451,7 +5612,8 @@
         "BASIC": "BASIC",
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
-      }
+      },
+      "sendCta": "إرسال الفاتورة الإلكترونية"
     }
   },
   "Ir35Chain": {

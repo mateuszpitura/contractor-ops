@@ -205,7 +205,9 @@
       "notifications": "Powiadomienia",
       "integrations": "Integracje",
       "auditLog": "Dziennik audytu",
-      "billing": "Rozliczenia"
+      "billing": "Rozliczenia",
+      "apiKeys": "Klucze API",
+      "privacy": "Prywatność"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
@@ -591,7 +593,11 @@
         "categoryContracts": "Umowy",
         "categoryTasks": "Zadania",
         "categoryEquipment": "Sprzet"
-      }
+      },
+      "syncFailedToast": "Synchronizacja nie powiodła się. Spróbuj ponownie.",
+      "syncNow": "Synchronizuj teraz",
+      "syncSuccessToast": "{count, plural, =0 {Synchronizacja ukończona} one {Synchronizacja ukończona — # zmiana} few {Synchronizacja ukończona — # zmiany} many {Synchronizacja ukończona — # zmian} other {Synchronizacja ukończona — # zmian}}",
+      "syncing": "Synchronizowanie…"
     },
     "provider": {
       "connectCta": "Połącz {provider}",
@@ -889,7 +895,12 @@
       "body": "Wystąpił nieoczekiwany błąd po naszej stronie. Spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
       "cta": "Spróbuj ponownie"
     },
-    "unauthorized": "Nie masz uprawnień do wykonania tej akcji.",
+    "unauthorized": {
+      "body": "Nie masz uprawnień do wyświetlenia tej strony. Jeśli uważasz, że to pomyłka, skontaktuj się z administratorem.",
+      "code": "403",
+      "cta": "Wróć do pulpitu",
+      "heading": "Brak dostępu"
+    },
     "forbidden": "Odmowa dostępu.",
     "accountBanned": "Twoje konto zostało dezaktywowane. Skontaktuj się z administratorem organizacji.",
     "accountLocked": "Zbyt wiele nieudanych prób logowania. Twoje konto jest tymczasowo zablokowane. Spróbuj ponownie później.",
@@ -2940,7 +2951,51 @@
       "waiveConfirm": "Zrzeknij się odsetek",
       "waivedBanner": "Odsetki zrzeczone {date} przez {name}. {revokeLink}",
       "revokeWaiverCta": "Cofnij zrzeczenie",
-      "revokeReasonPlaceholder": "Powód cofnięcia (wymagany) — np. klient odmówił ugody"
+      "revokeReasonPlaceholder": "Powód cofnięcia (wymagany) — np. klient odmówił ugody",
+      "b2cNotApplicable": "Odsetki ustawowe nie mają zastosowania do transakcji B2C.",
+      "downloadClaimLetter": "Pobierz pismo roszczenia",
+      "heading": "Ustawowe odsetki za opóźnienie w płatności",
+      "notYetOverdue": "Faktura nie jest jeszcze przeterminowana. Odsetki zaczną być naliczane po upływie terminu płatności.",
+      "rateTooltipAriaLabel": "Pokaż szczegóły obliczania stopy",
+      "rateTooltipExplanation": "Stopa ustalana zgodnie z Late Payment of Commercial Debts (Interest) Act 1998: stopa bazowa Bank of England + 8%, ustalana ostatniego dnia poprzedzającego 6-miesięcznego okresu ustawowego (30 czerwca lub 31 grudnia).",
+      "waiveReason": "Powód zrzeczenia",
+      "claim": {
+        "cancel": "Anuluj",
+        "confirm": "Żądaj odsetek",
+        "confirming": "Składanie roszczenia…",
+        "description": "Spowoduje to utrwalenie bieżących kwot odsetek i rekompensaty, wygenerowanie pisma roszczenia w PDF oraz opcjonalnie wystawienie faktury dodatkowej na kwotę roszczenia. Migawka jest niezmienna — dalsze odsetki nie będą naliczane od tego roszczenia.",
+        "issueSecondaryInvoice": "Wystaw roszczenie jako fakturę dodatkową",
+        "successToast": "Zgłoszono roszczenie o odsetki ustawowe",
+        "title": "Zgłosić roszczenie o odsetki ustawowe?"
+      },
+      "revokeWaiver": {
+        "cancel": "Anuluj",
+        "confirm": "Cofnij zrzeczenie",
+        "confirming": "Cofanie…",
+        "description": "Cofnięcie tego zrzeczenia wznowi naliczanie odsetek od pierwotnej daty zaległości. Podaj powód w dzienniku audytu.",
+        "reasonLabel": "Powód cofnięcia",
+        "reasonMinLength": "Powód musi mieć co najmniej 10 znaków.",
+        "reasonPlaceholder": "np. klient odmówił wynegocjowanej ugody",
+        "successToast": "Cofnięto zrzeczenie — wznowiono naliczanie odsetek",
+        "title": "Cofnąć zrzeczenie się odsetek?"
+      },
+      "waive": {
+        "cancel": "Anuluj",
+        "confirm": "Zrzeknij się odsetek",
+        "confirming": "Zrzekanie się…",
+        "description": "Zrzeczenie zatrzymuje naliczanie odsetek i usuwa roszczenie ustawowe. Czynność jest zapisywana w dzienniku audytu i może zostać później cofnięta.",
+        "reasonLabel": "Powód zrzeczenia",
+        "reasonMinLength": "Powód musi mieć co najmniej 10 znaków.",
+        "reasonPlaceholder": "np. wynegocjowana ugoda z klientem, gest dobrej woli, błąd administracyjny",
+        "successToast": "Zrzeczono się odsetek",
+        "title": "Zrzec się odsetek ustawowych?",
+        "typeLabel": "Co chcesz zrzec",
+        "types": {
+          "STATUTORY_INTEREST": "Tylko odsetki ustawowe",
+          "COMPENSATION": "Tylko rekompensata stała",
+          "BOTH": "Odsetki i rekompensata"
+        }
+      }
     },
     "overdueInterest": {
       "columnHeader": "Odsetki za opóźnienie",
@@ -2977,7 +3032,56 @@
       "snapshotToast": "Skonto zastosowane do przebiegu — {count} faktur(a) z rabatem, zaoszczędzono {totalSavings}",
       "columnHeader": "Skonto",
       "emptyCell": "—",
-      "cellFormat": "{percent}% {discountDays}/{netDays}"
+      "cellFormat": "{percent}% {discountDays}/{netDays}",
+      "billingProfile": {
+        "deletedToast": "Usunięto domyślne Skonto",
+        "discountPercentLabel": "Rabat %",
+        "discountPeriodLabel": "Okres rabatu (dni)",
+        "heading": "Domyślny rabat za wcześniejszą płatność",
+        "netPeriodLabel": "Okres netto (dni)",
+        "removeDefault": "Usuń domyślne Skonto",
+        "saveTerm": "Zapisz domyślne Skonto",
+        "savedToast": "Zapisano domyślne Skonto",
+        "saving": "Zapisywanie…",
+        "validation": {
+          "daysOrdering": "Okres rabatu musi być krótszy niż okres netto.",
+          "invalidDays": "Wprowadź całkowitą liczbę dni (1 lub więcej).",
+          "percentOutOfRange": "Rabat musi mieścić się w zakresie od 0 do 50%."
+        }
+      },
+      "form": {
+        "addSkonto": "Dodaj Skonto",
+        "customizeToggle": "Dostosuj dla tej faktury",
+        "deletedToast": "Usunięto Skonto przypisane do faktury",
+        "discountPercentLabel": "Rabat %",
+        "discountPeriodLabel": "Okres rabatu (dni)",
+        "heading": "Rabat za wcześniejszą płatność (Skonto)",
+        "netPeriodLabel": "Okres netto (dni)",
+        "previewLine": "Rabat {percent}% przy płatności w ciągu {discountDays} dni, w przeciwnym razie netto {netDays} dni",
+        "removeSkonto": "Usuń Skonto",
+        "resetToDefault": "Przywróć domyślne dla kontrahenta",
+        "saveTerm": "Zapisz warunek Skonto",
+        "savedToast": "Zapisano Skonto",
+        "saving": "Zapisywanie…",
+        "useDefaultPill": "Domyślne dla kontrahenta: {percent}% / {discountDays} dni / netto {netDays} dni",
+        "validation": {
+          "daysOrdering": "Okres rabatu musi być krótszy niż okres netto.",
+          "invalidDays": "Wprowadź całkowitą liczbę dni (1 lub więcej).",
+          "percentOutOfRange": "Rabat musi mieścić się w zakresie od 0 do 50%."
+        }
+      },
+      "paymentRun": {
+        "applyDescription": "Zastosuj Skonto {percent}% — oszczędność {amount}",
+        "applyLabel": "Zastosuj Skonto {percent}%, oszczędność {amount}",
+        "newAmount": "Nowa kwota: {amount}",
+        "pastWindowDescription": "Okno rabatowe wygasło {date} — obowiązuje pełna kwota",
+        "pastWindowLabel": "Skonto niedostępne — okno rabatowe wygasło"
+      }
+    },
+    "dashboard": {
+      "overdueClickThrough": "Zobacz przeterminowane faktury",
+      "overdueSubline": "{principal} do zapłaty — +{interest} naliczonych odsetek",
+      "overdueTitle": "Przeterminowane należności (UK)"
     }
   },
   "Reports": {
@@ -3886,7 +3990,8 @@
     "notConfigured": "Nie skonfigurowano",
     "configureButton": "Konfiguruj",
     "orgCalendarDescription": "Wydarzenia beda wysylane do tego wspoldzielonego kalendarza dla calej organizacji.",
-    "calendarSectionTitle": "Kalendarz"
+    "calendarSectionTitle": "Kalendarz",
+    "connectFailedToast": "Nie udało się połączyć kalendarza. Spróbuj ponownie."
   },
   "Equipment": {
     "title": "Sprzet",
@@ -4358,6 +4463,60 @@
     "privacyAcknowledgement": {
       "label": "Zapoznałem/am się z <link>informacją o prywatności</link> i akceptuję jej treść.",
       "error": "Aby kontynuować, potwierdź zapoznanie się z informacją o prywatności."
+    },
+    "optional": "Opcjonalne",
+    "required": "Wymagane",
+    "settings": {
+      "consentHistory": "Historia zgód",
+      "consentUpdated": "Zaktualizowano preferencje zgód",
+      "crossBorderDetected": "Wykryto transfer transgraniczny",
+      "crossBorderInfo": "Dane Twojej organizacji są przetwarzane w regionie {orgRegion} i hostowane w {hostingRegion}. Transfer jest chroniony Standardowymi Klauzulami Umownymi (SCC).",
+      "crossBorderTitle": "Transgraniczny transfer danych",
+      "downloadDPA": "Pobierz DPA",
+      "downloadSCC": "Pobierz SCC",
+      "dpaDescription": "Umowa o powierzeniu przetwarzania danych (DPA) regulująca przetwarzanie danych osobowych w imieniu Twojej organizacji.",
+      "dpaDownloaded": "Pobrano DPA",
+      "dpaTitle": "Umowa o powierzeniu przetwarzania danych (DPA)",
+      "granted": "Udzielono",
+      "historyAction": "Działanie",
+      "historyDate": "Data",
+      "historyPurpose": "Cel",
+      "historyVersion": "Wersja",
+      "legalDocuments": "Dokumenty prawne",
+      "noCrossBorder": "Nie wykryto transgranicznych transferów danych dla Twojej organizacji.",
+      "notRequired": "Zarządzanie zgodami nie jest wymagane w Twojej jurysdykcji.",
+      "revoked": "Cofnięto",
+      "sccDescription": "Standardowe Klauzule Umowne wymagane przy transferze danych osobowych poza region macierzysty.",
+      "sccDownloaded": "Pobrano SCC",
+      "sccNotRequired": "SCC nie są wymagane — nie wykryto transferu transgranicznego.",
+      "sccTitle": "Standardowe Klauzule Umowne (SCC)",
+      "yourConsents": "Twoje zgody"
+    },
+    "purposes": {
+      "contractor-data-processing": {
+        "label": "Przetwarzanie danych kontrahenta",
+        "description": "Przetwarzanie danych profilu kontrahenta (imię i nazwisko, kontakt, identyfikatory podatkowe, dane bankowe) w celu zarządzania współpracą i płatnościami."
+      },
+      "invoice-payment-processing": {
+        "label": "Przetwarzanie faktur i płatności",
+        "description": "Odbiór, weryfikacja i opłacanie faktur kontrahentów, w tym realizacja przelewów bankowych i raportowanie podatkowe."
+      },
+      "analytics-reporting": {
+        "label": "Analityka i raportowanie",
+        "description": "Generowanie zagregowanych analiz korzystania oraz metryk usprawnień produktu. Dane nie są udostępniane podmiotom trzecim."
+      },
+      "cross-border-transfer": {
+        "label": "Transgraniczny transfer danych",
+        "description": "Przekazywanie danych osobowych poza region macierzysty w celu świadczenia usług, chronione Standardowymi Klauzulami Umownymi."
+      },
+      "integration-data-sharing": {
+        "label": "Udostępnianie danych integracjom",
+        "description": "Udostępnianie wymaganych danych podłączonym usługom (np. księgowość, listy płac, kalendarz, komunikatory), które autoryzowałeś."
+      },
+      "communication-notifications": {
+        "label": "Komunikacja i powiadomienia",
+        "description": "Wysyłanie niezbędnych powiadomień serwisowych (zatwierdzenia, status płatności, alerty bezpieczeństwa) e-mailem lub w aplikacji."
+      }
     }
   },
   "CookieConsent": {
@@ -5215,7 +5374,8 @@
           "description": "Offizielle DRV-Informationen zum Statusfeststellungsverfahren nach § 7a SGB IV"
         }
       }
-    }
+    },
+    "loading": "Ładowanie klasyfikacji…"
   },
   "EInvoice": {
     "_NOTE": "AI-first-pass translation pending review",
@@ -5227,7 +5387,8 @@
         "ctaNotRegistered": "Zarejestruj uczestnika Peppol",
         "ctaRegistered": "Zarządzaj uczestnikiem",
         "emptyHeading": "Brak rejestracji w Peppol",
-        "emptyBody": "Zarejestruj organizację jednorazowo, aby wysyłać e-faktury XRechnung do brytyjskich nabywców z sektora publicznego i odbierać potwierdzenia dostarczenia."
+        "emptyBody": "Zarejestruj organizację jednorazowo, aby wysyłać e-faktury XRechnung do brytyjskich nabywców z sektora publicznego i odbierać potwierdzenia dostarczenia.",
+        "pendingHeading": "Rejestracja w toku"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Utwórz Leitweg-ID",
@@ -5451,7 +5612,8 @@
         "BASIC": "BASIC",
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
-      }
+      },
+      "sendCta": "Wyślij e-fakturę"
     }
   },
   "Offboarding": {

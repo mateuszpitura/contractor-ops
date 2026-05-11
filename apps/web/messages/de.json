@@ -347,7 +347,9 @@
       "notifications": "Benachrichtigungen",
       "integrations": "Integrationen",
       "auditLog": "Audit-Log",
-      "billing": "Abrechnung"
+      "billing": "Abrechnung",
+      "apiKeys": "API-Schlüssel",
+      "privacy": "Datenschutz"
     },
     "saveCta": "Änderungen speichern",
     "saving": "Wird gespeichert…",
@@ -733,7 +735,11 @@
         "categoryContracts": "Verträge",
         "categoryTasks": "Aufgaben",
         "categoryEquipment": "Ausstattung"
-      }
+      },
+      "syncFailedToast": "Synchronisierung fehlgeschlagen. Bitte erneut versuchen.",
+      "syncNow": "Jetzt synchronisieren",
+      "syncSuccessToast": "{count, plural, =0 {Synchronisierung abgeschlossen} one {Synchronisierung abgeschlossen — # Änderung} other {Synchronisierung abgeschlossen — # Änderungen}}",
+      "syncing": "Wird synchronisiert…"
     },
     "provider": {
       "connectCta": "{provider} verbinden",
@@ -1031,7 +1037,12 @@
       "body": "Auf unserer Seite ist ein unerwarteter Fehler aufgetreten. Versuchen Sie es erneut oder kontaktieren Sie den Support, falls das Problem weiterhin besteht.",
       "cta": "Erneut versuchen"
     },
-    "unauthorized": "Sie sind nicht berechtigt, diese Aktion auszuführen.",
+    "unauthorized": {
+      "body": "Sie haben keine Berechtigung, diese Seite anzuzeigen. Falls dies ein Fehler ist, wenden Sie sich an Ihren Administrator.",
+      "code": "403",
+      "cta": "Zurück zum Dashboard",
+      "heading": "Zugriff verweigert"
+    },
     "forbidden": "Zugriff verweigert.",
     "accountBanned": "Ihr Konto wurde deaktiviert. Bitte wenden Sie sich an Ihren Organisations-Administrator.",
     "accountLocked": "Zu viele fehlgeschlagene Anmeldeversuche. Ihr Konto ist vorübergehend gesperrt. Bitte versuchen Sie es später erneut.",
@@ -3085,7 +3096,51 @@
       "revokeReasonPlaceholder": "Begründung für den Widerruf (erforderlich) — z. B. Kunde hat Vergleich abgelehnt",
       "overdueInterestColumn": "Verzugszinsen",
       "overdueFilterChip": "Überfällig",
-      "emptyOverdue": "Keine überfälligen UK-B2B-Rechnungen"
+      "emptyOverdue": "Keine überfälligen UK-B2B-Rechnungen",
+      "b2cNotApplicable": "Gesetzliche Verzugszinsen gelten nicht für B2C-Transaktionen.",
+      "downloadClaimLetter": "Forderungsschreiben herunterladen",
+      "heading": "Gesetzliche Verzugszinsen",
+      "notYetOverdue": "Die Rechnung ist noch nicht überfällig. Zinsen werden ab Ablauf der Zahlungsfrist berechnet.",
+      "rateTooltipAriaLabel": "Berechnung des Zinssatzes anzeigen",
+      "rateTooltipExplanation": "Zinssatz nach dem Late Payment of Commercial Debts (Interest) Act 1998: Bank-of-England-Basiszinssatz + 8 %, festgelegt am letzten Tag des vorhergehenden sechsmonatigen gesetzlichen Zeitraums (30. Juni oder 31. Dezember).",
+      "waiveReason": "Verzichtsgrund",
+      "claim": {
+        "cancel": "Abbrechen",
+        "confirm": "Zinsen geltend machen",
+        "confirming": "Wird geltend gemacht…",
+        "description": "Hierdurch werden die aktuellen Zins- und Entschädigungsbeträge fixiert, ein PDF-Forderungsschreiben erstellt und optional eine Nachberechnung als zusätzliche Rechnung ausgestellt. Die Erfassung ist unveränderlich — weitere Zinsen fallen auf diese Forderung nicht mehr an.",
+        "issueSecondaryInvoice": "Forderung als Nachberechnungsrechnung ausstellen",
+        "successToast": "Forderung auf gesetzliche Verzugszinsen eingereicht",
+        "title": "Gesetzliche Verzugszinsen geltend machen?"
+      },
+      "revokeWaiver": {
+        "cancel": "Abbrechen",
+        "confirm": "Verzicht widerrufen",
+        "confirming": "Wird widerrufen…",
+        "description": "Mit dem Widerruf dieses Verzichts wird die Zinsberechnung ab dem ursprünglichen Fälligkeitsdatum fortgesetzt. Geben Sie einen Grund für das Audit-Log an.",
+        "reasonLabel": "Grund für den Widerruf",
+        "reasonMinLength": "Der Grund muss mindestens 10 Zeichen lang sein.",
+        "reasonPlaceholder": "z. B. Kunde lehnte ausgehandelten Vergleich ab",
+        "successToast": "Verzicht widerrufen — Zinsberechnung wieder aufgenommen",
+        "title": "Zinsverzicht widerrufen?"
+      },
+      "waive": {
+        "cancel": "Abbrechen",
+        "confirm": "Zinsen erlassen",
+        "confirming": "Wird erlassen…",
+        "description": "Der Verzicht stoppt die Zinsberechnung und entfernt die gesetzliche Forderung. Diese Aktion wird im Audit-Log erfasst und kann später widerrufen werden.",
+        "reasonLabel": "Grund für den Verzicht",
+        "reasonMinLength": "Der Grund muss mindestens 10 Zeichen lang sein.",
+        "reasonPlaceholder": "z. B. ausgehandelter Vergleich mit Kunden, Kulanz, Verwaltungsfehler",
+        "successToast": "Zinsen erlassen",
+        "title": "Gesetzliche Verzugszinsen erlassen?",
+        "typeLabel": "Was erlassen werden soll",
+        "types": {
+          "STATUTORY_INTEREST": "Nur gesetzliche Zinsen",
+          "COMPENSATION": "Nur Pauschalentschädigung",
+          "BOTH": "Zinsen und Entschädigung"
+        }
+      }
     },
     "overdueInterest": {
       "columnHeader": "Verzugszinsen",
@@ -3122,7 +3177,56 @@
       "snapshotToast": "Skonto auf Lauf angewendet — {count} Rechnung(en) rabattiert, {totalSavings} gespart",
       "columnHeader": "Skonto",
       "emptyCell": "—",
-      "cellFormat": "{percent} % {discountDays}/{netDays}"
+      "cellFormat": "{percent} % {discountDays}/{netDays}",
+      "billingProfile": {
+        "deletedToast": "Standard-Skonto entfernt",
+        "discountPercentLabel": "Skonto %",
+        "discountPeriodLabel": "Skontofrist (Tage)",
+        "heading": "Standard-Skonto (Frühzahlerrabatt)",
+        "netPeriodLabel": "Nettofrist (Tage)",
+        "removeDefault": "Standard-Skonto entfernen",
+        "saveTerm": "Standard-Skonto speichern",
+        "savedToast": "Standard-Skonto gespeichert",
+        "saving": "Wird gespeichert…",
+        "validation": {
+          "daysOrdering": "Die Skontofrist muss kürzer als die Nettofrist sein.",
+          "invalidDays": "Geben Sie eine ganze Anzahl Tage ein (mindestens 1).",
+          "percentOutOfRange": "Das Skonto muss zwischen 0 und 50 % liegen."
+        }
+      },
+      "form": {
+        "addSkonto": "Skonto hinzufügen",
+        "customizeToggle": "Für diese Rechnung anpassen",
+        "deletedToast": "Rechnungsspezifisches Skonto entfernt",
+        "discountPercentLabel": "Skonto %",
+        "discountPeriodLabel": "Skontofrist (Tage)",
+        "heading": "Skonto (Frühzahlerrabatt)",
+        "netPeriodLabel": "Nettofrist (Tage)",
+        "previewLine": "{percent} % Skonto bei Zahlung innerhalb von {discountDays} Tagen, sonst netto {netDays} Tage",
+        "removeSkonto": "Skonto entfernen",
+        "resetToDefault": "Auf Auftragnehmerstandard zurücksetzen",
+        "saveTerm": "Skonto-Konditionen speichern",
+        "savedToast": "Skonto gespeichert",
+        "saving": "Wird gespeichert…",
+        "useDefaultPill": "Auftragnehmerstandard: {percent} % / {discountDays} Tage / netto {netDays} Tage",
+        "validation": {
+          "daysOrdering": "Die Skontofrist muss kürzer als die Nettofrist sein.",
+          "invalidDays": "Geben Sie eine ganze Anzahl Tage ein (mindestens 1).",
+          "percentOutOfRange": "Das Skonto muss zwischen 0 und 50 % liegen."
+        }
+      },
+      "paymentRun": {
+        "applyDescription": "{percent} % Skonto anwenden — Ersparnis {amount}",
+        "applyLabel": "{percent} % Skonto anwenden, Ersparnis {amount}",
+        "newAmount": "Neuer Betrag: {amount}",
+        "pastWindowDescription": "Skontofrist am {date} abgelaufen — voller Betrag fällig",
+        "pastWindowLabel": "Skonto nicht verfügbar — Skontofrist abgelaufen"
+      }
+    },
+    "dashboard": {
+      "overdueClickThrough": "Überfällige Rechnungen anzeigen",
+      "overdueSubline": "{principal} ausstehend — +{interest} Zinsen angefallen",
+      "overdueTitle": "Überfällige Forderungen (UK)"
     }
   },
   "Reports": {
@@ -4031,7 +4135,8 @@
     "notConfigured": "Nicht konfiguriert",
     "configureButton": "Konfigurieren",
     "orgCalendarDescription": "Termine werden für die gesamte Organisation an diesen gemeinsamen Kalender übertragen.",
-    "calendarSectionTitle": "Calendar"
+    "calendarSectionTitle": "Calendar",
+    "connectFailedToast": "Kalender konnte nicht verbunden werden. Bitte erneut versuchen."
   },
   "Equipment": {
     "title": "Ausstattung",
@@ -4503,6 +4608,60 @@
     "privacyAcknowledgement": {
       "label": "Ich habe die <link>Datenschutzerklärung</link> gelesen und verstanden.",
       "error": "Bitte bestätigen Sie, dass Sie die Datenschutzerklärung gelesen haben, um fortzufahren."
+    },
+    "optional": "Optional",
+    "required": "Erforderlich",
+    "settings": {
+      "consentHistory": "Einwilligungsverlauf",
+      "consentUpdated": "Einwilligungseinstellungen aktualisiert",
+      "crossBorderDetected": "Grenzüberschreitende Datenübermittlung erkannt",
+      "crossBorderInfo": "Die Daten Ihrer Organisation werden in {orgRegion} verarbeitet und in {hostingRegion} gehostet. Die Übermittlung ist durch Standardvertragsklauseln (SCC) geschützt.",
+      "crossBorderTitle": "Grenzüberschreitende Datenübermittlung",
+      "downloadDPA": "DPA herunterladen",
+      "downloadSCC": "SCC herunterladen",
+      "dpaDescription": "Der Auftragsverarbeitungsvertrag (DPA) regelt die Verarbeitung personenbezogener Daten im Auftrag Ihrer Organisation.",
+      "dpaDownloaded": "DPA heruntergeladen",
+      "dpaTitle": "Auftragsverarbeitungsvertrag (DPA)",
+      "granted": "Erteilt",
+      "historyAction": "Aktion",
+      "historyDate": "Datum",
+      "historyPurpose": "Zweck",
+      "historyVersion": "Version",
+      "legalDocuments": "Rechtsdokumente",
+      "noCrossBorder": "Für Ihre Organisation wurden keine grenzüberschreitenden Datenübermittlungen erkannt.",
+      "notRequired": "In Ihrer Rechtsordnung ist eine Einwilligungsverwaltung nicht erforderlich.",
+      "revoked": "Widerrufen",
+      "sccDescription": "Standardvertragsklauseln, die bei der Übermittlung personenbezogener Daten außerhalb Ihrer Heimatregion erforderlich sind.",
+      "sccDownloaded": "SCC heruntergeladen",
+      "sccNotRequired": "SCC sind nicht erforderlich — keine grenzüberschreitende Übermittlung erkannt.",
+      "sccTitle": "Standardvertragsklauseln (SCC)",
+      "yourConsents": "Ihre Einwilligungen"
+    },
+    "purposes": {
+      "contractor-data-processing": {
+        "label": "Verarbeitung von Auftragnehmerdaten",
+        "description": "Verarbeitung von Auftragnehmer-Profildaten (Name, Kontakt, Steuer-IDs, Bankdaten) zur Verwaltung von Beauftragungen und Zahlungen."
+      },
+      "invoice-payment-processing": {
+        "label": "Rechnungs- und Zahlungsverarbeitung",
+        "description": "Empfang, Prüfung und Bezahlung von Auftragnehmerrechnungen, einschließlich Banküberweisungen und Steuermeldung."
+      },
+      "analytics-reporting": {
+        "label": "Analyse und Berichterstattung",
+        "description": "Erstellung aggregierter Nutzungsanalysen und Produktverbesserungsmetriken. Es werden keine Daten an Dritte weitergegeben."
+      },
+      "cross-border-transfer": {
+        "label": "Grenzüberschreitende Datenübermittlung",
+        "description": "Übermittlung personenbezogener Daten außerhalb Ihrer Heimatregion zur Leistungserbringung, abgesichert durch Standardvertragsklauseln."
+      },
+      "integration-data-sharing": {
+        "label": "Datenfreigabe für Integrationen",
+        "description": "Freigabe erforderlicher Daten an angebundene Dienste (z. B. Buchhaltung, Lohnabrechnung, Kalender, Messaging), die Sie autorisiert haben."
+      },
+      "communication-notifications": {
+        "label": "Kommunikation und Benachrichtigungen",
+        "description": "Versand wesentlicher Dienstbenachrichtigungen (Freigaben, Zahlungsstatus, Sicherheitswarnungen) per E-Mail oder in der App."
+      }
     }
   },
   "CookieConsent": {
@@ -5404,7 +5563,8 @@
           "description": "Offizielle DRV-Informationen zum Statusfeststellungsverfahren nach § 7a SGB IV"
         }
       }
-    }
+    },
+    "loading": "Klassifizierung wird geladen…"
   },
   "EInvoice": {
     "Settings": {
@@ -5414,7 +5574,8 @@
         "ctaNotRegistered": "Peppol-Teilnehmer registrieren",
         "ctaRegistered": "Teilnehmer verwalten",
         "emptyHeading": "Nicht auf Peppol registriert",
-        "emptyBody": "Registrieren Sie Ihre Organisation einmalig, um XRechnung-E-Rechnungen an britische Behörden zu versenden und Zustellbestätigungen zu empfangen."
+        "emptyBody": "Registrieren Sie Ihre Organisation einmalig, um XRechnung-E-Rechnungen an britische Behörden zu versenden und Zustellbestätigungen zu empfangen.",
+        "pendingHeading": "Registrierung ausstehend"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Leitweg-ID anlegen",
@@ -5632,7 +5793,8 @@
         "BASIC": "BASIC",
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
-      }
+      },
+      "sendCta": "E-Rechnung senden"
     }
   },
   "Admin": {

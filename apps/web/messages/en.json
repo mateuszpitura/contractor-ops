@@ -205,7 +205,9 @@
       "notifications": "Notifications",
       "integrations": "Integrations",
       "auditLog": "Audit log",
-      "billing": "Billing"
+      "billing": "Billing",
+      "apiKeys": "API keys",
+      "privacy": "Privacy"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
@@ -591,7 +593,11 @@
         "categoryContracts": "Contracts",
         "categoryTasks": "Tasks",
         "categoryEquipment": "Equipment"
-      }
+      },
+      "syncFailedToast": "Sync failed. Please try again.",
+      "syncNow": "Sync now",
+      "syncSuccessToast": "{count, plural, =0 {Sync completed} one {Sync completed — # change} other {Sync completed — # changes}}",
+      "syncing": "Syncing…"
     },
     "provider": {
       "connectCta": "Connect {provider}",
@@ -889,7 +895,12 @@
       "body": "An unexpected error occurred on our end. Please try again or contact support if the problem persists.",
       "cta": "Try again"
     },
-    "unauthorized": "You are not authorized to perform this action.",
+    "unauthorized": {
+      "body": "You don't have permission to view this page. If you think this is a mistake, contact your administrator.",
+      "code": "403",
+      "cta": "Back to dashboard",
+      "heading": "Access denied"
+    },
     "forbidden": "Access denied.",
     "accountBanned": "Your account has been deactivated. Please contact your organization administrator.",
     "accountLocked": "Too many failed login attempts. Your account is temporarily locked. Please try again later.",
@@ -2940,7 +2951,51 @@
       "waiveConfirm": "Waive interest",
       "waivedBanner": "Interest waived on {date} by {name}. {revokeLink}",
       "revokeWaiverCta": "Revoke waiver",
-      "revokeReasonPlaceholder": "Reason for revoking (required) — e.g., customer refused settlement"
+      "revokeReasonPlaceholder": "Reason for revoking (required) — e.g., customer refused settlement",
+      "b2cNotApplicable": "Statutory interest does not apply to B2C transactions.",
+      "downloadClaimLetter": "Download claim letter",
+      "heading": "Statutory late-payment interest",
+      "notYetOverdue": "Invoice is not yet overdue. Interest will start accruing once payment terms expire.",
+      "rateTooltipAriaLabel": "Show rate calculation details",
+      "rateTooltipExplanation": "Rate set under the Late Payment of Commercial Debts (Interest) Act 1998: Bank of England base rate + 8%, fixed on the last day of the preceding 6-month statutory period (30 June or 31 December).",
+      "waiveReason": "Waiver reason",
+      "claim": {
+        "cancel": "Cancel",
+        "confirm": "Claim interest",
+        "confirming": "Claiming…",
+        "description": "This will snapshot the current interest and compensation amounts, generate a PDF claim letter, and optionally issue a secondary invoice for the claim amount. The snapshot is immutable — further interest will not accrue on this claim.",
+        "issueSecondaryInvoice": "Issue claim as a secondary invoice",
+        "successToast": "Statutory interest claim submitted",
+        "title": "Claim statutory interest?"
+      },
+      "revokeWaiver": {
+        "cancel": "Cancel",
+        "confirm": "Revoke waiver",
+        "confirming": "Revoking…",
+        "description": "Reinstating this waiver will resume interest accrual from the original overdue date. Provide a reason for the audit log.",
+        "reasonLabel": "Reason for revoking",
+        "reasonMinLength": "Reason must be at least 10 characters.",
+        "reasonPlaceholder": "e.g. customer refused negotiated settlement",
+        "successToast": "Waiver revoked — interest accrual resumed",
+        "title": "Revoke interest waiver?"
+      },
+      "waive": {
+        "cancel": "Cancel",
+        "confirm": "Waive interest",
+        "confirming": "Waiving…",
+        "description": "Waiving stops interest accrual and removes the statutory claim. This action is recorded in the audit log and can be revoked later.",
+        "reasonLabel": "Reason for waiving",
+        "reasonMinLength": "Reason must be at least 10 characters.",
+        "reasonPlaceholder": "e.g. negotiated settlement with customer, goodwill gesture, admin error",
+        "successToast": "Interest waived",
+        "title": "Waive statutory interest?",
+        "typeLabel": "What to waive",
+        "types": {
+          "STATUTORY_INTEREST": "Statutory interest only",
+          "COMPENSATION": "Fixed compensation only",
+          "BOTH": "Interest and compensation"
+        }
+      }
     },
     "overdueInterest": {
       "columnHeader": "Overdue interest",
@@ -2977,7 +3032,56 @@
       "snapshotToast": "Skonto applied to run — {count} invoice(s) discounted, {totalSavings} saved",
       "columnHeader": "Skonto",
       "emptyCell": "—",
-      "cellFormat": "{percent}% {discountDays}/{netDays}"
+      "cellFormat": "{percent}% {discountDays}/{netDays}",
+      "billingProfile": {
+        "deletedToast": "Default Skonto removed",
+        "discountPercentLabel": "Discount %",
+        "discountPeriodLabel": "Discount period (days)",
+        "heading": "Default early-payment discount",
+        "netPeriodLabel": "Net period (days)",
+        "removeDefault": "Remove default Skonto",
+        "saveTerm": "Save default Skonto",
+        "savedToast": "Default Skonto saved",
+        "saving": "Saving…",
+        "validation": {
+          "daysOrdering": "Discount period must be shorter than the net period.",
+          "invalidDays": "Enter a whole number of days (1 or more).",
+          "percentOutOfRange": "Discount must be between 0 and 50%."
+        }
+      },
+      "form": {
+        "addSkonto": "Add Skonto",
+        "customizeToggle": "Customize for this invoice",
+        "deletedToast": "Invoice-specific Skonto removed",
+        "discountPercentLabel": "Discount %",
+        "discountPeriodLabel": "Discount period (days)",
+        "heading": "Early-payment discount (Skonto)",
+        "netPeriodLabel": "Net period (days)",
+        "previewLine": "{percent}% discount if paid within {discountDays} days, otherwise net {netDays} days",
+        "removeSkonto": "Remove Skonto",
+        "resetToDefault": "Reset to contractor default",
+        "saveTerm": "Save Skonto term",
+        "savedToast": "Skonto saved",
+        "saving": "Saving…",
+        "useDefaultPill": "Using contractor default: {percent}% / {discountDays} days / net {netDays} days",
+        "validation": {
+          "daysOrdering": "Discount period must be shorter than the net period.",
+          "invalidDays": "Enter a whole number of days (1 or more).",
+          "percentOutOfRange": "Discount must be between 0 and 50%."
+        }
+      },
+      "paymentRun": {
+        "applyDescription": "Apply {percent}% Skonto — save {amount}",
+        "applyLabel": "Apply {percent}% Skonto, saving {amount}",
+        "newAmount": "New amount: {amount}",
+        "pastWindowDescription": "Discount window expired on {date} — full amount applies",
+        "pastWindowLabel": "Skonto unavailable — discount window expired"
+      }
+    },
+    "dashboard": {
+      "overdueClickThrough": "View overdue invoices",
+      "overdueSubline": "{principal} outstanding — +{interest} interest accrued",
+      "overdueTitle": "Overdue receivables (UK)"
     }
   },
   "Reports": {
@@ -3886,7 +3990,8 @@
     "notConfigured": "Not configured",
     "configureButton": "Configure",
     "orgCalendarDescription": "Events will be pushed to this shared calendar for the entire organization.",
-    "calendarSectionTitle": "Calendar"
+    "calendarSectionTitle": "Calendar",
+    "connectFailedToast": "Could not connect calendar. Please try again."
   },
   "Equipment": {
     "title": "Equipment",
@@ -4358,6 +4463,60 @@
     "privacyAcknowledgement": {
       "label": "I have read and understood the <link>privacy notice</link>.",
       "error": "Please confirm you have read the privacy notice to continue."
+    },
+    "optional": "Optional",
+    "required": "Required",
+    "settings": {
+      "consentHistory": "Consent history",
+      "consentUpdated": "Consent preferences updated",
+      "crossBorderDetected": "Cross-border transfer detected",
+      "crossBorderInfo": "Your organization data is processed in {orgRegion} and hosted in {hostingRegion}. Standard Contractual Clauses (SCCs) protect this transfer.",
+      "crossBorderTitle": "Cross-border data transfer",
+      "downloadDPA": "Download DPA",
+      "downloadSCC": "Download SCCs",
+      "dpaDescription": "The Data Processing Agreement governing how we process personal data on behalf of your organization.",
+      "dpaDownloaded": "DPA downloaded",
+      "dpaTitle": "Data Processing Agreement (DPA)",
+      "granted": "Granted",
+      "historyAction": "Action",
+      "historyDate": "Date",
+      "historyPurpose": "Purpose",
+      "historyVersion": "Version",
+      "legalDocuments": "Legal documents",
+      "noCrossBorder": "No cross-border data transfers detected for your organization.",
+      "notRequired": "Consent management is not required in your jurisdiction.",
+      "revoked": "Revoked",
+      "sccDescription": "Standard Contractual Clauses required when personal data is transferred outside your home region.",
+      "sccDownloaded": "SCCs downloaded",
+      "sccNotRequired": "SCCs are not required — no cross-border transfer detected.",
+      "sccTitle": "Standard Contractual Clauses (SCCs)",
+      "yourConsents": "Your consents"
+    },
+    "purposes": {
+      "contractor-data-processing": {
+        "label": "Contractor data processing",
+        "description": "Process contractor profile data (name, contact, tax IDs, banking) to manage engagements and payments."
+      },
+      "invoice-payment-processing": {
+        "label": "Invoice and payment processing",
+        "description": "Receive, validate and pay contractor invoices, including bank transfer execution and tax reporting."
+      },
+      "analytics-reporting": {
+        "label": "Analytics and reporting",
+        "description": "Generate aggregated usage analytics and product-improvement metrics. No data is shared with third parties."
+      },
+      "cross-border-transfer": {
+        "label": "Cross-border data transfer",
+        "description": "Transfer personal data outside your home region for service delivery, protected by Standard Contractual Clauses."
+      },
+      "integration-data-sharing": {
+        "label": "Integration data sharing",
+        "description": "Share required data with connected services (e.g. accounting, payroll, calendar, messaging) you have authorized."
+      },
+      "communication-notifications": {
+        "label": "Communications and notifications",
+        "description": "Send essential service notifications (approvals, payment status, security alerts) by email or in-app."
+      }
     }
   },
   "CookieConsent": {
@@ -5259,7 +5418,8 @@
           "description": "Offizielle DRV-Informationen zum Statusfeststellungsverfahren nach § 7a SGB IV"
         }
       }
-    }
+    },
+    "loading": "Loading classification…"
   },
   "EInvoice": {
     "Settings": {
@@ -5269,7 +5429,8 @@
         "ctaNotRegistered": "Register Peppol participant",
         "ctaRegistered": "Manage participant",
         "emptyHeading": "Not registered on Peppol",
-        "emptyBody": "Register your organisation once to send XRechnung e-invoices to UK public-sector buyers and receive delivery acknowledgements."
+        "emptyBody": "Register your organisation once to send XRechnung e-invoices to UK public-sector buyers and receive delivery acknowledgements.",
+        "pendingHeading": "Registration pending"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Create Leitweg-ID",
@@ -5487,7 +5648,8 @@
         "BASIC": "BASIC",
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
-      }
+      },
+      "sendCta": "Send e-invoice"
     }
   },
   "Admin": {
