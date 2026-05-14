@@ -273,6 +273,7 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
       {/* Timeline */}
       {sorted.length === 0 ? (
         <AtelierEmptyState
+          variant="subview"
           illustration={ContractsIllustration}
           heading={t('empty.title')}
           body={t('empty.description')}
