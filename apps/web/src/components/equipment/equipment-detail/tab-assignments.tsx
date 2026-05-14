@@ -1,8 +1,9 @@
 'use client';
 
+import { AtelierEmptyState, ContractorsIllustration } from '@contractor-ops/ui';
 import { format, formatDistanceStrict } from 'date-fns';
-import { UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -47,11 +48,13 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
 
   if (assignments.length === 0) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-        <UserPlus className="h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">{t('assignmentsEmpty')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t('assignmentsEmptyDescription')}</p>
-      </div>
+      <AtelierEmptyState
+        variant="subview"
+        illustration={ContractorsIllustration}
+        heading={t('assignmentsEmpty')}
+        body={t('assignmentsEmptyDescription')}
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 

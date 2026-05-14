@@ -1,5 +1,6 @@
 'use client';
 
+import { AtelierEmptyState, EquipmentIllustration } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Trash2, Truck } from 'lucide-react';
@@ -96,19 +97,28 @@ export function TabShipments({
     return (
       <div className="space-y-4">
         {!!pendingReturnRequest && <ReturnApprovalBanner returnRequest={pendingReturnRequest} />}
-        <div className="flex justify-end">
-          <Button onClick={onCreateShipment}>
-            <Truck className="me-1.5 size-3.5" />
-            {t('detail.createShipment')}
-          </Button>
-        </div>
-        <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-          <Truck className="h-10 w-10 text-muted-foreground/50" />
-          <h3 className="mt-3 text-[16px] font-medium">{t('detail.shipmentsEmpty')}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t('detail.shipmentsEmptyDescription')}
-          </p>
-        </div>
+        <AtelierEmptyState
+          variant="subview"
+          illustration={EquipmentIllustration}
+          heading={t('detail.shipmentsEmpty')}
+          body={t('detail.shipmentsEmptyDescription')}
+          primaryAction={{
+            label: t('detail.createShipment'),
+            onClick: onCreateShipment,
+            icon: Truck,
+          }}
+          renderAction={(action, variant) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                variant={variant === 'secondary' ? 'outline' : 'default'}
+                onClick={action.onClick}>
+                {Icon ? <Icon className="me-1.5 size-4" /> : null}
+                {action.label}
+              </Button>
+            );
+          }}
+        />
       </div>
     );
   }
