@@ -164,6 +164,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     return (
       <>
         <AtelierEmptyState
+          variant="subview"
           illustration={ContractsIllustration}
           heading={t('contractorTab.emptyHeading')}
           body={t('contractorTab.emptyBody')}

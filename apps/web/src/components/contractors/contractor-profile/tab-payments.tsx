@@ -204,6 +204,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
   if (!isLoading && allItems.length === 0) {
     return (
       <AtelierEmptyState
+        variant="subview"
         illustration={PaymentsIllustration}
         heading={t('contractorEmptyHeading')}
         body={t('contractorEmptyBody')}

@@ -236,6 +236,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
     return (
       <>
         <AtelierEmptyState
+          variant="subview"
           illustration={WorkflowsIllustration}
           heading={t('contractorNoWorkflows')}
           body={t('contractorNoWorkflowsBody')}

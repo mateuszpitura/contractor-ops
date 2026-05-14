@@ -59,6 +59,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
         <ContractorEInvoicingSection contractorId={contractor.id} />
 
         <AtelierEmptyState
+          variant="subview"
           illustration={ComplianceGapsIllustration}
           heading={t('noRequirements')}
           body={t('noRequirementsHint')}

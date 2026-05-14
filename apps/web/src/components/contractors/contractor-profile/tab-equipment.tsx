@@ -65,6 +65,7 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
   if (!isLoading && items.length === 0) {
     return (
       <AtelierEmptyState
+        variant="subview"
         illustration={EquipmentIllustration}
         heading={t('contractorTab.emptyTitle')}
         body={t('contractorTab.emptyDescription')}

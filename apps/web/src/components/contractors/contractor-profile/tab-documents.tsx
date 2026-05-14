@@ -73,6 +73,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
         </div>
       ) : documents.length === 0 ? (
         <AtelierEmptyState
+          variant="subview"
           illustration={DocumentsIllustration}
           heading={t('contractorTab.emptyHeading')}
           body={t('contractorTab.emptyBody')}

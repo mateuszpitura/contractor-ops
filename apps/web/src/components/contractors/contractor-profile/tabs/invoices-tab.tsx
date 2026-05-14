@@ -107,6 +107,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
     return (
       <>
         <AtelierEmptyState
+          variant="subview"
           illustration={InvoicesIllustration}
           heading={t('tab.noInvoicesHeading')}
           body={t('tab.noInvoicesBody')}
