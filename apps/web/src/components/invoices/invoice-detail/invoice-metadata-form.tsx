@@ -1,14 +1,14 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { AlertTriangle, CalendarIcon, Loader2, MoreHorizontal } from 'lucide-react';
+import { CalendarIcon, Loader2, MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
+import type { InvoiceAction } from '@/components/invoices/actions';
+import { getDetailInvoiceActions } from '@/components/invoices/actions';
 import { VatRateSelector } from '@/components/invoices/vat-rate-selector';
 import {
   AlertDialog,
@@ -39,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -138,11 +139,41 @@ function dateFieldToOptionalString(value: string | Date | null | undefined): str
 
 export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
   const t = useTranslations('Invoices');
+  const tDetail = useTranslations('Invoices.detail');
+  const tBulk = useTranslations('Invoices.bulkActions');
   const tMeta = useTranslations('Invoices.metadata');
   const tv = useTranslations('Validation.invoice');
   const id = useId();
-  const queryClient = useQueryClient();
   const isEditable = invoice.status === 'RECEIVED';
+  const invoiceQueryKey = trpc.invoice.getById.queryKey({ id: invoice.id });
+
+  // ---- Registry-driven action inventory (single source of truth) --------
+  // Resolves visible detail actions purely from `actions.ts`. Each action
+  // supplies its own label + icon + variant; the consumer wires the
+  // matching mutation by `action.key`. Keeps the action bar in lockstep
+  // with the registry and future bulk / row-menu surfaces.
+  const detailActions = useMemo(
+    () => getDetailInvoiceActions({ id: invoice.id, status: invoice.status }),
+    [invoice.id, invoice.status],
+  );
+
+  const actionByKey = useMemo(
+    () => new Map<string, InvoiceAction>(detailActions.map(a => [a.key, a])),
+    [detailActions],
+  );
+  const editAction = actionByKey.get('edit');
+  const submitForMatchingAction = actionByKey.get('submitForMatching');
+  const voidAction = actionByKey.get('void');
+
+  function getActionLabel(action: InvoiceAction): string {
+    if (action.i18nNamespace === 'Invoices.detail') {
+      return tDetail(action.labelKey as Parameters<typeof tDetail>[0]);
+    }
+    if (action.i18nNamespace === 'Invoices.bulkActions') {
+      return tBulk(action.labelKey as Parameters<typeof tBulk>[0]);
+    }
+    return t(action.labelKey as Parameters<typeof t>[0]);
+  }
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
     tv(key as Parameters<typeof tv>[0]),
@@ -204,51 +235,33 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const vatRateValue = watch('vatRate');
   const currencyValue = watch('currency');
 
-  // Save draft mutation
-  const saveDraftMutation = useMutation(
-    trpc.invoice.update.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('detail.savedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-        });
-      },
-      onError: () => {
-        toast.error(t('detail.saveError'));
-      },
-    }),
-  );
+  // Save draft mutation — canonical post-mutation contract via useResourceMutation.
+  const saveDraftMutation = useResourceMutation(trpc.invoice.update.mutationOptions(), {
+    invalidate: [invoiceQueryKey],
+    successMessage: t('detail.savedToast'),
+    errorMessage: t('detail.saveError'),
+  });
 
   // Submit for matching mutation
-  const submitForMatchingMutation = useMutation(
+  const submitForMatchingMutation = useResourceMutation(
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
-        toast.success(t('detail.submittedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-        });
         onSubmittedForMatching?.();
       },
-      onError: () => {
-        toast.error(t('detail.submitError'));
-      },
     }),
+    {
+      invalidate: [invoiceQueryKey],
+      successMessage: t('detail.submittedToast'),
+      errorMessage: t('detail.submitError'),
+    },
   );
 
   // Void invoice mutation
-  const voidMutation = useMutation(
-    trpc.invoice.voidInvoice.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('detail.voidedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.invoice.getById.queryKey({ id: invoice.id }),
-        });
-      },
-      onError: () => {
-        toast.error(t('detail.voidError'));
-      },
-    }),
-  );
+  const voidMutation = useResourceMutation(trpc.invoice.voidInvoice.mutationOptions(), {
+    invalidate: [invoiceQueryKey],
+    successMessage: t('detail.voidedToast'),
+    errorMessage: t('detail.voidError'),
+  });
 
   function onSaveDraft(values: InvoiceMetadataValues) {
     saveDraftMutation.mutate({
@@ -502,49 +515,55 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
               </div>
             </div>
 
-            {/* Action bar */}
+            {/* Action bar — sourced from getDetailInvoiceActions() */}
             <div className="flex items-center justify-between gap-2 border-t pt-4">
               <div className="flex items-center gap-2">
-                {isEditable && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isSubmitting}
-                      onClick={handleSubmit(onSaveDraft)}>
-                      {!!saveDraftMutation.isPending && (
-                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-                      )}
-                      {t('detail.saveDraft')}
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={handleSubmit(onSubmitForMatching)}>
-                      {!!submitForMatchingMutation.isPending && (
-                        <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-                      )}
-                      {t('detail.submitForMatching')}
-                    </Button>
-                  </>
+                {!!editAction && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                    onClick={handleSubmit(onSaveDraft)}>
+                    {!!saveDraftMutation.isPending && (
+                      <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    {getActionLabel(editAction)}
+                  </Button>
+                )}
+                {!!submitForMatchingAction && (
+                  <Button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleSubmit(onSubmitForMatching)}>
+                    {!!submitForMatchingMutation.isPending && (
+                      <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    {getActionLabel(submitForMatchingAction)}
+                  </Button>
                 )}
               </div>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">More actions</span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => setVoidDialogOpen(true)}>
-                    <AlertTriangle className="me-1.5 h-3.5 w-3.5" />
-                    {t('detail.voidInvoice')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {!!voidAction &&
+                (() => {
+                  const VoidIcon = voidAction.icon;
+                  return (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">More actions</span>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                          onClick={() => setVoidDialogOpen(true)}>
+                          <VoidIcon className="me-1.5 h-3.5 w-3.5" />
+                          {getActionLabel(voidAction)}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                })()}
             </div>
           </form>
         </CardContent>
