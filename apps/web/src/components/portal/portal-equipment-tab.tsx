@@ -100,11 +100,30 @@ export function PortalEquipmentTab() {
   if (equipmentQuery.isPending) {
     return (
       <div className="space-y-8">
-        <h1 className="text-xl font-semibold">{t('title')}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">{t('title')}</h1>
+          <Skeleton className="h-9 w-32" />
+        </div>
+        {/* Equipment card skeletons mirror final layout: icon + name+badge / serial+delivered */}
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <Skeleton key={`skel-${i}`} className="h-24 w-full rounded-lg" />
+            <Card
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              key={`skel-${i}`}>
+              <CardContent className="flex items-center gap-4 p-4">
+                <Skeleton className="h-6 w-6 shrink-0 rounded" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-3 w-36" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
