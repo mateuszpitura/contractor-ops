@@ -2,6 +2,7 @@
 
 import type { AtelierStatusVariant } from '@contractor-ops/ui';
 import {
+  AtelierEmptyState,
   AtelierPageHeader,
   AtelierStatusPill,
   AtelierTableShell,
@@ -147,19 +148,31 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<'Port
 
 function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<'Portal'>> }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="text-primary/70">
-        <InvoicesIllustration className="h-24 w-24" />
-      </div>
-      <h2 className="mt-5 text-xl font-semibold">{t('invoices.emptyTitle')}</h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('invoices.emptyBody')}</p>
-      <Link href="/portal/invoices/submit">
-        <Button className="mt-6">
-          <Plus className="me-1.5 h-4 w-4" />
-          {t('invoices.submitInvoice')}
-        </Button>
-      </Link>
-    </div>
+    <AtelierEmptyState
+      illustration={InvoicesIllustration}
+      heading={t('invoices.emptyTitle')}
+      body={t('invoices.emptyBody')}
+      primaryAction={{
+        label: t('invoices.submitInvoice'),
+        href: '/portal/invoices/submit',
+        icon: Plus,
+      }}
+      renderAction={action =>
+        action.href ? (
+          <Link href={action.href}>
+            <Button>
+              {action.icon ? <action.icon className="me-1.5 h-4 w-4" /> : null}
+              {action.label}
+            </Button>
+          </Link>
+        ) : (
+          <Button onClick={action.onClick}>
+            {action.icon ? <action.icon className="me-1.5 h-4 w-4" /> : null}
+            {action.label}
+          </Button>
+        )
+      }
+    />
   );
 }
 

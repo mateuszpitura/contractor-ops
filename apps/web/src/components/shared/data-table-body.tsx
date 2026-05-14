@@ -82,7 +82,6 @@ function skeletonClassForShape(descriptor: SkeletonColumnShape | undefined): str
       return 'h-5 w-16 rounded-full';
     case 'actions':
       return 'ms-auto h-4 w-4 rounded-sm';
-    case 'text':
     default:
       return `h-4 ${descriptor.width ?? 'w-full max-w-[120px]'}`;
   }

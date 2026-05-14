@@ -1,6 +1,6 @@
 'use client';
 
-import { NotificationsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, NotificationsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -190,18 +190,24 @@ export function ReminderRulesSection() {
   if (rules.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <NotificationsIllustration className="h-24 w-24" />
-          <h3 className="mt-4 text-base font-semibold">{t('reminderRules.emptyHeading')}</h3>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-            {t('reminderRules.emptyBody')}
-          </p>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button className="mt-4" onClick={handleCreate}>
-            <Plus className="me-1.5 size-4" />
-            {t('reminderRules.emptyCta')}
-          </Button>
-        </div>
+        <AtelierEmptyState
+          variant="subview"
+          illustration={NotificationsIllustration}
+          heading={t('reminderRules.emptyHeading')}
+          body={t('reminderRules.emptyBody')}
+          primaryAction={{
+            label: t('reminderRules.emptyCta'),
+            onClick: handleCreate,
+            icon: Plus,
+          }}
+          renderAction={action => (
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            <Button onClick={action.onClick}>
+              {action.icon ? <action.icon className="me-1.5 size-4" /> : null}
+              {action.label}
+            </Button>
+          )}
+        />
         <ReminderRuleEditor
           open={editorOpen}
           onOpenChange={setEditorOpen}
