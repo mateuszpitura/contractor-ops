@@ -58,7 +58,12 @@ export interface UseResourceMutationConfig {
  * createContractor.mutate({ name: '...' });
  * ```
  */
-export function useResourceMutation<TData, TError extends Error, TVariables, TContext = unknown>(
+export function useResourceMutation<
+  TData,
+  TError extends { message?: string } = Error,
+  TVariables = void,
+  TContext = unknown,
+>(
   mutationOptions: UseMutationOptions<TData, TError, TVariables, TContext>,
   config: UseResourceMutationConfig,
 ) {

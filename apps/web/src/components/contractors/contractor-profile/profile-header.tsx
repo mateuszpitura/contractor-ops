@@ -1,9 +1,8 @@
 'use client';
 
 import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
-import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FilePlus, MoreHorizontal, Pencil, Play } from 'lucide-react';
+import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
+import { MoreHorizontal, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -18,9 +17,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
+import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import type { ContractorAction } from '../actions';
+import { getProfileContractorActions } from '../actions';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
@@ -35,114 +37,123 @@ type ProfileHeaderProps = {
   };
 };
 
-// Lifecycle labels are now served from translations: ContractorProfile.lifecycle.*
-
-type LifecycleMenuItem = {
-  target: LifecycleStage;
-  labelKey: string;
-  variant?: 'destructive';
-  isArchive?: boolean;
+/**
+ * Maps lifecycle-transition action keys to the target stage we send to
+ * the `updateLifecycleStage` mutation. Kept colocated so the registry
+ * stays UI-agnostic.
+ */
+const LIFECYCLE_TRANSITION_TARGETS: Record<string, LifecycleStage> = {
+  'lifecycle.startOnboarding': 'ONBOARDING',
+  'lifecycle.activate': 'ACTIVE',
+  'lifecycle.startOffboarding': 'OFFBOARDING',
+  'lifecycle.markInactive': 'ENDED',
+  'lifecycle.completeOffboarding': 'ENDED',
 };
 
-const LIFECYCLE_MENU_CONFIG: Record<LifecycleStage, LifecycleMenuItem[]> = {
-  DRAFT: [{ target: 'ONBOARDING', labelKey: 'actions.startOnboarding' }],
-  ONBOARDING: [{ target: 'ACTIVE', labelKey: 'actions.activate' }],
-  ACTIVE: [
-    { target: 'OFFBOARDING', labelKey: 'actions.startOffboarding' },
-    { target: 'ENDED', labelKey: 'actions.markInactive' },
-  ],
-  OFFBOARDING: [{ target: 'ENDED', labelKey: 'actions.completeOffboarding' }],
-  ENDED: [
-    { target: 'ENDED', labelKey: 'actions.archive', variant: 'destructive', isArchive: true },
-  ],
-};
-
-function LifecycleMenuItems({
-  stage,
-  isPending,
-  onLifecycleAction,
-  onArchive,
-  t,
-}: {
-  stage: LifecycleStage;
-  isPending: boolean;
-  onLifecycleAction: (target: LifecycleStage) => void;
-  onArchive: () => void;
-  t: (key: string) => string;
-}) {
-  const items = LIFECYCLE_MENU_CONFIG[stage] ?? [];
-  return (
-    <>
-      {items.map(item => (
-        <DropdownMenuItem
-          key={item.labelKey}
-          disabled={isPending}
-          variant={item.variant}
-          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-          onSelect={() => (item.isArchive ? onArchive() : onLifecycleAction(item.target))}>
-          {t(item.labelKey)}
-        </DropdownMenuItem>
-      ))}
-    </>
-  );
-}
+/** Action keys promoted to primary buttons (rendered outside the kebab menu). */
+const PRIMARY_BUTTON_KEYS = new Set([
+  'edit',
+  'addContract',
+  // Workflow launchers are surfaced via a primary button per stage.
+]);
 
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const t = useTranslations('ContractorProfile');
   const tc = useTranslations('Contractors');
+  const tBulk = useTranslations('Contractors.bulkActions');
   const tToast = useTranslations('ContractorProfile.toast');
   const tCommon = useTranslations('Common');
-  const queryClient = useQueryClient();
+
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerType, setPickerType] = useState<string | undefined>(undefined);
 
-  const lifecycleMutation = useMutation(
-    trpc.contractor.updateLifecycleStage.mutationOptions({
-      onSuccess: (_data, variables) => {
-        toast.success(t('lifecycle.transitioned', { stage: variables.stage }));
-        queryClient.invalidateQueries({
-          queryKey: trpc.contractor.getById.queryKey(),
-        });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('statusFailed'));
-      },
-    }),
-  );
-
-  const archiveMutation = useMutation(
-    trpc.contractor.archive.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('lifecycle.archived'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.contractor.getById.queryKey(),
-        });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || tToast('archiveFailed'));
-      },
-    }),
-  );
-
   const stage = contractor.lifecycleStage as LifecycleStage;
+  const contractorPrefixKey = ['contractor'] as const;
+
+  // ---- Mutations via canonical useResourceMutation ------------------------
+  const lifecycleMutation = useResourceMutation(
+    trpc.contractor.updateLifecycleStage.mutationOptions(),
+    {
+      invalidate: [contractorPrefixKey, trpc.contractor.getById.queryKey()],
+      // successMessage is overridden per-call via toast.success below;
+      // we still need a non-empty string here to satisfy the contract.
+      successMessage: t('lifecycle.transitioned', { stage }),
+      errorMessage: tToast('statusFailed'),
+    },
+  );
+
+  const archiveMutation = useResourceMutation(trpc.contractor.archive.mutationOptions(), {
+    invalidate: [contractorPrefixKey, trpc.contractor.getById.queryKey()],
+    successMessage: t('lifecycle.archived'),
+    errorMessage: tToast('archiveFailed'),
+  });
+
   const isPending = lifecycleMutation.isPending || archiveMutation.isPending;
 
-  function handleLifecycleAction(targetStage: LifecycleStage) {
-    lifecycleMutation.mutate({ id: contractor.id, stage: targetStage });
+  // ---- Registry-driven action inventory ----------------------------------
+  const applicable = getProfileContractorActions({
+    id: contractor.id,
+    lifecycleStage: stage,
+  });
+
+  const primaryActions = applicable.filter(a => PRIMARY_BUTTON_KEYS.has(a.key));
+  // Actions surfaced outside the kebab menu — exclude these to avoid
+  // duplicating them inside the dropdown.
+  const ROUTED_ELSEWHERE = new Set(['recomputeCompliance', 'launchWorkflow']);
+  const menuActions = applicable.filter(
+    a => !(PRIMARY_BUTTON_KEYS.has(a.key) || ROUTED_ELSEWHERE.has(a.key)),
+  );
+
+  // ---- Dispatchers --------------------------------------------------------
+  function getActionLabel(action: ContractorAction): string {
+    // next-intl namespaces are flat strings; switch on the registry-declared
+    // namespace so the right `t()` is used.
+    if (action.i18nNamespace === 'ContractorProfile') return t(action.labelKey);
+    if (action.i18nNamespace === 'Contractors.bulkActions') return tBulk(action.labelKey);
+    return tc(action.labelKey);
   }
 
-  function handleArchive() {
-    archiveMutation.mutate({ id: contractor.id });
+  function dispatchPrimaryAction(action: ContractorAction) {
+    switch (action.key) {
+      case 'edit':
+        toast.info(t('actions.editComingSoon'));
+        return;
+      case 'addContract':
+        setWizardOpen(true);
+        return;
+      default:
+        return;
+    }
   }
+
+  function dispatchMenuAction(action: ContractorAction) {
+    if (action.key === 'profile.archive') {
+      archiveMutation.mutate({ id: contractor.id });
+      return;
+    }
+    const target = LIFECYCLE_TRANSITION_TARGETS[action.key];
+    if (target) {
+      lifecycleMutation.mutate({ id: contractor.id, stage: target });
+    }
+  }
+
+  // ---- Stage-specific workflow launcher ----------------------------------
+  const workflowLauncher = (() => {
+    if (stage === 'DRAFT' || stage === 'ONBOARDING') {
+      return {
+        labelKey: 'actions.startOnboarding',
+        pickerType: 'ONBOARDING' as const,
+      };
+    }
+    if (stage === 'ACTIVE' || stage === 'OFFBOARDING') {
+      return {
+        labelKey: 'actions.startWorkflow',
+        pickerType: stage === 'ACTIVE' ? ('OFFBOARDING' as const) : undefined,
+      };
+    }
+    return null;
+  })();
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -180,68 +191,60 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" size="sm" onClick={() => toast.info(t('actions.editComingSoon'))}>
-          <Pencil className="me-1.5 size-3.5" />
-          {t('actions.edit')}
-        </Button>
+        {primaryActions.map(action => {
+          const Icon = action.icon;
+          return (
+            <Button
+              key={action.key}
+              variant="outline"
+              size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => dispatchPrimaryAction(action)}>
+              <Icon className={`me-1.5 ${iconSize.sm}`} />
+              {getActionLabel(action)}
+            </Button>
+          );
+        })}
 
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
-          <FilePlus className="me-1.5 size-3.5" />
-          {t('actions.addContract')}
-        </Button>
-
-        {(stage === 'DRAFT' || stage === 'ONBOARDING') && (
+        {!!workflowLauncher && (
           <Button
             variant="outline"
             size="sm"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
-              setPickerType('ONBOARDING');
+              setPickerType(workflowLauncher.pickerType);
               setPickerOpen(true);
             }}>
-            <Play className="me-1.5 size-3.5" />
-            {t('actions.startOnboarding')}
+            <Play className={`me-1.5 ${iconSize.sm}`} />
+            {t(workflowLauncher.labelKey as Parameters<typeof t>[0])}
           </Button>
         )}
 
-        {(stage === 'ACTIVE' || stage === 'OFFBOARDING') && (
-          <Button
-            variant="outline"
-            size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => {
-              setPickerType(stage === 'ACTIVE' ? 'OFFBOARDING' : undefined);
-              setPickerOpen(true);
-            }}>
-            <Play className="me-1.5 size-3.5" />
-            {t('actions.startWorkflow')}
-          </Button>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="icon-sm">
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end">
-            <LifecycleMenuItems
-              stage={stage}
-              isPending={isPending}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onLifecycleAction={handleLifecycleAction}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onArchive={handleArchive}
-              t={t}
+        {menuActions.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
+                <Button {...props} variant="outline" size="icon-sm">
+                  <MoreHorizontal className={iconSize.md} />
+                  <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
+                </Button>
+              )}
             />
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenuContent align="end">
+              {menuActions.map(action => (
+                <DropdownMenuItem
+                  key={action.key}
+                  disabled={isPending}
+                  variant={action.variant}
+                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                  onSelect={() => dispatchMenuAction(action)}>
+                  {getActionLabel(action)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Contract wizard dialog */}
