@@ -21,12 +21,16 @@
  *   pnpm tsx scripts/audit-i18n-code-coverage.ts
  *   pnpm tsx scripts/audit-i18n-code-coverage.ts --full
  *   pnpm tsx scripts/audit-i18n-code-coverage.ts --dump
+ *   pnpm tsx scripts/audit-i18n-code-coverage.ts --allow-hardcoded
  *
  * Flags:
- *   --full   print every finding (vs the default top-N sample per category)
- *   --dump   write `.planning/translations/i18n-code-gaps-<locale>.json` per
- *            locale, shaped `{ path: { sample: en-value-if-available } }`,
- *            so a follow-up translation pass can read it directly.
+ *   --full              print every finding (vs the default top-N sample per category)
+ *   --dump              write `.planning/translations/i18n-code-gaps-<locale>.json` per
+ *                       locale, shaped `{ path: { sample: en-value-if-available } }`,
+ *                       so a follow-up translation pass can read it directly.
+ *   --allow-hardcoded   do not exit non-zero when the JSX hardcoded-string
+ *                       detector flags strings. Use during migration; remove
+ *                       once a file is fully translated.
  *
  * Exit code: 0 when zero code-referenced paths are missing from EN and zero
  * are missing from any non-en locale; non-zero otherwise. Drift is a build
@@ -43,6 +47,7 @@ const MSG_DIR = resolve(ROOT, APP, 'messages');
 const LOCALES = ['en', 'pl', 'de', 'ar'] as const;
 const FULL = process.argv.includes('--full');
 const DUMP = process.argv.includes('--dump');
+const ALLOW_HARDCODED = process.argv.includes('--allow-hardcoded');
 const DUMP_DIR = resolve(ROOT, '.planning/translations');
 const SAMPLE = 15;
 
@@ -404,6 +409,323 @@ function audit(): Report {
   return report;
 }
 
+// ─── hardcoded-string detector ───────────────────────────────────────────────
+//
+// Independent pass over .tsx files: flags raw string literals that look like
+// user-facing UI copy but were never wrapped in t('...'). Heuristic-based, not
+// type-aware — designed to catch the bulk of regressions without false-flagging
+// className tokens, test IDs, or technical literals.
+
+interface HardcodedFinding {
+  file: string;
+  line: number;
+  column: number;
+  snippet: string;
+  context: 'jsx-text' | 'jsx-attr' | 'toast';
+}
+
+const HARDCODED_SKIP_DIR_RE =
+  /\/(node_modules|\.next|\.turbo|generated|__tests__|test|tests|__mocks__|mocks)\b|(?:test-utils\.tsx?|\.(test|spec)\.tsx?)$/;
+
+const FLAGGABLE_JSX_ATTRS = new Set([
+  'placeholder',
+  'aria-label',
+  'title',
+  'description',
+  'label',
+  'alt',
+]);
+
+const TOAST_METHODS = new Set(['success', 'error', 'info', 'warning']);
+
+const HARDCODED_IGNORE_COMMENT_RE = /(?:\/\*\s*i18n-ignore\s*\*\/|\/\/\s*i18n-ignore)/;
+
+const BRAND_ALLOWLIST = new Set([
+  'Slack',
+  'Jira',
+  'Google Workspace',
+  'Microsoft Teams',
+  'ZATCA',
+  'KSeF',
+  'Peppol',
+  'InPost',
+  'DPD',
+  'UPS',
+  'Stripe',
+  'Sentry',
+  'GitHub',
+  'Linear',
+  'tRPC',
+  'GDPR',
+]);
+
+const SEPARATOR_CHARS = new Set(['·', '—', '–', '•', ':', '/', '|', '-', '.']);
+const ALPHA_RE = /[\p{L}]/u; // any unicode letter (Latin, Polish, German, Arabic, …)
+const PURE_INTERPOLATION_RE = /^\s*\{[^{}]+\}\s*$/;
+const SIZE_UNIT_RE = /^[\d.,]+\s*(?:px|rem|em|ms|s|%|vh|vw|deg|fr)$/;
+const NUMERIC_ONLY_RE = /^[\d\s.,+\-:/]+$/;
+const URL_RE = /^https?:\/\//i;
+// Emoji-only literal: whitespace + emoji presentation/pictographic +
+// zero-width-joiner (U+200D) + variation-selector-16 (U+FE0F) used to compose
+// multi-codepoint emoji (e.g. family / flag sequences).
+const EMOJI_ONLY_RE = /^(?:\s|\p{Emoji_Presentation}|\p{Extended_Pictographic}|‍|️)+$/u;
+
+function listTsxFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const rel = relative(ROOT, full);
+    if (HARDCODED_SKIP_DIR_RE.test(`/${rel}`)) continue;
+    const st = statSync(full);
+    if (st.isDirectory()) {
+      listTsxFiles(full, out);
+    } else if (/\.tsx$/.test(full) && !HARDCODED_SKIP_DIR_RE.test(full)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+/** True when the literal looks like a candidate for translation. */
+function shouldFlagLiteral(value: string, opts: { strictJsxText?: boolean } = {}): boolean {
+  const trimmed = value.trim();
+  if (trimmed.length < 3) return false;
+  if (BRAND_ALLOWLIST.has(trimmed)) return false;
+  if (NUMERIC_ONLY_RE.test(trimmed)) return false;
+  if (SIZE_UNIT_RE.test(trimmed)) return false;
+  if (URL_RE.test(trimmed)) return false;
+  if (PURE_INTERPOLATION_RE.test(trimmed)) return false;
+  if (EMOJI_ONLY_RE.test(trimmed)) return false;
+  // Pure separator/punctuation strings (e.g. " · ", " — ").
+  let isPureSeparator = true;
+  for (const ch of trimmed) {
+    if (!(SEPARATOR_CHARS.has(ch) || /\s/.test(ch))) {
+      isPureSeparator = false;
+      break;
+    }
+  }
+  if (isPureSeparator) return false;
+  // Require at least one alpha letter — kills tokens like "v1.2.3" or "0.25".
+  if (!ALPHA_RE.test(trimmed)) return false;
+
+  // For JSX text we apply a stricter shape filter to avoid catching TS type
+  // annotations (`Promise<X>`), comparisons (`>= 1`), and other code that
+  // happens to live between `>` and `<` syntactically. UI copy almost
+  // never contains these characters.
+  if (opts.strictJsxText) {
+    if (/[=();{}[\]|&]|=>|::|\+\+|--/.test(trimmed)) return false;
+    // Looks like a generic / call expression remnant: `,` followed by code-like
+    // tokens, or a stray colon outside of label:value pairs.
+    if (/[,;]\s*$/.test(trimmed)) return false;
+    // Require either a space (multi-word prose) or a fairly long alpha run.
+    if (!/\s/.test(trimmed) && trimmed.length < 5) return false;
+    // Require the literal to start with a letter or quote — kills `): Foo`
+    // and `): Record` fragments.
+    if (!/^[\p{L}"'`]/u.test(trimmed)) return false;
+  }
+  return true;
+}
+
+/** Locate the start of the line containing `index`. */
+function lineStart(text: string, index: number): number {
+  let i = index;
+  while (i > 0 && text[i - 1] !== '\n') i--;
+  return i;
+}
+
+function previousNonBlankLineRange(
+  text: string,
+  lineStartIdx: number,
+): { start: number; end: number } | null {
+  if (lineStartIdx <= 0) return null;
+  let end = lineStartIdx - 1; // points at the trailing '\n' of the previous line
+  while (end > 0 && text[end] === '\n') end--;
+  if (end <= 0) return null;
+  let start = end;
+  while (start > 0 && text[start - 1] !== '\n') start--;
+  return { start, end: end + 1 };
+}
+
+/** True when the i18n-ignore comment sits on the immediately-preceding line. */
+function hasIgnoreComment(text: string, literalStart: number): boolean {
+  const lsIdx = lineStart(text, literalStart);
+  // Same-line trailing comment after the literal: scan to end-of-line.
+  let eol = literalStart;
+  while (eol < text.length && text[eol] !== '\n') eol++;
+  const sameLine = text.slice(lsIdx, eol);
+  if (HARDCODED_IGNORE_COMMENT_RE.test(sameLine)) return true;
+  // Previous non-blank line.
+  const prev = previousNonBlankLineRange(text, lsIdx);
+  if (!prev) return false;
+  const prevLine = text.slice(prev.start, prev.end);
+  return HARDCODED_IGNORE_COMMENT_RE.test(prevLine);
+}
+
+function lineColumnOf(text: string, index: number): { line: number; column: number } {
+  let line = 1;
+  let lastNewline = -1;
+  for (let i = 0; i < index; i++) {
+    if (text[i] === '\n') {
+      line++;
+      lastNewline = i;
+    }
+  }
+  return { line, column: index - lastNewline };
+}
+
+/**
+ * Read a string-literal arg starting at `start` if it is a plain string (not
+ * template / not identifier). Returns its inner unescaped value and the index
+ * past its closing quote, or null.
+ */
+function readStringLiteral(text: string, start: number): { value: string; end: number } | null {
+  if (start >= text.length) return null;
+  const q = text[start];
+  if (q !== "'" && q !== '"') return null;
+  let i = start + 1;
+  let out = '';
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === '\\') {
+      const n = text[i + 1];
+      if (n === q) {
+        out += q;
+        i += 2;
+        continue;
+      }
+      if (n === 'n') {
+        out += '\n';
+        i += 2;
+        continue;
+      }
+      if (n === 't') {
+        out += '\t';
+        i += 2;
+        continue;
+      }
+      if (n === '\\') {
+        out += '\\';
+        i += 2;
+        continue;
+      }
+      // Unknown escape: keep raw.
+      out += n ?? '';
+      i += 2;
+      continue;
+    }
+    if (ch === q) return { value: out, end: i + 1 };
+    if (ch === '\n') return null; // unterminated for our purposes
+    out += ch;
+    i++;
+  }
+  return null;
+}
+
+function auditHardcodedStrings(): HardcodedFinding[] {
+  const findings: HardcodedFinding[] = [];
+  const files = listTsxFiles(SRC_DIR);
+
+  for (const file of files) {
+    const text = readFileSync(file, 'utf-8');
+
+    // ── Pass 1: JSX text children ──
+    // Match `>TEXT<` segments. We then strip JSX expression containers and
+    // sub-tag noise, and require the remaining literal text to look human.
+    // Simple regex: `>([^<>{}]+)<` — skips text that contains tags or
+    // interpolations; conservative but kills false positives.
+    const jsxTextRe = />([^<>{}]+)</g;
+    for (const m of text.matchAll(jsxTextRe)) {
+      const raw = m[1];
+      const trimmed = raw.trim();
+      if (!shouldFlagLiteral(trimmed, { strictJsxText: true })) continue;
+      const openIdx = m.index ?? 0; // position of '>'
+      const literalStart = openIdx + 1; // first content char
+      const closeIdx = openIdx + 1 + raw.length; // position of '<'
+
+      // Filter: skip TS/JS code that looks like text between angle brackets.
+      // - `=>` arrow followed by code (preceding char is '=')
+      // - `<Identifier<X>` generics (preceding char is alpha/digit/'_' AND
+      //   the '<' that follows is itself part of a generic, not a JSX tag).
+      const prevCh = openIdx > 0 ? text[openIdx - 1] : '';
+      if (prevCh === '=') continue;
+      // For the closing '<': real JSX text is followed by '<' then '/' (close
+      // tag) OR a letter that starts a Component tag. Generics' '<' is often
+      // followed by an uppercase letter too, so distinguish by whether the
+      // preceding token (before the opening '>') looked like a JSX close.
+      // Heuristic: real JSX text is preceded by '>' that closes a tag whose
+      // last char before '>' is one of `"`, `}`, `/`, or a letter that's part
+      // of a component name (PascalCase) or HTML tag (lowercase).
+      // Code-side '>' is most commonly after a generic identifier — we already
+      // filter by code-shape via strictJsxText. As a final guard, skip when
+      // the character before the closing '<' is alphanumeric/underscore AND
+      // the literal contains no whitespace and starts with an uppercase letter
+      // — that's the `Promise` shape.
+      const beforeClose = closeIdx > 0 ? text[closeIdx - 1] : '';
+      if (!/\s/.test(trimmed) && /^[A-Z]/.test(trimmed) && /[A-Za-z0-9_)\]]/.test(beforeClose)) {
+        continue;
+      }
+      if (hasIgnoreComment(text, literalStart)) continue;
+      const { line, column } = lineColumnOf(text, literalStart);
+      findings.push({
+        file,
+        line,
+        column,
+        snippet: trimmed.length > 80 ? `${trimmed.slice(0, 77)}…` : trimmed,
+        context: 'jsx-text',
+      });
+    }
+
+    // ── Pass 2: JSX attrs (placeholder, aria-label, title, description, label, alt) ──
+    for (const attr of FLAGGABLE_JSX_ATTRS) {
+      const re = new RegExp(`(^|[\\s{(/])${attr.replace('-', '\\-')}\\s*=\\s*(['"])`, 'gm');
+      for (const m of text.matchAll(re)) {
+        // m[0] includes the leading boundary char; quoteStart is the actual quote.
+        const quoteStart = (m.index ?? 0) + m[0].length - 1;
+        // Skip property-access patterns: `.description =` or `:description =`.
+        const before = (m.index ?? 0) > 0 ? text[(m.index ?? 0) - 1] : '';
+        if (before === '.' || before === ':') continue;
+        // Skip TS member: `foo: { description: '…' }` — but the regex requires
+        // `=` so this won't match. We're safe.
+        const lit = readStringLiteral(text, quoteStart);
+        if (!lit) continue;
+        if (!shouldFlagLiteral(lit.value)) continue;
+        if (hasIgnoreComment(text, quoteStart)) continue;
+        const { line, column } = lineColumnOf(text, quoteStart);
+        findings.push({
+          file,
+          line,
+          column,
+          snippet: `${attr}="${lit.value.length > 60 ? `${lit.value.slice(0, 57)}…` : lit.value}"`,
+          context: 'jsx-attr',
+        });
+      }
+    }
+
+    // ── Pass 3: toast.{success,error,info,warning}('...') ──
+    const toastRe = /\btoast\.(\w+)\s*\(\s*(['"])/g;
+    for (const m of text.matchAll(toastRe)) {
+      const method = m[1];
+      if (!TOAST_METHODS.has(method)) continue;
+      const quoteStart = (m.index ?? 0) + m[0].length - 1;
+      const lit = readStringLiteral(text, quoteStart);
+      if (!lit) continue;
+      if (!shouldFlagLiteral(lit.value)) continue;
+      if (hasIgnoreComment(text, quoteStart)) continue;
+      const { line, column } = lineColumnOf(text, quoteStart);
+      findings.push({
+        file,
+        line,
+        column,
+        snippet: `toast.${method}("${lit.value.length > 60 ? `${lit.value.slice(0, 57)}…` : lit.value}")`,
+        context: 'toast',
+      });
+    }
+  }
+
+  // Sort: file, then line.
+  findings.sort((a, b) => (a.file === b.file ? a.line - b.line : a.file.localeCompare(b.file)));
+  return findings;
+}
+
 // ─── output ───────────────────────────────────────────────────────────────────
 
 function printSection<T>(label: string, items: ReadonlyArray<T>, render: (x: T) => string): void {
@@ -449,9 +771,29 @@ const driftTotal =
   Object.values(report.drift).reduce((s, a) => s + a.length, 0) +
   Object.values(report.dynamicDrift).reduce((s, a) => s + a.length, 0);
 
+const hardcoded = auditHardcodedStrings();
+console.log(`\n— Hardcoded UI strings (not wrapped in t()) —`);
+if (hardcoded.length === 0) {
+  console.log(`  ✓ No hardcoded user-facing strings detected.`);
+} else {
+  console.log(`  ❌ Hardcoded UI strings (not wrapped in t()): ${hardcoded.length}`);
+  const slice = FULL ? hardcoded : hardcoded.slice(0, SAMPLE);
+  for (const f of slice) {
+    const rel = relative(ROOT, f.file);
+    console.log(`    - ${rel}:${f.line}:${f.column}  [${f.context}]  ${f.snippet}`);
+  }
+  if (!FULL && hardcoded.length > SAMPLE) {
+    console.log(`    … and ${hardcoded.length - SAMPLE} more (--full to see all)`);
+  }
+  if (ALLOW_HARDCODED) {
+    console.log(`    (--allow-hardcoded set: not failing the build on hardcoded strings)`);
+  }
+}
+
 console.log(`\n━━━ summary ━━━`);
 console.log(`Missing in en (bugs):  ${baseTotal}`);
 console.log(`Cross-locale drift:    ${driftTotal}`);
+console.log(`Hardcoded UI strings:  ${hardcoded.length}${ALLOW_HARDCODED ? ' (allowed)' : ''}`);
 
 // ─── dump ─────────────────────────────────────────────────────────────────────
 
@@ -488,5 +830,6 @@ if (DUMP) {
   console.log(`\nDumped per-locale gap maps to ${relative(ROOT, DUMP_DIR)}/i18n-code-gaps-*.json`);
 }
 
-const exitCode = baseTotal === 0 && driftTotal === 0 ? 0 : 1;
+const hardcodedFails = !ALLOW_HARDCODED && hardcoded.length > 0;
+const exitCode = baseTotal === 0 && driftTotal === 0 && !hardcodedFails ? 0 : 1;
 process.exit(exitCode);
