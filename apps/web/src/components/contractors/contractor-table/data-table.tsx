@@ -1,10 +1,9 @@
 'use client';
 
-import { AtelierTableShell } from '@contractor-ops/ui';
+import { AtelierTableShell, ContractorsIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -25,6 +24,13 @@ interface ContractorDataTableProps {
   onRowClick: (contractor: ContractorRow) => void;
   onAddContractor: () => void;
   onImport?: () => void;
+  /**
+   * When true, DataTableBody renders skeleton rows even if the table's own
+   * data has already arrived. Used by the page when its parallel count
+   * query is still in flight, so the in-table empty state never flashes
+   * before the page swaps to AtelierEmptyState.
+   */
+  parentLoading?: boolean;
 }
 
 /**
@@ -36,6 +42,7 @@ export function ContractorDataTable({
   onRowClick,
   onAddContractor,
   onImport,
+  parentLoading,
 }: ContractorDataTableProps) {
   const t = useTranslations('Contractors');
   const tAria = useTranslations('Common.aria');
@@ -90,6 +97,9 @@ export function ContractorDataTable({
           ? (filters.lifecycleStage as Array<
               'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED'
             >)
+          : undefined,
+        type: filters.type.length
+          ? (filters.type as Array<'SOLE_TRADER' | 'COMPANY' | 'INDIVIDUAL_FREELANCER' | 'OTHER'>)
           : undefined,
         ownerUserId: filters.owner.length ? filters.owner : undefined,
         primaryTeamId: filters.team.length ? filters.team : undefined,
@@ -173,6 +183,7 @@ export function ContractorDataTable({
       partial: Partial<{
         status: string[];
         lifecycleStage: string[];
+        type: string[];
         owner: string[];
         team: string[];
         billingModel: string[];
@@ -211,6 +222,7 @@ export function ContractorDataTable({
       search: '',
       status: [],
       lifecycleStage: [],
+      type: [],
       owner: [],
       team: [],
       billingModel: [],
@@ -226,6 +238,7 @@ export function ContractorDataTable({
   const hasFiltersOrSearch =
     filters.search.length > 0 ||
     filters.lifecycleStage.length > 0 ||
+    filters.type.length > 0 ||
     filters.owner.length > 0 ||
     filters.billingModel.length > 0 ||
     filters.health.length > 0;
@@ -239,6 +252,7 @@ export function ContractorDataTable({
         filters={{
           status: filters.status,
           lifecycleStage: filters.lifecycleStage,
+          type: filters.type,
           owner: filters.owner,
           team: filters.team,
           billingModel: filters.billingModel,
@@ -246,6 +260,7 @@ export function ContractorDataTable({
         }}
         onFiltersChange={handleFiltersChange}
         isSearching={isRefetching}
+        disabled={isLoading || parentLoading === true}
         onAddContractor={onAddContractor}
         onImport={onImport}
       />
@@ -253,9 +268,11 @@ export function ContractorDataTable({
       {/* Bulk actions bar */}
       <DataTableBulkActions table={table} />
 
-      {/* Workbench-tier table chrome */}
+      {/* Workbench-tier table chrome. isLoading drives the translucent
+          background overlay that visually darkens the table area while
+          data is in flight — matches /approvals behaviour. */}
       <AtelierTableShell
-        isLoading={isRefetching}
+        isLoading={isLoading || isRefetching || parentLoading === true}
         footer={
           !isLoading && totalRows > 0 ? (
             <DataTablePagination
@@ -294,9 +311,10 @@ export function ContractorDataTable({
           <DataTableBody
             table={table}
             isLoading={isLoading}
+            forceLoading={parentLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
-            emptyIcon={<Users className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyIcon={<ContractorsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}

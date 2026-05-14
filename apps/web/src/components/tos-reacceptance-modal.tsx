@@ -78,7 +78,7 @@ export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptance
         <p className="text-xs text-muted-foreground">
           {t('readFull')}{' '}
           <Link
-            href={`/${locale}/terms`}
+            href={`/${locale}/legal/terms`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline">

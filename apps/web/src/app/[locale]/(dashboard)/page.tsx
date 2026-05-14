@@ -1,8 +1,7 @@
 'use client';
 
-import { AtelierBackground } from '@contractor-ops/ui';
+import { AtelierBackground, DashboardIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { LayoutDashboard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
@@ -25,6 +24,39 @@ import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
+// Dashboard skeleton — shared between Suspense fallback & KPI loading gate
+// ---------------------------------------------------------------------------
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="space-y-1">
+        <Skeleton className="h-8 w-64 rounded-lg" />
+        <Skeleton className="h-4 w-48 rounded-md" />
+      </div>
+      <Skeleton className="h-[200px] w-full rounded-2xl" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+          <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-[340px] rounded-xl" />
+          <Skeleton className="h-[280px] rounded-xl" />
+        </div>
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-[120px] rounded-xl" />
+          <Skeleton className="h-[280px] rounded-xl" />
+          <Skeleton className="h-[320px] rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Empty state when all KPIs are zero
 // ---------------------------------------------------------------------------
 
@@ -34,9 +66,7 @@ function DashboardEmptyState() {
   return (
     <div className="dot-grid corner-marks flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border/40 text-center">
       <div className="flex flex-col items-center px-6 py-16">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <LayoutDashboard className="h-8 w-8 text-primary" />
-        </div>
+        <DashboardIllustration className="h-28 w-28" />
         <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t('heading')}</h2>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('body')}</p>
         <Button render={<Link href="/contractors?action=new" />} className="mt-8">
@@ -55,13 +85,19 @@ function DashboardContent() {
   const { can } = usePermissions();
   const hasReportAccess = can('report', ['read']);
   const lateInterestEnabled = useFlag('payments.late-interest-enabled');
+  const classificationEnabled = useFlag('module.classification-engine');
 
-  // Fetch KPIs to check for empty state
+  // Fetch KPIs to check for empty state — gate on this before rendering widgets
   const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
+
+  // While KPIs are loading, show the skeleton fallback to avoid a flash of
+  // individual widget skeletons that then snap to the empty state.
+  if (kpisLoading) {
+    return <DashboardSkeleton />;
+  }
 
   // Check if everything is zero (empty org)
   const isEmpty =
-    !kpisLoading &&
     kpis &&
     kpis.activeContractors.value === 0 &&
     kpis.pendingApprovals.value === 0 &&
@@ -119,9 +155,11 @@ function DashboardContent() {
           <AnimateIn delay={5}>
             <EInvoiceComplianceWidget />
           </AnimateIn>
-          <AnimateIn delay={5}>
-            <TaxObligationsWidget />
-          </AnimateIn>
+          {classificationEnabled && (
+            <AnimateIn delay={5}>
+              <TaxObligationsWidget />
+            </AnimateIn>
+          )}
         </div>
       </div>
     </div>
@@ -164,33 +202,7 @@ export default function DashboardPage() {
     <div className="relative">
       <AtelierBackground />
       <div className="relative z-10">
-        <Suspense
-          fallback={
-            <div className="flex flex-col gap-8">
-              <div className="space-y-1">
-                <Skeleton className="h-8 w-64 rounded-lg" />
-                <Skeleton className="h-4 w-48 rounded-md" />
-              </div>
-              <Skeleton className="h-[200px] w-full rounded-2xl" />
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                  <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
-                ))}
-              </div>
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="flex flex-col gap-6">
-                  <Skeleton className="h-[340px] rounded-xl" />
-                  <Skeleton className="h-[280px] rounded-xl" />
-                </div>
-                <div className="flex flex-col gap-6">
-                  <Skeleton className="h-[120px] rounded-xl" />
-                  <Skeleton className="h-[280px] rounded-xl" />
-                  <Skeleton className="h-[320px] rounded-xl" />
-                </div>
-              </div>
-            </div>
-          }>
+        <Suspense fallback={<DashboardSkeleton />}>
           <DashboardContent />
         </Suspense>
       </div>

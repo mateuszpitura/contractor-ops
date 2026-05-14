@@ -75,7 +75,7 @@ export const equipmentListSchema = z.object({
   status: z.array(equipmentStatusEnum).optional(),
   type: z.array(equipmentTypeEnum).optional(),
   assignedContractorId: z.string().optional(),
-  sortBy: z.enum(['name', 'type', 'status', 'createdAt']).default('createdAt'),
+  sortBy: z.enum(['name', 'serialNumber', 'type', 'status', 'createdAt']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 

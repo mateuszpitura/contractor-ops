@@ -2,7 +2,6 @@
 
 import { Mail, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import type { InvoiceRow } from './invoice-table/columns';
 
 // ---------------------------------------------------------------------------
@@ -81,6 +81,7 @@ interface InvoiceSidePanelProps {
 export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePanelProps) {
   const t = useTranslations('Invoices');
   const ts = useTranslations('Invoices.sidePanel');
+  const { formatDate } = useDateFormatter();
 
   if (!invoice) return null;
 
@@ -137,18 +138,12 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label={t('columns.issueDate')}
-                  value={
-                    invoice.issueDate
-                      ? new Date(invoice.issueDate).toLocaleDateString('pl-PL')
-                      : null
-                  }
+                  value={invoice.issueDate ? formatDate(invoice.issueDate) : null}
                 />
                 <div className="space-y-1">
                   <dt className="text-[13px] text-muted-foreground">{t('columns.dueDate')}</dt>
                   <dd className={overdue ? 'text-destructive font-medium' : ''}>
-                    {invoice.dueDate
-                      ? new Date(invoice.dueDate).toLocaleDateString('pl-PL')
-                      : '\u2014'}
+                    {invoice.dueDate ? formatDate(invoice.dueDate) : '\u2014'}
                   </dd>
                 </div>
               </div>

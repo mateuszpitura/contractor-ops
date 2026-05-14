@@ -13,7 +13,7 @@ export function useInvoiceFilters() {
     sortBy: parseAsString.withDefault('receivedAt'),
     sortOrder: parseAsString.withDefault('desc'),
     status: parseAsArrayOf(parseAsString).withDefault([]),
-    matchStatus: parseAsString.withDefault(''),
+    matchStatus: parseAsArrayOf(parseAsString).withDefault([]),
     source: parseAsArrayOf(parseAsString).withDefault([]),
     contractorId: parseAsString.withDefault(''),
   });

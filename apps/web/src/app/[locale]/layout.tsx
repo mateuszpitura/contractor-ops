@@ -2,10 +2,12 @@ import { Noto_Sans_Arabic } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'sonner';
 import { Providers } from '@/app/providers';
 import { CookieConsentBanner } from '@/components/layout/cookie-consent-banner';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { getDir, isRtl } from '@/i18n/config';
+import type { Locale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import '@/app/globals.css';
 
@@ -42,8 +44,8 @@ export default async function LocaleLayout({
   // Set lang and dir attributes on the html element for screen readers and RTL.
   // Sanitize locale to alphanumeric+hyphen only (defense in depth).
   const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, '');
-  const dir = locale === 'ar' ? 'rtl' : 'ltr';
-  const isArabic = locale === 'ar';
+  const dir = getDir(locale as Locale);
+  const isArabic = isRtl(locale as Locale);
 
   return (
     <>

@@ -5,9 +5,9 @@ import {
   AtelierPageHeader,
   AtelierStatusPill,
   AtelierTableShell,
+  PaymentsIllustration,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -56,16 +57,7 @@ export default function PortalPaymentsPage() {
   const paymentsQuery = useQuery(portalTrpc.portal.listPayments.queryOptions());
   const payments = paymentsQuery.data;
   const isLoading = paymentsQuery.isPending;
-
-  function formatDate(date: Date | string | null): string {
-    if (!date) return t('time.na');
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(d);
-  }
+  const { formatDate } = usePortalDateFormatter();
 
   return (
     <div>
@@ -145,7 +137,7 @@ export default function PortalPaymentsPage() {
           </div>
         ) : (
           <AtelierEmptyState
-            icon={Banknote}
+            illustration={PaymentsIllustration}
             heading={t('payments.emptyTitle')}
             body={t('payments.emptyBody')}
             renderAction={renderEmptyStateAction}

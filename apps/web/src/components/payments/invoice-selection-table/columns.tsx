@@ -50,8 +50,22 @@ function formatMinorUnits(minor: number): string {
 // ---------------------------------------------------------------------------
 
 type TranslateFunction = (key: string) => string;
+type DateFormatter = (value: Date | string | null | undefined) => string;
 
-export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
+export function getColumns(
+  t: TranslateFunction,
+  formatDate?: DateFormatter,
+): ColumnDef<ReadyInvoiceRow>[] {
+  const fmtDate: DateFormatter =
+    formatDate ??
+    (v => {
+      if (v == null) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleDateString();
+      } catch {
+        return '\u2014';
+      }
+    });
   return [
     // 1. Checkbox
     {
@@ -143,7 +157,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ReadyInvoiceRow>[] {
       cell: ({ row }) => {
         const dueDate = row.original.dueDate;
         if (!dueDate) return <span className="text-muted-foreground">&mdash;</span>;
-        return <span className="text-sm">{new Date(dueDate).toLocaleDateString('pl-PL')}</span>;
+        return <span className="text-sm">{fmtDate(dueDate)}</span>;
       },
     },
 

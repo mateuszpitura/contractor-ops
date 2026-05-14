@@ -142,6 +142,8 @@ export const contractListSchema = z.object({
       type: z.array(contractTypeEnum).optional(),
       billingModel: z.array(billingModelEnum).optional(),
       ownerUserId: z.array(z.string()).optional(),
+      startDateFrom: z.iso.datetime().optional(),
+      startDateTo: z.iso.datetime().optional(),
       endDateFrom: z.iso.datetime().optional(),
       endDateTo: z.iso.datetime().optional(),
       complianceRiskLevel: z.array(complianceRiskLevelEnum).optional(),

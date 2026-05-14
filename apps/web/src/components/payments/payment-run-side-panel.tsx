@@ -33,6 +33,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Textarea } from '@/components/ui/textarea';
 import { useDoubleConfirmation } from '@/hooks/use-double-confirmation';
 import { Link } from '@/i18n/navigation';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { formatRelativeDate } from '@/lib/format-relative-date';
 import { trpc } from '@/trpc/init';
@@ -61,6 +62,7 @@ export function PaymentRunSidePanel({
 }: PaymentRunSidePanelProps) {
   const t = useTranslations('Payments');
   const locale = useLocale();
+  const { formatDate } = useDateFormatter();
   const queryClient = useQueryClient();
 
   // Fetch run data
@@ -226,7 +228,7 @@ export function PaymentRunSidePanel({
               {!!run.completedAt && (
                 <DetailItem
                   label={t('sidePanel.completedDate')}
-                  value={new Date(run.completedAt).toLocaleDateString('pl-PL')}
+                  value={formatDate(run.completedAt)}
                 />
               )}
             </div>

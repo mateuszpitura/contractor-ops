@@ -1,7 +1,8 @@
 'use client';
 
+import { NotificationsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Timer, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -190,7 +191,7 @@ export function ReminderRulesSection() {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Timer className="size-12 text-muted-foreground" />
+          <NotificationsIllustration className="h-24 w-24" />
           <h3 className="mt-4 text-base font-semibold">{t('reminderRules.emptyHeading')}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             {t('reminderRules.emptyBody')}

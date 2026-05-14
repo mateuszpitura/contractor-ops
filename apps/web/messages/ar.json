@@ -89,7 +89,8 @@
     "uploadInvoice": "رفع فاتورة",
     "search": "بحث",
     "searchShortcut": "Cmd+K",
-    "notifications": "الإشعارات"
+    "notifications": "الإشعارات",
+    "addContractorFirst": "أضف مقاولًا أولًا"
   },
   "Dashboard": {
     "emptyState": {
@@ -226,17 +227,29 @@
       "languagePlaceholder": "اختر اللغة",
       "languagePolish": "البولندية",
       "languageEnglish": "الإنجليزية",
+      "languageGerman": "الألمانية",
+      "languageArabic": "العربية",
       "fiscalYear": "شهر بداية السنة المالية",
       "fiscalYearPlaceholder": "اختر الشهر",
       "billingEmail": "بريد الفوترة الإلكتروني",
-      "billingEmailOptional": "(اختياري)"
+      "billingEmailOptional": "(اختياري)",
+      "dateFormat": "تنسيق التاريخ",
+      "dateFormatPlaceholder": "اختر تنسيق التاريخ",
+      "timeFormat": "تنسيق الوقت",
+      "timeFormatPlaceholder": "اختر تنسيق الوقت",
+      "timeFormat24h": "24 ساعة",
+      "timeFormat12h": "12 ساعة (ص/م)"
+    },
+    "appearance": {
+      "heading": "اللغة والعرض",
+      "description": "اختر لغة واجهة التطبيق.",
+      "uiLanguage": "لغة الواجهة"
     },
     "expiryReminders": {
       "heading": "تذكيرات انتهاء العقود",
       "description": "فترات التذكير الافتراضية لجميع العقود. يمكن للعقود الفردية تجاوز هذه الإعدادات.",
       "label": "أيام قبل الانتهاء",
       "placeholder": "مثال: 30، 60، 90",
-      "save": "حفظ الإعدادات الافتراضية",
       "successToast": "تم تحديث إعدادات التذكير الافتراضية"
     },
     "invoiceEmailInbox": "صندوق بريد الف��اتير",
@@ -660,6 +673,7 @@
       "filterActorAll": "جميع الجهات الفاعلة",
       "filterActionAll": "جميع الإجراءات",
       "filterResourceAll": "جميع الموارد",
+      "filterDateRange": "نطاق التاريخ",
       "expand": "تفاصيل Expand",
       "collapse": "تفاصيل Collapse",
       "columns": {
@@ -678,7 +692,61 @@
         "export": "تم التصدير",
         "invite": "تمت الدعوة",
         "deactivate": "Deactivated",
-        "login": "تسجيل الدخول"
+        "login": "تسجيل الدخول",
+        "settingsUpdate": "تم تحديث الإعدادات",
+        "settingsExpiryRemindersUpdate": "تم تحديث تذكيرات انتهاء الصلاحية",
+        "settingsInvoiceThresholdUpdate": "تم تحديث حد الفاتورة",
+        "settingsBrandingUpdate": "تم تحديث العلامة التجارية",
+        "settingsPortalDomainUpdate": "تم تحديث نطاق البوابة",
+        "memberInvite": "تمت دعوة العضو",
+        "memberRoleUpdate": "تم تحديث الدور",
+        "memberDeactivate": "تم تعطيل العضو",
+        "memberReactivate": "تمت إعادة تنشيط العضو",
+        "documentDelete": "تم حذف المستند",
+        "apiKeyCreate": "تم إنشاء مفتاح API",
+        "apiKeyUpdate": "تم تحديث مفتاح API",
+        "apiKeyRevoke": "تم إلغاء مفتاح API",
+        "reminderRuleCreate": "تم إنشاء قاعدة التذكير",
+        "reminderRuleUpdate": "تم تحديث قاعدة التذكير",
+        "reminderRuleDelete": "تم حذف قاعدة التذكير",
+        "statusTransition": "تم تغيير الحالة",
+        "integrationUserLink": "تم ربط التكامل",
+        "integrationUserUnlink": "تم إلغاء ربط التكامل",
+        "integrationDisconnect": "تم قطع التكامل",
+        "integrationConnect": "تم توصيل التكامل",
+        "integrationReconnect": "تمت إعادة توصيل التكامل",
+        "approvalChainCreate": "تم إنشاء سلسلة الموافقة",
+        "approvalChainUpdate": "تم تحديث سلسلة الموافقة",
+        "approvalChainDelete": "تم حذف سلسلة الموافقة",
+        "billingCheckoutSessionCreate": "تم إنشاء جلسة الدفع",
+        "billingPortalSessionCreate": "تم فتح بوابة الفواتير",
+        "billingTopupCheckoutCreate": "تم إنشاء عملية شحن الرصيد",
+        "organizationUpdate": "تم تحديث المنظمة",
+        "organizationKleinunternehmerToggle": "تم تبديل حالة المنشأة الصغيرة",
+        "changeRequestApprove": "تمت الموافقة على طلب التغيير",
+        "changeRequestReject": "تم رفض طلب التغيير",
+        "bacsSubmitterConfigUpdated": "تم تحديث إعدادات BACS",
+        "statusfeststellungsverfahrenCreate": "تم إنشاء إجراء تحديد الوضع",
+        "statusfeststellungsverfahrenUpdate": "تم تحديث إجراء تحديد الوضع",
+        "statusfeststellungsverfahrenDelete": "تم حذف إجراء تحديد الوضع",
+        "complianceRecompute": "تمت إعادة حساب الامتثال",
+        "organizationErasureRequested": "تم طلب محو البيانات",
+        "equipmentCreate": "تم إنشاء المعدات",
+        "equipmentUpdate": "تم تحديث المعدات",
+        "equipmentRetire": "تم إيقاف المعدات",
+        "equipmentAssign": "تم تعيين المعدات",
+        "equipmentUnassign": "تم إلغاء تعيين المعدات",
+        "shipmentCreate": "تم إنشاء الشحنة",
+        "shipmentUpdateStatus": "تم تحديث حالة الشحنة",
+        "shipmentCreateInPost": "تم إنشاء شحنة InPost",
+        "shipmentCreateDpd": "تم إنشاء شحنة DPD",
+        "shipmentCreateUps": "تم إنشاء شحنة UPS",
+        "courierConfigSave": "تم حفظ إعدادات شركة الشحن",
+        "returnRequestCreate": "تم إنشاء طلب الإرجاع",
+        "returnRequestCancel": "تم إلغاء طلب الإرجاع",
+        "returnRequestApprove": "تمت الموافقة على طلب الإرجاع",
+        "returnRequestReject": "تم رفض طلب الإرجاع",
+        "workflowOffboardingOverrideBlockingTask": "تم تجاوز المهمة المحظورة"
       },
       "resources": {
         "organization": "المؤسسة",
@@ -691,7 +759,12 @@
         "paymentRun": "دفعة",
         "project": "المشروع",
         "team": "الفريق",
-        "approvalFlow": "موافقة"
+        "approvalFlow": "موافقة",
+        "timesheet": "سجل الوقت",
+        "equipment": "المعدات",
+        "shipment": "الشحنة",
+        "returnRequest": "طلب الإرجاع",
+        "user": "المستخدم"
       },
       "pagination": {
         "summary": "صفحة {page} من {totalPages}",
@@ -713,17 +786,16 @@
       "logoAlt": "شعار المؤسسة",
       "accentColor": "اللون المميّز",
       "saving": "جارٍ الحفظ...",
-      "saveBranding": "حفظ Branding",
       "successToast": "تم تحديث Portal branding",
       "errorToast": "فشل save branding. يرجى المحاولة مجددًا.",
       "uploadError": "فشل upload logo. يرجى المحاولة مجددًا.",
       "invalidFileType": "يرجى رفع ملف PNG أو JPG أو SVG.",
       "fileTooLarge": "يجب أن يكون الشعار أقل من 2 ميغابايت.",
       "subdomainHeading": "النطاق الفرعي للبوابة",
+      "subdomainCardDescription": "تكوين النطاق الفرعي المخصص لبوابة المقاولين",
       "subdomainDescription": "سيصل المقاولون إلى البوابة عبر",
       "subdomainPlaceholder": "مثال: , acme",
       "subdomainSuffix": ".portal.yourdomain.com",
-      "saveDomain": "حفظ Domain",
       "subdomainUpdated": "تم تحديث Portal subdomain",
       "subdomainTaken": "هذا النطاق الفرعي مستخدم بالفعل",
       "subdomainSaveError": "فشل save portal subdomain. يرجى المحاولة مجددًا.",
@@ -880,6 +952,16 @@
       "readonly": "قراءة فقط",
       "owner": "المسؤول",
       "member": "عضو"
+    },
+    "roleDescriptions": {
+      "admin": "وصول كامل لجميع الميزات باستثناء إعدادات المنصة",
+      "financeAdmin": "الفواتير والمدفوعات والتقارير والموافقات",
+      "opsManager": "المقاولون والعقود وسير العمل والمعدات",
+      "teamManager": "عرض المقاولين والموافقة على الفواتير وجداول الدوام",
+      "legalComplianceViewer": "وصول للقراءة فقط للمقاولين والعقود والفواتير",
+      "itAdmin": "إدارة الأعضاء والتكاملات وإعدادات النظام",
+      "externalAccountant": "وصول للقراءة فقط للبيانات المالية والتقارير",
+      "readonly": "عرض المقاولين والعقود والفواتير والتقارير"
     }
   },
   "Errors": {
@@ -1760,6 +1842,7 @@
     "editNamePrompt": "أدخل اسمك",
     "nameUpdated": "تم تحديث Name",
     "nameUpdateFailed": "تعذر update name. حاول مجددًا.",
+    "signOutFailed": "تعذر تسجيل الخروج. حاول مجددًا.",
     "save": "حفظ",
     "cancel": "إلغاء",
     "aria": {
@@ -1794,7 +1877,8 @@
       "mapColumnToField": "ربط العمود \"{header}\" بالحقل",
       "mapTo": "ربط \"{header}\" بـ",
       "overdueTasks": "{count} مهام متأخرة",
-      "notificationsWithUnread": "{title} — {count} غير مقروء"
+      "notificationsWithUnread": "{title} — {count} غير مقروء",
+      "teams": "مايكروسوفت تيمز"
     },
     "srOnly": {
       "more": "المزيد",
@@ -2130,6 +2214,8 @@
     "searchPlaceholder": "البحث عن invoices...",
     "filters": "عوامل التصفية",
     "clearAll": "مسح الكل",
+    "complianceFilterLabel": "امتثال الفاتورة الإلكترونية",
+    "statusFilterLabel": "حالة الدفع والمطابقة",
     "overdueFilter": "متأخر السداد",
     "columns": {
       "selectAll": "تحديد الكل",
@@ -2144,7 +2230,9 @@
       "status": "الحالة",
       "matchStatus": "حالة المطابقة",
       "source": "Source",
-      "einvoiceCompliance": "E-invoice"
+      "einvoiceCompliance": "E-invoice",
+      "overdueInterest": "فوائد التأخر",
+      "skonto": "خصم نقدي"
     },
     "status": {
       "received": "مستلمة",
@@ -2308,6 +2396,8 @@
     "tabMy": "موافقاتي",
     "tabAll": "الكل",
     "searchPlaceholder": "البحث عن approvals...",
+    "filters": "عوامل التصفية",
+    "clearAll": "مسح الكل",
     "chips": {
       "all": "الكل",
       "pending": "قيد الانتظار",
@@ -2608,6 +2698,7 @@
       "disconnectCta": "فصل Slack"
     },
     "title": "الإشعارات",
+    "pageDescription": "طلبات الموافقة وإسناد المهام والتحديثات المهمة",
     "markAllRead": "وضع علامة قراءة على الكل",
     "viewAll": "عرض all notifications",
     "empty": "لا توجد إشعارات",
@@ -2708,6 +2799,15 @@
     "importStatement": "استيراد statement",
     "tabPayments": "المدفوعات",
     "totalPaid": "إجمالي المدفوع",
+    "columns": {
+      "runNumber": "رقم التشغيل",
+      "status": "الحالة",
+      "created": "تم الإنشاء",
+      "invoices": "الفواتير",
+      "total": "الإجمالي",
+      "format": "Format",
+      "actions": "الإجراءات"
+    },
     "columnRunNumber": "رقم التشغيل",
     "columnDate": "التاريخ",
     "columnInvoiceNumber": "رقم الفاتورة",
@@ -2883,7 +2983,9 @@
       "viewPaymentRun": "عرض payment run",
       "close": "إغلاق"
     },
+    "clearAll": "مسح الكل",
     "filters": {
+      "status": "الحالة",
       "dateRange": "النطاق الزمني",
       "all": "الكل",
       "draft": "مسودة",
@@ -3082,6 +3184,16 @@
       "overdueClickThrough": "عرض الفواتير المتأخرة",
       "overdueSubline": "{principal} مستحقة — +{interest} فوائد متراكمة",
       "overdueTitle": "الذمم المتأخرة (المملكة المتحدة)"
+    },
+    "selection": {
+      "selectAll": "تحديد الكل",
+      "selectRow": "تحديد الصف",
+      "invoiceNumber": "رقم الفاتورة",
+      "contractor": "المقاول",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "dueDate": "تاريخ الاستحقاق",
+      "contractNumber": "رقم العقد"
     }
   },
   "Reports": {
@@ -3303,6 +3415,11 @@
       "body": "إضافة your first contractor or import from a spreadsheet to get started.",
       "cta": "إضافة مقاول",
       "secondary": "استيراد from file"
+    },
+    "equipment": {
+      "heading": "لا توجد معدات بعد",
+      "body": "أضف أول عنصر لإدارة الأدوات والتخصيصات وعمليات الشحن.",
+      "cta": "إضافة معدات"
     },
     "contracts": {
       "heading": "لا توجد عقود بعد",
@@ -3995,7 +4112,13 @@
   },
   "Equipment": {
     "title": "المعدات",
+    "pageDescription": "تتبع التخصيصات والشحنات ودورة حياة المعدات",
     "addEquipment": "إضافة equipment",
+    "noResults": {
+      "heading": "لم يتم العثور على معدات",
+      "body": "حاول تعديل بحثك أو الفلاتر.",
+      "cta": "مسح الفلاتر"
+    },
     "list": {
       "emptyTitle": "لا يوجد equipment tracked بعد",
       "emptyDescription": "إضافة your first piece of equipment to start tracking assignments and shipments.",
@@ -4703,7 +4826,8 @@
     },
     "credits": {
       "remaining": "{remaining} من {total} أرصدة متبقية",
-      "exhausted": "لا توجد أرصدة متبقية — اشترِ المزيد لمتابعة معالجة OCR",
+      "usedOfTotal": "{used} مستخدم / {total} إجمالي",
+      "exhausted": "لا توجد أرصدة متبقية",
       "buyMore": "شراء المزيد"
     },
     "topUp": {
@@ -4726,14 +4850,15 @@
   },
   "Time": {
     "pageTitle": "تتبّع الوقت",
+    "pageDescription": "مراجعة واعتماد جداول عمل المتعاقدين",
     "tabs": {
       "pendingReviews": "المراجعات المعلّقة",
       "allEntries": "جميع الإدخالات",
-      "reconciliation": "Reconciliation"
+      "reconciliation": "التسوية"
     },
     "filters": {
       "allStatuses": "جميع الحالات",
-      "draft": "Draft",
+      "draft": "مسودة",
       "submitted": "Submitted",
       "approved": "Approved",
       "rejected": "Rejected",
@@ -5508,7 +5633,7 @@
     },
     "intake": {
       "_NOTE": "AI-first-pass translation pending review — EN placeholders",
-      "splitButtonPrimary": "+ فاتورة جديدة",
+      "splitButtonPrimary": "فاتورة جديدة",
       "splitButtonImport": "استيراد فاتورة إلكترونية",
       "sidebarImports": "Imports",
       "pageTitle": "استيرادات الفواتير",

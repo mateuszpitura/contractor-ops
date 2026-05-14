@@ -1,8 +1,13 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  InvoicesIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Check, Copy, Receipt } from 'lucide-react';
+import { Check, Copy, Mail, Receipt, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -12,12 +17,10 @@ import { ImportSplitButton } from '@/components/invoices/intake/import-split-but
 import { InvoiceSidePanel } from '@/components/invoices/invoice-side-panel';
 import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
 import { InvoiceDataTable } from '@/components/invoices/invoice-table/data-table';
-import { useInvoiceFilters } from '@/components/invoices/invoice-table/use-invoice-filters';
 import { InvoiceUploadArea } from '@/components/invoices/invoice-upload-area';
-import { StatusChipBar } from '@/components/invoices/status-chip-bar';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -52,9 +55,6 @@ function InvoicesContent() {
     }
   }, [action, setAction]);
 
-  // URL-synced filter state for chip bar integration
-  const [filters, setFilters] = useInvoiceFilters();
-
   // Count queries for empty state detection
   const invoiceCountQuery = useQuery(trpc.invoice.list.queryOptions({ page: 1, pageSize: 10 }));
   const contractorCountQuery = useQuery(
@@ -77,13 +77,6 @@ function InvoicesContent() {
     setUploadOpen(false);
   }, []);
 
-  const handleStatusChange = useCallback(
-    (status: string) => {
-      void setFilters({ matchStatus: status, page: 1 });
-    },
-    [setFilters],
-  );
-
   const handleCopyEmail = useCallback(() => {
     navigator.clipboard.writeText(invoiceEmail).then(() => {
       setEmailCopied(true);
@@ -103,28 +96,10 @@ function InvoicesContent() {
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  // Show empty state when no invoices exist
-  if (!isCountLoading && invoiceTotal === 0) {
-    return (
-      <div className="space-y-6">
-        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
-        {uploadOpen ? (
-          <InvoiceUploadArea onUploadComplete={handleUploadComplete} />
-        ) : (
-          <AtelierEmptyState
-            icon={Receipt}
-            heading={te('invoices.heading')}
-            body={te('invoices.body')}
-            primaryAction={{ label: te('invoices.cta'), onClick: handleUpload }}
-            secondaryAction={{ label: te('invoices.secondary'), href: '/settings' }}
-            prerequisiteMissing={contractorCount === 0}
-            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
-            renderAction={renderEmptyStateAction}
-          />
-        )}
-      </div>
-    );
-  }
+  // Empty state shown inline within the chrome — keeps SummaryTile + filter
+  // chips + status bar mounted across the loading→empty transition, so
+  // height doesn't collapse when count resolves to zero.
+  const isEmptyResolved = !isCountLoading && invoiceTotal === 0;
 
   return (
     <div className="space-y-6">
@@ -139,17 +114,17 @@ function InvoicesContent() {
         />
       </AnimateIn>
 
-      {/* Phase 61 · Plan 61-08 — compliance summary tile + filter chips */}
+      {/* Phase 61 · Plan 61-08 — compliance summary tile + filter tabs */}
       <AnimateIn delay={1}>
         <EInvoiceComplianceSummaryTile onReviewFilterRequested={handleComplianceReview} />
       </AnimateIn>
       <AnimateIn delay={2}>
-        <EInvoiceComplianceFilterChips />
-      </AnimateIn>
-
-      {/* Status chip bar */}
-      <AnimateIn delay={3}>
-        <StatusChipBar activeStatus={filters.matchStatus} onStatusChange={handleStatusChange} />
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground">
+            {t('complianceFilterLabel')}
+          </h3>
+          <EInvoiceComplianceFilterChips disabled={isCountLoading} />
+        </div>
       </AnimateIn>
 
       {/* Upload area (collapsible) */}
@@ -170,15 +145,33 @@ function InvoicesContent() {
         </div>
       )}
 
-      {/* Directory section */}
+      {/* Directory section — swap to AtelierEmptyState inline once count
+          resolves to zero, so the chrome above stays mounted (no jump). */}
       <AnimateIn delay={4}>
-        <section
-          data-slot="invoices-table-region"
-          aria-label={t('pageTitle')}
-          className="space-y-3">
-          <SectionLabel icon={Receipt}>{t('pageTitle')}</SectionLabel>
-          <InvoiceDataTable onRowClick={handleRowClick} onUpload={handleUpload} />
-        </section>
+        {isEmptyResolved ? (
+          <AtelierEmptyState
+            illustration={InvoicesIllustration}
+            heading={te('invoices.heading')}
+            body={te('invoices.body')}
+            primaryAction={{ label: te('invoices.cta'), onClick: handleUpload, icon: Upload }}
+            secondaryAction={{ label: te('invoices.secondary'), href: '/settings', icon: Mail }}
+            prerequisiteMissing={contractorCount === 0}
+            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            renderAction={renderEmptyStateAction}
+          />
+        ) : (
+          <section
+            data-slot="invoices-table-region"
+            aria-label={t('pageTitle')}
+            className="space-y-3">
+            <SectionLabel icon={Receipt}>{t('pageTitle')}</SectionLabel>
+            <InvoiceDataTable
+              onRowClick={handleRowClick}
+              onUpload={handleUpload}
+              parentLoading={isCountLoading}
+            />
+          </section>
+        )}
       </AnimateIn>
 
       {/* Side panel */}
@@ -187,52 +180,6 @@ function InvoicesContent() {
         open={sidePanelOpen}
         onOpenChange={setSidePanelOpen}
       />
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Loading fallback
-// ---------------------------------------------------------------------------
-
-function InvoicesLoading() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-7 w-40" />
-      {/* Chip bar skeleton */}
-      <div className="flex items-center gap-2">
-        {Array.from({ length: 7 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`skel-${i}`} className="h-8 w-24 rounded-full" />
-        ))}
-      </div>
-      {/* Table skeleton */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-80" />
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              key={`skel-${i}`}
-              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-6" />
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -247,7 +194,7 @@ function InvoicesLoading() {
  */
 export default function InvoicesPage() {
   return (
-    <Suspense fallback={<InvoicesLoading />}>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <InvoicesContent />
     </Suspense>
   );

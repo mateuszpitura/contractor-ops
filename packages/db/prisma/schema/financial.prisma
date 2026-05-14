@@ -19,8 +19,6 @@ model BoEBaseRateHistory {
   notes            String?       @db.Text
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-
-  @@map("boe_base_rate_history")
 }
 
 // Skonto (early payment discount) models — multi-tenant
@@ -43,7 +41,6 @@ model SkontoTerm {
   skontoApplications SkontoApplication[]
 
   @@index([organizationId])
-  @@map("skonto_term")
 }
 
 enum SkontoEligibility {
@@ -65,7 +62,6 @@ model SkontoSnapshot {
   createdAt            DateTime          @default(now())
 
   @@index([organizationId])
-  @@map("skonto_snapshot")
 }
 
 model SkontoApplication {
@@ -81,5 +77,4 @@ model SkontoApplication {
   createdAt              DateTime       @default(now())
 
   @@index([organizationId])
-  @@map("skonto_application")
 }

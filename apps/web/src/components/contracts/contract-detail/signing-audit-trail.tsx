@@ -5,6 +5,7 @@ import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from 'lucide
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -27,36 +28,6 @@ const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatRelativeTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMinutes < 1) return 'Just now';
-  if (diffMinutes < 60) return `${diffMinutes}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 30) return `${diffDays}d ago`;
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function formatFullDateTime(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -76,6 +47,27 @@ type SigningAuditTrailProps = {
  * Per UI-SPEC: Sheet from right, 400px wide, newest first.
  */
 export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAuditTrailProps) {
+  const { formatDate, formatDateTime } = useDateFormatter();
+
+  function formatRelativeTime(date: Date | string): string {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return formatDate(d);
+  }
+
+  function formatFullDateTime(date: Date | string): string {
+    return formatDateTime(date);
+  }
+
   const detailQuery = useQuery(
     trpc.esign.getEnvelopeDetail.queryOptions({ envelopeId }, { enabled: open && !!envelopeId }),
   );

@@ -2,8 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
+import { useCallback, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { tabsListVariants } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -11,18 +13,19 @@ import { trpc } from '@/trpc/init';
 // ---------------------------------------------------------------------------
 
 interface StatusChipBarProps {
-  /** Currently active status filter from URL state */
-  activeStatus: string;
-  /** Callback to set the active status filter */
-  onStatusChange: (status: string) => void;
+  /** Currently active status filters from URL state (array for multi-select) */
+  activeStatuses: string[];
+  /** Callback to set the active status filters */
+  onStatusChange: (statuses: string[]) => void;
+  /** Disable all toggles (initial data load). */
+  disabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------
-// Chip definitions
+// Toggle definitions
 // ---------------------------------------------------------------------------
 
-const STATUS_CHIPS = [
-  { key: '', labelKey: 'chips.all' },
+const STATUS_TOGGLES = [
   { key: 'RECEIVED', labelKey: 'chips.received' },
   { key: 'MATCHED', labelKey: 'chips.matched' },
   { key: 'UNMATCHED', labelKey: 'chips.unmatched' },
@@ -33,73 +36,85 @@ const STATUS_CHIPS = [
 ] as const;
 
 // ---------------------------------------------------------------------------
+// Shared trigger classes — mirrors TabsTrigger default-variant styles so
+// single-select Tabs (row 1) and multi-select toggles (row 2) look identical.
+// ---------------------------------------------------------------------------
+
+const TRIGGER_BASE = cn(
+  'relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2.5 py-0.5 text-sm font-medium whitespace-nowrap transition-[color,background-color,box-shadow] duration-150 ease-out',
+  'focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring',
+  'disabled:pointer-events-none disabled:opacity-50',
+  'text-muted-foreground hover:text-foreground/80',
+);
+
+const TRIGGER_ACTIVE = 'bg-background text-foreground shadow-sm';
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 /**
- * Horizontal row of Badge-style chips above the invoice table.
- * Each chip shows a live count from trpc.invoice.statusCounts.
- * Active chip gets primary styling, inactive gets muted.
- * Overflow: horizontal scroll with fade gradient on narrow screens.
+ * Multi-select toggle bar for invoice payment & matching status.
+ * Visually matches `TabsList` / `TabsTrigger` (default variant) but allows
+ * multiple items to be pressed simultaneously. Empty selection = no filter.
  */
-export function StatusChipBar({ activeStatus, onStatusChange }: StatusChipBarProps) {
+export function StatusChipBar({ activeStatuses, onStatusChange, disabled }: StatusChipBarProps) {
   const t = useTranslations('Invoices');
 
   // Fetch live counts
   const countsQuery = useQuery(trpc.invoice.statusCounts.queryOptions());
   const counts = (countsQuery.data ?? {}) as Record<string, number>;
 
-  // Compute total for "All" chip
-  const totalCount = Object.entries(counts)
-    .filter(([key]) => key.startsWith('status:'))
-    .reduce((sum, [, count]) => sum + count, 0);
+  const activeSet = useMemo(() => new Set(activeStatuses), [activeStatuses]);
 
   const getCount = (key: string): number => {
-    if (key === '') return totalCount;
-    // statusCounts uses "status:STATUS" or "matchStatus:STATUS" keys
     return (counts[`status:${key}`] ?? 0) + (counts[`matchStatus:${key}`] ?? 0);
   };
 
+  const handleToggle = useCallback(
+    (key: string) => {
+      if (activeSet.has(key)) {
+        onStatusChange(activeStatuses.filter(s => s !== key));
+      } else {
+        onStatusChange([...activeStatuses, key]);
+      }
+    },
+    [activeSet, activeStatuses, onStatusChange],
+  );
+
   if (countsQuery.isLoading) {
     return (
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {STATUS_CHIPS.map(chip => (
-          <Skeleton key={chip.key} className="h-8 w-24 rounded-full" />
+      <div className="flex items-center gap-2 pb-1">
+        {STATUS_TOGGLES.map(toggle => (
+          <Skeleton key={toggle.key} className="h-9 w-24 rounded-lg" />
         ))}
       </div>
     );
   }
 
   return (
-    <div className="relative">
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {STATUS_CHIPS.map(chip => {
-          const isActive = activeStatus === chip.key;
-          const count = getCount(chip.key);
+    <fieldset
+      className={cn(tabsListVariants({ variant: 'default' }), 'h-9 border-0 p-1')}
+      aria-label={t('filters')}>
+      {STATUS_TOGGLES.map(toggle => {
+        const isActive = activeSet.has(toggle.key);
+        const count = getCount(toggle.key);
 
-          return (
-            <button
-              key={chip.key}
-              type="button"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onStatusChange(chip.key)}
-              className="shrink-0">
-              <Badge
-                variant="secondary"
-                className={`cursor-pointer px-3 py-1.5 text-[13px] transition-colors ${
-                  isActive
-                    ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                }`}>
-                {t(chip.labelKey as Parameters<typeof t>[0])}
-                <span className="ms-1.5 tabular-nums">({count})</span>
-              </Badge>
-            </button>
-          );
-        })}
-      </div>
-      {/* Fade gradient for overflow on narrow screens */}
-      <div className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
-    </div>
+        return (
+          <button
+            key={toggle.key}
+            type="button"
+            role="switch"
+            disabled={disabled}
+            aria-checked={isActive}
+            // biome-ignore lint/nursery/noJsxPropsBind: per-toggle handler
+            onClick={() => handleToggle(toggle.key)}
+            className={cn(TRIGGER_BASE, isActive && TRIGGER_ACTIVE)}>
+            {t(toggle.labelKey as Parameters<typeof t>[0])}
+            <span className="tabular-nums text-muted-foreground">({count})</span>
+          </button>
+        );
+      })}
+    </fieldset>
   );
 }

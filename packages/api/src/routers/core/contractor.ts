@@ -407,6 +407,21 @@ export const contractorRouter = router({
       if (filters?.primaryTeamId?.length) {
         where.primaryTeamId = { in: filters.primaryTeamId };
       }
+      if (filters?.type?.length) {
+        where.type = { in: filters.type };
+      }
+      if (filters?.billingModel?.length) {
+        const bmIds: Array<{ id: string }> = await ctx.db.$queryRaw`
+          SELECT id FROM "Contractor"
+          WHERE "organizationId" = ${ctx.organizationId}
+            AND "deletedAt" IS NULL
+            AND "customFieldsJson"->>'billingModel' = ANY(${filters.billingModel}::text[])
+        `;
+        if (bmIds.length === 0) {
+          return { items: [] as Record<string, unknown>[], total: 0, page, pageSize };
+        }
+        where.id = { ...(where.id as Record<string, unknown>), in: bmIds.map(r => r.id) };
+      }
 
       // Full-text search via PostgreSQL tsvector
       if (search && search.length >= 2) {
@@ -1094,7 +1109,9 @@ export const contractorRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { default: XLSX } = await import('xlsx');
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Contractors');
 
       const contractors = await ctx.db.contractor.findMany({
         where: {
@@ -1117,31 +1134,49 @@ export const contractorRouter = router({
         },
       });
 
-      const rows = contractors.map(c => ({
-        'Legal Name': c.legalName,
-        'Display Name': c.displayName,
-        Type: c.type,
-        'Tax ID': c.taxId ?? '',
-        'VAT ID': c.vatId ?? '',
-        Email: c.email ?? '',
-        Phone: c.phone ?? '',
-        Country: c.countryCode,
-        Currency: c.currency,
-        Status: c.status,
-        'Lifecycle Stage': c.lifecycleStage,
-        City: c.city ?? '',
-        'Postal Code': c.postalCode ?? '',
-        'Payment Terms (days)': c.billingProfiles[0]?.paymentTermsDays ?? '',
-      }));
+      const columns = [
+        { header: 'Legal Name', key: 'legalName' },
+        { header: 'Display Name', key: 'displayName' },
+        { header: 'Type', key: 'type' },
+        { header: 'Tax ID', key: 'taxId' },
+        { header: 'VAT ID', key: 'vatId' },
+        { header: 'Email', key: 'email' },
+        { header: 'Phone', key: 'phone' },
+        { header: 'Country', key: 'country' },
+        { header: 'Currency', key: 'currency' },
+        { header: 'Status', key: 'status' },
+        { header: 'Lifecycle Stage', key: 'lifecycleStage' },
+        { header: 'City', key: 'city' },
+        { header: 'Postal Code', key: 'postalCode' },
+        { header: 'Payment Terms (days)', key: 'paymentTermsDays' },
+      ] as const;
 
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Contractors');
+      worksheet.columns = columns.map(c => ({ header: c.header, key: c.key }));
 
-      const buffer = XLSX.write(workbook, {
-        type: 'buffer',
-        bookType: input.format === 'csv' ? 'csv' : 'xlsx',
-      }) as Buffer;
+      for (const c of contractors) {
+        worksheet.addRow({
+          legalName: c.legalName,
+          displayName: c.displayName,
+          type: c.type,
+          taxId: c.taxId ?? '',
+          vatId: c.vatId ?? '',
+          email: c.email ?? '',
+          phone: c.phone ?? '',
+          country: c.countryCode,
+          currency: c.currency,
+          status: c.status,
+          lifecycleStage: c.lifecycleStage,
+          city: c.city ?? '',
+          postalCode: c.postalCode ?? '',
+          paymentTermsDays: c.billingProfiles[0]?.paymentTermsDays ?? '',
+        });
+      }
+
+      const buffer = Buffer.from(
+        input.format === 'csv'
+          ? await workbook.csv.writeBuffer()
+          : await workbook.xlsx.writeBuffer(),
+      );
 
       const timestamp = new Date().toISOString().slice(0, 10);
       const filename = `contractors-${timestamp}.${input.format}`;

@@ -42,6 +42,16 @@ describe('updateOrganizationSettingsSchema', () => {
     expect(r.success).toBe(true);
   });
 
+  it.each(['pl', 'en', 'ar', 'de'] as const)('accepts language %s', language => {
+    const r = updateOrganizationSettingsSchema.safeParse({ language });
+    expect(r.success).toBe(true);
+  });
+
+  it('rejects unsupported language', () => {
+    const r = updateOrganizationSettingsSchema.safeParse({ language: 'fr' });
+    expect(r.success).toBe(false);
+  });
+
   it('caps onboarding steps array', () => {
     const steps = Array.from({ length: 11 }, (_, i) => `step${i}`);
     const r = updateOrganizationSettingsSchema.safeParse({

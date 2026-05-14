@@ -1,25 +1,20 @@
 'use client';
 
+import { AtelierEmptyState, ContractsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FileText, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import { DataTableBody } from '@/components/shared/data-table-body';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Link } from '@/i18n/navigation';
+import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useRouter } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -65,6 +60,8 @@ type TabContractsProps = {
 
 export function TabContracts({ contractorId }: TabContractsProps) {
   const t = useTranslations('Contracts');
+  const { formatDate } = useDateFormatter();
+  const router = useRouter();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -80,7 +77,12 @@ export function TabContracts({ contractorId }: TabContractsProps) {
   );
 
   const queryData = contractsQuery.data;
-  const items: MiniContractRow[] = (queryData?.items ?? []) as unknown as MiniContractRow[];
+  // Memoize against the stable React Query data reference rather than
+  // creating a new `[]` fallback every render while loading.
+  const items: MiniContractRow[] = useMemo(
+    () => (queryData?.items ?? []) as unknown as MiniContractRow[],
+    [queryData],
+  );
   const totalCount: number = queryData?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -107,11 +109,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           if (!row.original.startDate)
             return <span className="text-muted-foreground">&mdash;</span>;
           try {
-            return (
-              <span className="text-sm">
-                {new Date(row.original.startDate).toLocaleDateString('pl-PL')}
-              </span>
-            );
+            return <span className="text-sm">{formatDate(row.original.startDate)}</span>;
           } catch {
             return <span className="text-muted-foreground">&mdash;</span>;
           }
@@ -123,11 +121,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         cell: ({ row }) => {
           if (!row.original.endDate) return <span className="text-muted-foreground">&mdash;</span>;
           try {
-            return (
-              <span className="text-sm">
-                {new Date(row.original.endDate).toLocaleDateString('pl-PL')}
-              </span>
-            );
+            return <span className="text-sm">{formatDate(row.original.endDate)}</span>;
           } catch {
             return <span className="text-muted-foreground">&mdash;</span>;
           }
@@ -152,7 +146,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         },
       },
     ],
-    [t],
+    [t, formatDate],
   );
 
   const table = useReactTable({
@@ -163,38 +157,33 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     pageCount: totalPages,
   });
 
-  // Loading state
-  if (contractsQuery.isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const isLoading = contractsQuery.isLoading;
 
-  // Empty state
-  if (items.length === 0 && !contractsQuery.isLoading) {
+  // Empty state only when fully loaded and truly empty
+  if (!isLoading && items.length === 0) {
     return (
       <>
-        <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
-          <FileText className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button size="sm" onClick={() => setWizardOpen(true)}>
-            <Plus className="me-1.5 size-3.5" />
-            {t('contractorTab.emptyCTA')}
-          </Button>
-        </div>
+        <AtelierEmptyState
+          illustration={ContractsIllustration}
+          heading={t('contractorTab.emptyHeading')}
+          body={t('contractorTab.emptyBody')}
+          primaryAction={{
+            label: t('contractorTab.emptyCTA'),
+            onClick: () => setWizardOpen(true),
+            icon: Plus,
+          }}
+          renderAction={(action, variant) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                variant={variant === 'secondary' ? 'outline' : 'default'}
+                onClick={action.onClick}>
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                {action.label}
+              </Button>
+            );
+          }}
+        />
         <ContractWizardDialog
           open={wizardOpen}
           onOpenChange={setWizardOpen}
@@ -209,8 +198,11 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       {/* Header with CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button size="sm" onClick={() => setWizardOpen(true)}>
+        <Button
+          size="sm"
+          disabled={isLoading}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setWizardOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorTab.addCTA')}
         </Button>
@@ -232,19 +224,17 @@ export function TabContracts({ contractorId }: TabContractsProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id} className="cursor-pointer hover:bg-muted/50">
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    <Link href={`/contracts/${row.original.id}`} className="contents">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </Link>
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={false}
+            emptyTitle={t('contractorTab.emptyHeading')}
+            emptyDescription={t('contractorTab.emptyBody')}
+            noResultsTitle={t('contractorTab.emptyHeading')}
+            skeletonRows={5}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onRowClick={row => router.push(`/contracts/${row.id}`)}
+          />
         </Table>
       </div>
 
@@ -254,7 +244,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1}
+            disabled={isLoading || page <= 1}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
@@ -265,7 +255,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages}
+            disabled={isLoading || page >= totalPages}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;

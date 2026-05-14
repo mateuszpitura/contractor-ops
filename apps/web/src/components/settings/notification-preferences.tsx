@@ -9,6 +9,7 @@ import {
   FileText,
   FileWarning,
   Loader2,
+  Save,
   UserCheck,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -17,6 +18,14 @@ import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -203,138 +212,142 @@ export function NotificationPreferences() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-base font-semibold">{t('notifications.heading')}</h3>
-        <p className="text-sm text-muted-foreground">{t('notifications.description')}</p>
-      </div>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('notifications.heading')}</CardTitle>
+          <CardDescription>{t('notifications.description')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-auto">{t('notifications.columnEvent')}</TableHead>
+                <TableHead className="w-20 text-center">{t('notifications.columnInApp')}</TableHead>
+                <TableHead className="w-20 text-center">{t('notifications.columnEmail')}</TableHead>
+                <TableHead className="w-20 text-center">{t('notifications.columnSlack')}</TableHead>
+                <TableHead className="w-20 text-center">
+                  {t('notifications.columnTeams' as Parameters<typeof t>[0])}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {NOTIFICATION_TYPES.map((type, index) => {
+                const config = EVENT_CONFIG[type];
+                const Icon = config.icon;
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-auto">{t('notifications.columnEvent')}</TableHead>
-              <TableHead className="w-20 text-center">{t('notifications.columnInApp')}</TableHead>
-              <TableHead className="w-20 text-center">{t('notifications.columnEmail')}</TableHead>
-              <TableHead className="w-20 text-center">{t('notifications.columnSlack')}</TableHead>
-              <TableHead className="w-20 text-center">
-                {t('notifications.columnTeams' as Parameters<typeof t>[0])}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {NOTIFICATION_TYPES.map((type, index) => {
-              const config = EVENT_CONFIG[type];
-              const Icon = config.icon;
-
-              return (
-                <TableRow key={type}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex size-8 items-center justify-center rounded-full ${config.bgClass}`}>
-                        <Icon className={`size-4 ${config.iconClass}`} />
+                return (
+                  <TableRow key={type}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex size-8 items-center justify-center rounded-full ${config.bgClass}`}>
+                          <Icon className={`size-4 ${config.iconClass}`} />
+                        </div>
+                        <span className="text-sm font-medium">
+                          {t(`notifications.${config.labelKey}` as Parameters<typeof t>[0])}
+                        </span>
                       </div>
-                      <span className="text-sm font-medium">
-                        {t(`notifications.${config.labelKey}` as Parameters<typeof t>[0])}
-                      </span>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  {/* In-app: always on, disabled */}
-                  <TableCell className="text-center">
-                    <Tooltip>
-                      <TooltipTrigger render={<div className="inline-flex" />}>
-                        <Switch checked disabled aria-label={tAria('inApp')} />
-                      </TooltipTrigger>
-                      <TooltipContent>{t('notifications.inAppTooltip')}</TooltipContent>
-                    </Tooltip>
-                  </TableCell>
+                    {/* In-app: always on, disabled */}
+                    <TableCell className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger render={<div className="inline-flex" />}>
+                          <Switch checked disabled aria-label={tAria('inApp')} />
+                        </TooltipTrigger>
+                        <TooltipContent>{t('notifications.inAppTooltip')}</TooltipContent>
+                      </Tooltip>
+                    </TableCell>
 
-                  {/* Email */}
-                  <TableCell className="text-center">
-                    <Controller
-                      control={form.control}
-                      name={`preferences.${index}.channelEmail`}
-                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                      render={({ field }) => (
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          aria-label={tAria('email')}
+                    {/* Email */}
+                    <TableCell className="text-center">
+                      <Controller
+                        control={form.control}
+                        name={`preferences.${index}.channelEmail`}
+                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                        render={({ field }) => (
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            aria-label={tAria('email')}
+                          />
+                        )}
+                      />
+                    </TableCell>
+
+                    {/* Slack */}
+                    <TableCell className="text-center">
+                      {isSlackConnected ? (
+                        <Controller
+                          control={form.control}
+                          name={`preferences.${index}.channelSlack`}
+                          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                          render={({ field }) => (
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              aria-label={tAria('slack')}
+                            />
+                          )}
                         />
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger render={<div className="inline-flex" />}>
+                            <Switch checked={false} disabled aria-label={tAria('slack')} />
+                          </TooltipTrigger>
+                          <TooltipContent>{t('notifications.slackDisabledTooltip')}</TooltipContent>
+                        </Tooltip>
                       )}
-                    />
-                  </TableCell>
+                    </TableCell>
 
-                  {/* Slack */}
-                  <TableCell className="text-center">
-                    {isSlackConnected ? (
-                      <Controller
-                        control={form.control}
-                        name={`preferences.${index}.channelSlack`}
-                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            aria-label={tAria('slack')}
-                          />
-                        )}
-                      />
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger render={<div className="inline-flex" />}>
-                          <Switch checked={false} disabled aria-label={tAria('slack')} />
-                        </TooltipTrigger>
-                        <TooltipContent>{t('notifications.slackDisabledTooltip')}</TooltipContent>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-
-                  {/* Teams */}
-                  <TableCell className="text-center">
-                    {isTeamsConnected ? (
-                      <Controller
-                        control={form.control}
-                        name={`preferences.${index}.channelTeams`}
-                        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
-                          />
-                        )}
-                      />
-                    ) : (
-                      <Tooltip>
-                        <TooltipTrigger render={<div className="inline-flex" />}>
-                          <Switch
-                            checked={false}
-                            disabled
-                            aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {t('notifications.teamsDisabledTooltip' as Parameters<typeof t>[0])}
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-
-        <div className="mt-4">
+                    {/* Teams */}
+                    <TableCell className="text-center">
+                      {isTeamsConnected ? (
+                        <Controller
+                          control={form.control}
+                          name={`preferences.${index}.channelTeams`}
+                          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                          render={({ field }) => (
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
+                            />
+                          )}
+                        />
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger render={<div className="inline-flex" />}>
+                            <Switch
+                              checked={false}
+                              disabled
+                              aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {t('notifications.teamsDisabledTooltip' as Parameters<typeof t>[0])}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+        <CardFooter>
           <Button type="submit" disabled={!form.formState.isDirty || updateMutation.isPending}>
-            {!!updateMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+            {updateMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
             {t('notifications.savePreferences')}
           </Button>
-        </div>
-      </form>
-    </div>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

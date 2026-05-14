@@ -13,16 +13,16 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <main className="container mx-auto max-w-3xl px-6 py-12">{children}</main>
       <footer className="border-t py-8">
         <div className="container mx-auto flex gap-6 px-6 text-sm text-muted-foreground">
-          <Link href="/privacy" className="hover:underline">
+          <Link href="/legal/privacy" className="hover:underline">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="hover:underline">
+          <Link href="/legal/terms" className="hover:underline">
             Terms of Service
           </Link>
-          <Link href="/sub-processors" className="hover:underline">
+          <Link href="/legal/sub-processors" className="hover:underline">
             Sub-processors
           </Link>
-          <Link href="/breach-notification" className="hover:underline">
+          <Link href="/legal/breach-notification" className="hover:underline">
             Breach Notification
           </Link>
         </div>

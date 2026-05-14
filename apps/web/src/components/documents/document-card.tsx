@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { PdfPreview } from './pdf-preview';
 import { VersionHistory } from './version-history';
 
@@ -48,15 +49,6 @@ function getFileIcon(mimeType: string) {
   if (mimeType.startsWith('image/')) return Image;
   if (mimeType.includes('spreadsheet') || mimeType.includes('xlsx')) return FileSpreadsheet;
   return FileText;
-}
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function formatFileSize(bytes: number): string {
@@ -116,6 +108,7 @@ export function DocumentCard({
   onUploadNewVersion,
 }: DocumentCardProps) {
   const t = useTranslations('Documents');
+  const { formatDate } = useDateFormatter();
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const FileIcon = getFileIcon(doc.mimeType);

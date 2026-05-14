@@ -183,96 +183,101 @@ export function SpendChart() {
         {isLoading ? (
           <Skeleton className="h-[280px] w-full rounded-lg" />
         ) : chartData.length === 0 ? (
-          <div className="corner-marks flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+          <div className="corner-marks flex h-[280px] items-center justify-center rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground">
             {t('spend.empty')}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={chartData} style={chartStyle}>
-              <defs>
-                <linearGradient id={gradPlnId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
-                  <stop offset="50%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.12} />
-                  <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id={gradEurId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.3} />
-                  <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.1} />
-                  <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
-                </linearGradient>
-                {/* Glow filter for stroke lines */}
-                <filter id={glowPlnId} x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="color-mix(in oklch, var(--color-muted-foreground) 10%, transparent)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="month"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'var(--color-muted-foreground)' }}
-                {...xAxisProps}
-              />
-              <YAxis
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'var(--color-muted-foreground)' }}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
-                width={70}
-                {...yAxisProps}
-              />
-              <Tooltip
-                content={<ChartTooltip formatter={currencyFormatter} />}
-                cursor={{
-                  stroke: 'var(--color-primary)',
-                  strokeWidth: 1,
-                  strokeDasharray: '4 4',
-                  strokeOpacity: 0.3,
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="PLN"
-                stackId="1"
-                stroke="var(--color-viz-1)"
-                fill={`url(#${gradPlnId})`}
-                strokeWidth={2.5}
-                filter={`url(#${glowPlnId})`}
-                dot={false}
-                activeDot={{
-                  r: 5,
-                  fill: 'var(--color-viz-1)',
-                  stroke: 'var(--color-surface-1)',
-                  strokeWidth: 2,
-                }}
-              />
-              {hasEur && (
+          <div className="rounded-xl border-2 border-dashed border-border p-4">
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart
+                data={chartData}
+                style={chartStyle}
+                margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id={gradPlnId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="oklch(0.65 0.145 178)" stopOpacity={0.35} />
+                    <stop offset="50%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="oklch(0.55 0.15 178)" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id={gradEurId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="oklch(0.72 0.14 65)" stopOpacity={0.02} />
+                  </linearGradient>
+                  {/* Glow filter for stroke lines */}
+                  <filter id={glowPlnId} x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="color-mix(in oklch, var(--color-muted-foreground) 10%, transparent)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="month"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--color-muted-foreground)' }}
+                  {...xAxisProps}
+                />
+                <YAxis
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--color-muted-foreground)' }}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
+                  width={70}
+                  {...yAxisProps}
+                />
+                <Tooltip
+                  content={<ChartTooltip formatter={currencyFormatter} />}
+                  cursor={{
+                    stroke: 'var(--color-primary)',
+                    strokeWidth: 1,
+                    strokeDasharray: '4 4',
+                    strokeOpacity: 0.3,
+                  }}
+                />
                 <Area
                   type="monotone"
-                  dataKey="EUR"
+                  dataKey="PLN"
                   stackId="1"
-                  stroke="var(--color-viz-2)"
-                  fill={`url(#${gradEurId})`}
-                  strokeWidth={2}
+                  stroke="var(--color-viz-1)"
+                  fill={`url(#${gradPlnId})`}
+                  strokeWidth={2.5}
+                  filter={`url(#${glowPlnId})`}
                   dot={false}
                   activeDot={{
-                    r: 4,
-                    fill: 'var(--color-viz-2)',
+                    r: 5,
+                    fill: 'var(--color-viz-1)',
                     stroke: 'var(--color-surface-1)',
                     strokeWidth: 2,
                   }}
                 />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+                {hasEur && (
+                  <Area
+                    type="monotone"
+                    dataKey="EUR"
+                    stackId="1"
+                    stroke="var(--color-viz-2)"
+                    fill={`url(#${gradEurId})`}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      fill: 'var(--color-viz-2)',
+                      stroke: 'var(--color-surface-1)',
+                      strokeWidth: 2,
+                    }}
+                  />
+                )}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -40,7 +40,10 @@ function formatMinorUnits(minor: number, currency?: string | null): string {
   return currency ? `${formatted} ${currency}` : formatted;
 }
 
-function formatRelativeDate(dateStr: string): string {
+type DateFormatter = (value: Date | string | null | undefined) => string;
+type DateTimeFormatter = (value: Date | string | null | undefined) => string;
+
+function formatRelativeDate(dateStr: string, formatDateFn: DateFormatter): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -52,7 +55,7 @@ function formatRelativeDate(dateStr: string): string {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 30) return `${diffDays}d ago`;
-  return date.toLocaleDateString('pl-PL');
+  return formatDateFn(date);
 }
 
 // ---------------------------------------------------------------------------
@@ -70,7 +73,29 @@ interface ColumnActions {
 export function getColumns(
   t: TranslateFunction,
   actions: ColumnActions,
+  formatDate?: DateFormatter,
+  formatDateTime?: DateTimeFormatter,
 ): ColumnDef<PaymentRunRow>[] {
+  const fmtDate: DateFormatter =
+    formatDate ??
+    (v => {
+      if (v == null) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleDateString();
+      } catch {
+        return '\u2014';
+      }
+    });
+  const fmtDateTime: DateTimeFormatter =
+    formatDateTime ??
+    (v => {
+      if (v == null) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleString();
+      } catch {
+        return '\u2014';
+      }
+    });
   return [
     // 1. Run number
     {
@@ -97,10 +122,8 @@ export function getColumns(
       accessorKey: 'createdAt',
       header: t('columns.created'),
       cell: ({ row }) => (
-        <span
-          className="text-sm text-muted-foreground"
-          title={new Date(row.original.createdAt).toLocaleString('pl-PL')}>
-          {formatRelativeDate(row.original.createdAt)}
+        <span className="text-sm text-muted-foreground" title={fmtDateTime(row.original.createdAt)}>
+          {formatRelativeDate(row.original.createdAt, fmtDate)}
         </span>
       ),
     },

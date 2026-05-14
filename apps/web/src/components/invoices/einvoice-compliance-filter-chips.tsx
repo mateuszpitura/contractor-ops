@@ -3,12 +3,12 @@
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Supported filter values — mirrors the einvoice.listByOrg router enum
-// except for `all` which renders as the "no filter" chip.
+// except for `all` which renders as the "no filter" tab.
 // ---------------------------------------------------------------------------
 
 const FILTER_VALUES = [
@@ -25,12 +25,12 @@ export type EInvoiceComplianceFilter = (typeof FILTER_VALUES)[number];
 
 const URL_PARAM = 'einvoiceStatus';
 
-interface FilterChipDef {
+interface TabDef {
   value: EInvoiceComplianceFilter;
   labelKey: 'all' | 'notGenerated' | 'valid' | 'warnings' | 'invalid' | 'transmitted' | 'failed';
 }
 
-const CHIPS: FilterChipDef[] = [
+const TABS: TabDef[] = [
   { value: 'all', labelKey: 'all' },
   { value: 'notGenerated', labelKey: 'notGenerated' },
   { value: 'valid', labelKey: 'valid' },
@@ -45,10 +45,12 @@ interface EInvoiceComplianceFilterChipsProps {
   value?: EInvoiceComplianceFilter[];
   onChange?: (next: EInvoiceComplianceFilter[]) => void;
   /**
-   * When true, chip click state syncs to `?einvoiceStatus=<value>` in the URL
+   * When true, tab state syncs to `?einvoiceStatus=<value>` in the URL
    * via next/navigation. Exposed as a prop so tests can bypass router wiring.
    */
   syncToUrl?: boolean;
+  /** Disable all tabs (initial data load). */
+  disabled?: boolean;
 }
 
 /**
@@ -70,17 +72,17 @@ export function parseFilterParam(raw: string | null): EInvoiceComplianceFilter[]
 }
 
 /**
- * Row of 7 `role="button"` interactive shadcn `Badge` chips. Selection is
- * single-select for user clicks (`all` semantics) and multi-select when
- * driven externally by the "Review" CTA (invalid+failed).
+ * Row of tabs for e-invoice compliance status filtering. Single-select for
+ * user clicks, multi-select when driven externally by the "Review" CTA
+ * (invalid+failed).
  *
- * URL binding uses `?einvoiceStatus=invalid` — or a comma-separated list for
- * multi-select — so filtered lists are shareable.
+ * URL binding uses `?einvoiceStatus=invalid` so filtered lists are shareable.
  */
 export function EInvoiceComplianceFilterChips({
   value,
   onChange,
   syncToUrl = true,
+  disabled: tabsDisabled,
 }: EInvoiceComplianceFilterChipsProps) {
   const t = useTranslations('EInvoice.InvoicesList.Filter');
   const router = useRouter();
@@ -92,7 +94,8 @@ export function EInvoiceComplianceFilterChips({
   );
 
   const activeFilters = value ?? urlValue;
-  const activeSet = useMemo(() => new Set(activeFilters), [activeFilters]);
+  // For tabs, use the first active filter as the selected tab value
+  const activeTab = activeFilters[0] ?? 'all';
 
   const writeUrl = useCallback(
     (next: EInvoiceComplianceFilter[]) => {
@@ -109,51 +112,26 @@ export function EInvoiceComplianceFilterChips({
     [router, searchParams, syncToUrl],
   );
 
-  const handleClick = useCallback(
-    (chip: EInvoiceComplianceFilter) => {
-      // Single-select semantics: click the same chip again → back to `all`.
-      const next: EInvoiceComplianceFilter[] =
-        chip === 'all' || (activeSet.has(chip) && activeFilters.length === 1) ? ['all'] : [chip];
+  const handleTabChange = useCallback(
+    (tabValue: string | number | null) => {
+      if (tabValue === null) return;
+      const tab = String(tabValue) as EInvoiceComplianceFilter;
+      const next: EInvoiceComplianceFilter[] = tab === 'all' ? ['all'] : [tab];
       writeUrl(next);
       onChange?.(next);
     },
-    [activeSet, activeFilters.length, onChange, writeUrl],
-  );
-
-  const handleKeyDown = useCallback(
-    (chip: EInvoiceComplianceFilter, event: React.KeyboardEvent<HTMLSpanElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        handleClick(chip);
-      }
-    },
-    [handleClick],
+    [onChange, writeUrl],
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('label')}>
-      {CHIPS.map(chip => {
-        const isActive = activeSet.has(chip.value);
-        return (
-          <Badge
-            key={chip.value}
-            role="button"
-            tabIndex={0}
-            aria-pressed={isActive}
-            data-active={isActive ? 'true' : 'false'}
-            data-value={chip.value}
-            variant={isActive ? 'default' : 'outline'}
-            className={`cursor-pointer h-8 px-3 text-sm select-none ${
-              isActive ? 'bg-primary text-primary-foreground' : 'bg-transparent hover:bg-muted'
-            }`}
-            // biome-ignore lint/nursery/noJsxPropsBind: per-chip handler
-            onClick={() => handleClick(chip.value)}
-            // biome-ignore lint/nursery/noJsxPropsBind: per-chip keyboard handler
-            onKeyDown={e => handleKeyDown(chip.value, e)}>
-            {t(chip.labelKey)}
-          </Badge>
-        );
-      })}
-    </div>
+    <Tabs value={activeTab} onValueChange={handleTabChange}>
+      <TabsList className={tabsDisabled ? 'opacity-50 pointer-events-none' : ''}>
+        {TABS.map(tab => (
+          <TabsTrigger key={tab.value} value={tab.value} disabled={tabsDisabled}>
+            {t(tab.labelKey)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }

@@ -360,6 +360,25 @@
     0 8px 20px oklch(0 0 0 / 15%);
 }
 
+/* ─── Marketing Navbar — bleed-through glass ─────────────────────────
+ *
+ * `.glass-subtle` (shared, used for product top-bar + sidebar +
+ * dropdowns) sits at 75% surface-1 opacity, which reads correctly
+ * over dense product surfaces. The marketing hero deliberately wants
+ * the teal/amber orb wash to bleed *through* the navbar — so when the
+ * landing navbar is in its scrolled (glassy) state we override its
+ * background to a thinner film while keeping the shared blur + border.
+ * Higher specificity (`header.navbar-bleed`) ensures we win over
+ * `.glass-subtle`'s base rule.
+ */
+header.navbar-bleed {
+  background: color-mix(in oklch, var(--surface-1) 50%, transparent);
+}
+
+.dark header.navbar-bleed {
+  background: oklch(1 0 0 / 3%);
+}
+
 /* ─── Divider Line ───────────────────────────────────────────────────── */
 
 .section-divider {

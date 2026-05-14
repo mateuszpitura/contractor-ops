@@ -1,26 +1,19 @@
 'use client';
 
+import { ExpiringContractsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { FileWarning } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import { ExportButtons } from './export-buttons';
 import { ReportChart } from './report-chart';
 import { ReportTable } from './report-table';
-
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('pl-PL', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(iso));
-}
 
 interface ExpiringContractsReportProps {
   dateFrom: string;
@@ -43,6 +36,7 @@ export function ExpiringContractsReport({
 }: ExpiringContractsReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
+  const { formatDate } = useDateFormatter();
 
   const [days, setDays] = useState<'30' | '60' | '90'>('30');
   const [page, setPage] = useState(1);
@@ -138,7 +132,7 @@ export function ExpiringContractsReport({
         },
       },
     ],
-    [t],
+    [t, formatDate],
   );
 
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
@@ -191,7 +185,7 @@ export function ExpiringContractsReport({
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contracts/${row.contractId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={<FileWarning className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyIcon={<ExpiringContractsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
         emptyTitle={t('emptyExpiringContracts')}
         emptyDescription={t('emptyExpiringContractsBody')}
       />

@@ -1,7 +1,8 @@
 'use client';
 
+import { AtelierEmptyState, ContractsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -42,15 +44,6 @@ type AmendmentsTabProps = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Add amendment dialog
@@ -192,6 +185,7 @@ function TimelineNode({
   isLast: boolean;
 }) {
   const t = useTranslations('ContractDetail.amendments');
+  const { formatDate } = useDateFormatter();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -252,6 +246,7 @@ function TimelineNode({
 
 export function AmendmentsTab({ contract }: AmendmentsTabProps) {
   const t = useTranslations('ContractDetail.amendments');
+  const { formatDate } = useDateFormatter();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const amendments = (contract.amendments ?? []) as Amendment[];
@@ -277,11 +272,27 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
 
       {/* Timeline */}
       {sorted.length === 0 ? (
-        <div className="flex min-h-[200px] flex-col items-center justify-center gap-2 text-center">
-          <FileText className="size-8 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium text-muted-foreground">{t('empty.title')}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t('empty.description')}</p>
-        </div>
+        <AtelierEmptyState
+          illustration={ContractsIllustration}
+          heading={t('empty.title')}
+          body={t('empty.description')}
+          primaryAction={{
+            label: t('addCta'),
+            onClick: () => setDialogOpen(true),
+            icon: Plus,
+          }}
+          renderAction={(action, variant) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                variant={variant === 'secondary' ? 'outline' : 'default'}
+                onClick={action.onClick}>
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                {action.label}
+              </Button>
+            );
+          }}
+        />
       ) : (
         <div className="ms-1">
           {sorted.map((amendment, i) => (

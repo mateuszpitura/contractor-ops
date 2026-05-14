@@ -1,8 +1,8 @@
 'use client';
 
+import { ComplianceGapsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -201,7 +201,7 @@ export function ComplianceGapsReport({
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={<ShieldAlert className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyIcon={<ComplianceGapsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
         emptyTitle={t('emptyComplianceGaps')}
         emptyDescription={t('emptyComplianceGapsBody')}
       />

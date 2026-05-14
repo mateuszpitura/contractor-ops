@@ -8,6 +8,7 @@ import { ComplianceHealthBadge } from '@/components/contractors/compliance-healt
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePermissions } from '@/hooks/use-permissions';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 
 type HealthFactor = {
@@ -104,17 +105,9 @@ function FieldRow({
   );
 }
 
-function formatDate(date: string | Date, locale?: string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString(locale ?? 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 export function TabOverview({ contractor }: TabOverviewProps) {
   const t = useTranslations('ContractorProfile.overview');
+  const { formatDate } = useDateFormatter();
   const tc = useTranslations('Contractors');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);

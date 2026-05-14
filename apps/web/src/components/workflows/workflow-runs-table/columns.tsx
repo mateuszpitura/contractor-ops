@@ -51,12 +51,26 @@ const templateTypeBadgeColors: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 type TranslateFunction = (key: string) => string;
+type DateFormatter = (value: Date | string | null | undefined) => string;
 
 /**
  * Returns all column definitions for the workflow runs data table.
  * Accepts a translation function for headers and labels.
  */
-export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
+export function getColumns(
+  t: TranslateFunction,
+  formatDate?: DateFormatter,
+): ColumnDef<WorkflowRunRow>[] {
+  const fmtDate: DateFormatter =
+    formatDate ??
+    (v => {
+      if (!v) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleDateString();
+      } catch {
+        return '\u2014';
+      }
+    });
   return [
     // 1. Select checkbox
     {
@@ -163,7 +177,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
         const startedAt = row.original.startedAt;
         if (!startedAt) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return <span className="text-sm">{new Date(startedAt).toLocaleDateString('pl-PL')}</span>;
+          return <span className="text-sm">{fmtDate(startedAt)}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -186,7 +200,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<WorkflowRunRow>[] {
 
           return (
             <span className={`text-sm ${isOverdue ? 'text-destructive font-medium' : ''}`}>
-              {date.toLocaleDateString('pl-PL')}
+              {fmtDate(date)}
             </span>
           );
         } catch {

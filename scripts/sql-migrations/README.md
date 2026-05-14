@@ -2,7 +2,7 @@
 
 Hand-rolled SQL migrations for changes that Prisma 7's schema language
 cannot fully express (partial unique indexes, deduplication-then-unique
-flows, redundant index cleanup that Prisma's `db push` does not perform).
+flows, redundant index cleanup that Prisma's `migrate deploy` does not perform).
 
 These run **in addition to** the Prisma-managed schema. After applying
 them, regenerate the Prisma client so the codegen reflects the
@@ -25,7 +25,7 @@ prerequisite for letting the next Prisma `db push` reconcile cleanly. The
 F-DB-13 partial-unique migration drops a Prisma-managed constraint and
 replaces it with two partial indexes that Prisma can no longer express
 inline — running F-DB-13 first leaves the schema in a state where Prisma
-will try to recreate the dropped constraint on the next `db push`. Apply
+will try to recreate the dropped constraint on the next `migrate deploy`. Apply
 F-DB-13 only when you are ready to also accept the schema-vs-DB drift it
 introduces (documented in the migration file).
 
@@ -90,7 +90,7 @@ Prisma 7's schema DSL has known limitations:
   step before applying a constraint, so adding a partial unique to a
   table with existing duplicates fails.
 - **Drop redundant index that schema previously declared but no longer
-  does** — Prisma's `db push` is non-destructive of indexes by design;
+  does** — Prisma's `migrate deploy` is non-destructive of indexes by design;
   F-DB-17's redundant index has to be removed manually.
 
 When future schema changes need similar capabilities, prefer to add a

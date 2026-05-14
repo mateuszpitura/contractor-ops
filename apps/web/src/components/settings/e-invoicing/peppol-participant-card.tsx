@@ -13,8 +13,8 @@
 
 'use client';
 
+import { IntegrationsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Globe } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Bdi } from '@/components/ui/bdi';
@@ -114,8 +114,8 @@ export function PeppolParticipantCard() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-start gap-4 py-4">
-            <Globe className="size-12 text-muted-foreground" aria-hidden="true" />
+          <div className="flex flex-col items-center gap-4 py-8 text-center">
+            <IntegrationsIllustration className="h-24 w-24" />
             <Button type="button" onClick={() => setRegisterOpen(true)}>
               {t('ctaNotRegistered')}
             </Button>

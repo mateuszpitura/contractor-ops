@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Filter, Loader2, Search, X } from 'lucide-react';
+import { Filter, Loader2, Plus, Search, Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import { trpc } from '@/trpc/init';
 interface FilterState {
   status: string[];
   lifecycleStage: string[];
+  type: string[];
   owner: string[];
   team: string[];
   billingModel: string[];
@@ -31,6 +32,8 @@ interface DataTableToolbarProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
   isSearching?: boolean;
+  /** Disable all interactive controls (initial data load). */
+  disabled?: boolean;
   onAddContractor: () => void;
   onImport?: () => void;
 }
@@ -39,7 +42,18 @@ interface DataTableToolbarProps {
 // Filter option sets
 // ---------------------------------------------------------------------------
 
-const LIFECYCLE_STAGES = ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED'] as const;
+// Lifecycle stages rendered as a horizontal chip bar at the top of the
+// toolbar (mirrors the /approvals status-chips pattern). Multi-select: no
+// chips active = all stages.
+const LIFECYCLE_STAGE_CHIPS = [
+  { key: 'DRAFT', labelKey: 'lifecycle.draft' },
+  { key: 'ONBOARDING', labelKey: 'lifecycle.onboarding' },
+  { key: 'ACTIVE', labelKey: 'lifecycle.active' },
+  { key: 'OFFBOARDING', labelKey: 'lifecycle.offboarding' },
+  { key: 'ENDED', labelKey: 'lifecycle.ended' },
+] as const;
+
+const CONTRACTOR_TYPES = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'] as const;
 
 const BILLING_MODELS = ['FIXED', 'HOURLY', 'PROJECT', 'MILESTONE'] as const;
 
@@ -58,6 +72,7 @@ export function DataTableToolbar({
   filters,
   onFiltersChange,
   isSearching,
+  disabled: filtersDisabled,
   onAddContractor,
   onImport,
 }: DataTableToolbarProps) {
@@ -86,21 +101,11 @@ export function DataTableToolbar({
   const usersQuery = useQuery(trpc.user.list.queryOptions());
   const users = Array.isArray(usersQuery.data) ? usersQuery.data : [];
 
-  // Active filter count for badge
-  const activeFilterCount =
-    filters.status.length +
-    filters.lifecycleStage.length +
-    filters.owner.length +
-    filters.team.length +
-    filters.billingModel.length +
-    filters.health.length;
-
-  const hasActiveFilters = activeFilterCount > 0;
-
   const clearAllFilters = () => {
     onFiltersChange({
       status: [],
       lifecycleStage: [],
+      type: [],
       owner: [],
       team: [],
       billingModel: [],
@@ -118,16 +123,67 @@ export function DataTableToolbar({
     onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
   };
 
+  // Secondary filters (everything except lifecycleStage which is now the chip bar)
+  const secondaryFilterCount =
+    filters.status.length +
+    filters.type.length +
+    filters.owner.length +
+    filters.team.length +
+    filters.billingModel.length +
+    filters.health.length;
+  const hasSecondaryFilters = secondaryFilterCount > 0;
+
   return (
-    <div className="space-y-2">
-      {/* Main toolbar row */}
+    <div className="space-y-3">
+      {/* Search + status filter + advanced filters + actions row */}
       <div className="flex items-center gap-2">
+        {/* Status multi-select */}
+        <Popover>
+          <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+                {t('columns.lifecycleStage')}
+                {filters.lifecycleStage.length > 0 && (
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                    {filters.lifecycleStage.length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+          />
+          <PopoverContent className="w-52 p-0" align="start">
+            <div className="p-4 space-y-2">
+              <h4 className="text-[13px] font-medium text-foreground">
+                {t('columns.lifecycleStage')}
+              </h4>
+              <div className="space-y-1">
+                {LIFECYCLE_STAGE_CHIPS.map(chip => (
+                  <label
+                    key={chip.key}
+                    htmlFor={`lifecycle-${chip.key}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                    <Checkbox
+                      id={`lifecycle-${chip.key}`}
+                      checked={filters.lifecycleStage.includes(chip.key)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onCheckedChange={() => toggleFilterValue('lifecycleStage', chip.key)}
+                    />
+                    <span>{t(chip.labelKey as Parameters<typeof t>[0])}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t('searchPlaceholder')}
             value={localSearch}
+            disabled={filtersDisabled}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
@@ -137,17 +193,17 @@ export function DataTableToolbar({
           )}
         </div>
 
-        {/* Filters popover */}
+        {/* Advanced filters popover (no lifecycle — that lives in chip bar) */}
         <Popover>
           <PopoverTrigger
             // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
-              <Button {...props} variant="outline" size="lg">
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
                 <Filter className="h-3.5 w-3.5" />
                 {t('filters')}
-                {hasActiveFilters && (
+                {hasSecondaryFilters && (
                   <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {activeFilterCount}
+                    {secondaryFilterCount}
                   </Badge>
                 )}
               </Button>
@@ -155,16 +211,16 @@ export function DataTableToolbar({
           />
           <PopoverContent className="w-72 p-0" align="start">
             <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
-              {/* Status / Lifecycle Stage */}
+              {/* Type */}
               <FilterSection
-                title={t('columns.status')}
-                options={LIFECYCLE_STAGES.map(stage => ({
-                  value: stage,
-                  label: t(`lifecycle.${enumKey(stage)}`),
+                title={t('columns.type')}
+                options={CONTRACTOR_TYPES.map(ct => ({
+                  value: ct,
+                  label: t(`type.${enumKey(ct)}`),
                 }))}
-                selected={filters.lifecycleStage}
+                selected={filters.type}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('lifecycleStage', value)}
+                onToggle={value => toggleFilterValue('type', value)}
               />
 
               {/* Owner */}
@@ -178,12 +234,13 @@ export function DataTableToolbar({
                     email?: string | null;
                   }>
                 ).map(user => ({
-                  value: user.id ?? user.userId ?? '',
+                  value: user.userId ?? user.id ?? '',
                   label: user.name ?? user.email ?? 'Unknown',
                 }))}
                 selected={filters.owner}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onToggle={value => toggleFilterValue('owner', value)}
+                searchable
               />
 
               {/* Billing model */}
@@ -218,26 +275,28 @@ export function DataTableToolbar({
 
         {/* Import CTA */}
         {!!onImport && (
-          <Button size="lg" variant="outline" onClick={onImport}>
+          <Button size="lg" variant="outline" disabled={filtersDisabled} onClick={onImport}>
+            <Upload className="h-4 w-4" aria-hidden="true" />
             {t('import')}
           </Button>
         )}
 
         {/* Add contractor CTA */}
-        <Button size="lg" onClick={onAddContractor}>
+        <Button size="lg" disabled={filtersDisabled} onClick={onAddContractor}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           {t('addContractor')}
         </Button>
       </div>
 
-      {/* Active filter badges */}
-      {hasActiveFilters && (
+      {/* Active filter badges (lifecycle handled by chip bar, so skipped here) */}
+      {hasSecondaryFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {filters.lifecycleStage.map(stage => (
+          {filters.type.map(ct => (
             <FilterBadge
-              key={`stage-${stage}`}
-              label={t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0])}
+              key={`type-${ct}`}
+              label={t(`type.${enumKey(ct)}`)}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('lifecycleStage', stage)}
+              onRemove={() => removeFilter('type', ct)}
             />
           ))}
           {filters.owner.map(ownerId => {
@@ -248,7 +307,7 @@ export function DataTableToolbar({
                 name?: string | null;
                 email?: string | null;
               }>
-            ).find(u => (u.id ?? u.userId) === ownerId);
+            ).find(u => (u.userId ?? u.id) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
@@ -296,19 +355,53 @@ function FilterSection({
   options,
   selected,
   onToggle,
+  searchable,
+  maxVisible = 10,
 }: {
   title: string;
   options: Array<{ value: string; label: string }>;
   selected: string[];
   onToggle: (value: string) => void;
+  searchable?: boolean;
+  maxVisible?: number;
 }) {
+  const [query, setQuery] = useState('');
+
   if (options.length === 0) return null;
+
+  const filtered =
+    searchable && query
+      ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+      : options;
+
+  // Show selected first, then limit unselected to maxVisible
+  const selectedOptions = filtered.filter(o => selected.includes(o.value));
+  const unselectedOptions = filtered.filter(o => !selected.includes(o.value));
+  const visibleOptions = searchable
+    ? [...selectedOptions, ...unselectedOptions.slice(0, maxVisible)]
+    : filtered;
 
   return (
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
+      {!!searchable && (
+        <>
+          <Input
+            placeholder={`Search ${title.toLowerCase()}...`}
+            value={query}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setQuery(e.target.value)}
+            className="h-7 text-xs"
+          />
+          {!query && unselectedOptions.length > maxVisible && (
+            <p className="text-[10px] text-muted-foreground">
+              Showing {maxVisible} of {options.length}. Type to search.
+            </p>
+          )}
+        </>
+      )}
       <div className="space-y-1">
-        {options.map(option => (
+        {visibleOptions.map(option => (
           <label
             key={option.value}
             htmlFor={`filter-${title}-${option.value}`}

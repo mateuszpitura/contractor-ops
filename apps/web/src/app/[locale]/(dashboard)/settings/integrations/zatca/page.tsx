@@ -1,9 +1,9 @@
 'use client';
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
-import { AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierPageHeader, IntegrationsIllustration } from '@contractor-ops/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -74,10 +74,10 @@ export default function ZatcaSettingsPage() {
       {!(isConnected || isOnboarding || wizardOpen) && (
         <AnimateIn delay={1}>
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-6 py-16 text-center">
-            <div className="rounded-lg bg-muted p-3 mb-4">
-              <ShieldCheck className="h-8 w-8 text-muted-foreground" />
+            <div className="text-primary/70">
+              <IntegrationsIllustration className="h-24 w-24" />
             </div>
-            <h2 className="text-lg font-semibold">Connect to ZATCA</h2>
+            <h2 className="mt-5 text-lg font-semibold">Connect to ZATCA</h2>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
               Submit e-invoices to ZATCA for clearance and reporting. Set up your
               organization&apos;s certificate to get started.

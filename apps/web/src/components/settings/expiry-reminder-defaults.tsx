@@ -6,7 +6,14 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc/init';
 
@@ -31,15 +38,22 @@ export function ExpiryReminderDefaults() {
   const serverDefaults = defaultsQuery.data?.reminderDaysBefore as number[] | undefined;
 
   const [inputValue, setInputValue] = useState('');
+  const [serverInputValue, setServerInputValue] = useState('');
 
   // Sync input from server state once loaded
   useEffect(() => {
     if (serverDefaults) {
-      setInputValue(serverDefaults.join(', '));
+      const value = serverDefaults.join(', ');
+      setInputValue(value);
+      setServerInputValue(value);
     } else if (!defaultsQuery.isLoading) {
-      setInputValue(DEFAULT_DAYS.join(', '));
+      const value = DEFAULT_DAYS.join(', ');
+      setInputValue(value);
+      setServerInputValue(value);
     }
   }, [serverDefaults, defaultsQuery.isLoading]);
+
+  const isDirty = inputValue !== serverInputValue;
 
   const updateMutation = useMutation(
     trpc.settings.updateExpiryReminderDefaults.mutationOptions({
@@ -89,16 +103,18 @@ export function ExpiryReminderDefaults() {
           />
           <p className="text-xs text-muted-foreground">{t('expiryReminders.description')}</p>
         </div>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
-          {updateMutation.isPending ? (
-            <Loader2 className="me-1.5 size-3.5 animate-spin" />
-          ) : (
-            <Save className="me-1.5 size-3.5" />
-          )}
-          {t('expiryReminders.save')}
-        </Button>
       </CardContent>
+      <CardFooter>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+        <Button onClick={handleSave} disabled={!isDirty || updateMutation.isPending}>
+          {updateMutation.isPending ? (
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="me-2 h-4 w-4" />
+          )}
+          {updateMutation.isPending ? t('saving') : t('saveCta')}
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

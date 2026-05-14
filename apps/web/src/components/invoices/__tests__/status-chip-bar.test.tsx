@@ -28,12 +28,12 @@ describe('StatusChipBar', () => {
       isLoading: true,
     } as ReturnType<typeof useQuery>);
 
-    render(<StatusChipBar activeStatus="" onStatusChange={vi.fn()} />);
+    render(<StatusChipBar activeStatuses={[]} onStatusChange={vi.fn()} />);
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('renders chip labels with counts from statusCounts and calls onStatusChange', async () => {
+  it('renders chip labels with counts from statusCounts and calls onStatusChange on toggle', async () => {
     mockedUseQuery.mockReturnValue({
       data: {
         'status:RECEIVED': 2,
@@ -45,15 +45,34 @@ describe('StatusChipBar', () => {
 
     const onStatusChange = vi.fn();
     const { user } = setup(
-      <StatusChipBar activeStatus="RECEIVED" onStatusChange={onStatusChange} />,
+      <StatusChipBar activeStatuses={['RECEIVED']} onStatusChange={onStatusChange} />,
     );
 
-    // All = sum of status:* keys only (button name is concatenated text, e.g. "All(3)")
-    expect(screen.getByRole('button', { name: /All\(3\)/i })).toBeInTheDocument();
+    // Chips render with counts
     expect(screen.getByRole('button', { name: /Received\(2\)/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Matched\(4\)/i })).toBeInTheDocument();
 
+    // Clicking an inactive chip adds it to selection
     await user.click(screen.getByRole('button', { name: /Approved\(1\)/i }));
-    expect(onStatusChange).toHaveBeenCalledWith('APPROVED');
+    expect(onStatusChange).toHaveBeenCalledWith(['RECEIVED', 'APPROVED']);
+  });
+
+  it('deselects a chip when clicking an active one', async () => {
+    mockedUseQuery.mockReturnValue({
+      data: {
+        'status:RECEIVED': 2,
+        'matchStatus:MATCHED': 4,
+      },
+      isLoading: false,
+    } as ReturnType<typeof useQuery>);
+
+    const onStatusChange = vi.fn();
+    const { user } = setup(
+      <StatusChipBar activeStatuses={['RECEIVED', 'MATCHED']} onStatusChange={onStatusChange} />,
+    );
+
+    // Clicking an active chip removes it
+    await user.click(screen.getByRole('button', { name: /Received\(2\)/i }));
+    expect(onStatusChange).toHaveBeenCalledWith(['MATCHED']);
   });
 });

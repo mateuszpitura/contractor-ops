@@ -152,6 +152,16 @@
   }
 }
 
+/* Soft fade-in — used by AtelierBackground to avoid pop-in after hydration. */
+@keyframes atelier-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Pulse ring around status dots. */
 @keyframes atelier-ring-ping {
   75%,
@@ -200,6 +210,11 @@
 .atelier-border-glow {
   border: 1.5px solid color-mix(in oklch, var(--primary) 35%, transparent);
   animation: atelier-border-breathe var(--duration-atelier-breathe) ease-in-out infinite;
+}
+
+/* Soft fade-in for decorative layers (avoids hydration pop-in). */
+.atelier-fade-in {
+  animation: atelier-fade-in 0.8s ease-out both;
 }
 
 /* Surface shimmer — metallic sweep on hover (interactive surfaces only). */

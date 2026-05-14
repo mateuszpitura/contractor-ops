@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Crown, FileSearch, RefreshCw } from 'lucide-react';
+import { Crown, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { BillingDateCard } from './billing-date-card';
-import { CreditProgressBar } from './credit-progress-bar';
+import { CreditCard } from './credit-progress-bar';
 import type { TierId } from './plan-comparison-grid';
 import { PlanComparisonGrid } from './plan-comparison-grid';
 import { SeatCountCard } from './seat-count-card';
@@ -53,7 +53,6 @@ function formatStatus(status: string): string {
 
 export function UsageDashboard() {
   const t = useTranslations('Billing.usage');
-  const tCredits = useTranslations('Billing.credits');
   const [topUpOpen, setTopUpOpen] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -89,6 +88,9 @@ export function UsageDashboard() {
       </div>
     );
   }
+
+  // ---- Data not yet available (isPending without isFetching, e.g. disabled query) ----
+  if (!data) return null;
 
   const { subscription, credits, activeContractors, includedSeats, planConfig } =
     data as unknown as {
@@ -155,24 +157,11 @@ export function UsageDashboard() {
         />
 
         {/* Card 3: OCR Credits */}
-        <UsageKpiCard
-          icon={<FileSearch size={16} aria-hidden="true" />}
-          label={t('ocrCredits')}
-          value={
-            <div className="space-y-2">
-              <CreditProgressBar used={credits?.used ?? 0} total={total} />
-              {!!isLowCredits && (
-                <Button
-                  variant="link"
-                  size="xs"
-                  className="h-auto p-0 text-xs"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => setTopUpOpen(true)}>
-                  {tCredits('buyMore')}
-                </Button>
-              )}
-            </div>
-          }
+        <CreditCard
+          used={credits?.used ?? 0}
+          total={total}
+          isLowCredits={isLowCredits}
+          onBuyMore={() => setTopUpOpen(true)}
         />
 
         {/* Card 4: Next Billing Date */}

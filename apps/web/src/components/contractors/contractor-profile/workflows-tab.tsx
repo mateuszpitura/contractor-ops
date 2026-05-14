@@ -1,7 +1,8 @@
 'use client';
 
+import { AtelierEmptyState, WorkflowsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { GitBranch, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { JiraActivitySummary } from '@/components/integrations/jira-activity-summary';
@@ -234,16 +235,27 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
   if (items.length === 0 && !runsQuery.isLoading) {
     return (
       <>
-        <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
-          <GitBranch className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t('contractorNoWorkflows')}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorNoWorkflowsBody')}</p>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button size="sm" onClick={() => setPickerOpen(true)}>
-            <Plus className="me-1.5 size-3.5" />
-            {t('contractorNoWorkflowsCta')}
-          </Button>
-        </div>
+        <AtelierEmptyState
+          illustration={WorkflowsIllustration}
+          heading={t('contractorNoWorkflows')}
+          body={t('contractorNoWorkflowsBody')}
+          primaryAction={{
+            label: t('contractorNoWorkflowsCta'),
+            onClick: () => setPickerOpen(true),
+            icon: Plus,
+          }}
+          renderAction={(action, variant) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                variant={variant === 'secondary' ? 'outline' : 'default'}
+                onClick={action.onClick}>
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                {action.label}
+              </Button>
+            );
+          }}
+        />
         <TemplatePicker
           open={pickerOpen}
           onOpenChange={setPickerOpen}

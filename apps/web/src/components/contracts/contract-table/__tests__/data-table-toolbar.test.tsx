@@ -21,6 +21,8 @@ const emptyFilters = {
   type: [],
   billingModel: [],
   ownerUserId: [],
+  startDateFrom: '',
+  startDateTo: '',
   endDateFrom: '',
   endDateTo: '',
   complianceRiskLevel: [],

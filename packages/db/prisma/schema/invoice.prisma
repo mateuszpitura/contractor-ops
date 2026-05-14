@@ -292,7 +292,6 @@ model InvoicePayment {
   createdAt              DateTime                 @default(now())
 
   @@index([organizationId, invoiceId])
-  @@map("invoice_payment")
 }
 
 model InvoiceInterestCompensation {
@@ -307,7 +306,6 @@ model InvoiceInterestCompensation {
   createdAt                  DateTime     @default(now())
 
   @@index([organizationId])
-  @@map("invoice_interest_compensation")
 }
 
 enum InterestWaiveType {
@@ -332,7 +330,6 @@ model InvoiceInterestWaiver {
   createdAt       DateTime          @default(now())
 
   @@index([organizationId, invoiceId])
-  @@map("invoice_interest_waiver")
 }
 
 model InvoiceInterestClaim {
@@ -362,7 +359,6 @@ model InvoiceInterestClaim {
 
   @@index([organizationId, invoiceId])
   @@index([pdfStatus, createdAt])
-  @@map("invoice_interest_claim")
 }
 
 enum InvoiceInterestClaimPdfStatus {

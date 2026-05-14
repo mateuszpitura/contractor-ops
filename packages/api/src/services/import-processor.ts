@@ -7,6 +7,7 @@
 
 import { prisma } from '@contractor-ops/db';
 import * as E from '../errors';
+import { parseSpreadsheetBuffer } from '../lib/excel-parse';
 import { isValidContractorTaxId, normalizeContractorTaxId } from './contractor-tax-id';
 
 // ---------------------------------------------------------------------------
@@ -232,26 +233,11 @@ export function validateContractRow(row: Record<string, unknown>): {
 
 /**
  * Parses a CSV or XLSX file buffer into an array of row objects.
- * Uses xlsx library with cellDates: true to handle Excel date serials.
+ * Uses exceljs via parseSpreadsheetBuffer to avoid SheetJS prototype-pollution / ReDoS.
  * Enforces a max row limit.
  */
 export async function parseImportFile(buffer: Buffer): Promise<Record<string, string>[]> {
-  const { default: XLSX } = await import('xlsx');
-
-  const workbook = XLSX.read(buffer, { type: 'buffer', cellDates: true });
-  const sheetName = workbook.SheetNames[0];
-  if (!sheetName) {
-    throw new Error('File contains no sheets');
-  }
-
-  const sheet = workbook.Sheets[sheetName];
-  if (!sheet) {
-    throw new Error('Sheet not found in workbook');
-  }
-  const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
-    defval: '',
-    raw: false,
-  });
+  const rows = await parseSpreadsheetBuffer(buffer);
 
   if (rows.length > MAX_IMPORT_ROWS) {
     throw new Error(`File exceeds maximum of ${MAX_IMPORT_ROWS} rows (found ${rows.length})`);

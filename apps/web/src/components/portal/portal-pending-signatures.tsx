@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -17,6 +18,7 @@ import { trpc } from '@/trpc/init';
 function formatRelativeTime(
   date: Date | string,
   t: (key: string, values?: Record<string, string | number | Date>) => string,
+  formatDate: (value: Date | string | null | undefined) => string,
 ): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   const now = new Date();
@@ -29,11 +31,7 @@ function formatRelativeTime(
   if (diffMinutes < 60) return t('time.minutesAgo', { minutes: diffMinutes });
   if (diffHours < 24) return t('time.hoursAgo', { hours: diffHours });
   if (diffDays < 30) return t('time.daysAgo', { days: diffDays });
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return formatDate(d);
 }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +67,7 @@ type SigningTarget = {
  */
 export function PortalPendingSignatures() {
   const t = useTranslations('Portal');
+  const { formatDate } = usePortalDateFormatter();
   const [signingTarget, setSigningTarget] = useState<SigningTarget | null>(null);
 
   const pendingQuery = useQuery(trpc.esign.listPendingForContractor.queryOptions());
@@ -121,7 +120,9 @@ export function PortalPendingSignatures() {
                     </p>
                     {!!item.sentAt && (
                       <p className="text-sm text-muted-foreground">
-                        {t('pendingSignatures.sent', { time: formatRelativeTime(item.sentAt, t) })}
+                        {t('pendingSignatures.sent', {
+                          time: formatRelativeTime(item.sentAt, t, formatDate),
+                        })}
                       </p>
                     )}
                   </div>

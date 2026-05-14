@@ -42,8 +42,8 @@ Verify the work is ready to ship:
    ```bash
    VERIFICATION=$(cat ${PHASE_DIR}/*-VERIFICATION.md 2>/dev/null)
    ```
-   Check for `status: passed` or `status: human_needed` (with human approval).
-   If no VERIFICATION.md or status is `gaps_found`: warn and ask user to confirm.
+   Check for `status: pass` or `status: passed`.
+   If no VERIFICATION.md or status is anything other than `pass` / `passed` (including `human_needed` / `gaps_found`): block with `PHASE_VERIFICATION_INCOMPLETE`; complete or formally re-run verification before shipping.
 
 2. **Clean working tree?**
    ```bash
@@ -257,7 +257,7 @@ gsd-sdk query state.update "Status" "Phase ${PHASE_NUMBER} shipped — PR #${PR_
 
 If `commit_docs` is true:
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" .planning/STATE.md
+gsd-sdk query commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" --files .planning/STATE.md
 ```
 </step>
 

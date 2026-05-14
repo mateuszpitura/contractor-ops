@@ -146,6 +146,7 @@ export const contractorListSchema = z.object({
     .object({
       status: z.array(contractorStatusEnum).optional(),
       lifecycleStage: z.array(contractorLifecycleStageEnum).optional(),
+      type: z.array(contractorTypeEnum).optional(),
       ownerUserId: z.array(z.string()).optional(),
       primaryTeamId: z.array(z.string()).optional(),
       billingModel: z.array(z.string()).optional(),

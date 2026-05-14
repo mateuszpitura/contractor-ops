@@ -2,7 +2,6 @@
 
 import {
   ChevronsUpDown,
-  Globe,
   Loader2,
   LogOut,
   Maximize2,
@@ -11,7 +10,7 @@ import {
   Settings,
   UserPen,
 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
 import { useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -30,11 +29,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useDensity } from '@/hooks/use-density';
-import { usePathname, useRouter } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
-import { routing } from '@/i18n/routing';
+import { useRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 
@@ -50,15 +48,15 @@ import { getAvatarInitials } from '@/lib/avatar-initials';
 export function UserMenu() {
   const t = useTranslations('Common');
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale();
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const { density, toggleDensity } = useDensity();
   const id = useId();
   const session = authClient.useSession();
+  const isPending = session.isPending;
 
   const user = session.data?.user;
+  const displayName = user?.name || user?.email?.split('@')[0] || null;
   const initials = getAvatarInitials(user?.name, user?.email ?? undefined);
 
   const [nameDialogOpen, setNameDialogOpen] = useState(false);
@@ -82,6 +80,7 @@ export function UserMenu() {
     setNameSaving(true);
     try {
       await authClient.updateUser({ name: trimmed });
+      await session.refetch();
       toast.success(t('nameUpdated'));
       setNameDialogOpen(false);
     } catch {
@@ -92,30 +91,34 @@ export function UserMenu() {
   };
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    // Full page navigation to /login clears React Query cache, Zustand stores,
-    // and all in-memory state — prevents stale data from the previous session.
-    window.location.href = '/login';
+    const { error } = await authClient.signOut({
+      fetchOptions: {
+        // onSuccess fires only after the response (including Set-Cookie to
+        // clear the session) has been fully processed by the browser.
+        onSuccess: () => {
+          // Full page navigation to /login clears React Query cache, Zustand
+          // stores, and all in-memory state — prevents stale data from the
+          // previous session.
+          window.location.href = '/login';
+        },
+      },
+    });
+    if (error) {
+      toast.error(t('signOutFailed'));
+    }
   };
 
-  // Phase 56 · Plan 07 — localeOrder derived from routing.locales so adding a
-  // new locale to `routing.locales` automatically propagates into the switcher.
-  // The `nativeNames` map below MUST have an entry for every routing.locales
-  // value — regression-tested by user-menu.test.tsx.
-  const localeOrder: Locale[] = [...routing.locales];
-  const nativeNames: Record<Locale, string> = {
-    pl: 'Polski',
-    en: 'English',
-    ar: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629', // العربية
-    de: 'Deutsch',
-  };
-  const currentIndex = localeOrder.indexOf(locale as Locale);
-  const nextLocale = localeOrder[(currentIndex + 1) % localeOrder.length];
-  const nextLocaleLabelText = nativeNames[nextLocale];
-
-  const handleLocaleSwitch = () => {
-    router.replace(pathname, { locale: nextLocale });
-  };
+  if (isPending) {
+    return (
+      <SidebarMenuButton size="lg" className="pointer-events-none">
+        <Skeleton className="h-8 w-8 rounded-lg" />
+        <div className="grid flex-1 gap-1">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </SidebarMenuButton>
+    );
+  }
 
   return (
     <>
@@ -128,12 +131,12 @@ export function UserMenu() {
             />
           }>
           <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? ''} />
+            <AvatarImage src={user?.image ?? undefined} alt={displayName ?? ''} />
             <AvatarFallback className="rounded-lg text-xs">{initials}</AvatarFallback>
           </Avatar>
           <div className="grid flex-1 text-start text-sm leading-tight">
             <span className="truncate font-semibold">
-              <Bdi>{user?.name ?? 'User'}</Bdi>
+              <Bdi>{displayName ?? user?.email ?? ''}</Bdi>
             </span>
             <span className="truncate text-xs text-muted-foreground">
               <Bdi>{user?.email ?? ''}</Bdi>
@@ -149,12 +152,12 @@ export function UserMenu() {
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? ''} />
+                <AvatarImage src={user?.image ?? undefined} alt={displayName ?? ''} />
                 <AvatarFallback className="rounded-lg text-xs">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  <Bdi>{user?.name ?? 'User'}</Bdi>
+                  <Bdi>{displayName ?? user?.email ?? ''}</Bdi>
                 </span>
                 <span className="truncate text-xs text-muted-foreground">
                   <Bdi>{user?.email ?? ''}</Bdi>
@@ -212,21 +215,6 @@ export function UserMenu() {
               onCheckedChange={toggleDensity}
               aria-label={t('density')}
             />
-          </div>
-
-          <div className="flex items-center justify-between px-2 py-1.5">
-            <div className="flex items-center gap-2">
-              <Globe className="h-4 w-4" />
-              <span className="text-sm">{t('language')}</span>
-            </div>
-            <button
-              type="button"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={handleLocaleSwitch}
-              className="text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              aria-label={t('switchToLanguage', { name: nextLocaleLabelText })}>
-              <span lang={nextLocale}>{nextLocaleLabelText}</span>
-            </button>
           </div>
 
           <DropdownMenuSeparator />

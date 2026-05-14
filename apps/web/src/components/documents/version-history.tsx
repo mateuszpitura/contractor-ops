@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -16,24 +17,12 @@ type VersionHistoryProps = {
 };
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function VersionHistory({ documentId }: VersionHistoryProps) {
   const t = useTranslations('Documents');
+  const { formatDate } = useDateFormatter();
   const [expanded, setExpanded] = useState(false);
 
   const historyQuery = useQuery({

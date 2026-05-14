@@ -53,6 +53,8 @@ export const settingsRouter = router({
         metadataUpdates.fiscalYearStartMonth = input.fiscalYearStartMonth;
       if (input.billingEmail !== undefined) metadataUpdates.billingEmail = input.billingEmail;
       if (input.language !== undefined) metadataUpdates.language = input.language;
+      if (input.dateFormat !== undefined) metadataUpdates.dateFormat = input.dateFormat;
+      if (input.timeFormat !== undefined) metadataUpdates.timeFormat = input.timeFormat;
       if (input.onboardingCompletedSteps !== undefined)
         metadataUpdates.onboardingCompletedSteps = input.onboardingCompletedSteps;
       if (input.onboardingDismissed !== undefined)

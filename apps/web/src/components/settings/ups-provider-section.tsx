@@ -1,18 +1,19 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Truck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { UpsBrandIcon } from '@/components/integrations/brand-icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle as DialogTitleComponent,
 } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { CarrierCredentialForm } from './carrier-credential-form';
 
@@ -29,25 +30,47 @@ export function UpsProviderSection() {
   const configs = (configsQuery.data ?? []) as unknown as Array<{ carrier: string }>;
   const isConfigured = configs.some(c => c.carrier.toLowerCase() === 'ups');
 
+  if (configsQuery.isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-8 rounded" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="mt-2 h-8 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Card>
-        <CardHeader className="flex flex-row items-center gap-3">
-          <Truck className="size-8 text-amber-700" />
-          <div className="flex-1">
-            <CardTitle className="text-base">UPS</CardTitle>
-            <p className="text-sm text-muted-foreground">{t('upsDescription')}</p>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center">
+              <UpsBrandIcon className="size-8" />
+            </span>
+            <h4 className="text-base font-semibold">UPS</h4>
+            <Badge variant={isConfigured ? 'default' : 'secondary'}>
+              {isConfigured ? tCarriers('connected') : tCarriers('notConfigured')}
+            </Badge>
           </div>
-          <Badge variant={isConfigured ? 'default' : 'secondary'}>
-            {isConfigured ? tCarriers('connected') : tCarriers('notConfigured')}
-          </Badge>
         </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">{t('upsDescription')}</p>
+            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+            <Button variant="outline" onClick={() => setConfigOpen(true)}>
+              {t('configureUps')}
+            </Button>
+          </div>
+        </CardContent>
       </Card>
-
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-      <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
-        {t('configureUps')}
-      </Button>
 
       <Dialog open={configOpen} onOpenChange={setConfigOpen}>
         <DialogContent>

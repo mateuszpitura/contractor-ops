@@ -1,9 +1,9 @@
 'use client';
 
-import { AtelierPageHeader, AtelierTableShell } from '@contractor-ops/ui';
+import { AtelierPageHeader, AtelierTableShell, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
-import { Clock, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -357,8 +357,10 @@ export default function PortalTimePage() {
             </AtelierTableShell>
           ) : !historyQuery.data?.items || historyQuery.data.items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Clock className="h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 font-display text-[20px] font-semibold">
+              <div className="text-primary/70">
+                <TimeTrackingIllustration className="h-24 w-24" />
+              </div>
+              <h3 className="mt-5 font-display text-[20px] font-semibold">
                 {t('noEntriesHeading')}
               </h3>
               <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('noEntriesBody')}</p>

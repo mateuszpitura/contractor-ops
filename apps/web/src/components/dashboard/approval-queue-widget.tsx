@@ -122,20 +122,20 @@ export function ApprovalQueueWidget() {
                   <Link
                     key={item.id}
                     href={invoiceId ? `/invoices/${invoiceId}` : '/approvals'}
-                    className={`flex items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}>
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                      {contractorName}
-                    </span>
-                    <span className="shrink-0 font-display text-sm font-semibold tabular-nums text-foreground">
+                    className={`grid grid-cols-[minmax(0,1fr)_7rem_7rem] items-center gap-3 rounded-lg border-s-2 ${accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}>
+                    <span className="min-w-0 truncate text-sm font-medium">{contractorName}</span>
+                    <span className="text-right font-display text-sm font-semibold tabular-nums text-foreground">
                       {formatAmount(amount, currency)}
                     </span>
-                    {!!item.slaStatus && (
-                      <Badge
-                        variant={getSlaVariant(slaStatus)}
-                        className={isBreached ? 'badge-glow' : ''}>
-                        {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus) as Parameters<typeof t>[0])}
-                      </Badge>
-                    )}
+                    <div className="flex justify-end">
+                      {!!item.slaStatus && (
+                        <Badge
+                          variant={getSlaVariant(slaStatus)}
+                          className={isBreached ? 'badge-glow' : ''}>
+                          {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus) as Parameters<typeof t>[0])}
+                        </Badge>
+                      )}
+                    </div>
                   </Link>
                 );
               })}

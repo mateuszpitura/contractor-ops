@@ -2,6 +2,7 @@
 
 import type { Row, Table } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
+import { SearchX } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,6 +15,13 @@ import { TableBody, TableCell, TableRow } from '@/components/ui/table';
 interface DataTableBodyProps<TData> {
   table: Table<TData>;
   isLoading: boolean;
+  /**
+   * When true, render SkeletonRows even if `isLoading` is false. Used by
+   * pages that have a separate count query — while the count is in flight
+   * we keep the table in skeleton state so DataTableBody never flashes its
+   * in-table empty state before the page swaps to AtelierEmptyState.
+   */
+  forceLoading?: boolean;
   hasFiltersOrSearch: boolean;
 
   /** Callback when a data row is clicked. */
@@ -78,16 +86,24 @@ function EmptyState({
   onCta?: () => void;
 }) {
   return (
-    <TableRow>
-      <TableCell colSpan={colSpan} className="py-16 text-center">
-        {icon}
-        <h3 className="mt-3 text-[16px] font-medium">{title}</h3>
-        {!!description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-        {!!cta && !!onCta && (
-          <Button className="mt-4" onClick={onCta}>
-            {cta}
-          </Button>
-        )}
+    <TableRow className="hover:bg-transparent">
+      <TableCell colSpan={colSpan} className="py-20">
+        <div className="mx-auto flex max-w-md flex-col items-center text-center">
+          {!!icon && (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
+              {icon}
+            </div>
+          )}
+          <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">{title}</h3>
+          {!!description && (
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+          )}
+          {!!cta && !!onCta && (
+            <Button size="sm" className="mt-5" onClick={onCta}>
+              {cta}
+            </Button>
+          )}
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -111,15 +127,22 @@ function NoResultsState({
   onClearFilters?: () => void;
 }) {
   return (
-    <TableRow>
-      <TableCell colSpan={colSpan} className="py-16 text-center">
-        <h3 className="text-[16px] font-medium">{title}</h3>
-        {!!description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-        {!!cta && !!onClearFilters && (
-          <Button variant="outline" className="mt-4" onClick={onClearFilters}>
-            {cta}
-          </Button>
-        )}
+    <TableRow className="hover:bg-transparent">
+      <TableCell colSpan={colSpan} className="py-20">
+        <div className="mx-auto flex max-w-md flex-col items-center text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60">
+            <SearchX className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          </div>
+          <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">{title}</h3>
+          {!!description && (
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>
+          )}
+          {!!cta && !!onClearFilters && (
+            <Button variant="outline" size="sm" className="mt-5" onClick={onClearFilters}>
+              {cta}
+            </Button>
+          )}
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -168,6 +191,7 @@ function DataRows<TData>({
 export function DataTableBody<TData>({
   table,
   isLoading,
+  forceLoading,
   hasFiltersOrSearch,
   onRowClick,
   rowClassName,
@@ -184,10 +208,11 @@ export function DataTableBody<TData>({
 }: DataTableBodyProps<TData>) {
   const colSpan = table.getVisibleLeafColumns().length;
   const rows = table.getRowModel().rows;
+  const showSkeleton = isLoading || forceLoading === true;
 
   return (
     <TableBody>
-      {isLoading ? (
+      {showSkeleton ? (
         <SkeletonRows table={table} count={skeletonRows} />
       ) : rows.length > 0 ? (
         <DataRows rows={rows} onRowClick={onRowClick} rowClassName={rowClassName} />

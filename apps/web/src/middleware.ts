@@ -27,9 +27,18 @@ function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.
 }
 
 // Per-IP limiters
-const authLimiter = createLimiter(10, '1m'); // 10 auth requests per minute per IP
-const portalLimiter = createLimiter(10, '1m'); // 10 portal requests per minute per IP
-const apiLimiter = createLimiter(60, '1m'); // 60 API requests per minute per IP
+//
+// Auth endpoints (/api/auth/*) are NOT rate-limited at the edge. Better Auth
+// has its own granular per-endpoint rate limiter (10/min sign-in, 5/min
+// sign-up, etc.), per-account lockout (5 failed → 15min lock), and Turnstile
+// CAPTCHA on sign-up. Those three layers are strictly superior to a blanket
+// edge counter that can't distinguish endpoints or success/failure. The
+// previous edge auth limiter starved legitimate session polling and blocked
+// sign-out/re-login flows — adding complexity to work around it (exemptions,
+// counter resets) would duplicate what Better Auth already does better.
+const isDev = (process.env.NODE_ENV ?? 'development') === 'development';
+const portalLimiter = isDev ? null : createLimiter(10, '1m'); // 10 portal requests per minute per IP
+const apiLimiter = isDev ? null : createLimiter(60, '1m'); // 60 API requests per minute per IP
 // NOTE: Per-org rate limiting used to key on the `better-auth.active_organization`
 // cookie, but that cookie is client-editable — an attacker can trivially
 // rotate the value to escape their bucket, making the limit unenforceable
@@ -325,17 +334,17 @@ const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
  */
 function isAuthRoute(pathname: string): boolean {
   // Strip locale prefix: /en/login -> /login, /pl/register -> /register
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
   return AUTH_ROUTES.some(
     route => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
   );
 }
 
 /** Public routes accessible without authentication */
-const PUBLIC_ROUTES = ['/privacy', '/terms'];
+const PUBLIC_ROUTES = ['/legal'];
 
 function isPublicRoute(pathname: string): boolean {
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
   return PUBLIC_ROUTES.some(
     route => withoutLocale === route || withoutLocale.startsWith(`${route}/`),
   );
@@ -345,7 +354,8 @@ function isPublicRoute(pathname: string): boolean {
  * Check if a pathname is a dashboard route (not auth, not portal, not api, not public).
  */
 function isDashboardRoute(pathname: string): boolean {
-  const withoutLocale = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
+  // Strip locale prefix: /en/contractors -> /contractors, /en -> /
+  const withoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
   return (
     !(
       isAuthRoute(pathname) ||
@@ -415,11 +425,15 @@ async function applyRateLimits(
   ip: string,
   request: NextRequest,
 ): Promise<NextResponse | null> {
+  // Skip rate limiting entirely in development — all requests come from
+  // 127.0.0.1 and the in-memory fallback quickly exhausts the 60 req/min
+  // budget with normal dashboard polling (notifications, approvals, time).
+  if (isDev) return null;
+
   try {
-    if (pathname.startsWith('/api/auth')) {
-      const { allowed, remaining, limit, reset } = await checkLimit(authLimiter, ip, 'auth', 10);
-      if (!allowed) return rateLimitResponse(remaining, limit, reset);
-    }
+    // Auth endpoints (/api/auth/*) are intentionally NOT rate-limited here.
+    // Better Auth handles this internally with per-endpoint caps + account
+    // lockout + Turnstile — see packages/auth/src/config.ts.
 
     if (pathname.startsWith('/api/portal')) {
       const { allowed, remaining, limit, reset } = await checkLimit(

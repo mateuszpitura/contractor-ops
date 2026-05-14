@@ -1,7 +1,7 @@
-import { evaluate } from './evaluator.js';
-import type { FlagKey } from './registry.js';
-import { FLAG_KEYS } from './registry.js';
-import type { EvalContext } from './schemas.js';
+import { evaluate } from './evaluator';
+import type { FlagKey } from './registry';
+import { FLAG_KEYS } from './registry';
+import type { EvalContext } from './schemas';
 
 export type FlagValues = Record<FlagKey, boolean>;
 
@@ -36,10 +36,15 @@ export interface FlagBag extends LazyFlagBag {
  * evaluation context should use {@link buildFlagBag} instead.
  */
 export function emptyFlagBag(): FlagBag {
-  const values = FLAG_KEYS.reduce((acc, key) => {
+  // Plain object (not Object.create(null)) so the bag survives serialization
+  // across the React Server → Client Component boundary. RSC's serializer
+  // refuses null-prototype objects with `Classes or null prototypes are not
+  // supported`. Prototype-pollution defense is unnecessary here because
+  // FLAG_KEYS is code-controlled (no user input ever reaches it).
+  const values = FLAG_KEYS.reduce<FlagValues>((acc, key) => {
     acc[key] = false;
     return acc;
-  }, Object.create(null) as FlagValues);
+  }, {} as FlagValues);
   return {
     values,
     isEnabled: () => false,
@@ -49,16 +54,14 @@ export function emptyFlagBag(): FlagBag {
 /**
  * Evaluates every declared flag once for the given context and returns a
  * materialized bag. Safe to serialize (plain booleans) and hydrate into the
- * browser via a React server component.
- *
- * The underlying object is created with a null prototype so `bag.values` has
- * no inherited keys — a future caller that mis-types a flag key as a string
- * cannot accidentally resolve `values.hasOwnProperty` or `values.__proto__`
- * to something truthy. Defense in depth against prototype-pollution-adjacent
- * footguns.
+ * browser via a React server component — which is why this object uses a
+ * normal prototype: RSC's serializer rejects null-prototype objects with
+ * `Classes or null prototypes are not supported`. Prototype-pollution
+ * defense is unnecessary here because the only keys ever assigned come from
+ * the immutable FLAG_KEYS array, which is code-controlled.
  */
 export function buildFlagBag(ctx: EvalContext): FlagBag {
-  const values = Object.create(null) as FlagValues;
+  const values: FlagValues = {} as FlagValues;
   for (const key of FLAG_KEYS) {
     values[key] = evaluate(key, ctx).enabled;
   }

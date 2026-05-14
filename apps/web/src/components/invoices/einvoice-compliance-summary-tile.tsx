@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
@@ -70,9 +71,17 @@ export function EInvoiceComplianceSummaryTile({
       <Card>
         <CardContent className="flex flex-col gap-4 p-6">
           <Skeleton className="h-7 w-48" />
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-1 w-full" />
-          <Skeleton className="h-4 w-80" />
+          <div className="flex items-baseline gap-4">
+            <Skeleton className="h-10 w-20" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-full max-w-sm" />
+              <Skeleton className="h-4 w-2/3 max-w-xs" />
+            </div>
+          </div>
+          <Skeleton className="h-2 w-full" />
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-40" />
+          </div>
         </CardContent>
       </Card>
     );
@@ -116,6 +125,7 @@ export function EInvoiceComplianceSummaryTile({
         {needsAttentionCount > 0 ? (
           <div className="flex justify-end">
             <Button variant="outline" onClick={handleReviewClick}>
+              <AlertCircle className="h-4 w-4" aria-hidden="true" />
               {t('ctaNeedsAttention', { needsAttentionCount })}
             </Button>
           </div>

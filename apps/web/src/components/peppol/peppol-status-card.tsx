@@ -1,10 +1,11 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Globe, Settings, Unplug } from 'lucide-react';
+import { Settings, Unplug } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { PeppolBrandIcon } from '@/components/integrations/brand-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +19,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { PeppolWizard } from './peppol-wizard';
 
@@ -78,23 +80,46 @@ export function PeppolStatusCard() {
     }),
   );
 
+  if (statusQuery.isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-8 rounded" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="mt-2 h-8 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Not connected state
   if (!statusQuery.data) {
     return (
       <>
-        <Card className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="rounded-lg bg-muted p-2.5">
-              <Globe className="h-5 w-5 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center">
+                <PeppolBrandIcon className="size-8" />
+              </span>
+              <h4 className="text-base font-semibold">{t('title')}</h4>
+              <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                Disconnected
+              </Badge>
             </div>
-            <div className="flex-1 space-y-1">
-              <h3 className="text-base font-semibold">{t('title')}</h3>
-              <p className="text-sm text-muted-foreground">{t('notConnected')}</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
             </div>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
-          </div>
+          </CardContent>
         </Card>
         <PeppolWizard open={wizardOpen} onOpenChange={setWizardOpen} />
       </>
@@ -106,20 +131,20 @@ export function PeppolStatusCard() {
   const counts = participantQuery.data?._count;
 
   return (
-    <Card className="p-6">
-      <CardHeader className="p-0 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            <CardTitle className="text-base font-semibold">{t('title')}</CardTitle>
-          </div>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <span className="flex size-8 items-center justify-center">
+            <PeppolBrandIcon className="size-8" />
+          </span>
+          <h4 className="text-base font-semibold">{t('title')}</h4>
           <Badge variant="outline" className={statusInfo.className}>
             {statusInfo.label}
           </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 p-0">
+      <CardContent className="space-y-4">
         {/* Details */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">

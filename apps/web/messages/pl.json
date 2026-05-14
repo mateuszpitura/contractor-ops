@@ -89,7 +89,8 @@
     "uploadInvoice": "Prześlij fakturę",
     "search": "Szukaj",
     "searchShortcut": "Cmd+K",
-    "notifications": "Powiadomienia"
+    "notifications": "Powiadomienia",
+    "addContractorFirst": "Najpierw dodaj kontrahenta"
   },
   "Dashboard": {
     "emptyState": {
@@ -226,17 +227,29 @@
       "languagePlaceholder": "Wybierz jezyk",
       "languagePolish": "Polski",
       "languageEnglish": "Angielski",
+      "languageGerman": "Niemiecki",
+      "languageArabic": "Arabski",
       "fiscalYear": "Miesiąc początku roku obrachunkowego",
       "fiscalYearPlaceholder": "Wybierz miesiąc",
       "billingEmail": "Email rozliczeniowy",
-      "billingEmailOptional": "(opcjonalne)"
+      "billingEmailOptional": "(opcjonalne)",
+      "dateFormat": "Format daty",
+      "dateFormatPlaceholder": "Wybierz format daty",
+      "timeFormat": "Format czasu",
+      "timeFormatPlaceholder": "Wybierz format czasu",
+      "timeFormat24h": "24-godzinny",
+      "timeFormat12h": "12-godzinny (AM/PM)"
+    },
+    "appearance": {
+      "heading": "Język i wyświetlanie",
+      "description": "Wybierz język interfejsu aplikacji.",
+      "uiLanguage": "Język interfejsu"
     },
     "expiryReminders": {
       "heading": "Przypomnienia o wygasaniu umów",
       "description": "Domyślne interwały przypomnień dla wszystkich umów. Poszczególne umowy mogą je nadpisać.",
       "label": "Dni przed wygaśnięciem",
       "placeholder": "np. 30, 60, 90",
-      "save": "Zapisz domyślne",
       "successToast": "Domyślne przypomnienia zaktualizowane"
     },
     "invoiceEmailInbox": "Skrzynka email faktur",
@@ -660,6 +673,7 @@
       "filterActorAll": "Wszyscy aktorzy",
       "filterActionAll": "Wszystkie akcje",
       "filterResourceAll": "Wszystkie zasoby",
+      "filterDateRange": "Zakres dat",
       "expand": "Rozwiń szczegóły",
       "collapse": "Zwin szczegóły",
       "columns": {
@@ -678,7 +692,61 @@
         "export": "Wyeksportowano",
         "invite": "Zaproszono",
         "deactivate": "Dezaktywowano",
-        "login": "Zalogowano"
+        "login": "Zalogowano",
+        "settingsUpdate": "Ustawienia zaktualizowane",
+        "settingsExpiryRemindersUpdate": "Przypomnienia o wygaśnięciu zaktualizowane",
+        "settingsInvoiceThresholdUpdate": "Próg faktury zaktualizowany",
+        "settingsBrandingUpdate": "Branding zaktualizowany",
+        "settingsPortalDomainUpdate": "Domena portalu zaktualizowana",
+        "memberInvite": "Członek zaproszony",
+        "memberRoleUpdate": "Rola zaktualizowana",
+        "memberDeactivate": "Członek dezaktywowany",
+        "memberReactivate": "Członek reaktywowany",
+        "documentDelete": "Dokument usunięty",
+        "apiKeyCreate": "Klucz API utworzony",
+        "apiKeyUpdate": "Klucz API zaktualizowany",
+        "apiKeyRevoke": "Klucz API unieważniony",
+        "reminderRuleCreate": "Reguła przypomnienia utworzona",
+        "reminderRuleUpdate": "Reguła przypomnienia zaktualizowana",
+        "reminderRuleDelete": "Reguła przypomnienia usunięta",
+        "statusTransition": "Status zmieniony",
+        "integrationUserLink": "Integracja połączona",
+        "integrationUserUnlink": "Integracja odłączona",
+        "integrationDisconnect": "Integracja rozłączona",
+        "integrationConnect": "Integracja połączona",
+        "integrationReconnect": "Integracja ponownie połączona",
+        "approvalChainCreate": "Łańcuch zatwierdzania utworzony",
+        "approvalChainUpdate": "Łańcuch zatwierdzania zaktualizowany",
+        "approvalChainDelete": "Łańcuch zatwierdzania usunięty",
+        "billingCheckoutSessionCreate": "Sesja płatności utworzona",
+        "billingPortalSessionCreate": "Portal rozliczeniowy otwarty",
+        "billingTopupCheckoutCreate": "Doładowanie utworzone",
+        "organizationUpdate": "Organizacja zaktualizowana",
+        "organizationKleinunternehmerToggle": "Status małego przedsiębiorcy przełączony",
+        "changeRequestApprove": "Wniosek o zmianę zatwierdzony",
+        "changeRequestReject": "Wniosek o zmianę odrzucony",
+        "bacsSubmitterConfigUpdated": "Konfiguracja BACS zaktualizowana",
+        "statusfeststellungsverfahrenCreate": "Postępowanie statusowe utworzone",
+        "statusfeststellungsverfahrenUpdate": "Postępowanie statusowe zaktualizowane",
+        "statusfeststellungsverfahrenDelete": "Postępowanie statusowe usunięte",
+        "complianceRecompute": "Zgodność przeliczona",
+        "organizationErasureRequested": "Żądanie usunięcia danych",
+        "equipmentCreate": "Sprzęt utworzony",
+        "equipmentUpdate": "Sprzęt zaktualizowany",
+        "equipmentRetire": "Sprzęt wycofany",
+        "equipmentAssign": "Sprzęt przypisany",
+        "equipmentUnassign": "Sprzęt odpisany",
+        "shipmentCreate": "Przesyłka utworzona",
+        "shipmentUpdateStatus": "Status przesyłki zaktualizowany",
+        "shipmentCreateInPost": "Przesyłka InPost utworzona",
+        "shipmentCreateDpd": "Przesyłka DPD utworzona",
+        "shipmentCreateUps": "Przesyłka UPS utworzona",
+        "courierConfigSave": "Konfiguracja kuriera zapisana",
+        "returnRequestCreate": "Wniosek o zwrot utworzony",
+        "returnRequestCancel": "Wniosek o zwrot anulowany",
+        "returnRequestApprove": "Wniosek o zwrot zatwierdzony",
+        "returnRequestReject": "Wniosek o zwrot odrzucony",
+        "workflowOffboardingOverrideBlockingTask": "Zadanie blokujące nadpisane"
       },
       "resources": {
         "organization": "Organizacja",
@@ -691,7 +759,12 @@
         "paymentRun": "Płatność",
         "project": "Projekt",
         "team": "Zespół",
-        "approvalFlow": "Zatwierdzenie"
+        "approvalFlow": "Zatwierdzenie",
+        "timesheet": "Karta czasu",
+        "equipment": "Sprzęt",
+        "shipment": "Przesyłka",
+        "returnRequest": "Wniosek o zwrot",
+        "user": "Użytkownik"
       },
       "pagination": {
         "summary": "Strona {page} z {totalPages}",
@@ -713,17 +786,16 @@
       "logoAlt": "Logo organizacji",
       "accentColor": "Kolor akcentu",
       "saving": "Zapisywanie...",
-      "saveBranding": "Zapisz branding",
       "successToast": "Branding portalu zaktualizowany",
       "errorToast": "Nie udało się zapisać brandingu. Spróbuj ponownie.",
       "uploadError": "Nie udało się przesłać logo. Spróbuj ponownie.",
       "invalidFileType": "Prześlij plik PNG, JPG lub SVG.",
       "fileTooLarge": "Logo musi mieć mniej niż 2MB.",
       "subdomainHeading": "Subdomena portalu",
+      "subdomainCardDescription": "Skonfiguruj niestandardową subdomenę dla portalu kontrahenta",
       "subdomainDescription": "Kontrahenci będą mieli dostęp do portalu pod adresem",
       "subdomainPlaceholder": "np. acme",
       "subdomainSuffix": ".portal.yourdomain.com",
-      "saveDomain": "Zapisz domenę",
       "subdomainUpdated": "Subdomena portalu zaktualizowana",
       "subdomainTaken": "Ta subdomena jest już zajęta",
       "subdomainSaveError": "Nie udało się zapisać subdomeny. Spróbuj ponownie.",
@@ -880,6 +952,16 @@
       "readonly": "Tylko odczyt",
       "owner": "Właściciel",
       "member": "Członek"
+    },
+    "roleDescriptions": {
+      "admin": "Pełny dostęp do wszystkich funkcji poza ustawieniami platformy",
+      "financeAdmin": "Faktury, płatności, raporty i zatwierdzenia",
+      "opsManager": "Wykonawcy, umowy, przepływy pracy i sprzęt",
+      "teamManager": "Podgląd wykonawców, zatwierdzanie faktur i kart czasu",
+      "legalComplianceViewer": "Dostęp tylko do odczytu wykonawców, umów i faktur",
+      "itAdmin": "Zarządzanie członkami, integracjami i ustawieniami systemu",
+      "externalAccountant": "Dostęp tylko do odczytu danych finansowych i raportów",
+      "readonly": "Podgląd wykonawców, umów, faktur i raportów"
     }
   },
   "Errors": {
@@ -1760,6 +1842,7 @@
     "editNamePrompt": "Wpisz swoje imię",
     "nameUpdated": "Imię zaktualizowane",
     "nameUpdateFailed": "Nie udało się zaktualizować imienia. Spróbuj ponownie.",
+    "signOutFailed": "Nie udało się wylogować. Spróbuj ponownie.",
     "save": "Zapisz",
     "cancel": "Anuluj",
     "aria": {
@@ -1794,7 +1877,8 @@
       "mapColumnToField": "Mapuj kolumnę \"{header}\" do pola",
       "mapTo": "Mapuj \"{header}\" do",
       "overdueTasks": "{count} zaległych zadań",
-      "notificationsWithUnread": "{title} — {count} nieprzeczytanych"
+      "notificationsWithUnread": "{title} — {count} nieprzeczytanych",
+      "teams": "Microsoft Teams"
     },
     "srOnly": {
       "more": "Więcej",
@@ -2130,6 +2214,8 @@
     "searchPlaceholder": "Szukaj faktur...",
     "filters": "Filtry",
     "clearAll": "Wyczyść wszystko",
+    "complianceFilterLabel": "Zgodność e-faktur",
+    "statusFilterLabel": "Status płatności i dopasowania",
     "overdueFilter": "Po terminie",
     "columns": {
       "selectAll": "Zaznacz wszystko",
@@ -2144,7 +2230,9 @@
       "status": "Status",
       "matchStatus": "Status dopasowania",
       "source": "Źródło",
-      "einvoiceCompliance": "E-faktura"
+      "einvoiceCompliance": "E-faktura",
+      "overdueInterest": "Odsetki za zwłokę",
+      "skonto": "Skonto"
     },
     "status": {
       "received": "Otrzymana",
@@ -2308,6 +2396,8 @@
     "tabMy": "Moje akceptacje",
     "tabAll": "Wszystkie",
     "searchPlaceholder": "Szukaj akceptacji...",
+    "filters": "Filtry",
+    "clearAll": "Wyczyść wszystko",
     "chips": {
       "all": "Wszystkie",
       "pending": "Oczekujące",
@@ -2608,6 +2698,7 @@
       "disconnectCta": "Rozłącz Slack"
     },
     "title": "Powiadomienia",
+    "pageDescription": "Prośby o akceptacje, przypisania zadań i ważne aktualizacje",
     "markAllRead": "Oznacz wszystkie jako przeczytane",
     "viewAll": "Zobacz wszystkie powiadomienia",
     "empty": "Brak powiadomień",
@@ -2708,6 +2799,15 @@
     "importStatement": "Importuj wyciąg",
     "tabPayments": "Płatności",
     "totalPaid": "Zapłacono łącznie",
+    "columns": {
+      "runNumber": "Nr serii",
+      "status": "Status",
+      "created": "Utworzono",
+      "invoices": "Faktury",
+      "total": "Suma",
+      "format": "Format",
+      "actions": "Akcje"
+    },
     "columnRunNumber": "Nr serii",
     "columnDate": "Data",
     "columnInvoiceNumber": "Nr faktury",
@@ -2883,7 +2983,9 @@
       "viewPaymentRun": "Zobacz przebieg płatności",
       "close": "Zamknij"
     },
+    "clearAll": "Wyczyść wszystko",
     "filters": {
+      "status": "Status",
       "dateRange": "Zakres dat",
       "all": "Wszystkie",
       "draft": "Robocze",
@@ -3082,6 +3184,16 @@
       "overdueClickThrough": "Zobacz przeterminowane faktury",
       "overdueSubline": "{principal} do zapłaty — +{interest} naliczonych odsetek",
       "overdueTitle": "Przeterminowane należności (UK)"
+    },
+    "selection": {
+      "selectAll": "Zaznacz wszystko",
+      "selectRow": "Zaznacz wiersz",
+      "invoiceNumber": "Numer faktury",
+      "contractor": "Kontrahent",
+      "amount": "Kwota",
+      "currency": "Waluta",
+      "dueDate": "Termin płatności",
+      "contractNumber": "Numer umowy"
     }
   },
   "Reports": {
@@ -3303,6 +3415,11 @@
       "body": "Dodaj pierwszego kontrahenta lub importuj z arkusza, aby rozpocząć.",
       "cta": "Dodaj kontrahenta",
       "secondary": "Importuj z pliku"
+    },
+    "equipment": {
+      "heading": "Brak sprzętu",
+      "body": "Dodaj pierwszą pozycję, aby zarządzać narzędziami, przypisaniami i wysyłkami.",
+      "cta": "Dodaj sprzęt"
     },
     "contracts": {
       "heading": "Brak umów",
@@ -3995,7 +4112,13 @@
   },
   "Equipment": {
     "title": "Sprzet",
+    "pageDescription": "Śledź przypisania, przesyłki i cykl życia sprzętu",
     "addEquipment": "Dodaj sprzet",
+    "noResults": {
+      "heading": "Nie znaleziono sprzętu",
+      "body": "Spróbuj zmienić wyszukiwanie lub filtry.",
+      "cta": "Wyczyść filtry"
+    },
     "list": {
       "emptyTitle": "Brak sledzonych urzadzen",
       "emptyDescription": "Dodaj pierwszy sprzet, aby zaczac sledzic przypisania i przesylki.",
@@ -4703,7 +4826,8 @@
     },
     "credits": {
       "remaining": "{remaining} z {total} kredytow pozostalo",
-      "exhausted": "Brak kredytow -- kup wiecej, aby kontynuowac przetwarzanie OCR",
+      "usedOfTotal": "{used} uzytych / {total} lacznie",
+      "exhausted": "Brak kredytów",
       "buyMore": "Kup wiecej"
     },
     "topUp": {
@@ -4726,17 +4850,18 @@
   },
   "Time": {
     "pageTitle": "Rejestracja czasu pracy",
+    "pageDescription": "Przeglądaj i zatwierdzaj karty czasu pracy kontrahentów",
     "tabs": {
       "pendingReviews": "Oczekujące do przeglądu",
       "allEntries": "Wszystkie wpisy",
-      "reconciliation": "Reconciliation"
+      "reconciliation": "Uzgadnianie"
     },
     "filters": {
       "allStatuses": "Wszystkie statusy",
-      "draft": "Draft",
-      "submitted": "Submitted",
-      "approved": "Approved",
-      "rejected": "Rejected",
+      "draft": "Robocze",
+      "submitted": "Złożone",
+      "approved": "Zatwierdzone",
+      "rejected": "Odrzucone",
       "statusPlaceholder": "Status"
     },
     "columns": {
@@ -5405,13 +5530,13 @@
       },
       "Filter": {
         "label": "Filtruj wg zgodności",
-        "all": "All",
+        "all": "Wszystkie",
         "notGenerated": "Nie wygenerowano",
-        "valid": "Valid",
-        "warnings": "Warnings",
-        "invalid": "Invalid",
-        "transmitted": "Transmitted",
-        "failed": "Failed"
+        "valid": "Prawidłowe",
+        "warnings": "Ostrzeżenia",
+        "invalid": "Nieprawidłowe",
+        "transmitted": "Wysłane",
+        "failed": "Nieudane"
       },
       "Cell": {
         "columnHeader": "E-invoice",
@@ -5508,7 +5633,7 @@
     },
     "intake": {
       "_NOTE": "AI-first-pass translation pending review — EN placeholders",
-      "splitButtonPrimary": "+ Nowa faktura",
+      "splitButtonPrimary": "Nowa faktura",
       "splitButtonImport": "Importuj e-fakturę",
       "sidebarImports": "Imports",
       "pageTitle": "Importy faktur",

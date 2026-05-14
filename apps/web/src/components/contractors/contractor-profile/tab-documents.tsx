@@ -1,10 +1,11 @@
 'use client';
 
+import { AtelierEmptyState, DocumentsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Files } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DocumentCard } from '@/components/documents/document-card';
 import { DropZone } from '@/components/documents/drop-zone';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
@@ -44,39 +45,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
     status: string;
   }>;
 
-  // Loading state
-  if (documentsQuery.isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-start gap-4 rounded-lg border p-4">
-            <Skeleton className="size-12 rounded-md" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Empty state
-  if (documents.length === 0) {
-    return (
-      <div className="space-y-6">
-        {/* Drop zone always shown for easy upload */}
-        <DropZone entityType="CONTRACTOR" entityId={contractorId} />
-
-        <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
-          <Files className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t('contractorTab.emptyHeading')}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t('contractorTab.emptyBody')}</p>
-        </div>
-      </div>
-    );
-  }
+  const isLoading = documentsQuery.isLoading;
 
   return (
     <div className="space-y-6">
@@ -85,15 +54,37 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
         <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
       </div>
 
-      {/* Drop zone for uploads */}
-      <DropZone entityType="CONTRACTOR" entityId={contractorId} />
+      {/* Drop zone for uploads — disabled while initial list loads */}
+      <DropZone entityType="CONTRACTOR" entityId={contractorId} disabled={isLoading} />
 
-      {/* Document cards */}
-      <div className="space-y-3">
-        {documents.map((doc, i) => (
-          <DocumentCard key={doc.id} document={doc} versionNumber={documents.length - i} />
-        ))}
-      </div>
+      {/* Document cards — skeleton placeholders during initial load */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <div key={`skel-${i}`} className="flex items-start gap-4 rounded-lg border p-4">
+              <Skeleton className="size-12 rounded-md" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : documents.length === 0 ? (
+        <AtelierEmptyState
+          illustration={DocumentsIllustration}
+          heading={t('contractorTab.emptyHeading')}
+          body={t('contractorTab.emptyBody')}
+          renderAction={renderEmptyStateAction}
+        />
+      ) : (
+        <div className="space-y-3">
+          {documents.map((doc, i) => (
+            <DocumentCard key={doc.id} document={doc} versionNumber={documents.length - i} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

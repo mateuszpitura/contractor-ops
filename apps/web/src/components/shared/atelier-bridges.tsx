@@ -20,9 +20,12 @@ export function renderEmptyStateAction(
 ) {
   const buttonVariant = variant === 'secondary' ? 'outline' : 'default';
 
+  const Icon = action.icon;
+
   if (action.href) {
     return (
       <Button variant={buttonVariant} nativeButton={false} render={<Link href={action.href} />}>
+        {Icon ? <Icon className="h-4 w-4" /> : null}
         {action.label}
       </Button>
     );
@@ -30,6 +33,7 @@ export function renderEmptyStateAction(
 
   return (
     <Button variant={buttonVariant} onClick={action.onClick}>
+      {Icon ? <Icon className="h-4 w-4" /> : null}
       {action.label}
     </Button>
   );

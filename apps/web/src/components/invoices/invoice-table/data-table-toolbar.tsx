@@ -14,6 +14,7 @@ import { DataTableFilters } from './data-table-filters';
 
 interface FilterState {
   status: string[];
+  matchStatus: string[];
   source: string[];
 }
 
@@ -23,6 +24,8 @@ interface DataTableToolbarProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
   isSearching?: boolean;
+  /** Disable all interactive filter controls (initial data load). */
+  disabled?: boolean;
   onUpload: () => void;
 }
 
@@ -40,6 +43,7 @@ export function DataTableToolbar({
   filters,
   onFiltersChange,
   isSearching,
+  disabled: filtersDisabled,
   onUpload,
 }: DataTableToolbarProps) {
   const t = useTranslations('Invoices');
@@ -73,6 +77,7 @@ export function DataTableToolbar({
           <Input
             placeholder={t('searchPlaceholder')}
             value={localSearch}
+            disabled={filtersDisabled}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
@@ -83,13 +88,17 @@ export function DataTableToolbar({
         </div>
 
         {/* Filters */}
-        <DataTableFilters filters={filters} onFiltersChange={onFiltersChange} />
+        <DataTableFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          disabled={filtersDisabled}
+        />
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Upload invoices CTA */}
-        <Button size="lg" onClick={onUpload}>
+        <Button size="lg" disabled={filtersDisabled} onClick={onUpload}>
           <Upload className="h-3.5 w-3.5" />
           {t('uploadInvoices')}
         </Button>

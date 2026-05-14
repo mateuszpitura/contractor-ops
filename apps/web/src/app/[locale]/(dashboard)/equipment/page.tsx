@@ -1,7 +1,7 @@
 'use client';
 
-import { AtelierPageHeader } from '@contractor-ops/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AtelierEmptyState, AtelierPageHeader, EquipmentIllustration } from '@contractor-ops/ui';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -11,6 +11,8 @@ import type { EquipmentRow } from '@/components/equipment/equipment-table/equipm
 import { EquipmentTable } from '@/components/equipment/equipment-table/equipment-table';
 import { ShipmentForm } from '@/components/equipment/shipment-form';
 import { AnimateIn } from '@/components/shared/animate-in';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,7 +22,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ import { trpc } from '@/trpc/init';
 
 function EquipmentContent() {
   const t = useTranslations('Equipment');
+  const te = useTranslations('EmptyStates');
   const queryClient = useQueryClient();
 
   // Dialog state
@@ -38,6 +40,11 @@ function EquipmentContent() {
   const [shipmentTarget, setShipmentTarget] = useState<EquipmentRow | null>(null);
   const [retireTarget, setRetireTarget] = useState<EquipmentRow | null>(null);
   const [unassignTarget, setUnassignTarget] = useState<EquipmentRow | null>(null);
+
+  // Lightweight count query for empty state detection
+  const countQuery = useQuery(trpc.equipment.list.queryOptions({ page: 1, pageSize: 10 }));
+  const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
+  const isCountLoading = countQuery.isLoading;
 
   const retireMutation = useMutation(
     trpc.equipment.retire.mutationOptions({
@@ -117,10 +124,39 @@ function EquipmentContent() {
     [unassignTarget, unassignMutation],
   );
 
+  // Atelier full-page empty state only after count resolves AND there's truly
+  // zero data. While count is in flight, fall through to the populated
+  // branch — EquipmentTable renders its real chrome and DataTableBody shows
+  // skeleton rows. `parentLoading` is forwarded to prevent an in-table empty
+  // flash before the swap to Atelier.
+  if (!isCountLoading && totalCount === 0) {
+    return (
+      <div className="space-y-6">
+        <AnimateIn delay={0}>
+          <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
+        </AnimateIn>
+        <AnimateIn delay={1}>
+          <AtelierEmptyState
+            illustration={EquipmentIllustration}
+            heading={te('equipment.heading')}
+            body={te('equipment.body')}
+            primaryAction={{ label: te('equipment.cta'), onClick: handleAddEquipment }}
+            renderAction={renderEmptyStateAction}
+          />
+        </AnimateIn>
+        <EquipmentForm
+          open={formOpen}
+          onOpenChange={handleFormOpenChange}
+          equipment={editEquipment}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('title')} />
+        <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
@@ -131,6 +167,7 @@ function EquipmentContent() {
           onCreateShipment={handleCreateShipment}
           onRetire={handleRetire}
           onAddEquipment={handleAddEquipment}
+          parentLoading={isCountLoading}
         />
       </AnimateIn>
 
@@ -217,44 +254,12 @@ function EquipmentContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Loading fallback
-// ---------------------------------------------------------------------------
-
-function EquipmentLoading() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-7 w-40" />
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-80" />
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="rounded-xl border bg-background">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              key={`skel-${i}`}
-              className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function EquipmentPage() {
   return (
-    <Suspense fallback={<EquipmentLoading />}>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <EquipmentContent />
     </Suspense>
   );

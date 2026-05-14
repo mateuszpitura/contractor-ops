@@ -1,10 +1,15 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  ApprovalsIllustration,
+  AtelierEmptyState,
+  AtelierPageHeader,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckSquare, ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { ApprovalQueueRow } from '@/components/approvals/approval-queue/columns';
@@ -15,6 +20,7 @@ import { ApprovalSidePanel } from '@/components/approvals/approval-queue/side-pa
 import { ChangeRequestDiffCard } from '@/components/settings/change-request-diff-card';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { PageTableSkeleton } from '@/components/shared/page-table-skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -23,6 +29,17 @@ import { trpc } from '@/trpc/init';
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
 // ---------------------------------------------------------------------------
+
+/** Client-side status filter for multi-select (API only accepts a single value). */
+function matchesStatusFilter(row: ApprovalQueueRow, filterSet: Set<string>): boolean {
+  const isOverdue =
+    row.status === 'PENDING' && !!row.slaDeadline && new Date(row.slaDeadline) < new Date();
+  if (filterSet.has('overdue') && isOverdue) return true;
+  if (filterSet.has('pending') && row.status === 'PENDING') return true;
+  if (filterSet.has('approved') && row.status === 'APPROVED') return true;
+  if (filterSet.has('rejected') && row.status === 'REJECTED') return true;
+  return false;
+}
 
 function ApprovalsContent() {
   const t = useTranslations('Approvals');
@@ -33,7 +50,10 @@ function ApprovalsContent() {
 
   // URL state via nuqs
   const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('my'));
-  const [status, setStatus] = useQueryState('status', parseAsString.withDefault('all'));
+  const [statuses, setStatuses] = useQueryState(
+    'status',
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
   const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [pageSize, setPageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
@@ -67,18 +87,25 @@ function ApprovalsContent() {
 
   const pendingCount = changeRequests.length;
 
+  // Map multi-select statuses to single API value.
+  // API accepts one enum; when 0 or 2+ selected, send 'all' and filter client-side.
+  const apiStatus: 'all' | 'pending' | 'overdue' | 'approved' | 'rejected' =
+    statuses.length === 1
+      ? (statuses[0] as 'pending' | 'overdue' | 'approved' | 'rejected')
+      : 'all';
+
   // Build query input
   const queryInput = useMemo(
     () => ({
       tab: tab as 'my' | 'all',
-      status: status as 'all' | 'pending' | 'overdue' | 'approved' | 'rejected',
+      status: apiStatus,
       search: search || undefined,
       page,
       pageSize,
       sortBy: 'slaDeadline' as const,
       sortOrder: 'asc' as const,
     }),
-    [tab, status, search, page, pageSize],
+    [tab, apiStatus, search, page, pageSize],
   );
 
   // Fetch queue data
@@ -91,8 +118,12 @@ function ApprovalsContent() {
     const result = queueQuery.data as
       | { items: ApprovalQueueRow[]; total: number; page: number; pageSize: number }
       | undefined;
-    return result?.items ?? [];
-  }, [queueQuery.data]);
+    const items = result?.items ?? [];
+    // Client-side filter when 2+ statuses selected (API only accepts single value)
+    if (statuses.length <= 1) return items;
+    const filterSet = new Set(statuses);
+    return items.filter(row => matchesStatusFilter(row, filterSet));
+  }, [queueQuery.data, statuses]);
 
   const totalRows = useMemo(() => {
     const result = queueQuery.data as { items: unknown[]; total: number } | undefined;
@@ -162,13 +193,13 @@ function ApprovalsContent() {
     [setPageSize, setPage],
   );
 
-  // Status filter handler
+  // Status filter handler (multi-select)
   const handleStatusChange = useCallback(
-    (newStatus: string) => {
-      void setStatus(newStatus);
+    (newStatuses: string[]) => {
+      void setStatuses(newStatuses);
       void setPage(1);
     },
-    [setStatus, setPage],
+    [setStatuses, setPage],
   );
 
   // Search handler
@@ -215,11 +246,11 @@ function ApprovalsContent() {
 
   // Render queue content (shared between tabs)
   const renderQueue = () => {
-    if (isEmpty && status === 'all' && !search) {
+    if (isEmpty && statuses.length === 0 && !search) {
       // True empty state - informational only, no CTA
       return (
         <AtelierEmptyState
-          icon={CheckSquare}
+          illustration={ApprovalsIllustration}
           heading={te('approvals.heading')}
           body={te('approvals.body')}
           renderAction={renderEmptyStateAction}
@@ -230,7 +261,7 @@ function ApprovalsContent() {
     return (
       <div className="space-y-4">
         <ApprovalQueueToolbar
-          activeStatus={status}
+          activeStatuses={statuses}
           onStatusChange={handleStatusChange}
           search={search}
           onSearchChange={handleSearchChange}
@@ -304,7 +335,7 @@ function ApprovalsContent() {
                 </div>
               ) : changeRequests.length === 0 ? (
                 <AtelierEmptyState
-                  icon={ClipboardCheck}
+                  illustration={ApprovalsIllustration}
                   heading={t('changeRequests.noPendingHeading')}
                   body={t('changeRequests.noPendingBody')}
                   renderAction={renderEmptyStateAction}
@@ -340,38 +371,6 @@ function ApprovalsContent() {
 // Loading fallback
 // ---------------------------------------------------------------------------
 
-function ApprovalsLoading() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-7 w-40" />
-      <Skeleton className="h-10 w-60" />
-      <div className="flex items-center gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`skel-${i}`} className="h-8 w-24 rounded-full" />
-        ))}
-      </div>
-      <Skeleton className="h-9 w-80" />
-      <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            key={`skel-${i}`}
-            className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
-            <Skeleton className="h-4 w-4" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Page export
 // ---------------------------------------------------------------------------
@@ -382,7 +381,7 @@ function ApprovalsLoading() {
  */
 export default function ApprovalsPage() {
   return (
-    <Suspense fallback={<ApprovalsLoading />}>
+    <Suspense fallback={<PageTableSkeleton />}>
       <ApprovalsContent />
     </Suspense>
   );

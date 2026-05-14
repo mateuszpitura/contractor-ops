@@ -16,6 +16,8 @@ export function useContractFilters() {
     type: parseAsArrayOf(parseAsString).withDefault([]),
     billingModel: parseAsArrayOf(parseAsString).withDefault([]),
     ownerUserId: parseAsArrayOf(parseAsString).withDefault([]),
+    startDateFrom: parseAsString.withDefault(''),
+    startDateTo: parseAsString.withDefault(''),
     endDateFrom: parseAsString.withDefault(''),
     endDateTo: parseAsString.withDefault(''),
     complianceRiskLevel: parseAsArrayOf(parseAsString).withDefault([]),

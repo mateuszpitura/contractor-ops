@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
 import { trpc } from '@/trpc/init';
+import { GoogleWorkspaceBrandIcon } from './brand-icons';
 import { DirectoryImportWizard } from './google-workspace/directory-import-wizard';
 import { SyncStatusSection } from './google-workspace/sync-status-section';
-import { GoogleWorkspaceLogo } from './google-workspace-logo';
 import { GoogleWorkspaceReconnectBanner } from './google-workspace-reconnect-banner';
 
 // ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ export function GoogleWorkspaceProviderSection() {
         <ProviderConnectionCard
           provider="google_workspace"
           displayName="Google Workspace"
-          icon={<GoogleWorkspaceLogo className="size-8" />}
+          icon={<GoogleWorkspaceBrandIcon className="size-8" />}
           description={isConnected ? t('descriptionConnected') : t('descriptionDisconnected')}
         />
 

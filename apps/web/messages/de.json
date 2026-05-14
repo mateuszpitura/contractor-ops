@@ -231,7 +231,8 @@
     "uploadInvoice": "Rechnung hochladen",
     "search": "Suchen",
     "searchShortcut": "Cmd+K",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "addContractorFirst": "Zuerst einen Auftragnehmer hinzufügen"
   },
   "Dashboard": {
     "emptyState": {
@@ -368,17 +369,29 @@
       "languagePlaceholder": "Sprache auswählen",
       "languagePolish": "Polnisch",
       "languageEnglish": "Englisch",
+      "languageGerman": "Deutsch",
+      "languageArabic": "Arabisch",
       "fiscalYear": "Beginn des Geschäftsjahrs (Monat)",
       "fiscalYearPlaceholder": "Monat auswählen",
       "billingEmail": "Rechnungs-E-Mail",
-      "billingEmailOptional": "(optional)"
+      "billingEmailOptional": "(optional)",
+      "dateFormat": "Datumsformat",
+      "dateFormatPlaceholder": "Datumsformat auswählen",
+      "timeFormat": "Zeitformat",
+      "timeFormatPlaceholder": "Zeitformat auswählen",
+      "timeFormat24h": "24-Stunden",
+      "timeFormat12h": "12-Stunden (AM/PM)"
+    },
+    "appearance": {
+      "heading": "Sprache & Anzeige",
+      "description": "Wählen Sie die Sprache der Anwendungsoberfläche.",
+      "uiLanguage": "Oberflächensprache"
     },
     "expiryReminders": {
       "heading": "Erinnerungen zum Vertragsablauf",
       "description": "Standardintervalle für Erinnerungen bei allen Verträgen. Einzelne Verträge können diese überschreiben.",
       "label": "Tage vor Ablauf",
       "placeholder": "z. B. 30, 60, 90",
-      "save": "Standardwerte speichern",
       "successToast": "Standard-Erinnerungen aktualisiert"
     },
     "invoiceEmailInbox": "E-Mail-Posteingang für Rechnungen",
@@ -802,6 +815,7 @@
       "filterActorAll": "Alle Akteure",
       "filterActionAll": "Alle Aktionen",
       "filterResourceAll": "Alle Ressourcen",
+      "filterDateRange": "Zeitraum",
       "expand": "Details einblenden",
       "collapse": "Details ausblenden",
       "columns": {
@@ -820,7 +834,61 @@
         "export": "Exportiert",
         "invite": "Eingeladen",
         "deactivate": "Deaktiviert",
-        "login": "Angemeldet"
+        "login": "Angemeldet",
+        "settingsUpdate": "Einstellungen aktualisiert",
+        "settingsExpiryRemindersUpdate": "Ablauferinnerungen aktualisiert",
+        "settingsInvoiceThresholdUpdate": "Rechnungsschwelle aktualisiert",
+        "settingsBrandingUpdate": "Branding aktualisiert",
+        "settingsPortalDomainUpdate": "Portal-Domain aktualisiert",
+        "memberInvite": "Mitglied eingeladen",
+        "memberRoleUpdate": "Rolle aktualisiert",
+        "memberDeactivate": "Mitglied deaktiviert",
+        "memberReactivate": "Mitglied reaktiviert",
+        "documentDelete": "Dokument gelöscht",
+        "apiKeyCreate": "API-Schlüssel erstellt",
+        "apiKeyUpdate": "API-Schlüssel aktualisiert",
+        "apiKeyRevoke": "API-Schlüssel widerrufen",
+        "reminderRuleCreate": "Erinnerungsregel erstellt",
+        "reminderRuleUpdate": "Erinnerungsregel aktualisiert",
+        "reminderRuleDelete": "Erinnerungsregel gelöscht",
+        "statusTransition": "Status geändert",
+        "integrationUserLink": "Integration verknüpft",
+        "integrationUserUnlink": "Integration getrennt",
+        "integrationDisconnect": "Integration getrennt",
+        "integrationConnect": "Integration verbunden",
+        "integrationReconnect": "Integration wiederverbunden",
+        "approvalChainCreate": "Genehmigungskette erstellt",
+        "approvalChainUpdate": "Genehmigungskette aktualisiert",
+        "approvalChainDelete": "Genehmigungskette gelöscht",
+        "billingCheckoutSessionCreate": "Checkout-Sitzung erstellt",
+        "billingPortalSessionCreate": "Abrechnungsportal geöffnet",
+        "billingTopupCheckoutCreate": "Auflade-Checkout erstellt",
+        "organizationUpdate": "Organisation aktualisiert",
+        "organizationKleinunternehmerToggle": "Kleinunternehmer-Status umgeschaltet",
+        "changeRequestApprove": "Änderungsantrag genehmigt",
+        "changeRequestReject": "Änderungsantrag abgelehnt",
+        "bacsSubmitterConfigUpdated": "BACS-Konfiguration aktualisiert",
+        "statusfeststellungsverfahrenCreate": "Statusfeststellungsverfahren erstellt",
+        "statusfeststellungsverfahrenUpdate": "Statusfeststellungsverfahren aktualisiert",
+        "statusfeststellungsverfahrenDelete": "Statusfeststellungsverfahren gelöscht",
+        "complianceRecompute": "Compliance neu berechnet",
+        "organizationErasureRequested": "Datenlöschung angefordert",
+        "equipmentCreate": "Ausrüstung erstellt",
+        "equipmentUpdate": "Ausrüstung aktualisiert",
+        "equipmentRetire": "Ausrüstung ausgemustert",
+        "equipmentAssign": "Ausrüstung zugewiesen",
+        "equipmentUnassign": "Ausrüstung freigegeben",
+        "shipmentCreate": "Sendung erstellt",
+        "shipmentUpdateStatus": "Sendungsstatus aktualisiert",
+        "shipmentCreateInPost": "InPost-Sendung erstellt",
+        "shipmentCreateDpd": "DPD-Sendung erstellt",
+        "shipmentCreateUps": "UPS-Sendung erstellt",
+        "courierConfigSave": "Kurier-Konfiguration gespeichert",
+        "returnRequestCreate": "Rückgabeanfrage erstellt",
+        "returnRequestCancel": "Rückgabeanfrage storniert",
+        "returnRequestApprove": "Rückgabeanfrage genehmigt",
+        "returnRequestReject": "Rückgabeanfrage abgelehnt",
+        "workflowOffboardingOverrideBlockingTask": "Blockierende Aufgabe überschrieben"
       },
       "resources": {
         "organization": "Organization",
@@ -833,7 +901,12 @@
         "paymentRun": "Zahlung",
         "project": "Projekt",
         "team": "Team",
-        "approvalFlow": "Freigabe"
+        "approvalFlow": "Freigabe",
+        "timesheet": "Zeiterfassung",
+        "equipment": "Ausrüstung",
+        "shipment": "Sendung",
+        "returnRequest": "Rückgabeanfrage",
+        "user": "Benutzer"
       },
       "pagination": {
         "summary": "Seite {page} von {totalPages}",
@@ -855,17 +928,16 @@
       "logoAlt": "Organisationslogo",
       "accentColor": "Akzentfarbe",
       "saving": "Wird gespeichert…",
-      "saveBranding": "Branding speichern",
       "successToast": "Portal-Branding aktualisiert",
       "errorToast": "Aktion fehlgeschlagen: save branding. Please try again.",
       "uploadError": "Aktion fehlgeschlagen: upload logo. Please try again.",
       "invalidFileType": "Bitte laden Sie eine PNG-, JPG- oder SVG-Datei hoch.",
       "fileTooLarge": "Logo darf höchstens 2 MB groß sein.",
       "subdomainHeading": "Portal-Subdomain",
+      "subdomainCardDescription": "Konfigurieren Sie die benutzerdefinierte Subdomain für Ihr Auftragnehmer-Portal",
       "subdomainDescription": "Auftragnehmer rufen das Portal auf unter",
       "subdomainPlaceholder": "z. B. acme",
       "subdomainSuffix": ".portal.yourdomain.com",
-      "saveDomain": "Domain speichern",
       "subdomainUpdated": "Portal-Subdomain aktualisiert",
       "subdomainTaken": "Diese Subdomain ist bereits vergeben",
       "subdomainSaveError": "Aktion fehlgeschlagen: save portal subdomain. Please try again.",
@@ -1022,6 +1094,16 @@
       "readonly": "Nur Lesezugriff",
       "owner": "Inhaber:in",
       "member": "Mitglied"
+    },
+    "roleDescriptions": {
+      "admin": "Vollzugriff auf alle Funktionen außer Plattformeinstellungen",
+      "financeAdmin": "Rechnungen, Zahlungen, Berichte und Genehmigungen",
+      "opsManager": "Auftragnehmer, Verträge, Workflows und Ausstattung",
+      "teamManager": "Auftragnehmer einsehen, Rechnungen und Zeiten genehmigen",
+      "legalComplianceViewer": "Lesezugriff auf Auftragnehmer, Verträge und Rechnungen",
+      "itAdmin": "Mitglieder, Integrationen und Systemeinstellungen verwalten",
+      "externalAccountant": "Lesezugriff auf Finanzdaten und Berichte",
+      "readonly": "Auftragnehmer, Verträge, Rechnungen und Berichte einsehen"
     }
   },
   "Errors": {
@@ -1902,6 +1984,7 @@
     "editNamePrompt": "Geben Sie Ihren Namen ein",
     "nameUpdated": "Name aktualisiert",
     "nameUpdateFailed": "Aktion fehlgeschlagen: update name. Versuchen Sie es erneut.",
+    "signOutFailed": "Abmeldung fehlgeschlagen. Versuchen Sie es erneut.",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "aria": {
@@ -1936,7 +2019,8 @@
       "mapColumnToField": "Spalte „{header}“ einem Feld zuordnen",
       "mapTo": "„{header}“ zuordnen zu",
       "overdueTasks": "{count} überfällige Aufgaben",
-      "notificationsWithUnread": "{title} — {count} ungelesen"
+      "notificationsWithUnread": "{title} — {count} ungelesen",
+      "teams": "Microsoft Teams"
     },
     "srOnly": {
       "more": "Mehr",
@@ -2272,6 +2356,8 @@
     "searchPlaceholder": "Rechnungen suchen ...",
     "filters": "Filter",
     "clearAll": "Alle zurücksetzen",
+    "complianceFilterLabel": "E-Rechnung Compliance",
+    "statusFilterLabel": "Zahlungs- & Zuordnungsstatus",
     "overdueFilter": "Überfällig",
     "columns": {
       "selectAll": "Alle auswählen",
@@ -2286,7 +2372,9 @@
       "status": "Status",
       "matchStatus": "Abgleichsstatus",
       "source": "Source",
-      "einvoiceCompliance": "E-Rechnung"
+      "einvoiceCompliance": "E-Rechnung",
+      "overdueInterest": "Verzugszinsen",
+      "skonto": "Skonto"
     },
     "status": {
       "received": "Received",
@@ -2450,6 +2538,8 @@
     "tabMy": "Meine Freigaben",
     "tabAll": "Alle",
     "searchPlaceholder": "Freigaben suchen ...",
+    "filters": "Filter",
+    "clearAll": "Alle zurücksetzen",
     "chips": {
       "all": "Alle",
       "pending": "Ausstehend",
@@ -2750,6 +2840,7 @@
       "disconnectCta": "Slack trennen"
     },
     "title": "Benachrichtigungen",
+    "pageDescription": "Freigabeanfragen, Aufgabenzuweisungen und wichtige Aktualisierungen",
     "markAllRead": "Alle als gelesen markieren",
     "viewAll": "Alle Benachrichtigungen anzeigen",
     "empty": "Keine Benachrichtigungen",
@@ -2850,6 +2941,15 @@
     "importStatement": "Auszug importieren",
     "tabPayments": "Zahlungen",
     "totalPaid": "Gesamt bezahlt",
+    "columns": {
+      "runNumber": "Lauf Nr.",
+      "status": "Status",
+      "created": "Erstellt",
+      "invoices": "Rechnungen",
+      "total": "Total",
+      "format": "Format",
+      "actions": "Aktionen"
+    },
     "columnRunNumber": "Lauf Nr.",
     "columnDate": "Datum",
     "columnInvoiceNumber": "Rechnung Nr.",
@@ -3025,7 +3125,9 @@
       "viewPaymentRun": "Zahlungslauf anzeigen",
       "close": "Schließen"
     },
+    "clearAll": "Alle zurücksetzen",
     "filters": {
+      "status": "Status",
       "dateRange": "Datumsbereich",
       "all": "Alle",
       "draft": "Entwurf",
@@ -3227,6 +3329,16 @@
       "overdueClickThrough": "Überfällige Rechnungen anzeigen",
       "overdueSubline": "{principal} ausstehend — +{interest} Zinsen angefallen",
       "overdueTitle": "Überfällige Forderungen (UK)"
+    },
+    "selection": {
+      "selectAll": "Alle auswählen",
+      "selectRow": "Zeile auswählen",
+      "invoiceNumber": "Rechnungsnummer",
+      "contractor": "Auftragnehmer",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "dueDate": "Fälligkeitsdatum",
+      "contractNumber": "Vertragsnummer"
     }
   },
   "Reports": {
@@ -3448,6 +3560,11 @@
       "body": "Fügen Sie Ihren ersten Auftragnehmer hinzu oder importieren Sie aus einer Tabelle, um zu starten.",
       "cta": "Auftragnehmer hinzufügen",
       "secondary": "Aus Datei importieren"
+    },
+    "equipment": {
+      "heading": "Noch keine Ausstattung erfasst",
+      "body": "Fügen Sie Ihren ersten Gegenstand hinzu, um Werkzeuge, Zuweisungen und Versand zu verwalten.",
+      "cta": "Ausstattung hinzufügen"
     },
     "contracts": {
       "heading": "Noch keine Verträge",
@@ -4140,7 +4257,13 @@
   },
   "Equipment": {
     "title": "Ausstattung",
+    "pageDescription": "Zuweisungen, Versand und Gerätelebenszyklus verfolgen",
     "addEquipment": "Ausrüstung hinzufügen",
+    "noResults": {
+      "heading": "Keine Ausstattung gefunden",
+      "body": "Passen Sie Ihre Suche oder Filter an.",
+      "cta": "Filter zurücksetzen"
+    },
     "list": {
       "emptyTitle": "Noch keine Ausrüstung erfasst",
       "emptyDescription": "Fügen Sie Ihre erste Ausrüstung hinzu, um Zuweisungen und Versand zu verfolgen.",
@@ -4848,7 +4971,8 @@
     },
     "credits": {
       "remaining": "{remaining} von {total} Guthaben verbleibend",
-      "exhausted": "Kein Guthaben mehr – kaufen Sie weiteres Guthaben, um die OCR-Verarbeitung fortzusetzen",
+      "usedOfTotal": "{used} verbraucht / {total} gesamt",
+      "exhausted": "Kein Guthaben mehr",
       "buyMore": "Mehr kaufen"
     },
     "topUp": {
@@ -4871,10 +4995,11 @@
   },
   "Time": {
     "pageTitle": "Zeiterfassung",
+    "pageDescription": "Arbeitszeitnachweise der Auftragnehmer prüfen und genehmigen",
     "tabs": {
       "pendingReviews": "Ausstehende Prüfungen",
       "allEntries": "Alle Einträge",
-      "reconciliation": "Reconciliation"
+      "reconciliation": "Abstimmung"
     },
     "filters": {
       "allStatuses": "Alle Status",
@@ -5689,7 +5814,7 @@
       "Generic": "Etwas ist schiefgelaufen. Versuchen Sie es erneut oder kontaktieren Sie den Support, falls das Problem bestehen bleibt."
     },
     "intake": {
-      "splitButtonPrimary": "+ Neue Rechnung",
+      "splitButtonPrimary": "Neue Rechnung",
       "splitButtonImport": "E-Rechnung importieren",
       "sidebarImports": "Importe",
       "pageTitle": "Rechnungsimporte",

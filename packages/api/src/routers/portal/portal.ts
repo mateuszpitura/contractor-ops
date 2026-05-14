@@ -937,8 +937,10 @@ export const portalRouter = router({
     // Routing table (`Organization`) lives on primary — not regional `ctx.db`
     const org = await prisma.organization.findUnique({
       where: { id: ctx.organizationId },
-      select: { id: true, name: true, logo: true },
+      select: { id: true, name: true, logo: true, metadata: true },
     });
+
+    const metadata = org?.metadata ? (JSON.parse(org.metadata) as Record<string, unknown>) : {};
 
     return {
       contractor: {
@@ -950,6 +952,9 @@ export const portalRouter = router({
         id: ctx.organizationId,
         name: org?.name ?? '',
         logo: org?.logo ?? null,
+        dateFormat: (metadata.dateFormat as string) ?? null,
+        timeFormat: (metadata.timeFormat as string) ?? null,
+        timezone: (metadata.timezone as string) ?? null,
       },
     };
   }),

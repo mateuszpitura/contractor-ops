@@ -144,7 +144,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
                   email?: string | null;
                 }>
               ).map(user => {
-                const userId = user.id ?? user.userId ?? '';
+                const userId = user.userId ?? user.id ?? '';
                 return (
                   <button
                     key={userId}

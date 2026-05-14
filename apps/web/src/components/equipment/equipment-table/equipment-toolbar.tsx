@@ -1,6 +1,6 @@
 'use client';
 
-import { Filter, Loader2, Search, X } from 'lucide-react';
+import { Loader2, Plus, Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -26,6 +26,8 @@ interface EquipmentToolbarProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
   isSearching?: boolean;
+  /** Disable all interactive controls (initial data load). */
+  disabled?: boolean;
   onAddEquipment: () => void;
 }
 
@@ -67,6 +69,7 @@ export function EquipmentToolbar({
   filters,
   onFiltersChange,
   isSearching,
+  disabled: filtersDisabled,
   onAddEquipment,
 }: EquipmentToolbarProps) {
   const t = useTranslations('Equipment');
@@ -117,6 +120,7 @@ export function EquipmentToolbar({
           <Input
             placeholder={t('list.filters.search')}
             value={localSearch}
+            disabled={filtersDisabled}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
@@ -126,47 +130,80 @@ export function EquipmentToolbar({
           )}
         </div>
 
-        {/* Filters popover */}
+        {/* Type filter — standalone */}
         <Popover>
           <PopoverTrigger
             // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
-              <Button {...props} variant="outline" size="lg">
-                <Filter className="h-3.5 w-3.5" />
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
                 {t('list.filters.type')}
-                {hasActiveFilters && (
+                {filters.type.length > 0 && (
                   <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {activeFilterCount}
+                    {filters.type.length}
                   </Badge>
                 )}
               </Button>
             )}
           />
-          <PopoverContent className="w-72 p-0" align="start">
-            <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
-              {/* Type filter */}
-              <FilterSection
-                title={t('list.filters.type')}
-                options={EQUIPMENT_TYPES.map(type => ({
-                  value: type,
-                  label: t(`type.${enumKey(type)}`),
-                }))}
-                selected={filters.type}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('type', value)}
-              />
+          <PopoverContent className="w-52 p-0" align="start">
+            <div className="p-4 space-y-2">
+              <h4 className="text-[13px] font-medium text-foreground">{t('list.filters.type')}</h4>
+              <div className="space-y-1">
+                {EQUIPMENT_TYPES.map(type => (
+                  <label
+                    key={type}
+                    htmlFor={`equip-type-${type}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                    <Checkbox
+                      id={`equip-type-${type}`}
+                      checked={filters.type.includes(type)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onCheckedChange={() => toggleFilterValue('type', type)}
+                    />
+                    <span>{t(`type.${enumKey(type)}`)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
 
-              {/* Status filter */}
-              <FilterSection
-                title={t('list.filters.status')}
-                options={EQUIPMENT_STATUSES.map(status => ({
-                  value: status,
-                  label: t(`status.${enumKey(status)}`),
-                }))}
-                selected={filters.status}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('status', value)}
-              />
+        {/* Status filter — standalone */}
+        <Popover>
+          <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+                {t('list.filters.status')}
+                {filters.status.length > 0 && (
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                    {filters.status.length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+          />
+          <PopoverContent className="w-52 p-0" align="start">
+            <div className="p-4 space-y-2">
+              <h4 className="text-[13px] font-medium text-foreground">
+                {t('list.filters.status')}
+              </h4>
+              <div className="space-y-1">
+                {EQUIPMENT_STATUSES.map(status => (
+                  <label
+                    key={status}
+                    htmlFor={`equip-status-${status}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                    <Checkbox
+                      id={`equip-status-${status}`}
+                      checked={filters.status.includes(status)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onCheckedChange={() => toggleFilterValue('status', status)}
+                    />
+                    <span>{t(`status.${enumKey(status)}`)}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </PopoverContent>
         </Popover>
@@ -175,7 +212,8 @@ export function EquipmentToolbar({
         <div className="flex-1" />
 
         {/* Add equipment CTA */}
-        <Button size="lg" onClick={onAddEquipment}>
+        <Button size="lg" disabled={filtersDisabled} onClick={onAddEquipment}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           {t('addEquipment')}
         </Button>
       </div>
@@ -215,40 +253,6 @@ export function EquipmentToolbar({
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
-
-function FilterSection({
-  title,
-  options,
-  selected,
-  onToggle,
-}: {
-  title: string;
-  options: Array<{ value: string; label: string }>;
-  selected: string[];
-  onToggle: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-2">
-      <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
-      <div className="space-y-1">
-        {options.map(option => (
-          <label
-            key={option.value}
-            htmlFor={`equip-filter-${title}-${option.value}`}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-            <Checkbox
-              id={`equip-filter-${title}-${option.value}`}
-              checked={selected.includes(option.value)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={() => onToggle(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (

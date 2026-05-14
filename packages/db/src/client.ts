@@ -1,6 +1,19 @@
 import { createLogger } from '@contractor-ops/logger';
-import { PrismaNeon } from '@prisma/adapter-neon';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from './generated/prisma/client/client.js';
+
+/**
+ * pg.Pool sizing — per Prisma instance. Each Render service (web, public-api,
+ * worker) instantiates 1+ Prisma clients (region clients, read replicas), so
+ * total connections = sum across services and instances. Keep `max`
+ * conservative so we stay well under Neon's per-project budget:
+ *   - free tier:    ~100 connections to pooler
+ *   - launch tier:  ~1000
+ *   - scale tier:   ~10000
+ * Default 10 is sane for a single instance on free tier (10 × 3 services × 2
+ * regions ≈ 60). Override via `PG_POOL_MAX` when scaling out.
+ */
+const PG_POOL_MAX = Number.parseInt(process.env.PG_POOL_MAX ?? '10', 10);
 
 /**
  * Slow-query threshold in ms. Phase 2 P2-E F-OBS-10. Queries that take longer
@@ -119,9 +132,19 @@ function attachQueryLogger(client: PrismaClient): void {
   }
 }
 
-/** Creates a PrismaClient connected to the given Neon connection string. */
+/** Creates a PrismaClient connected to the given Postgres connection string. */
 export function createPrismaClientForUrl(connectionString: string): PrismaClient {
-  const adapter = new PrismaNeon({ connectionString });
+  const adapter = new PrismaPg({
+    connectionString,
+    max: PG_POOL_MAX,
+    // Release idle connections after 30s so long-lived processes don't hold
+    // sockets they don't actively use (Neon counts active sockets toward the
+    // per-project budget even when idle).
+    idleTimeoutMillis: 30_000,
+    // Fail fast if the pool is exhausted — better than queueing indefinitely
+    // and timing out at a downstream layer with a less actionable error.
+    connectionTimeoutMillis: 5_000,
+  });
   const client = new PrismaClient({
     adapter,
     // F-OBS-10: opt into event-driven logs so we can pipe slow queries into

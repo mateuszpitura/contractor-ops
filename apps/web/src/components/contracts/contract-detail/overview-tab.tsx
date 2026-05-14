@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -48,15 +49,6 @@ type OverviewTabProps = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function formatCurrency(minor: number, currency: string): string {
   return `${(minor / 100).toFixed(2)} ${currency}`;
@@ -201,7 +193,7 @@ function translateEnum(
   prefix: string,
   tEnum: (key: string) => string,
 ): string | null {
-  return value ? tEnum(`${prefix}.${value}` as string) : null;
+  return value ? tEnum(`${prefix}.${enumKey(value)}` as string) : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -212,6 +204,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
   const t = useTranslations('ContractDetail.overview');
   const tEnum = useTranslations('Contracts');
   const tContractor = useTranslations('Contractors');
+  const { formatDate } = useDateFormatter();
 
   const metadata = (contract.metadataJson as Record<string, unknown>) ?? {};
   const reminderDaysBefore = (metadata.reminderDaysBefore as number[]) ?? [];

@@ -1,13 +1,30 @@
 'use client';
 
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
-import { Download, Loader2, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, Loader2, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+/** Format a local Date to `YYYY-MM-DD` without UTC shift. */
+function toLocalDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Parse `YYYY-MM-DD` as local midnight (not UTC). */
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d);
+}
+
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -15,7 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { AuditLogEntry } from './audit-log-table';
@@ -238,37 +254,6 @@ export function AuditLogTab() {
   const isLoading = listQuery.isPending && !listQuery.data;
   const isRefetching = listQuery.isFetching && !isLoading;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-9 flex-1" />
-          <Skeleton className="h-9 w-32" />
-        </div>
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-9 w-40" />
-          <Skeleton className="h-9 w-40" />
-          <Skeleton className="h-9 w-40" />
-        </div>
-        <AuditLogTable
-          data={[]}
-          totalCount={0}
-          page={1}
-          pageSize={PAGE_SIZE}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onPageChange={() => undefined}
-          sortOrder="desc"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onSortOrderChange={() => undefined}
-          expandedRows={{}}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onToggleRow={() => undefined}
-          isLoading
-        />
-      </div>
-    );
-  }
-
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
@@ -281,6 +266,7 @@ export function AuditLogTab() {
           <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={localSearch}
+            disabled={isLoading}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setLocalSearch(e.target.value)}
             placeholder={t('searchPlaceholder')}
@@ -290,7 +276,7 @@ export function AuditLogTab() {
         <Button
           variant="outline"
           onClick={handleExport}
-          disabled={exportMutation.isPending || totalCount === 0}>
+          disabled={isLoading || exportMutation.isPending || totalCount === 0}>
           {exportMutation.isPending ? (
             <Loader2 className="me-2 size-4 animate-spin" />
           ) : (
@@ -304,6 +290,7 @@ export function AuditLogTab() {
       <div className="flex flex-wrap items-center gap-3">
         {/* Actor filter */}
         <Select
+          disabled={isLoading}
           value={actorId}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
@@ -325,6 +312,7 @@ export function AuditLogTab() {
 
         {/* Action filter */}
         <Select
+          disabled={isLoading}
           value={actionFilter}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
@@ -346,6 +334,7 @@ export function AuditLogTab() {
 
         {/* Resource type filter */}
         <Select
+          disabled={isLoading}
           value={resourceType}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => {
@@ -365,31 +354,70 @@ export function AuditLogTab() {
           </SelectContent>
         </Select>
 
-        {/* Date range - from */}
-        <Input
-          type="date"
-          value={dateFrom}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => {
-            void setDateFrom(e.target.value || null);
-            void setAuditPage('1');
-          }}
-          className="w-36"
-          aria-label={tAria('dateFrom')}
-        />
-
-        {/* Date range - to */}
-        <Input
-          type="date"
-          value={dateTo}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => {
-            void setDateTo(e.target.value || null);
-            void setAuditPage('1');
-          }}
-          className="w-36"
-          aria-label={tAria('dateTo')}
-        />
+        {/* Date range */}
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button variant="outline" size="default" className="gap-1.5" disabled={isLoading} />
+            }>
+            <CalendarIcon className="h-3.5 w-3.5" />
+            <span className="text-xs">
+              {dateFrom && dateTo
+                ? `${dateFrom} – ${dateTo}`
+                : dateFrom
+                  ? `From ${dateFrom}`
+                  : dateTo
+                    ? `To ${dateTo}`
+                    : t('filterDateRange')}
+            </span>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <div className="flex gap-2 p-3">
+              <div>
+                <p className="text-xs font-medium mb-2 text-muted-foreground">
+                  {tAria('dateFrom')}
+                </p>
+                <Calendar
+                  mode="single"
+                  selected={dateFrom ? parseLocalDate(dateFrom) : undefined}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onSelect={date => {
+                    void setDateFrom(date ? toLocalDateString(date) : null);
+                    void setAuditPage('1');
+                  }}
+                />
+              </div>
+              <div>
+                <p className="text-xs font-medium mb-2 text-muted-foreground">{tAria('dateTo')}</p>
+                <Calendar
+                  mode="single"
+                  selected={dateTo ? parseLocalDate(dateTo) : undefined}
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onSelect={date => {
+                    void setDateTo(date ? toLocalDateString(date) : null);
+                    void setAuditPage('1');
+                  }}
+                />
+              </div>
+            </div>
+            {!!(dateFrom || dateTo) && (
+              <div className="border-t px-3 py-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => {
+                    void setDateFrom(null);
+                    void setDateTo(null);
+                    void setAuditPage('1');
+                  }}>
+                  Clear dates
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Table */}
@@ -403,6 +431,7 @@ export function AuditLogTab() {
         onSortOrderChange={handleSortOrderChange}
         expandedRows={expandedRows}
         onToggleRow={handleToggleRow}
+        isLoading={isLoading}
         isFetching={isRefetching}
       />
     </div>

@@ -1,8 +1,7 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, ContractsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { ContractCard, ContractCardSkeleton } from '@/components/portal/contract-card';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -50,7 +49,7 @@ export default function PortalContractsPage() {
           </div>
         ) : (
           <AtelierEmptyState
-            icon={FileText}
+            illustration={ContractsIllustration}
             heading={t('contracts.emptyTitle')}
             body={t('contracts.emptyBody')}
             renderAction={renderEmptyStateAction}

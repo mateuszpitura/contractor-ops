@@ -1,8 +1,12 @@
 'use client';
 
-import { AtelierEmptyState } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  NotificationsIllustration,
+} from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell } from 'lucide-react';
+import { CheckCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useId, useMemo } from 'react';
@@ -13,8 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
-import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 import type { NotificationData } from './notification-item';
 import { getEntityUrl, NotificationItem } from './notification-item';
@@ -152,39 +156,35 @@ export function NotificationCenter() {
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Page header */}
       <AnimateIn delay={0}>
-        <div className="flex items-center justify-between">
-          <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight">
-            {t('title')}
-          </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => markAllReadMutation.mutate(undefined as never)}
-            disabled={unreadCount === 0 || markAllReadMutation.isPending}>
-            {t('markAllRead')}
-          </Button>
-        </div>
+        <AtelierPageHeader
+          title={t('title')}
+          description={t('pageDescription')}
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => markAllReadMutation.mutate(undefined as never)}
+              disabled={unreadCount === 0 || markAllReadMutation.isPending}>
+              <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              {t('markAllRead')}
+            </Button>
+          }
+        />
       </AnimateIn>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Type filter chips */}
-        {FILTER_KEYS.map(key => (
-          <button
-            key={key}
-            type="button"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => handleFilterChange(key)}
-            className={cn(
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-              typeFilter === key
-                ? 'bg-primary/10 text-primary'
-                : 'bg-muted text-muted-foreground hover:bg-accent',
-            )}>
-            {t(`filters.${key}` as Parameters<typeof t>[0])}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Type filter tabs */}
+        <Tabs value={typeFilter} onValueChange={handleFilterChange}>
+          <TabsList>
+            {FILTER_KEYS.map(key => (
+              <TabsTrigger key={key} value={key}>
+                {t(`filters.${key}` as Parameters<typeof t>[0])}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Spacer */}
         <div className="flex-1" />
@@ -222,7 +222,7 @@ export function NotificationCenter() {
       ) : isEmpty ? (
         /* Empty state - informational only */
         <AtelierEmptyState
-          icon={Bell}
+          illustration={NotificationsIllustration}
           heading={te('notifications.heading')}
           body={te('notifications.body')}
           renderAction={renderEmptyStateAction}

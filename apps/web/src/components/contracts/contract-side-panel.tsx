@@ -2,7 +2,6 @@
 
 import { differenceInDays, isPast } from 'date-fns';
 import { useTranslations } from 'next-intl';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import type { ContractRow } from './contract-table/columns';
 
 // ---------------------------------------------------------------------------
@@ -44,6 +44,7 @@ interface ContractSidePanelProps {
 export function ContractSidePanel({ contract, open, onOpenChange }: ContractSidePanelProps) {
   const t = useTranslations('Contracts');
   const ts = useTranslations('Contracts.sidePanel');
+  const { formatDate } = useDateFormatter();
 
   if (!contract) return null;
 
@@ -98,17 +99,11 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 />
                 <DetailItem
                   label={t('columns.startDate')}
-                  value={
-                    contract.startDate
-                      ? new Date(contract.startDate).toLocaleDateString('pl-PL')
-                      : null
-                  }
+                  value={contract.startDate ? formatDate(contract.startDate) : null}
                 />
                 <DetailItem
                   label={t('columns.endDate')}
-                  value={
-                    contract.endDate ? new Date(contract.endDate).toLocaleDateString('pl-PL') : null
-                  }
+                  value={contract.endDate ? formatDate(contract.endDate) : null}
                 />
                 <DetailItem
                   label={t('columns.rate')}

@@ -1,8 +1,8 @@
 'use client';
 
+import { SpendReportIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { UsersRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -184,7 +184,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         sortBy={sortBy}
         sortOrder={sortOrder}
         isLoading={tableQuery.isLoading}
-        emptyIcon={<UsersRound className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyIcon={<SpendReportIllustration className="mx-auto h-16 w-16 text-primary/60" />}
         emptyTitle={t('emptySpendTeam')}
         emptyDescription={t('emptySpendTeamBody')}
         grandTotalLabel={t('grandTotal')}

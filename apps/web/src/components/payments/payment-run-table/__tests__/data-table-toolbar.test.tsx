@@ -1,9 +1,9 @@
-import { render, screen, setup } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 import { DataTableToolbar } from '../data-table-toolbar';
 
 function makeProps(overrides: Partial<Parameters<typeof DataTableToolbar>[0]> = {}) {
   return {
-    activeStatus: 'all',
+    activeStatuses: [] as string[],
     onStatusChange: vi.fn(),
     dateFrom: undefined,
     dateTo: undefined,
@@ -14,32 +14,18 @@ function makeProps(overrides: Partial<Parameters<typeof DataTableToolbar>[0]> = 
 }
 
 describe('DataTableToolbar', () => {
-  it('renders all status chips', () => {
+  it('renders the status filter button', () => {
     render(<DataTableToolbar {...makeProps()} />);
-
-    // 6 chips: all, draft, locked, exported, completed, cancelled
-    const buttons = screen.getAllByRole('button').filter(b => b.classList.contains('rounded-full'));
-    expect(buttons).toHaveLength(6);
-  });
-
-  it('highlights the active status chip', () => {
-    render(<DataTableToolbar {...makeProps({ activeStatus: 'DRAFT' })} />);
-
-    const draftChip = screen.getByText(/draft/i);
-    expect(draftChip.className).toContain('text-primary');
-  });
-
-  it('calls onStatusChange when a chip is clicked', async () => {
-    const onStatusChange = vi.fn();
-    const { user } = setup(<DataTableToolbar {...makeProps({ onStatusChange })} />);
-
-    await user.click(screen.getByText(/exported/i));
-    expect(onStatusChange).toHaveBeenCalledWith('EXPORTED');
+    expect(screen.getByText(/status/i)).toBeInTheDocument();
   });
 
   it('renders date range button', () => {
     render(<DataTableToolbar {...makeProps()} />);
-
     expect(screen.getByText(/date range/i)).toBeInTheDocument();
+  });
+
+  it('shows active filter badges when statuses are selected', () => {
+    render(<DataTableToolbar {...makeProps({ activeStatuses: ['DRAFT'] })} />);
+    expect(screen.getByText(/draft/i)).toBeInTheDocument();
   });
 });

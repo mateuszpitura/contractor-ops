@@ -1,10 +1,9 @@
 'use client';
 
-import { AtelierTableShell } from '@contractor-ops/ui';
+import { AtelierTableShell, InvoicesIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FileText } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
@@ -12,6 +11,7 @@ import { parseFilterParam } from '@/components/invoices/einvoice-compliance-filt
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Table, TableHeader, TableRow } from '@/components/ui/table';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { InvoiceRow } from './columns';
 import { deriveComplianceStatus, getColumns } from './columns';
@@ -37,6 +37,14 @@ function isRowOverdue(row: InvoiceRow): boolean {
 interface InvoiceDataTableProps {
   onRowClick: (invoice: InvoiceRow) => void;
   onUpload: () => void;
+  /**
+   * When true, DataTableBody keeps showing skeleton rows even if the
+   * table's own data has already arrived, and AtelierTableShell shows its
+   * loading overlay. Used by the page while its count query is still in
+   * flight, so the in-table empty state never flashes before the swap to
+   * AtelierEmptyState.
+   */
+  parentLoading?: boolean;
 }
 
 /**
@@ -44,8 +52,9 @@ interface InvoiceDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps) {
+export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: InvoiceDataTableProps) {
   const t = useTranslations('Invoices');
+  const { formatDate } = useDateFormatter();
   const tAria = useTranslations('Common.aria');
 
   // URL-synced filter state
@@ -83,11 +92,12 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
               | 'VOID'
             >)
           : undefined,
-        matchStatus: filters.matchStatus
-          ? ([filters.matchStatus] as Array<
-              'UNMATCHED' | 'PARTIAL' | 'MATCHED' | 'DISCREPANCY' | 'MANUALLY_CONFIRMED'
-            >)
-          : undefined,
+        matchStatus:
+          filters.matchStatus.length > 0
+            ? (filters.matchStatus as Array<
+                'UNMATCHED' | 'PARTIAL' | 'MATCHED' | 'DISCREPANCY' | 'MANUALLY_CONFIRMED'
+              >)
+            : undefined,
         source: filters.source.length
           ? (filters.source as Array<'MANUAL_UPLOAD' | 'EMAIL_INTAKE' | 'KSEF' | 'API'>)
           : undefined,
@@ -135,8 +145,8 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
 
   // Column definitions
   const columns: ColumnDef<InvoiceRow>[] = useMemo(
-    () => getColumns((key: string) => t(key as Parameters<typeof t>[0])),
-    [t],
+    () => getColumns((key: string) => t(key as Parameters<typeof t>[0]), formatDate),
+    [t, formatDate],
   );
 
   // TanStack Table instance
@@ -185,6 +195,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     (
       partial: Partial<{
         status: string[];
+        matchStatus: string[];
         source: string[];
         contractorId: string;
       }>,
@@ -225,7 +236,7 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
     void setFilters({
       search: '',
       status: [],
-      matchStatus: '',
+      matchStatus: [],
       source: [],
       contractorId: '',
       page: 1,
@@ -249,16 +260,19 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
         onSearchChange={handleSearchChange}
         filters={{
           status: filters.status,
+          matchStatus: filters.matchStatus,
           source: filters.source,
         }}
         onFiltersChange={handleFiltersChange}
         isSearching={isRefetching}
+        disabled={isLoading || parentLoading === true}
         onUpload={onUpload}
       />
 
-      {/* Workbench-tier table chrome */}
+      {/* Workbench-tier table chrome. isLoading drives the translucent
+          background overlay during data fetches. */}
       <AtelierTableShell
-        isLoading={isRefetching}
+        isLoading={isLoading || isRefetching || parentLoading === true}
         footer={
           !isLoading && totalRows > 0 ? (
             <DataTablePagination
@@ -293,10 +307,11 @@ export function InvoiceDataTable({ onRowClick, onUpload }: InvoiceDataTableProps
           <DataTableBody
             table={table}
             isLoading={isLoading}
+            forceLoading={parentLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
             rowClassName={rowClassName}
-            emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyIcon={<InvoicesIllustration className="mx-auto h-16 w-16 text-primary/60" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}

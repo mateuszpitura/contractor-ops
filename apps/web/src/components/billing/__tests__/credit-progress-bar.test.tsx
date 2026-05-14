@@ -1,35 +1,48 @@
 import { render, screen } from '@/test/test-utils';
-import { CreditProgressBar } from '../credit-progress-bar';
+import { CreditCard } from '../credit-progress-bar';
 
-describe('CreditProgressBar', () => {
-  it('renders remaining credits text when credits are available', () => {
-    render(<CreditProgressBar used={30} total={100} />);
-    expect(screen.getByText('70 of 100 credits remaining')).toBeInTheDocument();
+function noop() {
+  /* no-op */
+}
+
+describe('CreditCard', () => {
+  it('renders used count and subtitle when credits are available', () => {
+    render(<CreditCard used={30} total={100} isLowCredits={false} onBuyMore={noop} />);
+    expect(screen.getByText('30')).toBeInTheDocument();
+    expect(screen.getByText('30 used / 100 total')).toBeInTheDocument();
   });
 
   it('renders exhausted text when all credits are used', () => {
-    render(<CreditProgressBar used={100} total={100} />);
+    render(<CreditCard used={100} total={100} isLowCredits={true} onBuyMore={noop} />);
     expect(
       screen.getByText('No credits remaining -- purchase more to continue OCR processing'),
     ).toBeInTheDocument();
   });
 
   it('renders exhausted text when used exceeds total', () => {
-    render(<CreditProgressBar used={120} total={100} />);
+    render(<CreditCard used={120} total={100} isLowCredits={true} onBuyMore={noop} />);
     expect(
       screen.getByText('No credits remaining -- purchase more to continue OCR processing'),
     ).toBeInTheDocument();
   });
 
   it('handles zero total gracefully', () => {
-    render(<CreditProgressBar used={0} total={0} />);
-    // 0 remaining, 0 total -> remaining = 0, not isExhausted because total is 0
-    // isExhausted = total > 0 && remaining <= 0 -> false
-    expect(screen.getByText('0 of 0 credits remaining')).toBeInTheDocument();
+    render(<CreditCard used={0} total={0} isLowCredits={false} onBuyMore={noop} />);
+    expect(screen.getByText('0 used / 0 total')).toBeInTheDocument();
   });
 
   it('renders a progressbar element', () => {
-    render(<CreditProgressBar used={10} total={100} />);
+    render(<CreditCard used={10} total={100} isLowCredits={false} onBuyMore={noop} />);
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('shows buy more button when credits are low', () => {
+    render(<CreditCard used={90} total={100} isLowCredits={true} onBuyMore={noop} />);
+    expect(screen.getByText('Buy more')).toBeInTheDocument();
+  });
+
+  it('hides buy more button when credits are sufficient', () => {
+    render(<CreditCard used={10} total={100} isLowCredits={false} onBuyMore={noop} />);
+    expect(screen.queryByText('Buy more')).not.toBeInTheDocument();
   });
 });

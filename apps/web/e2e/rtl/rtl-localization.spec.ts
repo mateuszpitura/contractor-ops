@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
  * RTL / Arabic localization behavioral tests — Phase 50.
  *
  * Requirements covered:
- *   L10N-01  Locale switcher cycles pl -> en -> ar from the user menu
+ *   L10N-01  Language selector in Settings page switches locale
  *   L10N-02  Arabic locale renders page with dir="rtl" and RTL sidebar
  *   L10N-03  Bdi-wrapped content isolates LTR text within RTL context
  *   L10N-04  Spend chart renders with mirrored axes in Arabic locale
@@ -220,99 +220,36 @@ test.describe('L10N-04 — Chart axis mirroring in RTL', () => {
 });
 
 // ---------------------------------------------------------------------------
-// L10N-01: Locale switcher cycles pl -> en -> ar
-// Verifies the language toggle button in the user menu changes the locale.
+// L10N-01: Language selector in Settings page
+// Verifies the LanguageCard tile selector in Settings changes the locale.
 // Requires authentication.
 // ---------------------------------------------------------------------------
 
-test.describe('L10N-01 — Locale switcher cycles through all three locales', () => {
-  test('locale switcher button is present in user menu', async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, '/en/v2');
+test.describe('L10N-01 — Language selector in settings page', () => {
+  test('language card is present on settings general tab', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/en/settings');
     if (!didLogin) {
-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switcher test');
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping language card test');
       return;
     }
 
-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
-
-    // Open the user menu dropdown by clicking the sidebar menu button
-    const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
-    await userMenuTrigger.click();
-
-    // The locale switcher button shows the NEXT locale label.
-    // When locale is "en", next is Arabic (عربي).
-    // It's a plain button with text-primary class inside the dropdown.
-    const localeButton = page
-      .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
-      .first();
-    await expect(localeButton).toBeVisible({ timeout: 10_000 });
-
-    // Button text should show "عربي" (Arabic script) when current locale is "en"
-    const buttonText = await localeButton.textContent();
-    expect(buttonText?.trim()).toBe('عربي');
+    // The LanguageCard renders locale tiles with lang attributes
+    const languageTile = page.locator('button[lang="ar"]').first();
+    await expect(languageTile).toBeVisible({ timeout: 20_000 });
   });
 
-  test('clicking locale switcher from english navigates to arabic locale url', async ({ page }) => {
-    const didLogin = await loginAndNavigate(page, '/en/v2');
+  test('clicking arabic tile navigates to arabic locale url', async ({ page }) => {
+    const didLogin = await loginAndNavigate(page, '/en/settings');
     if (!didLogin) {
-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale switch navigation test');
+      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping language switch test');
       return;
     }
 
-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
+    const arabicTile = page.locator('button[lang="ar"]').first();
+    await expect(arabicTile).toBeVisible({ timeout: 20_000 });
+    await arabicTile.click();
 
-    // Open the user menu dropdown
-    const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
-    await userMenuTrigger.click();
-
-    // Click the locale button (shows "عربي" when on /en)
-    const localeButton = page
-      .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
-      .first();
-    await expect(localeButton).toBeVisible({ timeout: 10_000 });
-    await localeButton.click();
-
-    // After clicking, should navigate to /ar/... URL
     await page.waitForURL(/\/ar\//, { timeout: 30_000 });
     expect(page.url()).toContain('/ar/');
-  });
-
-  test('clicking locale switcher twice cycles from arabic back to polish locale', async ({
-    page,
-  }) => {
-    const didLogin = await loginAndNavigate(page, '/en/v2');
-    if (!didLogin) {
-      test.skip(true, 'E2E_EMAIL / E2E_PASSWORD not set — skipping locale cycle test');
-      return;
-    }
-
-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
-
-    // First click: en -> ar
-    const userMenuTrigger = page.locator("[data-sidebar='menu-button']").last();
-    await userMenuTrigger.click();
-
-    const localeButton = page
-      .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
-      .first();
-    await localeButton.click();
-    await page.waitForURL(/\/ar\//, { timeout: 30_000 });
-
-    // Now in /ar — open menu again and click the locale button (shows "PL")
-    await page.waitForSelector("[data-sidebar='sidebar']", { timeout: 20_000 });
-    await userMenuTrigger.click();
-
-    const localeButtonAr = page
-      .locator('[role="menu"] button.text-primary, [role="menu"] button[class*="text-primary"]')
-      .first();
-    await expect(localeButtonAr).toBeVisible({ timeout: 10_000 });
-
-    const arButtonText = await localeButtonAr.textContent();
-    expect(arButtonText?.trim()).toBe('PL');
-
-    await localeButtonAr.click();
-    // After clicking from /ar, should navigate to /pl/...
-    await page.waitForURL(/\/pl\//, { timeout: 30_000 });
-    expect(page.url()).toContain('/pl/');
   });
 });

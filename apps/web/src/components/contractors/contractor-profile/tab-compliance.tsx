@@ -1,14 +1,17 @@
 'use client';
 
-import { ShieldCheck, Upload } from 'lucide-react';
+import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
+import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import { ContractorEInvoicingSection } from '@/components/contractors/contractor-e-invoicing-section';
 import { CountryComplianceSection } from '@/components/contractors/country-compliance-section';
 import { DocumentList } from '@/components/documents/document-list';
 import { DropZone } from '@/components/documents/drop-zone';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 
 type ComplianceItem = {
   id: string;
@@ -43,18 +46,10 @@ function isExpiringSoon(expiresAt: string | Date | null): boolean {
   return d <= thirtyDaysFromNow && d >= new Date();
 }
 
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 export function TabCompliance({ contractor }: TabComplianceProps) {
   const id = useId();
   const t = useTranslations('ContractorProfile.compliance');
+  const { formatDate } = useDateFormatter();
 
   if (contractor.complianceItems.length === 0) {
     return (
@@ -63,17 +58,12 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
         <CountryComplianceSection contractorId={contractor.id} />
         <ContractorEInvoicingSection contractorId={contractor.id} />
 
-        <div className="flex min-h-[300px] w-full flex-col items-center justify-center gap-3 px-4">
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-muted">
-            <ShieldCheck className="size-6 text-muted-foreground" />
-          </div>
-          <div className="mx-auto w-full max-w-[320px] text-center">
-            <p className="text-sm font-medium">{t('noRequirements')}</p>
-            <p className="mt-1 text-xs text-pretty text-muted-foreground">
-              {t('noRequirementsHint')}
-            </p>
-          </div>
-        </div>
+        <AtelierEmptyState
+          illustration={ComplianceGapsIllustration}
+          heading={t('noRequirements')}
+          body={t('noRequirementsHint')}
+          renderAction={renderEmptyStateAction}
+        />
       </div>
     );
   }

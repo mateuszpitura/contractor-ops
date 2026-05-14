@@ -224,7 +224,11 @@ const portalSchema = z.object({
 // development; production deployments MUST set this so the admin shell rejects
 // arbitrary org owners (F-SEC-04).
 const platformOperatorSchema = z.object({
-  PLATFORM_OPERATOR_ORG_ID: z.string().uuid().optional(),
+  // Org IDs in this schema are generated with Prisma `@default(cuid())`, not
+  // UUID. Accept any non-empty string (CUID, UUID, or other) so the gate works
+  // regardless of the ID strategy. Strict format checks belong at row-creation
+  // time in Prisma, not on env vars.
+  PLATFORM_OPERATOR_ORG_ID: z.string().min(1).optional(),
 });
 
 // ── Observability ──────────────────────────────────────────────────────────
@@ -370,10 +374,22 @@ export function resetServerEnvCacheForTesting(): void {
  * or pass a record here — this does not update the {@link getServerEnv} cache unless
  * validating the default `process.env`.
  */
+// Empty string in dotenv means "key declared but blank" (e.g. `TURNSTILE_SITE_KEY=`).
+// Treat it the same as a missing key so `.optional()` schemas accept blank lines from .env.
+function coerceBlankToUndefined(
+  env: Record<string, string | undefined>,
+): Record<string, string | undefined> {
+  const out: Record<string, string | undefined> = {};
+  for (const [k, v] of Object.entries(env)) {
+    out[k] = v === '' ? undefined : v;
+  }
+  return out;
+}
+
 export function validateServerEnv(
   env: Record<string, string | undefined> = process.env,
 ): ServerEnv {
-  const result = serverEnvSchema.safeParse(env);
+  const result = serverEnvSchema.safeParse(coerceBlankToUndefined(env));
   if (!result.success) {
     const errors = result.error.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Environment validation failed:\n${errors}`);
@@ -390,7 +406,7 @@ export function validateServerEnv(
 export function validateClientEnv(
   env: Record<string, string | undefined> = process.env,
 ): ClientEnv {
-  const result = clientEnvSchema.safeParse(env);
+  const result = clientEnvSchema.safeParse(coerceBlankToUndefined(env));
   if (!result.success) {
     const errors = result.error.issues.map(i => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Client environment validation failed:\n${errors}`);

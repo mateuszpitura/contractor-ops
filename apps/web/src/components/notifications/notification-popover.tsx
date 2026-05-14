@@ -1,12 +1,11 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell, BellOff } from 'lucide-react';
+import { Bell, BellOff, CheckCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
@@ -150,7 +149,8 @@ export function NotificationPopover() {
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => markAllReadMutation.mutate(undefined as never)}
               disabled={markAllReadMutation.isPending}
-              className="text-xs text-primary hover:underline disabled:opacity-50">
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50">
+              <CheckCheck className="h-3 w-3" aria-hidden="true" />
               {t('markAllRead')}
             </button>
           )}
@@ -167,7 +167,7 @@ export function NotificationPopover() {
           </div>
         ) : (
           <>
-            <ScrollArea className="max-h-[360px]">
+            <div className="max-h-[360px] overflow-y-auto">
               <div className="flex flex-col">
                 {notifications.map(n => (
                   <NotificationItem
@@ -179,7 +179,7 @@ export function NotificationPopover() {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Footer */}
             <div className="border-t px-4 py-2 text-center">

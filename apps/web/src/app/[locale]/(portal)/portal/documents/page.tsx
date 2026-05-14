@@ -1,8 +1,13 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, AtelierTableShell } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  AtelierTableShell,
+  DocumentsIllustration,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Download, FileText } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
@@ -17,20 +22,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
-}
 
 function formatDocType(type: string): string {
   return type
@@ -53,6 +50,7 @@ function formatDocType(type: string): string {
  */
 export default function PortalDocumentsPage() {
   const t = useTranslations('Portal');
+  const { formatDate } = usePortalDateFormatter();
   const documentsQuery = useQuery(portalTrpc.portal.listDocuments.queryOptions());
   const documents = documentsQuery.data;
   const isLoading = documentsQuery.isPending;
@@ -151,7 +149,7 @@ export default function PortalDocumentsPage() {
           </div>
         ) : (
           <AtelierEmptyState
-            icon={FileText}
+            illustration={DocumentsIllustration}
             heading={t('documents.emptyTitle')}
             body={t('documents.emptyBody')}
             renderAction={renderEmptyStateAction}

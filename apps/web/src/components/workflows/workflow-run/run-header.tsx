@@ -26,6 +26,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -85,15 +86,6 @@ function calculateRunProgress(tasks: RunTask[]) {
   };
 }
 
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
 function getDaysOverdue(dueDate: string | Date): number {
   const due = typeof dueDate === 'string' ? new Date(dueDate) : dueDate;
   const now = new Date();
@@ -108,6 +100,7 @@ function getDaysOverdue(dueDate: string | Date): number {
 export function RunHeader({ run }: RunHeaderProps) {
   const t = useTranslations('Workflows');
   const tCommon = useTranslations('Common');
+  const { formatDate } = useDateFormatter();
   const queryClient = useQueryClient();
   const [cancelOpen, setCancelOpen] = useState(false);
 

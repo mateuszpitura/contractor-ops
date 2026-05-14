@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -25,15 +26,6 @@ function formatAmount(minor: number, currency: string): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(minor / 100);
-}
-
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
 }
 
 // ---------------------------------------------------------------------------
@@ -111,6 +103,7 @@ function DetailSkeleton() {
 
 export default function PortalInvoiceDetailPage() {
   const t = useTranslations('Portal');
+  const { formatDate } = usePortalDateFormatter();
   const params = useParams<{ id: string }>();
 
   const { data: invoice, isLoading } = useQuery(

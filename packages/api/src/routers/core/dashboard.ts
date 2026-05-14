@@ -152,7 +152,7 @@ async function fetchSpendTrend(organizationId: string, months: string, db: Tenan
     SELECT
       date_trunc('month', "paidAt") AS month,
       currency,
-      COALESCE(SUM("amountToPayMinor")::int, 0) AS "totalMinor"
+      COALESCE(SUM("totalMinor")::int, 0) AS "totalMinor"
     FROM "Invoice"
     WHERE "organizationId" = ${organizationId}
       AND "paymentStatus" = 'PAID'

@@ -19,6 +19,7 @@ vi.mock('@/trpc/init', () => ({
 const defaultFilters = {
   status: [],
   lifecycleStage: [],
+  type: [],
   owner: [],
   team: [],
   billingModel: [],

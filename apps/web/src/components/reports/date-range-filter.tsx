@@ -100,6 +100,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
           {preset.id === 'custom' ? (
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
               <PopoverTrigger
+                nativeButton={false}
                 // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
                 render={props => (
                   <span {...props} className="flex items-center gap-1.5">

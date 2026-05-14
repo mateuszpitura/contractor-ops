@@ -21,6 +21,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { DateFormatKey, TimeFormatKey } from '@/lib/format-date';
+import {
+  DATE_FORMATS,
+  DEFAULT_DATE_FORMAT,
+  DEFAULT_TIME_FORMAT,
+  previewDateFormat,
+  previewTimeFormat,
+  TIME_FORMATS,
+} from '@/lib/format-date';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -33,7 +42,9 @@ const updateSettingsSchema = z.object({
   country: z.string().length(2),
   currency: z.string().length(3),
   timezone: z.string().min(1),
-  language: z.enum(['pl', 'en']),
+  language: z.enum(['pl', 'en', 'ar', 'de']),
+  dateFormat: z.enum(DATE_FORMATS),
+  timeFormat: z.enum(TIME_FORMATS),
   fiscalYearStartMonth: z.number().int().min(1).max(12),
   billingEmail: z.email().optional().or(z.literal('')),
 });
@@ -243,6 +254,8 @@ export function OrgSettingsForm() {
       currency: 'PLN',
       timezone: 'Europe/Warsaw',
       language: 'pl',
+      dateFormat: DEFAULT_DATE_FORMAT,
+      timeFormat: DEFAULT_TIME_FORMAT,
       fiscalYearStartMonth: 1,
       billingEmail: '',
     },
@@ -259,7 +272,9 @@ export function OrgSettingsForm() {
         country: (metadata.countryCode as string) ?? 'PL',
         currency: (metadata.defaultCurrency as string) ?? 'PLN',
         timezone: (metadata.timezone as string) ?? 'Europe/Warsaw',
-        language: ((metadata.language as string) ?? 'pl') as 'pl' | 'en',
+        language: ((metadata.language as string) ?? 'pl') as 'pl' | 'en' | 'ar' | 'de',
+        dateFormat: ((metadata.dateFormat as string) ?? DEFAULT_DATE_FORMAT) as DateFormatKey,
+        timeFormat: ((metadata.timeFormat as string) ?? DEFAULT_TIME_FORMAT) as TimeFormatKey,
         fiscalYearStartMonth: (metadata.fiscalYearStartMonth as number) ?? 1,
         billingEmail: (metadata.billingEmail as string) ?? '',
       });
@@ -273,6 +288,8 @@ export function OrgSettingsForm() {
       fiscalYearStartMonth: values.fiscalYearStartMonth,
       billingEmail: values.billingEmail || undefined,
       language: values.language,
+      dateFormat: values.dateFormat,
+      timeFormat: values.timeFormat,
     });
   };
 
@@ -411,12 +428,15 @@ export function OrgSettingsForm() {
               value={watch('language')}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onValueChange={value => {
-                if (value) setValue('language', value as 'pl' | 'en', { shouldDirty: true });
+                if (value)
+                  setValue('language', value as 'pl' | 'en' | 'ar' | 'de', { shouldDirty: true });
               }}
               disabled={updateMutation.isPending}
               items={[
                 { value: 'pl', label: t('fields.languagePolish') },
                 { value: 'en', label: t('fields.languageEnglish') },
+                { value: 'de', label: t('fields.languageGerman') },
+                { value: 'ar', label: t('fields.languageArabic') },
               ]}>
               <SelectTrigger id={`${id}-language`} className="w-full">
                 <SelectValue placeholder={t('fields.languagePlaceholder')} />
@@ -424,6 +444,68 @@ export function OrgSettingsForm() {
               <SelectContent>
                 <SelectItem value="pl">{t('fields.languagePolish')}</SelectItem>
                 <SelectItem value="en">{t('fields.languageEnglish')}</SelectItem>
+                <SelectItem value="de">{t('fields.languageGerman')}</SelectItem>
+                <SelectItem value="ar">{t('fields.languageArabic')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Date format */}
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-dateFormat`} className="text-[13px]">
+              {t('fields.dateFormat')}
+            </Label>
+            <Select
+              value={watch('dateFormat')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onValueChange={value => {
+                if (value) setValue('dateFormat', value as DateFormatKey, { shouldDirty: true });
+              }}
+              disabled={updateMutation.isPending}
+              items={DATE_FORMATS.map(fmt => ({
+                value: fmt,
+                label: `${fmt} — ${previewDateFormat(fmt)}`,
+              }))}>
+              <SelectTrigger id={`${id}-dateFormat`} className="w-full">
+                <SelectValue placeholder={t('fields.dateFormatPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                {DATE_FORMATS.map(fmt => (
+                  <SelectItem key={fmt} value={fmt}>
+                    {fmt}
+                    <span className="ms-2 text-muted-foreground">{previewDateFormat(fmt)}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Time format */}
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-timeFormat`} className="text-[13px]">
+              {t('fields.timeFormat')}
+            </Label>
+            <Select
+              value={watch('timeFormat')}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onValueChange={value => {
+                if (value) setValue('timeFormat', value as TimeFormatKey, { shouldDirty: true });
+              }}
+              disabled={updateMutation.isPending}
+              items={TIME_FORMATS.map(fmt => ({
+                value: fmt,
+                label: `${t(`fields.timeFormat${fmt === '24h' ? '24h' : '12h'}`)} — ${previewTimeFormat(fmt)}`,
+              }))}>
+              <SelectTrigger id={`${id}-timeFormat`} className="w-full">
+                <SelectValue placeholder={t('fields.timeFormatPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                {TIME_FORMATS.map(fmt => (
+                  <SelectItem key={fmt} value={fmt}>
+                    {t(`fields.timeFormat${fmt === '24h' ? '24h' : '12h'}`)}
+                    <span className="ms-2 text-muted-foreground">{previewTimeFormat(fmt)}</span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

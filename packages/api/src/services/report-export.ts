@@ -1,6 +1,6 @@
 /**
  * CSV generation functions for reports and audit log export.
- * Uses xlsx library with BOM for Polish character support.
+ * Uses exceljs for proper escaping. Adds UTF-8 BOM for Polish character support.
  * Phase 46: Added home-currency conversion for multi-currency reports.
  */
 
@@ -37,32 +37,31 @@ type AuditLogItem = {
 
 /**
  * Generate a CSV file from rows with specified column definitions.
- * Uses xlsx library for proper escaping. Adds UTF-8 BOM for Polish characters.
+ * Uses exceljs for proper escaping. Adds UTF-8 BOM for Polish characters.
  * Returns base64-encoded CSV string.
  */
 export async function generateReportCsv(
   columns: CsvColumn[],
   rows: Record<string, unknown>[],
 ): Promise<{ data: string; mimeType: string }> {
-  const { default: XLSX } = await import('xlsx');
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Report');
 
-  // Map rows to use header names as keys
-  const mappedRows = rows.map(row => {
+  worksheet.columns = columns.map(col => ({
+    header: col.header,
+    key: col.key,
+  }));
+
+  for (const row of rows) {
     const mapped: Record<string, unknown> = {};
     for (const col of columns) {
-      mapped[col.header] = row[col.key] ?? '';
+      mapped[col.key] = row[col.key] ?? '';
     }
-    return mapped;
-  });
+    worksheet.addRow(mapped);
+  }
 
-  const worksheet = XLSX.utils.json_to_sheet(mappedRows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Report');
-
-  const csvBuffer = XLSX.write(workbook, {
-    type: 'buffer',
-    bookType: 'csv',
-  }) as Buffer;
+  const csvBuffer = Buffer.from(await workbook.csv.writeBuffer());
 
   // Prepend UTF-8 BOM for Excel Polish character support
   const bom = Buffer.from([0xef, 0xbb, 0xbf]);

@@ -3,6 +3,7 @@
 import type { MemberStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, AtelierTableShell, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { usePermissions } from '@/hooks/use-permissions';
+import { authClient } from '@/lib/auth-client';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 
@@ -85,6 +87,8 @@ export function UsersTable() {
   const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
   const { can } = usePermissions();
+  const session = authClient.useSession();
+  const currentUserId = session.data?.user?.id;
   const canManageMembers = can('member', ['update']);
   const canDeleteMembers = can('member', ['delete']);
 
@@ -100,6 +104,14 @@ export function UsersTable() {
     if (!Array.isArray(data)) return [];
     return data as unknown as Member[];
   }, [membersQuery.data]);
+
+  const showActionsColumn =
+    (canManageMembers || canDeleteMembers) &&
+    members.some(m => {
+      const isSelf = m.userId === currentUserId;
+      const isDisabled = displayStatus(m) === 'disabled';
+      return (isDisabled && canManageMembers) || (!(isDisabled || isSelf) && canDeleteMembers);
+    });
 
   const updateRoleMutation = useMutation(
     trpc.user.updateRole.mutationOptions({
@@ -143,7 +155,7 @@ export function UsersTable() {
               <TableHead>{t('columns.email')}</TableHead>
               <TableHead>{t('columns.role')}</TableHead>
               <TableHead>{t('columns.status')}</TableHead>
-              {!!(canManageMembers || canDeleteMembers) && (
+              {showActionsColumn && (
                 <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
@@ -164,7 +176,7 @@ export function UsersTable() {
                 <TableCell>
                   <Skeleton className="h-5 w-16" />
                 </TableCell>
-                {!!(canManageMembers || canDeleteMembers) && (
+                {showActionsColumn && (
                   <TableCell>
                     <Skeleton className="h-8 w-20 ms-auto" />
                   </TableCell>
@@ -189,6 +201,9 @@ export function UsersTable() {
   const roleLabel = (role: string) =>
     t(`roles.${enumKey(role)}` as Parameters<typeof t>[0]) ?? role;
 
+  const roleDescription = (role: string) =>
+    t(`roleDescriptions.${enumKey(role)}` as Parameters<typeof t>[0]);
+
   const statusLabel = (status: string) =>
     t(`status.${enumKey(status)}` as Parameters<typeof t>[0]) ?? status;
 
@@ -202,7 +217,7 @@ export function UsersTable() {
               <TableHead>{t('columns.email')}</TableHead>
               <TableHead>{t('columns.role')}</TableHead>
               <TableHead>{t('columns.status')}</TableHead>
-              {!!(canManageMembers || canDeleteMembers) && (
+              {showActionsColumn && (
                 <TableHead className="text-end">{t('columns.actions')}</TableHead>
               )}
             </TableRow>
@@ -211,6 +226,7 @@ export function UsersTable() {
             {members.map((m, idx) => {
               const status = displayStatus(m);
               const memberId = m.id ?? m.userId ?? '';
+              const isSelf = m.userId === currentUserId;
               const isDisabled = status === 'disabled';
 
               return (
@@ -242,8 +258,11 @@ export function UsersTable() {
                                   });
                                 }
                               }}
-                              className={role === m.role ? 'font-semibold' : ''}>
-                              {roleLabel(role)}
+                              className={`${role === m.role ? 'font-semibold' : ''} flex flex-col items-start gap-0.5`}>
+                              <span>{roleLabel(role)}</span>
+                              <span className="text-xs font-normal text-muted-foreground">
+                                {roleDescription(role)}
+                              </span>
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
@@ -264,7 +283,7 @@ export function UsersTable() {
                       <Badge variant="secondary">{statusLabel(status)}</Badge>
                     )}
                   </TableCell>
-                  {!!(canManageMembers || canDeleteMembers) && (
+                  {showActionsColumn && (
                     <TableCell className="text-end">
                       {isDisabled && canManageMembers ? (
                         <Button
@@ -275,7 +294,7 @@ export function UsersTable() {
                           disabled={reactivateMutation.isPending}>
                           {t('actions.reactivate')}
                         </Button>
-                      ) : !isDisabled && canDeleteMembers ? (
+                      ) : !(isDisabled || isSelf) && canDeleteMembers ? (
                         <Button
                           variant="destructive"
                           size="sm"
@@ -286,6 +305,7 @@ export function UsersTable() {
                               name: displayName(m),
                             })
                           }>
+                          <UserX className="h-3.5 w-3.5" aria-hidden="true" />
                           {t('actions.deactivate')}
                         </Button>
                       ) : null}

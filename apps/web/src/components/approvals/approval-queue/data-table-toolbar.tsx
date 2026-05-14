@@ -1,12 +1,13 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
 
@@ -24,10 +26,10 @@ import { trpc } from '@/trpc/init';
 // ---------------------------------------------------------------------------
 
 interface ApprovalQueueToolbarProps {
-  /** Currently active status filter */
-  activeStatus: string;
-  /** Callback to change the status filter */
-  onStatusChange: (status: string) => void;
+  /** Currently active status filters (multi-select) */
+  activeStatuses: string[];
+  /** Callback to change the status filters */
+  onStatusChange: (statuses: string[]) => void;
   /** Current search value */
   search: string;
   /** Callback to change the search */
@@ -41,15 +43,14 @@ interface ApprovalQueueToolbarProps {
 }
 
 // ---------------------------------------------------------------------------
-// Status chip definitions
+// Status filter options
 // ---------------------------------------------------------------------------
 
-const STATUS_CHIPS = [
-  { key: 'all', labelKey: 'chips.all' },
-  { key: 'pending', labelKey: 'chips.pending' },
-  { key: 'overdue', labelKey: 'chips.overdue' },
-  { key: 'approved', labelKey: 'chips.approved' },
-  { key: 'rejected', labelKey: 'chips.rejected' },
+const STATUS_OPTIONS = [
+  { value: 'pending', labelKey: 'chips.pending' },
+  { value: 'overdue', labelKey: 'chips.overdue' },
+  { value: 'approved', labelKey: 'chips.approved' },
+  { value: 'rejected', labelKey: 'chips.rejected' },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -58,10 +59,10 @@ const STATUS_CHIPS = [
 
 /**
  * Toolbar for the approval queue page.
- * Contains status chip bar, search input, and floating bulk action toolbar.
+ * Contains status filter popover, search input, and floating bulk action toolbar.
  */
 export function ApprovalQueueToolbar({
-  activeStatus,
+  activeStatuses,
   onStatusChange,
   search,
   onSearchChange,
@@ -70,6 +71,7 @@ export function ApprovalQueueToolbar({
   onClearSelection,
 }: ApprovalQueueToolbarProps) {
   const t = useTranslations('Approvals');
+  const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
   const reactId = useId();
 
@@ -91,6 +93,31 @@ export function ApprovalQueueToolbar({
     },
     [onSearchChange],
   );
+
+  // Filter toggle
+  const toggleFilter = useCallback(
+    (value: string) => {
+      if (activeStatuses.includes(value)) {
+        onStatusChange(activeStatuses.filter(s => s !== value));
+      } else {
+        onStatusChange([...activeStatuses, value]);
+      }
+    },
+    [activeStatuses, onStatusChange],
+  );
+
+  const removeFilter = useCallback(
+    (value: string) => {
+      onStatusChange(activeStatuses.filter(s => s !== value));
+    },
+    [activeStatuses, onStatusChange],
+  );
+
+  const clearAllFilters = useCallback(() => {
+    onStatusChange([]);
+  }, [onStatusChange]);
+
+  const activeFilterCount = activeStatuses.length;
 
   // Bulk approve mutation
   const bulkApproveMutation = useMutation(
@@ -149,49 +176,90 @@ export function ApprovalQueueToolbar({
   return (
     <>
       <div className="space-y-3">
-        {/* Status chip bar */}
-        <div className="relative">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {STATUS_CHIPS.map(chip => {
-              const isActive = activeStatus === chip.key;
-              return (
-                <button
-                  key={chip.key}
-                  type="button"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onStatusChange(chip.key)}
-                  className="shrink-0">
-                  <Badge
-                    variant="secondary"
-                    className={`cursor-pointer px-3 py-1.5 text-[13px] transition-colors ${
-                      isActive
-                        ? 'bg-primary/10 text-primary hover:bg-primary/15'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}>
-                    {t(chip.labelKey as Parameters<typeof t>[0])}
-                  </Badge>
-                </button>
-              );
-            })}
+        {/* Search + filter row */}
+        <div className="flex items-center gap-2">
+          {/* Search input */}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('searchPlaceholder')}
+              value={localSearch}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => handleSearchInput(e.target.value)}
+              className="h-9 ps-9 pe-8"
+            />
+            {!!isSearching && (
+              <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
           </div>
-          {/* Fade gradient for overflow on narrow screens */}
-          <div className="pointer-events-none absolute inset-y-0 end-0 w-8 bg-gradient-to-l from-background to-transparent xl:hidden" />
+
+          {/* Status filter — standalone select */}
+          <Popover>
+            <PopoverTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
+                <Button {...props} variant="outline" size="lg">
+                  {t('columns.status')}
+                  {activeFilterCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                      {activeFilterCount}
+                    </Badge>
+                  )}
+                </Button>
+              )}
+            />
+            <PopoverContent className="w-56 p-0" align="start">
+              <div className="p-4 space-y-2">
+                <h4 className="text-[13px] font-medium text-foreground">{t('columns.status')}</h4>
+                <div className="space-y-1">
+                  {STATUS_OPTIONS.map(option => (
+                    <label
+                      key={option.value}
+                      htmlFor={`${reactId}-filter-${option.value}`}
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                      <Checkbox
+                        id={`${reactId}-filter-${option.value}`}
+                        checked={activeStatuses.includes(option.value)}
+                        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                        onCheckedChange={() => toggleFilter(option.value)}
+                      />
+                      <span>{t(option.labelKey as Parameters<typeof t>[0])}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
 
-        {/* Search input */}
-        <div className="relative max-w-sm">
-          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('searchPlaceholder')}
-            value={localSearch}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
-            className="h-9 ps-9 pe-8"
-          />
-          {!!isSearching && (
-            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-          )}
-        </div>
+        {/* Active filter badges */}
+        {activeFilterCount > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {activeStatuses.map(s => (
+              <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+                <span className="text-xs">{t(`chips.${s}` as Parameters<typeof t>[0])}</span>
+                <button
+                  type="button"
+                  className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => removeFilter(s)}
+                  aria-label={tAria('removeFilter', {
+                    label: t(`chips.${s}` as Parameters<typeof t>[0]),
+                  })}>
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+            <button
+              type="button"
+              className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+              onClick={clearAllFilters}>
+              {t('clearAll')}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Floating bulk action toolbar */}

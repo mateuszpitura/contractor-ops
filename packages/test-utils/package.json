@@ -44,7 +44,7 @@
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
-    "msw": "^2.13.6"
+    "msw": "^2.14.3"
   },
   "devDependencies": {
     "typescript": "^6.0.3",

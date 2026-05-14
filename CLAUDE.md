@@ -1,11 +1,29 @@
 # Engineering & Product Guidelines
 
+## Git Safety — NEVER stash without explicit user approval
+
+- DO NOT run `git stash`, `git stash --keep-index`, `git stash --include-untracked`, or any stash variant unsolicited. Other agents may be working in the same working tree without isolated worktrees — an unexpected stash silently moves their in-flight edits, destroying their context and wasting tokens when they replay work.
+- DO NOT run `git checkout --`, `git restore`, `git reset --hard`, or any other destructive operation on files you did not create in the current turn, unless the user has explicitly authorized it FOR THIS specific operation.
+- If you think you need to stash/checkout/reset to test something (e.g. "is this error pre-existing?"), STOP and ask first — describe what you want to do and why. A single confirmation is cheap, a lost edit is expensive.
+- When in doubt about working-tree state, prefer read-only diagnosis (`git status`, `git diff`, `git show`) over any mutation. Never "clean up" the index, stash list, or working tree without a direct instruction.
+
 ## UI / Design
 
 - Use the `frontend-design` plugin for all UI-related work.
 - Always aim for high-quality, polished, visually consistent, and production-ready interfaces.
 - Prioritize excellent UX, strong visual hierarchy, responsiveness, accessibility, and design consistency across the entire app.
 - Avoid generic or low-effort UI output.
+
+## Browser Automation
+
+Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
+
+Core workflow:
+
+1. `agent-browser open <url>` - Navigate to page
+2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
+3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
+4. Re-snapshot after page changes
 
 ## Architecture
 

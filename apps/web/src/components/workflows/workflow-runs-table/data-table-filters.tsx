@@ -26,6 +26,14 @@ interface FilterState {
 interface DataTableFiltersProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
+  /** Disable all interactive filter controls (initial data load). */
+  disabled?: boolean;
+  /**
+   * Render callback receiving (trigger, badges) so the parent can place
+   * the popover button inline with search and the badges on a separate row.
+   * When omitted, both render stacked in a fragment.
+   */
+  children?: (trigger: React.ReactNode, badges: React.ReactNode) => React.ReactNode;
 }
 
 // ---------------------------------------------------------------------------
@@ -41,7 +49,12 @@ const RUN_STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'B
 /**
  * Filter popover and active filter badges for the workflow runs data table.
  */
-export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
+export function DataTableFilters({
+  filters,
+  onFiltersChange,
+  disabled: filtersDisabled,
+  children,
+}: DataTableFiltersProps) {
   const t = useTranslations('Workflows');
   const reactId = useId();
 
@@ -86,107 +99,110 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
     [filters, onFiltersChange],
   );
 
+  const trigger = (
+    <Popover>
+      <PopoverTrigger
+        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+        render={props => (
+          <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+            <Filter className="h-3.5 w-3.5" />
+            {t('filters')}
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        )}
+      />
+      <PopoverContent className="w-80 p-0" align="start">
+        <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
+          {/* Status */}
+          <FilterSection
+            title={t('columns.status')}
+            options={RUN_STATUSES.map(s => ({
+              value: s,
+              label: t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0]),
+            }))}
+            selected={filters.status}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onToggle={value => toggleFilterValue('status', value)}
+          />
+
+          {/* Template */}
+          <FilterSection
+            title={t('filterTemplate')}
+            options={templates.map(tmpl => ({
+              value: tmpl.id,
+              label: tmpl.name,
+            }))}
+            selected={filters.templateId}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onToggle={value => toggleFilterValue('templateId', value)}
+          />
+
+          {/* Overdue only toggle */}
+          <div className="flex items-center justify-between">
+            <Label
+              htmlFor={`${reactId}-overdue-toggle`}
+              className="text-[13px] font-medium text-foreground">
+              {t('filterOverdueOnly')}
+            </Label>
+            <Switch
+              id={`${reactId}-overdue-toggle`}
+              checked={filters.overdueOnly}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
+            />
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+
+  const badges = hasActiveFilters ? (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {filters.status.map(s => (
+        <FilterBadge
+          key={`status-${s}`}
+          label={t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onRemove={() => removeFilter('status', s)}
+        />
+      ))}
+      {filters.templateId.map(tmplId => {
+        const tmpl = templates.find(t => t.id === tmplId);
+        return (
+          <FilterBadge
+            key={`template-${tmplId}`}
+            label={tmpl?.name ?? tmplId}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onRemove={() => removeFilter('templateId', tmplId)}
+          />
+        );
+      })}
+      {!!filters.overdueOnly && (
+        <FilterBadge
+          label={t('filterOverdueOnly')}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onRemove={() => onFiltersChange({ overdueOnly: false })}
+        />
+      )}
+      <button
+        type="button"
+        className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+        onClick={clearAllFilters}>
+        {t('clearAll')}
+      </button>
+    </div>
+  ) : null;
+
+  if (children) return children(trigger, badges);
+
   return (
     <>
-      {/* Filter popover button + overdue toggle */}
-      <div className="flex items-center gap-2">
-        <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg">
-                <Filter className="h-3.5 w-3.5" />
-                {t('filters')}
-                {hasActiveFilters && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
-          <PopoverContent className="w-80 p-0" align="start">
-            <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
-              {/* Status */}
-              <FilterSection
-                title={t('columns.status')}
-                options={RUN_STATUSES.map(s => ({
-                  value: s,
-                  label: t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0]),
-                }))}
-                selected={filters.status}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('status', value)}
-              />
-
-              {/* Template */}
-              <FilterSection
-                title={t('filterTemplate')}
-                options={templates.map(tmpl => ({
-                  value: tmpl.id,
-                  label: tmpl.name,
-                }))}
-                selected={filters.templateId}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('templateId', value)}
-              />
-
-              {/* Overdue only toggle */}
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor={`${reactId}-overdue-toggle`}
-                  className="text-[13px] font-medium text-foreground">
-                  {t('filterOverdueOnly')}
-                </Label>
-                <Switch
-                  id={`${reactId}-overdue-toggle`}
-                  checked={filters.overdueOnly}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
-                />
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {/* Active filter badges */}
-      {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {filters.status.map(s => (
-            <FilterBadge
-              key={`status-${s}`}
-              label={t(`runStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('status', s)}
-            />
-          ))}
-          {filters.templateId.map(tmplId => {
-            const tmpl = templates.find(t => t.id === tmplId);
-            return (
-              <FilterBadge
-                key={`template-${tmplId}`}
-                label={tmpl?.name ?? tmplId}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onRemove={() => removeFilter('templateId', tmplId)}
-              />
-            );
-          })}
-          {!!filters.overdueOnly && (
-            <FilterBadge
-              label={t('filterOverdueOnly')}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => onFiltersChange({ overdueOnly: false })}
-            />
-          )}
-          <button
-            type="button"
-            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}>
-            {t('clearAll')}
-          </button>
-        </div>
-      )}
+      {trigger}
+      {badges}
     </>
   );
 }

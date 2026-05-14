@@ -1,11 +1,11 @@
 import { createLogger } from '@contractor-ops/logger';
 import type { Context, Unleash } from 'unleash-client';
 import { initialize } from 'unleash-client';
-import type { Region } from './schemas.js';
+import type { Region } from './schemas';
 
 const log = createLogger({ service: 'feature-flags' });
 
-export type { Region } from './schemas.js';
+export type { Region } from './schemas';
 
 /**
  * Sentinel branding so the evaluator can detect the stub client and apply
@@ -68,11 +68,29 @@ function createUnleashClient(region: Region): FlagClient {
       disableMetrics: false,
     });
 
+    // Track readiness so we can fully drop the expected boot-race noise.
+    // The SDK emits `Unleash has not been initialized yet. isEnabled(X)
+    // defaulted to Y` for every flag check that arrives in the ~100-300ms
+    // window between `initialize()` and the first toggle-config fetch
+    // completing. Those warnings are not actionable (we ALREADY fall back to
+    // declared defaults by design) and they show up in N copies on boot —
+    // one per flag the app touches at startup. The `unleash client ready`
+    // info line is sufficient signal that the SDK is live. Other warns
+    // (stale config, fetch failures, schema drift) still surface at warn.
+    let isReady = false;
     client.on('error', err => log.error({ err, region }, 'unleash client error'));
-    client.on('warn', msg => log.warn({ msg, region }, 'unleash client warning'));
+    client.on('warn', msg => {
+      if (!isReady && typeof msg === 'string' && msg.includes('has not been initialized yet')) {
+        return; // drop entirely — boot-race noise has zero debug value
+      }
+      log.warn({ msg, region }, 'unleash client warning');
+    });
     // Don't log the URL — benign today, but keeps us free of a future footgun
     // if someone ever sets UNLEASH_URL with embedded credentials.
-    client.on('ready', () => log.info({ region }, 'unleash client ready'));
+    client.on('ready', () => {
+      isReady = true;
+      log.info({ region }, 'unleash client ready');
+    });
 
     return client;
   } catch (err) {

@@ -6,11 +6,18 @@ export interface AtelierEmptyStateAction {
   href?: string;
   /** Renders as a button onClick if provided. Ignored when href is set. */
   onClick?: () => void;
+  /** Optional icon component rendered before the label. */
+  icon?: ComponentType<{ className?: string }>;
 }
 
 export interface AtelierEmptyStateProps {
-  /** Display icon — typically a lucide-react component. */
-  icon: ComponentType<{ className?: string }>;
+  /** Display icon — typically a lucide-react component. Falls back when `illustration` is set. */
+  icon?: ComponentType<{ className?: string; strokeWidth?: number }>;
+  /**
+   * Contextual SVG illustration — replaces the icon-in-circle when provided.
+   * Use one of the `*Illustration` components from `./empty-state-illustrations`.
+   */
+  illustration?: ComponentType<{ className?: string }>;
   /** Primary heading. */
   heading: string;
   /** Body copy under the heading. */
@@ -48,6 +55,7 @@ export interface AtelierEmptyStateProps {
  */
 export function AtelierEmptyState({
   icon: Icon,
+  illustration: Illustration,
   heading,
   body,
   primaryAction,
@@ -61,9 +69,15 @@ export function AtelierEmptyState({
 
   return (
     <div className="dot-grid flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border/40 px-6 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-        <Icon className="h-6 w-6 text-primary" />
-      </div>
+      {Illustration ? (
+        <div className="text-primary/70">
+          <Illustration className="h-24 w-24" />
+        </div>
+      ) : Icon ? (
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/8">
+          <Icon className="h-8 w-8 text-primary/70" strokeWidth={1.5} />
+        </div>
+      ) : null}
       <h2 className="mt-5 font-display text-[20px] font-semibold tracking-tight">{heading}</h2>
       <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">{body}</p>
       {effectivePrimary || secondaryAction ? (

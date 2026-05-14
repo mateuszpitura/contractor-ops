@@ -1,9 +1,9 @@
 import { createLogger } from '@contractor-ops/logger';
-import type { FlagClient, FlagEvalUnleashContext } from './client.js';
-import { getFlagClient, isStubClient } from './client.js';
-import type { FlagKey } from './registry.js';
-import { CLASSIFICATION_ENGINE_FLAG, FLAGS } from './registry.js';
-import type { EvalContext, FlagDefinition } from './schemas.js';
+import type { FlagClient, FlagEvalUnleashContext } from './client';
+import { getFlagClient, isStubClient } from './client';
+import type { FlagKey } from './registry';
+import { CLASSIFICATION_ENGINE_FLAG, FLAGS } from './registry';
+import type { EvalContext, FlagDefinition } from './schemas';
 
 const log = createLogger({ service: 'feature-flags' });
 
@@ -36,6 +36,17 @@ const gateRegistry = globalThis as unknown as GateRegistry;
  */
 export function registerClassificationDisclaimerGate(fn: () => boolean): void {
   if (gateRegistry.__contractorOpsClassificationGate) {
+    // Next.js dev HMR re-evaluates `feature-flags-init.ts` on every edit while
+    // `evaluator.ts` (which owns this registry) is not part of the reload
+    // boundary — so the gate appears "already registered" on subsequent
+    // imports. That's benign: the latest registration wins, and in prod the
+    // module is evaluated exactly once. Suppress the warn in development so
+    // the noise doesn't drown out real signal; keep it in production where a
+    // double-register would point at a real boot-path bug.
+    if (process.env.NODE_ENV === 'development') {
+      gateRegistry.__contractorOpsClassificationGate = fn;
+      return;
+    }
     log.warn(
       {},
       'registerClassificationDisclaimerGate called more than once — this usually means feature-flags-init was imported from multiple boot paths',

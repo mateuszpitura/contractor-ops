@@ -6,43 +6,132 @@
     <title>contractor-ops — local dev links</title>
     <style>
       body {
-                                                                                                                                                                                            font-family: system-ui, sans-serif;
-                                                                                                                                                                                            max-width: 40rem;
-                                                                                                                                                                                            margin: 2rem auto;
-                                                                                                                                                                                            padding: 0 1rem;
-                                                                                                                                                                                            line-height: 1.5;
-                                                                                                                                                                                          }
-                                                                                                                                                                                          h1 {
-                                                                                                                                                                                            font-size: 1.25rem;
-                                                                                                                                                                                          }
-                                                                                                                                                                                          ul {
-                                                                                                                                                                                            padding-left: 1.2rem;
-                                                                                                                                                                                          }
-                                                                                                                                                                                          a {
-                                                                                                                                                                                            color: #2563eb;
-                                                                                                                                                                                          }
-                                                                                                                                                                                          code {
-                                                                                                                                                                                            font-size: 0.9em;
-                                                                                                                                                                                          }
+        font-family: system-ui, sans-serif;
+        max-width: 44rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        line-height: 1.5;
+        color: #111827;
+      }
+      h1 {
+        font-size: 1.25rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        color: #374151;
+      }
+      ul {
+        padding-left: 1.2rem;
+      }
+      li {
+        margin: 0.25rem 0;
+      }
+      a {
+        color: #2563eb;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      code {
+        font-size: 0.9em;
+        background: #f3f4f6;
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+      }
+      .profile {
+        color: #6b7280;
+        font-size: 0.85em;
+      }
     </style>
   </head>
   <body>
-    <h1>Local dev (default ports)</h1>
+    <h1>contractor-ops — local dev links</h1>
     <p>
-      Start stacks with
-      <code>docker compose --profile infisical --profile dev-tooling up -d</code>
-      (adjust ports via env — see <code>docker-compose.yml</code>).
+      Bring everything up:
+      <code>docker compose --profile infisical --profile dev-tooling --profile unleash up -d</code>
     </p>
+
+    <h2>Application servers</h2>
     <ul>
-      <li><a href="http://localhost:8090">Infisical</a> (via nginx gateway)</li>
-      <li><a href="http://localhost:8025">Mailpit</a> (captured email)</li>
-      <li><a href="http://localhost:9001">MinIO Console</a> (S3-compatible API on :9000)</li>
+      <li><a href="http://localhost:3000">Web app</a> — Next.js dashboard + portal <span class="profile">(<code>pnpm dev</code>)</span></li>
+      <li><a href="http://localhost:3001">Landing</a> — marketing site <span class="profile">(<code>pnpm dev</code>)</span></li>
+      <li><a href="http://localhost:4100/health">Public API</a> — Hono Enterprise REST <span class="profile">(<code>pnpm dev</code>)</span></li>
+      <li><a href="http://localhost:3000/api/health">Web health probe</a> — Postgres/Redis/QStash/R2/backpressure status</li>
+    </ul>
+
+    <h2>Feature flags</h2>
+    <ul>
       <li>
-        <a href="http://localhost:8978">CloudBeaver</a> (Postgres — new connection: host
-        <code>infisical-db</code>, port <code>5432</code>, database <code>infisical</code>, credentials from
-        <code>docker/infisical.env</code>)
+        <a href="http://localhost:4242">Unleash</a> — flag dashboard
+        <span class="profile">(profile <code>unleash</code>; default admin <code>admin</code> / <code>unleash4all</code>)</span>
       </li>
-      <li><a href="http://localhost:5540">Redis Insight</a> (add <code>redis://infisical-redis:6379</code>)</li>
+      <li>
+        Seed flags + generate API token:
+        <code>node scripts/seed-dev-services.mjs</code>
+      </li>
+    </ul>
+
+    <h2>Secrets</h2>
+    <ul>
+      <li>
+        <a href="http://localhost:8090">Infisical</a> — secret manager via nginx gateway
+        <span class="profile">(profile <code>infisical</code>; backend on :8080 internally)</span>
+      </li>
+    </ul>
+
+    <h2>Email + storage</h2>
+    <ul>
+      <li>
+        <a href="http://localhost:8025">Mailpit</a> — captured email
+        <span class="profile">(SMTP on :1025 — set <code>DEV_SMTP_HOST=127.0.0.1</code> + <code>DEV_SMTP_PORT=1025</code> in <code>.env</code>)</span>
+      </li>
+      <li>
+        <a href="http://localhost:9001">MinIO Console</a> — S3-compatible storage
+        <span class="profile">(API on :9000; admin <code>minioadmin</code> / <code>minioadmin</code>)</span>
+      </li>
+    </ul>
+
+    <h2>Database + cache UIs</h2>
+    <ul>
+      <li>
+        <a href="http://localhost:8978">CloudBeaver</a> — Postgres GUI
+        <span class="profile">(new connection: host <code>infisical-db</code>, port <code>5432</code>, db <code>infisical</code>, creds from <code>docker/infisical.env</code>)</span>
+      </li>
+      <li>
+        <a href="http://localhost:5540">Redis Insight</a> — Redis GUI
+        <span class="profile">(add <code>redis://infisical-redis:6379</code>)</span>
+      </li>
+    </ul>
+
+    <h2>Background services (no UI)</h2>
+    <ul>
+      <li>
+        <code>clamav</code> — antivirus scanner on TCP :3310
+        <span class="profile">(default profile — required for file uploads; check: <code>docker compose ps clamav</code>)</span>
+      </li>
+      <li>
+        <code>worker</code> — node-cron scheduler
+        <span class="profile">(profile <code>worker</code>; runs as standalone Node ESM container)</span>
+      </li>
+    </ul>
+
+    <h2>External / cloud-only (no local container)</h2>
+    <ul>
+      <li>Neon Postgres — primary DB (<code>DATABASE_URL</code>)</li>
+      <li>Upstash Redis — rate limiting + idempotency cache (<code>UPSTASH_REDIS_REST_URL</code>)</li>
+      <li>Upstash QStash — webhook queue (<code>QSTASH_TOKEN</code>)</li>
+      <li>Cloudflare R2 — document/PDF storage (<code>R2_ACCOUNT_ID</code>)</li>
+      <li>Sentry — errors + tracing (<code>NEXT_PUBLIC_SENTRY_DSN</code>)</li>
+      <li>Axiom — log shipping (<code>AXIOM_TOKEN</code>)</li>
+    </ul>
+
+    <h2>One-shot setup commands</h2>
+    <ul>
+      <li><code>pnpm db:push</code> — apply Prisma schema to Neon</li>
+      <li><code>pnpm db:seed:dev -- --profile=showcase --confirm --progress</code> — seed dev data with progress bar</li>
+      <li><code>node scripts/seed-dev-services.mjs</code> — create Unleash flags + print env block</li>
     </ul>
   </body>
 </html>

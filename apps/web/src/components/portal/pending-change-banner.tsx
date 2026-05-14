@@ -3,6 +3,7 @@
 import { ChevronDown, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,15 +27,6 @@ const FIELD_LABELS: Record<string, string> = {
   taxId: 'Tax ID (NIP)',
 };
 
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -45,6 +37,7 @@ function formatDate(date: Date | string): string {
  * request is pending approval (D-04, UI-SPEC).
  */
 export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBannerProps) {
+  const { formatDate } = usePortalDateFormatter();
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const changes = pendingChangeRequest.requestedChanges;

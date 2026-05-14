@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
@@ -114,7 +115,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
   const autoRenewal = watch('autoRenewal');
 
   // Fetch contractors for picker
-  const { data: contractorsData } = useQuery(
+  const { data: contractorsData, isLoading: contractorsLoading } = useQuery(
     trpc.contractor.list.queryOptions({
       page: 1,
       pageSize: 50,
@@ -165,11 +166,15 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
       <div className="space-y-2">
         <Label className="text-[13px]">{t('fields.contractor')}</Label>
         {contractorId ? (
-          <Input
-            value={selectedContractor?.displayName ?? contractorId}
-            readOnly
-            className="bg-muted"
-          />
+          contractorsLoading ? (
+            <Skeleton className="h-9 w-full rounded-lg" />
+          ) : (
+            <Input
+              value={selectedContractor?.displayName ?? contractorId}
+              readOnly
+              className="bg-muted"
+            />
+          )
         ) : (
           <Popover open={contractorPopoverOpen} onOpenChange={setContractorPopoverOpen}>
             <PopoverTrigger
@@ -185,7 +190,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
                 <span className="text-muted-foreground">{t('fields.contractorPlaceholder')}</span>
               )}
             </PopoverTrigger>
-            <PopoverContent className="w-[--anchor-width] p-0" align="start">
+            <PopoverContent className="w-(--anchor-width) p-0" align="start">
               <Command shouldFilter={false}>
                 <CommandInput
                   placeholder={t('fields.contractorPlaceholder')}

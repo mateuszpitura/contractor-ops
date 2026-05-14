@@ -8,17 +8,7 @@
  * leaking a signed URL into long-lived inboxes.
  */
 
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Body, Button, Container, Head, Hr, Html, Preview, Section, Text } from 'react-email';
 
 const main = {
   backgroundColor: '#f6f9fc',

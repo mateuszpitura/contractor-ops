@@ -1,15 +1,21 @@
 'use client';
 
+import { FileSearch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-interface CreditProgressBarProps {
+interface CreditCardProps {
   used: number;
   total: number;
+  isLowCredits: boolean;
+  onBuyMore: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -20,48 +26,75 @@ function getBarColor(used: number, total: number): string {
   if (total === 0) return 'var(--destructive)';
   const remaining = total - used;
   const pct = remaining / total;
-  if (pct > 0.5) return 'var(--success)'; // >50% remaining: green
-  if (pct >= 0.2) return 'var(--warning)'; // 20-50%: yellow
-  return 'var(--destructive)'; // <20%: red
+  if (pct > 0.5) return 'var(--success)';
+  if (pct >= 0.2) return 'var(--warning)';
+  return 'var(--destructive)';
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function CreditProgressBar({ used, total }: CreditProgressBarProps) {
-  const t = useTranslations('Billing.credits');
+export function CreditCard({ used, total, isLowCredits, onBuyMore }: CreditCardProps) {
+  const t = useTranslations('Billing.usage');
+  const tCredits = useTranslations('Billing.credits');
 
   const remaining = Math.max(0, total - used);
   const percentUsed = total > 0 ? (used / total) * 100 : 100;
   const isExhausted = total > 0 && remaining <= 0;
+  const isNearLimit = !isExhausted && total > 0 && remaining / total < 0.2;
   const barColor = getBarColor(used, total);
 
   return (
-    <div className="space-y-2">
-      <Progress
-        value={percentUsed}
-        aria-valuenow={remaining}
-        aria-valuemin={0}
-        aria-valuemax={total}
-        aria-label={t('remaining', {
-          remaining: String(remaining),
-          total: String(total),
-        })}>
-        <ProgressTrack>
-          <ProgressIndicator style={{ backgroundColor: barColor }} />
-        </ProgressTrack>
-      </Progress>
+    <Card
+      className={cn(
+        'p-4',
+        isExhausted && 'ring-destructive/40 bg-destructive/3',
+        isNearLimit && 'ring-warning/40 bg-warning/3',
+      )}>
+      <CardContent className="flex flex-1 flex-col gap-1 p-0">
+        <div className="flex items-start justify-between">
+          <span className="text-xs text-muted-foreground">{t('ocrCredits')}</span>
+          <div className="flex items-center gap-1.5">
+            {!!isLowCredits && (
+              <Button
+                variant="outline"
+                size="xs"
+                className="h-5 text-[10px] font-medium"
+                onClick={onBuyMore}>
+                {tCredits('buyMore')}
+              </Button>
+            )}
+            <FileSearch size={16} className="text-muted-foreground" aria-hidden="true" />
+          </div>
+        </div>
+        <div className="text-2xl font-semibold">{used}</div>
 
-      <p
-        className={`text-sm ${isExhausted ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
-        {isExhausted
-          ? t('exhausted')
-          : t('remaining', {
+        <div className="mt-auto flex flex-col gap-1">
+          <span
+            className={`text-xs ${isExhausted ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+            {isExhausted
+              ? tCredits('exhausted')
+              : tCredits('usedOfTotal', {
+                  used: String(used),
+                  total: String(total),
+                })}
+          </span>
+          <Progress
+            value={percentUsed}
+            aria-valuenow={remaining}
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-label={tCredits('remaining', {
               remaining: String(remaining),
               total: String(total),
-            })}
-      </p>
-    </div>
+            })}>
+            <ProgressTrack>
+              <ProgressIndicator style={{ backgroundColor: barColor }} />
+            </ProgressTrack>
+          </Progress>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,6 +1,11 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  ContractsIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -13,7 +18,7 @@ import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wiz
 import { ImportWizardDialog } from '@/components/import/import-wizard-dialog';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { trpc } from '@/trpc/init';
 
 /**
@@ -60,20 +65,28 @@ function ContractsContent() {
     setImportWizardOpen(true);
   }, []);
 
-  // Show empty state when no contracts exist
+  // Atelier full-page empty state only after count resolves AND there's truly
+  // zero data. While count is in flight, fall through to the populated
+  // branch — ContractDataTable renders its real chrome and DataTableBody
+  // shows skeleton rows. `parentLoading` is forwarded to prevent an
+  // in-table empty flash before the swap to Atelier.
   if (!isCountLoading && contractTotal === 0) {
     return (
       <div className="space-y-6">
-        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
-        <AtelierEmptyState
-          icon={FileText}
-          heading={te('contracts.heading')}
-          body={te('contracts.body')}
-          primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract }}
-          prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
-          renderAction={renderEmptyStateAction}
-        />
+        <AnimateIn delay={0}>
+          <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        </AnimateIn>
+        <AnimateIn delay={1}>
+          <AtelierEmptyState
+            illustration={ContractsIllustration}
+            heading={te('contracts.heading')}
+            body={te('contracts.body')}
+            primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract }}
+            prerequisiteMissing={contractorCount === 0}
+            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            renderAction={renderEmptyStateAction}
+          />
+        </AnimateIn>
         <ContractWizardDialog open={wizardOpen} onOpenChange={setWizardOpen} />
       </div>
     );
@@ -94,6 +107,7 @@ function ContractsContent() {
             onRowClick={handleRowClick}
             onNewContract={handleNewContract}
             onImport={handleOpenImportWizard}
+            parentLoading={isCountLoading}
           />
         </section>
       </AnimateIn>
@@ -119,44 +133,12 @@ function ContractsContent() {
 }
 
 /**
- * Fallback loading state while Suspense boundary resolves.
- */
-function ContractsLoading() {
-  return (
-    <div className="space-y-6">
-      <Skeleton className="h-7 w-40" />
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-80" />
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              key={`skel-${i}`}
-              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
  * Contract list page at /contracts.
  * Wrapped in Suspense to handle nuqs useSearchParams usage.
  */
 export default function ContractsPage() {
   return (
-    <Suspense fallback={<ContractsLoading />}>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <ContractsContent />
     </Suspense>
   );

@@ -2,6 +2,7 @@
 
 import { FilePlus, FileText, RefreshCw, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,27 +29,7 @@ type ActivityTabProps = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatRelativeTime(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 30) {
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  }
-  if (days > 0) return `${days}d ago`;
-  if (hours > 0) return `${hours}h ago`;
-  if (minutes > 0) return `${minutes}m ago`;
-  return 'just now';
-}
+// formatRelativeTime is now defined inside the component to use the org-aware hook.
 
 // ---------------------------------------------------------------------------
 // Component
@@ -56,6 +37,23 @@ function formatRelativeTime(date: string | Date): string {
 
 export function ActivityTab({ contract }: ActivityTabProps) {
   const t = useTranslations('ContractDetail.activity');
+  const { formatDate } = useDateFormatter();
+
+  function formatRelativeTime(date: string | Date): string {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 30) return formatDate(d);
+    if (days > 0) return `${days}d ago`;
+    if (hours > 0) return `${hours}h ago`;
+    if (minutes > 0) return `${minutes}m ago`;
+    return 'just now';
+  }
 
   // Build events from contract data
   const events: Array<{

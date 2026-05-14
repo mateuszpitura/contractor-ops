@@ -5,6 +5,7 @@ import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ConfluenceIcon, NotionIcon } from '@/components/integrations/provider-icons';
+import { useFlagBag } from '@/components/layout/feature-flag-context';
 import { Badge } from '@/components/ui/badge';
 import {
   CommandDialog,
@@ -213,10 +214,12 @@ function QuickActionCommandItem({
 
 function PageNavigationCommandItem({
   item,
+  label,
   navigate,
   addRecentItem,
 }: {
   item: (typeof navigationItems)[number];
+  label: string;
   navigate: (href: string) => void;
   addRecentItem: (item: Omit<RecentItem, 'viewedAt'>) => void;
 }) {
@@ -224,15 +227,15 @@ function PageNavigationCommandItem({
     addRecentItem({
       id: item.href,
       type: 'page',
-      name: item.label,
+      name: label,
     });
     navigate(item.href);
-  }, [addRecentItem, navigate, item.href, item.label]);
+  }, [addRecentItem, navigate, item.href, label]);
 
   return (
     <CommandItem key={`page-${item.key}`} onSelect={handleSelect}>
       <item.icon className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm">{item.label}</span>
+      <span className="text-sm">{label}</span>
     </CommandItem>
   );
 }
@@ -301,9 +304,11 @@ function DocResultCommandItem({ result }: { result: DocSearchResultItem }) {
 
 function MatchedPageCommandItem({
   item,
+  label,
   navigate,
 }: {
   item: (typeof navigationItems)[number];
+  label: string;
   navigate: (href: string) => void;
 }) {
   const handleSelect = useCallback(() => navigate(item.href), [navigate, item.href]);
@@ -311,7 +316,7 @@ function MatchedPageCommandItem({
   return (
     <CommandItem key={`page-${item.key}`} onSelect={handleSelect}>
       <ArrowRight className="h-4 w-4 text-muted-foreground" />
-      <span className="text-sm">{item.label}</span>
+      <span className="text-sm">{label}</span>
     </CommandItem>
   );
 }
@@ -323,8 +328,16 @@ function MatchedPageCommandItem({
 export function CommandPalette() {
   const t = useTranslations('Search');
   const tTime = useTranslations('Search.time');
+  const tNav = useTranslations('Navigation');
   const { open, setOpen, recentItems, addRecentItem } = useSearch();
   const router = useRouter();
+  const flagBag = useFlagBag();
+
+  // Filter nav items by feature flag (mirrors sidebar logic in nav-items.tsx).
+  const visibleNavItems = useMemo(
+    () => navigationItems.filter(item => !item.flag || flagBag[item.flag]),
+    [flagBag],
+  );
 
   // Input / debounce state
   const [query, setQuery] = useState('');
@@ -376,12 +389,14 @@ export function CommandPalette() {
     return (docSearchQuery.data as DocSearchResultItem[]).slice(0, 5);
   }, [docSearchQuery.data]);
 
-  // Client-side page matching
+  // Client-side page matching (searches both translated and English labels)
   const matchedPages = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return [];
     const q = debouncedQuery.toLowerCase();
-    return navigationItems.filter(item => item.label.toLowerCase().includes(q));
-  }, [debouncedQuery]);
+    return visibleNavItems.filter(
+      item => tNav(item.key).toLowerCase().includes(q) || item.label.toLowerCase().includes(q),
+    );
+  }, [debouncedQuery, tNav, visibleNavItems]);
 
   // Client-side action matching
   const matchedActions = useMemo(() => {
@@ -524,10 +539,11 @@ export function CommandPalette() {
             {/* Page navigation */}
             <CommandSeparator />
             <CommandGroup heading={t('sections.pages')}>
-              {navigationItems.map(item => (
+              {visibleNavItems.map(item => (
                 <PageNavigationCommandItem
                   key={`page-${item.key}`}
                   item={item}
+                  label={tNav(item.key)}
                   navigate={navigate}
                   addRecentItem={addRecentItem}
                 />
@@ -590,6 +606,7 @@ export function CommandPalette() {
                     <MatchedPageCommandItem
                       key={`page-${item.key}`}
                       item={item}
+                      label={tNav(item.key)}
                       navigate={navigate}
                     />
                   ))}

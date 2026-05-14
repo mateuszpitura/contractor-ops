@@ -1,15 +1,20 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  SectionLabel,
+  WorkflowsIllustration,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { GitBranch } from 'lucide-react';
+import { GitBranch, Play, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useEffect, useState } from 'react';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MyTasksList } from '@/components/workflows/my-tasks-list';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
@@ -70,33 +75,46 @@ function WorkflowsContent() {
 
   const canManageTemplates = can('workflow', ['create']);
 
-  // Show empty state when no workflow runs exist
-  if (!isCountLoading && runsTotal === 0) {
+  // Atelier full-page empty state only after count resolves AND there's truly
+  // zero data. While count is in flight, fall through to the populated
+  // branch — WorkflowRunsDataTable renders its real chrome and DataTableBody
+  // shows skeleton rows. `parentLoading` is forwarded to prevent an
+  // in-table empty flash before the swap to Atelier.
+  if (!isCountLoading && runsTotal === 0 && !canManageTemplates) {
     return (
       <div className="space-y-6">
-        <AtelierPageHeader
-          title={t('pageTitle')}
-          description={t('pageDescription')}
-          actions={
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            <Button size="sm" onClick={handleStartWorkflow}>
-              {t('startWorkflow')}
-            </Button>
-          }
-        />
-        <AtelierEmptyState
-          icon={GitBranch}
-          heading={te('workflows.heading')}
-          body={te('workflows.body')}
-          primaryAction={
-            canManageTemplates
-              ? { label: t('templates.newTemplate'), href: '/workflows/templates/new' }
-              : { label: te('workflows.cta'), onClick: handleStartWorkflow }
-          }
-          prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
-          renderAction={renderEmptyStateAction}
-        />
+        <AnimateIn delay={0}>
+          <AtelierPageHeader
+            title={t('pageTitle')}
+            description={t('pageDescription')}
+            actions={
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              <Button size="sm" onClick={handleStartWorkflow}>
+                <Play className="h-4 w-4" aria-hidden="true" />
+                {t('startWorkflow')}
+              </Button>
+            }
+          />
+        </AnimateIn>
+        <AnimateIn delay={1}>
+          <AtelierEmptyState
+            illustration={WorkflowsIllustration}
+            heading={te('workflows.heading')}
+            body={te('workflows.body')}
+            primaryAction={
+              canManageTemplates
+                ? {
+                    label: t('templates.newTemplate'),
+                    href: '/workflows/templates/new',
+                    icon: Plus,
+                  }
+                : { label: te('workflows.cta'), onClick: handleStartWorkflow, icon: Play }
+            }
+            prerequisiteMissing={contractorCount === 0}
+            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            renderAction={renderEmptyStateAction}
+          />
+        </AnimateIn>
         <TemplatePicker open={templatePickerOpen} onOpenChange={setTemplatePickerOpen} />
       </div>
     );
@@ -136,6 +154,7 @@ function WorkflowsContent() {
                 onRowClick={handleRowClick}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onStartWorkflow={handleStartWorkflow}
+                parentLoading={isCountLoading}
               />
             </section>
           </TabsContent>
@@ -148,6 +167,7 @@ function WorkflowsContent() {
             <TabsContent value="templates" className="mt-4">
               <div className="flex items-center justify-end mb-4">
                 <Button size="sm" render={<Link href="/workflows/templates/new" />}>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
                   {t('templates.newTemplate')}
                 </Button>
               </div>
@@ -174,43 +194,6 @@ function WorkflowsContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Loading fallback
-// ---------------------------------------------------------------------------
-
-function WorkflowsLoading() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-9 w-32" />
-      </div>
-      <Skeleton className="h-10 w-80" />
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-9 w-80" />
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              key={`skel-${i}`}
-              className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page export
 // ---------------------------------------------------------------------------
 
@@ -220,7 +203,7 @@ function WorkflowsLoading() {
  */
 export default function WorkflowsPage() {
   return (
-    <Suspense fallback={<WorkflowsLoading />}>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <WorkflowsContent />
     </Suspense>
   );

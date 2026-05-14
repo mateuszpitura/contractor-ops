@@ -8,6 +8,7 @@ import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-ca
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -33,18 +34,6 @@ function formatAmount(minor: number, currency: string): string {
   }).format(minor / 100);
 }
 
-/**
- * Format a date to a short readable form (e.g. "Mar 15, 2026").
- */
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -60,6 +49,7 @@ function formatDate(date: Date | string): string {
  */
 export default function PortalOverviewPage() {
   const t = useTranslations('Portal');
+  const { formatDate } = usePortalDateFormatter();
   const overviewQuery = useQuery(portalTrpc.portal.overview.queryOptions());
   const sessionQuery = useQuery(portalTrpc.portal.getSession.queryOptions());
 

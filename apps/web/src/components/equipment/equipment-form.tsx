@@ -4,13 +4,14 @@ import type { EquipmentCreateInput } from '@contractor-ops/validators';
 import { equipmentCreateSchema } from '@contractor-ops/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -198,7 +200,14 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
                 val && form.setValue('type', val as EquipmentCreateInput['type'])
               }>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string) => (
+                    <div className="flex items-center gap-2">
+                      <EquipmentTypeIcon type={value} />
+                      <span>{t(`type.${enumKey(value)}`)}</span>
+                    </div>
+                  )}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {EQUIPMENT_TYPES.map(type => (
@@ -227,14 +236,35 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
 
           {/* Purchase Date */}
           <div className="space-y-2">
-            <Label htmlFor={`${id}-eq-purchase-date`}>{t('form.purchaseDate')}</Label>
-            <Input
-              id={`${id}-eq-purchase-date`}
-              type="date"
-              {...form.register('purchaseDate', {
-                setValueAs: (v: string) => (v ? new Date(v) : undefined),
-              })}
-            />
+            <Label>{t('form.purchaseDate')}</Label>
+            <Popover>
+              <PopoverTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-2 font-normal bg-background"
+                  />
+                }>
+                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                <span className={form.watch('purchaseDate') ? '' : 'text-muted-foreground'}>
+                  {form.watch('purchaseDate')
+                    ? new Date(form.watch('purchaseDate') as unknown as string).toLocaleDateString()
+                    : t('form.purchaseDatePlaceholder')}
+                </span>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={
+                    form.watch('purchaseDate')
+                      ? new Date(form.watch('purchaseDate') as unknown as string)
+                      : undefined
+                  }
+                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                  onSelect={date => form.setValue('purchaseDate', date, { shouldDirty: true })}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Notes */}

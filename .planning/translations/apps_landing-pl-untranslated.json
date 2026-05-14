@@ -1,0 +1,7 @@
+{
+  "problem.tools.excel": "Excel / Sheets",
+  "problem.tools.email": "Email / Slack",
+  "problem.tools.slack": "Slack DM",
+  "problem.tools.drive": "Google Drive",
+  "socialProof.stats.approvalTime.value": "< 2min"
+}

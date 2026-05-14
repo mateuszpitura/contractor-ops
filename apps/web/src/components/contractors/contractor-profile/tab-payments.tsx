@@ -1,23 +1,19 @@
 'use client';
 
+import { AtelierEmptyState, PaymentsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Banknote } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { DataTableBody } from '@/components/shared/data-table-body';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -63,6 +59,7 @@ type TabPaymentsProps = {
 
 export function TabPayments({ contractorId }: TabPaymentsProps) {
   const t = useTranslations('Payments');
+  const { formatDate } = useDateFormatter();
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -73,12 +70,13 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
     trpc.payment.listByContractor.queryOptions({ contractorId, take: 200 }),
   );
 
-  const rawItems = paymentsQuery.data?.items ?? [];
-
-  // Map to row type (API returns nested paymentRun/invoice relations)
+  // Map to row type (API returns nested paymentRun/invoice relations).
+  // Memoize against paymentsQuery.data (stable ref from React Query) rather
+  // than the inline `data?.items ?? []` whose `[]` fallback creates a new
+  // array reference on every render during loading.
   const allItems: PaymentItemRow[] = useMemo(
     () =>
-      rawItems.map(item => ({
+      (paymentsQuery.data?.items ?? []).map(item => ({
         id: item.id,
         paymentRunId: item.paymentRunId,
         runNumber: item.paymentRun?.runNumber ?? '--',
@@ -91,12 +89,16 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         markedPaidAt: item.markedPaidAt ? String(item.markedPaidAt) : null,
         createdAt: String(item.createdAt ?? item.paymentRun?.createdAt ?? ''),
       })),
-    [rawItems],
+    [paymentsQuery.data],
   );
 
-  // Client-side pagination
+  // Client-side pagination — memoize the page slice so TanStack Table's
+  // `data` prop is referentially stable while loading.
   const totalPages = Math.max(1, Math.ceil(allItems.length / pageSize));
-  const items = allItems.slice((page - 1) * pageSize, page * pageSize);
+  const items = useMemo(
+    () => allItems.slice((page - 1) * pageSize, page * pageSize),
+    [allItems, page],
+  );
 
   // Total paid calculation (sum of PAID items in minor units)
   const totalPaidMinor = useMemo(
@@ -138,11 +140,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
           if (!row.original.createdAt)
             return <span className="text-muted-foreground">&mdash;</span>;
           try {
-            return (
-              <span className="text-sm">
-                {new Date(row.original.createdAt).toLocaleDateString('pl-PL')}
-              </span>
-            );
+            return <span className="text-sm">{formatDate(row.original.createdAt)}</span>;
           } catch {
             return <span className="text-muted-foreground">&mdash;</span>;
           }
@@ -191,7 +189,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
         ),
       },
     ],
-    [t, formatAmount],
+    [t, formatAmount, formatDate],
   );
 
   const table = useReactTable({
@@ -200,33 +198,17 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  // Loading state
-  if (paymentsQuery.isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const isLoading = paymentsQuery.isLoading;
 
-  // Empty state
-  if (allItems.length === 0 && !paymentsQuery.isLoading) {
+  // Empty state only when fully loaded and truly empty
+  if (!isLoading && allItems.length === 0) {
     return (
-      <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
-        <Banknote className="size-8 text-muted-foreground/50" />
-        <h4 className="text-sm font-medium">{t('contractorEmptyHeading')}</h4>
-        <p className="max-w-sm text-sm text-muted-foreground">{t('contractorEmptyBody')}</p>
-      </div>
+      <AtelierEmptyState
+        illustration={PaymentsIllustration}
+        heading={t('contractorEmptyHeading')}
+        body={t('contractorEmptyBody')}
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 
@@ -235,11 +217,15 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
       {/* Header with total paid stat */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('tabPayments')}</h3>
-        <div className="text-sm text-muted-foreground">
-          {t('totalPaid')}:{' '}
-          <span className="font-mono font-medium tabular-nums text-foreground">
-            {formatAmount(totalPaidMinor, totalPaidCurrency)}
-          </span>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>{t('totalPaid')}:</span>
+          {isLoading ? (
+            <Skeleton className="h-4 w-24" />
+          ) : (
+            <span className="font-mono font-medium tabular-nums text-foreground">
+              {formatAmount(totalPaidMinor, totalPaidCurrency)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -259,17 +245,15 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id} className="hover:bg-muted/50">
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={false}
+            emptyTitle={t('contractorEmptyHeading')}
+            emptyDescription={t('contractorEmptyBody')}
+            noResultsTitle={t('contractorEmptyHeading')}
+            skeletonRows={5}
+          />
         </Table>
       </div>
 
@@ -279,7 +263,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1}
+            disabled={isLoading || page <= 1}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
@@ -290,7 +274,7 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages}
+            disabled={isLoading || page >= totalPages}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;

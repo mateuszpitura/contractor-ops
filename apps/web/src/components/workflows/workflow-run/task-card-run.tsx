@@ -38,6 +38,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { enumKey } from '@/lib/enum-key';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import { TaskAttachments } from './task-attachments';
 import { TaskComments } from './task-comments';
@@ -101,30 +102,6 @@ interface TaskCardRunProps {
   runId: string;
   currentUserId: string | null;
   dependencyTitle?: string;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function formatDateTime(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -342,6 +319,8 @@ function TaskExpandedDetails({
   isConditionSkipped: boolean;
   t: ReturnType<typeof useTranslations<'Workflows'>>;
 }) {
+  const { formatDateTime } = useDateFormatter();
+
   return (
     <div className="border-t px-4 pb-4 pt-3 space-y-4">
       {/* Description */}
@@ -392,6 +371,7 @@ function TaskExpandedDetails({
 
 export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: TaskCardRunProps) {
   const t = useTranslations('Workflows');
+  const { formatDate } = useDateFormatter();
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
 

@@ -51,12 +51,26 @@ const riskBadgeColors: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 type TranslateFunction = (key: string, params?: Record<string, string | number>) => string;
+type DateFormatter = (value: Date | string | null | undefined) => string;
 
 /**
  * Returns all column definitions for the contract data table.
  * Accepts a translation function for headers and labels.
  */
-export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
+export function getColumns(
+  t: TranslateFunction,
+  formatDate?: DateFormatter,
+): ColumnDef<ContractRow>[] {
+  const fmtDate: DateFormatter =
+    formatDate ??
+    (v => {
+      if (v == null) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleDateString();
+      } catch {
+        return '\u2014';
+      }
+    });
   return [
     // 1. Select checkbox
     {
@@ -142,7 +156,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
         const startDate = row.original.startDate;
         if (!startDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return <span className="text-sm">{new Date(startDate).toLocaleDateString('pl-PL')}</span>;
+          return <span className="text-sm">{fmtDate(startDate)}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -170,7 +184,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractRow>[] {
                 // biome-ignore lint/nursery/noJsxPropsBind: column definition
                 render={props => (
                   <span {...props} className="text-sm cursor-default">
-                    {date.toLocaleDateString('pl-PL')}
+                    {fmtDate(date)}
                   </span>
                 )}
               />

@@ -280,6 +280,13 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (input.userId === ctx.user.id) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'CANNOT_DEACTIVATE_SELF',
+        });
+      }
+
       const targetMember = await guardLastAdmin(ctx.db, ctx.organizationId, input.userId);
 
       const updated = await ctx.db.member.update({

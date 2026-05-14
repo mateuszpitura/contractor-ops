@@ -1,7 +1,12 @@
 'use client';
 
 import type { AtelierStatusVariant } from '@contractor-ops/ui';
-import { AtelierPageHeader, AtelierStatusPill, AtelierTableShell } from '@contractor-ops/ui';
+import {
+  AtelierPageHeader,
+  AtelierStatusPill,
+  AtelierTableShell,
+  InvoicesIllustration,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -19,6 +24,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -32,15 +38,6 @@ function formatAmount(minor: number, currency: string): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(minor / 100);
-}
-
-function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(d);
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +148,10 @@ function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations<'Port
 function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<'Portal'>> }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <h2 className="text-xl font-semibold">{t('invoices.emptyTitle')}</h2>
+      <div className="text-primary/70">
+        <InvoicesIllustration className="h-24 w-24" />
+      </div>
+      <h2 className="mt-5 text-xl font-semibold">{t('invoices.emptyTitle')}</h2>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('invoices.emptyBody')}</p>
       <Link href="/portal/invoices/submit">
         <Button className="mt-6">
@@ -169,6 +169,7 @@ function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations<'Porta
 
 export default function PortalInvoicesPage() {
   const t = useTranslations('Portal');
+  const { formatDate } = usePortalDateFormatter();
   const router = useRouter();
 
   const { data: invoices, isLoading } = useQuery(portalTrpc.portal.listInvoices.queryOptions());

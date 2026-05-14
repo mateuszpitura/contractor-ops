@@ -1,16 +1,35 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Filter, X } from 'lucide-react';
+import { CalendarIcon, Filter, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useId } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+
+// ---------------------------------------------------------------------------
+// Helpers — timezone-safe date ↔ YYYY-MM-DD conversion
+// ---------------------------------------------------------------------------
+
+/** Format a local Date to `YYYY-MM-DD` without UTC shift. */
+function toLocalDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Parse `YYYY-MM-DD` as local midnight (not UTC). */
+function parseLocalDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number) as [number, number, number];
+  return new Date(y, m - 1, d);
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -21,6 +40,8 @@ interface FilterState {
   type: string[];
   billingModel: string[];
   ownerUserId: string[];
+  startDateFrom: string;
+  startDateTo: string;
   endDateFrom: string;
   endDateTo: string;
   complianceRiskLevel: string[];
@@ -29,6 +50,8 @@ interface FilterState {
 interface DataTableFiltersProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
+  /** Disable all interactive filter controls (initial data load). */
+  disabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -73,9 +96,12 @@ const RISK_LEVELS = ['LOW', 'MEDIUM', 'HIGH'] as const;
 /**
  * Filter popover and active filter badges for the contract data table.
  */
-export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
+export function DataTableFilters({
+  filters,
+  onFiltersChange,
+  disabled: filtersDisabled,
+}: DataTableFiltersProps) {
   const t = useTranslations('Contracts');
-  const id = useId();
 
   // Fetch users for owner filter
   const usersQuery = useQuery(trpc.user.list.queryOptions());
@@ -88,6 +114,8 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
     filters.billingModel.length +
     filters.ownerUserId.length +
     filters.complianceRiskLevel.length +
+    (filters.startDateFrom ? 1 : 0) +
+    (filters.startDateTo ? 1 : 0) +
     (filters.endDateFrom ? 1 : 0) +
     (filters.endDateTo ? 1 : 0);
 
@@ -99,6 +127,8 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       type: [],
       billingModel: [],
       ownerUserId: [],
+      startDateFrom: '',
+      startDateTo: '',
       endDateFrom: '',
       endDateTo: '',
       complianceRiskLevel: [],
@@ -134,7 +164,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
         <PopoverTrigger
           // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={props => (
-            <Button {...props} variant="outline" size="lg">
+            <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
               <Filter className="h-3.5 w-3.5" />
               {t('filters')}
               {hasActiveFilters && (
@@ -145,7 +175,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
             </Button>
           )}
         />
-        <PopoverContent className="w-80 p-0" align="start">
+        <PopoverContent className="w-auto p-0" align="start">
           <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
             {/* Status */}
             <FilterSection
@@ -194,12 +224,13 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                   email?: string | null;
                 }>
               ).map(user => ({
-                value: user.id ?? user.userId ?? '',
+                value: user.userId ?? user.id ?? '',
                 label: user.name ?? user.email ?? 'Unknown',
               }))}
               selected={filters.ownerUserId}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={value => toggleFilterValue('ownerUserId', value)}
+              searchable
             />
 
             {/* Compliance risk */}
@@ -213,50 +244,117 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={value => toggleFilterValue('complianceRiskLevel', value)}
             />
-
-            {/* End date range */}
-            <div className="space-y-2">
-              <h4 className="text-[13px] font-medium text-foreground">{t('columns.endDate')}</h4>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label
-                    htmlFor={`${id}-contract-end-date-from`}
-                    className="text-xs text-muted-foreground">
-                    {t('dateFrom')}
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id={`${id}-contract-end-date-from`}
-                      type="date"
-                      value={filters.endDateFrom}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => onFiltersChange({ endDateFrom: e.target.value })}
-                      className="h-8 ps-7 text-xs"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label
-                    htmlFor={`${id}-contract-end-date-to`}
-                    className="text-xs text-muted-foreground">
-                    {t('dateTo')}
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute start-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id={`${id}-contract-end-date-to`}
-                      type="date"
-                      value={filters.endDateTo}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => onFiltersChange({ endDateTo: e.target.value })}
-                      className="h-8 ps-7 text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Contract start date range — standalone picker */}
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button variant="outline" size="lg" disabled={filtersDisabled} className="gap-1.5" />
+          }>
+          <CalendarIcon className="h-3.5 w-3.5" />
+          <span className="text-xs">
+            {filters.startDateFrom && filters.startDateTo
+              ? `${filters.startDateFrom} – ${filters.startDateTo}`
+              : filters.startDateFrom
+                ? `From ${filters.startDateFrom}`
+                : filters.startDateTo
+                  ? `To ${filters.startDateTo}`
+                  : t('columns.startDate')}
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <div className="p-3">
+            <Calendar
+              mode="range"
+              selected={
+                filters.startDateFrom || filters.startDateTo
+                  ? {
+                      from: filters.startDateFrom
+                        ? parseLocalDate(filters.startDateFrom)
+                        : undefined,
+                      to: filters.startDateTo ? parseLocalDate(filters.startDateTo) : undefined,
+                    }
+                  : undefined
+              }
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onSelect={range => {
+                onFiltersChange({
+                  startDateFrom: range?.from ? toLocalDateString(range.from) : '',
+                  startDateTo: range?.to ? toLocalDateString(range.to) : '',
+                });
+              }}
+              numberOfMonths={2}
+            />
+          </div>
+          {!!(filters.startDateFrom || filters.startDateTo) && (
+            <div className="border-t px-3 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => onFiltersChange({ startDateFrom: '', startDateTo: '' })}>
+                {t('clearAll')}
+              </Button>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+
+      {/* Contract end date range — standalone picker */}
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button variant="outline" size="lg" disabled={filtersDisabled} className="gap-1.5" />
+          }>
+          <CalendarIcon className="h-3.5 w-3.5" />
+          <span className="text-xs">
+            {filters.endDateFrom && filters.endDateTo
+              ? `${filters.endDateFrom} – ${filters.endDateTo}`
+              : filters.endDateFrom
+                ? `From ${filters.endDateFrom}`
+                : filters.endDateTo
+                  ? `To ${filters.endDateTo}`
+                  : t('columns.endDate')}
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <div className="p-3">
+            <Calendar
+              mode="range"
+              selected={
+                filters.endDateFrom || filters.endDateTo
+                  ? {
+                      from: filters.endDateFrom ? parseLocalDate(filters.endDateFrom) : undefined,
+                      to: filters.endDateTo ? parseLocalDate(filters.endDateTo) : undefined,
+                    }
+                  : undefined
+              }
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+              onSelect={range => {
+                onFiltersChange({
+                  endDateFrom: range?.from ? toLocalDateString(range.from) : '',
+                  endDateTo: range?.to ? toLocalDateString(range.to) : '',
+                });
+              }}
+              numberOfMonths={2}
+            />
+          </div>
+          {!!(filters.endDateFrom || filters.endDateTo) && (
+            <div className="border-t px-3 py-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => onFiltersChange({ endDateFrom: '', endDateTo: '' })}>
+                {t('clearAll')}
+              </Button>
+            </div>
+          )}
         </PopoverContent>
       </Popover>
 
@@ -295,7 +393,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
                 name?: string | null;
                 email?: string | null;
               }>
-            ).find(u => (u.id ?? u.userId) === ownerId);
+            ).find(u => (u.userId ?? u.id) === ownerId);
             return (
               <FilterBadge
                 key={`owner-${ownerId}`}
@@ -348,20 +446,53 @@ function FilterSection({
   options,
   selected,
   onToggle,
+  searchable,
+  maxVisible = 10,
 }: {
   title: string;
   options: Array<{ value: string; label: string }>;
   selected: string[];
   onToggle: (value: string) => void;
+  searchable?: boolean;
+  maxVisible?: number;
 }) {
   const filterId = useId();
+  const [query, setQuery] = useState('');
+
   if (options.length === 0) return null;
+
+  const filtered =
+    searchable && query
+      ? options.filter(o => o.label.toLowerCase().includes(query.toLowerCase()))
+      : options;
+
+  const selectedOptions = filtered.filter(o => selected.includes(o.value));
+  const unselectedOptions = filtered.filter(o => !selected.includes(o.value));
+  const visibleOptions = searchable
+    ? [...selectedOptions, ...unselectedOptions.slice(0, maxVisible)]
+    : filtered;
 
   return (
     <div className="space-y-2">
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
+      {!!searchable && (
+        <>
+          <Input
+            placeholder={`Search ${title.toLowerCase()}...`}
+            value={query}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setQuery(e.target.value)}
+            className="h-7 text-xs"
+          />
+          {!query && unselectedOptions.length > maxVisible && (
+            <p className="text-[10px] text-muted-foreground">
+              Showing {maxVisible} of {options.length}. Type to search.
+            </p>
+          )}
+        </>
+      )}
       <div className="space-y-1">
-        {options.map(option => (
+        {visibleOptions.map(option => (
           <label
             key={option.value}
             htmlFor={`${filterId}-filter-${option.value}`}

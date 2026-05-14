@@ -1,4 +1,4 @@
-import type { Prisma } from './generated/prisma/client/client.js';
+import { Prisma } from './generated/prisma/client/client.js';
 
 type PrismaExtensible = {
   $extends: Prisma.DefaultPrismaClient['$extends'];
@@ -54,15 +54,16 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
   return prisma.$extends({
     query: {
       $allModels: {
-        async delete({ model, args, query }: ModelQueryHookParams) {
+        async delete(this: unknown, { model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
 
-          // Convert delete to soft-delete
-          const delegate = (prisma as unknown as Record<string, unknown>)[lowerFirst(model)] as
-            | DelegateWithSoftDelete
-            | undefined;
+          // Convert delete to soft-delete.
+          // Use Prisma.getExtensionContext to route through the fully-extended
+          // client (tenant scope + soft-delete), not the base prisma instance.
+          const ctx = Prisma.getExtensionContext(this) as unknown as Record<string, unknown>;
+          const delegate = ctx[lowerFirst(model)] as DelegateWithSoftDelete | undefined;
 
           if (!delegate) return await query(args);
 
@@ -72,15 +73,15 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
           });
         },
 
-        async deleteMany({ model, args, query }: ModelQueryHookParams) {
+        async deleteMany(this: unknown, { model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }
 
-          // Convert deleteMany to updateMany with deletedAt
-          const delegate = (prisma as unknown as Record<string, unknown>)[lowerFirst(model)] as
-            | DelegateWithSoftDelete
-            | undefined;
+          // Convert deleteMany to updateMany with deletedAt.
+          // Route through the extended client to preserve tenant scoping.
+          const ctx = Prisma.getExtensionContext(this) as unknown as Record<string, unknown>;
+          const delegate = ctx[lowerFirst(model)] as DelegateWithSoftDelete | undefined;
 
           if (!delegate) return await query(args);
 
@@ -91,6 +92,20 @@ export function withSoftDelete<T extends PrismaExtensible>(prisma: T) {
         },
 
         async findMany({ model, args, query }: ModelQueryHookParams) {
+          if (!softDeleteModels.has(model)) {
+            return await query(args);
+          }
+          return await query(injectDeletedAtNull(args));
+        },
+
+        async findUnique({ model, args, query }: ModelQueryHookParams) {
+          if (!softDeleteModels.has(model)) {
+            return await query(args);
+          }
+          return await query(injectDeletedAtNull(args));
+        },
+
+        async findUniqueOrThrow({ model, args, query }: ModelQueryHookParams) {
           if (!softDeleteModels.has(model)) {
             return await query(args);
           }

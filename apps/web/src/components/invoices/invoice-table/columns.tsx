@@ -148,12 +148,26 @@ function isOverdue(dueDate: string | null, status: string): boolean {
 // ---------------------------------------------------------------------------
 
 type TranslateFunction = (key: string) => string;
+type DateFormatter = (value: Date | string | null | undefined) => string;
 
 /**
  * Returns all column definitions for the invoice data table.
  * Accepts a translation function for headers and labels.
  */
-export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
+export function getColumns(
+  t: TranslateFunction,
+  formatDate?: DateFormatter,
+): ColumnDef<InvoiceRow>[] {
+  const fmtDate: DateFormatter =
+    formatDate ??
+    (v => {
+      if (v == null) return '\u2014';
+      try {
+        return new Date(typeof v === 'string' ? v : v).toLocaleDateString();
+      } catch {
+        return '\u2014';
+      }
+    });
   return [
     // 1. Select checkbox
     {
@@ -220,7 +234,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
         const issueDate = row.original.issueDate;
         if (!issueDate) return <span className="text-muted-foreground">&mdash;</span>;
         try {
-          return <span className="text-sm">{new Date(issueDate).toLocaleDateString('pl-PL')}</span>;
+          return <span className="text-sm">{fmtDate(issueDate)}</span>;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
@@ -238,7 +252,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<InvoiceRow>[] {
           const overdue = isOverdue(dueDate, row.original.status);
           return (
             <span className={`text-sm ${overdue ? 'text-destructive font-medium' : ''}`}>
-              {new Date(dueDate).toLocaleDateString('pl-PL')}
+              {fmtDate(dueDate)}
             </span>
           );
         } catch {

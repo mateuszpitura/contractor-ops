@@ -1,6 +1,7 @@
 'use client';
 
 import { complianceState } from '@contractor-ops/einvoice/compliance';
+import { IntegrationsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
 import { useId } from 'react';
@@ -112,7 +113,8 @@ export function EInvoiceComplianceDetail() {
 
       {statuses.length === 0 ? (
         <Card>
-          <CardContent className="flex h-32 items-center justify-center">
+          <CardContent className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <IntegrationsIllustration className="h-24 w-24" />
             <p className="text-sm text-muted-foreground">No e-invoicing profiles configured.</p>
           </CardContent>
         </Card>

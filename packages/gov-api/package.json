@@ -28,8 +28,8 @@
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@upstash/ratelimit": "^2.0.8",
-    "@upstash/redis": "^1.37.0",
-    "zod": "^4.3.6"
+    "@upstash/redis": "^1.38.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@contractor-ops/test-utils": "workspace:*",

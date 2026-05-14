@@ -4,6 +4,7 @@ import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,49 +31,56 @@ export function SeatCountCard({
   const maxSeats = Math.max(includedSeats, activeContractors);
   const fillPercent = maxSeats > 0 ? (activeContractors / maxSeats) * 100 : 0;
   const pricePerSeat = seatPriceMinor / 100;
+  const isOverLimit = overage > 0;
+  const isNearLimit = !isOverLimit && includedSeats > 0 && activeContractors / includedSeats >= 0.8;
 
   return (
-    <Card className="p-4">
-      <CardContent className="flex flex-col gap-1 p-0">
+    <Card
+      className={cn(
+        'p-4',
+        isOverLimit && 'ring-destructive/40 bg-destructive/3',
+        isNearLimit && 'ring-warning/40 bg-warning/3',
+      )}>
+      <CardContent className="flex flex-1 flex-col gap-1 p-0">
         <div className="flex items-start justify-between">
           <span className="text-xs text-muted-foreground">{t('activeSeats')}</span>
           <Users size={16} className="text-muted-foreground" aria-hidden="true" />
         </div>
         <div className="text-2xl font-semibold">{activeContractors}</div>
-        <span className="text-xs text-muted-foreground">
-          {t('active', {
-            active: String(activeContractors),
-            included: String(includedSeats),
-          })}
-        </span>
 
-        <Progress
-          value={fillPercent}
-          aria-valuenow={activeContractors}
-          aria-valuemin={0}
-          aria-valuemax={maxSeats}
-          aria-label={t('active', {
-            active: String(activeContractors),
-            included: String(includedSeats),
-          })}
-          className="mt-2">
-          <ProgressTrack>
-            <ProgressIndicator
-              style={{
-                backgroundColor: overage > 0 ? 'var(--warning)' : 'var(--primary)',
-              }}
-            />
-          </ProgressTrack>
-        </Progress>
-
-        {overage > 0 && (
-          <span className="text-xs text-warning mt-1">
-            {t('overage', {
-              overage: String(overage),
-              price: String(pricePerSeat),
+        <div className="mt-auto flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground">
+            {t('active', {
+              active: String(activeContractors),
+              included: String(includedSeats),
             })}
           </span>
-        )}
+          <Progress
+            value={fillPercent}
+            aria-valuenow={activeContractors}
+            aria-valuemin={0}
+            aria-valuemax={maxSeats}
+            aria-label={t('active', {
+              active: String(activeContractors),
+              included: String(includedSeats),
+            })}>
+            <ProgressTrack>
+              <ProgressIndicator
+                style={{
+                  backgroundColor: overage > 0 ? 'var(--warning)' : 'var(--primary)',
+                }}
+              />
+            </ProgressTrack>
+          </Progress>
+          {overage > 0 && (
+            <span className="text-xs text-warning mt-1">
+              {t('overage', {
+                overage: String(overage),
+                price: String(pricePerSeat),
+              })}
+            </span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

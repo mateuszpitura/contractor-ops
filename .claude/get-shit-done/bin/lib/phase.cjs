@@ -4,9 +4,62 @@
 
 const fs = require('fs');
 const path = require('path');
-const { escapeRegex, loadConfig, normalizePhaseName, comparePhaseNum, findPhaseInternal, getArchivedPhaseDirs, generateSlugInternal, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, replaceInCurrentMilestone, toPosixPath, planningDir, withPlanningLock, output, error, readSubdirectories, phaseTokenMatches, atomicWriteFileSync } = require('./core.cjs');
+const { escapeRegex, loadConfig, normalizePhaseName, comparePhaseNum, findPhaseInternal, getArchivedPhaseDirs, generateSlugInternal, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, replaceInCurrentMilestone, toPosixPath, output, error, readSubdirectories, phaseTokenMatches, atomicWriteFileSync } = require('./core.cjs');
+const { planningDir, withPlanningLock } = require('./planning-workspace.cjs');
 const { extractFrontmatter } = require('./frontmatter.cjs');
 const { writeStateMd, readModifyWriteStateMd, stateExtractField, stateReplaceField, stateReplaceFieldWithFallback, updatePerformanceMetricsSection } = require('./state.cjs');
+
+// #2893 — strict canonical filter: `{padded_phase}-{NN}-PLAN.md` or `PLAN.md`.
+// Documented in agents/gsd-planner.md (write_phase_prompt step). The wider
+// "looks like a plan but isn't canonical" probe below is used to surface a
+// loud warning instead of silently returning zero plans.
+const isCanonicalPlanFile = (f) => f.endsWith('-PLAN.md') || f === 'PLAN.md';
+
+// Any .md file with PLAN anywhere in the basename — the diagnostic net for
+// catching agent deviations like `01-PLAN-01-foundation.md` (#2893).
+// Excludes derivative files (`-PLAN-OUTLINE.md`, `*.pre-bounce.md`, etc.) that
+// the planner legitimately produces alongside canonical plans.
+const PLAN_OUTLINE_RE = /-PLAN-OUTLINE\.md$/i;
+const PLAN_PRE_BOUNCE_RE = /-PLAN.*\.pre-bounce\.md$/i;
+const looksLikePlanFile = (f) =>
+  /\.md$/i.test(f)
+  && /PLAN/i.test(f)
+  && !PLAN_OUTLINE_RE.test(f)
+  && !PLAN_PRE_BOUNCE_RE.test(f);
+
+/**
+ * Detect plan-shaped files that the canonical filter would reject. Returns
+ * a warning string when offenders exist, else null. Centralised so every
+ * read site (phase-plan-index, phases list --type plans, find-phase) emits
+ * the same message.
+ *
+ * @param {string[]} dirFiles — readdirSync output for one phase directory
+ * @param {string[]} matchedFiles — what the canonical filter accepted
+ * @returns {string|null}
+ */
+function describeNonCanonicalPlans(dirFiles, matchedFiles) {
+  const matched = new Set(matchedFiles);
+  const offenders = dirFiles.filter((f) => looksLikePlanFile(f) && !matched.has(f));
+  if (offenders.length === 0) return null;
+  return (
+    `Found ${offenders.length} plan-shaped file(s) in this phase that don't match the canonical ` +
+    `naming convention "{padded_phase}-{NN}-PLAN.md" (or bare "PLAN.md") and were skipped: ` +
+    offenders.map((f) => `"${f}"`).join(', ') +
+    `. Rename to the canonical form (e.g. "01-01-PLAN.md") so the executor can detect them. ` +
+    `See agents/gsd-planner.md write_phase_prompt step for the full contract.`
+  );
+}
+
+function extractCanonicalPlanId(filename) {
+  const base = filename.replace(/-PLAN\.md$/i, '').replace(/-SUMMARY\.md$/i, '').replace(/\.md$/i, '');
+  const parts = base.split('-').filter(Boolean);
+  const tokenRe = /^\d+[A-Z]?(?:\.\d+)*$/i;
+  const phaseIdx = parts.findIndex(p => tokenRe.test(p));
+  if (phaseIdx >= 0 && phaseIdx + 1 < parts.length && tokenRe.test(parts[phaseIdx + 1])) {
+    return `${parts[phaseIdx]}-${parts[phaseIdx + 1]}`;
+  }
+  return base;
+}
 
 function cmdPhasesList(cwd, options, raw) {
   const phasesDir = path.join(planningDir(cwd), 'phases');
@@ -52,13 +105,18 @@ function cmdPhasesList(cwd, options, raw) {
     // If listing files of a specific type
     if (type) {
       const files = [];
+      const warnings = [];
       for (const dir of dirs) {
         const dirPath = path.join(phasesDir, dir);
         const dirFiles = fs.readdirSync(dirPath);
 
         let filtered;
         if (type === 'plans') {
-          filtered = dirFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md');
+          filtered = dirFiles.filter(isCanonicalPlanFile);
+          // #2893 — surface plan-shaped files the canonical filter rejected
+          // so callers (executor init, etc.) don't silently see zero plans.
+          const w = describeNonCanonicalPlans(dirFiles, filtered);
+          if (w) warnings.push(`${dir}: ${w}`);
         } else if (type === 'summaries') {
           filtered = dirFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
         } else {
@@ -73,6 +131,7 @@ function cmdPhasesList(cwd, options, raw) {
         count: files.length,
         phase_dir: phase ? dirs[0].replace(/^\d+(?:\.\d+)*-?/, '') : null,
       };
+      if (warnings.length) result.warning = warnings.join(' | ');
       output(result, raw, files.join('\n'));
       return;
     }
@@ -153,45 +212,64 @@ function cmdFindPhase(cwd, phase, raw) {
     error('phase identifier required');
   }
 
-  const phasesDir = path.join(planningDir(cwd), 'phases');
+  const planBase = planningDir(cwd);
   const normalized = normalizePhaseName(phase);
+  const notFound = { found: false, directory: null, phase_number: null, phase_name: null, plans: [], summaries: [], searched_directories: [] };
 
-  const notFound = { found: false, directory: null, phase_number: null, phase_name: null, plans: [], summaries: [] };
-
+  // Build candidate search dirs: flat layout first, then milestone-archive layout.
+  const searchDirs = [];
+  const flatPhasesDir = path.join(planBase, 'phases');
+  if (fs.existsSync(flatPhasesDir)) searchDirs.push(flatPhasesDir);
   try {
-    const entries = fs.readdirSync(phasesDir, { withFileTypes: true });
-    const dirs = entries.filter(e => e.isDirectory()).map(e => e.name).sort((a, b) => comparePhaseNum(a, b));
-
-    const match = dirs.find(d => phaseTokenMatches(d, normalized));
-    if (!match) {
-      output(notFound, raw, '');
-      return;
+    const milestonesDir = path.join(planBase, 'milestones');
+    const entries = fs.readdirSync(milestonesDir, { withFileTypes: true })
+      .filter(e => e.isDirectory() && /^v\d+.*-phases$/.test(e.name))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    for (const e of entries) {
+      searchDirs.push(path.join(milestonesDir, e.name));
     }
+  } catch { /* no milestones dir */ }
 
-    // Extract phase number — supports project-code-prefixed (CK-01-name), numeric (01-name), and custom IDs
-    const dirMatch = match.match(/^(?:[A-Z]{1,6}-)(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i)
-      || match.match(/^(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i);
-    const phaseNumber = dirMatch ? dirMatch[1] : normalized;
-    const phaseName = dirMatch && dirMatch[2] ? dirMatch[2] : null;
+  notFound.searched_directories = searchDirs.map((searchDir) =>
+    toPosixPath(path.join(path.relative(cwd, planBase), path.relative(planBase, searchDir))));
 
-    const phaseDir = path.join(phasesDir, match);
-    const phaseFiles = fs.readdirSync(phaseDir);
-    const plans = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md').sort();
-    const summaries = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md').sort();
+  for (const searchDir of searchDirs) {
+    try {
+      const entries = fs.readdirSync(searchDir, { withFileTypes: true });
+      const dirs = entries.filter(e => e.isDirectory()).map(e => e.name).sort((a, b) => comparePhaseNum(a, b));
 
-    const result = {
-      found: true,
-      directory: toPosixPath(path.join(path.relative(cwd, planningDir(cwd)), 'phases', match)),
-      phase_number: phaseNumber,
-      phase_name: phaseName,
-      plans,
-      summaries,
-    };
+      const match = dirs.find(d => phaseTokenMatches(d, normalized));
+      if (!match) continue;
 
-    output(result, raw, result.directory);
-  } catch {
-    output(notFound, raw, '');
+      // Extract phase number — supports project-code-prefixed (CK-01-name), numeric (01-name), and custom IDs
+      const dirMatch = match.match(/^(?:[A-Z]{1,6}-)(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i)
+        || match.match(/^(\d+[A-Z]?(?:\.\d+)*)-?(.*)/i);
+      const phaseNumber = dirMatch ? dirMatch[1] : normalized;
+      const phaseName = dirMatch && dirMatch[2] ? dirMatch[2] : null;
+
+      const phaseDir = path.join(searchDir, match);
+      const phaseFiles = fs.readdirSync(phaseDir);
+      const plans = phaseFiles.filter(isCanonicalPlanFile).sort();
+      const summaries = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md').sort();
+      // #2893 — same diagnostic as phase-plan-index for consistency.
+      const planNamingWarning = describeNonCanonicalPlans(phaseFiles, plans);
+
+      const result = {
+        found: true,
+        directory: toPosixPath(path.join(path.relative(cwd, planBase), path.relative(planBase, searchDir), match)),
+        phase_number: phaseNumber,
+        phase_name: phaseName,
+        plans,
+        summaries,
+      };
+      if (planNamingWarning) result.warning = planNamingWarning;
+
+      output(result, raw, result.directory);
+      return;
+    } catch { continue; }
   }
+
+  output(notFound, raw, '');
 }
 
 function extractObjective(content) {
@@ -229,18 +307,24 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
 
   // Get all files in phase directory
   const phaseFiles = fs.readdirSync(phaseDir);
-  const planFiles = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md').sort();
+  const planFiles = phaseFiles.filter(isCanonicalPlanFile).sort();
   const summaryFiles = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+  // #2893 — surface plan-shaped files the canonical filter rejected so a
+  // misnamed plan never silently produces plan_count: 0 at executor init.
+  const planNamingWarning = describeNonCanonicalPlans(phaseFiles, planFiles);
 
   // Build set of plan IDs with summaries
   const completedPlanIds = new Set(
-    summaryFiles.map(s => s.replace('-SUMMARY.md', '').replace('SUMMARY.md', ''))
+    summaryFiles.flatMap(s => {
+      const exact = s.replace('-SUMMARY.md', '').replace('SUMMARY.md', '');
+      const canonical = extractCanonicalPlanId(s);
+      return canonical === exact ? [exact] : [exact, canonical];
+    })
   );
 
-  const plans = [];
-  const waves = {};
-  const incomplete = [];
-  let hasCheckpoints = false;
+  // ── Pass 1: parse each plan file ─────────────────────────────────────────
+
+  const rawPlans = [];
 
   for (const planFile of planFiles) {
     const planId = planFile.replace('-PLAN.md', '').replace('PLAN.md', '');
@@ -253,17 +337,25 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
     const mdTasks = content.match(/##\s*Task\s*\d+/gi) || [];
     const taskCount = xmlTasks.length || mdTasks.length;
 
-    // Parse wave as integer
-    const wave = parseInt(fm.wave, 10) || 1;
+    // Parse wave as integer — use nullish handling so wave: 0 is preserved.
+    // parseInt returns NaN for missing/non-numeric values; fall back to null
+    // (meaning "no declared wave") so downstream can apply the topo default.
+    const parsedWave = parseInt(fm.wave, 10);
+    const declaredWave = Number.isNaN(parsedWave) ? null : parsedWave;
+
+    // Parse depends_on — normalise to string[]
+    let dependsOn = [];
+    const fmDeps = fm['depends_on'];
+    if (Array.isArray(fmDeps)) {
+      dependsOn = fmDeps.map(String);
+    } else if (typeof fmDeps === 'string' && fmDeps.trim() !== '') {
+      dependsOn = [fmDeps];
+    }
 
     // Parse autonomous (default true if not specified)
     let autonomous = true;
     if (fm.autonomous !== undefined) {
       autonomous = fm.autonomous === 'true' || fm.autonomous === true;
-    }
-
-    if (!autonomous) {
-      hasCheckpoints = true;
     }
 
     // Parse files_modified (underscore is canonical; also accept hyphenated for compat)
@@ -273,29 +365,130 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
       filesModified = Array.isArray(fmFiles) ? fmFiles : [fmFiles];
     }
 
-    const hasSummary = completedPlanIds.has(planId);
-    if (!hasSummary) {
-      incomplete.push(planId);
+    const hasSummary = completedPlanIds.has(planId) || completedPlanIds.has(extractCanonicalPlanId(planFile));
+
+    rawPlans.push({
+      id: planId,
+      declaredWave,
+      dependsOn,
+      autonomous,
+      objective: extractObjective(content) || fm.objective || null,
+      filesModified,
+      taskCount,
+      hasSummary,
+    });
+  }
+
+  // ── Pass 2: topological level assignment via depends_on DAG ──────────────
+
+  // Build a map from plan ID → raw plan for fast lookup.
+  // Deps that reference plans outside this phase are treated as external and ignored.
+  const planMap = new Map(rawPlans.map(p => [p.id, p]));
+  // Secondary index: canonical prefix → full plan ID, so depends_on: ['03-01'] resolves
+  // to '03-01-auth-hardening-PLAN.md'-derived ID '03-01-auth-hardening' (k015).
+  const canonicalToId = new Map(rawPlans.map(p => [extractCanonicalPlanId(p.id), p.id]));
+
+  // Kahn's algorithm — compute in-degree and adjacency for in-phase deps only.
+  const level = new Map();
+  const inDeg = new Map();
+  const adj = new Map();
+
+  for (const p of rawPlans) {
+    if (!inDeg.has(p.id)) inDeg.set(p.id, 0);
+    if (!adj.has(p.id)) adj.set(p.id, []);
+    for (const dep of p.dependsOn) {
+      // Accept both full-stem ('03-01-auth-hardening') and canonical-prefix ('03-01') forms.
+      const resolvedDep = planMap.has(dep) ? dep : canonicalToId.get(dep);
+      if (!resolvedDep) continue; // external dep — ignore
+      if (!adj.has(resolvedDep)) adj.set(resolvedDep, []);
+      adj.get(resolvedDep).push(p.id);
+      inDeg.set(p.id, (inDeg.get(p.id) ?? 0) + 1);
+    }
+  }
+
+  // Start with nodes that have no in-phase dependencies.
+  const queue = [];
+  for (const p of rawPlans) {
+    if ((inDeg.get(p.id) ?? 0) === 0) {
+      queue.push(p.id);
+      level.set(p.id, 0);
+    }
+  }
+
+  let visited = 0;
+  while (queue.length > 0) {
+    const cur = queue.shift();
+    visited++;
+    const curLevel = level.get(cur);
+    for (const dep of (adj.get(cur) ?? [])) {
+      const newLevel = curLevel + 1;
+      if (newLevel > (level.get(dep) ?? -1)) {
+        level.set(dep, newLevel);
+      }
+      inDeg.set(dep, inDeg.get(dep) - 1);
+      if (inDeg.get(dep) === 0) {
+        queue.push(dep);
+      }
+    }
+  }
+
+  // Cycle detection — any node not visited has a cycle.
+  if (visited < rawPlans.length) {
+    const cycleNodes = rawPlans.filter(p => !level.has(p.id)).map(p => p.id);
+    error(`depends_on cycle detected in phase ${normalized} — cycle involves: ${cycleNodes.join(', ')}`);
+    return;
+  }
+
+  // ── Pass 3: determine lowest bucket key and build output ─────────────────
+
+  // If any plan has declared wave: 0, the lowest level maps to "0"; otherwise "1".
+  const anyWaveZero = rawPlans.some(p => p.declaredWave === 0);
+  const levelOffset = anyWaveZero ? 0 : 1;
+
+  const plans = [];
+  const waves = {};
+  const incomplete = [];
+  let hasCheckpoints = false;
+  const warnings = [];
+
+  for (const raw of rawPlans) {
+    if (!raw.autonomous) {
+      hasCheckpoints = true;
+    }
+    if (!raw.hasSummary) {
+      incomplete.push(raw.id);
+    }
+
+    // Computed wave = topological level + offset (so lowest level → 0 or 1).
+    const computedWave = (level.get(raw.id) ?? 0) + levelOffset;
+
+    // The effective wave used for bucketing is always the computed topo level.
+    // If the plan declared a wave that disagrees, emit a non-fatal warning.
+    const effectiveWave = computedWave;
+    if (raw.declaredWave !== null && raw.declaredWave !== computedWave) {
+      warnings.push(
+        `Plan ${raw.id}: declared wave: ${raw.declaredWave} but depends_on DAG places it in wave ${computedWave}`,
+      );
     }
 
     const plan = {
-      id: planId,
-      wave,
-      autonomous,
-      objective: extractObjective(content) || fm.objective || null,
-      files_modified: filesModified,
-      task_count: taskCount,
-      has_summary: hasSummary,
+      id: raw.id,
+      wave: effectiveWave,
+      depends_on: raw.dependsOn,
+      autonomous: raw.autonomous,
+      objective: raw.objective,
+      files_modified: raw.filesModified,
+      task_count: raw.taskCount,
+      has_summary: raw.hasSummary,
     };
 
     plans.push(plan);
 
-    // Group by wave
-    const waveKey = String(wave);
+    const waveKey = String(effectiveWave);
     if (!waves[waveKey]) {
       waves[waveKey] = [];
     }
-    waves[waveKey].push(planId);
+    waves[waveKey].push(raw.id);
   }
 
   const result = {
@@ -305,6 +498,8 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
     incomplete,
     has_checkpoints: hasCheckpoints,
   };
+  if (planNamingWarning) result.warning = planNamingWarning;
+  if (warnings.length > 0) result.warnings = warnings;
 
   output(result, raw);
 }
@@ -501,6 +696,10 @@ function cmdPhaseInsert(cwd, afterPhase, description, raw) {
     const afterPhaseEscaped = unpadded.replace(/\./g, '\\.');
     const targetPattern = new RegExp(`#{2,4}\\s*Phase\\s+0*${afterPhaseEscaped}:`, 'i');
     if (!targetPattern.test(content)) {
+      const checklistPattern = new RegExp(`-\\s*\\[[ x]\\]\\s*\\*\\*Phase\\s+0*${afterPhaseEscaped}:`, 'i');
+      if (checklistPattern.test(content)) {
+        error(`Phase ${afterPhase} exists in roadmap summary but is missing a detail section (### Phase ${afterPhase}: ...).`);
+      }
       error(`Phase ${afterPhase} not found in ROADMAP.md`);
     }
 
@@ -652,6 +851,26 @@ function renameIntegerPhases(phasesDir, removedInt) {
   return { renamedDirs, renamedFiles };
 }
 
+function decrementRoadmapPhaseNumber(raw, removedInt) {
+  const num = parseInt(raw, 10);
+  if (!Number.isInteger(num) || num <= removedInt || num >= 999) return raw;
+  return String(num - 1);
+}
+
+function decrementRoadmapPhaseToken(raw, removedInt) {
+  const match = String(raw).match(/^(\d+)(\.\d+)?$/);
+  if (!match) return raw;
+  const num = parseInt(match[1], 10);
+  if (!Number.isInteger(num) || num <= removedInt || num >= 999) return raw;
+  return `${num - 1}${match[2] || ''}`;
+}
+
+function decrementRoadmapPaddedPhaseNumber(raw, removedInt) {
+  const num = parseInt(raw, 10);
+  if (!Number.isInteger(num) || num <= removedInt || num >= 999) return raw;
+  return String(num - 1).padStart(raw.length, '0');
+}
+
 /**
  * Remove a phase section from ROADMAP.md and renumber all subsequent integer phases.
  */
@@ -661,22 +880,35 @@ function updateRoadmapAfterPhaseRemoval(roadmapPath, targetPhase, isDecimal, rem
     let content = fs.readFileSync(roadmapPath, 'utf-8');
     const escaped = escapeRegex(targetPhase);
 
-    content = content.replace(new RegExp(`\\n?#{2,4}\\s*Phase\\s+${escaped}\\s*:[\\s\\S]*?(?=\\n#{2,4}\\s+Phase\\s+\\d|$)`, 'i'), '');
+    content = content.replace(new RegExp(`\\n?#{2,4}\\s*Phase\\s+${escaped}\\s*:[\\s\\S]*?(?=\\n#{2,4}\\s+Phase\\s+\\d+\\s*:|$)`, 'i'), '');
     content = content.replace(new RegExp(`\\n?-\\s*\\[[ x]\\]\\s*.*Phase\\s+${escaped}[:\\s][^\\n]*`, 'gi'), '');
     content = content.replace(new RegExp(`\\n?\\|\\s*${escaped}\\.?\\s[^|]*\\|[^\\n]*`, 'gi'), '');
 
     if (!isDecimal) {
-      const MAX_PHASE = 99;
-      for (let oldNum = MAX_PHASE; oldNum > removedInt; oldNum--) {
-        const newNum = oldNum - 1;
-        const oldStr = String(oldNum), newStr = String(newNum);
-        const oldPad = oldStr.padStart(2, '0'), newPad = newStr.padStart(2, '0');
-        content = content.replace(new RegExp(`(#{2,4}\\s*Phase\\s+)${oldStr}(\\s*:)`, 'gi'), `$1${newStr}$2`);
-        content = content.replace(new RegExp(`(Phase\\s+)${oldStr}([:\\s])`, 'g'), `$1${newStr}$2`);
-        content = content.replace(new RegExp(`(?<![0-9-])${oldPad}-(\\d{2})(?![0-9-])`, 'g'), `${newPad}-$1`);
-        content = content.replace(new RegExp(`(\\|\\s*)${oldStr}\\.\\s`, 'g'), `$1${newStr}. `);
-        content = content.replace(new RegExp(`(Depends on:\\*\\*\\s*Phase\\s+)${oldStr}\\b`, 'gi'), `$1${newStr}`);
-      }
+      content = content.replace(
+        /(#{2,4}\s*Phase\s+)(\d+(?:\.\d+)?)(\s*:)/gi,
+        (_match, prefix, num, suffix) => `${prefix}${decrementRoadmapPhaseToken(num, removedInt)}${suffix}`
+      );
+      content = content.replace(
+        /(-\s*\[[ x]\]\s*.*?Phase\s+)(\d+)(\s*:|\s+)/gi,
+        (_match, prefix, num, suffix) => `${prefix}${decrementRoadmapPhaseNumber(num, removedInt)}${suffix}`
+      );
+      content = content.replace(
+        /(\|\s*)(\d+)(\.\s)/g,
+        (_match, prefix, num, suffix) => `${prefix}${decrementRoadmapPhaseNumber(num, removedInt)}${suffix}`
+      );
+      content = content.replace(
+        /(?<![0-9-])(\d{2})-(\d{2})(?=(?:-(?:PLAN|SUMMARY)\.md)?(?![0-9-]))/g,
+        (_match, phaseNum, planNum) => `${decrementRoadmapPaddedPhaseNumber(phaseNum, removedInt)}-${planNum}`
+      );
+      content = content.replace(
+        /(\*\*Depends on\*\*\s*:\s*Phase\s+)(\d+(?:\.\d+)?)\b/gi,
+        (_match, prefix, num) => `${prefix}${decrementRoadmapPhaseToken(num, removedInt)}`
+      );
+      content = content.replace(
+        /(Depends on:\*\*\s*Phase\s+)(\d+(?:\.\d+)?)\b/gi,
+        (_match, prefix, num) => `${prefix}${decrementRoadmapPhaseToken(num, removedInt)}`
+      );
     }
 
     atomicWriteFileSync(roadmapPath, content);
@@ -868,7 +1100,11 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
         );
 
         const sectionText = phaseSectionMatch ? phaseSectionMatch[1] : '';
-        const reqMatch = sectionText.match(/\*\*Requirements:\*\*\s*([^\n]+)/i);
+        // Accept all bold/colon variants (#2769) — the previous pattern only
+        // matched **Requirements:** (colon inside bold) and silently skipped
+        // **Requirements**: (colon outside), preventing the matching REQ-IDs
+        // from being ticked off in REQUIREMENTS.md on phase completion.
+        const reqMatch = sectionText.match(/\*\*Requirements:?\*\*[^\S\n]*:?[^\S\n]*([^\n]+)/i);
 
         let reqContent = fs.readFileSync(reqPath, 'utf-8');
 

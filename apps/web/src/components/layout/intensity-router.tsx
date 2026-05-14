@@ -25,7 +25,12 @@ const ATELIER_ROUTES: ReadonlyArray<RegExp> = [
   /^\/reports(\/|$)/,
 ];
 
-function intensityFor(pathname: string): AtelierIntensity {
+/**
+ * Pure pathname → intensity mapping. Exported so the server layout can
+ * resolve the intensity at SSR time (for `data-intensity` on `<main>`)
+ * without waiting for client-side hydration.
+ */
+export function intensityForPathname(pathname: string): AtelierIntensity {
   // pathname comes from next-intl's usePathname() which strips the locale,
   // so "/contractors/abc" is what we get on /pl/contractors/abc.
   for (const route of ATELIER_ROUTES) {
@@ -42,7 +47,7 @@ function intensityFor(pathname: string): AtelierIntensity {
  */
 export function IntensityRouter({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const intensity = intensityFor(pathname);
+  const intensity = intensityForPathname(pathname);
 
   useEffect(() => {
     const prev = document.body.dataset.intensity;
@@ -57,5 +62,14 @@ export function IntensityRouter({ children }: { children: ReactNode }) {
     };
   }, [intensity]);
 
-  return <AtelierIntensityProvider value={intensity}>{children}</AtelierIntensityProvider>;
+  return (
+    <AtelierIntensityProvider value={intensity}>
+      {/* display:contents makes the wrapper invisible to flex/grid layout
+          while giving CSS a data-intensity anchor available from the first
+          server render (useEffect on <body> only fires after hydration). */}
+      <div data-intensity={intensity} className="contents">
+        {children}
+      </div>
+    </AtelierIntensityProvider>
+  );
 }

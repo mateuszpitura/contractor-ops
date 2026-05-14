@@ -68,6 +68,8 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
           <button
             type="button"
             className="h-6 w-6 rounded-md border border-input shadow-sm transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            // biome-ignore lint/nursery/noInlineStyles: dynamic user-chosen brand color
+            style={{ backgroundColor: value }}
             aria-label={tAria('selectedColor', { value })}
           />
         }
@@ -81,6 +83,8 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
               <button
                 key={swatch.hex}
                 type="button"
+                // biome-ignore lint/nursery/noInlineStyles: dynamic swatch color
+                style={{ backgroundColor: swatch.hex }}
                 className={cn(
                   'relative h-8 w-8 rounded-md transition-all',
                   isSelected && 'ring-2 ring-offset-2 ring-primary',

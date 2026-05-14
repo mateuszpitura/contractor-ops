@@ -212,11 +212,11 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
             size="sm"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => {
-              setPickerType('OFFBOARDING');
+              setPickerType(stage === 'ACTIVE' ? 'OFFBOARDING' : undefined);
               setPickerOpen(true);
             }}>
             <Play className="me-1.5 size-3.5" />
-            {t('actions.startOffboarding')}
+            {t('actions.startWorkflow')}
           </Button>
         )}
 

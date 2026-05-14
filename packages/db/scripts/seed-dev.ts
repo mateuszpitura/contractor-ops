@@ -35,12 +35,26 @@
  *   showcase  1 fully-populated demo org with every state present
  *   all       union of every profile above
  *
+ *   Per-profile defaults (overridable via --orgs / --users-per-org /
+ *   --contractors-per-org / --invoices-per-contractor):
+ *
+ *     profile     orgs  users/org  contractors/org  invoices/contractor
+ *     empty        1       1            0                  0
+ *     solo         1       1            2                 1–3
+ *     small        3       4           10                 2–6
+ *     medium       5      10          100                 3–8
+ *     huge         6      30         1000                5–12     (mixed)
+ *     showcase     1       8           40                 4–7
+ *     all          8     (mix)        (mix)              (mix)
+ *
  * ---------------------------------------------------------------------------
  * Sample invocations
  * ---------------------------------------------------------------------------
  *   pnpm db:seed:dev --profile=small --confirm
  *   pnpm db:seed:dev --profile=huge --regions=EU,ME --confirm --seed=123
  *   SEED_PASSWORD=letmein pnpm db:seed:dev --profile=showcase --confirm
+ *   # Add a showcase org on top of an already-seeded dev DB (no wipe):
+ *   pnpm db:seed:dev --profile=showcase --append
  *
  * ---------------------------------------------------------------------------
  * CLI flags
@@ -54,7 +68,15 @@
  *   --seed=N                  Faker seed (default 42). Faker draws are
  *                             deterministic per seed; row IDs and timestamps
  *                             are NOT (they use crypto.randomUUID + Date.now).
- *   --confirm                 Required. Wipes tenant data before reseeding.
+ *   --confirm                 Required (unless --append). Wipes tenant data
+ *                             before reseeding.
+ *   --append                  Skip the wipe and seed on top of existing data.
+ *                             Each run creates fresh orgs (slugs include a
+ *                             random token), so conflicts are impossible.
+ *                             Mutually replaces --confirm.
+ *   --progress / --no-progress
+ *                             Bottom-anchored progress bar is ON by default.
+ *                             Pass --no-progress to stream phase log lines.
  *   --help, -h                Print this help text and exit 0.
  *
  * ---------------------------------------------------------------------------
@@ -70,11 +92,18 @@
 
 import { randomBytes, randomUUID } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
+import { Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
-import { createLogger } from '@contractor-ops/logger';
+import type { Logger } from '@contractor-ops/logger';
+import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import { ar, de, en, en_GB, Faker, pl } from '@faker-js/faker';
 import { hashPassword } from 'better-auth/crypto';
+import { defineCommand, runMain } from 'citty';
+import cliProgress from 'cli-progress';
+import CliTable3 from 'cli-table3';
 import { config as loadEnv } from 'dotenv';
+import pino from 'pino';
+import pinoPretty from 'pino-pretty';
 
 import { createPrismaClientForUrl } from '../src/client.js';
 import type { PrismaClient } from '../src/generated/prisma/client/client.js';
@@ -89,7 +118,34 @@ loadEnv({ path: resolve(here, '../../../.env') });
 // Logger
 // ---------------------------------------------------------------------------
 
-const log = createLogger({ service: 'seed-dev' });
+/**
+ * Build a pino-pretty pipeline with the seed-dev style (emoji per phase,
+ * colorised level/time, compact single-line). Used both for normal stdout
+ * output and (with destination=multibar.log) for the --progress mode.
+ */
+function createSeedPrettyLogger(destination: NodeJS.WritableStream): Logger {
+  const prettyStream = pinoPretty({
+    colorize: true,
+    translateTime: 'HH:MM:ss',
+    ignore: 'pid,hostname,service',
+    singleLine: true,
+    destination,
+    messageFormat: (record, messageKey): string => {
+      const msg = String(record[messageKey] ?? '');
+      const phaseMatch = msg.match(/^(.+?) seeded$/);
+      const phaseIcon = phaseMatch?.[1] ? PHASE_EMOJI[phaseMatch[1]] : undefined;
+      const levelIcon = LEVEL_EMOJI[Number(record.level)] ?? '·';
+      const orgKey = record.orgKey ? ` [${String(record.orgKey)}]` : '';
+      return `${phaseIcon ?? levelIcon}${orgKey} ${msg}`;
+    },
+  });
+  return pino(getBaseLoggerOptions(), prettyStream).child({ service: 'seed-dev' });
+}
+
+// `let` so --progress can swap in a logger whose destination forwards lines
+// through MultiBar.log(), making them appear above the bottom-anchored bar.
+// Default destination is stdout so even non-progress runs get pretty output.
+let log: Logger = createSeedPrettyLogger(process.stdout);
 
 // ---------------------------------------------------------------------------
 // CLI parsing — minimal built-in to avoid extra deps
@@ -106,105 +162,288 @@ interface CliFlags {
   regions: readonly ('EU' | 'ME')[];
   seed: number;
   confirm: boolean;
+  /**
+   * Skip the tenant-table wipe and add seed rows on top of existing data.
+   * Each invocation creates fresh orgs (slug includes a random token), so
+   * conflicts with prior runs are impossible. Useful for stacking a
+   * `--profile=showcase` org alongside an already-seeded `small` dataset.
+   * Bypasses the `--confirm` requirement (no destruction = no acknowledgement).
+   */
+  append: boolean;
   help: boolean;
+  /** Show a bottom-anchored progress bar instead of per-phase log lines. */
+  progress: boolean;
 }
 
-function parseFlags(argv: readonly string[]): CliFlags {
-  const map = new Map<string, string>();
-  for (let i = 0; i < argv.length; i += 1) {
-    const raw = argv[i] ?? '';
-    if (!raw.startsWith('--') && raw !== '-h') continue;
-    const stripped = raw === '-h' ? '--help' : raw.slice(2);
-    if (stripped.includes('=')) {
-      const eqIdx = stripped.indexOf('=');
-      map.set(stripped.slice(0, eqIdx), stripped.slice(eqIdx + 1));
-    } else if (i + 1 < argv.length && !(argv[i + 1] ?? '').startsWith('--')) {
-      map.set(stripped, argv[i + 1] ?? '');
-      i += 1;
+// ---------------------------------------------------------------------------
+// Phase reporter — toggles between per-phase log lines and a bottom progress bar
+// ---------------------------------------------------------------------------
+
+/** Number of distinct `reporter.tick()` calls a single seedOrg() makes. Keep in sync with seedOrg. */
+const PHASES_PER_ORG = 18;
+
+/** Emoji shown for each named phase in pretty log lines (--progress mode). */
+const PHASE_EMOJI: Record<string, string> = {
+  contractors: '👥',
+  contracts: '📜',
+  invoices: '🧾',
+  equipment: '💻',
+  'payment runs': '💰',
+  reminders: '⏰',
+  notifications: '🔔',
+  outbox: '📤',
+  'webhook deliveries': '🪝',
+  'audit logs': '📋',
+  'e-invoice lifecycle': '📨',
+  'portal sessions': '🚪',
+  'integration connections': '🔌',
+  'invoice documents': '📑',
+  'workflow templates': '🌀',
+  subscription: '💳',
+  'courier configs': '📦',
+  comments: '💬',
+};
+
+/** Emoji shown by log level when no phase emoji matched. */
+const LEVEL_EMOJI: Record<number, string> = {
+  10: '🔍', // trace
+  20: '🔍', // debug
+  30: '✨', // info
+  40: '⚠️ ', // warn
+  50: '❌', // error
+  60: '🔥', // fatal
+};
+
+/**
+ * Empirical "cost" per phase, used for weighted ETA. Numbers don't have to be
+ * exact seconds — only their RATIO matters. Calibrated against `showcase`
+ * profile runs:
+ *   - contractors: 40 rows + tags/assignments/billing-profiles per row
+ *   - invoices: ~210 rows with lines/approvals/matches — dominant cost
+ *   - equipment, e-invoice, invoice-documents: mid-tier (joined records)
+ *   - outbox/webhook/portal-session/integration: near-instant batch inserts
+ *
+ * Without this, cli-progress' built-in ETA divides elapsed time by tick count
+ * (each phase weighs the same), which produces wildly wrong estimates: it
+ * predicts "10 minutes left" after the fast early phases, then crashes to "5
+ * minutes" once the bigger phases finish.
+ */
+const PHASE_WEIGHTS: Record<string, number> = {
+  contractors: 20,
+  contracts: 5,
+  invoices: 30,
+  equipment: 10,
+  'payment runs': 5,
+  reminders: 3,
+  notifications: 2,
+  outbox: 1,
+  'webhook deliveries': 1,
+  'audit logs': 3,
+  'e-invoice lifecycle': 5,
+  'portal sessions': 1,
+  'integration connections': 1,
+  'invoice documents': 5,
+  'workflow templates': 3,
+  subscription: 1,
+  'courier configs': 1,
+  comments: 3,
+};
+const PHASE_WEIGHT_DEFAULT = 3;
+const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
+
+function formatDurationMs(ms: number): string {
+  if (!Number.isFinite(ms) || ms < 0) return '—';
+  const totalSec = Math.round(ms / 1000);
+  if (totalSec < 60) return `${totalSec}s`;
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}m${s.toString().padStart(2, '0')}s`;
+}
+
+interface Reporter {
+  start(totalTicks: number): void;
+  tick(orgKey: string, phase: string): void;
+  stop(): void;
+}
+
+class LogReporter implements Reporter {
+  start(): void {
+    /* no-op — log lines provide their own structure */
+  }
+  tick(orgKey: string, phase: string): void {
+    log.info({ orgKey }, `${phase} seeded`);
+  }
+  stop(): void {
+    /* no-op */
+  }
+}
+
+/** Braille spinner — 10 frames @ 80ms cycles every ~800ms, classic feel. */
+const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'] as const;
+const SPINNER_FPS_MS = 80;
+
+class BarReporter implements Reporter {
+  private readonly multibar: cliProgress.MultiBar;
+  private bar: cliProgress.SingleBar | null = null;
+  private spinnerInterval: ReturnType<typeof setInterval> | null = null;
+  private spinnerIdx = 0;
+  /** Last payload set by tick() — re-used during spinner-only redraws so the
+   *  bar doesn't flicker back to a stale orgKey/phase between ticks. */
+  private lastPayload: Record<string, string> = { orgKey: '-', phase: 'starting' };
+  /** Wall-clock when start() ran; basis for elapsed + weighted ETA. */
+  private startedAtMs = 0;
+  /** Sum of weights of completed phases — input to weighted ETA. */
+  private completedWeight = 0;
+  /** Total weight across all orgs (set in start() once we know orgs count). */
+  private totalWeight = 1;
+  /**
+   * ETA snapshot taken at the moment of the last tick. The spinner interval
+   * COUNTS DOWN from this value rather than recomputing from `elapsed /
+   * completedWeight * remaining` every frame — otherwise ETA grows linearly
+   * with `elapsed` while we wait for the next tick, which is the opposite of
+   * what a countdown should do.
+   */
+  private etaAtLastTickMs = 0;
+  /** When `etaAtLastTickMs` was set — countdown floor. */
+  private etaSetAt = 0;
+
+  constructor() {
+    // MultiBar (with a single visible bar) is used here specifically because
+    // it exposes `.log(message)`, which prints text *above* the progress line
+    // while the bar stays anchored at the bottom of the terminal. SingleBar
+    // doesn't support this — log lines would trample the bar redraw.
+    this.multibar = new cliProgress.MultiBar(
+      {
+        // Note: {eta_weighted} is our custom payload field (filled by tick()
+        // and the spinner interval); cli-progress' built-in {eta_formatted}
+        // would be the naive "elapsed / ticks" estimate that gave the
+        // 10m→5m jump.
+        format:
+          '{spinner} {bar} {percentage}% ({value}/{total}) │ {orgKey} │ {phase} │ ⏱ {elapsed} │ ETA {eta_weighted}',
+        barCompleteChar: '█',
+        barIncompleteChar: '░',
+        hideCursor: true,
+        clearOnComplete: false,
+        stopOnComplete: false,
+        autopadding: true,
+        forceRedraw: true,
+        noTTYOutput: false,
+      },
+      cliProgress.Presets.shades_classic,
+    );
+  }
+
+  /**
+   * Recompute the ETA snapshot from the latest tick state (called from tick()).
+   * Stored separately from the render so the spinner interval can count down
+   * from it without growing the value.
+   */
+  private recomputeEta(): void {
+    if (this.completedWeight <= 0) {
+      this.etaAtLastTickMs = 0;
+      this.etaSetAt = Date.now();
+      return;
+    }
+    const elapsedMs = Date.now() - this.startedAtMs;
+    const remaining = Math.max(0, this.totalWeight - this.completedWeight);
+    this.etaAtLastTickMs = (elapsedMs / this.completedWeight) * remaining;
+    this.etaSetAt = Date.now();
+  }
+
+  /** Render-time payload — elapsed (live) + ETA (counts down between ticks). */
+  private timePayload(): { elapsed: string; eta_weighted: string } {
+    const now = Date.now();
+    const elapsedMs = now - this.startedAtMs;
+    let eta: string;
+    if (this.completedWeight <= 0) {
+      eta = '—';
     } else {
-      map.set(stripped, 'true');
+      // Countdown from the most recent tick's ETA snapshot. Floored at 0 so
+      // the bar reads "0s" rather than negatives if a phase outruns its weight.
+      const remainingEtaMs = Math.max(0, this.etaAtLastTickMs - (now - this.etaSetAt));
+      eta = formatDurationMs(remainingEtaMs);
     }
+    return { elapsed: formatDurationMs(elapsedMs), eta_weighted: eta };
   }
 
-  const profileRaw = (map.get('profile') ?? 'small') as ProfileName;
-  const allowedProfiles: readonly ProfileName[] = [
-    'empty',
-    'solo',
-    'small',
-    'medium',
-    'huge',
-    'showcase',
-    'all',
-  ];
-  if (!allowedProfiles.includes(profileRaw)) {
-    throw new Error(`unknown profile "${profileRaw}". Allowed: ${allowedProfiles.join(', ')}`);
+  start(totalTicks: number): void {
+    this.startedAtMs = Date.now();
+    this.etaSetAt = Date.now();
+    // totalTicks = orgsPlanned.length * PHASES_PER_ORG, so the weight total
+    // scales with the org count.
+    const orgsCount = Math.max(1, Math.round(totalTicks / PHASES_PER_ORG));
+    this.totalWeight = TOTAL_WEIGHT_PER_ORG * orgsCount;
+
+    this.bar = this.multibar.create(totalTicks, 0, {
+      ...this.lastPayload,
+      spinner: SPINNER_FRAMES[0],
+      ...this.timePayload(),
+    });
+    // Animate the spinner + refresh elapsed/ETA so the bar visibly "breathes"
+    // while a long phase (e.g. seeding 500 invoices) is still in flight
+    // between two ticks.
+    this.spinnerInterval = setInterval(() => {
+      this.spinnerIdx = (this.spinnerIdx + 1) % SPINNER_FRAMES.length;
+      this.bar?.update({
+        ...this.lastPayload,
+        spinner: SPINNER_FRAMES[this.spinnerIdx],
+        ...this.timePayload(),
+      });
+    }, SPINNER_FPS_MS);
+  }
+  tick(orgKey: string, phase: string): void {
+    // Log first (lands above the bar via asLogStream → multibar.log), THEN
+    // increment so the bar's redraw is the last terminal write of the tick
+    // and stays anchored at the bottom.
+    log.info({ orgKey }, `${phase} seeded`);
+    this.lastPayload = { orgKey, phase };
+    this.completedWeight += PHASE_WEIGHTS[phase] ?? PHASE_WEIGHT_DEFAULT;
+    // Refresh the ETA snapshot now that we have one more data point; spinner
+    // interval will count down from this value until the next tick.
+    this.recomputeEta();
+    this.bar?.increment({
+      orgKey,
+      phase,
+      spinner: SPINNER_FRAMES[this.spinnerIdx],
+      ...this.timePayload(),
+    });
+  }
+  stop(): void {
+    if (this.spinnerInterval) {
+      clearInterval(this.spinnerInterval);
+      this.spinnerInterval = null;
+    }
+    // Final frame: replace spinner with a checkmark and zero out ETA so the
+    // last visible bar reads as "done" rather than mid-animation.
+    this.bar?.update({
+      ...this.lastPayload,
+      spinner: '✔',
+      phase: 'done',
+      elapsed: formatDurationMs(Date.now() - this.startedAtMs),
+      eta_weighted: '0s',
+    });
+    this.multibar.stop();
   }
 
-  const regionsRaw = (map.get('regions') ?? 'EU')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
-  const regions = regionsRaw.map(r => {
-    if (r !== 'EU' && r !== 'ME') {
-      throw new Error(`unknown region "${r}". Allowed: EU, ME`);
-    }
-    return r;
-  }) as ReadonlyArray<'EU' | 'ME'>;
-
-  const intOrUndef = (key: string): number | undefined => {
-    const v = map.get(key);
-    if (v === undefined) return v;
-    const n = Number.parseInt(v, 10);
-    if (!Number.isFinite(n) || n < 0) {
-      throw new Error(`flag --${key} must be a non-negative integer (got "${v}")`);
-    }
-    return n;
-  };
-
-  return {
-    profile: profileRaw,
-    orgs: intOrUndef('orgs'),
-    usersPerOrg: intOrUndef('users-per-org'),
-    contractorsPerOrg: intOrUndef('contractors-per-org'),
-    invoicesPerContractor: intOrUndef('invoices-per-contractor'),
-    regions,
-    seed: intOrUndef('seed') ?? 42,
-    confirm: map.get('confirm') === 'true',
-    help: map.get('help') === 'true',
-  };
+  /**
+   * Writable sink that the pretty-logger pipeline writes into. Each chunk is
+   * one already-formatted log line (colors, emoji, human time) which we
+   * forward through `multibar.log()` so it lands above the bottom-anchored
+   * progress bar. The pino-pretty stage itself is built in
+   * `createSeedPrettyLogger()` and shared with non-progress runs.
+   */
+  asLogSink(): NodeJS.WritableStream {
+    return new Writable({
+      write: (chunk: Buffer | string, _enc, cb) => {
+        const text = typeof chunk === 'string' ? chunk : chunk.toString('utf8');
+        this.multibar.log(text);
+        cb();
+      },
+    });
+  }
 }
 
-function printHelp(): void {
-  process.stdout.write(
-    [
-      'scripts/seed-dev.ts — comprehensive dev/test data seed (NOT FOR PRODUCTION)',
-      '',
-      'Usage:',
-      '  pnpm db:seed:dev --profile=<name> --confirm [other flags]',
-      '',
-      'Profiles:',
-      '  empty | solo | small | medium | huge | showcase | all',
-      '',
-      'Flags:',
-      '  --profile=NAME             default: small',
-      '  --orgs=N                   override profile org count',
-      '  --users-per-org=N          override users per org',
-      '  --contractors-per-org=N    override contractors per org',
-      '  --invoices-per-contractor=N override invoices per contractor',
-      '  --regions=EU,ME            default: EU',
-      '  --seed=N                   faker seed, default 42 (deterministic)',
-      '  --confirm                  REQUIRED. Wipes tenant data first.',
-      '  --help, -h                 this message',
-      '',
-      'Env:',
-      '  DATABASE_URL_EU / DATABASE_URL_ME  per-region URLs',
-      '  DATABASE_URL                       fallback when EU URL is unset',
-      '  SEED_PASSWORD                      default: Test1234!',
-      '  SEED_DEV_ALLOWED_HOST              extra regex of allowed hostnames',
-      '',
-    ].join('\n'),
-  );
-}
+let reporter: Reporter = new LogReporter();
 
 // ---------------------------------------------------------------------------
 // Safety guardrails
@@ -255,8 +494,10 @@ function ensureSafeEnvironment(flags: CliFlags): void {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('refusing to seed: NODE_ENV=production');
   }
-  if (!flags.confirm) {
-    throw new Error('refusing to seed: pass --confirm to acknowledge data wipe');
+  if (!(flags.confirm || flags.append)) {
+    throw new Error(
+      'refusing to seed: pass --confirm to acknowledge data wipe, or --append to seed on top of existing data',
+    );
   }
 }
 
@@ -596,6 +837,18 @@ const dateBetween = (faker: Faker, from: Date, to: Date): Date => {
   return new Date(faker.number.int({ min, max }));
 };
 
+/**
+ * `pastDate(daysBack)` clamped at `anchor` — the generated date never
+ * pre-dates `anchor`. Used so notification / outbox / webhook / integration
+ * timestamps never sit outside the org's lifespan (a 90-day-old notification
+ * on a 5-day-old org was the bug).
+ */
+const pastDateAfter = (faker: Faker, daysBack: number, anchor: Date): Date => {
+  const earliest = anchor.getTime();
+  const candidate = Date.now() - faker.number.int({ min: 0, max: daysBack * 86_400_000 });
+  return new Date(Math.max(earliest, candidate));
+};
+
 // ---------------------------------------------------------------------------
 // Country-aware formatters
 // ---------------------------------------------------------------------------
@@ -830,20 +1083,35 @@ async function wipeAllTenantData(prisma: PrismaClient, regionLabel: string): Pro
   log.warn({ region: regionLabel, tables: WIPE_TABLES_IN_ORDER.length }, 'wiping tenant tables');
   // One TRUNCATE per table — safer than CASCADE which would also nuke
   // production reference tables that share FKs (none today, but defensive).
-  // Wrap in transaction so a failure rolls back nothing-half-done.
-  await prisma.$transaction(async tx => {
-    for (const table of WIPE_TABLES_IN_ORDER) {
-      try {
-        await tx.$executeRawUnsafe(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
-      } catch (err) {
-        // Table may not exist yet on a freshly-pushed schema; log and continue.
-        log.debug(
-          { region: regionLabel, table, err: (err as Error).message },
-          'skipping wipe (table missing)',
-        );
+  // Wrap in transaction so a failure rolls back nothing-half-done. Bump
+  // timeouts above the Prisma defaults (maxWait=2s, timeout=5s) so the wipe
+  // survives Neon's cloud round-trip on a multi-table cascade.
+  //
+  // Each TRUNCATE is wrapped in a SAVEPOINT so a 42P01 (missing table on a
+  // freshly-pushed schema) can be rolled back without aborting the outer
+  // transaction — otherwise Postgres marks the whole tx as 25P02 and every
+  // subsequent statement silently no-ops.
+  await prisma.$transaction(
+    async tx => {
+      for (const table of WIPE_TABLES_IN_ORDER) {
+        const savepoint = `sp_wipe_${table.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+        await tx.$executeRawUnsafe(`SAVEPOINT ${savepoint}`);
+        try {
+          await tx.$executeRawUnsafe(`TRUNCATE TABLE ${table} RESTART IDENTITY CASCADE`);
+          await tx.$executeRawUnsafe(`RELEASE SAVEPOINT ${savepoint}`);
+        } catch (err) {
+          // Table may not exist yet on a freshly-pushed schema; roll back to
+          // the savepoint so the outer tx stays alive, then continue.
+          await tx.$executeRawUnsafe(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+          log.debug(
+            { region: regionLabel, table, err: (err as Error).message },
+            'skipping wipe (table missing)',
+          );
+        }
       }
-    }
-  });
+    },
+    { maxWait: 30_000, timeout: 120_000 },
+  );
   log.info({ region: regionLabel }, 'wipe complete');
 }
 
@@ -881,8 +1149,14 @@ const ROLE_DISTRIBUTION: ReadonlyArray<readonly [string, number]> = [
 ];
 
 function pickMemberRole(faker: Faker, ordinal: number): string {
+  // Reserved positions ensure the approval-chain lookups
+  // (`ctx.users.find(u => u.role === 'team_manager' | 'finance_admin' | 'admin')`)
+  // always hit a role-matched approver — without this, a small org could roll
+  // four `readonly` members and silently fall back to the owner for every step.
   if (ordinal === 0) return 'owner';
   if (ordinal === 1) return 'admin';
+  if (ordinal === 2) return 'team_manager';
+  if (ordinal === 3) return 'finance_admin';
   return weightedPick(faker, ROLE_DISTRIBUTION);
 }
 
@@ -936,6 +1210,7 @@ async function seedOrganizationCore(
   fakers: OrgFakers,
 ): Promise<{
   organizationId: string;
+  organizationName: string;
   ownerUserId: string;
   teamIds: string[];
   projectIds: string[];
@@ -1024,9 +1299,13 @@ async function seedOrganizationCore(
     }
   }
 
-  // Projects (2 per team) — start dates anchored to the org's lifespan, not "now − 365"
+  // Projects (2 per team) — start dates anchored to the org's lifespan, not "now − 365".
+  // Code uses deterministic team+project ordinals (P-T01-1, P-T01-2, P-T02-1, …)
+  // so the [organizationId, code] unique constraint can never collide on
+  // re-seed and remains human-readable in lists.
   const projectIds: string[] = [];
-  for (const teamId of teamIds) {
+  for (let tIdx = 0; tIdx < teamIds.length; tIdx += 1) {
+    const teamId = teamIds[tIdx] as string;
     for (let i = 0; i < 2; i += 1) {
       const start = dateBetween(fakers.org, foundedAt, new Date());
       const end = fakers.org.datatype.boolean() ? futureDate(fakers.org, 365) : null;
@@ -1035,7 +1314,7 @@ async function seedOrganizationCore(
           organizationId,
           teamId,
           name: fakers.org.commerce.productName(),
-          code: `P${tokenHex(2).toUpperCase()}`,
+          code: `P-T${(tIdx + 1).toString().padStart(2, '0')}-${i + 1}`,
           status: 'ACTIVE',
           startDate: dateOnly(start),
           endDate: end ? dateOnly(end) : null,
@@ -1086,6 +1365,7 @@ async function seedOrganizationCore(
 
   return {
     organizationId,
+    organizationName: orgName,
     ownerUserId: owner.id,
     teamIds,
     projectIds,
@@ -1245,6 +1525,15 @@ async function seedContractors(
         primaryTeamId: team,
         primaryProjectId: project,
         defaultCostCenterId: costCenter,
+        customFieldsJson: {
+          billingModel: ctx.fakers.org.helpers.arrayElement([
+            'FIXED',
+            'HOURLY',
+            'PROJECT',
+            'MILESTONE',
+          ]),
+          rateValueMinor: moneyMinor(ctx.fakers.org, 50, 250),
+        },
         notes: ctx.fakers.org.lorem.sentence(),
         createdAt: hiredAt,
       },
@@ -1338,6 +1627,8 @@ async function seedContractors(
           ['EXPIRED', 1],
         ],
       );
+      // dueDate / expiresAt anchored to org lifespan — an EXPIRED item due
+      // 2 years ago is impossible for a 1-year-old org.
       const dueDate = (() => {
         switch (itemStatus) {
           case 'MISSING':
@@ -1345,16 +1636,16 @@ async function seedContractors(
           case 'PENDING':
             return dateOnly(futureDate(ctx.fakers.org, 14));
           case 'SATISFIED':
-            return dateOnly(pastDate(ctx.fakers.org, 365));
+            return dateOnly(pastDateAfter(ctx.fakers.org, 365, ctx.foundedAt));
           case 'EXPIRED':
-            return dateOnly(pastDate(ctx.fakers.org, 730));
+            return dateOnly(pastDateAfter(ctx.fakers.org, 730, ctx.foundedAt));
         }
       })();
       const expiresAt =
         itemStatus === 'SATISFIED'
           ? dateOnly(futureDate(ctx.fakers.org, 365))
           : itemStatus === 'EXPIRED'
-            ? dateOnly(pastDate(ctx.fakers.org, 30))
+            ? dateOnly(pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt))
             : null;
       await prisma.contractorComplianceItem.create({
         data: {
@@ -1406,13 +1697,14 @@ async function seedContracts(
   // ~70% of contractors get a contract
   const subset = contractors.filter(() => ctx.fakers.org.datatype.boolean({ probability: 0.7 }));
   for (const c of subset) {
-    const start = pastDate(ctx.fakers.org, 540);
-    // Contracts are negotiated and signed BEFORE they start. Pick a signed
-    // date 7–30 days before the start date.
-    const signedAt = new Date(
-      start.getTime() - ctx.fakers.org.number.int({ min: 7, max: 30 }) * 86_400_000,
-    );
-    // End date, when set, must be strictly after start.
+    // Contracts are negotiated, signed, then start 7–30 days later. Anchor
+    // signedAt to org lifespan so a 365-day-old org doesn't have contracts
+    // signed 540 days ago. start = signedAt + 7..30d (clamped to now); end,
+    // when set, follows start by 90–730 days.
+    const signedAt = pastDateAfter(ctx.fakers.org, 540, ctx.foundedAt);
+    const startMs =
+      signedAt.getTime() + ctx.fakers.org.number.int({ min: 7, max: 30 }) * 86_400_000;
+    const start = new Date(Math.min(startMs, Date.now()));
     const end = ctx.fakers.org.datatype.boolean({ probability: 0.4 })
       ? new Date(start.getTime() + ctx.fakers.org.number.int({ min: 90, max: 730 }) * 86_400_000)
       : null;
@@ -1453,6 +1745,8 @@ async function seedContracts(
         rateValueMinor,
         paymentTermsDays: c.paymentTermsDays,
         invoiceCycle: 'MONTHLY',
+        internalOwnerUserId: ctx.fakers.org.helpers.arrayElement(ctx.users).id,
+        complianceRiskLevel: ctx.fakers.org.helpers.arrayElement(['LOW', 'LOW', 'MEDIUM', 'HIGH']),
         signedAt: isSigned ? signedAt : null,
         notes: ctx.fakers.org.lorem.sentence(),
         createdAt: signedAt,
@@ -1467,7 +1761,22 @@ async function seedContracts(
       createdAt: signedAt,
     });
 
-    // 1 rate period — same rate as the contract header.
+    // ~25% have an amendment — pre-decide so the rate-period table reflects
+    // the rate change (otherwise the contract page shows only the original
+    // rate even though an "Amendment A1: rate +5%" row exists).
+    // amendmentEffective ∈ [start, now] so an amendment never pre-dates the
+    // contract it amends.
+    const hasAmendment = ctx.fakers.org.datatype.boolean({ probability: 0.25 });
+    const amendmentEffective = hasAmendment ? dateBetween(ctx.fakers.org, start, new Date()) : null;
+    const newRateMinor = hasAmendment ? Math.round(rateValueMinor * 1.05) : null;
+
+    // Original rate period — runs from start until amendment kicks in (or
+    // contract end / open-ended if no amendment).
+    const originalValidTo = amendmentEffective
+      ? dateOnly(new Date(amendmentEffective.getTime() - 86_400_000))
+      : end
+        ? dateOnly(end)
+        : null;
     await prisma.contractRatePeriod.create({
       data: {
         organizationId: ctx.organizationId,
@@ -1476,15 +1785,25 @@ async function seedContracts(
         rateValueMinor,
         currency: c.currency,
         validFrom: dateOnly(start),
-        validTo: end ? dateOnly(end) : null,
+        validTo: originalValidTo,
         createdAt: signedAt,
       },
     });
 
-    // ~25% have an amendment
-    if (ctx.fakers.org.datatype.boolean({ probability: 0.25 })) {
-      const amendmentEffective = pastDate(ctx.fakers.org, 90);
-      const newRateMinor = Math.round(rateValueMinor * 1.05);
+    if (hasAmendment && amendmentEffective && newRateMinor !== null) {
+      // New rate period kicks in on the amendment's effectiveDate.
+      await prisma.contractRatePeriod.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractId: contract.id,
+          rateType: 'PER_HOUR',
+          rateValueMinor: newRateMinor,
+          currency: c.currency,
+          validFrom: dateOnly(amendmentEffective),
+          validTo: end ? dateOnly(end) : null,
+          createdAt: amendmentEffective,
+        },
+      });
       await prisma.contractAmendment.create({
         data: {
           organizationId: ctx.organizationId,
@@ -1694,6 +2013,11 @@ async function seedInvoices(
   // strict yearly sequences (PL law) — this isn't perfect (we don't
   // backfill across orgs) but it's much closer than tokenHex was.
   const counterByYear = new Map<number, number>();
+  // Global invoice index across all contractors — drives showcase's
+  // round-robin so REJECTED / VOID actually appear (per-contractor `i`
+  // resets every iteration, capping showcase at indices 0–6 and silently
+  // dropping the last two states).
+  let globalInvoiceIdx = 0;
 
   for (const contractor of contractors) {
     const count = ctx.fakers.org.number.int({
@@ -1701,7 +2025,10 @@ async function seedInvoices(
       max: ctx.org.invoicesPerContractor.max,
     });
     for (let i = 0; i < count; i += 1) {
-      const showcaseEntry = ctx.org.showcase ? INVOICE_LIFECYCLE_DISTRIBUTION[i] : undefined;
+      const showcaseEntry = ctx.org.showcase
+        ? INVOICE_LIFECYCLE_DISTRIBUTION[globalInvoiceIdx % INVOICE_LIFECYCLE_DISTRIBUTION.length]
+        : undefined;
+      globalInvoiceIdx += 1;
       const lifecycle: InvoiceLifecycle = showcaseEntry
         ? showcaseEntry[0]
         : weightedPick(ctx.fakers.org, INVOICE_LIFECYCLE_DISTRIBUTION);
@@ -1857,8 +2184,11 @@ async function seedInvoices(
             resourceId: created.id,
             chainConfigId: approvalChainConfigId,
             status: approvalStatus,
-            currentStepOrder:
-              approvalStatus === 'PENDING' ? 1 : approvalStatus === 'APPROVED' ? 2 : null,
+            // PENDING flows are on step 1 (manager review). Terminal states
+            // (APPROVED / REJECTED / CANCELLED) leave currentStepOrder null —
+            // the prior hard-coded `2` was wrong for both 1-step and 3-step
+            // chains.
+            currentStepOrder: approvalStatus === 'PENDING' ? 1 : null,
             startedAt: flowStartedAt,
             completedAt: flowCompletedAt,
             cancelledAt: approvalStatus === 'CANCELLED' ? timeline.reviewedAt : null,
@@ -2016,13 +2346,31 @@ async function seedPaymentRuns(
   invoices: readonly SeededInvoice[],
   refs: EntityRef[],
 ): Promise<void> {
+  // PARTIALLY_PAID invoices are modelled as having had their first
+  // instalment settled by a manual / bank-statement entry BEFORE this run
+  // (a separate event). Seeded unconditionally — paymentRunsPerOrg=0 would
+  // otherwise leave "partial" invoices with no payment trail at all.
+  for (const inv of invoices) {
+    if (inv.paymentStatus === 'PARTIALLY_PAID') {
+      const partialPaidAt = pastDateAfter(ctx.fakers.org, 120, ctx.foundedAt);
+      await prisma.invoicePayment.create({
+        data: {
+          organizationId: ctx.organizationId,
+          invoiceId: inv.id,
+          amountMinor: inv.partialPaidMinor,
+          paidAt: partialPaidAt,
+          sourceKind: 'BANK_STATEMENT',
+          notes: `Standalone partial payment ref REF-${tokenHex(4).toUpperCase()}`,
+          createdAt: partialPaidAt,
+        },
+      });
+    }
+  }
+
   if (ctx.org.paymentRunsPerOrg === 0) return;
-  const payable = invoices.filter(
-    i =>
-      i.paymentStatus === 'READY' ||
-      i.paymentStatus === 'PAID' ||
-      i.paymentStatus === 'PARTIALLY_PAID',
-  );
+  // Payment runs only batch READY (outstanding) and PAID (settled). Partial
+  // is settled out-of-band above.
+  const payable = invoices.filter(i => i.paymentStatus === 'READY' || i.paymentStatus === 'PAID');
   if (payable.length === 0) return;
 
   const finance = ctx.users.find(u => u.role === 'finance_admin') ?? ctx.users[0] ?? null;
@@ -2030,7 +2378,8 @@ async function seedPaymentRuns(
 
   // Real payment runs are SINGLE-currency — bank export files (SEPA XML,
   // BACS, etc.) accept exactly one currency per submission. Group payable
-  // invoices by currency and split the configured run quota proportionally.
+  // invoices by currency and distribute the run quota with a HARD cap so the
+  // total never exceeds `paymentRunsPerOrg`.
   const byCurrency = new Map<string, SeededInvoice[]>();
   for (const inv of payable) {
     const list = byCurrency.get(inv.currency) ?? [];
@@ -2038,50 +2387,91 @@ async function seedPaymentRuns(
     byCurrency.set(inv.currency, list);
   }
 
+  // Floor + remainder distribution so the sum equals exactly
+  // `paymentRunsPerOrg` (the previous Math.round + Math.max(1) combination
+  // could overshoot by 1–2 runs).
   const totalRuns = ctx.org.paymentRunsPerOrg;
+  const currencies = [...byCurrency.entries()];
+  const baseQuotas: number[] = currencies.map(([, invs]) =>
+    Math.floor((invs.length / payable.length) * totalRuns),
+  );
+  let allocated = baseQuotas.reduce((acc, n) => acc + n, 0);
+  // Anyone with payable invoices gets at least 1 run (if quota allows).
+  for (let idx = 0; idx < baseQuotas.length && allocated < totalRuns; idx += 1) {
+    if (baseQuotas[idx] === 0) {
+      baseQuotas[idx] = 1;
+      allocated += 1;
+    }
+  }
+  // Distribute leftover runs to currencies with the most invoices first.
+  const remainderOrder = currencies
+    .map((entry, idx) => ({ idx, count: entry[1].length }))
+    .sort((a, b) => b.count - a.count);
+  let r = 0;
+  while (allocated < totalRuns && remainderOrder.length > 0) {
+    const target = remainderOrder[r % remainderOrder.length];
+    if (target !== undefined) baseQuotas[target.idx] = (baseQuotas[target.idx] ?? 0) + 1;
+    allocated += 1;
+    r += 1;
+  }
+
   let runOrdinal = 0;
-  for (const [currency, currencyInvoices] of byCurrency) {
-    // Distribute run quota proportionally; every currency gets at least 1
-    // run if it has payable invoices.
-    const runsForThisCurrency = Math.max(
-      1,
-      Math.round((currencyInvoices.length / payable.length) * totalRuns),
-    );
+  for (let cIdx = 0; cIdx < currencies.length; cIdx += 1) {
+    const entry = currencies[cIdx];
+    if (entry === undefined) continue;
+    const [currency, currencyInvoices] = entry;
+    const runsForThisCurrency = baseQuotas[cIdx] ?? 0;
+    if (runsForThisCurrency === 0) continue;
     const perRun = Math.max(1, Math.ceil(currencyInvoices.length / runsForThisCurrency));
     const chunks: SeededInvoice[][] = [];
-    for (let i = 0; i < currencyInvoices.length; i += perRun) {
-      chunks.push(currencyInvoices.slice(i, i + perRun));
+    for (let j = 0; j < currencyInvoices.length; j += perRun) {
+      chunks.push(currencyInvoices.slice(j, j + perRun));
     }
-    const sliceLimit = chunks.slice(0, runsForThisCurrency);
 
-    for (const slice of sliceLimit) {
+    for (const slice of chunks) {
       runOrdinal += 1;
       const allPaid = slice.every(i => i.paymentStatus === 'PAID');
       const status = allPaid
         ? 'COMPLETED'
         : ctx.fakers.org.helpers.arrayElement(['DRAFT', 'LOCKED', 'EXPORTED']);
-      // Run total = sum of OUTSTANDING balances (not full invoice values),
-      // since a payment run pays what's still owed.
       const totalMinor = slice.reduce(
-        (acc, i) =>
-          acc +
-          (i.paymentStatus === 'PAID' ? i.totalMinor : i.amountToPayMinor + i.partialPaidMinor),
+        (acc, i) => acc + (i.paymentStatus === 'PAID' ? i.totalMinor : i.amountToPayMinor),
         0,
       );
 
-      // Chained timestamps: exportedAt → completedAt (run can't complete
-      // before it was exported to the bank).
+      // Anchor the run timeline on the items' actual payment moments so the
+      // run can never claim it exported AFTER items were marked paid. For
+      // PAID slices, exportedAt = earliest paid − 1 day (clamped to
+      // foundedAt), completedAt = latest paid + 0–2 days.
+      const paidMoments = slice
+        .map(i => i.paidAt)
+        .filter((d): d is Date => d !== null)
+        .sort((a, b) => a.getTime() - b.getTime());
+      const earliestPaid = paidMoments[0];
+      const latestPaid = paidMoments[paidMoments.length - 1];
+      const foundedMs = ctx.foundedAt.getTime();
       const exportedAt =
-        status === 'EXPORTED' || status === 'COMPLETED' ? pastDate(ctx.fakers.org, 60) : null;
-      const completedAt =
-        status === 'COMPLETED' && exportedAt
-          ? advanceCapped(exportedAt, ctx.fakers.org.number.int({ min: 1, max: 14 }))
+        status === 'EXPORTED' || status === 'COMPLETED'
+          ? earliestPaid
+            ? new Date(Math.max(foundedMs, earliestPaid.getTime() - 86_400_000))
+            : pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt)
           : null;
+      const completedAt =
+        status === 'COMPLETED' && latestPaid
+          ? advanceCapped(latestPaid, ctx.fakers.org.number.int({ min: 0, max: 2 }))
+          : null;
+
+      const runCreatedAt = exportedAt
+        ? new Date(Math.max(foundedMs, exportedAt.getTime() - 86_400_000))
+        : pastDateAfter(ctx.fakers.org, 14, ctx.foundedAt);
 
       const run = await prisma.paymentRun.create({
         data: {
           organizationId: ctx.organizationId,
-          runNumber: `PR-${ctx.org.key.slice(0, 4).toUpperCase()}-${currency}-${runOrdinal}-${tokenHex(2)}`,
+          // runOrdinal is monotonic across all currencies within this org-seed
+          // call, so {orgKey, currency, ordinal} is already unique under the
+          // [organizationId, runNumber] constraint.
+          runNumber: `PR-${ctx.org.key.slice(0, 4).toUpperCase()}-${currency}-${runOrdinal.toString().padStart(3, '0')}`,
           name: `${ctx.fakers.org.date.month()} ${currency} run ${runOrdinal}`,
           status,
           currency,
@@ -2089,8 +2479,6 @@ async function seedPaymentRuns(
           approvedByUserId: status === 'COMPLETED' || status === 'EXPORTED' ? finance.id : null,
           totalMinor,
           invoiceCount: slice.length,
-          // Real export format depends on the currency: SEPA_XML for EUR,
-          // BACS_STD18 for GBP, generic XML/SWIFT_XML otherwise.
           exportFormat:
             status === 'DRAFT'
               ? null
@@ -2101,9 +2489,7 @@ async function seedPaymentRuns(
                   : 'SWIFT_XML',
           exportedAt,
           completedAt,
-          createdAt: exportedAt
-            ? new Date(exportedAt.getTime() - 86_400_000)
-            : pastDate(ctx.fakers.org, 14),
+          createdAt: runCreatedAt,
         },
         select: { id: true, createdAt: true },
       });
@@ -2116,8 +2502,7 @@ async function seedPaymentRuns(
       });
 
       for (const inv of slice) {
-        // ONE shared payment reference for the whole event chain. Real
-        // payment systems echo the bank reference everywhere it appears.
+        // ONE shared payment reference for the whole event chain.
         const paymentReference = `REF-${tokenHex(4).toUpperCase()}`;
         const itemStatus =
           inv.paymentStatus === 'PAID'
@@ -2125,43 +2510,28 @@ async function seedPaymentRuns(
             : status === 'EXPORTED' || status === 'COMPLETED'
               ? 'EXPORTED'
               : 'PENDING';
-        // Single moment in time for the actual payment. Reuses the invoice
-        // timeline's `paidAt` so Invoice / PaymentRunItem / InvoicePayment
-        // all agree on when the money moved.
-        const paymentMoment =
-          inv.paymentStatus === 'PAID'
-            ? (inv.paidAt ?? completedAt ?? exportedAt)
-            : inv.paymentStatus === 'PARTIALLY_PAID'
-              ? new Date(Date.now() - ctx.fakers.org.number.int({ min: 30, max: 120 }) * 86_400_000)
-              : null;
+        // PAID invoices always carry timeline.paidAt (built in seedInvoices);
+        // no need for a `?? completedAt ?? exportedAt` fallback.
+        const paymentMoment = inv.paymentStatus === 'PAID' ? inv.paidAt : null;
 
-        // Run item amount = what THIS run intends to settle. For PAID
-        // invoices that's the full total; for PARTIALLY_PAID it's the
-        // already-paid half (we model the partial as having flowed through
-        // a prior run); for READY it's the outstanding balance.
-        const itemAmountMinor =
-          inv.paymentStatus === 'PAID'
-            ? inv.totalMinor
-            : inv.paymentStatus === 'PARTIALLY_PAID'
-              ? inv.partialPaidMinor
-              : inv.amountToPayMinor;
-
-        await prisma.paymentRunItem.create({
+        const runItem = await prisma.paymentRunItem.create({
           data: {
             organizationId: ctx.organizationId,
             paymentRunId: run.id,
             invoiceId: inv.id,
             contractorId: inv.contractorId,
-            amountMinor: itemAmountMinor,
+            amountMinor: inv.paymentStatus === 'PAID' ? inv.totalMinor : inv.amountToPayMinor,
             currency: inv.currency,
             status: itemStatus,
             paymentReference: itemStatus === 'PAID' ? paymentReference : null,
             markedPaidAt: itemStatus === 'PAID' ? paymentMoment : null,
             createdAt: run.createdAt,
           },
+          select: { id: true },
         });
 
-        // InvoicePayment row mirrors the same payment moment + reference.
+        // InvoicePayment row links back via FK so the "Payments" tab on the
+        // invoice can trace the source. PARTIALLY_PAID handled at top of fn.
         if (inv.paymentStatus === 'PAID' && paymentMoment) {
           await prisma.invoicePayment.create({
             data: {
@@ -2170,22 +2540,29 @@ async function seedPaymentRuns(
               amountMinor: inv.totalMinor,
               paidAt: paymentMoment,
               sourceKind: 'PAYMENT_RUN',
+              sourcePaymentRunItemId: runItem.id,
               notes: `Settled via ${paymentReference}`,
               createdAt: paymentMoment,
             },
           });
-        } else if (inv.paymentStatus === 'PARTIALLY_PAID' && paymentMoment) {
-          await prisma.invoicePayment.create({
-            data: {
-              organizationId: ctx.organizationId,
-              invoiceId: inv.id,
-              amountMinor: inv.partialPaidMinor,
-              paidAt: paymentMoment,
-              sourceKind: 'BANK_STATEMENT',
-              notes: `Partial payment ${paymentReference}`,
-              createdAt: paymentMoment,
-            },
+        }
+      }
+
+      // Once a run is LOCKED or EXPORTED, the underlying READY invoices are
+      // committed to that run — Invoice.paymentStatus must flip to IN_RUN so
+      // the invoice list and the run page agree. (Without this, a READY
+      // invoice could appear in an EXPORTED run while still labelled "ready
+      // for payment" everywhere else.)
+      if (status === 'LOCKED' || status === 'EXPORTED') {
+        const inRunIds = slice.filter(i => i.paymentStatus === 'READY').map(i => i.id);
+        if (inRunIds.length > 0) {
+          await prisma.invoice.updateMany({
+            where: { id: { in: inRunIds } },
+            data: { paymentStatus: 'IN_RUN' },
           });
+          for (const inv of slice) {
+            if (inv.paymentStatus === 'READY') inv.paymentStatus = 'IN_RUN';
+          }
         }
       }
 
@@ -2302,9 +2679,11 @@ async function seedReminders(
   const instances: Instance[] = [];
 
   /**
-   * Picks the lifecycle status by where `scheduledFor` falls relative to
-   * now: future → PENDING; past → mostly SENT with some FAILED / CANCELLED
-   * noise.
+   * Status by where `scheduledFor` falls relative to now. CANCELLED is
+   * intentionally ONLY in the future bucket: openInvoices is filtered to
+   * exclude PAID/VOID/REJECTED, so a "cancelled reminder on a still-open
+   * invoice" in the past is a contradiction (cancellations usually fire
+   * when the invoice gets paid first).
    */
   const pickStatus = (scheduledFor: Date): Instance['status'] => {
     if (scheduledFor.getTime() > Date.now()) {
@@ -2314,11 +2693,23 @@ async function seedReminders(
       ]);
     }
     return weightedPick<Instance['status']>(ctx.fakers.org, [
-      ['SENT', 8],
+      ['SENT', 9],
       ['FAILED', 1],
-      ['CANCELLED', 1],
     ]);
   };
+
+  // Reminder schedules clamped at foundedAt — for very young orgs a rule
+  // with offsetDays=30 anchored on a near-foundedAt invoice could otherwise
+  // schedule a reminder before the org existed.
+  const clampToOrgLifespan = (d: Date): Date =>
+    new Date(Math.max(d.getTime(), ctx.foundedAt.getTime()));
+
+  /** Real cron fires within minutes/hours of the schedule, not on the exact
+   *  same instant. 1min – 4h jitter for SENT instances. */
+  const sentAtFor = (scheduledFor: Date): Date =>
+    new Date(
+      scheduledFor.getTime() + ctx.fakers.org.number.int({ min: 60_000, max: 4 * 3_600_000 }),
+    );
 
   for (const { id: ruleId, cfg } of seededRules) {
     if (cfg.entityType === 'INVOICE') {
@@ -2326,12 +2717,14 @@ async function seedReminders(
       for (const inv of openInvoices.slice(0, Math.min(200, openInvoices.length))) {
         const offsetMs = (cfg.offsetDays ?? 0) * 86_400_000;
         const baseMs = inv.dueDate.getTime();
-        const scheduledFor = new Date(
-          cfg.triggerType === 'BEFORE_DUE_DATE'
-            ? baseMs - offsetMs
-            : cfg.triggerType === 'AFTER_DUE_DATE'
-              ? baseMs + offsetMs
-              : baseMs,
+        const scheduledFor = clampToOrgLifespan(
+          new Date(
+            cfg.triggerType === 'BEFORE_DUE_DATE'
+              ? baseMs - offsetMs
+              : cfg.triggerType === 'AFTER_DUE_DATE'
+                ? baseMs + offsetMs
+                : baseMs,
+          ),
         );
         const status = pickStatus(scheduledFor);
         instances.push({
@@ -2342,7 +2735,7 @@ async function seedReminders(
           entityId: inv.id,
           scheduledFor,
           status,
-          sentAt: status === 'SENT' ? scheduledFor : null,
+          sentAt: status === 'SENT' ? sentAtFor(scheduledFor) : null,
         });
       }
     } else if (cfg.entityType === 'CONTRACT') {
@@ -2352,7 +2745,9 @@ async function seedReminders(
         const contractEnd = new Date(
           Date.now() + ctx.fakers.org.number.int({ min: 30, max: 540 }) * 86_400_000,
         );
-        const scheduledFor = new Date(contractEnd.getTime() - (cfg.offsetDays ?? 0) * 86_400_000);
+        const scheduledFor = clampToOrgLifespan(
+          new Date(contractEnd.getTime() - (cfg.offsetDays ?? 0) * 86_400_000),
+        );
         const status = pickStatus(scheduledFor);
         instances.push({
           id: newId(),
@@ -2362,7 +2757,7 @@ async function seedReminders(
           entityId: ref.id,
           scheduledFor,
           status,
-          sentAt: status === 'SENT' ? scheduledFor : null,
+          sentAt: status === 'SENT' ? sentAtFor(scheduledFor) : null,
         });
       }
     }
@@ -2387,10 +2782,24 @@ const NOTIFICATION_TYPES_FOR_SEED: readonly string[] = [
   'TASK_OVERDUE',
   'CONTRACT_EXPIRING',
   'EQUIPMENT_RETURN_REQUESTED',
+  'EQUIPMENT_RETURN_APPROVED',
+  'EQUIPMENT_RETURN_REJECTED',
   'PAYMENT_FAILED',
   'PAYMENT_ACTION_REQUIRED',
   'SHIPMENT_STATUS_CHANGE',
 ];
+
+/**
+ * Synthetic actor for system-driven notifications. Real cron / system events
+ * don't have a User actor — using one of the recipients pollutes message
+ * bodies ("Anna assigned you a task" where Anna is the recipient).
+ */
+const SYSTEM_ACTOR: SeededUser = {
+  id: 'system',
+  name: 'System',
+  email: 'system@seed.local',
+  role: 'system',
+};
 
 async function seedNotifications(
   prisma: PrismaClient,
@@ -2572,10 +2981,41 @@ async function seedNotifications(
             max: NOTIFICATION_TYPES_FOR_SEED.length - 1,
           })
         ] ?? 'INVOICE_RECEIVED';
-      const sentAt = status === 'PENDING' ? null : pastDate(ctx.fakers.org, 90);
       const ref = refForNotificationType(type);
-      const actor = ctx.fakers.org.helpers.arrayElement(ctx.users);
+      // Pick an actor appropriate to the notification type:
+      //  - System-driven events use a synthetic SYSTEM_ACTOR — using one of
+      //    the recipients made INVOICE_RECEIVED look like a user sent it.
+      //  - User-driven events pick a user OTHER than the recipient — Anna
+      //    can't request her own approval. Falls back to the recipient when
+      //    there's only one user (solo profile).
+      const isSystemEvent =
+        type === 'INVOICE_RECEIVED' ||
+        type.startsWith('PAYMENT_') ||
+        type === 'TASK_OVERDUE' ||
+        type === 'CONTRACT_EXPIRING' ||
+        type === 'SHIPMENT_STATUS_CHANGE';
+      const candidateActors = ctx.users.filter(usr => usr.id !== u.id);
+      const actor = isSystemEvent
+        ? SYSTEM_ACTOR
+        : candidateActors.length > 0
+          ? ctx.fakers.org.helpers.arrayElement(candidateActors)
+          : u;
       const rendered = renderNotification(type, ref, actor);
+      // Anchor the notification timeline so it never pre-dates the org and
+      // sentAt/readAt always come AFTER createdAt.
+      const createdAt = pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt);
+      const sentAt =
+        status === 'PENDING'
+          ? null
+          : new Date(
+              createdAt.getTime() + ctx.fakers.org.number.int({ min: 0, max: 6 * 3_600_000 }), // 0–6h after create
+            );
+      const readAt =
+        status === 'READ' && sentAt
+          ? new Date(
+              sentAt.getTime() + ctx.fakers.org.number.int({ min: 60_000, max: 7 * 86_400_000 }), // 1min–7d after sent
+            )
+          : null;
       rows.push({
         id: newId(),
         organizationId: ctx.organizationId,
@@ -2588,9 +3028,9 @@ async function seedNotifications(
         entityId: ref?.id ?? null,
         status,
         sentAt,
-        readAt: status === 'READ' ? pastDate(ctx.fakers.org, 60) : null,
+        readAt,
         dedupKey: `${u.id}:${type}:${i}:${tokenHex(4)}`,
-        createdAt: pastDate(ctx.fakers.org, 90),
+        createdAt,
       });
     }
   }
@@ -2619,10 +3059,15 @@ const OUTBOX_EVENT_TYPES: readonly string[] = [
 
 /** Builds a payload that mirrors the shape produced by the real handlers in
  *  `packages/api/src/services/outbox/handlers.ts` (entity snapshot + IDs). */
-function makeOutboxPayload(eventType: string, ref: EntityRef | null, faker: Faker): unknown {
+function makeOutboxPayload(
+  eventType: string,
+  ref: EntityRef | null,
+  faker: Faker,
+  organizationId: string,
+): unknown {
   const base = {
     eventType,
-    organizationId: '<seeded>',
+    organizationId,
     occurredAt: new Date().toISOString(),
   };
   if (ref === null) return { ...base };
@@ -2690,7 +3135,8 @@ async function seedOutbox(
         })
       ] ?? 'webhook.dispatch';
     const ref = refs.length > 0 ? ctx.fakers.org.helpers.arrayElement(refs) : null;
-    const created = pastDate(ctx.fakers.org, 90);
+    // Outbox event must land within the org's lifespan.
+    const created = pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt);
     return {
       id: newId(),
       organizationId: ctx.organizationId,
@@ -2703,7 +3149,7 @@ async function seedOutbox(
             ? 'Shipment'
             : 'Misc',
       aggregateId: ref?.id ?? tokenHex(8),
-      payloadJson: makeOutboxPayload(eventType, ref, ctx.fakers.org) as object,
+      payloadJson: makeOutboxPayload(eventType, ref, ctx.fakers.org, ctx.organizationId) as object,
       dedupKey: `outbox:${ctx.org.key}:${i}:${tokenHex(4)}`,
       status,
       attempts: status === 'FAILED' ? 10 : status === 'DISPATCHED' ? 1 : 0,
@@ -2854,7 +3300,7 @@ async function seedWebhookDeliveries(prisma: PrismaClient, ctx: OrgSeed): Promis
         ['FAILED', 1],
       ],
     );
-    const received = pastDate(ctx.fakers.org, 90);
+    const received = pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt);
     const event = makeWebhookEvent(provider, ctx.fakers.org);
     return {
       id: newId(),
@@ -2943,10 +3389,10 @@ async function seedEquipment(
 
     if (status !== 'AVAILABLE' && status !== 'RETIRED' && contractors.length > 0) {
       const contractor = ctx.fakers.org.helpers.arrayElement(contractors);
-      // Order timestamps so `unassignedAt` (if set) is always strictly after
-      // `assignedAt`. The previous independent `pastDate(60)` / `pastDate(365)`
-      // pair could place unassign before assign.
-      const assignedAt = pastDate(ctx.fakers.org, 365);
+      // Equipment must be PURCHASED before it's ASSIGNED. Pick the
+      // assignment date in [purchaseDate, now] so a 30-day-old laptop
+      // can't have a 200-day-old assignment.
+      const assignedAt = dateBetween(ctx.fakers.org, purchaseDate, new Date());
       const unassignedAt =
         status === 'RETURNED'
           ? advanceCapped(assignedAt, ctx.fakers.org.number.int({ min: 14, max: 240 }))
@@ -2963,9 +3409,15 @@ async function seedEquipment(
         },
       });
 
-      // Optional outbound shipment for non-AVAILABLE
+      // Optional outbound shipment for non-AVAILABLE — shipment created
+      // around assignment, event lands a few days later (carrier scan).
       if (status === 'IN_TRANSIT' || status === 'DELIVERED') {
         const shipStatus = status === 'IN_TRANSIT' ? 'IN_TRANSIT' : 'DELIVERED';
+        const shipmentCreatedAt = assignedAt;
+        const eventOccurredAt = advanceCapped(
+          shipmentCreatedAt,
+          ctx.fakers.org.number.int({ min: 1, max: 5 }),
+        );
         const ship = await prisma.shipment.create({
           data: {
             organizationId: ctx.organizationId,
@@ -2975,6 +3427,7 @@ async function seedEquipment(
             trackingNumber: tokenHex(8).toUpperCase(),
             currentStatus: shipStatus,
             createdByUserId: ctx.ownerUserId,
+            createdAt: shipmentCreatedAt,
           },
           select: { id: true },
         });
@@ -2983,16 +3436,26 @@ async function seedEquipment(
             organizationId: ctx.organizationId,
             shipmentId: ship.id,
             status: shipStatus,
-            occurredAt: pastDate(ctx.fakers.org, 30),
+            occurredAt: eventOccurredAt,
             createdByUserId: ctx.ownerUserId,
+            createdAt: eventOccurredAt,
           },
         });
       }
 
-      // Return request lifecycle
+      // Return request lifecycle — request filed AFTER assignment, approved
+      // a few days after that.
       if (status === 'RETURN_REQUESTED' || status === 'RETURNED') {
         const returnStatus =
           status === 'RETURN_REQUESTED' ? 'PENDING_APPROVAL' : 'SHIPMENT_CREATED';
+        const returnRequestedAt = advanceCapped(
+          assignedAt,
+          ctx.fakers.org.number.int({ min: 30, max: 365 }),
+        );
+        const returnApprovedAt =
+          returnStatus === 'PENDING_APPROVAL'
+            ? null
+            : advanceCapped(returnRequestedAt, ctx.fakers.org.number.int({ min: 1, max: 7 }));
         await prisma.returnRequest.create({
           data: {
             organizationId: ctx.organizationId,
@@ -3001,7 +3464,8 @@ async function seedEquipment(
             targetPointName: 'Warehouse',
             targetPointAddress: `${ctx.fakers.org.location.streetAddress()}, ${ctx.fakers.org.location.city()}`,
             approvedByUserId: returnStatus === 'PENDING_APPROVAL' ? null : ctx.ownerUserId,
-            approvedAt: returnStatus === 'PENDING_APPROVAL' ? null : pastDate(ctx.fakers.org, 30),
+            approvedAt: returnApprovedAt,
+            createdAt: returnRequestedAt,
           },
         });
       }
@@ -3203,8 +3667,10 @@ async function seedEInvoiceLifecycle(
     // monotonically.
     const generatedAt = inv.approvedAt ?? inv.receivedAt;
     const validatedAt = advanceCapped(generatedAt, ctx.fakers.org.number.int({ min: 0, max: 1 }));
+    // QUEUED is "accepted by the relay but not yet handed to the network" —
+    // by definition transmittedAt is null. NOT_SENT is the same.
     const transmittedAt =
-      transmissionStatus === 'NOT_SENT'
+      transmissionStatus === 'NOT_SENT' || transmissionStatus === 'QUEUED'
         ? null
         : advanceCapped(validatedAt, ctx.fakers.org.number.int({ min: 0, max: 2 }));
     const deliveredAt =
@@ -3328,6 +3794,13 @@ async function seedIntegrationConnections(prisma: PrismaClient, ctx: OrgSeed): P
           ['ERROR', 1],
           ['DISCONNECTED', 2],
         ]);
+    // Anchor connectedAt to the org's lifespan, then chain follow-up
+    // timestamps to AT-OR-AFTER connectedAt. Previously a fresh connection
+    // could show "last synced 5 days ago" while connectedAt was today.
+    const connectedAt = pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt);
+    const lastSyncAt =
+      status === 'CONNECTED' ? pastDateAfter(ctx.fakers.org, 7, connectedAt) : null;
+    const lastErrorAt = status === 'ERROR' ? pastDateAfter(ctx.fakers.org, 30, connectedAt) : null;
     await prisma.integrationConnection.create({
       data: {
         organizationId: ctx.organizationId,
@@ -3340,10 +3813,10 @@ async function seedIntegrationConnections(prisma: PrismaClient, ctx: OrgSeed): P
         // OK — no actual secret is fetched.
         credentialsRef: `seed:${ctx.org.key}:${provider}:${tokenHex(4)}`,
         connectedByUserId: ctx.ownerUserId,
-        connectedAt: pastDate(ctx.fakers.org, 180),
-        lastSyncAt: status === 'CONNECTED' ? pastDate(ctx.fakers.org, 7) : null,
-        lastSuccessAt: status === 'CONNECTED' ? pastDate(ctx.fakers.org, 7) : null,
-        lastErrorAt: status === 'ERROR' ? pastDate(ctx.fakers.org, 30) : null,
+        connectedAt,
+        lastSyncAt,
+        lastSuccessAt: lastSyncAt,
+        lastErrorAt,
         lastErrorMessage: status === 'ERROR' ? 'simulated upstream 500 (seed)' : null,
       },
     });
@@ -3367,6 +3840,11 @@ async function seedInvoiceDocuments(
 
   for (const inv of subset) {
     const documentId = newId();
+    // Document was uploaded around when the invoice was received. A few
+    // hours of jitter so list views show realistic timestamps.
+    const uploadedAt = new Date(
+      inv.receivedAt.getTime() + ctx.fakers.org.number.int({ min: 0, max: 4 * 3_600_000 }),
+    );
     await prisma.document.create({
       data: {
         id: documentId,
@@ -3385,6 +3863,7 @@ async function seedInvoiceDocuments(
         uploadedByUserId: ctx.ownerUserId,
         source: 'USER_UPLOAD',
         virusScanStatus: 'CLEAN',
+        createdAt: uploadedAt,
       },
     });
     await prisma.invoiceFile.create({
@@ -3393,6 +3872,7 @@ async function seedInvoiceDocuments(
         invoiceId: inv.id,
         documentId,
         role: 'SOURCE_ORIGINAL',
+        createdAt: uploadedAt,
       },
     });
   }
@@ -3530,6 +4010,10 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
         displayNamePl: seed.displayNamePl,
         displayNameDe: seed.displayNameDe,
         isSeed: true,
+        // Templates are typically materialised at org boot — anchor to
+        // foundedAt so a 2-year-old org doesn't show templates "created
+        // today".
+        createdAt: ctx.foundedAt,
       },
       select: { id: true },
     });
@@ -3541,6 +4025,7 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
         titleEn: t.titleEn,
         descriptionEn: t.descriptionEn,
         dueDayOffset: t.dueDayOffset,
+        createdAt: ctx.foundedAt,
       })),
     });
   }
@@ -3559,10 +4044,11 @@ async function seedSubscription(prisma: PrismaClient, ctx: OrgSeed): Promise<voi
   const status = ctx.org.showcase
     ? ctx.fakers.org.helpers.arrayElement(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED'] as const)
     : 'ACTIVE';
-  // For ACTIVE / TRIALING / PAST_DUE the period must end in the future
-  // (otherwise the billing page shows a stale "renews on …" line). For
-  // CANCELED we leave the period ended in the recent past.
-  const periodStart = pastDate(ctx.fakers.org, 25);
+  // For ACTIVE / TRIALING / PAST_DUE the period must end in the future. For
+  // CANCELED we leave the period ended in the recent past. periodStart
+  // clamps to foundedAt so a 5-day-old org doesn't claim a 25-day-old
+  // subscription period.
+  const periodStart = pastDateAfter(ctx.fakers.org, 25, ctx.foundedAt);
   const periodEnd =
     status === 'CANCELED'
       ? new Date(Date.now() - ctx.fakers.org.number.int({ min: 1, max: 5 }) * 86_400_000)
@@ -3570,17 +4056,22 @@ async function seedSubscription(prisma: PrismaClient, ctx: OrgSeed): Promise<voi
   await prisma.subscription.create({
     data: {
       organizationId: ctx.organizationId,
-      // Stripe IDs use cus_/sub_ prefix + alphanumeric. The plain hex token
-      // looks more like a real ID than the previous "seed" markers.
       stripeCustomerId: `cus_${tokenHex(8)}`,
       stripeSubscriptionId: `sub_${tokenHex(8)}`,
       tier,
       status,
       currentPeriodStart: periodStart,
       currentPeriodEnd: periodEnd,
-      trialEnd: status === 'TRIALING' ? futureDate(ctx.fakers.org, 14) : null,
+      // Stripe convention at trial start: trialEnd === currentPeriodEnd.
+      // Drifting them apart (independent rolls) reads weird in the billing UI.
+      trialEnd: status === 'TRIALING' ? periodEnd : null,
       seatCount: Math.max(1, ctx.users.length),
-      cancelAtPeriodEnd: status === 'CANCELED',
+      // Stripe semantics: `cancelAtPeriodEnd=true` means "scheduled to
+      // cancel at the end of the current period". Only ACTIVE rows can
+      // have it true (~10% — typical churn signal). Already-CANCELED has
+      // it false (it's done, not scheduled).
+      cancelAtPeriodEnd:
+        status === 'ACTIVE' && ctx.fakers.org.datatype.boolean({ probability: 0.1 }),
       createdAt: ctx.foundedAt,
     },
   });
@@ -3649,6 +4140,9 @@ async function seedComments(
     const commentCount = ctx.fakers.org.number.int({ min: 1, max: 3 });
     for (let i = 0; i < commentCount; i += 1) {
       const author = ctx.fakers.org.helpers.arrayElement(ctx.users);
+      // Comments anchored to the invoice's lifetime so old invoices show
+      // appropriately old comment threads (not "just now").
+      const commentedAt = dateBetween(ctx.fakers.org, ref.createdAt, new Date());
       await prisma.comment.create({
         data: {
           organizationId: ctx.organizationId,
@@ -3656,7 +4150,290 @@ async function seedComments(
           entityId: ref.id,
           authorUserId: author.id,
           body: ctx.fakers.org.lorem.sentence(),
+          createdAt: commentedAt,
         },
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Workflow runs — concrete executions of workflow templates for contractors.
+// ---------------------------------------------------------------------------
+
+async function seedWorkflowRuns(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  if (contractors.length === 0) return;
+
+  const templates = await prisma.workflowTemplate.findMany({
+    where: { organizationId: ctx.organizationId },
+    select: { id: true },
+  });
+  if (templates.length === 0) return;
+
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getTime() - 180 * 86_400_000);
+
+  const taskTypes = [
+    'APPROVAL',
+    'DOCUMENT_COLLECTION',
+    'ACCESS_GRANT',
+    'NOTIFICATION',
+    'MANUAL',
+    'EQUIPMENT',
+    'KNOWLEDGE_TRANSFER',
+  ] as const;
+
+  const taskTitles = [
+    'Collect signed NDA',
+    'Verify tax information',
+    'Set up payroll account',
+    'Send welcome notification',
+    'Assign equipment',
+    'Schedule onboarding call',
+    'Review compliance docs',
+  ];
+
+  for (const contractor of contractors) {
+    if (!ctx.fakers.org.datatype.boolean({ probability: 0.3 })) continue;
+
+    const template = ctx.fakers.org.helpers.arrayElement(templates);
+    const startedAt = dateBetween(ctx.fakers.org, sixMonthsAgo, now);
+    const startedBy = ctx.fakers.org.helpers.arrayElement(ctx.users);
+    const runStatus = ctx.fakers.org.helpers.arrayElement([
+      'IN_PROGRESS',
+      'COMPLETED',
+      'CANCELLED',
+    ] as const);
+
+    const completedAt =
+      runStatus === 'COMPLETED'
+        ? advanceCapped(startedAt, ctx.fakers.org.number.int({ min: 1, max: 14 }))
+        : null;
+    const cancelledAt =
+      runStatus === 'CANCELLED'
+        ? advanceCapped(startedAt, ctx.fakers.org.number.int({ min: 1, max: 7 }))
+        : null;
+    const progressPercent =
+      runStatus === 'COMPLETED'
+        ? 100
+        : runStatus === 'CANCELLED'
+          ? ctx.fakers.org.number.int({ min: 10, max: 60 })
+          : ctx.fakers.org.number.int({ min: 20, max: 80 });
+
+    const run = await prisma.workflowRun.create({
+      data: {
+        organizationId: ctx.organizationId,
+        workflowTemplateId: template.id,
+        entityType: 'CONTRACTOR',
+        entityId: contractor.id,
+        contractorId: contractor.id,
+        status: runStatus,
+        startedByUserId: startedBy.id,
+        startedAt,
+        dueAt: advanceCapped(startedAt, ctx.fakers.org.number.int({ min: 7, max: 30 })),
+        completedAt,
+        cancelledAt,
+        cancelReason: cancelledAt ? ctx.fakers.org.lorem.sentence() : null,
+        progressPercent,
+        createdAt: startedAt,
+      },
+      select: { id: true },
+    });
+
+    const taskCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
+    const tasks: Array<{
+      organizationId: string;
+      workflowRunId: string;
+      title: string;
+      taskType: string;
+      status: string;
+      required: boolean;
+      assigneeUserId: string;
+      dueAt: Date;
+      startedAt: Date | null;
+      completedAt: Date | null;
+      completedByUserId: string | null;
+      createdAt: Date;
+    }> = [];
+
+    for (let i = 0; i < taskCount; i += 1) {
+      const taskType = ctx.fakers.org.helpers.arrayElement(taskTypes);
+      const title = ctx.fakers.org.helpers.arrayElement(taskTitles);
+      const assignee = ctx.fakers.org.helpers.arrayElement(ctx.users);
+
+      let taskStatus: string;
+      if (runStatus === 'COMPLETED') {
+        taskStatus = ctx.fakers.org.helpers.arrayElement(['DONE', 'DONE', 'DONE', 'SKIPPED']);
+      } else if (runStatus === 'CANCELLED') {
+        taskStatus = ctx.fakers.org.helpers.arrayElement(['DONE', 'CANCELLED', 'TODO']);
+      } else {
+        taskStatus =
+          i < taskCount / 2
+            ? ctx.fakers.org.helpers.arrayElement(['DONE', 'IN_PROGRESS'])
+            : ctx.fakers.org.helpers.arrayElement(['TODO', 'TODO', 'BLOCKED']);
+      }
+
+      const taskStartedAt =
+        taskStatus !== 'TODO' && taskStatus !== 'BLOCKED' ? advanceCapped(startedAt, i) : null;
+      const taskCompletedAt =
+        taskStatus === 'DONE' || taskStatus === 'SKIPPED'
+          ? advanceCapped(startedAt, i + ctx.fakers.org.number.int({ min: 1, max: 3 }))
+          : null;
+      const taskCompletedBy = taskCompletedAt
+        ? ctx.fakers.org.helpers.arrayElement(ctx.users).id
+        : null;
+
+      tasks.push({
+        organizationId: ctx.organizationId,
+        workflowRunId: run.id,
+        title,
+        taskType,
+        status: taskStatus,
+        required: ctx.fakers.org.datatype.boolean({ probability: 0.8 }),
+        assigneeUserId: assignee.id,
+        dueAt: advanceCapped(startedAt, (i + 1) * 3),
+        startedAt: taskStartedAt,
+        completedAt: taskCompletedAt,
+        completedByUserId: taskCompletedBy,
+        createdAt: startedAt,
+      });
+    }
+
+    await prisma.workflowTaskRun.createMany({ data: tasks });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Timesheets — weekly time-tracking sheets with individual time entries.
+// ---------------------------------------------------------------------------
+
+async function seedTimesheets(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+  contractByContractor: ReadonlyMap<string, string>,
+): Promise<void> {
+  if (contractors.length === 0) return;
+
+  const now = new Date();
+
+  const toMonday = (d: Date): Date => {
+    const day = d.getUTCDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const m = new Date(d);
+    m.setUTCDate(m.getUTCDate() + diff);
+    m.setUTCHours(0, 0, 0, 0);
+    return m;
+  };
+
+  const weekDescriptions = [
+    'Backend API implementation',
+    'Frontend dashboard work',
+    'Code review and refactoring',
+    'Bug fixes and testing',
+    'Architecture planning',
+    'Documentation and specs',
+    'DevOps and CI/CD setup',
+    'Feature development',
+  ];
+
+  for (const contractor of contractors) {
+    const contractId = contractByContractor.get(contractor.id);
+    if (!contractId) continue;
+
+    const weekCount = ctx.fakers.org.number.int({ min: 4, max: 8 });
+    const currentMonday = toMonday(now);
+
+    for (let w = 0; w < weekCount; w += 1) {
+      const weekStart = new Date(currentMonday);
+      weekStart.setUTCDate(weekStart.getUTCDate() - w * 7);
+
+      let status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+      if (w === 0) {
+        status = 'DRAFT';
+      } else if (w === 1) {
+        status = 'SUBMITTED';
+      } else if (ctx.fakers.org.datatype.boolean({ probability: 0.15 })) {
+        status = 'REJECTED';
+      } else {
+        status = 'APPROVED';
+      }
+
+      const submittedAt =
+        status === 'DRAFT'
+          ? null
+          : advanceCapped(weekStart, ctx.fakers.org.number.int({ min: 4, max: 6 }));
+      const reviewedAt =
+        status === 'APPROVED' || status === 'REJECTED'
+          ? advanceCapped(weekStart, ctx.fakers.org.number.int({ min: 5, max: 7 }))
+          : null;
+      const reviewer = reviewedAt ? ctx.fakers.org.helpers.arrayElement(ctx.users) : null;
+
+      const sheet = await prisma.timesheet.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorId: contractor.id,
+          weekStartDate: dateOnly(weekStart),
+          status,
+          totalMinutes: 0,
+          submittedAt,
+          reviewedAt,
+          reviewedByUserId: reviewer?.id ?? null,
+          rejectionReason: status === 'REJECTED' ? ctx.fakers.org.lorem.sentence() : null,
+          createdAt: weekStart,
+        },
+        select: { id: true },
+      });
+
+      const entryCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
+      const usedDays = new Set<number>();
+      const entries: Array<{
+        organizationId: string;
+        timesheetId: string;
+        contractorId: string;
+        contractId: string;
+        entryDate: Date;
+        minutes: number;
+        description: string;
+        source: string;
+        createdAt: Date;
+      }> = [];
+
+      let totalMinutes = 0;
+      for (let e = 0; e < entryCount; e += 1) {
+        let dayOffset: number;
+        do {
+          dayOffset = ctx.fakers.org.number.int({ min: 0, max: 4 });
+        } while (usedDays.has(dayOffset));
+        usedDays.add(dayOffset);
+
+        const entryDate = new Date(weekStart);
+        entryDate.setUTCDate(entryDate.getUTCDate() + dayOffset);
+
+        const minutes = ctx.fakers.org.number.int({ min: 120, max: 480 });
+        totalMinutes += minutes;
+
+        entries.push({
+          organizationId: ctx.organizationId,
+          timesheetId: sheet.id,
+          contractorId: contractor.id,
+          contractId,
+          entryDate: dateOnly(entryDate),
+          minutes,
+          description: ctx.fakers.org.helpers.arrayElement(weekDescriptions),
+          source: 'MANUAL',
+          createdAt: weekStart,
+        });
+      }
+
+      await prisma.timeEntry.createMany({ data: entries });
+      await prisma.timesheet.update({
+        where: { id: sheet.id },
+        data: { totalMinutes },
       });
     }
   }
@@ -3670,7 +4447,10 @@ interface SeedSummary {
   region: 'EU' | 'ME';
   orgKey: string;
   organizationId: string;
-  users: number;
+  organizationName: string;
+  countryCode: string;
+  /** Per-user logins. The shared password lives on the runSeed-level `password`. */
+  users: SeededUser[];
   contractors: number;
   invoices: number;
 }
@@ -3725,10 +4505,10 @@ async function seedOrg(
     orgCore.costCenterIds,
     refs,
   );
-  log.debug({ orgKey: org.key, count: contractors.length }, 'contractors seeded');
+  reporter.tick(org.key, 'contractors');
 
   const contractByContractor = await seedContracts(prisma, ctx, contractors, refs);
-  log.debug({ orgKey: org.key, contracts: contractByContractor.size }, 'contracts seeded');
+  reporter.tick(org.key, 'contracts');
 
   const approvalChainConfigId = await seedApprovalChainConfig(prisma, ctx);
 
@@ -3740,31 +4520,52 @@ async function seedOrg(
     approvalChainConfigId,
     refs,
   );
-  log.debug({ orgKey: org.key, invoices: invoices.length }, 'invoices seeded');
+  reporter.tick(org.key, 'invoices');
 
   // Equipment is seeded BEFORE payment runs / reminders so its refs are
   // available for downstream seeders that sample real entities.
   await seedEquipment(prisma, ctx, contractors, refs);
+  reporter.tick(org.key, 'equipment');
   await seedPaymentRuns(prisma, ctx, invoices, refs);
+  reporter.tick(org.key, 'payment runs');
   await seedReminders(prisma, ctx, invoices, refs);
+  reporter.tick(org.key, 'reminders');
   await seedNotifications(prisma, ctx, refs);
+  reporter.tick(org.key, 'notifications');
   await seedOutbox(prisma, ctx, refs);
+  reporter.tick(org.key, 'outbox');
   await seedWebhookDeliveries(prisma, ctx);
+  reporter.tick(org.key, 'webhook deliveries');
   await seedAuditLogs(prisma, ctx, refs);
+  reporter.tick(org.key, 'audit logs');
   await seedEInvoiceLifecycle(prisma, ctx, invoices);
+  reporter.tick(org.key, 'e-invoice lifecycle');
   await seedPortalSessions(prisma, ctx, contractors);
+  reporter.tick(org.key, 'portal sessions');
   await seedIntegrationConnections(prisma, ctx);
+  reporter.tick(org.key, 'integration connections');
   await seedInvoiceDocuments(prisma, ctx, invoices);
+  reporter.tick(org.key, 'invoice documents');
   await seedWorkflowTemplates(prisma, ctx);
+  reporter.tick(org.key, 'workflow templates');
   await seedSubscription(prisma, ctx);
+  reporter.tick(org.key, 'subscription');
   await seedCourierConfigs(prisma, ctx);
+  reporter.tick(org.key, 'courier configs');
   await seedComments(prisma, ctx, refs);
+  reporter.tick(org.key, 'comments');
+  await seedWorkflowRuns(prisma, ctx, contractors);
+  reporter.tick(org.key, 'workflow runs');
+  await seedTimesheets(prisma, ctx, contractors, contractByContractor);
+  reporter.tick(org.key, 'timesheets');
 
   return {
     region: org.region,
     orgKey: org.key,
     organizationId: orgCore.organizationId,
-    users: users.length,
+    organizationName: orgCore.organizationName,
+    countryCode: profile.countryCode,
+    users,
     contractors: contractors.length,
     invoices: invoices.length,
   };
@@ -3774,19 +4575,64 @@ async function seedOrg(
 // Main
 // ---------------------------------------------------------------------------
 
-async function main(): Promise<void> {
-  const flags = parseFlags(process.argv.slice(2));
-  if (flags.help) {
-    printHelp();
-    return;
+/**
+ * Print compact tabular summaries of seeded orgs + per-user logins so the
+ * person clicking through the app has copy-pasteable credentials and IDs.
+ * Written directly to stdout (not via pino) so the box-drawing characters
+ * survive JSON serialisation.
+ */
+function printSummaryTables(summaries: readonly SeedSummary[], password: string): void {
+  if (summaries.length === 0) return;
+
+  const orgTable = new CliTable3({
+    head: ['Region', 'Key', 'Country', 'Organization', 'ID'],
+    style: { head: ['cyan'], border: ['gray'] },
+    wordWrap: true,
+  });
+  for (const s of summaries) {
+    orgTable.push([s.region, s.orgKey, s.countryCode, s.organizationName, s.organizationId]);
   }
 
+  const loginTable = new CliTable3({
+    head: ['Org Key', 'Email', 'Role', 'Name', 'User ID'],
+    style: { head: ['cyan'], border: ['gray'] },
+    wordWrap: true,
+  });
+  for (const s of summaries) {
+    for (const u of s.users) {
+      loginTable.push([s.orgKey, u.email, u.role, u.name, u.id]);
+    }
+  }
+
+  process.stdout.write('\n');
+  process.stdout.write('Seeded organizations:\n');
+  process.stdout.write(`${orgTable.toString()}\n`);
+  process.stdout.write('\n');
+  process.stdout.write(`Logins (shared password: ${password}):\n`);
+  process.stdout.write(`${loginTable.toString()}\n`);
+  process.stdout.write('\n');
+  process.stdout.write(
+    `Tip: every seeded user shares the same password. Override via SEED_PASSWORD env var.\n\n`,
+  );
+}
+
+async function runSeed(flags: CliFlags): Promise<void> {
   ensureSafeEnvironment(flags);
 
   const orgsPlanned = applyOverrides(buildOrgs(flags.profile, flags.regions), flags);
   if (orgsPlanned.length === 0) {
     log.warn('no orgs to seed (profile/regions/orgs overrides cancelled all)');
     return;
+  }
+
+  // Activate the bottom-anchored progress bar and re-pipe pino through
+  // MultiBar.log() so log lines scroll above the bar instead of fighting it
+  // for the last terminal row.
+  if (flags.progress) {
+    const bar = new BarReporter();
+    reporter = bar;
+    log = createSeedPrettyLogger(bar.asLogSink());
+    reporter.start(orgsPlanned.length * PHASES_PER_ORG);
   }
 
   const password = process.env.SEED_PASSWORD ?? 'Test1234!';
@@ -3814,9 +4660,16 @@ async function main(): Promise<void> {
     clients.set(region, createPrismaClientForUrl(url));
   }
 
-  log.warn({ regions: [...regionUrls.keys()] }, 'wipe phase starting (--confirm)');
-  for (const [region, client] of clients) {
-    await wipeAllTenantData(client, region);
+  if (flags.append) {
+    log.info(
+      { regions: [...regionUrls.keys()] },
+      'append mode — skipping tenant wipe; new rows will sit alongside existing data',
+    );
+  } else {
+    log.warn({ regions: [...regionUrls.keys()] }, 'wipe phase starting (--confirm)');
+    for (const [region, client] of clients) {
+      await wipeAllTenantData(client, region);
+    }
   }
 
   const summaries: SeedSummary[] = [];
@@ -3833,10 +4686,18 @@ async function main(): Promise<void> {
     orgIndex += 1;
   }
 
+  reporter.stop();
+  // After the bar is gone, restore the default stdout-pretty logger so the
+  // final recap lands on a normal line (instead of trying to go through the
+  // now-stopped MultiBar sink).
+  if (flags.progress) {
+    log = createSeedPrettyLogger(process.stdout);
+  }
+
   // Final summary line
   const totals = summaries.reduce(
     (acc, s) => ({
-      users: acc.users + s.users,
+      users: acc.users + s.users.length,
       contractors: acc.contractors + s.contractors,
       invoices: acc.invoices + s.invoices,
     }),
@@ -3848,28 +4709,153 @@ async function main(): Promise<void> {
       regions: [...regionUrls.keys()],
       orgs: summaries.length,
       ...totals,
-      sampleLogin: summaries
-        .slice(0, 3)
-        .map(s => `${s.orgKey}: any *.${s.orgKey}@seed.local / ${password}`),
     },
     'seed completed',
   );
+
+  // Tabular dump of useful test data — printed directly to stdout (not via
+  // pino) so the ASCII box drawing isn't escaped into JSON.
+  printSummaryTables(summaries, password);
 
   for (const client of clients.values()) {
     await client.$disconnect();
   }
 }
 
+// ---------------------------------------------------------------------------
+// CLI definition (citty) — auto-generated --help, type-safe args
+// ---------------------------------------------------------------------------
+
+const PROFILE_NAMES = [
+  'empty',
+  'solo',
+  'small',
+  'medium',
+  'huge',
+  'showcase',
+  'all',
+] as const satisfies readonly ProfileName[];
+
+function parseNonNegInt(raw: string | undefined, flag: string): number | undefined {
+  if (!raw) return;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 0) {
+    throw new Error(`flag --${flag} must be a non-negative integer (got "${raw}")`);
+  }
+  return n;
+}
+
+const cli = defineCommand({
+  meta: {
+    name: 'seed-dev',
+    version: '0.1.0',
+    description: 'Comprehensive dev/test data seed. NOT FOR PRODUCTION.',
+  },
+  args: {
+    profile: {
+      type: 'enum',
+      description: 'Volume tier',
+      options: [...PROFILE_NAMES],
+      default: 'small',
+    },
+    regions: {
+      type: 'string',
+      description: 'Comma-separated regions: EU,ME',
+      default: 'EU',
+    },
+    seed: {
+      type: 'string',
+      description: 'Faker seed (deterministic)',
+      default: '42',
+    },
+    confirm: {
+      type: 'boolean',
+      description: 'REQUIRED (or pass --append). Wipes tenant data first.',
+      default: false,
+    },
+    append: {
+      type: 'boolean',
+      description:
+        'Skip wipe and seed on top of existing data. Each run creates fresh orgs (no slug collisions). Implies no destruction.',
+      default: false,
+    },
+    progress: {
+      type: 'boolean',
+      description:
+        'Bottom-anchored progress bar (logs scroll above). Pass --no-progress to stream phase log lines instead.',
+      default: true,
+    },
+    orgs: {
+      type: 'string',
+      description: 'Override profile org count (range 1–8 across profiles)',
+    },
+    'users-per-org': {
+      type: 'string',
+      description: 'Override users per org (range 1–30 across profiles)',
+    },
+    'contractors-per-org': {
+      type: 'string',
+      description: 'Override contractors per org (range 0–1000 across profiles)',
+    },
+    'invoices-per-contractor': {
+      type: 'string',
+      description: 'Override invoices per contractor (sets both min and max)',
+    },
+  },
+  async run({ args }) {
+    const regions = args.regions
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+      .map((r: string) => {
+        if (r !== 'EU' && r !== 'ME') {
+          throw new Error(`unknown region "${r}". Allowed: EU, ME`);
+        }
+        return r;
+      }) as ReadonlyArray<'EU' | 'ME'>;
+
+    const flags: CliFlags = {
+      profile: args.profile,
+      regions,
+      seed: parseNonNegInt(args.seed, 'seed') ?? 42,
+      confirm: args.confirm,
+      append: args.append,
+      progress: args.progress,
+      help: false,
+      orgs: parseNonNegInt(args.orgs, 'orgs'),
+      usersPerOrg: parseNonNegInt(args['users-per-org'], 'users-per-org'),
+      contractorsPerOrg: parseNonNegInt(args['contractors-per-org'], 'contractors-per-org'),
+      invoicesPerContractor: parseNonNegInt(
+        args['invoices-per-contractor'],
+        'invoices-per-contractor',
+      ),
+    };
+
+    try {
+      await runSeed(flags);
+    } catch (err) {
+      // Ensure the bar is cleaned up so the error message lands on a fresh
+      // line. Reset the logger to default so the failure message bypasses the
+      // (now-stopped) bar stream.
+      try {
+        reporter.stop();
+      } catch {
+        /* ignore secondary cleanup failure */
+      }
+      log = createSeedPrettyLogger(process.stdout);
+      log.error(
+        {
+          err: err instanceof Error ? err.message : err,
+          stack: (err as Error).stack,
+        },
+        'seed failed',
+      );
+      process.exit(1);
+    }
+  },
+});
+
 const isCli = process.argv[1] !== undefined && process.argv[1] === fileURLToPath(import.meta.url);
 if (isCli) {
-  main().catch(err => {
-    log.error(
-      {
-        err: err instanceof Error ? err.message : err,
-        stack: (err as Error).stack,
-      },
-      'seed failed',
-    );
-    process.exit(1);
-  });
+  runMain(cli);
 }

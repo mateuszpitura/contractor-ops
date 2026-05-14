@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
+import { RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback } from 'react';
@@ -14,14 +15,18 @@ import { AuditLogTab } from '@/components/settings/audit-log-tab';
 import { ExpiryReminderDefaults } from '@/components/settings/expiry-reminder-defaults';
 import { IntegrationsTab } from '@/components/settings/integrations-tab';
 import { InvoiceMatchingSettings } from '@/components/settings/invoice-matching-settings';
+import { LanguageCard } from '@/components/settings/language-card';
 import { NotificationPreferences } from '@/components/settings/notification-preferences';
 import { OrgSettingsForm } from '@/components/settings/org-settings-form';
+import { PortalSubdomainSection } from '@/components/settings/portal-subdomain-section';
 import { ReminderRulesSection } from '@/components/settings/reminder-rules-section';
 import { TransferTitleSettings } from '@/components/settings/transfer-title-settings';
 import { AnimateIn } from '@/components/shared/animate-in';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -37,12 +42,14 @@ function SettingsContent() {
 
   const onSettingsTabChange = useCallback(
     (value: string) => {
+      if (value === 'members') {
+        router.push('/settings/members');
+        return;
+      }
       void setActiveTab(value);
     },
-    [setActiveTab],
+    [setActiveTab, router],
   );
-
-  const goToMembers = useCallback(() => router.push('/settings/members'), [router]);
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
   const canViewAuditLog = can('settings', ['read']);
@@ -70,17 +77,29 @@ function SettingsContent() {
                 {t('tabs.apiKeys', { defaultMessage: 'API Keys' })}
               </TabsTrigger>
             )}
-            <TabsTrigger value="members" onClick={goToMembers}>
-              {t('tabs.members')}
-            </TabsTrigger>
+            <TabsTrigger value="members">{t('tabs.members')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="mt-6 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('reimport.title')}</CardTitle>
+                <CardDescription>{t('reimport.description')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" render={<Link href="/onboarding/import" />}>
+                  <RefreshCw className="h-4 w-4" />
+                  {t('reimport.cta')}
+                </Button>
+              </CardContent>
+            </Card>
+            <LanguageCard />
             <OrgSettingsForm />
             <ExpiryReminderDefaults />
             <InvoiceMatchingSettings />
             <TransferTitleSettings />
             <AdminBrandingSection />
+            <PortalSubdomainSection />
           </TabsContent>
 
           <TabsContent value="approvals" className="mt-6">

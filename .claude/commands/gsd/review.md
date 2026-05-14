@@ -36,5 +36,5 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the review workflow from @/Users/mateusz.pitura/Repos/projects/contractor-ops/.claude/get-shit-done/workflows/review.md end-to-end.
+Execute end-to-end.
 </process>

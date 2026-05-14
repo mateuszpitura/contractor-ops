@@ -3,7 +3,7 @@
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, X } from 'lucide-react';
+import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
@@ -490,7 +490,11 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
                           value={roleField.value ?? undefined}
                           onValueChange={roleField.onChange}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={t('approvals.editor.rolePlaceholder')} />
+                            <SelectValue placeholder={t('approvals.editor.rolePlaceholder')}>
+                              {roleField.value
+                                ? (ROLE_LABELS[roleField.value] ?? roleField.value)
+                                : null}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {APPROVER_ROLES.map(role => (
@@ -597,7 +601,11 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
               {t('approvals.editor.discard')}
             </Button>
             <Button type="submit" disabled={isPending}>
-              {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
               {t('approvals.editor.save')}
             </Button>
           </DialogFooter>

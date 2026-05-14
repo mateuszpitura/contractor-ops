@@ -5,7 +5,11 @@ import { act, render, screen, setup } from '@/test/test-utils';
 
 import { DataTableToolbar } from '../data-table-toolbar';
 
-const defaultFilters = { status: [] as string[], source: [] as string[] };
+const defaultFilters = {
+  status: [] as string[],
+  matchStatus: [] as string[],
+  source: [] as string[],
+};
 
 describe('DataTableToolbar', () => {
   it('calls onUpload when the upload CTA is clicked', async () => {

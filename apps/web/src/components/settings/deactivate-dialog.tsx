@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -76,7 +76,10 @@ export function DeactivateDialog({ open, onOpenChange, userId, userName }: Deact
                 {t('deactivating')}
               </>
             ) : (
-              t('cta')
+              <>
+                <UserX className="h-4 w-4" />
+                {t('cta')}
+              </>
             )}
           </Button>
         </AlertDialogFooter>

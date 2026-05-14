@@ -1,16 +1,21 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Globe, Loader2, Upload } from 'lucide-react';
+import { Loader2, Save, Upload } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useId, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { BrandColorPicker } from './brand-color-picker';
@@ -28,36 +33,19 @@ const DEFAULT_BRAND_COLOR = '#4f46e5'; // indigo-600
 // Component
 // ---------------------------------------------------------------------------
 
-/**
- * Admin Portal Branding section for organization settings (General tab).
- *
- * Features:
- * - Logo upload to R2 via presigned URL (PNG, JPG, SVG, max 2MB)
- * - 8-swatch brand color picker with hex input
- * - Live preview strip
- * - Save button wired to settings.updateBranding
- */
 export function AdminBrandingSection() {
-  const id = useId();
   const t = useTranslations('Settings.branding');
-  const tAria = useTranslations('Common.aria');
+  const tSettings = useTranslations('Settings');
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // -------------------------------------------------------------------------
-  // State
-  // -------------------------------------------------------------------------
 
   const [brandColor, setBrandColor] = useState<string>(DEFAULT_BRAND_COLOR);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [initialized, setInitialized] = useState(false);
-
-  // Portal subdomain state
-  const [portalSubdomain, setPortalSubdomain] = useState('');
-  const [subdomainInitialized, setSubdomainInitialized] = useState(false);
-  const [subdomainError, setSubdomainError] = useState<string | null>(null);
+  const [serverBrandColor, setServerBrandColor] = useState<string>(DEFAULT_BRAND_COLOR);
+  const [serverLogoUrl, setServerLogoUrl] = useState<string | null>(null);
 
   // -------------------------------------------------------------------------
   // Queries & Mutations
@@ -66,11 +54,12 @@ export function AdminBrandingSection() {
   const brandingQuery = useQuery({
     ...trpc.settings.getBranding.queryOptions(),
     select: data => {
-      // Initialize local state from server data (once)
       if (!initialized && data) {
         setBrandColor(data.brandColor ?? DEFAULT_BRAND_COLOR);
         setLogoUrl(data.logo);
         setLogoPreview(data.logo);
+        setServerBrandColor(data.brandColor ?? DEFAULT_BRAND_COLOR);
+        setServerLogoUrl(data.logo);
         setInitialized(true);
       }
       return data;
@@ -93,36 +82,6 @@ export function AdminBrandingSection() {
     }),
   );
 
-  const _portalDomainQuery = useQuery({
-    ...trpc.settings.getPortalDomain.queryOptions(),
-    select: data => {
-      if (!subdomainInitialized && data) {
-        setPortalSubdomain(data.portalSubdomain ?? '');
-        setSubdomainInitialized(true);
-      }
-      return data;
-    },
-  });
-
-  const updatePortalDomainMutation = useMutation(
-    trpc.settings.updatePortalDomain.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('subdomainUpdated'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.settings.getPortalDomain.queryKey(),
-        });
-      },
-      onError: error => {
-        if (error.message === 'This subdomain is already in use') {
-          toast.error(t('subdomainTaken'));
-          setSubdomainError(t('subdomainTaken'));
-        } else {
-          toast.error(t('subdomainSaveError'));
-        }
-      },
-    }),
-  );
-
   // -------------------------------------------------------------------------
   // Handlers
   // -------------------------------------------------------------------------
@@ -131,7 +90,6 @@ export function AdminBrandingSection() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Client-side validation
     if (!ACCEPTED_TYPES.includes(file.type)) {
       toast.error(t('invalidFileType'));
       return;
@@ -144,13 +102,11 @@ export function AdminBrandingSection() {
     try {
       setUploading(true);
 
-      // Get presigned URL
       const { uploadUrl, publicUrl } = await uploadUrlMutation.mutateAsync({
         filename: file.name,
         contentType: file.type,
       });
 
-      // Upload to R2
       await fetch(uploadUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.type },
@@ -163,7 +119,6 @@ export function AdminBrandingSection() {
       toast.error(t('uploadError'));
     } finally {
       setUploading(false);
-      // Reset input so the same file can be re-selected
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -175,38 +130,12 @@ export function AdminBrandingSection() {
     setLogoPreview(null);
   };
 
+  const isDirty = brandColor !== serverBrandColor || logoUrl !== serverLogoUrl;
+
   const handleSave = () => {
     updateBrandingMutation.mutate({
       brandColor,
       logoUrl,
-    });
-  };
-
-  const validateSubdomain = (value: string): string | null => {
-    if (!value) return null; // Empty is valid (clears subdomain)
-    if (value.length < 3) return t('subdomainMinLength');
-    if (value.length > 63) return t('subdomainMaxLength');
-    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(value)) {
-      return t('subdomainFormat');
-    }
-    return null;
-  };
-
-  const handleSubdomainChange = (value: string) => {
-    // Auto-lowercase and strip invalid chars for better UX
-    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    setPortalSubdomain(sanitized);
-    setSubdomainError(null);
-  };
-
-  const handleSaveSubdomain = () => {
-    const error = validateSubdomain(portalSubdomain);
-    if (error) {
-      setSubdomainError(error);
-      return;
-    }
-    updatePortalDomainMutation.mutate({
-      portalSubdomain: portalSubdomain || null,
     });
   };
 
@@ -238,8 +167,8 @@ export function AdminBrandingSection() {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-sm font-semibold">{t('heading')}</h3>
-        <p className="text-sm text-muted-foreground">{t('description')}</p>
+        <CardTitle>{t('heading')}</CardTitle>
+        <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Logo upload */}
@@ -300,79 +229,20 @@ export function AdminBrandingSection() {
 
         {/* Preview strip */}
         <BrandPreviewStrip color={brandColor} />
-
-        {/* Save button */}
+      </CardContent>
+      <CardFooter>
         <Button
           // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={handleSave}
-          disabled={updateBrandingMutation.isPending}
-          className="w-full sm:w-auto">
+          disabled={!isDirty || updateBrandingMutation.isPending}>
           {updateBrandingMutation.isPending ? (
-            <>
-              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-              {t('saving')}
-            </>
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            t('saveBranding')
+            <Save className="me-2 h-4 w-4" />
           )}
+          {updateBrandingMutation.isPending ? t('saving') : tSettings('saveCta')}
         </Button>
-
-        <Separator />
-
-        {/* Portal subdomain configuration */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <Label className="text-sm font-normal">{t('subdomainHeading')}</Label>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {t('subdomainDescription')}{' '}
-            <span className="font-medium text-foreground">
-              {portalSubdomain || 'your-subdomain'}
-            </span>
-            {t('subdomainSuffix')}
-          </p>
-
-          <div className="flex items-center gap-2">
-            <Input
-              value={portalSubdomain}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => handleSubdomainChange(e.target.value)}
-              placeholder={t('subdomainPlaceholder')}
-              className="max-w-[200px]"
-              aria-label={tAria('portalSubdomain')}
-              aria-describedby="subdomain-suffix subdomain-error"
-            />
-            <span
-              id={`${id}-subdomain-suffix`}
-              className="text-sm text-muted-foreground whitespace-nowrap">
-              {t('subdomainSuffix')}
-            </span>
-          </div>
-
-          {!!subdomainError && (
-            <p id={`${id}-subdomain-error`} className="text-sm text-destructive" role="alert">
-              {subdomainError}
-            </p>
-          )}
-
-          <Button
-            variant="outline"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleSaveSubdomain}
-            disabled={updatePortalDomainMutation.isPending}
-            className="w-full sm:w-auto">
-            {updatePortalDomainMutation.isPending ? (
-              <>
-                <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                {t('saving')}
-              </>
-            ) : (
-              t('saveDomain')
-            )}
-          </Button>
-        </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 }

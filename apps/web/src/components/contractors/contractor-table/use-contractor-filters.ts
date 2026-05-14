@@ -14,6 +14,7 @@ export function useContractorFilters() {
     sortOrder: parseAsString.withDefault('desc'),
     status: parseAsArrayOf(parseAsString).withDefault([]),
     lifecycleStage: parseAsArrayOf(parseAsString).withDefault([]),
+    type: parseAsArrayOf(parseAsString).withDefault([]),
     owner: parseAsArrayOf(parseAsString).withDefault([]),
     team: parseAsArrayOf(parseAsString).withDefault([]),
     billingModel: parseAsArrayOf(parseAsString).withDefault([]),

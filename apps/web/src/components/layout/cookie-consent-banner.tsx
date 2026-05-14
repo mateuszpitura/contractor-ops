@@ -36,7 +36,7 @@ export function CookieConsentBanner() {
         <p className="flex-1 text-sm text-muted-foreground">
           {t('message')}{' '}
           <Link
-            href="/privacy"
+            href="/legal/privacy"
             className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
             {t('learnMore')}
           </Link>

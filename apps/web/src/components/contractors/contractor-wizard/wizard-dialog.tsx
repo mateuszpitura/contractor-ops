@@ -370,7 +370,6 @@ export function WizardDialog({ open, onOpenChange }: WizardDialogProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      ;
     </>
   );
 }

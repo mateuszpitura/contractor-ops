@@ -138,33 +138,45 @@ export function resolveTransferTitle(
 
 /**
  * Generate a CSV file from payment run items.
- * Uses xlsx library for proper escaping and encoding.
+ * Uses exceljs for proper escaping and encoding.
  * Adds UTF-8 BOM for Excel compatibility.
  */
 export async function generateCsv(items: ExportItem[]): Promise<Buffer> {
-  const { default: XLSX } = await import('xlsx');
+  const ExcelJS = (await import('exceljs')).default;
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Payment');
 
-  const rows = items.map(item => ({
-    'Contractor name': item.contractorName,
-    IBAN: item.iban,
-    Amount: minorToDecimal(item.amountMinor, item.currency),
-    Currency: item.currency,
-    'Invoice number': item.invoiceNumber,
-    NIP: item.taxId ?? '',
-    'Bank name': item.bankName ?? '',
-    'SWIFT/BIC': item.swiftBic ?? '',
-    'Due date': item.dueDate.toISOString().slice(0, 10),
-    'Transfer title': item.transferTitle,
-  }));
+  const columns = [
+    { header: 'Contractor name', key: 'contractorName' },
+    { header: 'IBAN', key: 'iban' },
+    { header: 'Amount', key: 'amount' },
+    { header: 'Currency', key: 'currency' },
+    { header: 'Invoice number', key: 'invoiceNumber' },
+    { header: 'NIP', key: 'nip' },
+    { header: 'Bank name', key: 'bankName' },
+    { header: 'SWIFT/BIC', key: 'swiftBic' },
+    { header: 'Due date', key: 'dueDate' },
+    { header: 'Transfer title', key: 'transferTitle' },
+  ] as const;
 
-  const worksheet = XLSX.utils.json_to_sheet(rows);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Payment');
+  worksheet.columns = columns.map(c => ({ header: c.header, key: c.key }));
 
-  const csvBuffer = XLSX.write(workbook, {
-    type: 'buffer',
-    bookType: 'csv',
-  }) as Buffer;
+  for (const item of items) {
+    worksheet.addRow({
+      contractorName: item.contractorName,
+      iban: item.iban,
+      amount: minorToDecimal(item.amountMinor, item.currency),
+      currency: item.currency,
+      invoiceNumber: item.invoiceNumber,
+      nip: item.taxId ?? '',
+      bankName: item.bankName ?? '',
+      swiftBic: item.swiftBic ?? '',
+      dueDate: item.dueDate.toISOString().slice(0, 10),
+      transferTitle: item.transferTitle,
+    });
+  }
+
+  const csvBuffer = Buffer.from(await workbook.csv.writeBuffer());
 
   // Prepend UTF-8 BOM for Excel compatibility
   const bom = Buffer.from([0xef, 0xbb, 0xbf]);

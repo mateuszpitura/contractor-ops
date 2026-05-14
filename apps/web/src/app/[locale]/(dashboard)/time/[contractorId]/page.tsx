@@ -1,8 +1,7 @@
 'use client';
 
-import { AtelierEmptyState } from '@contractor-ops/ui';
+import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useMemo } from 'react';
@@ -104,7 +103,7 @@ function ContractorReviewContent() {
   if (!(timesheetId && timesheet)) {
     return (
       <AtelierEmptyState
-        icon={Clock}
+        illustration={TimeTrackingIllustration}
         heading={t('detail.notFoundHeading')}
         body={t('detail.notFoundBody')}
         primaryAction={{ label: t('detail.backToTimeTracking'), href: '/time' }}

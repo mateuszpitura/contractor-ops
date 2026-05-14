@@ -110,19 +110,16 @@ export const auth = betterAuth({
   // F-SCALE-20 — Better Auth built-in per-IP rate limiter
   // ---------------------------------------------------------------------
   //
-  // Defense-in-depth alongside the edge middleware (apps/web/src/middleware.ts)
-  // and Tier-1 / P2-D Turnstile. The edge limiter caps ALL `/api/auth/*`
-  // requests at 10/min/IP; this nested limiter applies tighter caps to the
-  // highest-value endpoints (sign-in / sign-up / password-reset) so a
-  // single misbehaving IP cannot consume the global edge bucket on the
-  // expensive flows.
+  // This is the PRIMARY rate-limiting layer for auth endpoints. The edge
+  // middleware (apps/web/src/middleware.ts) intentionally does NOT rate-limit
+  // /api/auth/* — Better Auth's granular per-endpoint caps + per-account
+  // lockout (5 failed → 15min lock) + Turnstile CAPTCHA are strictly
+  // superior to a blanket edge counter that can't distinguish endpoints,
+  // success from failure, or session reads from credential attempts.
   //
-  // Storage: defaults to in-memory (per-pod). Acceptable here because the
-  // *edge* limiter is the authoritative cross-instance throttle (Upstash);
-  // this layer's purpose is per-endpoint shaping, not fleet-wide
-  // coordination. Better Auth's `secondary-storage` option is left
-  // unconfigured to avoid forcing every auth call through Redis on the
-  // hot path.
+  // Storage: defaults to in-memory (per-pod). For multi-instance
+  // deployments, configure `secondary-storage` (Upstash) so rate-limit
+  // state is shared across pods.
   //
   // `enabled` is forced ON in every environment. The Better Auth default
   // is "production-only" which leaves dev/preview unprotected against

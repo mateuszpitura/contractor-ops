@@ -1,11 +1,11 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { SlackBrandIcon } from '@/components/integrations/brand-icons';
+import { KsefBrandIcon, SlackBrandIcon } from '@/components/integrations/brand-icons';
 import { GoogleWorkspaceProviderSection } from '@/components/integrations/google-workspace-provider-section';
 import { JiraLogo } from '@/components/integrations/jira-logo';
 import { JiraProviderSection } from '@/components/integrations/jira-provider-section';
@@ -17,7 +17,6 @@ import { DpdProviderSection } from '@/components/settings/dpd-provider-section';
 import { UpsProviderSection } from '@/components/settings/ups-provider-section';
 import { Button } from '@/components/ui/button';
 import { ZatcaStatusCard } from '@/components/zatca/zatca-status-card';
-import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { KsefSetupDialog } from './ksef-setup-dialog';
 import { KsefSyncHistory } from './ksef-sync-history';
@@ -39,7 +38,7 @@ const PROVIDER_CONFIG = [
   {
     provider: 'ksef',
     displayName: 'KSeF',
-    icon: <ShieldCheck className="size-8 text-primary" />,
+    icon: <KsefBrandIcon className="size-8" />,
     descriptionKey: 'ksef.descriptionDisconnected' as const,
   },
   {
@@ -129,7 +128,7 @@ function KsefProviderSection() {
       <ProviderConnectionCard
         provider="ksef"
         displayName="KSeF"
-        icon={<ShieldCheck className="size-8 text-primary" />}
+        icon={<KsefBrandIcon className="size-8" />}
         description={tIntegrations(
           'ksef.descriptionDisconnected' as Parameters<typeof tIntegrations>[0],
         )}
@@ -150,8 +149,6 @@ function KsefProviderSection() {
 
 export function IntegrationsTab() {
   const t = useTranslations('Settings.integrations');
-  const tImport = useTranslations('OnboardingImport');
-
   // Check Slack connection status for user mapping visibility
   const healthQuery = useQuery(trpc.integration.getHealth.queryOptions({ provider: 'slack' }));
   const slackHealth = healthQuery.data as { status: string } | null | undefined;
@@ -164,13 +161,6 @@ export function IntegrationsTab() {
 
   return (
     <div className="space-y-8">
-      {/* Re-import from tools link (D-03) */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline" render={<Link href="/onboarding/import" />}>
-          {tImport('settingsReimport')}
-        </Button>
-      </div>
-
       {/* Provider cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {standardProviders.map(config => (

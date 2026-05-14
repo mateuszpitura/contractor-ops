@@ -19,7 +19,7 @@ export function AppFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-16 border-t border-border pt-8 pb-12 text-xs text-muted-foreground">
+    <footer className="mt-auto border-t border-border py-4 text-xs text-muted-foreground">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6">
         <Link
           href="/legal/privacy"

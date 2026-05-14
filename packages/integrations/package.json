@@ -124,7 +124,7 @@
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.91.1",
+    "@anthropic-ai/sdk": "^0.95.0",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
@@ -132,15 +132,15 @@
     "@contractor-ops/validators": "workspace:^",
     "@infisical/sdk": "^5.0.2",
     "@upstash/qstash": "^2.10.1",
-    "@upstash/redis": "^1.37.0",
+    "@upstash/redis": "^1.38.0",
     "arctic": "^3.7.0",
-    "docusign-esign": "8.7.0",
-    "fast-xml-parser": "^5.7.2",
+    "docusign-esign": "^9.0.0",
+    "fast-xml-parser": "^5.7.3",
     "opossum": "^9.0.0",
     "p-limit": "^7.3.0",
     "p-retry": "^8.0.0",
-    "resend": "^6.12.2",
-    "zod": "^4.3.6"
+    "resend": "^6.12.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@contractor-ops/test-utils": "workspace:*",

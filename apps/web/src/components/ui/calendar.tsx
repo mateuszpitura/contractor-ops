@@ -140,23 +140,26 @@ function Calendar({
             defaultClassNames.week_number,
           ),
           day: cn(
-            'group/day relative aspect-square h-full w-full rounded-(--cell-radius) p-0 text-center select-none [&:last-child[data-selected=true]_button]:rounded-e-(--cell-radius)',
+            'group/day relative flex items-center justify-center !p-0 h-full w-full rounded-(--cell-radius) text-center select-none [&:last-child[data-selected=true]_button]:rounded-e-(--cell-radius)',
             props.showWeekNumber
               ? '[&:nth-child(2)[data-selected=true]_button]:rounded-s-(--cell-radius)'
               : '[&:first-child[data-selected=true]_button]:rounded-s-(--cell-radius)',
             defaultClassNames.day,
           ),
           range_start: cn(
-            'relative isolate z-0 rounded-s-(--cell-radius) bg-muted after:absolute after:inset-y-0 after:end-0 after:w-4 after:bg-muted',
+            'relative isolate z-0 rounded-s-(--cell-radius) after:absolute after:inset-y-0 after:end-0 after:start-0 after:rounded-s-(--cell-radius) after:bg-muted after:-z-1',
             defaultClassNames.range_start,
           ),
-          range_middle: cn('rounded-none', defaultClassNames.range_middle),
+          range_middle: cn(
+            'relative rounded-none after:absolute after:inset-y-0 after:inset-x-0 after:bg-muted after:-z-1',
+            defaultClassNames.range_middle,
+          ),
           range_end: cn(
-            'relative isolate z-0 rounded-e-(--cell-radius) bg-muted after:absolute after:inset-y-0 after:start-0 after:w-4 after:bg-muted',
+            'relative isolate z-0 rounded-e-(--cell-radius) after:absolute after:inset-y-0 after:end-0 after:start-0 after:rounded-e-(--cell-radius) after:bg-muted after:-z-1',
             defaultClassNames.range_end,
           ),
           today: cn(
-            'rounded-(--cell-radius) bg-muted text-foreground data-[selected=true]:rounded-none',
+            'rounded-(--cell-radius) text-foreground ring-1 ring-ring/30 data-[selected=true]:rounded-none data-[selected=true]:ring-0',
             defaultClassNames.today,
           ),
           outside: cn(
@@ -185,6 +188,7 @@ function CalendarDayButton({
   day,
   modifiers,
   locale,
+  children,
   ...props
 }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
   const defaultClassNames = getDefaultClassNames();
@@ -193,6 +197,11 @@ function CalendarDayButton({
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);
+
+  const isSelectedEndpoint =
+    modifiers.range_start || modifiers.range_end || (modifiers.selected && !modifiers.range_middle);
+
+  const hasActivity = (modifiers as Record<string, unknown>).hasActivity === true;
 
   return (
     <Button
@@ -209,12 +218,22 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        'relative isolate z-10 flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 border-0 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-ring/50 data-[range-end=true]:rounded-(--cell-radius) data-[range-end=true]:rounded-e-(--cell-radius) data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-middle=true]:rounded-none data-[range-middle=true]:bg-muted data-[range-middle=true]:text-foreground data-[range-start=true]:rounded-(--cell-radius) data-[range-start=true]:rounded-s-(--cell-radius) data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground dark:hover:text-foreground [&>span]:text-xs [&>span]:opacity-70',
+        'relative isolate z-10 flex size-(--cell-size) items-center justify-center border-0 leading-none font-normal group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-[3px] group-data-[focused=true]/day:ring-ring/50 data-[range-end=true]:rounded-(--cell-radius) data-[range-end=true]:rounded-e-(--cell-radius) data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-middle=true]:rounded-none data-[range-middle=true]:text-foreground data-[range-start=true]:rounded-(--cell-radius) data-[range-start=true]:rounded-s-(--cell-radius) data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground dark:hover:text-foreground [&>span]:text-xs [&>span]:opacity-70',
         defaultClassNames.day,
         className,
       )}
-      {...props}
-    />
+      {...props}>
+      {children}
+      {hasActivity && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full !opacity-100',
+            isSelectedEndpoint ? 'bg-primary-foreground/80' : 'bg-primary/60',
+          )}
+        />
+      )}
+    </Button>
   );
 }
 

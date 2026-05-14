@@ -1,11 +1,12 @@
 'use client';
 
+import { AuditLogIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,6 +62,11 @@ interface AuditLogTableProps {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/** Fallback: split camelCase key into capitalised words. */
+function humanizeAction(key: string): string {
+  return key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, c => c.toUpperCase());
+}
 
 const RESOURCE_TYPE_URL_MAP: Record<string, (id: string) => string> = {
   CONTRACTOR: id => `/contractors/${id}`,
@@ -156,11 +162,12 @@ export function AuditLogTable({
         header: () => t('columns.action'),
         cell: ({ row }) => {
           const actionKey = row.original.action;
-          return (
-            <span className="text-sm font-semibold">
-              {t(`actions.${enumKey(actionKey)}` as Parameters<typeof t>[0])}
-            </span>
-          );
+          const key = enumKey(actionKey);
+          const translated = t(`actions.${key}` as Parameters<typeof t>[0]);
+          // next-intl returns the full key path when a translation is missing —
+          // fall back to a humanised version of the camelCase key instead.
+          const label = translated.includes('.') ? humanizeAction(key) : translated;
+          return <span className="text-sm font-semibold">{label}</span>;
         },
       },
       {
@@ -173,7 +180,11 @@ export function AuditLogTable({
           return (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-[11px]">
-                {t(`resources.${enumKey(resourceType)}` as Parameters<typeof t>[0])}
+                {(() => {
+                  const rKey = enumKey(resourceType);
+                  const rt = t(`resources.${rKey}` as Parameters<typeof t>[0]);
+                  return rt.includes('.') ? humanizeAction(rKey) : rt;
+                })()}
               </Badge>
               {href ? (
                 <Link
@@ -294,17 +305,22 @@ export function AuditLogTable({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.length === 0 ? (
-            <TableRow>
+            <TableRow className="hover:bg-transparent">
               <TableCell colSpan={columns.length} className="py-16 text-center">
-                <h3 className="text-[16px] font-medium">{t('empty.heading')}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
+                <div className="mx-auto flex max-w-md flex-col items-center">
+                  <div className="text-primary/70">
+                    <AuditLogIllustration className="h-20 w-20" />
+                  </div>
+                  <h3 className="mt-4 text-[16px] font-medium">{t('empty.heading')}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{t('empty.body')}</p>
+                </div>
               </TableCell>
             </TableRow>
           ) : (
             table.getRowModel().rows.map(row => {
               const isExpanded = !!expandedRows[row.original.id];
               return (
-                <span key={row.id} className="contents">
+                <Fragment key={row.id}>
                   {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <TableRow className="cursor-pointer" onClick={() => onToggleRow(row.original.id)}>
                     {row.getVisibleCells().map(cell => (
@@ -323,7 +339,7 @@ export function AuditLogTable({
                       </TableCell>
                     </TableRow>
                   )}
-                </span>
+                </Fragment>
               );
             })
           )}

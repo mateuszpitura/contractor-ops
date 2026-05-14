@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Plus, Search, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -17,6 +17,8 @@ interface FilterState {
   type: string[];
   billingModel: string[];
   ownerUserId: string[];
+  startDateFrom: string;
+  startDateTo: string;
   endDateFrom: string;
   endDateTo: string;
   complianceRiskLevel: string[];
@@ -28,6 +30,8 @@ interface DataTableToolbarProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
   isSearching?: boolean;
+  /** Disable all interactive controls (initial data load). */
+  disabled?: boolean;
   onNewContract: () => void;
   onImport?: () => void;
 }
@@ -46,6 +50,7 @@ export function DataTableToolbar({
   filters,
   onFiltersChange,
   isSearching,
+  disabled: filtersDisabled,
   onNewContract,
   onImport,
 }: DataTableToolbarProps) {
@@ -80,6 +85,7 @@ export function DataTableToolbar({
           <Input
             placeholder={t('searchPlaceholder')}
             value={localSearch}
+            disabled={filtersDisabled}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSearchInput(e.target.value)}
             className="h-9 ps-9 pe-8"
@@ -90,20 +96,26 @@ export function DataTableToolbar({
         </div>
 
         {/* Filters */}
-        <DataTableFilters filters={filters} onFiltersChange={onFiltersChange} />
+        <DataTableFilters
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          disabled={filtersDisabled}
+        />
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Import CTA */}
         {!!onImport && (
-          <Button size="lg" variant="outline" onClick={onImport}>
+          <Button size="lg" variant="outline" disabled={filtersDisabled} onClick={onImport}>
+            <Upload className="h-4 w-4" aria-hidden="true" />
             {t('import')}
           </Button>
         )}
 
         {/* New contract CTA */}
-        <Button size="lg" onClick={onNewContract}>
+        <Button size="lg" disabled={filtersDisabled} onClick={onNewContract}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           {t('newContract')}
         </Button>
       </div>

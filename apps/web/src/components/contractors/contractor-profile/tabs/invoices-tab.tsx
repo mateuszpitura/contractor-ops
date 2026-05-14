@@ -1,25 +1,20 @@
 'use client';
 
+import { AtelierEmptyState, InvoicesIllustration } from '@contractor-ops/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FileText, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
 import { getColumns } from '@/components/invoices/invoice-table/columns';
 import { InvoiceUploadArea } from '@/components/invoices/invoice-upload-area';
+import { DataTableBody } from '@/components/shared/data-table-body';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -52,6 +47,7 @@ interface InvoicesTabProps {
  */
 export function InvoicesTab({ contractorId }: InvoicesTabProps) {
   const t = useTranslations('Invoices');
+  const { formatDate } = useDateFormatter();
   const queryClient = useQueryClient();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -82,9 +78,9 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
 
   // Column definitions - filter out contractor column since we're scoped
   const columns: ColumnDef<InvoiceRow>[] = useMemo(() => {
-    const allColumns = getColumns((key: string) => t(key as Parameters<typeof t>[0]));
+    const allColumns = getColumns((key: string) => t(key as Parameters<typeof t>[0]), formatDate);
     return allColumns.filter(col => col.id !== 'contractor');
-  }, [t]);
+  }, [t, formatDate]);
 
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
 
@@ -106,37 +102,31 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
 
   const isLoading = invoicesQuery.isLoading;
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Empty state
-  if (data.length === 0) {
+  // Empty state only when fully loaded and truly empty
+  if (!isLoading && data.length === 0) {
     return (
       <>
-        <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 text-center">
-          <FileText className="size-10 text-muted-foreground/50" />
-          <h4 className="text-sm font-medium">{t('tab.noInvoicesHeading')}</h4>
-          <p className="max-w-sm text-sm text-muted-foreground">{t('tab.noInvoicesBody')}</p>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button size="sm" onClick={() => setUploadOpen(true)}>
-            <Upload className="me-1.5 size-3.5" />
-            {t('tab.uploadInvoice')}
-          </Button>
-        </div>
+        <AtelierEmptyState
+          illustration={InvoicesIllustration}
+          heading={t('tab.noInvoicesHeading')}
+          body={t('tab.noInvoicesBody')}
+          primaryAction={{
+            label: t('tab.uploadInvoice'),
+            onClick: () => setUploadOpen(true),
+            icon: Upload,
+          }}
+          renderAction={(action, variant) => {
+            const Icon = action.icon;
+            return (
+              <Button
+                variant={variant === 'secondary' ? 'outline' : 'default'}
+                onClick={action.onClick}>
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                {action.label}
+              </Button>
+            );
+          }}
+        />
         <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
@@ -154,8 +144,11 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
       {/* Header with upload CTA */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-medium">{t('tab.heading')}</h3>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button size="sm" onClick={() => setUploadOpen(true)}>
+        <Button
+          size="sm"
+          disabled={isLoading}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setUploadOpen(true)}>
           <Upload className="me-1.5 size-3.5" />
           {t('tab.uploadInvoice')}
         </Button>
@@ -177,19 +170,17 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow
-                key={row.id}
-                className={`${isRowOverdue(row.original) ? 'bg-destructive/5' : ''}`}>
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={false}
+            emptyTitle={t('tab.noInvoicesHeading')}
+            emptyDescription={t('tab.noInvoicesBody')}
+            noResultsTitle={t('tab.noInvoicesHeading')}
+            skeletonRows={6}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            rowClassName={row => (isRowOverdue(row) ? 'bg-destructive/5' : '')}
+          />
         </Table>
       </div>
 
@@ -199,7 +190,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1}
+            disabled={isLoading || page <= 1}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.max(1, p - 1))}>
             &laquo;
@@ -210,7 +201,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages}
+            disabled={isLoading || page >= totalPages}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
             &raquo;

@@ -1,8 +1,9 @@
 'use client';
 
+import { PaymentsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { RowSelectionState } from '@tanstack/react-table';
-import { CalendarIcon, FileSearch } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { ReadyInvoiceRow } from '../invoice-selection-table/columns';
 import { getColumns } from '../invoice-selection-table/columns';
@@ -49,6 +51,7 @@ export function StepSelect({
   onNext,
 }: StepSelectProps) {
   const t = useTranslations('Payments');
+  const { formatDate } = useDateFormatter();
   const reactId = useId();
 
   // Filter state
@@ -123,8 +126,8 @@ export function StepSelect({
 
   // Column definitions
   const columns = useMemo(
-    () => getColumns((key: string) => t(key as Parameters<typeof t>[0])),
-    [t],
+    () => getColumns((key: string) => t(key as Parameters<typeof t>[0]), formatDate),
+    [t, formatDate],
   );
 
   // Selection summary
@@ -167,7 +170,7 @@ export function StepSelect({
             <CalendarIcon className="h-3.5 w-3.5" />
             <span className="text-xs">
               {dueDateFrom
-                ? `${dueDateFrom.toLocaleDateString('pl-PL')}${dueDateTo ? ` - ${dueDateTo.toLocaleDateString('pl-PL')}` : ''}`
+                ? `${formatDate(dueDateFrom)}${dueDateTo ? ` - ${formatDate(dueDateTo)}` : ''}`
                 : t('step1.dueDate')}
             </span>
           </PopoverTrigger>
@@ -214,7 +217,9 @@ export function StepSelect({
       {/* Table or empty state */}
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <FileSearch className="h-12 w-12 text-muted-foreground/50" />
+          <div className="text-primary/70">
+            <PaymentsIllustration className="h-20 w-20" />
+          </div>
           <h3 className="mt-4 text-[16px] font-medium">{t('step1.noInvoicesHeading')}</h3>
           <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
             {t('step1.noInvoicesBody')}

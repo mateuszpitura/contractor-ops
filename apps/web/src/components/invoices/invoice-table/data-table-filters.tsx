@@ -16,6 +16,7 @@ import { enumKey } from '@/lib/enum-key';
 
 interface FilterState {
   status: string[];
+  matchStatus: string[];
   source: string[];
   /** Phase 63 — when true, show only overdue invoices (status != PAID && dueDate < now). */
   overdue?: boolean;
@@ -24,6 +25,8 @@ interface FilterState {
 interface DataTableFiltersProps {
   filters: FilterState;
   onFiltersChange: (filters: Partial<FilterState>) => void;
+  /** Disable all interactive filter controls (initial data load). */
+  disabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -42,6 +45,14 @@ const INVOICE_STATUSES = [
   'VOID',
 ] as const;
 
+const MATCH_STATUSES = [
+  'UNMATCHED',
+  'PARTIAL',
+  'MATCHED',
+  'DISCREPANCY',
+  'MANUALLY_CONFIRMED',
+] as const;
+
 const INVOICE_SOURCES = ['MANUAL_UPLOAD', 'EMAIL_INTAKE'] as const;
 
 // ---------------------------------------------------------------------------
@@ -51,17 +62,25 @@ const INVOICE_SOURCES = ['MANUAL_UPLOAD', 'EMAIL_INTAKE'] as const;
 /**
  * Filter popover and active filter badges for the invoice data table.
  */
-export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersProps) {
+export function DataTableFilters({
+  filters,
+  onFiltersChange,
+  disabled: filtersDisabled,
+}: DataTableFiltersProps) {
   const t = useTranslations('Invoices');
 
   // Active filter count for badge
   const activeFilterCount =
-    filters.status.length + filters.source.length + (filters.overdue ? 1 : 0);
+    filters.status.length +
+    filters.matchStatus.length +
+    filters.source.length +
+    (filters.overdue ? 1 : 0);
   const hasActiveFilters = activeFilterCount > 0;
 
   const clearAllFilters = useCallback(() => {
     onFiltersChange({
       status: [],
+      matchStatus: [],
       source: [],
       overdue: false,
     });
@@ -72,7 +91,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
   }, [filters.overdue, onFiltersChange]);
 
   const toggleFilterValue = useCallback(
-    (key: 'status' | 'source', value: string) => {
+    (key: 'status' | 'matchStatus' | 'source', value: string) => {
       const current = filters[key];
       const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
       onFiltersChange({ [key]: next });
@@ -81,7 +100,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
   );
 
   const removeFilter = useCallback(
-    (key: 'status' | 'source', value: string) => {
+    (key: 'status' | 'matchStatus' | 'source', value: string) => {
       onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
     },
     [filters, onFiltersChange],
@@ -93,6 +112,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
       <Button
         variant={filters.overdue ? 'default' : 'outline'}
         size="lg"
+        disabled={filtersDisabled}
         onClick={toggleOverdue}
         className={filters.overdue ? 'bg-primary text-primary-foreground' : ''}>
         {t('overdueFilter')}
@@ -103,7 +123,7 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
         <PopoverTrigger
           // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
           render={props => (
-            <Button {...props} variant="outline" size="lg">
+            <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
               <Filter className="h-3.5 w-3.5" />
               {t('filters')}
               {hasActiveFilters && (
@@ -126,6 +146,18 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               selected={filters.status}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onToggle={value => toggleFilterValue('status', value)}
+            />
+
+            {/* Match status */}
+            <FilterSection
+              title={t('columns.matchStatus')}
+              options={MATCH_STATUSES.map(s => ({
+                value: s,
+                label: t(`matchStatus.${enumKey(s)}`),
+              }))}
+              selected={filters.matchStatus}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onToggle={value => toggleFilterValue('matchStatus', value)}
             />
 
             {/* Source */}
@@ -153,6 +185,14 @@ export function DataTableFilters({ filters, onFiltersChange }: DataTableFiltersP
               label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
+            />
+          ))}
+          {filters.matchStatus.map(s => (
+            <FilterBadge
+              key={`matchStatus-${s}`}
+              label={t(`matchStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('matchStatus', s)}
             />
           ))}
           {filters.source.map(s => (

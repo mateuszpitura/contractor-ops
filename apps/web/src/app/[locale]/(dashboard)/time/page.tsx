@@ -1,9 +1,8 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierEmptyState, AtelierPageHeader, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, startOfISOWeek } from 'date-fns';
-import { ClipboardList, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo } from 'react';
@@ -195,7 +194,7 @@ function TimeTrackingContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('pageTitle')} />
+        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
@@ -220,7 +219,7 @@ function TimeTrackingContent() {
               <LoadingSkeleton />
             ) : pendingTimesheets.length === 0 ? (
               <AtelierEmptyState
-                icon={Clock}
+                illustration={TimeTrackingIllustration}
                 heading={t('emptyStates.noPendingReviewsHeading')}
                 body={t('emptyStates.noPendingReviewsBody')}
                 renderAction={renderEmptyStateAction}
@@ -261,7 +260,7 @@ function TimeTrackingContent() {
                 <LoadingSkeleton />
               ) : allTimesheets.length === 0 ? (
                 <AtelierEmptyState
-                  icon={ClipboardList}
+                  illustration={TimeTrackingIllustration}
                   heading={t('emptyStates.noTimeEntriesHeading')}
                   body={t('emptyStates.noTimeEntriesBody')}
                   renderAction={renderEmptyStateAction}

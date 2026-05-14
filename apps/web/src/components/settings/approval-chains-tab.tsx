@@ -1,5 +1,6 @@
 'use client';
 
+import { ApprovalsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -157,7 +158,8 @@ export function ApprovalChainsTab() {
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <h3 className="text-base font-semibold">{t('approvals.empty.heading')}</h3>
+          <ApprovalsIllustration className="h-24 w-24" />
+          <h3 className="mt-4 text-base font-semibold">{t('approvals.empty.heading')}</h3>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t('approvals.empty.body')}</p>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button className="mt-4" onClick={handleCreate}>

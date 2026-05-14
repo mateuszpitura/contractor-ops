@@ -9,7 +9,14 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { trpc } from '@/trpc/init';
 
@@ -108,13 +115,13 @@ export function TransferTitleSettings() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('settingsHeading')}</CardTitle>
-        <CardDescription>{t('settingsDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settingsHeading')}</CardTitle>
+          <CardDescription>{t('settingsDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-2">
             <label htmlFor={`${id}-transfer-title-template`} className="text-sm font-medium">
               {t('templateLabel')}
@@ -132,17 +139,18 @@ export function TransferTitleSettings() {
 
           {/* Live preview */}
           <p className="text-xs text-muted-foreground">{t('preview', { value: preview })}</p>
-
-          <Button type="submit" size="sm" disabled={!isDirty || updateMutation.isPending}>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
             {updateMutation.isPending ? (
-              <Loader2 className="me-1.5 size-3.5 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Save className="me-1.5 size-3.5" />
+              <Save className="size-4" />
             )}
-            {t('save')}
+            {t('saveChanges')}
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }

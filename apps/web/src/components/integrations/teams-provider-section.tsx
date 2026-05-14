@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
 import { trpc } from '@/trpc/init';
+import { TeamsBrandIcon } from './brand-icons';
 import { TeamsChannelMappingCard } from './teams-channel-mapping-card';
-import { TeamsLogo } from './teams-logo';
 
 // ---------------------------------------------------------------------------
 // TeamsProviderSection
@@ -27,7 +27,7 @@ export function TeamsProviderSection() {
         <ProviderConnectionCard
           provider="microsoft_teams"
           displayName="Microsoft Teams"
-          icon={<TeamsLogo className="size-8" />}
+          icon={<TeamsBrandIcon className="size-8" />}
           description={isConnected ? t('descriptionConnected') : t('descriptionDisconnected')}
         />
 

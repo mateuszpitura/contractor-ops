@@ -69,7 +69,7 @@ vi.mock('../billing-date-card', () => ({
 }));
 
 vi.mock('../credit-progress-bar', () => ({
-  CreditProgressBar: () => <div data-testid="credit-progress-bar" />,
+  CreditCard: () => <div data-testid="credit-card" />,
 }));
 
 vi.mock('../plan-comparison-grid', () => ({

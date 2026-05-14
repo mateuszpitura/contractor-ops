@@ -1,8 +1,9 @@
 'use client';
 
+import { EquipmentIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Loader2, Package } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -25,6 +26,13 @@ interface EquipmentTableProps {
   onCreateShipment: (equipment: EquipmentRow) => void;
   onRetire: (equipment: EquipmentRow) => void;
   onAddEquipment: () => void;
+  /**
+   * When true, DataTableBody keeps showing skeleton rows even if the
+   * table's own data has already arrived. Used by the page while its
+   * count query is still in flight to prevent an in-table empty flash
+   * before swapping to AtelierEmptyState.
+   */
+  parentLoading?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -41,6 +49,7 @@ export function EquipmentTable({
   onCreateShipment,
   onRetire,
   onAddEquipment,
+  parentLoading,
 }: EquipmentTableProps) {
   const t = useTranslations('Equipment');
   const tCommon = useTranslations('Common');
@@ -77,7 +86,7 @@ export function EquipmentTable({
             | 'RETIRED'
           >)
         : undefined,
-      sortBy: sortBy as 'name' | 'type' | 'status' | 'createdAt',
+      sortBy: sortBy as 'name' | 'serialNumber' | 'type' | 'status' | 'createdAt',
       sortOrder,
     }),
     [page, search, typeFilter, statusFilter, sortBy, sortOrder],
@@ -178,6 +187,7 @@ export function EquipmentTable({
         filters={{ type: typeFilter, status: statusFilter }}
         onFiltersChange={handleFiltersChange}
         isSearching={isRefetching}
+        disabled={isLoading || parentLoading === true}
         onAddEquipment={onAddEquipment}
       />
 
@@ -201,15 +211,16 @@ export function EquipmentTable({
           <DataTableBody
             table={table}
             isLoading={isLoading}
+            forceLoading={parentLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
-            emptyIcon={<Package className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyIcon={<EquipmentIllustration className="mx-auto h-16 w-16 text-primary/60" />}
             emptyTitle={t('list.emptyTitle')}
             emptyDescription={t('list.emptyDescription')}
             emptyCta={t('addEquipment')}
             onEmptyCta={onAddEquipment}
-            noResultsTitle="No results found"
-            noResultsDescription="Try adjusting your search or filters."
-            noResultsCta="Clear filters"
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
             onClearFilters={clearFilters}
           />
         </Table>

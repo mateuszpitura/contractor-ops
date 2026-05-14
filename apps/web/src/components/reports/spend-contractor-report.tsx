@@ -1,12 +1,13 @@
 'use client';
 
+import { SpendReportIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
-import { DollarSign } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
 import { ExportButtons } from './export-buttons';
@@ -20,15 +21,6 @@ function formatCurrency(minor: number): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(minor / 100);
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return '-';
-  return new Intl.DateTimeFormat('pl-PL', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(iso));
 }
 
 interface SpendContractorReportProps {
@@ -48,6 +40,7 @@ type SpendRow = {
 export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
+  const { formatDate } = useDateFormatter();
 
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('totalSpend');
@@ -142,7 +135,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         cell: ({ getValue }) => formatDate(getValue<string | null>()),
       },
     ],
-    [t],
+    [t, formatDate],
   );
 
   const handleSortChange = (newSortBy: string, newSortOrder: string) => {
@@ -198,7 +191,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
         isLoading={tableQuery.isLoading}
-        emptyIcon={<DollarSign className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+        emptyIcon={<SpendReportIllustration className="mx-auto h-16 w-16 text-primary/60" />}
         emptyTitle={t('emptySpendContractor')}
         emptyDescription={t('emptySpendContractorBody')}
         grandTotalLabel={t('grandTotal')}

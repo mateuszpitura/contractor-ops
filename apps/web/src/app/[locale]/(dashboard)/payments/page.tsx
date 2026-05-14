@@ -1,10 +1,15 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  PaymentsIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { parseAsString, useQueryState } from 'nuqs';
+import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { BankStatementDialog } from '@/components/payments/bank-statement-dialog';
 import { NewPaymentRunDialog } from '@/components/payments/new-payment-run-dialog';
@@ -15,8 +20,9 @@ import { PaymentRunDataTable } from '@/components/payments/payment-run-table/dat
 import { DataTableToolbar } from '@/components/payments/payment-run-table/data-table-toolbar';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { PageTableSkeleton } from '@/components/shared/page-table-skeleton';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -26,9 +32,13 @@ import { trpc } from '@/trpc/init';
 function PaymentsContent() {
   const t = useTranslations('Payments');
   const te = useTranslations('EmptyStates');
+  const { formatDate, formatDateTime } = useDateFormatter();
 
   // URL state via nuqs
-  const [status, setStatus] = useQueryState('status', parseAsString.withDefault('all'));
+  const [statuses, setStatuses] = useQueryState(
+    'status',
+    parseAsArrayOf(parseAsString).withDefault([]),
+  );
 
   // Date range state (local, not URL-synced for simplicity)
   const [dateFrom, setDateFrom] = useState<Date | undefined>(undefined);
@@ -46,13 +56,24 @@ function PaymentsContent() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [bankStatementRunId, setBankStatementRunId] = useState<string | null>(null);
 
+  // Map multi-select to single API value (API accepts one status enum).
+  // When 0 or 2+ selected, send undefined (all) and filter client-side.
+  const apiStatus:
+    | 'DRAFT'
+    | 'LOCKED'
+    | 'EXPORTED'
+    | 'COMPLETED'
+    | 'FAILED'
+    | 'CANCELLED'
+    | undefined =
+    statuses.length === 1
+      ? (statuses[0] as 'DRAFT' | 'LOCKED' | 'EXPORTED' | 'COMPLETED' | 'FAILED' | 'CANCELLED')
+      : undefined;
+
   // Build query input
   const queryInput = useMemo(
     () => ({
-      status:
-        status === 'all'
-          ? undefined
-          : (status as 'DRAFT' | 'LOCKED' | 'EXPORTED' | 'COMPLETED' | 'FAILED' | 'CANCELLED'),
+      status: apiStatus,
       cursor: currentCursor,
       limit: 20,
       sortBy: 'createdAt' as const,
@@ -60,7 +81,7 @@ function PaymentsContent() {
       dateFrom: dateFrom ?? undefined,
       dateTo: dateTo ?? undefined,
     }),
-    [status, currentCursor, dateFrom, dateTo],
+    [apiStatus, currentCursor, dateFrom, dateTo],
   );
 
   // Fetch payment runs
@@ -69,21 +90,38 @@ function PaymentsContent() {
   const data = useMemo(() => {
     const result = runsQuery.data;
     // tRPC returns Date objects but PaymentRunRow expects string dates
-    return (result?.items ?? []) as unknown as PaymentRunRow[];
-  }, [runsQuery.data]);
+    const items = (result?.items ?? []) as unknown as PaymentRunRow[];
+    // Client-side filter when 2+ statuses selected (API only accepts single value)
+    if (statuses.length <= 1) return items;
+    const filterSet = new Set(statuses);
+    return items.filter(row => filterSet.has(row.status));
+  }, [runsQuery.data, statuses]);
 
   const nextCursor = useMemo(() => {
     const result = runsQuery.data;
     return result?.nextCursor as string | undefined;
   }, [runsQuery.data]);
 
-  // Status change resets pagination
+  // Fetch all payment run dates for calendar dot indicators (independent of pagination).
+  // Endpoint returns 'YYYY-MM-DD' strings — parse as local-midnight dates so they match
+  // the Calendar's day cells (which use local timezone).
+  const activityDatesQuery = useQuery(trpc.payment.activityDates.queryOptions());
+  const activityDates = useMemo(() => {
+    const raw = activityDatesQuery.data as string[] | undefined;
+    if (!raw?.length) return [];
+    return raw.map(iso => {
+      const [y, m, d] = iso.split('-').map(Number) as [number, number, number];
+      return new Date(y, m - 1, d);
+    });
+  }, [activityDatesQuery.data]);
+
+  // Status change resets pagination (multi-select)
   const handleStatusChange = useCallback(
-    (newStatus: string) => {
-      void setStatus(newStatus);
+    (newStatuses: string[]) => {
+      void setStatuses(newStatuses);
       setCursors([]);
     },
-    [setStatus],
+    [setStatuses],
   );
 
   const handleDateFromChange = useCallback((date: Date | undefined) => {
@@ -116,20 +154,25 @@ function PaymentsContent() {
   // Column definitions
   const columns = useMemo(
     () =>
-      getColumns((key: string) => t(key as Parameters<typeof t>[0]), {
-        onDownloadExport: () => {
-          // Download handled via side panel
+      getColumns(
+        (key: string) => t(key as Parameters<typeof t>[0]),
+        {
+          onDownloadExport: () => {
+            // Download handled via side panel
+          },
+          onMarkAllPaid: run => {
+            setSelectedRunId(run.id);
+            setSidePanelOpen(true);
+          },
+          onCancelRun: run => {
+            setSelectedRunId(run.id);
+            setSidePanelOpen(true);
+          },
         },
-        onMarkAllPaid: run => {
-          setSelectedRunId(run.id);
-          setSidePanelOpen(true);
-        },
-        onCancelRun: run => {
-          setSelectedRunId(run.id);
-          setSidePanelOpen(true);
-        },
-      }),
-    [t],
+        formatDate,
+        formatDateTime,
+      ),
+    [t, formatDate, formatDateTime],
   );
 
   // Contractor count for smart sequencing
@@ -166,15 +209,17 @@ function PaymentsContent() {
 
       {isEmpty ? (
         /* Empty state with smart sequencing */
-        <AtelierEmptyState
-          icon={CreditCard}
-          heading={te('payments.heading')}
-          body={te('payments.body')}
-          primaryAction={{ label: te('payments.cta'), href: '/invoices' }}
-          prerequisiteMissing={contractorCount === 0}
-          prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
-          renderAction={renderEmptyStateAction}
-        />
+        <AnimateIn delay={1}>
+          <AtelierEmptyState
+            illustration={PaymentsIllustration}
+            heading={te('payments.heading')}
+            body={te('payments.body')}
+            primaryAction={{ label: te('payments.cta'), href: '/invoices' }}
+            prerequisiteMissing={contractorCount === 0}
+            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            renderAction={renderEmptyStateAction}
+          />
+        </AnimateIn>
       ) : (
         <AnimateIn delay={1}>
           <section aria-label={t('title')} className="space-y-3">
@@ -182,12 +227,13 @@ function PaymentsContent() {
 
             {/* Toolbar */}
             <DataTableToolbar
-              activeStatus={status}
+              activeStatuses={statuses}
               onStatusChange={handleStatusChange}
               dateFrom={dateFrom}
               dateTo={dateTo}
               onDateFromChange={handleDateFromChange}
               onDateToChange={handleDateToChange}
+              activityDates={activityDates}
             />
 
             {/* Table */}
@@ -244,45 +290,6 @@ function PaymentsContent() {
 }
 
 // ---------------------------------------------------------------------------
-// Loading fallback
-// ---------------------------------------------------------------------------
-
-function PaymentsLoading() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-9 w-36" />
-      </div>
-      {/* Chip bar skeleton */}
-      <div className="flex items-center gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Skeleton key={`skel-${i}`} className="h-7 w-20 rounded-full" />
-        ))}
-      </div>
-      {/* Table skeleton */}
-      <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            key={`skel-${i}`}
-            className="flex items-center gap-4 border-b border-border/50 px-4 py-3 last:border-b-0">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-4 w-8" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Page export
 // ---------------------------------------------------------------------------
 
@@ -292,7 +299,7 @@ function PaymentsLoading() {
  */
 export default function PaymentsPage() {
   return (
-    <Suspense fallback={<PaymentsLoading />}>
+    <Suspense fallback={<PageTableSkeleton />}>
       <PaymentsContent />
     </Suspense>
   );

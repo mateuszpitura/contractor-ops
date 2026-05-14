@@ -2,9 +2,10 @@
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, ShieldCheck, Unplug } from 'lucide-react';
+import { Settings, Unplug } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ZatcaBrandIcon } from '@/components/integrations/brand-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +19,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { OnboardingWizard } from './onboarding-wizard';
 import { zatcaTrpc } from './zatca-trpc';
@@ -73,25 +75,47 @@ export function ZatcaStatusCard() {
     toast.success('ZATCA onboarding complete!');
   }
 
+  if (stateQuery.isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-8 rounded" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="mt-2 h-8 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Not connected state
   if (!(isConnected || isOnboarding)) {
     return (
       <>
-        <Card className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="rounded-lg bg-muted p-2.5">
-              <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ZatcaBrandIcon className="h-8 w-auto" />
+              <h4 className="text-base font-semibold">ZATCA</h4>
+              <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                Disconnected
+              </Badge>
             </div>
-            <div className="flex-1 space-y-1">
-              <h3 className="text-base font-semibold">Connect to ZATCA</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Submit e-invoices to ZATCA for clearance and reporting. Set up your
                 organization&apos;s certificate to get started.
               </p>
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button onClick={() => setWizardOpen(true)}>Connect ZATCA</Button>
             </div>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <Button onClick={() => setWizardOpen(true)}>Connect to ZATCA</Button>
-          </div>
+          </CardContent>
         </Card>
 
         {!!wizardOpen && (
@@ -112,25 +136,25 @@ export function ZatcaStatusCard() {
   if (isOnboarding && !isConnected) {
     return (
       <>
-        <Card className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="rounded-lg bg-blue-50 p-2.5 dark:bg-blue-950/30">
-              <ShieldCheck className="h-5 w-5 text-blue-600" />
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <ZatcaBrandIcon className="h-8 w-auto" />
+              <h4 className="text-base font-semibold">ZATCA</h4>
+              <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
             </div>
-            <div className="flex-1 space-y-1">
-              <h3 className="text-base font-semibold">ZATCA (Saudi Arabia)</h3>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
                 Onboarding in progress — continue the setup wizard.
               </p>
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button variant="outline" onClick={() => setWizardOpen(true)}>
+                Continue Setup
+              </Button>
             </div>
-            <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
-          </div>
-          <div className="mt-4">
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <Button variant="outline" size="sm" onClick={() => setWizardOpen(true)}>
-              Continue Setup
-            </Button>
-          </div>
+          </CardContent>
         </Card>
 
         {!!wizardOpen && (
@@ -149,20 +173,20 @@ export function ZatcaStatusCard() {
 
   // Connected state
   return (
-    <Card className="p-6">
-      <CardHeader className="p-0 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-green-600" />
-            <CardTitle className="text-base font-semibold">ZATCA (Saudi Arabia)</CardTitle>
-          </div>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <ZatcaBrandIcon className="h-8 w-auto" />
+          <h4 className="text-base font-semibold">ZATCA</h4>
           <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4 p-0">
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Saudi Arabia e-invoicing clearance and reporting.
+        </p>
+        <div className="flex gap-2">
           <Button variant="outline" size="sm" render={<Link href="/settings/integrations/zatca" />}>
             <Settings className="me-1.5 h-3.5 w-3.5" />
             Manage

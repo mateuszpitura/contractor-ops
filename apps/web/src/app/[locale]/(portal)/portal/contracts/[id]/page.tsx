@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -72,16 +73,7 @@ export default function PortalContractDetailPage({ params }: { params: Promise<{
   const contractQuery = useQuery(portalTrpc.portal.getContract.queryOptions({ id }));
   const contract = contractQuery.data;
   const isLoading = contractQuery.isPending;
-
-  function formatDate(date: Date | string | null): string {
-    if (!date) return t('time.na');
-    const d = typeof date === 'string' ? new Date(date) : date;
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }).format(d);
-  }
+  const { formatDate } = usePortalDateFormatter();
 
   function ratePeriodLabel(rateType: string): string {
     switch (rateType) {

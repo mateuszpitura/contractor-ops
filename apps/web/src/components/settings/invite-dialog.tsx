@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 
 const inviteSchema = z.object({
@@ -48,6 +49,7 @@ export function InviteDialog({
   const id = useId();
   const t = useTranslations('Users.inviteDialog');
   const tr = useTranslations('Users.roles');
+  const trd = useTranslations('Users.roleDescriptions');
   const tToast = useTranslations('Settings.toast');
   const queryClient = useQueryClient();
 
@@ -84,10 +86,14 @@ export function InviteDialog({
     if (!open) reset({ email: '', role: 'readonly' });
   }, [open, reset]);
 
-  const roleItems = roleKeys.map(role => ({
-    value: role,
-    label: tr(role),
-  }));
+  const roleItems = roleKeys.map(role => {
+    const key = enumKey(role) as Parameters<typeof tr>[0];
+    return {
+      value: role,
+      label: tr(key),
+      description: trd(key as Parameters<typeof trd>[0]),
+    };
+  });
 
   const onSubmit = (values: InviteValues) => {
     inviteMutation.mutate(values);
@@ -126,13 +132,18 @@ export function InviteDialog({
               onValueChange={value => setValue('role', value as InviteValues['role'])}
               disabled={inviteMutation.isPending}
               items={roleItems}>
-              <SelectTrigger id={`${id}-invite-role`}>
+              <SelectTrigger id={`${id}-invite-role`} className="w-full">
                 <SelectValue placeholder={t('rolePlaceholder')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" className="max-h-64 overflow-y-auto">
                 {roleItems.map(item => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
+                  <SelectItem key={item.value} value={item.value} className="py-2">
+                    <div className="flex flex-col">
+                      <span>{item.label}</span>
+                      <span className="text-xs font-normal text-muted-foreground whitespace-normal">
+                        {item.description}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

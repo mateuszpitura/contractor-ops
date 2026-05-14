@@ -120,15 +120,20 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
   }
 
-  // Fetch active org info + user role in parallel (now also pulls the fields
-  // needed for feature-flag evaluation: dataRegion, countryCode).
+  // Fetch org info, user role, and ToS consent in parallel. Flag bag
+  // evaluation depends on the org result so it runs after the parallel fan-out.
   let activeOrg: OrgInfo | null = null;
   let userRole: string | null = null;
   let flagBag: FlagValues | null = null;
+  let latestTosConsent: { id: string } | null = null;
 
   if (activeOrgId) {
-    const { org, member } = await fetchOrgAndMember(session.user.id, activeOrgId);
+    const [{ org, member }, tosConsent] = await Promise.all([
+      fetchOrgAndMember(session.user.id, activeOrgId),
+      fetchLatestTosConsent(session.user.id, activeOrgId, TOS_CURRENT_VERSION),
+    ]);
 
+    latestTosConsent = tosConsent;
     activeOrg = org ? { id: org.id, name: org.name, slug: org.slug, logo: org.logo } : null;
     userRole = member?.role ?? null;
 
@@ -143,9 +148,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           authMode: 'session',
         }).values;
       } catch (err) {
-        // Evaluator should never throw (Unleash SDK catches internally + stub
-        // fallback), but if it does we must not break the entire dashboard.
-        // Fail closed: every flag becomes `false`.
         createLogger({ service: 'feature-flags', organizationId: org.id }).error(
           { err },
           'flag bag hydration failed; falling back to fail-closed defaults',
@@ -156,15 +158,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   }
 
   // Fail-closed default: when there is no active org (edge case during
-  // onboarding) or hydration threw, every flag resolves to `false`. A future
-  // no-org user cannot accidentally expose a gated feature.
+  // onboarding) or hydration threw, every flag resolves to `false`.
   const resolvedFlagBag: FlagValues = flagBag ?? emptyFlagBag().values;
-
-  // Phase 64 D-30 — ToS re-acceptance check (cached via unstable_cache;
-  // P2-F · F-SCALE-04). Invalidated by tagging via the ToS modal flow.
-  const latestTosConsent = activeOrgId
-    ? await fetchLatestTosConsent(session.user.id, activeOrgId, TOS_CURRENT_VERSION)
-    : null;
   const needsTosAcceptance = !latestTosConsent;
 
   return (
@@ -198,8 +193,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                      */}
                     <main
                       id="main-content"
-                      className="atelier-main-surface min-w-0 flex-1 overflow-x-hidden p-6">
-                      {children}
+                      className="atelier-main-surface flex min-w-0 flex-1 flex-col overflow-x-hidden p-6">
+                      <div className="flex-1 pb-8">{children}</div>
                       <AppFooter />
                     </main>
                   </SidebarInset>

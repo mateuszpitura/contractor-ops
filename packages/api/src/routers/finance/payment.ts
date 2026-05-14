@@ -677,6 +677,23 @@ export const paymentRouter = router({
     }),
 
   // =========================================================================
+  // activityDates — distinct dates with payment runs (for calendar dots)
+  // =========================================================================
+
+  activityDates: tenantProcedure
+    .use(requirePermission({ payment: ['read'] }))
+    .query(async ({ ctx }) => {
+      const rows = await ctx.db.$queryRaw<Array<{ d: string }>>`
+        SELECT DISTINCT TO_CHAR("createdAt", 'YYYY-MM-DD') AS d
+        FROM "PaymentRun"
+        WHERE "organizationId" = ${ctx.organizationId}
+        ORDER BY d DESC
+        LIMIT 180
+      `;
+      return rows.map(r => r.d);
+    }),
+
+  // =========================================================================
   // lockAndExport — lock a run and generate export file
   // =========================================================================
 

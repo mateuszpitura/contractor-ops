@@ -5,6 +5,7 @@ import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
@@ -32,14 +33,6 @@ interface ContractCardProps {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Format a date to abbreviated month + year (e.g. "Jan 2026").
- */
-function formatMonthYear(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(d);
-}
 
 /**
  * Format minor-unit amount to display currency (e.g. "12,000 PLN").
@@ -82,9 +75,11 @@ function ratePeriodLabel(rateType: string): string {
  * date range, rate, and status badge. Links to contract detail.
  */
 export function ContractCard({ contract, className }: ContractCardProps) {
+  const { formatDate } = usePortalDateFormatter();
+
   const dateRange = [
-    formatMonthYear(contract.startDate),
-    contract.endDate ? formatMonthYear(contract.endDate) : 'Ongoing',
+    formatDate(contract.startDate),
+    contract.endDate ? formatDate(contract.endDate) : 'Ongoing',
   ].join(' - ');
 
   const rate =

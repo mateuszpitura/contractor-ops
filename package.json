@@ -30,28 +30,28 @@
     "load:writes:stress": "k6 run -e K6_PROFILE=stress load-tests/api-write.js",
     "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
     "db:generate": "turbo db:generate",
-    "db:push": "turbo db:push",
+    "db:migrate:dev": "pnpm -F @contractor-ops/db run db:migrate:dev",
     "db:seed:dev": "pnpm -F @contractor-ops/db run db:seed:dev",
     "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger --filter=@contractor-ops/api",
     "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.13",
+    "@biomejs/biome": "^2.4.14",
     "@types/node": "^24.12.2",
-    "@typescript/native-preview": "7.0.0-dev.20260427.1",
+    "@typescript/native-preview": "7.0.0-dev.20260506.1",
     "@vitest/coverage-v8": "^4.1.5",
     "dotenv": "^17.4.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.2",
     "tinyglobby": "^0.2.16",
     "tsx": "^4.21.0",
-    "turbo": "^2.4.0",
+    "turbo": "^2.9.9",
     "typescript": "^6.0.3",
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1037.0",
-    "@aws-sdk/s3-request-presigner": "^3.1037.0"
+    "@aws-sdk/client-s3": "^3.1044.0",
+    "@aws-sdk/s3-request-presigner": "^3.1044.0"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css}": "biome check --write --no-errors-on-unmatched",
@@ -60,15 +60,34 @@
   "pnpm": {
     "overrides": {
       "@types/node": "$@types/node",
-      "defu": ">=6.1.5",
-      "path-to-regexp": ">=8.4.0"
+      "defu": "6.1.7",
+      "path-to-regexp": "8.4.2",
+      "axios": "1.16.0",
+      "protobufjs": "7.5.6",
+      "@xmldom/xmldom": "0.8.13",
+      "kysely": "0.28.17",
+      "fast-uri": "3.1.2",
+      "dompurify": "3.4.2",
+      "@protobufjs/utf8": "1.1.1",
+      "brace-expansion": "5.0.5",
+      "follow-redirects": "1.16.0",
+      "ip-address": "10.2.0",
+      "postcss": "8.5.14",
+      "vite": "8.0.10",
+      "fast-xml-builder": "1.1.9"
     },
     "onlyBuiltDependencies": [
+      "@parcel/watcher",
       "@prisma/client",
       "@prisma/engines",
+      "@sentry/cli",
+      "@swc/core",
       "esbuild",
+      "libxmljs2",
       "msw",
-      "prisma"
+      "prisma",
+      "protobufjs",
+      "sharp"
     ]
   }
 }

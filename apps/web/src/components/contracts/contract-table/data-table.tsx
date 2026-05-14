@@ -1,15 +1,15 @@
 'use client';
 
-import { AtelierTableShell } from '@contractor-ops/ui';
+import { AtelierTableShell, ContractsIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
 import { Table, TableHeader, TableRow } from '@/components/ui/table';
+import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { ContractRow } from './columns';
 import { getColumns } from './columns';
@@ -40,6 +40,14 @@ interface ContractDataTableProps {
   onRowClick: (contract: ContractRow) => void;
   onNewContract: () => void;
   onImport?: () => void;
+  /**
+   * When true, DataTableBody keeps showing skeleton rows even if the
+   * table's own data has already arrived, and AtelierTableShell shows its
+   * loading overlay. Used by the page while its count query is still in
+   * flight, so the in-table empty state never flashes before the swap to
+   * AtelierEmptyState.
+   */
+  parentLoading?: boolean;
 }
 
 /**
@@ -47,9 +55,15 @@ interface ContractDataTableProps {
  * Uses server-side pagination, sorting, and filtering via tRPC.
  * URL state is managed by nuqs for shareable filtered views.
  */
-export function ContractDataTable({ onRowClick, onNewContract, onImport }: ContractDataTableProps) {
+export function ContractDataTable({
+  onRowClick,
+  onNewContract,
+  onImport,
+  parentLoading,
+}: ContractDataTableProps) {
   const t = useTranslations('Contracts');
   const tAria = useTranslations('Common.aria');
+  const { formatDate } = useDateFormatter();
 
   // URL-synced filter state
   const [filters, setFilters] = useContractFilters();
@@ -105,6 +119,8 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
           'MONTHLY_RETAINER' | 'HOURLY' | 'DAILY' | 'MILESTONE' | 'DELIVERABLE_BASED' | 'MIXED'
         >(filters.billingModel),
         ownerUserId: asFilterArray(filters.ownerUserId),
+        startDateFrom: asDateFilter(filters.startDateFrom),
+        startDateTo: asDateFilter(filters.startDateTo),
         endDateFrom: asDateFilter(filters.endDateFrom),
         endDateTo: asDateFilter(filters.endDateTo),
         complianceRiskLevel: asFilterArray<'LOW' | 'MEDIUM' | 'HIGH'>(filters.complianceRiskLevel),
@@ -132,10 +148,12 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
   // Column definitions
   const columns: ColumnDef<ContractRow>[] = useMemo(
     () =>
-      getColumns((key: string, params?: Record<string, string | number>) =>
-        t(key as Parameters<typeof t>[0], params),
+      getColumns(
+        (key: string, params?: Record<string, string | number>) =>
+          t(key as Parameters<typeof t>[0], params),
+        formatDate,
       ),
-    [t],
+    [t, formatDate],
   );
 
   // TanStack Table instance
@@ -189,6 +207,8 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
         type: string[];
         billingModel: string[];
         ownerUserId: string[];
+        startDateFrom: string;
+        startDateTo: string;
         endDateFrom: string;
         endDateTo: string;
         complianceRiskLevel: string[];
@@ -228,6 +248,8 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
       type: [],
       billingModel: [],
       ownerUserId: [],
+      startDateFrom: '',
+      startDateTo: '',
       endDateFrom: '',
       endDateTo: '',
       complianceRiskLevel: [],
@@ -244,6 +266,8 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
     filters.billingModel.length > 0 ||
     filters.ownerUserId.length > 0 ||
     filters.complianceRiskLevel.length > 0 ||
+    filters.startDateFrom.length > 0 ||
+    filters.startDateTo.length > 0 ||
     filters.endDateFrom.length > 0 ||
     filters.endDateTo.length > 0;
 
@@ -258,12 +282,15 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
           type: filters.type,
           billingModel: filters.billingModel,
           ownerUserId: filters.ownerUserId,
+          startDateFrom: filters.startDateFrom,
+          startDateTo: filters.startDateTo,
           endDateFrom: filters.endDateFrom,
           endDateTo: filters.endDateTo,
           complianceRiskLevel: filters.complianceRiskLevel,
         }}
         onFiltersChange={handleFiltersChange}
         isSearching={isRefetching}
+        disabled={isLoading || parentLoading === true}
         onNewContract={onNewContract}
         onImport={onImport}
       />
@@ -271,9 +298,10 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
       {/* Bulk actions bar */}
       <DataTableBulkActions table={table} />
 
-      {/* Workbench-tier table chrome */}
+      {/* Workbench-tier table chrome. isLoading drives the translucent
+          background overlay during data fetches. */}
       <AtelierTableShell
-        isLoading={isRefetching}
+        isLoading={isLoading || isRefetching || parentLoading === true}
         footer={
           !isLoading && totalRows > 0 ? (
             <DataTablePagination
@@ -312,9 +340,10 @@ export function ContractDataTable({ onRowClick, onNewContract, onImport }: Contr
           <DataTableBody
             table={table}
             isLoading={isLoading}
+            forceLoading={parentLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
-            emptyIcon={<FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />}
+            emptyIcon={<ContractsIllustration className="mx-auto h-16 w-16 text-primary/60" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}

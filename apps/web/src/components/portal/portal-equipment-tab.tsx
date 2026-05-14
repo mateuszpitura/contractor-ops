@@ -1,8 +1,9 @@
 'use client';
 
+import { EquipmentIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, Package, RotateCcw } from 'lucide-react';
+import { Loader2, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -118,8 +119,10 @@ export function PortalEquipmentTab() {
       <div className="space-y-8">
         <h1 className="text-xl font-semibold">{t('title')}</h1>
         <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-          <Package className="h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 font-display text-[20px] font-semibold">{t('emptyTitle')}</h3>
+          <div className="text-primary/70">
+            <EquipmentIllustration className="h-24 w-24" />
+          </div>
+          <h3 className="mt-5 font-display text-[20px] font-semibold">{t('emptyTitle')}</h3>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('emptyDescription')}</p>
         </div>
       </div>

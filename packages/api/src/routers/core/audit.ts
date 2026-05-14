@@ -1,5 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
-import type { EntityType } from '@contractor-ops/db/generated/prisma/client';
+import type { AuditLog, EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
@@ -12,6 +12,65 @@ import { generateAuditCsv } from '../../services/report-export';
 // ---------------------------------------------------------------------------
 
 const settingsRead = requirePermission({ settings: ['read'] });
+
+/** Collect resource IDs that are missing a human-readable name. */
+function collectMissingIds(items: AuditLog[], type: EntityType): string[] {
+  const ids = new Set<string>();
+  for (const item of items) {
+    if (!item.resourceName && item.resourceType === type) ids.add(item.resourceId);
+  }
+  return [...ids];
+}
+
+/** Structural type for the Prisma client subset used by enrichment. */
+interface EnrichmentDb {
+  organization: {
+    findMany: (args: {
+      where: { id: { in: string[] } };
+      select: { id: true; name: true };
+    }) => Promise<{ id: string; name: string | null }[]>;
+  };
+  user: {
+    findMany: (args: {
+      where: { id: { in: string[] } };
+      select: { id: true; name: true };
+    }) => Promise<{ id: string; name: string | null }[]>;
+  };
+}
+
+/**
+ * Fill in `resourceName` for entries where it was not captured at write time.
+ * Currently handles ORGANIZATION (look up org name) and USER (look up member
+ * name) resource types. Runs a single query per entity type, not per row.
+ */
+async function enrichResourceNames<T extends AuditLog>(db: EnrichmentDb, items: T[]): Promise<T[]> {
+  if (items.length === 0) return items;
+
+  const orgIds = collectMissingIds(items, 'ORGANIZATION');
+  const userIds = collectMissingIds(items, 'USER');
+
+  const [orgs, users] = await Promise.all([
+    orgIds.length > 0
+      ? db.organization.findMany({
+          where: { id: { in: orgIds } },
+          select: { id: true, name: true },
+        })
+      : [],
+    userIds.length > 0
+      ? db.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true } })
+      : [],
+  ]);
+
+  const nameMap = new Map<string, string>();
+  for (const o of orgs) if (o.name) nameMap.set(o.id, o.name);
+  for (const u of users) if (u.name) nameMap.set(u.id, u.name);
+
+  return items.map(item => {
+    if (item.resourceName) return item;
+    const name = nameMap.get(item.resourceId);
+    return name ? { ...item, resourceName: name } : item;
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Shared filter schema
@@ -97,7 +156,7 @@ export const auditRouter = router({
         const hasMore = items.length > input.pageSize;
         const trimmed = hasMore ? items.slice(0, input.pageSize) : items;
         return {
-          items: trimmed,
+          items: await enrichResourceNames(ctx.db, trimmed),
           nextCursor: hasMore ? trimmed[trimmed.length - 1]?.id : undefined,
           // No totalCount in cursor mode — caller relies on nextCursor.
           totalCount: null,
@@ -120,7 +179,7 @@ export const auditRouter = router({
       ]);
 
       return {
-        items: items,
+        items: await enrichResourceNames(ctx.db, items),
         totalCount,
         page: input.page,
         pageSize: input.pageSize,

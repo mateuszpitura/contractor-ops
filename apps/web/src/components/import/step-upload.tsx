@@ -160,7 +160,7 @@ export function StepUpload({
           type="button"
           {...getRootProps()}
           aria-label={t('upload.dropHeading')}
-          className={`flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
+          className={`flex w-full min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
             isDragActive
               ? 'border-primary bg-primary/[0.03]'
               : 'border-border bg-muted/50 hover:border-muted-foreground/30'
@@ -173,7 +173,13 @@ export function StepUpload({
           />
           <p className="text-sm font-medium">{t('upload.dropHeading')}</p>
           <p className="mt-1 text-xs text-muted-foreground">{t('upload.dropBody')}</p>
-          <Button variant="secondary" size="sm" className="mt-4" type="button">
+          <Button
+            render={<span />}
+            variant="secondary"
+            size="sm"
+            className="mt-4"
+            aria-hidden="true"
+            tabIndex={-1}>
             {t('upload.browse')}
           </Button>
         </button>

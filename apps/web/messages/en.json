@@ -89,7 +89,8 @@
     "uploadInvoice": "Upload invoice",
     "search": "Search",
     "searchShortcut": "Cmd+K",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "addContractorFirst": "Add a contractor first"
   },
   "Dashboard": {
     "emptyState": {
@@ -167,7 +168,9 @@
         "import": "Imported",
         "invite": "Invited",
         "lock": "Locked",
-        "cancel": "Cancelled"
+        "cancel": "Cancelled",
+        "archive": "Archived",
+        "sign": "Signed"
       },
       "resources": {
         "contractor": "Contractor",
@@ -198,6 +201,11 @@
   "Settings": {
     "title": "Organization settings",
     "subtitle": "Manage your organization preferences and team",
+    "reimport": {
+      "title": "Import data from tools",
+      "description": "Re-import contractors, contracts, and invoices from external tools like CSV files, spreadsheets, or third-party platforms.",
+      "cta": "Re-import from tools"
+    },
     "tabs": {
       "general": "General",
       "members": "Members",
@@ -226,17 +234,29 @@
       "languagePlaceholder": "Select language",
       "languagePolish": "Polish",
       "languageEnglish": "English",
+      "languageGerman": "German",
+      "languageArabic": "Arabic",
       "fiscalYear": "Fiscal year start month",
       "fiscalYearPlaceholder": "Select month",
       "billingEmail": "Billing email",
-      "billingEmailOptional": "(optional)"
+      "billingEmailOptional": "(optional)",
+      "dateFormat": "Date format",
+      "dateFormatPlaceholder": "Select date format",
+      "timeFormat": "Time format",
+      "timeFormatPlaceholder": "Select time format",
+      "timeFormat24h": "24-hour",
+      "timeFormat12h": "12-hour (AM/PM)"
+    },
+    "appearance": {
+      "heading": "Language & display",
+      "description": "Choose the language for the application interface.",
+      "uiLanguage": "Interface language"
     },
     "expiryReminders": {
       "heading": "Contract Expiry Reminders",
       "description": "Default reminder intervals for all contracts. Individual contracts can override these.",
       "label": "Days before expiry",
       "placeholder": "e.g., 30, 60, 90",
-      "save": "Save defaults",
       "successToast": "Reminder defaults updated"
     },
     "invoiceEmailInbox": "Invoice email inbox",
@@ -477,12 +497,12 @@
         "confirm": "Disconnect"
       },
       "provider": {
-        "connectedOn": "Connected on {date}",
-        "connectedTo": "Connected to {name}",
+        "connectedOn": "Connected on",
+        "connectedTo": "Connected to",
         "connectionDetails": "Connection details",
         "errorConnectionFailed": "Connection failed",
         "errorTokenExpired": "Token expired — reconnection required",
-        "lastRefresh": "Last refreshed {date}",
+        "lastRefresh": "Last refreshed",
         "loadMore": "Load more",
         "manageCta": "Manage",
         "reconnectCta": "Reconnect",
@@ -531,15 +551,15 @@
         "statusError": "Connection error",
         "statusReauth": "Re-authentication required",
         "configureMapping": "Configure Status Mapping",
-        "pendingMappingWarning": "Linear connected -- configure status mapping for at least one team to activate bidirectional sync.",
-        "scopeExpansionWarning": "Re-auth required -- new scopes needed for issue creation and webhooks.",
+        "pendingMappingWarning": "Linear connected — configure status mapping for at least one team to activate bidirectional sync.",
+        "scopeExpansionWarning": "Re-auth required — new scopes needed for issue creation and webhooks.",
         "mapping": {
           "title": "Status Mapping",
           "description": "Map workflow task statuses to Linear workflow states for {teamName}.",
           "selectTeam": "Select a team",
           "workflowStatus": "Workflow Status",
           "linearState": "Linear State",
-          "unmappedTooltip": "Not mapped -- status changes for this state will be ignored",
+          "unmappedTooltip": "Not mapped — status changes for this state will be ignored",
           "noTeams": "No Linear teams found",
           "noTeamsBody": "Connect your Linear workspace to see available teams. Check that the workspace has at least one team.",
           "save": "Save Mapping",
@@ -660,6 +680,7 @@
       "filterActorAll": "All actors",
       "filterActionAll": "All actions",
       "filterResourceAll": "All resources",
+      "filterDateRange": "Date range",
       "expand": "Expand details",
       "collapse": "Collapse details",
       "columns": {
@@ -678,7 +699,70 @@
         "export": "Exported",
         "invite": "Invited",
         "deactivate": "Deactivated",
-        "login": "Logged in"
+        "login": "Logged in",
+        "settingsUpdate": "Settings updated",
+        "settingsExpiryRemindersUpdate": "Expiry reminders updated",
+        "settingsInvoiceThresholdUpdate": "Invoice threshold updated",
+        "settingsBrandingUpdate": "Branding updated",
+        "settingsPortalDomainUpdate": "Portal domain updated",
+        "memberInvite": "Member invited",
+        "memberRoleUpdate": "Role updated",
+        "memberDeactivate": "Member deactivated",
+        "memberReactivate": "Member reactivated",
+        "documentDelete": "Document deleted",
+        "apiKeyCreate": "API key created",
+        "apiKeyUpdate": "API key updated",
+        "apiKeyRevoke": "API key revoked",
+        "reminderRuleCreate": "Reminder rule created",
+        "reminderRuleUpdate": "Reminder rule updated",
+        "reminderRuleDelete": "Reminder rule deleted",
+        "statusTransition": "Status changed",
+        "integrationUserLink": "Integration linked",
+        "integrationUserUnlink": "Integration unlinked",
+        "integrationDisconnect": "Integration disconnected",
+        "integrationConnect": "Integration connected",
+        "integrationReconnect": "Integration reconnected",
+        "approvalChainCreate": "Approval chain created",
+        "approvalChainUpdate": "Approval chain updated",
+        "approvalChainDelete": "Approval chain deleted",
+        "billingCheckoutSessionCreate": "Checkout session created",
+        "billingPortalSessionCreate": "Billing portal opened",
+        "billingTopupCheckoutCreate": "Top-up checkout created",
+        "organizationUpdate": "Organization updated",
+        "organizationKleinunternehmerToggle": "Small business status toggled",
+        "changeRequestApprove": "Change request approved",
+        "changeRequestReject": "Change request rejected",
+        "bacsSubmitterConfigUpdated": "BACS config updated",
+        "statusfeststellungsverfahrenCreate": "Status determination created",
+        "statusfeststellungsverfahrenUpdate": "Status determination updated",
+        "statusfeststellungsverfahrenDelete": "Status determination deleted",
+        "complianceRecompute": "Compliance recomputed",
+        "organizationErasureRequested": "Data erasure requested",
+        "equipmentCreate": "Equipment created",
+        "equipmentUpdate": "Equipment updated",
+        "equipmentRetire": "Equipment retired",
+        "equipmentAssign": "Equipment assigned",
+        "equipmentUnassign": "Equipment unassigned",
+        "shipmentCreate": "Shipment created",
+        "shipmentUpdateStatus": "Shipment status updated",
+        "shipmentCreateInPost": "InPost shipment created",
+        "shipmentCreateDpd": "DPD shipment created",
+        "shipmentCreateUps": "UPS shipment created",
+        "courierConfigSave": "Courier config saved",
+        "returnRequestCreate": "Return request created",
+        "returnRequestCancel": "Return request cancelled",
+        "returnRequestApprove": "Return request approved",
+        "returnRequestReject": "Return request rejected",
+        "workflowOffboardingOverrideBlockingTask": "Blocking task overridden",
+        "invoiceUpdate": "Invoice updated",
+        "invoiceCreate": "Invoice created",
+        "invoiceApprove": "Invoice approved",
+        "invoiceReject": "Invoice rejected",
+        "contractorCreate": "Contractor created",
+        "contractorUpdate": "Contractor updated",
+        "contractorArchive": "Contractor archived",
+        "contractSign": "Contract signed",
+        "paymentRunComplete": "Payment run completed"
       },
       "resources": {
         "organization": "Organization",
@@ -691,7 +775,12 @@
         "paymentRun": "Payment",
         "project": "Project",
         "team": "Team",
-        "approvalFlow": "Approval"
+        "approvalFlow": "Approval",
+        "timesheet": "Timesheet",
+        "equipment": "Equipment",
+        "shipment": "Shipment",
+        "returnRequest": "Return Request",
+        "user": "User"
       },
       "pagination": {
         "summary": "Page {page} of {totalPages}",
@@ -713,17 +802,16 @@
       "logoAlt": "Organization logo",
       "accentColor": "Accent Color",
       "saving": "Saving...",
-      "saveBranding": "Save Branding",
       "successToast": "Portal branding updated",
       "errorToast": "Failed to save branding. Please try again.",
       "uploadError": "Failed to upload logo. Please try again.",
       "invalidFileType": "Please upload a PNG, JPG, or SVG file.",
       "fileTooLarge": "Logo must be under 2MB.",
       "subdomainHeading": "Portal Subdomain",
+      "subdomainCardDescription": "Configure the custom subdomain for your contractor portal",
       "subdomainDescription": "Contractors will access the portal at",
       "subdomainPlaceholder": "e.g., acme",
       "subdomainSuffix": ".portal.yourdomain.com",
-      "saveDomain": "Save Domain",
       "subdomainUpdated": "Portal subdomain updated",
       "subdomainTaken": "This subdomain is already in use",
       "subdomainSaveError": "Failed to save portal subdomain. Please try again.",
@@ -780,7 +868,7 @@
       "testConnection": "Test connection",
       "saveCredentials": "Save credentials",
       "connectionVerified": "Connection verified",
-      "connectionFailed": "Connection failed -- check your credentials and try again",
+      "connectionFailed": "Connection failed — check your credentials and try again",
       "credentialsSaved": "Credentials saved successfully",
       "saveFailed": "Could not save credentials. Please try again.",
       "username": "Username",
@@ -880,6 +968,16 @@
       "readonly": "Read Only",
       "owner": "Owner",
       "member": "Member"
+    },
+    "roleDescriptions": {
+      "admin": "Full access to all features except platform settings",
+      "financeAdmin": "Invoices, payments, reports and approvals",
+      "opsManager": "Contractors, contracts, workflows and equipment",
+      "teamManager": "View contractors, approve invoices and timesheets",
+      "legalComplianceViewer": "Read-only access to contractors, contracts and invoices",
+      "itAdmin": "Manage members, integrations and system settings",
+      "externalAccountant": "Read-only access to financial data and reports",
+      "readonly": "View contractors, contracts, invoices and reports"
     }
   },
   "Errors": {
@@ -1179,6 +1277,7 @@
       "uploadInvoice": "Upload invoice",
       "startOnboarding": "Start onboarding",
       "startOffboarding": "Start offboarding",
+      "startWorkflow": "Start workflow",
       "markInactive": "Mark as inactive",
       "activate": "Activate",
       "completeOffboarding": "Complete offboarding",
@@ -1760,6 +1859,7 @@
     "editNamePrompt": "Enter your name",
     "nameUpdated": "Name updated",
     "nameUpdateFailed": "Could not update name. Try again.",
+    "signOutFailed": "Could not sign out. Try again.",
     "save": "Save",
     "cancel": "Cancel",
     "aria": {
@@ -1794,7 +1894,8 @@
       "mapColumnToField": "Map column \"{header}\" to field",
       "mapTo": "Map \"{header}\" to",
       "overdueTasks": "{count} overdue tasks",
-      "notificationsWithUnread": "{title} — {count} unread"
+      "notificationsWithUnread": "{title} — {count} unread",
+      "teams": "Microsoft Teams"
     },
     "srOnly": {
       "more": "More",
@@ -2130,6 +2231,8 @@
     "searchPlaceholder": "Search invoices...",
     "filters": "Filters",
     "clearAll": "Clear all",
+    "complianceFilterLabel": "E-invoice compliance",
+    "statusFilterLabel": "Payment & matching status",
     "overdueFilter": "Overdue",
     "columns": {
       "selectAll": "Select all",
@@ -2144,7 +2247,9 @@
       "status": "Status",
       "matchStatus": "Match status",
       "source": "Source",
-      "einvoiceCompliance": "E-invoice"
+      "einvoiceCompliance": "E-invoice",
+      "overdueInterest": "Overdue interest",
+      "skonto": "Skonto"
     },
     "status": {
       "received": "Received",
@@ -2160,9 +2265,12 @@
     "matchStatus": {
       "strongMatch": "Strong match",
       "partialMatch": "Partial match",
+      "partial": "Partial",
+      "matched": "Matched",
       "discrepancy": "Discrepancy",
       "unmatched": "No match",
-      "manualMatch": "Manually matched"
+      "manualMatch": "Manually matched",
+      "manuallyConfirmed": "Manually confirmed"
     },
     "source": {
       "manualUpload": "Upload",
@@ -2308,6 +2416,8 @@
     "tabMy": "My Approvals",
     "tabAll": "All",
     "searchPlaceholder": "Search approvals...",
+    "filters": "Filters",
+    "clearAll": "Clear all",
     "chips": {
       "all": "All",
       "pending": "Pending",
@@ -2316,6 +2426,7 @@
       "rejected": "Rejected"
     },
     "columns": {
+      "status": "Status",
       "selectAll": "Select all",
       "selectRow": "Select row",
       "invoice": "Invoice",
@@ -2608,6 +2719,7 @@
       "disconnectCta": "Disconnect Slack"
     },
     "title": "Notifications",
+    "pageDescription": "Approval requests, task assignments, and important updates",
     "markAllRead": "Mark all read",
     "viewAll": "View all notifications",
     "empty": "No notifications",
@@ -2708,6 +2820,15 @@
     "importStatement": "Import statement",
     "tabPayments": "Payments",
     "totalPaid": "Total paid",
+    "columns": {
+      "runNumber": "Run #",
+      "status": "Status",
+      "created": "Created",
+      "invoices": "Invoices",
+      "total": "Total",
+      "format": "Format",
+      "actions": "Actions"
+    },
     "columnRunNumber": "Run #",
     "columnDate": "Date",
     "columnInvoiceNumber": "Invoice #",
@@ -2727,6 +2848,16 @@
     "templatePlaceholder": "'{invoice_number}'",
     "templateHelper": "Available: '{invoice_number}', '{billing_period}', '{contractor_name}', '{contract_number}'",
     "save": "Save",
+    "saveChanges": "Save changes",
+    "actions": {
+      "cancelRun": "Cancel run",
+      "downloadExport": "Download export",
+      "markAllPaid": "Mark all paid"
+    },
+    "noResults": {
+      "heading": "No payment runs found",
+      "body": "Try adjusting your status filter or date range to find what you're looking for."
+    },
     "cancelDraftTitle": "Cancel this payment run?",
     "cancelDraftBody": "All invoices will be released back to the ready-for-payment pool. This cannot be undone.",
     "cancelDraftCta": "Cancel run",
@@ -2883,7 +3014,9 @@
       "viewPaymentRun": "View payment run",
       "close": "Close"
     },
+    "clearAll": "Clear all",
     "filters": {
+      "status": "Status",
       "dateRange": "Date range",
       "all": "All",
       "draft": "Draft",
@@ -2902,7 +3035,7 @@
       "sortCodeLabel": "Originating sort code",
       "accountNumberLabel": "Originating account number",
       "submitterNameLabel": "Submitter name (max 18 ASCII chars)",
-      "saveSubmitter": "Save submitter details",
+      "saveSubmitter": "Save changes",
       "savedToast": "BACS submitter details saved",
       "featureFlagOffBanner": "BACS export is disabled. Enable it in feature flags to use BACS Std 18.",
       "previewCardTitle": "BACS Std 18 preview",
@@ -3082,6 +3215,16 @@
       "overdueClickThrough": "View overdue invoices",
       "overdueSubline": "{principal} outstanding — +{interest} interest accrued",
       "overdueTitle": "Overdue receivables (UK)"
+    },
+    "selection": {
+      "selectAll": "Select all",
+      "selectRow": "Select row",
+      "invoiceNumber": "Invoice number",
+      "contractor": "Contractor",
+      "amount": "Amount",
+      "currency": "Currency",
+      "dueDate": "Due date",
+      "contractNumber": "Contract number"
     }
   },
   "Reports": {
@@ -3303,6 +3446,11 @@
       "body": "Add your first contractor or import from a spreadsheet to get started.",
       "cta": "Add contractor",
       "secondary": "Import from file"
+    },
+    "equipment": {
+      "heading": "No equipment tracked yet",
+      "body": "Add your first item to start managing tools, assignments, and shipments.",
+      "cta": "Add equipment"
     },
     "contracts": {
       "heading": "No contracts yet",
@@ -3579,7 +3727,7 @@
       "deliveredOn": "Delivered {date}",
       "pendingApproval": "Return pending approval",
       "cancelReturn": "Cancel return",
-      "returnApproved": "Return approved -- your label is ready",
+      "returnApproved": "Return approved — your label is ready",
       "viewLabel": "View label"
     },
     "return": {
@@ -3727,7 +3875,7 @@
         "uploadFailed": "Failed to upload the file. Check your connection and try again.",
         "submitFailed": "Failed to submit invoice. Your data has been saved. Please try again."
       },
-      "ocrExtracted": "Invoice data extracted -- please review before submitting",
+      "ocrExtracted": "Invoice data extracted — please review before submitting",
       "ocrFailed": "Invoice extraction failed. Please try again or enter data manually.",
       "ocrPrefillBanner": "We've pre-filled some fields from your invoice. Please review before submitting.",
       "viewPdf": "View PDF",
@@ -3995,7 +4143,13 @@
   },
   "Equipment": {
     "title": "Equipment",
+    "pageDescription": "Track assignments, shipments, and equipment lifecycle",
     "addEquipment": "Add equipment",
+    "noResults": {
+      "heading": "No equipment found",
+      "body": "Try adjusting your search or filters.",
+      "cta": "Clear filters"
+    },
     "list": {
       "emptyTitle": "No equipment tracked yet",
       "emptyDescription": "Add your first piece of equipment to start tracking assignments and shipments.",
@@ -4046,6 +4200,7 @@
       "customTypePlaceholder": "e.g. Docking Station",
       "notes": "Notes",
       "purchaseDate": "Purchase date",
+      "purchaseDatePlaceholder": "Select a date",
       "save": "Save",
       "cancel": "Cancel"
     },
@@ -4143,7 +4298,7 @@
       "requested": "Requested",
       "approve": "Approve return",
       "reject": "Reject return",
-      "approvedToast": "Return approved -- shipment created",
+      "approvedToast": "Return approved — shipment created",
       "rejectedToast": "Return rejected",
       "actionFailed": "Could not complete the action. Please try again.",
       "rejectConfirmTitle": "Reject return",
@@ -4607,7 +4762,7 @@
     "step1": {
       "heading": "Where do you manage your team?",
       "subtitle": "Select the tools you want to import from. You can connect new tools right here.",
-      "skipLink": "Skip -- I'll invite people manually",
+      "skipLink": "Skip — I'll invite people manually",
       "connectError": "Failed to start connection. Please try again."
     },
     "step2": {
@@ -4633,7 +4788,7 @@
       "batchRole": "Assign Role",
       "emptyHeading": "No team members found",
       "emptyBody": "The selected sources didn't return any team members. Try connecting a different tool or invite people manually.",
-      "conflictTooltip": "Data mismatch -- click to resolve",
+      "conflictTooltip": "Data mismatch — click to resolve",
       "conflictCustom": "Custom value"
     },
     "step3": {
@@ -4703,7 +4858,8 @@
     },
     "credits": {
       "remaining": "{remaining} of {total} credits remaining",
-      "exhausted": "No credits remaining -- purchase more to continue OCR processing",
+      "usedOfTotal": "{used} used / {total} total",
+      "exhausted": "No credits remaining",
       "buyMore": "Buy more"
     },
     "topUp": {
@@ -4726,6 +4882,7 @@
   },
   "Time": {
     "pageTitle": "Time Tracking",
+    "pageDescription": "Review and approve contractor timesheets",
     "tabs": {
       "pendingReviews": "Pending Reviews",
       "allEntries": "All Entries",
@@ -4884,7 +5041,7 @@
         "workflowStatus": "Workflow Status",
         "jiraTransition": "Jira Transition",
         "notMapped": "Not mapped",
-        "unmappedTooltip": "Not mapped -- status changes for this state will be ignored",
+        "unmappedTooltip": "Not mapped — status changes for this state will be ignored",
         "discardChanges": "Discard Changes",
         "saveMapping": "Save Mapping",
         "toast": {
@@ -5544,7 +5701,7 @@
       "Generic": "Something went wrong. Try refreshing or contact support if this persists."
     },
     "intake": {
-      "splitButtonPrimary": "+ New invoice",
+      "splitButtonPrimary": "New invoice",
       "splitButtonImport": "Import e-invoice",
       "sidebarImports": "Imports",
       "pageTitle": "Invoice imports",

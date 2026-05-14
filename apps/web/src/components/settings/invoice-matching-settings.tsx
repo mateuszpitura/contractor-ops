@@ -38,12 +38,16 @@ export function InvoiceMatchingSettings() {
   const invoiceData = invoiceSettingsQuery.data;
 
   const [threshold, setThreshold] = useState(10);
+  const [serverThreshold, setServerThreshold] = useState(10);
 
   useEffect(() => {
     if (invoiceData?.invoiceDeviationThresholdPercent != null) {
       setThreshold(invoiceData.invoiceDeviationThresholdPercent);
+      setServerThreshold(invoiceData.invoiceDeviationThresholdPercent);
     }
   }, [invoiceData]);
+
+  const isDirty = threshold !== serverThreshold;
 
   const updateMutation = useMutation(
     trpc.settings.updateInvoiceSettings.mutationOptions({
@@ -126,13 +130,13 @@ export function InvoiceMatchingSettings() {
       </CardContent>
       <CardFooter>
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+        <Button onClick={handleSave} disabled={!isDirty || updateMutation.isPending}>
           {updateMutation.isPending ? (
-            <Loader2 className="me-1.5 size-3.5 animate-spin" />
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (
-            <Save className="me-1.5 size-3.5" />
+            <Save className="me-2 h-4 w-4" />
           )}
-          {t('saveCta')}
+          {updateMutation.isPending ? t('saving') : t('saveCta')}
         </Button>
       </CardFooter>
     </Card>

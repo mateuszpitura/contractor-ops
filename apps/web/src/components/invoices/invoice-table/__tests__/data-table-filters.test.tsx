@@ -8,7 +8,7 @@ describe('DataTableFilters', () => {
   it('shows active filter count on the Filters trigger', () => {
     render(
       <DataTableFilters
-        filters={{ status: ['RECEIVED', 'PAID'], source: ['MANUAL_UPLOAD'] }}
+        filters={{ status: ['RECEIVED', 'PAID'], matchStatus: [], source: ['MANUAL_UPLOAD'] }}
         onFiltersChange={vi.fn()}
       />,
     );
@@ -21,7 +21,7 @@ describe('DataTableFilters', () => {
     const onFiltersChange = vi.fn();
     const { user } = setup(
       <DataTableFilters
-        filters={{ status: ['RECEIVED'], source: [] }}
+        filters={{ status: ['RECEIVED'], matchStatus: [], source: [] }}
         onFiltersChange={onFiltersChange}
       />,
     );
@@ -40,7 +40,7 @@ describe('DataTableFilters', () => {
     const onFiltersChange = vi.fn();
     const { user } = setup(
       <DataTableFilters
-        filters={{ status: ['RECEIVED'], source: [] }}
+        filters={{ status: ['RECEIVED'], matchStatus: [], source: [] }}
         onFiltersChange={onFiltersChange}
       />,
     );
@@ -58,7 +58,7 @@ describe('DataTableFilters', () => {
     const onFiltersChange = vi.fn();
     const { user } = setup(
       <DataTableFilters
-        filters={{ status: ['RECEIVED'], source: [] }}
+        filters={{ status: ['RECEIVED'], matchStatus: [], source: [] }}
         onFiltersChange={onFiltersChange}
       />,
     );

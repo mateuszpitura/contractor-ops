@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -23,6 +24,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // BreadcrumbLinkRenderer — avoids inline arrow in render prop per iteration
@@ -44,6 +46,13 @@ export function TopBar() {
   const { setOpen: setSearchOpen } = useSearch();
 
   const [contractWizardOpen, setContractWizardOpen] = useState(false);
+
+  // Lightweight check: do any contractors exist? Gates contract & invoice actions.
+  const contractorCountQuery = useQuery(
+    trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
+  );
+  const hasContractors =
+    ((contractorCountQuery.data as { total: number } | undefined)?.total ?? 0) > 0;
 
   const navigateToNewContractor = useCallback(() => {
     router.push('/contractors?action=new');
@@ -88,7 +97,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="glass-subtle sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b-0 px-4">
+      <header className="glass-subtle sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b-0 px-6">
         <SidebarTrigger className="-ms-1" />
         <Separator orientation="vertical" className="!self-center me-2 h-4" />
 
@@ -182,14 +191,17 @@ export function TopBar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={openContractWizard}
+                  className={hasContractors ? 'h-8 w-8' : 'h-8 w-8 cursor-not-allowed opacity-50'}
+                  aria-disabled={!hasContractors || undefined}
+                  onClick={hasContractors ? openContractWizard : undefined}
                 />
               }>
               <FilePlus className="h-4 w-4" />
               <span className="sr-only">{t('newContract')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t('newContract')}</TooltipContent>
+            <TooltipContent>
+              {hasContractors ? t('newContract') : t('addContractorFirst')}
+            </TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -198,14 +210,17 @@ export function TopBar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
-                  onClick={navigateToUploadInvoice}
+                  className={hasContractors ? 'h-8 w-8' : 'h-8 w-8 cursor-not-allowed opacity-50'}
+                  aria-disabled={!hasContractors || undefined}
+                  onClick={hasContractors ? navigateToUploadInvoice : undefined}
                 />
               }>
               <Upload className="h-4 w-4" />
               <span className="sr-only">{t('uploadInvoice')}</span>
             </TooltipTrigger>
-            <TooltipContent>{t('uploadInvoice')}</TooltipContent>
+            <TooltipContent>
+              {hasContractors ? t('uploadInvoice') : t('addContractorFirst')}
+            </TooltipContent>
           </Tooltip>
 
           {/* Search bar trigger */}

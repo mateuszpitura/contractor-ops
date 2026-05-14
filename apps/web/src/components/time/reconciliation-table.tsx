@@ -1,9 +1,9 @@
 'use client';
 
-import { AtelierEmptyState } from '@contractor-ops/ui';
+import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { ArrowRightLeft, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { DeviationFlag } from '@/components/time/deviation-flag';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -128,7 +128,7 @@ export function ReconciliationTable() {
   if (items.length === 0) {
     return (
       <AtelierEmptyState
-        icon={ArrowRightLeft}
+        illustration={TimeTrackingIllustration}
         heading="No reconciliation data"
         body="Reconciliation data appears when invoices have matching approved time entries."
         renderAction={renderEmptyStateAction}

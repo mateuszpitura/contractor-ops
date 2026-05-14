@@ -15,7 +15,13 @@ interface DataTableToolbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   isSearching?: boolean;
+  /** Disable all interactive controls (initial data load). */
+  disabled?: boolean;
   onStartWorkflow: () => void;
+  /** Filter popover button rendered inline next to search. */
+  filterTrigger?: React.ReactNode;
+  /** Active filter badges rendered below the main toolbar row. */
+  filterBadges?: React.ReactNode;
 }
 
 // ---------------------------------------------------------------------------
@@ -29,7 +35,10 @@ export function DataTableToolbar({
   search,
   onSearchChange,
   isSearching,
+  disabled: filtersDisabled,
   onStartWorkflow,
+  filterTrigger,
+  filterBadges,
 }: DataTableToolbarProps) {
   const t = useTranslations('Workflows');
 
@@ -53,29 +62,36 @@ export function DataTableToolbar({
   );
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Search */}
-      <div className="relative flex-1 max-w-sm">
-        <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder={t('searchPlaceholder')}
-          value={localSearch}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => handleSearchInput(e.target.value)}
-          className="h-9 ps-9 pe-8"
-        />
-        {!!isSearching && (
-          <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-        )}
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        {/* Search */}
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={t('searchPlaceholder')}
+            value={localSearch}
+            disabled={filtersDisabled}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => handleSearchInput(e.target.value)}
+            className="h-9 ps-9 pe-8"
+          />
+          {!!isSearching && (
+            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          )}
+        </div>
+
+        {/* Filter trigger */}
+        {filterTrigger}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Start workflow CTA */}
+        <Button size="lg" disabled={filtersDisabled} onClick={onStartWorkflow}>
+          {t('startWorkflow')}
+        </Button>
       </div>
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Start workflow CTA */}
-      <Button size="lg" onClick={onStartWorkflow}>
-        {t('startWorkflow')}
-      </Button>
+      {filterBadges}
     </div>
   );
 }

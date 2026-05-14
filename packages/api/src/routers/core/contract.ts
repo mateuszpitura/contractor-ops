@@ -109,10 +109,20 @@ function buildContractListWhere(
     where.billingModel = { in: filters.billingModel };
   }
   if (filters?.ownerUserId?.length) {
-    where.internalOwnerUserId = { in: filters.ownerUserId };
+    where.OR = [
+      { internalOwnerUserId: { in: filters.ownerUserId } },
+      { internalOwnerUserId: null, contractor: { ownerUserId: { in: filters.ownerUserId } } },
+    ];
   }
   if (filters?.complianceRiskLevel?.length) {
     where.complianceRiskLevel = { in: filters.complianceRiskLevel };
+  }
+
+  if (filters?.startDateFrom || filters?.startDateTo) {
+    where.startDate = {
+      ...(filters?.startDateFrom && { gte: new Date(filters.startDateFrom) }),
+      ...(filters?.startDateTo && { lte: new Date(filters.startDateTo) }),
+    };
   }
 
   if (filters?.endDateFrom || filters?.endDateTo) {

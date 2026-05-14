@@ -51,7 +51,7 @@ export function Navbar() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? 'glass-subtle py-3' : 'py-5 bg-transparent'
+          scrolled ? 'glass-subtle navbar-bleed py-3' : 'py-5 bg-transparent'
         }`}>
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-6">
           {/* Logo */}

@@ -19,12 +19,28 @@ export type CreateOrganizationInput = z.infer<typeof createOrganizationSchema>;
  * Schema for updating organization settings.
  * All fields are optional — only provided fields are updated.
  */
+export const dateFormatValues = [
+  'DD/MM/YYYY',
+  'MM/DD/YYYY',
+  'YYYY-MM-DD',
+  'DD.MM.YYYY',
+  'DD MMM YYYY',
+] as const;
+
+export type DateFormatKey = (typeof dateFormatValues)[number];
+
+export const timeFormatValues = ['24h', '12h'] as const;
+
+export type TimeFormatKey = (typeof timeFormatValues)[number];
+
 export const updateOrganizationSettingsSchema = z.object({
   name: z.string().min(2).max(255).optional(),
   legalName: z.string().max(255).optional(),
   fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
   billingEmail: z.string().email('Invalid billing email').optional(),
-  language: z.enum(['pl', 'en']).optional(),
+  language: z.enum(['pl', 'en', 'ar', 'de']).optional(),
+  dateFormat: z.enum(dateFormatValues).optional(),
+  timeFormat: z.enum(timeFormatValues).optional(),
   onboardingCompletedSteps: z.array(z.string().min(1).max(50)).max(10).optional(),
   onboardingDismissed: z.boolean().optional(),
   defaultReturnCarrier: z.string().max(20).optional(),
