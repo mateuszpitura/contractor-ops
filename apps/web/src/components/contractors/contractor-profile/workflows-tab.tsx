@@ -214,19 +214,27 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
   const totalCount: number = queryData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  // Loading state
+  // Loading state — mirrors the final list-row layout (border + rounded-lg + status pill + progress + date)
   if (runsQuery.isLoading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 px-4 py-3">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-        ))}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              key={`skel-${i}`}
+              className="flex items-center gap-4 rounded-lg border px-4 py-3">
+              <Skeleton className="h-4 flex-1 max-w-[280px]" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+              <Skeleton className="h-4 w-12 tabular-nums" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
