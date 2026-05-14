@@ -320,6 +320,22 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}
             onClearFilters={clearFilters}
+            skeletonColumns={{
+              select: { shape: 'checkbox' },
+              invoiceNumber: { shape: 'text', width: 'w-28' },
+              contractor: { shape: 'text', width: 'w-36' },
+              issueDate: { shape: 'text', width: 'w-24' },
+              dueDate: { shape: 'text', width: 'w-24' },
+              subtotalMinor: { shape: 'text', width: 'w-20' },
+              totalMinor: { shape: 'text', width: 'w-24' },
+              currency: { shape: 'text', width: 'w-12' },
+              status: { shape: 'badge' },
+              matchStatus: { shape: 'badge' },
+              source: { shape: 'badge' },
+              einvoiceCompliance: { shape: 'badge' },
+              overdueInterest: { shape: 'text', width: 'w-20' },
+              skonto: { shape: 'text', width: 'w-16' },
+            }}
           />
         </Table>
       </AtelierTableShell>

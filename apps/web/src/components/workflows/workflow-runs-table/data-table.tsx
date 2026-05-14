@@ -269,6 +269,16 @@ export function WorkflowRunsDataTable({
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}
             onClearFilters={clearFilters}
+            skeletonColumns={{
+              select: { shape: 'checkbox' },
+              workflowName: { shape: 'text', width: 'w-40' },
+              contractor: { shape: 'text', width: 'w-36' },
+              templateType: { shape: 'badge' },
+              status: { shape: 'badge' },
+              progress: { shape: 'text', width: 'w-20' },
+              startedAt: { shape: 'text', width: 'w-24' },
+              dueAt: { shape: 'text', width: 'w-24' },
+            }}
           />
         </Table>
       </AtelierTableShell>

@@ -352,6 +352,20 @@ export function ContractDataTable({
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}
             onClearFilters={clearFilters}
+            skeletonColumns={{
+              select: { shape: 'checkbox' },
+              title: { shape: 'text', width: 'w-40' },
+              contractor: { shape: 'text', width: 'w-36' },
+              type: { shape: 'badge' },
+              status: { shape: 'badge' },
+              startDate: { shape: 'text', width: 'w-24' },
+              endDate: { shape: 'text', width: 'w-24' },
+              rateValueMinor: { shape: 'text', width: 'w-20' },
+              currency: { shape: 'text', width: 'w-12' },
+              billingModel: { shape: 'text', width: 'w-20' },
+              internalOwner: { shape: 'avatar' },
+              complianceRiskLevel: { shape: 'badge' },
+            }}
           />
         </Table>
       </AtelierTableShell>
