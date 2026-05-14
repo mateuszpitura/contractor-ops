@@ -209,7 +209,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 <SelectContent>
                   {ENUM_VALUE_FIELDS[rule.field]?.map(v => (
                     <SelectItem key={v} value={v}>
-                      {v}
+                      {t(`conditionValue.${enumKey(v)}` as Parameters<typeof t>[0])}
                     </SelectItem>
                   ))}
                 </SelectContent>
