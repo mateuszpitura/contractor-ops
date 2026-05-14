@@ -155,4 +155,49 @@ describe('DataTableBody', () => {
     await user.click(button);
     expect(onClear).toHaveBeenCalled();
   });
+
+  it('applies per-column skeleton shapes when skeletonColumns is provided', () => {
+    const table = createMockTable();
+    const { container } = renderInTable(
+      <DataTableBody
+        table={table as never}
+        isLoading={true}
+        hasFiltersOrSearch={false}
+        emptyTitle="No data"
+        noResultsTitle="No results"
+        skeletonRows={1}
+        skeletonColumns={{
+          'col-1': { shape: 'checkbox' },
+          'col-2': { shape: 'badge' },
+        }}
+      />,
+    );
+
+    // Two cells in the single skeleton row — one checkbox-sized, one badge-shaped.
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons).toHaveLength(2);
+    expect(skeletons[0]?.className).toMatch(/h-4 w-4/);
+    expect(skeletons[1]?.className).toMatch(/rounded-full/);
+  });
+
+  it('falls back to default skeleton shape when no descriptor is provided', () => {
+    const table = createMockTable();
+    const { container } = renderInTable(
+      <DataTableBody
+        table={table as never}
+        isLoading={true}
+        hasFiltersOrSearch={false}
+        emptyTitle="No data"
+        noResultsTitle="No results"
+        skeletonRows={1}
+      />,
+    );
+
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons).toHaveLength(2);
+    for (const sk of skeletons) {
+      expect(sk.className).toMatch(/h-4/);
+      expect(sk.className).toMatch(/max-w-\[120px\]/);
+    }
+  });
 });
