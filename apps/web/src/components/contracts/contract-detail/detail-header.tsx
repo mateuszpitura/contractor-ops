@@ -1,12 +1,10 @@
 'use client';
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
-import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ban, FilePlus, MoreHorizontal, Pencil, Replace, Upload } from 'lucide-react';
+import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
+import { MoreHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { Fragment, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +23,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import type { ContractAction } from '../actions';
+import { getDetailContractActions } from '../actions';
 import { SendForSignatureButton } from './send-for-signature-button';
 
 // ---------------------------------------------------------------------------
@@ -60,9 +61,9 @@ type DetailHeaderProps = {
   };
 };
 
-// ---------------------------------------------------------------------------
-// Status mapping moved to @contractor-ops/ui — statusToVariant('contract', s).
-// ---------------------------------------------------------------------------
+/** Action keys handled outside the kebab menu (rendered as primary buttons or */
+/** via the bespoke `SendForSignatureButton` component). */
+const ROUTED_ELSEWHERE = new Set(['sendForSignature']);
 
 // ---------------------------------------------------------------------------
 // Component
@@ -71,50 +72,62 @@ type DetailHeaderProps = {
 export function DetailHeader({ contract }: DetailHeaderProps) {
   const t = useTranslations('ContractDetail');
   const tEnum = useTranslations('Contracts');
-  const queryClient = useQueryClient();
   const [terminateOpen, setTerminateOpen] = useState(false);
 
-  const terminateMutation = useMutation(
-    trpc.contract.transitionStatus.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('actions.terminateSuccess'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.contract.getById.queryKey(),
-        });
-        setTerminateOpen(false);
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || t('actions.terminateError'));
-      },
-    }),
-  );
+  // ---- Mutations via canonical useResourceMutation ----------------------
+  const contractByIdKey = trpc.contract.getById.queryKey();
+  const terminateMutation = useResourceMutation(trpc.contract.transitionStatus.mutationOptions(), {
+    invalidate: [contractByIdKey],
+    successMessage: t('actions.terminateSuccess'),
+    errorMessage: t('actions.terminateError'),
+    onClose: () => setTerminateOpen(false),
+  });
 
-  const supersedeMutation = useMutation(
-    trpc.contract.transitionStatus.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('actions.supersedeSuccess'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.contract.getById.queryKey(),
-        });
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === 'object' && error && 'message' in error
-            ? String((error as { message?: unknown }).message ?? '')
-            : '';
-        toast.error(message || t('actions.supersedeError'));
-      },
-    }),
-  );
+  const supersedeMutation = useResourceMutation(trpc.contract.transitionStatus.mutationOptions(), {
+    invalidate: [contractByIdKey],
+    successMessage: t('actions.supersedeSuccess'),
+    errorMessage: t('actions.supersedeError'),
+  });
 
-  const canTerminate = ['DRAFT', 'ACTIVE', 'EXPIRING', 'EXPIRED', 'PENDING_SIGNATURE'].includes(
-    contract.status,
-  );
-  const canSupersede = ['ACTIVE', 'EXPIRING', 'EXPIRED'].includes(contract.status);
+  const isPending = terminateMutation.isPending || supersedeMutation.isPending;
+
+  // ---- Registry-driven action inventory ---------------------------------
+  const applicable = getDetailContractActions({
+    id: contract.id,
+    status: contract.status,
+  });
+
+  // Filter out actions handled by bespoke primary controls (SendForSignature).
+  const menuActions = applicable.filter(a => !ROUTED_ELSEWHERE.has(a.key));
+
+  function getActionLabel(action: ContractAction): string {
+    // ContractDetail-namespaced actions resolve via `t`; future Contracts
+    // namespace fallthrough is wired the same way as the contractors variant.
+    return t(action.labelKey as Parameters<typeof t>[0]);
+  }
+
+  // Action keys that are wired in the UI but their backend/UX is not yet
+  // implemented — they render disabled in the menu, no-op when clicked.
+  const NOT_IMPLEMENTED = new Set(['edit', 'addAmendment', 'uploadDocument']);
+
+  function dispatchMenuAction(action: ContractAction) {
+    if (NOT_IMPLEMENTED.has(action.key)) return;
+    switch (action.key) {
+      case 'terminate':
+        setTerminateOpen(true);
+        return;
+      case 'supersede':
+        supersedeMutation.mutate({ id: contract.id, targetStatus: 'SUPERSEDED' });
+        return;
+      default:
+        return;
+    }
+  }
+
+  // Whether the separator between non-destructive and destructive items should
+  // appear: only if at least one of each category is present.
+  const hasNonDestructive = menuActions.some(a => a.variant !== 'destructive');
+  const hasDestructive = menuActions.some(a => a.variant === 'destructive');
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -148,60 +161,42 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           documentId={contract._firstDocumentId}
           contractParties={contract._contractParties}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="sm">
-                <MoreHorizontal className="me-1.5 size-3.5" />
-                {t('actions.label')}
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled>
-              <Pencil className="me-2 size-3.5" />
-              {t('actions.edit')}
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <FilePlus className="me-2 size-3.5" />
-              {t('actions.addAmendment')}
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <Upload className="me-2 size-3.5" />
-              {t('actions.uploadDocument')}
-            </DropdownMenuItem>
-
-            {!!(canTerminate || canSupersede) && <DropdownMenuSeparator />}
-
-            {canTerminate && (
-              <DropdownMenuItem
-                variant="destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                onSelect={() => setTerminateOpen(true)}
-                disabled={terminateMutation.isPending}>
-                <Ban className="me-2 size-3.5" />
-                {t('actions.terminate')}
-              </DropdownMenuItem>
-            )}
-
-            {canSupersede && (
-              <DropdownMenuItem
-                variant="destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                onSelect={() =>
-                  supersedeMutation.mutate({
-                    id: contract.id,
-                    targetStatus: 'SUPERSEDED',
-                  })
-                }
-                disabled={supersedeMutation.isPending}>
-                <Replace className="me-2 size-3.5" />
-                {t('actions.supersede')}
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {menuActions.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
+                <Button {...props} variant="outline" size="sm">
+                  <MoreHorizontal className={`me-1.5 ${iconSize.sm}`} />
+                  {t('actions.label')}
+                </Button>
+              )}
+            />
+            <DropdownMenuContent align="end">
+              {menuActions.map(action => {
+                const Icon = action.icon;
+                const isFirstDestructive: boolean =
+                  hasNonDestructive &&
+                  hasDestructive &&
+                  action.variant === 'destructive' &&
+                  menuActions.find(a => a.variant === 'destructive')?.key === action.key;
+                return (
+                  <Fragment key={action.key}>
+                    {!!isFirstDestructive && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      disabled={isPending || NOT_IMPLEMENTED.has(action.key)}
+                      variant={action.variant}
+                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                      onSelect={() => dispatchMenuAction(action)}>
+                      <Icon className={`me-2 ${iconSize.sm}`} />
+                      {getActionLabel(action)}
+                    </DropdownMenuItem>
+                  </Fragment>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Terminate confirmation dialog */}

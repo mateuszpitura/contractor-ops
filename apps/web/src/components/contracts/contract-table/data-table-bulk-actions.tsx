@@ -1,8 +1,8 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { iconSize } from '@contractor-ops/ui';
 import type { Table } from '@tanstack/react-table';
-import { Download, Loader2, XCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -23,7 +23,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { trpc } from '@/trpc/init';
+import type { ContractAction } from '../actions';
+import { getBulkContractActions } from '../actions';
 import type { ContractRow } from './columns';
 
 interface DataTableBulkActionsProps {
@@ -32,13 +35,17 @@ interface DataTableBulkActionsProps {
 
 /**
  * Bulk action toolbar shown when 1+ rows are selected.
- * Includes export (CSV/XLSX) and terminate actions.
+ *
+ * Inventory of actions is sourced from `getBulkContractActions()` so the
+ * toolbar cannot drift from the detail-header or row context menu. Each
+ * action's `key` is matched to a bespoke UI control (dropdown / dialog /
+ * button) — the registry supplies label, icon and variant, the consumer
+ * supplies the interaction shape.
  */
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const t = useTranslations('Contracts.bulkActions');
   const tc = useTranslations('Contracts');
   const td = useTranslations('Contracts.terminate');
-  const queryClient = useQueryClient();
 
   const [showTerminateDialog, setShowTerminateDialog] = useState(false);
 
@@ -46,23 +53,35 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const selectedIds = selectedRows.map(row => row.original.id);
   const count = selectedIds.length;
 
-  const invalidateAndDeselect = () => {
-    queryClient.invalidateQueries({ queryKey: ['contract'] });
-    table.toggleAllPageRowsSelected(false);
-  };
+  // ---- Registry lookups ---------------------------------------------------
+  const actions = getBulkContractActions();
+  const actionByKey = new Map<string, ContractAction>(actions.map(a => [a.key, a]));
+  const exportAction = actionByKey.get('bulk.export');
+  const terminateAction = actionByKey.get('bulk.terminate');
 
-  const bulkTransitionMutation = useMutation(
-    trpc.contract.bulkTransition.mutationOptions({
-      onSuccess: data => {
-        const result = data as { updated: number; failed: string[] };
-        toast.success(tc('terminated', { count: result.updated }));
-        invalidateAndDeselect();
+  const ExportIcon = exportAction?.icon;
+  const TerminateIcon = terminateAction?.icon;
+
+  // Match the original broad invalidation scope so any contract-scoped query
+  // (list, getById, summaries, etc.) gets refreshed after a bulk transition.
+  const contractPrefixKey = ['contract'] as const;
+  const deselect = () => table.toggleAllPageRowsSelected(false);
+
+  // ---- Mutations (canonical pattern via useResourceMutation) --------------
+  // Note: the server returns `{ updated, failed }`; if rows are filtered out
+  // server-side the toast will still report the selection size. This is the
+  // same trade-off accepted in the contractors bulkArchive consumer.
+  const bulkTerminateMutation = useResourceMutation(
+    trpc.contract.bulkTransition.mutationOptions(),
+    {
+      invalidate: [contractPrefixKey],
+      successMessage: tc('terminated', { count }),
+      errorMessage: tc('error.loadFailed'),
+      onClose: () => {
+        deselect();
         setShowTerminateDialog(false);
       },
-      onError: () => {
-        toast.error(tc('error.loadFailed'));
-      },
-    }),
+    },
   );
 
   if (count === 0) return null;
@@ -72,45 +91,49 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
         <span className="text-sm font-medium">{t('selected', { count })}</span>
 
-        {/* Export — placeholder for now, actual export router is not yet implemented */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
-                <Download className="h-3.5 w-3.5" />
-                {t('export')}
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                toast.info(tc('exportComingSoon'));
-              }}>
-              {t('exportCsv')}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                toast.info(tc('exportComingSoon'));
-              }}>
-              {t('exportXlsx')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Export — placeholder; contract export router is not yet implemented */}
+        {!!exportAction && !!ExportIcon && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+              render={props => (
+                <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
+                  <ExportIcon className={iconSize.sm} />
+                  {t(exportAction.labelKey)}
+                </Button>
+              )}
+            />
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => {
+                  toast.info(tc('exportComingSoon'));
+                }}>
+                {t('exportCsv')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => {
+                  toast.info(tc('exportComingSoon'));
+                }}>
+                {t('exportXlsx')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
 
         {/* Terminate */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 text-destructive hover:text-destructive"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => setShowTerminateDialog(true)}>
-          <XCircle className="h-3.5 w-3.5" />
-          {t('terminate')}
-        </Button>
+        {!!terminateAction && !!TerminateIcon && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-destructive hover:text-destructive"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => setShowTerminateDialog(true)}>
+            <TerminateIcon className={iconSize.sm} />
+            {t(terminateAction.labelKey)}
+          </Button>
+        )}
       </div>
 
       {/* Terminate confirmation dialog */}
@@ -125,15 +148,15 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
             <AlertDialogAction
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() =>
-                bulkTransitionMutation.mutate({
+                bulkTerminateMutation.mutate({
                   ids: selectedIds,
                   targetStatus: 'TERMINATED',
                 })
               }
-              disabled={bulkTransitionMutation.isPending}
+              disabled={bulkTerminateMutation.isPending}
               variant="destructive">
-              {bulkTransitionMutation.isPending ? (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+              {bulkTerminateMutation.isPending ? (
+                <Loader2 className={`me-2 ${iconSize.md} animate-spin`} />
               ) : null}
               {td('ctaBulk', { count })}
             </AlertDialogAction>
