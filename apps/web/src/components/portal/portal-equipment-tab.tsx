@@ -1,6 +1,6 @@
 'use client';
 
-import { EquipmentIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, EquipmentIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Loader2, RotateCcw } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { EquipmentStatusBadge } from '@/components/equipment/equipment-status-badge';
 import { EquipmentTypeIcon } from '@/components/equipment/equipment-type-icon';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -118,13 +119,13 @@ export function PortalEquipmentTab() {
     return (
       <div className="space-y-8">
         <h1 className="text-xl font-semibold">{t('title')}</h1>
-        <div className="flex min-h-[300px] flex-col items-center justify-center text-center">
-          <div className="text-primary/70">
-            <EquipmentIllustration className="h-24 w-24" />
-          </div>
-          <h3 className="mt-5 font-display text-[20px] font-semibold">{t('emptyTitle')}</h3>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">{t('emptyDescription')}</p>
-        </div>
+        <AtelierEmptyState
+          variant="subview"
+          illustration={EquipmentIllustration}
+          heading={t('emptyTitle')}
+          body={t('emptyDescription')}
+          renderAction={renderEmptyStateAction}
+        />
       </div>
     );
   }

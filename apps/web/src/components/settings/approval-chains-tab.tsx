@@ -1,6 +1,6 @@
 'use client';
 
-import { ApprovalsIllustration } from '@contractor-ops/ui';
+import { ApprovalsIllustration, AtelierEmptyState } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -157,16 +157,23 @@ export function ApprovalChainsTab() {
   if (chains.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ApprovalsIllustration className="h-24 w-24" />
-          <h3 className="mt-4 text-base font-semibold">{t('approvals.empty.heading')}</h3>
-          <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t('approvals.empty.body')}</p>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button className="mt-4" onClick={handleCreate}>
-            <Plus className="me-1.5 size-4" />
-            {t('approvals.empty.cta')}
-          </Button>
-        </div>
+        <AtelierEmptyState
+          variant="subview"
+          illustration={ApprovalsIllustration}
+          heading={t('approvals.empty.heading')}
+          body={t('approvals.empty.body')}
+          primaryAction={{
+            label: t('approvals.empty.cta'),
+            onClick: handleCreate,
+            icon: Plus,
+          }}
+          renderAction={action => (
+            <Button onClick={action.onClick}>
+              {action.icon ? <action.icon className="me-1.5 size-4" /> : null}
+              {action.label}
+            </Button>
+          )}
+        />
         <ChainEditorDialog
           open={editorOpen}
           onOpenChange={setEditorOpen}
