@@ -2,6 +2,7 @@ export {
   AtelierEmptyState,
   type AtelierEmptyStateAction,
   type AtelierEmptyStateProps,
+  type AtelierEmptyStateVariant,
 } from './empty-state.js';
 export {
   ApprovalsIllustration,

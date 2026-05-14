@@ -10,6 +10,19 @@ export interface AtelierEmptyStateAction {
   icon?: ComponentType<{ className?: string }>;
 }
 
+/**
+ * Layout density for the empty state.
+ *
+ * - `page`     — full-page empty state. Tall (min-h 40vh), large
+ *   illustration, dot-grid backdrop, framed border. Default.
+ * - `subview`  — inside a tab/card/section. No min-h, smaller
+ *   illustration, no backdrop, no border. Use for empty tabs inside
+ *   detail pages or empty sections inside settings.
+ * - `inline`   — compact one-row layout for tiny empty lists. Icon +
+ *   heading + action side-by-side.
+ */
+export type AtelierEmptyStateVariant = 'page' | 'subview' | 'inline';
+
 export interface AtelierEmptyStateProps {
   /** Display icon — typically a lucide-react component. Falls back when `illustration` is set. */
   icon?: ComponentType<{ className?: string; strokeWidth?: number }>;
@@ -32,6 +45,12 @@ export interface AtelierEmptyStateProps {
    */
   prerequisiteAction?: AtelierEmptyStateAction;
   prerequisiteMissing?: boolean;
+  /**
+   * Layout density. Defaults to `'page'` so existing call sites are
+   * unchanged. Use `'subview'` inside tabs/cards and `'inline'` for
+   * tiny lists.
+   */
+  variant?: AtelierEmptyStateVariant;
   /**
    * Render the action(s). The primitive can't import the app's Link
    * component, so the consumer provides a render function.
@@ -62,10 +81,61 @@ export function AtelierEmptyState({
   secondaryAction,
   prerequisiteAction,
   prerequisiteMissing,
+  variant = 'page',
   renderAction,
 }: AtelierEmptyStateProps) {
   const effectivePrimary =
     prerequisiteMissing && prerequisiteAction ? prerequisiteAction : primaryAction;
+
+  if (variant === 'inline') {
+    return (
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/40 bg-muted/20 px-4 py-3">
+        {Illustration ? (
+          <div className="shrink-0 text-primary/70">
+            <Illustration className="h-8 w-8" />
+          </div>
+        ) : Icon ? (
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/8">
+            <Icon className="h-4 w-4 text-primary/70" strokeWidth={1.5} />
+          </div>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{heading}</p>
+          <p className="truncate text-xs text-muted-foreground">{body}</p>
+        </div>
+        {effectivePrimary || secondaryAction ? (
+          <div className="flex shrink-0 items-center gap-2">
+            {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
+            {effectivePrimary ? renderAction(effectivePrimary, 'primary') : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (variant === 'subview') {
+    return (
+      <div className="flex flex-col items-center justify-center px-6 py-10 text-center">
+        {Illustration ? (
+          <div className="text-primary/70">
+            <Illustration className="h-16 w-16" />
+          </div>
+        ) : Icon ? (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/8">
+            <Icon className="h-6 w-6 text-primary/70" strokeWidth={1.5} />
+          </div>
+        ) : null}
+        <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">{heading}</h3>
+        <p className="mt-1.5 max-w-[380px] text-sm leading-relaxed text-muted-foreground">{body}</p>
+        {effectivePrimary || secondaryAction ? (
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            {effectivePrimary ? renderAction(effectivePrimary, 'primary') : null}
+            {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="dot-grid flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border/40 px-6 py-12 text-center">

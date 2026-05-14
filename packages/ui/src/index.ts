@@ -18,5 +18,6 @@ export * from './components/atelier/index.js';
 export * from './components/workbench/index.js';
 export { useHoverCapability } from './hooks/use-hover-capability.js';
 export { useReducedMotion } from './hooks/use-reduced-motion.js';
+export { type IconSize, iconSize } from './icons/sizes.js';
 export * from './status/index.js';
 // biome-ignore-end lint/performance/noReExportAll: package barrel

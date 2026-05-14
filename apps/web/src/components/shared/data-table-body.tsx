@@ -12,6 +12,20 @@ import { TableBody, TableCell, TableRow } from '@/components/ui/table';
 // Types
 // ---------------------------------------------------------------------------
 
+/**
+ * Shape descriptor for a single skeleton column. Allows the SkeletonRow
+ * to mimic the actual column's visual weight instead of rendering a
+ * uniform 120px rectangle for every cell. Map by `columnId` (TanStack
+ * column id) — any unmapped column falls back to the default text
+ * shape.
+ */
+export type SkeletonColumnShape = {
+  /** Visual shape — drives skeleton dimensions + radius. */
+  shape?: 'text' | 'badge' | 'avatar' | 'actions' | 'checkbox';
+  /** Tailwind width class override (e.g. 'w-32', 'w-1/2'). Used by 'text' shape only. */
+  width?: string;
+};
+
 interface DataTableBodyProps<TData> {
   table: Table<TData>;
   isLoading: boolean;
@@ -43,13 +57,46 @@ interface DataTableBodyProps<TData> {
 
   /** Number of skeleton rows to show while loading (default: 8). */
   skeletonRows?: number;
+
+  /**
+   * Optional per-column skeleton shape descriptors keyed by TanStack column id.
+   * When omitted the skeleton falls back to the legacy uniform shape. Use
+   * this to align skeleton dimensions with real column content (avatars,
+   * badges, narrow checkbox/action cells, etc.).
+   */
+  skeletonColumns?: Record<string, SkeletonColumnShape>;
 }
 
 // ---------------------------------------------------------------------------
 // Skeleton rows
 // ---------------------------------------------------------------------------
 
-function SkeletonRows<TData>({ table, count }: { table: Table<TData>; count: number }) {
+function skeletonClassForShape(descriptor: SkeletonColumnShape | undefined): string {
+  if (!descriptor) return 'h-4 w-full max-w-[120px]';
+  switch (descriptor.shape) {
+    case 'checkbox':
+      return 'h-4 w-4 rounded-sm';
+    case 'avatar':
+      return 'h-7 w-7 rounded-full';
+    case 'badge':
+      return 'h-5 w-16 rounded-full';
+    case 'actions':
+      return 'ms-auto h-4 w-4 rounded-sm';
+    case 'text':
+    default:
+      return `h-4 ${descriptor.width ?? 'w-full max-w-[120px]'}`;
+  }
+}
+
+function SkeletonRows<TData>({
+  table,
+  count,
+  columns,
+}: {
+  table: Table<TData>;
+  count: number;
+  columns?: Record<string, SkeletonColumnShape>;
+}) {
   return (
     <>
       {Array.from({ length: count }).map((_, i) => (
@@ -57,7 +104,7 @@ function SkeletonRows<TData>({ table, count }: { table: Table<TData>; count: num
         <TableRow key={`skeleton-${i}`}>
           {table.getVisibleLeafColumns().map(col => (
             <TableCell key={col.id}>
-              <Skeleton className="h-4 w-full max-w-[120px]" />
+              <Skeleton className={skeletonClassForShape(columns?.[col.id])} />
             </TableCell>
           ))}
         </TableRow>
@@ -205,6 +252,7 @@ export function DataTableBody<TData>({
   noResultsCta,
   onClearFilters,
   skeletonRows = 8,
+  skeletonColumns,
 }: DataTableBodyProps<TData>) {
   const colSpan = table.getVisibleLeafColumns().length;
   const rows = table.getRowModel().rows;
@@ -213,7 +261,7 @@ export function DataTableBody<TData>({
   return (
     <TableBody>
       {showSkeleton ? (
-        <SkeletonRows table={table} count={skeletonRows} />
+        <SkeletonRows table={table} count={skeletonRows} columns={skeletonColumns} />
       ) : rows.length > 0 ? (
         <DataRows rows={rows} onRowClick={onRowClick} rowClassName={rowClassName} />
       ) : hasFiltersOrSearch ? (
