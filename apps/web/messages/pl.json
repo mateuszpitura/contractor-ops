@@ -4892,6 +4892,28 @@
       "notFoundHeading": "Nie znaleziono karty pracy",
       "notFoundBody": "Nie można znaleźć żądanej karty pracy. Mogła zostać usunięta lub adres URL jest nieprawidłowy.",
       "backToTimeTracking": "Powrót do rejestracji czasu pracy"
+    },
+    "singleEntry": {
+      "title": "Log Time Entry",
+      "description": "Add a single time entry for a specific date and project.",
+      "dateLabel": "Date",
+      "datePlaceholder": "Select date",
+      "projectLabel": "Project",
+      "projectPlaceholder": "Select a project",
+      "hoursLabel": "Hours",
+      "hoursPlaceholder": "e.g. 1.5",
+      "descriptionLabel": "Description",
+      "descriptionOptional": "(optional)",
+      "descriptionPlaceholder": "What did you work on?",
+      "validation": {
+        "dateRequired": "Date is required",
+        "projectRequired": "Project is required",
+        "hoursRange": "Hours must be between 0.25 and 24",
+        "descriptionLength": "Description must be 500 characters or less"
+      },
+      "discardCta": "Discard Entry",
+      "addCta": "Add Entry",
+      "addingCta": "Adding..."
     }
   },
   "Zatca": {

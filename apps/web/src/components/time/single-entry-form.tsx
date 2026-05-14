@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -65,6 +66,7 @@ export function SingleEntryForm({
   onSubmit,
   isSubmitting,
 }: SingleEntryFormProps) {
+  const t = useTranslations('Time.singleEntry');
   const id = useId();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [contractId, setContractId] = useState('');
@@ -85,17 +87,17 @@ export function SingleEntryForm({
     const newErrors: Record<string, string> = {};
 
     if (!date) {
-      newErrors.date = 'Date is required';
+      newErrors.date = t('validation.dateRequired');
     }
     if (!contractId) {
-      newErrors.contractId = 'Project is required';
+      newErrors.contractId = t('validation.projectRequired');
     }
     const hoursVal = parseFloat(hours);
     if (!hours || Number.isNaN(hoursVal) || hoursVal < 0.25 || hoursVal > 24) {
-      newErrors.hours = 'Hours must be between 0.25 and 24';
+      newErrors.hours = t('validation.hoursRange');
     }
     if (description && description.length > 500) {
-      newErrors.description = 'Description must be 500 characters or less';
+      newErrors.description = t('validation.descriptionLength');
     }
 
     setErrors(newErrors);
@@ -127,16 +129,14 @@ export function SingleEntryForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Log Time Entry</DialogTitle>
-          <DialogDescription>
-            Add a single time entry for a specific date and project.
-          </DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Date picker */}
           <div className="space-y-2">
-            <Label htmlFor={`${id}-entry-date`}>Date</Label>
+            <Label htmlFor={`${id}-entry-date`}>{t('dateLabel')}</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger
                 render={
@@ -150,7 +150,7 @@ export function SingleEntryForm({
                   />
                 }>
                 <CalendarDays className="me-2 h-4 w-4" />
-                {date ? format(date, 'MMM d, yyyy') : 'Select date'}
+                {date ? format(date, 'MMM d, yyyy') : t('datePlaceholder')}
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -170,14 +170,14 @@ export function SingleEntryForm({
 
           {/* Project select */}
           <div className="space-y-2">
-            <Label htmlFor={`${id}-entry-project`}>Project</Label>
+            <Label htmlFor={`${id}-entry-project`}>{t('projectLabel')}</Label>
             <Select
               value={contractId}
               onValueChange={value => {
                 if (value) setContractId(value);
               }}>
               <SelectTrigger id={`${id}-entry-project`}>
-                <SelectValue placeholder="Select a project" />
+                <SelectValue placeholder={t('projectPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {contracts.map(c => (
@@ -192,14 +192,14 @@ export function SingleEntryForm({
 
           {/* Hours input */}
           <div className="space-y-2">
-            <Label htmlFor={`${id}-entry-hours`}>Hours</Label>
+            <Label htmlFor={`${id}-entry-hours`}>{t('hoursLabel')}</Label>
             <Input
               id={`${id}-entry-hours`}
               type="number"
               step="0.25"
               min="0.25"
               max="24"
-              placeholder="e.g. 1.5"
+              placeholder={t('hoursPlaceholder')}
               value={hours}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setHours(e.target.value)}
@@ -211,13 +211,14 @@ export function SingleEntryForm({
           {/* Description textarea */}
           <div className="space-y-2">
             <Label htmlFor={`${id}-entry-description`}>
-              Description <span className="font-normal text-muted-foreground">(optional)</span>
+              {t('descriptionLabel')}{' '}
+              <span className="font-normal text-muted-foreground">{t('descriptionOptional')}</span>
             </Label>
             <Textarea
               id={`${id}-entry-description`}
               rows={3}
               maxLength={500}
-              placeholder="What did you work on?"
+              placeholder={t('descriptionPlaceholder')}
               value={description}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setDescription(e.target.value)}
@@ -234,11 +235,11 @@ export function SingleEntryForm({
         <DialogFooter className="gap-2 sm:gap-0">
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={handleDiscard}>
-            Discard Entry
+            {t('discardCta')}
           </Button>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add Entry'}
+            {isSubmitting ? t('addingCta') : t('addCta')}
           </Button>
         </DialogFooter>
       </DialogContent>
