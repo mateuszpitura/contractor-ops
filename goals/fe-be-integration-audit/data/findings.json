@@ -1,0 +1,2362 @@
+[
+  {
+    "id": "F-MED-001",
+    "severity": "LOW",
+    "category": "orphan-intentional-non-ui",
+    "procedure": "apiKey.update",
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "line": 133,
+    "problem": "Procedure apiKey.update (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "(middleware=apiKeyAdminProcedure on packages/api/src/routers/core/api-key.ts:133)"
+    ]
+  },
+  {
+    "id": "F-MED-002",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "organization.create",
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 35,
+    "problem": "Procedure organization.create (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:42:vi.mock('../lib/create-caller.js', () => ({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:2: * Unit tests for create-caller.ts",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:32:import { createPublicCaller } from '../create-caller.js';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/feature-flags.ts:2:import { createPublicCaller } from '../lib/create-caller.js';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/invoices.ts:2:import { createPublicCaller } from '../lib/create-caller.js';"
+    ]
+  },
+  {
+    "id": "F-MED-003",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "organization.update",
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 98,
+    "problem": "Procedure organization.update (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
+    ]
+  },
+  {
+    "id": "F-MED-004",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "user.setOutOfOffice",
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 394,
+    "problem": "Procedure user.setOutOfOffice (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-005",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "user.clearOutOfOffice",
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 420,
+    "problem": "Procedure user.clearOutOfOffice (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-006",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "contractor.validateTin",
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1375,
+    "problem": "Procedure contractor.validateTin (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-007",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "contractor.validateVat",
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1400,
+    "problem": "Procedure contractor.validateVat (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-008",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "contract.update",
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 334,
+    "problem": "Procedure contract.update (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
+    ]
+  },
+  {
+    "id": "F-HIGH-001",
+    "severity": "HIGH",
+    "category": "orphan",
+    "procedure": "contract.delete",
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 625,
+    "problem": "Procedure contract.delete (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
+    ]
+  },
+  {
+    "id": "F-MED-009",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "document.uploadNewVersion",
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 435,
+    "problem": "Procedure document.uploadNewVersion (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-HIGH-002",
+    "severity": "HIGH",
+    "category": "orphan",
+    "procedure": "document.delete",
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 597,
+    "problem": "Procedure document.delete (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
+    ]
+  },
+  {
+    "id": "F-MED-010",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "workflow.overrideBlockingTask",
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1177,
+    "problem": "Procedure workflow.overrideBlockingTask (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-011",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "workflowRoles.list",
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 59,
+    "problem": "Procedure workflowRoles.list (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:22:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:26:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:30:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:34:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:37:    featureFlags: { list: vi.fn().mockResolvedValue([]) },"
+    ]
+  },
+  {
+    "id": "F-MED-012",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "workflowRoles.create",
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 70,
+    "problem": "Procedure workflowRoles.create (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:42:vi.mock('../lib/create-caller.js', () => ({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:2: * Unit tests for create-caller.ts",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:32:import { createPublicCaller } from '../create-caller.js';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/feature-flags.ts:2:import { createPublicCaller } from '../lib/create-caller.js';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/invoices.ts:2:import { createPublicCaller } from '../lib/create-caller.js';"
+    ]
+  },
+  {
+    "id": "F-MED-013",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "workflowRoles.update",
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 112,
+    "problem": "Procedure workflowRoles.update (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
+    ]
+  },
+  {
+    "id": "F-HIGH-003",
+    "severity": "HIGH",
+    "category": "orphan",
+    "procedure": "workflowRoles.delete",
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 169,
+    "problem": "Procedure workflowRoles.delete (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
+    ]
+  },
+  {
+    "id": "F-MED-014",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "workflowRoles.selectForContractor",
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 196,
+    "problem": "Procedure workflowRoles.selectForContractor (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-015",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "authPermissions.getCurrentUserPermissions",
+    "file": "packages/api/src/routers/core/auth-permissions.ts",
+    "line": 26,
+    "problem": "Procedure authPermissions.getCurrentUserPermissions (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-016",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "invoiceIntake.downloadExtractedXml",
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 438,
+    "problem": "Procedure invoiceIntake.downloadExtractedXml (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-017",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "invoiceIntake.downloadValidationReport",
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 458,
+    "problem": "Procedure invoiceIntake.downloadValidationReport (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-018",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "approval.getChain",
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 441,
+    "problem": "Procedure approval.getChain (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-019",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "integration.syncUsers",
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 226,
+    "problem": "Procedure integration.syncUsers (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-020",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "payment.getFormatDetection",
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1458,
+    "problem": "Procedure payment.getFormatDetection (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-021",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "dashboard.bootstrap",
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 381,
+    "problem": "Procedure dashboard.bootstrap (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/setup.mjs:44:  checks.push({ label: '.env.example missing', ok: false, hint: 'cannot bootstrap' });",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/seed-dev-services.mjs:3: * scripts/seed-dev-services.mjs — bootstrap local Unleash + check Infisical."
+    ]
+  },
+  {
+    "id": "F-MED-022",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "ocr.getByDocument",
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 96,
+    "problem": "Procedure ocr.getByDocument (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-023",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "ocr.portalGetByDocument",
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 210,
+    "problem": "Procedure ocr.portalGetByDocument (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-HIGH-004",
+    "severity": "HIGH",
+    "category": "orphan",
+    "procedure": "ksef.disconnect",
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 213,
+    "problem": "Procedure ksef.disconnect (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-ar-translations-v2.ts:843:  'GoogleWorkspace.disconnect.body':",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:210:  'GoogleWorkspace.disconnect.title': 'Google Workspace trennen',",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:211:  'GoogleWorkspace.disconnect.body':",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/migrate-secrets-to-store.ts:142:    await prisma.$disconnect();"
+    ]
+  },
+  {
+    "id": "F-MED-024",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "latePaymentInterest.downloadClaim",
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 564,
+    "problem": "Procedure latePaymentInterest.downloadClaim (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-025",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "time.listContractors",
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 163,
+    "problem": "Procedure time.listContractors (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-026",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "time.getReconciliation",
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 320,
+    "problem": "Procedure time.getReconciliation (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-HIGH-005",
+    "severity": "HIGH",
+    "category": "orphan",
+    "procedure": "jira.disconnect",
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 480,
+    "problem": "Procedure jira.disconnect (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-ar-translations-v2.ts:843:  'GoogleWorkspace.disconnect.body':",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:210:  'GoogleWorkspace.disconnect.title': 'Google Workspace trennen',",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:211:  'GoogleWorkspace.disconnect.body':",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/migrate-secrets-to-store.ts:142:    await prisma.$disconnect();"
+    ]
+  },
+  {
+    "id": "F-MED-027",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "linear.getLinkedIssue",
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 290,
+    "problem": "Procedure linear.getLinkedIssue (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-028",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "linear.getLinkedIssues",
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 320,
+    "problem": "Procedure linear.getLinkedIssues (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-029",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "docs.refreshMetadata",
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 121,
+    "problem": "Procedure docs.refreshMetadata (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-030",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "billing.syncSeatCount",
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 313,
+    "problem": "Procedure billing.syncSeatCount (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-031",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "billing.getCreditBalance",
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 352,
+    "problem": "Procedure billing.getCreditBalance (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/credit-service.ts:47:export async function getCreditBalance(organizationId: string): Promise<CreditBalance> {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:50:import { allocateTopUpCredits, checkAndDeductCredit, getCreditBalance } from '../credit-service';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:116:describe('getCreditBalance', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:120:    const result = await getCreditBalance(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:128:    const result = await getCreditBalance(ORG_ID);"
+    ]
+  },
+  {
+    "id": "F-MED-032",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "billing.getPlanConfig",
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 360,
+    "problem": "Procedure billing.getPlanConfig (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-033",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "equipment.getShipment",
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 216,
+    "problem": "Procedure equipment.getShipment (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-034",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "equipment.listShipments",
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 252,
+    "problem": "Procedure equipment.listShipments (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-035",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "equipment.getShipmentLabel",
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 672,
+    "problem": "Procedure equipment.getShipmentLabel (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-036",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "gdpr.requestErasure",
+    "file": "packages/api/src/routers/compliance/gdpr.ts",
+    "line": 68,
+    "problem": "Procedure gdpr.requestErasure (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-037",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "gdpr.exportData",
+    "file": "packages/api/src/routers/compliance/gdpr.ts",
+    "line": 283,
+    "problem": "Procedure gdpr.exportData (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-038",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "teams.connectionStatus",
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 76,
+    "problem": "Procedure teams.connectionStatus (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-039",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "teams.setFallbackApprover",
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 168,
+    "problem": "Procedure teams.setFallbackApprover (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-040",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "einvoice.listByOrg",
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 880,
+    "problem": "Procedure einvoice.listByOrg (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-041",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "exchangeRate.query",
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 16,
+    "problem": "Procedure exchangeRate.query (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/openapi.ts:55:        in: 'query' as const,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/openapi.ts:60:        in: 'query' as const,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/openapi.ts:65:        in: 'query' as const,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/openapi.ts:81:            in: 'query',",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/openapi.ts:86:            in: 'query',"
+    ]
+  },
+  {
+    "id": "F-MED-042",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "exchangeRate.latest",
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 40,
+    "problem": "Procedure exchangeRate.latest (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/privacy-notice.ts:199: * Get the latest privacy notice for an organization's jurisdiction.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/privacy-notice.ts:306:  const latest = await prisma.privacyNotice.findFirst({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/privacy-notice.ts:312:  const nextVersion = (latest?.version ?? 0) + 1;",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/consent-record.ts:88: * Returns the latest record per purpose.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/consent-record.ts:155: * Returns true only if every REQUIRED_PURPOSE has a latest record with granted=true."
+    ]
+  },
+  {
+    "id": "F-MED-043",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "exchangeRate.convert",
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 55,
+    "problem": "Procedure exchangeRate.convert (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/invoice-intake-service.test.ts:615:  it('7. convert from PARSED (not MATCHED) throws INVALID_STATE_TRANSITION', async () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/invoice-intake-service.test.ts:689:  it('convert from MATCHED + WARNINGS without acknowledgement throws INVALID_STATE_TRANSITION', async () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/invoice-intake-service.ts:582:      `Cannot convert intake in status ${intake.status}; MATCHED required`,"
+    ]
+  },
+  {
+    "id": "F-MED-044",
+    "severity": "LOW",
+    "category": "orphan-intentional-non-ui",
+    "procedure": "exchangeRate.fetchDaily",
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 67,
+    "problem": "Procedure exchangeRate.fetchDaily (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:67)"
+    ]
+  },
+  {
+    "id": "F-MED-045",
+    "severity": "LOW",
+    "category": "orphan-intentional-non-ui",
+    "procedure": "featureFlags.list",
+    "file": "packages/api/src/routers/core/feature-flags.ts",
+    "line": 19,
+    "problem": "Procedure featureFlags.list (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)"
+    ]
+  },
+  {
+    "id": "F-MED-046",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "consent.adminGetUserConsent",
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 129,
+    "problem": "Procedure consent.adminGetUserConsent (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-047",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "consent.adminGetUserConsentHistory",
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 141,
+    "problem": "Procedure consent.adminGetUserConsentHistory (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-048",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "peppol.getTransmissionByInvoiceId",
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 349,
+    "problem": "Procedure peppol.getTransmissionByInvoiceId (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-049",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "peppol.lookupCapabilities",
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 458,
+    "problem": "Procedure peppol.lookupCapabilities (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-050",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "tax.getRatesByCountry",
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 25,
+    "problem": "Procedure tax.getRatesByCountry (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-051",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "tax.validateRate",
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 32,
+    "problem": "Procedure tax.validateRate (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-052",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "tax.calculateWht",
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 45,
+    "problem": "Procedure tax.calculateWht (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/tax-rate.service.ts:104:export async function calculateWht("
+    ]
+  },
+  {
+    "id": "F-MED-053",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "tax.listWhtCertificates",
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 79,
+    "problem": "Procedure tax.listWhtCertificates (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/wht-certificate.service.ts:78:export async function listWhtCertificates(organizationId: string) {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/wht-certificate.service.test.ts:21:import { createWhtCertificate, listWhtCertificates } from '../wht-certificate.service';",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/wht-certificate.service.test.ts:185:describe('listWhtCertificates', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/wht-certificate.service.test.ts:193:    const result = await listWhtCertificates(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/wht-certificate.service.test.ts:206:    const result = await listWhtCertificates(ORG_ID);"
+    ]
+  },
+  {
+    "id": "F-MED-054",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "tax.getWhtCertificate",
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 84,
+    "problem": "Procedure tax.getWhtCertificate (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-055",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.saveTaxDetails",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 33,
+    "problem": "Procedure zatca.saveTaxDetails (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:104:  saveTaxDetails,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:162:describe('saveTaxDetails', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:170:    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:194:    await saveTaxDetails(ORG_ID, taxDetails as never, USER_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/zatca-onboarding.ts:172:export async function saveTaxDetails("
+    ]
+  },
+  {
+    "id": "F-MED-056",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.generateCsr",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 46,
+    "problem": "Procedure zatca.generateCsr (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-ar-translations-v2.ts:2126:  'Zatca.csrGeneration.generateCsr': 'توليد CSR',",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-pl-translations-v2.ts:186:  'Zatca.csrGeneration.generateCsr': 'Wygeneruj CSR',",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:347:  'Zatca.csrGeneration.generateCsr': 'CSR erstellen',"
+    ]
+  },
+  {
+    "id": "F-MED-057",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.requestComplianceCsid",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 56,
+    "problem": "Procedure zatca.requestComplianceCsid (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:14:    requestComplianceCsid: vi.fn(),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:39:    requestComplianceCsid = mockZatcaApiClient.requestComplianceCsid;",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:102:  requestComplianceCsid,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:248:describe('requestComplianceCsid', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:256:    mockZatcaApiClient.requestComplianceCsid.mockResolvedValue({"
+    ]
+  },
+  {
+    "id": "F-MED-058",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.runComplianceChecks",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 66,
+    "problem": "Procedure zatca.runComplianceChecks (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:103:  runComplianceChecks,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:303:describe('runComplianceChecks', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:314:    const results = await runComplianceChecks(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:331:    await runComplianceChecks(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:355:    const results = await runComplianceChecks(ORG_ID);"
+    ]
+  },
+  {
+    "id": "F-MED-059",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.exchangeProductionCert",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 76,
+    "problem": "Procedure zatca.exchangeProductionCert (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-060",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.getOnboardingState",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 87,
+    "problem": "Procedure zatca.getOnboardingState (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:101:  getOnboardingState,",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:426:describe('getOnboardingState', () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:430:    const state = await getOnboardingState(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:452:    const state = await getOnboardingState(ORG_ID);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/zatca-onboarding.test.ts:474:    const state = await getOnboardingState(ORG_ID);"
+    ]
+  },
+  {
+    "id": "F-MED-061",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.getStatus",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 101,
+    "problem": "Procedure zatca.getStatus (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/courier/ups-polling-service.ts:84:      const statusResult = await client.getStatus(shipment.externalId);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/courier/courier-client.ts:22:  getStatus(shipmentExternalId: string): Promise<CourierStatusResult>;",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/courier/dpd-client.ts:183:  async getStatus(shipmentExternalId: string): Promise<CourierStatusResult> {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/courier/dpd-client.ts:193:      throw new Error(`[dpd-client] getStatus failed: HTTP ${response.status} — ${errorBody}`);",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/courier/dpd-polling-service.ts:84:      const statusResult = await client.getStatus(shipment.externalId);"
+    ]
+  },
+  {
+    "id": "F-MED-062",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.getInvoiceChain",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 133,
+    "problem": "Procedure zatca.getInvoiceChain (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-063",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.resubmit",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 171,
+    "problem": "Procedure zatca.resubmit (mutation, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-064",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "zatca.getComplianceStats",
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 198,
+    "problem": "Procedure zatca.getComplianceStats (query, surface=appRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
+  },
+  {
+    "id": "F-MED-065",
+    "severity": "MED",
+    "category": "orphan",
+    "procedure": "portal.logout",
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 339,
+    "problem": "Procedure portal.logout (mutation, surface=portalAppRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-session.ts:89: * Delete a portal session (logout)."
+    ]
+  },
+  {
+    "id": "F-MED-066",
+    "severity": "LOW",
+    "category": "orphan-intentional-non-ui",
+    "procedure": "featureFlags.list",
+    "file": "packages/api/src/routers/public-api/feature-flags.ts",
+    "line": 13,
+    "problem": "Procedure featureFlags.list (query, surface=publicApiRouter) has no FE caller.",
+    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
+    "intentionalCallers": [
+      "(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)"
+    ]
+  },
+  {
+    "id": "F-LOW-001",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "approval.approve",
+    "file": "apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx",
+    "line": 137,
+    "problem": "Mutation approval.approve trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-006",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "approval.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx",
+    "line": 152,
+    "problem": "Destructive mutation approval.reject fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-LOW-002",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "approval.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx",
+    "line": 152,
+    "problem": "Mutation approval.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-007",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "time.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx",
+    "line": 70,
+    "problem": "Destructive mutation time.reject fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-LOW-003",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "time.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx",
+    "line": 70,
+    "problem": "Mutation time.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-004",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "time.approve",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
+    "line": 110,
+    "problem": "Mutation time.approve trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-008",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "time.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
+    "line": 120,
+    "problem": "Destructive mutation time.reject fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-LOW-005",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "time.reject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
+    "line": 120,
+    "problem": "Mutation time.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-006",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "time.bulkApprove",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
+    "line": 130,
+    "problem": "Mutation time.bulkApprove trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-007",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "time.bulkReject",
+    "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
+    "line": 141,
+    "problem": "Mutation time.bulkReject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-067",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.requestMagicLink",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/login/page.tsx",
+    "line": 63,
+    "problem": "Mutation portal.requestMagicLink succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-068",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.verifyMagicLink",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
+    "line": 89,
+    "problem": "Mutation portal.verifyMagicLink succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-008",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portal.verifyMagicLink",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
+    "line": 89,
+    "problem": "Mutation portal.verifyMagicLink trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-069",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.selectOrg",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
+    "line": 93,
+    "problem": "Mutation portal.selectOrg succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-009",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portalTime.saveDraftEntries",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/time/page.tsx",
+    "line": 113,
+    "problem": "Mutation portalTime.saveDraftEntries trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-070",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "billing.createCheckoutSession",
+    "file": "apps/web/src/components/billing/billing-overlay.tsx",
+    "line": 39,
+    "problem": "Mutation billing.createCheckoutSession succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-010",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "billing.createCheckoutSession",
+    "file": "apps/web/src/components/billing/billing-overlay.tsx",
+    "line": 39,
+    "problem": "Mutation billing.createCheckoutSession trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-071",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "billing.createCheckoutSession",
+    "file": "apps/web/src/components/billing/billing-tab.tsx",
+    "line": 29,
+    "problem": "Mutation billing.createCheckoutSession succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-011",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "billing.createCheckoutSession",
+    "file": "apps/web/src/components/billing/billing-tab.tsx",
+    "line": 29,
+    "problem": "Mutation billing.createCheckoutSession trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-072",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "billing.createPortalSession",
+    "file": "apps/web/src/components/billing/billing-tab.tsx",
+    "line": 43,
+    "problem": "Mutation billing.createPortalSession succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-073",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "billing.createTopUpCheckout",
+    "file": "apps/web/src/components/billing/top-up-dialog.tsx",
+    "line": 55,
+    "problem": "Mutation billing.createTopUpCheckout succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-074",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "consent.downloadDPA",
+    "file": "apps/web/src/components/consent/consent-management-section.tsx",
+    "line": 55,
+    "problem": "Mutation consent.downloadDPA succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-075",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "consent.downloadSCC",
+    "file": "apps/web/src/components/consent/consent-management-section.tsx",
+    "line": 67,
+    "problem": "Mutation consent.downloadSCC succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-076",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "consent.bulkGrant",
+    "file": "apps/web/src/components/consent/onboarding-consent-step.tsx",
+    "line": 80,
+    "problem": "Mutation consent.bulkGrant succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-HIGH-009",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "skonto.deleteForBillingProfile",
+    "file": "apps/web/src/components/contractors/billing-profile/default-skonto-section.tsx",
+    "line": 72,
+    "problem": "Destructive mutation skonto.deleteForBillingProfile fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-077",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classification.acknowledgeDisclaimer",
+    "file": "apps/web/src/components/contractors/classification/classification-disclaimer-dialog.tsx",
+    "line": 89,
+    "problem": "Mutation classification.acknowledgeDisclaimer succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-078",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classificationDashboard.exportMarketCsv",
+    "file": "apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx",
+    "line": 26,
+    "problem": "Mutation classificationDashboard.exportMarketCsv succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-012",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "classificationDashboard.exportMarketCsv",
+    "file": "apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx",
+    "line": 26,
+    "problem": "Mutation classificationDashboard.exportMarketCsv trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-079",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classificationDocument.uploadDrvDecisionLetter",
+    "file": "apps/web/src/components/contractors/classification/drv-clearance/drv-clearance-panel.tsx",
+    "line": 62,
+    "problem": "Mutation classificationDocument.uploadDrvDecisionLetter succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-080",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classification.saveAnswer",
+    "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
+    "line": 91,
+    "problem": "Mutation classification.saveAnswer succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-013",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "classification.saveAnswer",
+    "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
+    "line": 91,
+    "problem": "Mutation classification.saveAnswer trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-081",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classification.approveSds",
+    "file": "apps/web/src/components/contractors/classification-documents/generate-sds-button.tsx",
+    "line": 40,
+    "problem": "Mutation classification.approveSds succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-082",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "classification.recreateComplianceAssessment",
+    "file": "apps/web/src/components/contractors/compliance/recompute-compliance-dialog.tsx",
+    "line": 68,
+    "problem": "Mutation classification.recreateComplianceAssessment succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-083",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.updateLifecycleStage",
+    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
+    "line": 76,
+    "problem": "Mutation contractor.updateLifecycleStage succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-HIGH-010",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "contractor.archive",
+    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
+    "line": 88,
+    "problem": "Destructive mutation contractor.archive fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-084",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.archive",
+    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
+    "line": 88,
+    "problem": "Mutation contractor.archive succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-085",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.bulkArchive",
+    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
+    "line": 84,
+    "problem": "Mutation contractor.bulkArchive succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-086",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.bulkAssignOwner",
+    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
+    "line": 97,
+    "problem": "Mutation contractor.bulkAssignOwner succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-087",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.export",
+    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
+    "line": 112,
+    "problem": "Mutation contractor.export succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-088",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contractor.updateCountryFields",
+    "file": "apps/web/src/components/contractors/country-compliance-section.tsx",
+    "line": 45,
+    "problem": "Mutation contractor.updateCountryFields succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-014",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ir35Chain.markDelivered",
+    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
+    "line": 31,
+    "problem": "Mutation ir35Chain.markDelivered trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-015",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ir35Chain.markAcknowledged",
+    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
+    "line": 42,
+    "problem": "Mutation ir35Chain.markAcknowledged trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-016",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ir35Chain.removeParticipant",
+    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
+    "line": 53,
+    "problem": "Mutation ir35Chain.removeParticipant trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-089",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contract.transitionStatus",
+    "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
+    "line": 80,
+    "problem": "Mutation contract.transitionStatus succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-090",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contract.transitionStatus",
+    "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
+    "line": 89,
+    "problem": "Mutation contract.transitionStatus succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-091",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "esign.resendToRecipient",
+    "file": "apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx",
+    "line": 118,
+    "problem": "Mutation esign.resendToRecipient succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-092",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "esign.voidEnvelope",
+    "file": "apps/web/src/components/contracts/contract-detail/void-envelope-dialog.tsx",
+    "line": 53,
+    "problem": "Mutation esign.voidEnvelope succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-093",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "contract.bulkTransition",
+    "file": "apps/web/src/components/contracts/contract-table/data-table-bulk-actions.tsx",
+    "line": 75,
+    "problem": "Mutation contract.bulkTransition succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-094",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
+    "line": 125,
+    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-017",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
+    "line": 125,
+    "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-095",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
+    "line": 131,
+    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-018",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
+    "line": 131,
+    "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-096",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.linkToEntity",
+    "file": "apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx",
+    "line": 253,
+    "problem": "Mutation document.linkToEntity succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-019",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.linkToEntity",
+    "file": "apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx",
+    "line": 253,
+    "problem": "Mutation document.linkToEntity trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-097",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/documents/drop-zone.tsx",
+    "line": 56,
+    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-020",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/documents/drop-zone.tsx",
+    "line": 56,
+    "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-098",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/documents/drop-zone.tsx",
+    "line": 62,
+    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-021",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/documents/drop-zone.tsx",
+    "line": 62,
+    "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-099",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "equipment.createInPostShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 163,
+    "problem": "Mutation equipment.createInPostShipment has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-100",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "equipment.createInPostShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 163,
+    "problem": "Mutation equipment.createInPostShipment succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-101",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "equipment.createDpdShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 170,
+    "problem": "Mutation equipment.createDpdShipment has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-102",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "equipment.createDpdShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 170,
+    "problem": "Mutation equipment.createDpdShipment succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-103",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "equipment.createUpsShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 177,
+    "problem": "Mutation equipment.createUpsShipment has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-104",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "equipment.createUpsShipment",
+    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
+    "line": 177,
+    "problem": "Mutation equipment.createUpsShipment succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-105",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "import.parse",
+    "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
+    "line": 170,
+    "problem": "Mutation import.parse succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-106",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "import.validate",
+    "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
+    "line": 185,
+    "problem": "Mutation import.validate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-HIGH-011",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "docs.detach",
+    "file": "apps/web/src/components/integrations/doc-links-section.tsx",
+    "line": 54,
+    "problem": "Destructive mutation docs.detach fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-LOW-022",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "docs.detach",
+    "file": "apps/web/src/components/integrations/doc-links-section.tsx",
+    "line": 54,
+    "problem": "Mutation docs.detach trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-107",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "googleWorkspace.listUserGroups",
+    "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
+    "line": 115,
+    "problem": "Mutation googleWorkspace.listUserGroups succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-108",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "einvoice.finalize",
+    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
+    "line": 102,
+    "problem": "Mutation einvoice.finalize succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-109",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "einvoice.revalidate",
+    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
+    "line": 125,
+    "problem": "Mutation einvoice.revalidate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-110",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "einvoice.send",
+    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
+    "line": 136,
+    "problem": "Mutation einvoice.send succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-111",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoiceIntake.convertToInvoice",
+    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
+    "line": 80,
+    "problem": "Mutation invoiceIntake.convertToInvoice succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-112",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoiceIntake.confirmMatch",
+    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
+    "line": 94,
+    "problem": "Mutation invoiceIntake.confirmMatch succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-113",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoiceIntake.acknowledgeValidation",
+    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
+    "line": 101,
+    "problem": "Mutation invoiceIntake.acknowledgeValidation succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-114",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoiceIntake.reject",
+    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
+    "line": 108,
+    "problem": "Mutation invoiceIntake.reject succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-115",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoiceIntake.upload",
+    "file": "apps/web/src/components/invoices/intake/intake-upload-dialog.tsx",
+    "line": 81,
+    "problem": "Mutation invoiceIntake.upload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-116",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.dismissDuplicate",
+    "file": "apps/web/src/components/invoices/invoice-detail/duplicate-warning.tsx",
+    "line": 41,
+    "problem": "Mutation invoice.dismissDuplicate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-117",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.update",
+    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
+    "line": 240,
+    "problem": "Mutation invoice.update succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-118",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.submitForMatching",
+    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
+    "line": 250,
+    "problem": "Mutation invoice.submitForMatching succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-119",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.voidInvoice",
+    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
+    "line": 266,
+    "problem": "Mutation invoice.voidInvoice succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-120",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.manualMatch",
+    "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
+    "line": 312,
+    "problem": "Mutation invoice.manualMatch succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-121",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 89,
+    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-023",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.requestUpload",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 89,
+    "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-122",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 95,
+    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-024",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "document.confirmUpload",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 95,
+    "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-123",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.create",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 100,
+    "problem": "Mutation invoice.create succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-025",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "invoice.create",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 100,
+    "problem": "Mutation invoice.create trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-124",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "ocr.trigger",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 105,
+    "problem": "Mutation ocr.trigger succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-026",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ocr.trigger",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 105,
+    "problem": "Mutation ocr.trigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-125",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "ocr.retrigger",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 110,
+    "problem": "Mutation ocr.retrigger succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-027",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ocr.retrigger",
+    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
+    "line": 110,
+    "problem": "Mutation ocr.retrigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-126",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "invoice.toggleReverseCharge",
+    "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
+    "line": 30,
+    "problem": "Mutation invoice.toggleReverseCharge succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-028",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "invoice.toggleReverseCharge",
+    "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
+    "line": 30,
+    "problem": "Mutation invoice.toggleReverseCharge trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-012",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "skonto.deleteForInvoice",
+    "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
+    "line": 105,
+    "problem": "Destructive mutation skonto.deleteForInvoice fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-127",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "legal.generatePrivacyNoticePdf",
+    "file": "apps/web/src/components/legal/privacy-notice-pdf-download.tsx",
+    "line": 33,
+    "problem": "Mutation legal.generatePrivacyNoticePdf succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-029",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "notification.markRead",
+    "file": "apps/web/src/components/notifications/notification-center.tsx",
+    "line": 101,
+    "problem": "Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-030",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "notification.markRead",
+    "file": "apps/web/src/components/notifications/notification-popover.tsx",
+    "line": 66,
+    "problem": "Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-128",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "onboardingImport.startImport",
+    "file": "apps/web/src/components/onboarding/confirm-import-step.tsx",
+    "line": 86,
+    "problem": "Mutation onboardingImport.startImport succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-031",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "settings.update",
+    "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
+    "line": 229,
+    "problem": "Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-129",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "bacs.generateExport",
+    "file": "apps/web/src/components/payments/bacs/bacs-preview-card.tsx",
+    "line": 59,
+    "problem": "Mutation bacs.generateExport succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-130",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "payment.importStatement",
+    "file": "apps/web/src/components/payments/bank-statement-dialog.tsx",
+    "line": 64,
+    "problem": "Mutation payment.importStatement succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-032",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "payment.importStatement",
+    "file": "apps/web/src/components/payments/bank-statement-dialog.tsx",
+    "line": 64,
+    "problem": "Mutation payment.importStatement trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-131",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "payment.create",
+    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
+    "line": 100,
+    "problem": "Mutation payment.create succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-033",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "payment.create",
+    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
+    "line": 100,
+    "problem": "Mutation payment.create trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-132",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "payment.lockAndExport",
+    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
+    "line": 107,
+    "problem": "Mutation payment.lockAndExport succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-034",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "payment.lockAndExport",
+    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
+    "line": 107,
+    "problem": "Mutation payment.lockAndExport trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-035",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "payment.updateItemStatus",
+    "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
+    "line": 115,
+    "problem": "Mutation payment.updateItemStatus trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-036",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "payment.removeFromRun",
+    "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
+    "line": 127,
+    "problem": "Mutation payment.removeFromRun trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-133",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "tax.generateWhtCertificate",
+    "file": "apps/web/src/components/payments/wht-summary-card.tsx",
+    "line": 32,
+    "problem": "Mutation tax.generateWhtCertificate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-134",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.getUploadUrl",
+    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
+    "line": 403,
+    "problem": "Mutation portal.getUploadUrl succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-037",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portal.getUploadUrl",
+    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
+    "line": 403,
+    "problem": "Mutation portal.getUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-135",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "ocr.portalTrigger",
+    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
+    "line": 406,
+    "problem": "Mutation ocr.portalTrigger succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-038",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ocr.portalTrigger",
+    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
+    "line": 406,
+    "problem": "Mutation ocr.portalTrigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-136",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.submitInvoice",
+    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
+    "line": 604,
+    "problem": "Mutation portal.submitInvoice succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-137",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.updateNotificationPreference",
+    "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
+    "line": 118,
+    "problem": "Mutation portal.updateNotificationPreference succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-039",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portal.updateNotificationPreference",
+    "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
+    "line": 118,
+    "problem": "Mutation portal.updateNotificationPreference trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-138",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.updateContactInfo",
+    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
+    "line": 72,
+    "problem": "Mutation portal.updateContactInfo succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-040",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portal.updateContactInfo",
+    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
+    "line": 72,
+    "problem": "Mutation portal.updateContactInfo trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-139",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "portal.submitFinancialChangeRequest",
+    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
+    "line": 77,
+    "problem": "Mutation portal.submitFinancialChangeRequest succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-041",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "portal.submitFinancialChangeRequest",
+    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
+    "line": 77,
+    "problem": "Mutation portal.submitFinancialChangeRequest trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-140",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "report.exportComplianceGaps",
+    "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
+    "line": 64,
+    "problem": "Mutation report.exportComplianceGaps succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-141",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "report.exportExpiringContracts",
+    "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
+    "line": 59,
+    "problem": "Mutation report.exportExpiringContracts succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-142",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "report.exportOverdueInvoices",
+    "file": "apps/web/src/components/reports/overdue-invoices-report.tsx",
+    "line": 64,
+    "problem": "Mutation report.exportOverdueInvoices succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-143",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "report.exportSpendByContractor",
+    "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
+    "line": 67,
+    "problem": "Mutation report.exportSpendByContractor succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-144",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "report.exportSpendByTeam",
+    "file": "apps/web/src/components/reports/spend-team-report.tsx",
+    "line": 60,
+    "problem": "Mutation report.exportSpendByTeam succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-145",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "settings.getLogoUploadUrl",
+    "file": "apps/web/src/components/settings/admin-branding-section.tsx",
+    "line": 69,
+    "problem": "Mutation settings.getLogoUploadUrl succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-042",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "settings.getLogoUploadUrl",
+    "file": "apps/web/src/components/settings/admin-branding-section.tsx",
+    "line": 69,
+    "problem": "Mutation settings.getLogoUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-043",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "approval.updateChain",
+    "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
+    "line": 67,
+    "problem": "Mutation approval.updateChain trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-146",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "audit.export",
+    "file": "apps/web/src/components/settings/audit-log-tab.tsx",
+    "line": 153,
+    "problem": "Mutation audit.export succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-147",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "equipment.testCourierConnection",
+    "file": "apps/web/src/components/settings/carrier-credential-form.tsx",
+    "line": 133,
+    "problem": "Mutation equipment.testCourierConnection succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-148",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "settings.reviewChangeRequest",
+    "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
+    "line": 89,
+    "problem": "Mutation settings.reviewChangeRequest succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-149",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "settings.reviewChangeRequest",
+    "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
+    "line": 101,
+    "problem": "Mutation settings.reviewChangeRequest succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-044",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "leitwegId.setDefault",
+    "file": "apps/web/src/components/settings/e-invoicing/leitweg-id-row.tsx",
+    "line": 69,
+    "problem": "Mutation leitwegId.setDefault trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-045",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "reminder.toggleActive",
+    "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
+    "line": 96,
+    "problem": "Mutation reminder.toggleActive trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-046",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "integration.linkUser",
+    "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
+    "line": 82,
+    "problem": "Mutation integration.linkUser trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-013",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "integration.unlinkUser",
+    "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
+    "line": 150,
+    "problem": "Destructive mutation integration.unlinkUser fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-150",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "consent.recordToS",
+    "file": "apps/web/src/components/tos-reacceptance-modal.tsx",
+    "line": 48,
+    "problem": "Mutation consent.recordToS succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-047",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "calendar.saveTaskConfig",
+    "file": "apps/web/src/components/workflow/calendar-task-config.tsx",
+    "line": 52,
+    "problem": "Mutation calendar.saveTaskConfig trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-048",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "workflow.deleteTemplate",
+    "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
+    "line": 138,
+    "problem": "Mutation workflow.deleteTemplate trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-151",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "workflow.startRun",
+    "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
+    "line": 110,
+    "problem": "Mutation workflow.startRun succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-152",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "workflow.seedStarterTemplates",
+    "file": "apps/web/src/components/workflows/templates-table.tsx",
+    "line": 123,
+    "problem": "Mutation workflow.seedStarterTemplates succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-049",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "workflow.seedStarterTemplates",
+    "file": "apps/web/src/components/workflows/templates-table.tsx",
+    "line": 123,
+    "problem": "Mutation workflow.seedStarterTemplates trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-HIGH-014",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "approval.reject",
+    "file": "apps/web/src/hooks/use-approval-actions.ts",
+    "line": 43,
+    "problem": "Destructive mutation approval.reject fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-153",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "workflow.updateTemplate",
+    "file": "apps/web/src/hooks/use-template-mutations.ts",
+    "line": 25,
+    "problem": "Mutation workflow.updateTemplate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-HIGH-015",
+    "severity": "HIGH",
+    "category": "missing-confirmation",
+    "procedure": "workflow.deleteTemplate",
+    "file": "apps/web/src/hooks/use-template-mutations.ts",
+    "line": 29,
+    "problem": "Destructive mutation workflow.deleteTemplate fires without a confirmation dialog in this file.",
+    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
+  },
+  {
+    "id": "F-MED-154",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "workflow.deleteTemplate",
+    "file": "apps/web/src/hooks/use-template-mutations.ts",
+    "line": 29,
+    "problem": "Mutation workflow.deleteTemplate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-MED-155",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "workflow.duplicateTemplate",
+    "file": "apps/web/src/hooks/use-template-mutations.ts",
+    "line": 33,
+    "problem": "Mutation workflow.duplicateTemplate succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  }
+]

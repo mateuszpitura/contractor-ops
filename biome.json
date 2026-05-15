@@ -208,11 +208,18 @@
       }
     },
     {
-      "includes": ["scripts/**", "load-tests/**"],
+      "includes": ["scripts/**", "load-tests/**", "goals/**"],
       "linter": {
         "rules": {
           "suspicious": {
             "noConsole": "off"
+          },
+          "style": {
+            "useNamingConvention": "off",
+            "useTemplate": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
           }
         }
       }

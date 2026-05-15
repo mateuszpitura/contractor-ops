@@ -1,0 +1,3818 @@
+[
+  {
+    "surface": "appRouter",
+    "path": "adminBoeRate.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/admin-boe-rate.ts",
+    "line": 29
+  },
+  {
+    "surface": "appRouter",
+    "path": "adminBoeRate.insert",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/admin-boe-rate.ts",
+    "line": 42
+  },
+  {
+    "surface": "appRouter",
+    "path": "adminBoeRate.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/admin-boe-rate.ts",
+    "line": 91
+  },
+  {
+    "surface": "appRouter",
+    "path": "adminBoeRate.delete",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/admin-boe-rate.ts",
+    "line": 134
+  },
+  {
+    "surface": "appRouter",
+    "path": "apiKey.create",
+    "type": "mutation",
+    "middleware": "apiKeyAdminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "line": 44
+  },
+  {
+    "surface": "appRouter",
+    "path": "apiKey.list",
+    "type": "query",
+    "middleware": "apiKeyAdminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "line": 108
+  },
+  {
+    "surface": "appRouter",
+    "path": "apiKey.update",
+    "type": "mutation",
+    "middleware": "apiKeyAdminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "line": 133
+  },
+  {
+    "surface": "appRouter",
+    "path": "apiKey.revoke",
+    "type": "mutation",
+    "middleware": "apiKeyAdminProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "line": 186
+  },
+  {
+    "surface": "appRouter",
+    "path": "bacs.getSubmitterMasks",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/bacs.ts",
+    "line": 254
+  },
+  {
+    "surface": "appRouter",
+    "path": "bacs.previewExport",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/bacs.ts",
+    "line": 272
+  },
+  {
+    "surface": "appRouter",
+    "path": "bacs.generateExport",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/bacs.ts",
+    "line": 308
+  },
+  {
+    "surface": "appRouter",
+    "path": "bacs.validateSortCode",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/bacs.ts",
+    "line": 462
+  },
+  {
+    "surface": "appRouter",
+    "path": "bacs.saveSubmitterConfig",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/bacs.ts",
+    "line": 497
+  },
+  {
+    "surface": "appRouter",
+    "path": "organization.create",
+    "type": "mutation",
+    "middleware": "authedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 35
+  },
+  {
+    "surface": "appRouter",
+    "path": "organization.getCurrent",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 85
+  },
+  {
+    "surface": "appRouter",
+    "path": "organization.update",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 98
+  },
+  {
+    "surface": "appRouter",
+    "path": "organization.setKleinunternehmer",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/organization.ts",
+    "line": 154
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 160
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.invite",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 186
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.updateRole",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 229
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.deactivate",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 274
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.reactivate",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 340
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.setOutOfOffice",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 394
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.clearOutOfOffice",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user.ts",
+    "line": 420
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.get",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 25
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.update",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 45
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.getExpiryReminderDefaults",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 110
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.updateExpiryReminderDefaults",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 135
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.getInvoiceSettings",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 184
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.updateInvoiceSettings",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 208
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.getBranding",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 266
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.getLogoUploadUrl",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 288
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.updateBranding",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 315
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.getPortalDomain",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 394
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.updatePortalDomain",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 414
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.listChangeRequests",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 482
+  },
+  {
+    "surface": "appRouter",
+    "path": "settings.reviewChangeRequest",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/settings.ts",
+    "line": 532
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 386
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.getById",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 526
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 628
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 727
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.updateLifecycleStage",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 817
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.archive",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 891
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.bulkArchive",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1009
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.bulkAssignOwner",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1079
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.export",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1103
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.gusLookup",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1197
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.listEngagements",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1281
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.getCountryFieldsConfig",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1309
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.getCountryFields",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1325
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.updateCountryFields",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1337
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.validateTin",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1375
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.validateVat",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1400
+  },
+  {
+    "surface": "appRouter",
+    "path": "contractor.revalidateVat",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contractor.ts",
+    "line": 1406
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 226
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.getById",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 284
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 334
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 406
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.transitionStatus",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 463
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.createAmendment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 523
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.listAmendments",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 568
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.updateExpiryReminders",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 586
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.delete",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 625
+  },
+  {
+    "surface": "appRouter",
+    "path": "contract.bulkTransition",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/contract.ts",
+    "line": 682
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.requestUpload",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 167
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.confirmUpload",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 251
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.getDownloadUrl",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 341
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 383
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.uploadNewVersion",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 435
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.getVersionHistory",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 545
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.delete",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 597
+  },
+  {
+    "surface": "appRouter",
+    "path": "document.linkToEntity",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/document.ts",
+    "line": 660
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.createTemplate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 61
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.updateTemplate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 97
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.getTemplate",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 153
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.listTemplates",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 178
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.deleteTemplate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 215
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.duplicateTemplate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 263
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.seedStarterTemplates",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-templates.ts",
+    "line": 351
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.startRun",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 458
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.cancelRun",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 639
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.getRun",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 704
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.listRuns",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 758
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.myTasks",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 842
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.completeTask",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 899
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.skipTask",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 957
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.reassignTask",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1010
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.addComment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1073
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.listComments",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1111
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.overdueCount",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1148
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflow.overrideBlockingTask",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-execution.ts",
+    "line": 1177
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflowRoles.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 59
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflowRoles.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 70
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflowRoles.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 112
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflowRoles.delete",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 169
+  },
+  {
+    "surface": "appRouter",
+    "path": "workflowRoles.selectForContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
+    "line": 196
+  },
+  {
+    "surface": "appRouter",
+    "path": "authPermissions.getCurrentUserPermissions",
+    "type": "query",
+    "middleware": "authedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/auth-permissions.ts",
+    "line": 26
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 294
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.getById",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 499
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 568
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 642
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.statusCounts",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 707
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.submitForMatching",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 748
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.manualMatch",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 857
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.voidInvoice",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 950
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.dismissDuplicate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 1058
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.searchContractors",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 1094
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.contractsForContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 1133
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoice.toggleReverseCharge",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice.ts",
+    "line": 1161
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.upload",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 223
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.listByOrg",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 255
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.getById",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 290
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.getMatchCandidates",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 310
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.confirmMatch",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 345
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.acknowledgeValidation",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 365
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.convertToInvoice",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 384
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.reject",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 403
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.downloadRawFile",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 422
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.downloadExtractedXml",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 438
+  },
+  {
+    "surface": "appRouter",
+    "path": "invoiceIntake.downloadValidationReport",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/invoice-intake.ts",
+    "line": 458
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.listChains",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 418
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.getChain",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 441
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.createChain",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 466
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.updateChain",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 521
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.deleteChain",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 591
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.listPending",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 652
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.approve",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 808
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.reject",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 937
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.delegate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1017
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.requestClarification",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1073
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.bulkApprove",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1109
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.bulkReject",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1149
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.submitForApproval",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1198
+  },
+  {
+    "surface": "appRouter",
+    "path": "approval.getAuditTrail",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/approval.ts",
+    "line": 1331
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 34
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.unreadCount",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 81
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.markRead",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 98
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.markAllRead",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 118
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.getPreferences",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 139
+  },
+  {
+    "surface": "appRouter",
+    "path": "notification.updatePreferences",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/notification.ts",
+    "line": 152
+  },
+  {
+    "surface": "appRouter",
+    "path": "reminder.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/reminder.ts",
+    "line": 27
+  },
+  {
+    "surface": "appRouter",
+    "path": "reminder.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/reminder.ts",
+    "line": 39
+  },
+  {
+    "surface": "appRouter",
+    "path": "reminder.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/reminder.ts",
+    "line": 84
+  },
+  {
+    "surface": "appRouter",
+    "path": "reminder.delete",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/reminder.ts",
+    "line": 138
+  },
+  {
+    "surface": "appRouter",
+    "path": "reminder.toggleActive",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/reminder.ts",
+    "line": 190
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getSlackStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 41
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.listUserMappings",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 71
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.linkUser",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 132
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.unlinkUser",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 185
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.syncUsers",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 226
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getAllHealth",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 252
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getHealth",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 261
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getOAuthUrlGeneric",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 278
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.disconnectGeneric",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 314
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getSyncLog",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 361
+  },
+  {
+    "surface": "appRouter",
+    "path": "integration.getWebhookLog",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/integration.ts",
+    "line": 403
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.readyForPayment",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 419
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 484
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.get",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 593
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 638
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.activityDates",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 683
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.lockAndExport",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 700
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.updateItemStatus",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 889
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.markAllPaid",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 947
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.cancel",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1010
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.importStatement",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1085
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.confirmStatementMatches",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1144
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.removeFromRun",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1212
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.listByContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1306
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.applySkontoToItem",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1349
+  },
+  {
+    "surface": "appRouter",
+    "path": "payment.getFormatDetection",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/payment.ts",
+    "line": 1458
+  },
+  {
+    "surface": "appRouter",
+    "path": "dashboard.kpis",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 313
+  },
+  {
+    "surface": "appRouter",
+    "path": "dashboard.spendTrend",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 326
+  },
+  {
+    "surface": "appRouter",
+    "path": "dashboard.deadlines",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 345
+  },
+  {
+    "surface": "appRouter",
+    "path": "dashboard.activity",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 357
+  },
+  {
+    "surface": "appRouter",
+    "path": "dashboard.bootstrap",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/dashboard.ts",
+    "line": 381
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.spendByContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 87
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.spendByTeam",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 172
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.expiringContracts",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 249
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.overdueInvoices",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 311
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.complianceGaps",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 372
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.spendByContractorChart",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 475
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.spendByTeamChart",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 514
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.expiringContractsChart",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 553
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.complianceGapsChart",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 596
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.exportSpendByContractor",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 661
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.exportSpendByTeam",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 676
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.exportExpiringContracts",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 691
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.exportOverdueInvoices",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 706
+  },
+  {
+    "surface": "appRouter",
+    "path": "report.exportComplianceGaps",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/report.ts",
+    "line": 718
+  },
+  {
+    "surface": "appRouter",
+    "path": "audit.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/audit.ts",
+    "line": 102
+  },
+  {
+    "surface": "appRouter",
+    "path": "audit.actors",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/audit.ts",
+    "line": 198
+  },
+  {
+    "surface": "appRouter",
+    "path": "audit.export",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/audit.ts",
+    "line": 219
+  },
+  {
+    "surface": "appRouter",
+    "path": "import.parse",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/import.ts",
+    "line": 191
+  },
+  {
+    "surface": "appRouter",
+    "path": "import.validate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/import.ts",
+    "line": 230
+  },
+  {
+    "surface": "appRouter",
+    "path": "import.commit",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/import.ts",
+    "line": 263
+  },
+  {
+    "surface": "appRouter",
+    "path": "search.global",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/search.ts",
+    "line": 39
+  },
+  {
+    "surface": "appRouter",
+    "path": "skonto.upsertForInvoice",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/skonto.ts",
+    "line": 101
+  },
+  {
+    "surface": "appRouter",
+    "path": "skonto.deleteForInvoice",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/skonto.ts",
+    "line": 136
+  },
+  {
+    "surface": "appRouter",
+    "path": "skonto.upsertForBillingProfile",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/skonto.ts",
+    "line": 156
+  },
+  {
+    "surface": "appRouter",
+    "path": "skonto.deleteForBillingProfile",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/skonto.ts",
+    "line": 197
+  },
+  {
+    "surface": "appRouter",
+    "path": "skonto.evaluateForInvoice",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/skonto.ts",
+    "line": 228
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.listConnections",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 73
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.sendForSignature",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 97
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.getSigningUrl",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 121
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.getPortalSigningUrl",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 137
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.voidEnvelope",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 175
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.resendToRecipient",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 192
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.getEnvelopeDetail",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 209
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.listEnvelopes",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 239
+  },
+  {
+    "surface": "appRouter",
+    "path": "esign.listPendingForContractor",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/esign.ts",
+    "line": 276
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.trigger",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 55
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.getResult",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 84
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.getByDocument",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 96
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.retrigger",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 109
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.portalTrigger",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 173
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.portalGetResult",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 198
+  },
+  {
+    "surface": "appRouter",
+    "path": "ocr.portalGetByDocument",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/ocr.ts",
+    "line": 210
+  },
+  {
+    "surface": "appRouter",
+    "path": "ksef.connect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 48
+  },
+  {
+    "surface": "appRouter",
+    "path": "ksef.disconnect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 213
+  },
+  {
+    "surface": "appRouter",
+    "path": "ksef.triggerSync",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 291
+  },
+  {
+    "surface": "appRouter",
+    "path": "ksef.syncHistory",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 325
+  },
+  {
+    "surface": "appRouter",
+    "path": "ksef.connectionStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/ksef.ts",
+    "line": 366
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.getForInvoice",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 42
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.getForOrg",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 169
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.waive",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 272
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.revokeWaiver",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 335
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.claim",
+    "type": "mutation",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 380
+  },
+  {
+    "surface": "appRouter",
+    "path": "latePaymentInterest.downloadClaim",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/late-payment-interest.ts",
+    "line": 564
+  },
+  {
+    "surface": "appRouter",
+    "path": "legal.generatePrivacyNoticePdf",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/legal.tsx",
+    "line": 33
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.listPending",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 45
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.listAll",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 73
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.getTimesheet",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 121
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.listContractors",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 163
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.approve",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 249
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.reject",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 265
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.bulkApprove",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 282
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.bulkReject",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 298
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.getReconciliation",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 320
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.getInvoiceReconciliation",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 340
+  },
+  {
+    "surface": "appRouter",
+    "path": "time.listReconciliations",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/time.ts",
+    "line": 387
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.connectionStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 124
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.listProjects",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 173
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.listIssueTypes",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 189
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.listProjectStatuses",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 210
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.getStatusMapping",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 228
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.getTaskConfig",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 245
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.linkedIssues",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 265
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.recentActivity",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 345
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.saveStatusMapping",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 404
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.saveTaskConfig",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 441
+  },
+  {
+    "surface": "appRouter",
+    "path": "jira.disconnect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/integrations/jira.ts",
+    "line": 480
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.connectionStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 88
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.teams",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 115
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.getStatusMapping",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 176
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.saveStatusMapping",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 192
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.saveTaskConfig",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 251
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.getLinkedIssue",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 290
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.getLinkedIssues",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 320
+  },
+  {
+    "surface": "appRouter",
+    "path": "linear.linkedIssues",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/linear.ts",
+    "line": 373
+  },
+  {
+    "surface": "appRouter",
+    "path": "docs.attach",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 37
+  },
+  {
+    "surface": "appRouter",
+    "path": "docs.detach",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 73
+  },
+  {
+    "surface": "appRouter",
+    "path": "docs.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 87
+  },
+  {
+    "surface": "appRouter",
+    "path": "docs.search",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 104
+  },
+  {
+    "surface": "appRouter",
+    "path": "docs.refreshMetadata",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/docs.ts",
+    "line": 121
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.listConnections",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 33
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.listPersonalConnections",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 58
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.disconnect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 87
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.listEvents",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 130
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.getTaskConfig",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 153
+  },
+  {
+    "surface": "appRouter",
+    "path": "calendar.saveTaskConfig",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/calendar.ts",
+    "line": 176
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.getSubscription",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 99
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.createCheckoutSession",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 107
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.getProrationPreview",
+    "type": "query",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 183
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.createPortalSession",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 225
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.createTopUpCheckout",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 261
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.syncSeatCount",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 313
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.getCreditBalance",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 352
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.getPlanConfig",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 360
+  },
+  {
+    "surface": "appRouter",
+    "path": "billing.getUsageDashboard",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/billing.ts",
+    "line": 369
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 44
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.getById",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 123
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.create",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 173
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.update",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 210
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.retire",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 273
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.assign",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 330
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.unassign",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/equipment/equipment.ts",
+    "line": 412
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.createShipment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 29
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.addShipmentEvent",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 122
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.getShipment",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 216
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.listShipments",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 252
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.deleteShipment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 276
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.listByContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-shipments.ts",
+    "line": 317
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.createInPostShipment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 43
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.createDpdShipment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 231
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.createUpsShipment",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 407
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.saveCourierConfig",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 583
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.getCourierConfigs",
+    "type": "query",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 625
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.testCourierConnection",
+    "type": "mutation",
+    "middleware": "adminProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 642
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.getShipmentLabel",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-couriers.ts",
+    "line": 672
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.approveReturnRequest",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-returns.ts",
+    "line": 29
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.rejectReturnRequest",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/equipment/equipment-returns.ts",
+    "line": 219
+  },
+  {
+    "surface": "appRouter",
+    "path": "equipment.listReturnRequests",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/equipment/equipment-returns.ts",
+    "line": 320
+  },
+  {
+    "surface": "appRouter",
+    "path": "googleWorkspace.listDirectory",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/google-workspace.ts",
+    "line": 184
+  },
+  {
+    "surface": "appRouter",
+    "path": "googleWorkspace.listUserGroups",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/google-workspace.ts",
+    "line": 241
+  },
+  {
+    "surface": "appRouter",
+    "path": "googleWorkspace.bulkImport",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/google-workspace.ts",
+    "line": 294
+  },
+  {
+    "surface": "appRouter",
+    "path": "googleWorkspace.triggerSync",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/google-workspace.ts",
+    "line": 383
+  },
+  {
+    "surface": "appRouter",
+    "path": "googleWorkspace.syncStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/google-workspace.ts",
+    "line": 409
+  },
+  {
+    "surface": "appRouter",
+    "path": "gdpr.requestErasure",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/gdpr.ts",
+    "line": 68
+  },
+  {
+    "surface": "appRouter",
+    "path": "gdpr.exportData",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/gdpr.ts",
+    "line": 283
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.connectionStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 76
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.getTeams",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 102
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.getChannels",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 114
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.getChannelMapping",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 128
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.saveChannelMapping",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 138
+  },
+  {
+    "surface": "appRouter",
+    "path": "teams.setFallbackApprover",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/teams.ts",
+    "line": 168
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.listSources",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 313
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.fetchPeople",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 334
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.fetchProjects",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 393
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.startImport",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 439
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.getProgress",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 481
+  },
+  {
+    "surface": "appRouter",
+    "path": "onboardingImport.retryFailedItem",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/onboarding-import.ts",
+    "line": 501
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.complianceStatuses",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 159
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.generateZugferdPdf",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 236
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.finalize",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 468
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.revalidate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 505
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.downloadXml",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 586
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.downloadReport",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 610
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.send",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 643
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.listByOrg",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 880
+  },
+  {
+    "surface": "appRouter",
+    "path": "einvoice.summaryForOrg",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/einvoice.ts",
+    "line": 933
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.list",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 91
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.listByContractor",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 103
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.listByContract",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 114
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.create",
+    "type": "mutation",
+    "middleware": "leitwegIdWriteProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 128
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.update",
+    "type": "mutation",
+    "middleware": "leitwegIdWriteProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 174
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.setDefault",
+    "type": "mutation",
+    "middleware": "leitwegIdWriteProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 237
+  },
+  {
+    "surface": "appRouter",
+    "path": "leitwegId.delete",
+    "type": "mutation",
+    "middleware": "leitwegIdWriteProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/core/leitweg-id.ts",
+    "line": 276
+  },
+  {
+    "surface": "appRouter",
+    "path": "exchangeRate.query",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 16
+  },
+  {
+    "surface": "appRouter",
+    "path": "exchangeRate.latest",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 40
+  },
+  {
+    "surface": "appRouter",
+    "path": "exchangeRate.convert",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 55
+  },
+  {
+    "surface": "appRouter",
+    "path": "exchangeRate.fetchDaily",
+    "type": "mutation",
+    "middleware": "cronProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/finance/exchange-rate.ts",
+    "line": 67
+  },
+  {
+    "surface": "appRouter",
+    "path": "featureFlags.list",
+    "type": "query",
+    "middleware": "tenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/feature-flags.ts",
+    "line": 19
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.getPrivacyNotice",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 60
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.getCurrentConsent",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 73
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.getConsentHistory",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 82
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.hasRequiredConsents",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 89
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.grant",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 97
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.bulkGrant",
+    "type": "mutation",
+    "middleware": "sensitiveActionProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 111
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.adminGetUserConsent",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 129
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.adminGetUserConsentHistory",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 141
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.downloadDPA",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 157
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.downloadSCC",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 174
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.getCrossBorderStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 190
+  },
+  {
+    "surface": "appRouter",
+    "path": "consent.recordToS",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/consent.ts",
+    "line": 216
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.connect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 39
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.disconnect",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 174
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.getStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 251
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.getParticipant",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 288
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.getTransmissionByInvoiceId",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 349
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.getTransmissions",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 378
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.retryTransmission",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 410
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.lookupCapabilities",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 458
+  },
+  {
+    "surface": "appRouter",
+    "path": "peppol.listParticipants",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/integrations/peppol.ts",
+    "line": 518
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.getRates",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 15
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.getRatesByCountry",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 25
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.validateRate",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 32
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.calculateWht",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 45
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.generateWhtCertificate",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 68
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.listWhtCertificates",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 79
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.getWhtCertificate",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 84
+  },
+  {
+    "surface": "appRouter",
+    "path": "tax.taxSummary",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/tax.ts",
+    "line": 97
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.saveTaxDetails",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 33
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.generateCsr",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 46
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.requestComplianceCsid",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 56
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.runComplianceChecks",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 66
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.exchangeProductionCert",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 76
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.getOnboardingState",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 87
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.getStatus",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 101
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.getInvoiceChain",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 133
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.resubmit",
+    "type": "mutation",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 171
+  },
+  {
+    "surface": "appRouter",
+    "path": "zatca.getComplianceStats",
+    "type": "query",
+    "middleware": "tenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/compliance/zatca.ts",
+    "line": 198
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.requestMagicLink",
+    "type": "mutation",
+    "middleware": "portalPublicProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 187
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.verifyMagicLink",
+    "type": "mutation",
+    "middleware": "portalPublicProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 207
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.selectOrg",
+    "type": "mutation",
+    "middleware": "portalPublicProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 277
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.logout",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 339
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.overview",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 355
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.listContracts",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 458
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getContract",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 487
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.listInvoices",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 535
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getInvoice",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 563
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.listDocuments",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 694
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.listPayments",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 736
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getUploadUrl",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 770
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.submitInvoice",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 807
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getActiveContracts",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 917
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getSession",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 936
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getProfile",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 971
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.updateContactInfo",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1043
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.submitFinancialChangeRequest",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1086
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getNotificationPreferences",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1183
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.updateNotificationPreference",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1218
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.listEquipment",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1273
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getReturnStatus",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1320
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.requestReturn",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1350
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.cancelReturn",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": true,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1460
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portal.getReturnLabel",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal.ts",
+    "line": 1530
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.getTimesheet",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 48
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.getActiveContracts",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 78
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.saveDraftEntries",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 101
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.createSingleEntry",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 118
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.submitTimesheet",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 152
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.listTimesheets",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 166
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.syncExternal",
+    "type": "mutation",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 217
+  },
+  {
+    "surface": "portalAppRouter",
+    "path": "portalTime.getConnectedProviders",
+    "type": "query",
+    "middleware": "portalProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/portal/portal-time.ts",
+    "line": 292
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "contractor.list",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/contractor.ts",
+    "line": 27
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "contractor.getById",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/contractor.ts",
+    "line": 70
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "invoice.list",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/invoice.ts",
+    "line": 39
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "invoice.getById",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/invoice.ts",
+    "line": 87
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "contract.list",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/contract.ts",
+    "line": 38
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "contract.getById",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/contract.ts",
+    "line": 81
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "document.list",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/document.ts",
+    "line": 27
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "document.getDownloadUrl",
+    "type": "query",
+    "middleware": "apiKeyTenantProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/document.ts",
+    "line": 73
+  },
+  {
+    "surface": "publicApiRouter",
+    "path": "featureFlags.list",
+    "type": "query",
+    "middleware": "apiKeyTenantFlaggedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/public-api/feature-flags.ts",
+    "line": 13
+  }
+]
