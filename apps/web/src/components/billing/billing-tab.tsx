@@ -31,6 +31,7 @@ export function BillingTab() {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
       }
+      toast.success('Done.');
     },
     onError() {
       toast.error(t('checkoutFailed'));
@@ -44,6 +45,7 @@ export function BillingTab() {
       if (data.url) {
         window.location.href = data.url;
       }
+      toast.success('Done.');
     },
     onError() {
       toast.error(t('portalFailed'));

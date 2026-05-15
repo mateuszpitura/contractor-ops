@@ -250,7 +250,15 @@ export function ContractWizardDialog({
     }),
   );
 
-  const linkToEntityMutation = useMutation(trpc.document.linkToEntity.mutationOptions({}));
+  const linkToEntityMutation = useMutation(
+    trpc.document.linkToEntity.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   async function linkDocuments(contractId: string) {
     for (const docId of uploadedDocumentIds) {

@@ -100,6 +100,7 @@ export function ClassificationWizardShell({
         expectedUpdatedAtRef.current = updatedAt;
         setLastSavedAt(updatedAt);
         setAutosaveStatus('saved');
+        toast.success('Done.');
       },
       onError: err => {
         setAutosaveStatus('error');
@@ -119,6 +120,7 @@ export function ClassificationWizardShell({
         router.push(
           `/contractors/${contractorId}/engagements/${contractorAssignmentId}/classification/${result.id}`,
         );
+        toast.success('Done.');
       },
       onError: err => {
         toast.error(tError('submitFailed'), {

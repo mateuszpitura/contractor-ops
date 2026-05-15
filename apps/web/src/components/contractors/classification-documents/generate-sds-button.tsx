@@ -11,6 +11,7 @@ import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -40,9 +41,11 @@ export function GenerateSdsButton({
       onSuccess: () => {
         setApproved(true);
         setErrorMessage(null);
+        toast.success('Done.');
       },
       onError: err => {
         setErrorMessage(err.message);
+        toast.error(err.message);
       },
     }),
   );
@@ -59,9 +62,11 @@ export function GenerateSdsButton({
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });
+        toast.success('Done.');
       },
       onError: err => {
         setErrorMessage(err.message);
+        toast.error(err.message);
       },
     }),
   );

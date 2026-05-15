@@ -161,21 +161,30 @@ export function CarrierShipmentForm({
 
   const inpostMutation = useMutation(
     trpc.equipment.createInPostShipment.mutationOptions({
-      onSuccess: () => onMutationSuccess('InPost'),
+      onSuccess: () => {
+        onMutationSuccess('InPost');
+        toast.success('Done.');
+      },
       onError: onMutationError,
     }),
   );
 
   const dpdMutation = useMutation(
     trpc.equipment.createDpdShipment.mutationOptions({
-      onSuccess: () => onMutationSuccess('DPD'),
+      onSuccess: () => {
+        onMutationSuccess('DPD');
+        toast.success('Done.');
+      },
       onError: onMutationError,
     }),
   );
 
   const upsMutation = useMutation(
     trpc.equipment.createUpsShipment.mutationOptions({
-      onSuccess: () => onMutationSuccess('UPS'),
+      onSuccess: () => {
+        onMutationSuccess('UPS');
+        toast.success('Done.');
+      },
       onError: onMutationError,
     }),
   );

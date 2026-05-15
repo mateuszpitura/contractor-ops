@@ -73,7 +73,12 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
 
   // ---- Mutations via canonical useResourceMutation ------------------------
   const lifecycleMutation = useResourceMutation(
-    trpc.contractor.updateLifecycleStage.mutationOptions(),
+    trpc.contractor.updateLifecycleStage.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
     {
       invalidate: [contractorPrefixKey, trpc.contractor.getById.queryKey()],
       // successMessage is overridden per-call via toast.success below;
@@ -83,11 +88,19 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
     },
   );
 
-  const archiveMutation = useResourceMutation(trpc.contractor.archive.mutationOptions(), {
-    invalidate: [contractorPrefixKey, trpc.contractor.getById.queryKey()],
-    successMessage: t('lifecycle.archived'),
-    errorMessage: tToast('archiveFailed'),
-  });
+  const archiveMutation = useResourceMutation(
+    trpc.contractor.archive.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [contractorPrefixKey, trpc.contractor.getById.queryKey()],
+      successMessage: t('lifecycle.archived'),
+      errorMessage: tToast('archiveFailed'),
+    },
+  );
 
   const isPending = lifecycleMutation.isPending || archiveMutation.isPending;
 

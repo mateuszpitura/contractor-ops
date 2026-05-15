@@ -5,6 +5,7 @@ import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui
 import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,18 +77,34 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
 
   // ---- Mutations via canonical useResourceMutation ----------------------
   const contractByIdKey = trpc.contract.getById.queryKey();
-  const terminateMutation = useResourceMutation(trpc.contract.transitionStatus.mutationOptions(), {
-    invalidate: [contractByIdKey],
-    successMessage: t('actions.terminateSuccess'),
-    errorMessage: t('actions.terminateError'),
-    onClose: () => setTerminateOpen(false),
-  });
+  const terminateMutation = useResourceMutation(
+    trpc.contract.transitionStatus.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [contractByIdKey],
+      successMessage: t('actions.terminateSuccess'),
+      errorMessage: t('actions.terminateError'),
+      onClose: () => setTerminateOpen(false),
+    },
+  );
 
-  const supersedeMutation = useResourceMutation(trpc.contract.transitionStatus.mutationOptions(), {
-    invalidate: [contractByIdKey],
-    successMessage: t('actions.supersedeSuccess'),
-    errorMessage: t('actions.supersedeError'),
-  });
+  const supersedeMutation = useResourceMutation(
+    trpc.contract.transitionStatus.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [contractByIdKey],
+      successMessage: t('actions.supersedeSuccess'),
+      errorMessage: t('actions.supersedeError'),
+    },
+  );
 
   const isPending = terminateMutation.isPending || supersedeMutation.isPending;
 

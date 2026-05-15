@@ -16,7 +16,7 @@ import { DirectoryPreviewTable } from './directory-preview-table';
 import { DirectorySummaryBar } from './directory-summary-bar';
 import { GroupRoleMappingStep } from './group-role-mapping-step';
 import { ImportConfirmStep } from './import-confirm-step';
-import { ROLE_LABELS, RoleAssignmentControls } from './role-assignment-controls';
+import { RoleAssignmentControls } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -112,7 +112,14 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
   // Step 2: Group listing (mutation fired when entering step 2)
   // ---------------------------------------------------------------------------
 
-  const listGroupsMutation = useMutation(trpc.googleWorkspace.listUserGroups.mutationOptions());
+  const listGroupsMutation = useMutation(
+    trpc.googleWorkspace.listUserGroups.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const handleGoToStep2 = useCallback(() => {
     const emails = Array.from(selectedEmails);

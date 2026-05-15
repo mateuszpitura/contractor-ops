@@ -69,10 +69,22 @@ export function PortalSettingsPage() {
   const profileQuery = useQuery(portalTrpc.portal.getProfile.queryOptions());
 
   // Mutations
-  const updateContactInfo = useMutation(portalTrpc.portal.updateContactInfo.mutationOptions());
+  const updateContactInfo = useMutation(
+    portalTrpc.portal.updateContactInfo.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const submitFinancialChange = useMutation(
-    portalTrpc.portal.submitFinancialChangeRequest.mutationOptions(),
+    portalTrpc.portal.submitFinancialChangeRequest.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
   );
 
   const profile = profileQuery.data;

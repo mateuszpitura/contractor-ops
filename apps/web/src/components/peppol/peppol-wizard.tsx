@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -90,9 +91,11 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
         queryClient.invalidateQueries({
           queryKey: trpc.peppol.getStatus.queryKey(),
         });
+        toast.success('Done.');
       },
       onError: error => {
         setRegistrationError(error.message || 'Registration failed');
+        toast.error(error.message);
       },
     }),
   );

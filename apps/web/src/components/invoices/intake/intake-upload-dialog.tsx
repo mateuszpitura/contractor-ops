@@ -78,7 +78,15 @@ export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogPro
   const [isDragOver, setIsDragOver] = useState(false);
   const [localError, setLocalError] = useState<LocalErrorKind | null>(null);
 
-  const uploadMutation = useMutation(trpc.invoiceIntake.upload.mutationOptions({}));
+  const uploadMutation = useMutation(
+    trpc.invoiceIntake.upload.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const handleReset = useCallback(() => {
     setLocalError(null);

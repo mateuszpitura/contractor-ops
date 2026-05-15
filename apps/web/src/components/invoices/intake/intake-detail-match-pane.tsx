@@ -73,6 +73,7 @@ export function IntakeDetailMatchPane({
         void queryClient.invalidateQueries({
           queryKey: trpc.invoiceIntake.getById.queryKey({ intakeId }),
         });
+        toast.success('Done.');
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),

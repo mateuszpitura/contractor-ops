@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -96,10 +97,26 @@ export function StepReview({
   const hasEUR = currencies.includes('EUR');
 
   // Create mutation
-  const createMutation = useMutation(trpc.payment.create.mutationOptions({}));
+  const createMutation = useMutation(
+    trpc.payment.create.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   // Lock and export mutation
-  const lockAndExportMutation = useMutation(trpc.payment.lockAndExport.mutationOptions({}));
+  const lockAndExportMutation = useMutation(
+    trpc.payment.lockAndExport.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const handleLockAndExport = useCallback(async () => {
     if (isLocking) return;

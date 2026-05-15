@@ -66,7 +66,14 @@ export function AdminBrandingSection() {
     },
   });
 
-  const uploadUrlMutation = useMutation(trpc.settings.getLogoUploadUrl.mutationOptions());
+  const uploadUrlMutation = useMutation(
+    trpc.settings.getLogoUploadUrl.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const updateBrandingMutation = useMutation(
     trpc.settings.updateBranding.mutationOptions({

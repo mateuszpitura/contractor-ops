@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { OnboardingConsentStep } from '@/components/consent/onboarding-consent-step';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -230,7 +231,10 @@ export function OnboardingChecklist() {
         void queryClient.invalidateQueries({
           queryKey: trpc.settings.get.queryOptions().queryKey,
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

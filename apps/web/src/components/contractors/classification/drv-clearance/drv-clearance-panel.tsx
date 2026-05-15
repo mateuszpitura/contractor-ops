@@ -13,6 +13,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { FileText, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,9 +63,11 @@ export function StatusfeststellungsverfahrenPanel({
       onSuccess: () => {
         setHasDecisionLetter(true);
         setUploadError(null);
+        toast.success('Done.');
       },
       onError: err => {
         setUploadError(err.message);
+        toast.error(err.message);
       },
     }),
   );

@@ -59,6 +59,7 @@ interface LeitwegIdRowProps {
 // ---------------------------------------------------------------------------
 
 export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
+  const t = useTranslations('EInvoice.LeitwegIdRow');
   const tErrors = useTranslations('EInvoice.Errors');
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
@@ -68,6 +69,7 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
     trpc.leitwegId.setDefault.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
+        toast.success('Done.');
       },
       onError: (err: { message?: string }) => {
         toast.error(err.message || tErrors('Generic'));
@@ -121,7 +123,7 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
         <TableCell className="align-top">
           {row.isDefaultForContractor ? (
             <Badge variant="success">
-              <Check aria-hidden="true" className="size-3" /> Default
+              <Check aria-hidden="true" className="size-3" /> {t('defaultBadge')}
             </Badge>
           ) : (
             <span className="text-sm text-muted-foreground">—</span>
@@ -139,14 +141,16 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  aria-label={`Actions for ${row.value}`}
+                  aria-label={t('actionsAriaLabel', { value: row.value })}
                   data-testid={`leitweg-actions-${row.id}`}
                 />
               }>
               <MoreHorizontal aria-hidden="true" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditOpen(true)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                {t('actionEdit')}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!row.contractorId || row.isDefaultForContractor}
                 onClick={() => {
@@ -154,12 +158,12 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
                     id: row.id,
                   });
                 }}>
-                Set default
+                {t('actionSetDefault')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setDeleteOpen(true)}
                 className="text-destructive focus:text-destructive">
-                Delete
+                {t('actionDelete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

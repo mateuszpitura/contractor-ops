@@ -73,10 +73,12 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
         }
         setSelectedMatches(matchedIndices);
         setStep('results');
+        toast.success('Done.');
       },
       onError: err => {
         setParseError(err.message || t('errors.failedToImportStatement'));
         setStep('error');
+        toast.error(err.message);
       },
     }),
   );

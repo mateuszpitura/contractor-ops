@@ -103,7 +103,10 @@ export function NotificationCenter() {
         void queryClient.invalidateQueries({
           queryKey: [['notification']],
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

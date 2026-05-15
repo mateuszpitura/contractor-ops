@@ -400,8 +400,23 @@ function useFileUploadWithOcr(t: (key: string) => string) {
   const [ocrPopulated, setOcrPopulated] = useState(false);
   const [creditExhausted, setCreditExhausted] = useState(false);
 
-  const getUploadUrl = useMutation(portalTrpc.portal.getUploadUrl.mutationOptions());
-  const ocrTriggerMutation = useMutation(trpc.ocr.portalTrigger.mutationOptions({}));
+  const getUploadUrl = useMutation(
+    portalTrpc.portal.getUploadUrl.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
+  const ocrTriggerMutation = useMutation(
+    trpc.ocr.portalTrigger.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const ocrQuery = useQuery({
     ...trpc.ocr.portalGetResult.queryOptions({ extractionId: extractionId ?? '' }),
@@ -595,7 +610,14 @@ function useAutoSelectSingleContract(
 
 function useInvoiceSubmission(t: (key: string) => string, upload: UploadState) {
   const router = useRouter();
-  const submitInvoice = useMutation(portalTrpc.portal.submitInvoice.mutationOptions());
+  const submitInvoice = useMutation(
+    portalTrpc.portal.submitInvoice.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const onSubmit = useCallback(
     async (values: InvoiceSubmitValues) => {

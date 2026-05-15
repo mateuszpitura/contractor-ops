@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { FolderKanban, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/trpc/init';
@@ -85,7 +86,10 @@ export function ConfirmImportStep({
     ...trpc.onboardingImport.startImport.mutationOptions(),
     onSuccess: data => {
       onJobIdChange(data.jobId);
+      toast.success('Done.');
     },
+
+    onError: err => toast.error(err.message),
   });
 
   const handleStartImport = useCallback(() => {

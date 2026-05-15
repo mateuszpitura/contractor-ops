@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -37,7 +38,10 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       void queryClient.invalidateQueries({
         queryKey: trpc.onboardingImport.getProgress.queryKey({ jobId }),
       });
+      toast.success('Done.');
     },
+
+    onError: err => toast.error(err.message),
   });
 
   if (!progress) {
@@ -128,7 +132,7 @@ export function ImportProgressTracker({ jobId }: ImportProgressTrackerProps) {
       {!(isComplete || isFailed) && progress.completedItems < progress.totalItems && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          <span>Processing...</span>
+          <span>{t('processing')}</span>
         </div>
       )}
     </div>

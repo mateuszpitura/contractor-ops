@@ -6,6 +6,7 @@ import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,18 +81,31 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   const deselect = () => table.toggleAllPageRowsSelected(false);
 
   // ---- Mutations (canonical pattern via useResourceMutation) --------------
-  const bulkArchiveMutation = useResourceMutation(trpc.contractor.bulkArchive.mutationOptions(), {
-    invalidate: [contractorPrefixKey],
-    successMessage: tc('archived', { count }),
-    errorMessage: tc('error.loadFailed'),
-    onClose: () => {
-      deselect();
-      setShowArchiveDialog(false);
+  const bulkArchiveMutation = useResourceMutation(
+    trpc.contractor.bulkArchive.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [contractorPrefixKey],
+      successMessage: tc('archived', { count }),
+      errorMessage: tc('error.loadFailed'),
+      onClose: () => {
+        deselect();
+        setShowArchiveDialog(false);
+      },
     },
-  });
+  );
 
   const bulkAssignOwnerMutation = useResourceMutation(
-    trpc.contractor.bulkAssignOwner.mutationOptions(),
+    trpc.contractor.bulkAssignOwner.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
     {
       invalidate: [contractorPrefixKey],
       successMessage: tc('ownerAssigned', { count }),
@@ -124,7 +138,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         a.download = result.filename;
         a.click();
         URL.revokeObjectURL(url);
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
     {
       invalidate: [],

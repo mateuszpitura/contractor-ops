@@ -115,7 +115,12 @@ export function NotificationPreferencesSection() {
 
   const queryKey = portalTrpc.portal.getNotificationPreferences.queryOptions().queryKey;
 
-  const updatePrefBase = portalTrpc.portal.updateNotificationPreference.mutationOptions();
+  const updatePrefBase = portalTrpc.portal.updateNotificationPreference.mutationOptions({
+    onError: err => toast.error(err.message),
+    onSuccess: () => {
+      toast.success('Done.');
+    },
+  });
 
   const updatePref = useMutation({
     mutationFn: updatePrefBase.mutationFn,

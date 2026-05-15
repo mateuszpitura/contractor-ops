@@ -11,6 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
@@ -79,7 +80,10 @@ function ConsentStepContent({
     trpc.consent.bulkGrant.mutationOptions({
       onSuccess: () => {
         onComplete();
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

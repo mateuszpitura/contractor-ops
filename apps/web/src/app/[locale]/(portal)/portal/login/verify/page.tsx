@@ -86,9 +86,23 @@ export default function PortalVerifyPage() {
   const [state, setState] = useState<VerifyState>({ status: 'verifying' });
   const goToLogin = useCallback(() => router.push('/portal/login'), [router]);
 
-  const verifyMagicLink = useMutation(portalTrpc.portal.verifyMagicLink.mutationOptions());
+  const verifyMagicLink = useMutation(
+    portalTrpc.portal.verifyMagicLink.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const selectOrg = useMutation(portalTrpc.portal.selectOrg.mutationOptions());
+  const selectOrg = useMutation(
+    portalTrpc.portal.selectOrg.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   // Verify token on mount
   useEffect(() => {

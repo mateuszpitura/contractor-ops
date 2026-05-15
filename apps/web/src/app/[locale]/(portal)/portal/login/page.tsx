@@ -60,7 +60,14 @@ export default function PortalLoginPage() {
     defaultValues: { email: '' },
   });
 
-  const requestMagicLink = useMutation(portalTrpc.portal.requestMagicLink.mutationOptions());
+  const requestMagicLink = useMutation(
+    portalTrpc.portal.requestMagicLink.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const onSubmit = async (values: LoginValues) => {
     try {

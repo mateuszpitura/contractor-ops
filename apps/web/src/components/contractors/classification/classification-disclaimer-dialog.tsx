@@ -89,6 +89,7 @@ export function ClassificationDisclaimerDialog(props: ClassificationDisclaimerDi
     trpc.classification.acknowledgeDisclaimer.mutationOptions({
       onSuccess: () => {
         onAcknowledged();
+        toast.success('Done.');
       },
       onError: err => {
         toast.error(t('disclaimer.ackFailed'), { description: err.message });

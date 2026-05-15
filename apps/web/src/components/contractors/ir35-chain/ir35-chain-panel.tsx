@@ -6,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
+import { toast } from 'sonner';
 
 import { trpc } from '@/trpc/init';
 
@@ -30,7 +31,10 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
     trpc.ir35Chain.markDelivered.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -38,7 +42,10 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
     trpc.ir35Chain.markAcknowledged.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -46,7 +53,9 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
     trpc.ir35Chain.removeParticipant.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
+        toast.success('Done.');
       },
+      onError: err => toast.error(err.message),
     }),
   );
 

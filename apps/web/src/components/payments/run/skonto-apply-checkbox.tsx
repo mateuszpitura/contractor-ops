@@ -66,6 +66,7 @@ export function SkontoApplyCheckbox({
     trpc.payment.applySkontoToItem.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries(trpc.payment.pathFilter());
+        toast.success('Done.');
       },
       onError: (error: { message: string }) => {
         toast.error(error.message);

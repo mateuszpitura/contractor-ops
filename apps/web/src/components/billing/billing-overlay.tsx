@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { SoftBlockModal } from './soft-block-modal';
@@ -40,7 +41,10 @@ export function BillingOverlay() {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
       }
+      toast.success('Done.');
     },
+
+    onError: err => toast.error(err.message),
   });
 
   // No subscription data yet or no subscription at all -- don't render

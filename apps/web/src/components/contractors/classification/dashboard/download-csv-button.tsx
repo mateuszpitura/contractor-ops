@@ -35,6 +35,7 @@ export function DownloadCsvButton({ market }: DownloadCsvButtonProps) {
           anchor.click();
           anchor.remove();
         }
+        toast.success('Done.');
       },
       onError: () => {
         toast.error(t('downloadCsv'));

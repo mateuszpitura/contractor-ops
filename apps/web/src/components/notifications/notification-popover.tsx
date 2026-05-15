@@ -71,7 +71,10 @@ export function NotificationPopover() {
         void queryClient.invalidateQueries({
           queryKey: [['notification', 'list']],
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

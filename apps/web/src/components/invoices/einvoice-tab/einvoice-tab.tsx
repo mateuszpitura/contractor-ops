@@ -115,8 +115,12 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
         if (announcementRef.current) {
           announcementRef.current.textContent = `E-invoice finalized — validation ${status} with ${issueCount} issue(s)`;
         }
+        toast.success('Done.');
       },
-      onError: err => handleError(extractErrorCode(err)),
+      onError: err => {
+        handleError(extractErrorCode(err));
+        toast.error(err.message);
+      },
     }),
   );
 
@@ -125,8 +129,12 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
       onSuccess: () => {
         setErrorMessage(null);
         invalidateAll();
+        toast.success('Done.');
       },
-      onError: err => handleError(extractErrorCode(err)),
+      onError: err => {
+        handleError(extractErrorCode(err));
+        toast.error(err.message);
+      },
     }),
   );
 
@@ -137,7 +145,10 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
         invalidateAll();
         toast.success(t('sendCta'));
       },
-      onError: err => handleError(extractErrorCode(err)),
+      onError: err => {
+        handleError(extractErrorCode(err));
+        toast.error(err.message);
+      },
     }),
   );
 

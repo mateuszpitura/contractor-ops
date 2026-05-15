@@ -43,6 +43,8 @@ export function DuplicateWarning({
         toast.success(t('duplicate.dismissedToast'));
         onDismiss?.();
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

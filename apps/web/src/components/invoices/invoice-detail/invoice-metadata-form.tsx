@@ -6,6 +6,7 @@ import { CalendarIcon, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import type { InvoiceAction } from '@/components/invoices/actions';
 import { getDetailInvoiceActions } from '@/components/invoices/actions';
@@ -236,18 +237,29 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const currencyValue = watch('currency');
 
   // Save draft mutation — canonical post-mutation contract via useResourceMutation.
-  const saveDraftMutation = useResourceMutation(trpc.invoice.update.mutationOptions(), {
-    invalidate: [invoiceQueryKey],
-    successMessage: t('detail.savedToast'),
-    errorMessage: t('detail.saveError'),
-  });
+  const saveDraftMutation = useResourceMutation(
+    trpc.invoice.update.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [invoiceQueryKey],
+      successMessage: t('detail.savedToast'),
+      errorMessage: t('detail.saveError'),
+    },
+  );
 
   // Submit for matching mutation
   const submitForMatchingMutation = useResourceMutation(
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
         onSubmittedForMatching?.();
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
     {
       invalidate: [invoiceQueryKey],
@@ -257,11 +269,19 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   );
 
   // Void invoice mutation
-  const voidMutation = useResourceMutation(trpc.invoice.voidInvoice.mutationOptions(), {
-    invalidate: [invoiceQueryKey],
-    successMessage: t('detail.voidedToast'),
-    errorMessage: t('detail.voidError'),
-  });
+  const voidMutation = useResourceMutation(
+    trpc.invoice.voidInvoice.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+    {
+      invalidate: [invoiceQueryKey],
+      successMessage: t('detail.voidedToast'),
+      errorMessage: t('detail.voidError'),
+    },
+  );
 
   function onSaveDraft(values: InvoiceMetadataValues) {
     saveDraftMutation.mutate({
@@ -550,7 +570,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                     <DropdownMenu>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
                         <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">More actions</span>
+                        <span className="sr-only">{t('detail.moreActions')}</span>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem

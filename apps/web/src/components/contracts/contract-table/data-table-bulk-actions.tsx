@@ -72,7 +72,12 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
   // server-side the toast will still report the selection size. This is the
   // same trade-off accepted in the contractors bulkArchive consumer.
   const bulkTerminateMutation = useResourceMutation(
-    trpc.contract.bulkTransition.mutationOptions(),
+    trpc.contract.bulkTransition.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
     {
       invalidate: [contractPrefixKey],
       successMessage: tc('terminated', { count }),

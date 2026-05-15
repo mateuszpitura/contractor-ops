@@ -54,7 +54,10 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         queryClient.invalidateQueries({
           queryKey: trpc.calendar.getTaskConfig.queryKey({ taskTemplateId }),
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

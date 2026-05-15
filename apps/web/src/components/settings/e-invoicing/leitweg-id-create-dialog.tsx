@@ -185,6 +185,7 @@ export function LeitwegIdCreateDialog({
         } else {
           setFormError(msg || tErrors('Generic'));
         }
+        toast.error(err.message);
       },
     }),
   );
@@ -205,6 +206,7 @@ export function LeitwegIdCreateDialog({
         } else {
           setFormError(msg || tErrors('Generic'));
         }
+        toast.error(err.message);
       },
     }),
   );
@@ -315,7 +317,7 @@ export function LeitwegIdCreateDialog({
                 name="contractId"
                 value={contractId}
                 onChange={e => setContractId(e.target.value)}
-                placeholder="Contract ID (optional)"
+                placeholder={t('contractIdPlaceholder')}
               />
             </div>
           </div>

@@ -150,7 +150,14 @@ export function AuditLogTab() {
     placeholderData: keepPreviousData,
   });
   const actorsQuery = useQuery(trpc.audit.actors.queryOptions());
-  const exportMutation = useMutation(trpc.audit.export.mutationOptions());
+  const exportMutation = useMutation(
+    trpc.audit.export.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const items = (listQuery.data?.items ?? []) as unknown as AuditLogEntry[];
   const totalCount = (listQuery.data?.totalCount as number) ?? 0;
@@ -365,9 +372,9 @@ export function AuditLogTab() {
               {dateFrom && dateTo
                 ? `${dateFrom} – ${dateTo}`
                 : dateFrom
-                  ? `From ${dateFrom}`
+                  ? t('dateFromPrefix', { date: dateFrom })
                   : dateTo
-                    ? `To ${dateTo}`
+                    ? t('dateToPrefix', { date: dateTo })
                     : t('filterDateRange')}
             </span>
           </PopoverTrigger>
@@ -412,7 +419,7 @@ export function AuditLogTab() {
                     void setDateTo(null);
                     void setAuditPage('1');
                   }}>
-                  Clear dates
+                  {t('clearDates')}
                 </Button>
               </div>
             )}

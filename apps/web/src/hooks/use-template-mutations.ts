@@ -22,11 +22,32 @@ export function useTemplateMutations(t: (key: string) => string): {
     });
   }, [queryClient]);
 
-  const updateMutation = useMutation(trpc.workflow.updateTemplate.mutationOptions());
+  const updateMutation = useMutation(
+    trpc.workflow.updateTemplate.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const deleteMutation = useMutation(trpc.workflow.deleteTemplate.mutationOptions());
+  const deleteMutation = useMutation(
+    trpc.workflow.deleteTemplate.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const duplicateMutation = useMutation(trpc.workflow.duplicateTemplate.mutationOptions());
+  const duplicateMutation = useMutation(
+    trpc.workflow.duplicateTemplate.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const activate = useCallback(
     async (id: string) => {

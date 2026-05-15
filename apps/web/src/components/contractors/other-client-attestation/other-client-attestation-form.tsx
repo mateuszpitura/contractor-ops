@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useState } from 'react';
+import { toast } from 'sonner';
 
 import { trpc } from '@/trpc/init';
 
@@ -44,8 +45,12 @@ export function OtherClientAttestationForm({ engagementId }: OtherClientAttestat
         void queryClient.invalidateQueries({
           queryKey: [['ir35Attestation', 'getForEngagement']],
         });
+        toast.success('Done.');
       },
-      onError: err => setErrorMessage(err.message),
+      onError: err => {
+        setErrorMessage(err.message);
+        toast.error(err.message);
+      },
     }),
   );
 

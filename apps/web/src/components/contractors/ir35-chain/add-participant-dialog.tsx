@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { trpc } from '@/trpc/init';
 
@@ -68,8 +69,12 @@ export function AddParticipantDialog({
         setContactEmail('');
         onOpenChange(false);
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
+        toast.success('Done.');
       },
-      onError: err => setErrorMessage(err.message),
+      onError: err => {
+        setErrorMessage(err.message);
+        toast.error(err.message);
+      },
     }),
   );
 

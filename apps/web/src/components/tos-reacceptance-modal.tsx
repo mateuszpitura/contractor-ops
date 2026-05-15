@@ -22,6 +22,7 @@ import { ExternalLink, ScrollText } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -49,7 +50,10 @@ export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptance
         setOpen(false);
         // Force a full reload so the dashboard layout re-queries and confirms acceptance.
         window.location.reload();
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

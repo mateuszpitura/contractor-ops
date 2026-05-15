@@ -173,6 +173,7 @@ export function ImportWizardDialog({
         setParseResult(result);
         setColumnMapping(result.suggestedMapping);
         setCurrentStep(1);
+        toast.success('Done.');
       },
       onError: () => {
         toast.error(t('parseError'));
@@ -186,6 +187,7 @@ export function ImportWizardDialog({
         const result = data as unknown as ImportResult;
         setValidateResult(result);
         setCurrentStep(2);
+        toast.success('Done.');
       },
       onError: () => {
         toast.error(t('validateError'));
@@ -201,6 +203,7 @@ export function ImportWizardDialog({
         queryClient.invalidateQueries({
           queryKey: [entityType === 'contractor' ? 'contractor' : 'contract'],
         });
+        toast.success('Done.');
       },
       onError: () => {
         toast.error(t('importError'));

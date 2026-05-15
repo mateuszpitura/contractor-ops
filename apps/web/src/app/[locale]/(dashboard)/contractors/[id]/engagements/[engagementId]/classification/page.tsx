@@ -14,6 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import type { WizardCountryCode } from '@/components/contractors/classification/wizard/classification-wizard-shell';
 import { ClassificationWizardShell } from '@/components/contractors/classification/wizard/classification-wizard-shell';
 import type { WizardAnswerValue } from '@/components/contractors/classification/wizard/wizard-question';
@@ -50,7 +51,10 @@ export default function ClassificationWizardPage() {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -61,7 +65,10 @@ export default function ClassificationWizardPage() {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

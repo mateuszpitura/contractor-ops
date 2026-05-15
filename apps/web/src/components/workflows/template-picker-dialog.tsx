@@ -107,7 +107,14 @@ export function TemplatePicker({
   const isLoading = templatesQuery.isLoading;
 
   // Start run mutation
-  const startRunMutation = useMutation(trpc.workflow.startRun.mutationOptions());
+  const startRunMutation = useMutation(
+    trpc.workflow.startRun.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const isBulk = contractorIds && contractorIds.length > 0;
   const effectiveContractorId = contractorId ?? contractorIds?.[0];

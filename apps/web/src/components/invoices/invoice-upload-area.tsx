@@ -86,15 +86,51 @@ export function InvoiceUploadArea({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showPdfReview, setShowPdfReview] = useState(false);
 
-  const requestUploadMutation = useMutation(trpc.document.requestUpload.mutationOptions({}));
+  const requestUploadMutation = useMutation(
+    trpc.document.requestUpload.mutationOptions({
+      onError: err => toast.error(err.message),
 
-  const confirmUploadMutation = useMutation(trpc.document.confirmUpload.mutationOptions({}));
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const createInvoiceMutation = useMutation(trpc.invoice.create.mutationOptions({}));
+  const confirmUploadMutation = useMutation(
+    trpc.document.confirmUpload.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const ocrTriggerMutation = useMutation(trpc.ocr.trigger.mutationOptions({}));
+  const createInvoiceMutation = useMutation(
+    trpc.invoice.create.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
-  const ocrRetriggerMutation = useMutation(trpc.ocr.retrigger.mutationOptions({}));
+  const ocrTriggerMutation = useMutation(
+    trpc.ocr.trigger.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
+
+  const ocrRetriggerMutation = useMutation(
+    trpc.ocr.retrigger.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const triggerOcrForPdf = useCallback(
     async (file: File, documentId: string, storageKey: string) => {
@@ -283,9 +319,9 @@ export function InvoiceUploadArea({
       const result = await ocrRetriggerMutation.mutateAsync({ extractionId });
       setExtractionId(result.extractionId);
     } catch {
-      toast.error('Failed to re-run OCR. Please try again.');
+      toast.error(t('ocrRetriggerError'));
     }
-  }, [extractionId, ocrRetriggerMutation]);
+  }, [extractionId, ocrRetriggerMutation, t]);
 
   return (
     <div className={`space-y-4 ${className ?? ''}`}>
@@ -301,12 +337,12 @@ export function InvoiceUploadArea({
             {showPdfReview ? (
               <>
                 <EyeOff className="me-1.5 size-4" />
-                Hide PDF
+                {t('hidePdf')}
               </>
             ) : (
               <>
                 <Eye className="me-1.5 size-4" />
-                View PDF
+                {t('viewPdf')}
               </>
             )}
           </Button>

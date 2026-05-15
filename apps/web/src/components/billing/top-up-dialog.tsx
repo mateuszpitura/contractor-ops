@@ -57,6 +57,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
       }
+      toast.success('Done.');
     },
     onError() {
       toast.error(t('errors.checkoutFailed'));

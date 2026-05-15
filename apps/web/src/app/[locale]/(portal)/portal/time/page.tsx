@@ -117,7 +117,10 @@ export default function PortalTimePage() {
             weekStartDate: weekStartStr,
           }).queryKey,
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -171,7 +174,10 @@ export default function PortalTimePage() {
         void queryClient.invalidateQueries({
           queryKey: portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
         });
+        toast.success('Done.');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

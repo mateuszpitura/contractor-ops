@@ -13,6 +13,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { trpc } from '@/trpc/init';
@@ -121,9 +122,25 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
   const tCommon = useTranslations('Common');
   const [files, setFiles] = useState<UploadingFile[]>([]);
 
-  const requestUploadMutation = useMutation(trpc.document.requestUpload.mutationOptions({}));
+  const requestUploadMutation = useMutation(
+    trpc.document.requestUpload.mutationOptions({
+      onError: err => toast.error(err.message),
 
-  const confirmUploadMutation = useMutation(trpc.document.confirmUpload.mutationOptions({}));
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
+
+  const confirmUploadMutation = useMutation(
+    trpc.document.confirmUpload.mutationOptions({
+      onError: err => toast.error(err.message),
+
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
 
   const uploadFile = useCallback(
     async (file: File) => {

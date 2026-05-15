@@ -6,6 +6,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
+import { toast } from 'sonner';
 
 import { trpc } from '@/trpc/init';
 
@@ -36,8 +37,12 @@ export function GenerateDrvBundleButton({
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });
+        toast.success('Done.');
       },
-      onError: err => setErrorMessage(err.message),
+      onError: err => {
+        setErrorMessage(err.message);
+        toast.error(err.message);
+      },
     }),
   );
 

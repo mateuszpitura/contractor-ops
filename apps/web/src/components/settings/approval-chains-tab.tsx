@@ -69,6 +69,7 @@ export function ApprovalChainsTab() {
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
+        toast.success('Done.');
       },
       onError: () => {
         toast.error(t('approvals.toasts.saveFailed'));

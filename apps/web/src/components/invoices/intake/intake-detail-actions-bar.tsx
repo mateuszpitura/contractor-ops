@@ -84,6 +84,7 @@ export function IntakeDetailActionsBar({
         if (converted?.invoiceId) {
           router.push(`/invoices/${converted.invoiceId}`);
         }
+        toast.success('Done.');
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
@@ -91,14 +92,20 @@ export function IntakeDetailActionsBar({
 
   const confirmMatchMutation = useMutation(
     trpc.invoiceIntake.confirmMatch.mutationOptions({
-      onSuccess: () => invalidateBoth(),
+      onSuccess: () => {
+        invalidateBoth();
+        toast.success('Done.');
+      },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
 
   const acknowledgeMutation = useMutation(
     trpc.invoiceIntake.acknowledgeValidation.mutationOptions({
-      onSuccess: () => invalidateBoth(),
+      onSuccess: () => {
+        invalidateBoth();
+        toast.success('Done.');
+      },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
   );
@@ -109,6 +116,7 @@ export function IntakeDetailActionsBar({
         invalidateBoth();
         setRejectOpen(false);
         setRejectReason('');
+        toast.success('Done.');
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),

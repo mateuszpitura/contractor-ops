@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -119,7 +120,14 @@ export function TemplatesTable() {
   } = useTemplateMutations(t);
 
   // Seed starter templates on first visit (if org has no templates)
-  const seedMutation = useMutation(trpc.workflow.seedStarterTemplates.mutationOptions());
+  const seedMutation = useMutation(
+    trpc.workflow.seedStarterTemplates.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success('Done.');
+      },
+    }),
+  );
   const seedAttempted = useRef(false);
 
   useEffect(() => {

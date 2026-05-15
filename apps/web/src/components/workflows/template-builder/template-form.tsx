@@ -141,6 +141,8 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
         queryClient.invalidateQueries({ queryKey: ['workflow'] });
         router.push('/workflows');
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -151,6 +153,8 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
         queryClient.invalidateQueries({ queryKey: ['workflow'] });
         router.push(`/workflows/templates/${(data as Record<string, unknown>).id}`);
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 

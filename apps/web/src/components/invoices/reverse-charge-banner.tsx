@@ -2,6 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { ChevronDown, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,15 @@ export function ReverseChargeBanner({
   isReverseCharge,
   onToggle,
 }: ReverseChargeBannerProps) {
+  const t = useTranslations('Invoices.reverseCharge');
   const toggleMutation = useMutation(
     trpc.invoice.toggleReverseCharge.mutationOptions({
       onSuccess: (_: unknown, vars: { isReverseCharge: boolean }) => {
-        toast.success(vars.isReverseCharge ? 'Reverse charge applied' : 'Reverse charge removed');
+        toast.success(vars.isReverseCharge ? t('applied') : t('removedToast'));
         onToggle?.(vars.isReverseCharge);
       },
+
+      onError: err => toast.error(err.message),
     }),
   );
 
@@ -38,15 +42,15 @@ export function ReverseChargeBanner({
   return (
     <Alert className="border-info/20 bg-info/5">
       <Info className="h-4 w-4 text-info" />
-      <AlertTitle className="text-sm font-medium">Reverse charge applied</AlertTitle>
+      <AlertTitle className="text-sm font-medium">{t('applied')}</AlertTitle>
       <AlertDescription className="text-sm text-muted-foreground">
-        Cross-border B2B transaction. VAT to be accounted by the buyer.
+        {t('description')}
       </AlertDescription>
       <div className="mt-2">
         <DropdownMenu>
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="sm" className="h-7 text-xs" />}>
-            Override <ChevronDown className="ms-1 h-3 w-3" />
+            {t('override')} <ChevronDown className="ms-1 h-3 w-3" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem
@@ -57,9 +61,9 @@ export function ReverseChargeBanner({
                   isReverseCharge: false,
                 })
               }>
-              Remove reverse charge
+              {t('remove')}
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>Keep reverse charge</DropdownMenuItem>
+            <DropdownMenuItem disabled>{t('keep')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
