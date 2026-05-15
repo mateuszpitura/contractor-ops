@@ -2096,6 +2096,12 @@
     "uploadNewVersion": "رفع new version",
     "download": "Download",
     "preview": "معاينة",
+    "delete": "حذف",
+    "deleted": "تم حذف المستند",
+    "deleteTitle": "حذف {name}؟",
+    "deleteBody": "سيتم حذف هذا المستند والملف من التخزين. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteCancel": "إلغاء",
+    "deleteConfirm": "حذف المستند",
     "version": "النسخة {n}",
     "versionLabel": "النسخة {n}",
     "currentVersion": "Current",
@@ -5843,6 +5849,7 @@
       "body": "توصيل a service below to enable automated syncing, webhook processing, and health monitoring."
     },
     "auditLog": {
+      "title": "سجل التدقيق",
       "before": "قبل",
       "after": "بعد",
       "noChanges": "لم تُسجَّل تغييرات حقول",

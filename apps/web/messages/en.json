@@ -2096,6 +2096,12 @@
     "uploadNewVersion": "Upload new version",
     "download": "Download",
     "preview": "Preview",
+    "delete": "Delete",
+    "deleted": "Document deleted",
+    "deleteTitle": "Delete {name}?",
+    "deleteBody": "This document will be removed and its file deleted from storage. This cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleteConfirm": "Delete document",
     "version": "Version {n}",
     "versionLabel": "Version {n}",
     "currentVersion": "Current",
@@ -5848,6 +5854,7 @@
       "body": "Connect a service below to enable automated syncing, webhook processing, and health monitoring."
     },
     "auditLog": {
+      "title": "Audit log",
       "before": "Before",
       "after": "After",
       "noChanges": "No field changes recorded",

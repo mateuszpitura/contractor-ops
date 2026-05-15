@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Download,
   Eye,
@@ -10,14 +11,27 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
+  Trash2,
   Upload,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
+import { trpc } from '@/trpc/init';
 import { PdfPreview } from './pdf-preview';
 import { VersionHistory } from './version-history';
 
@@ -109,7 +123,20 @@ export function DocumentCard({
 }: DocumentCardProps) {
   const t = useTranslations('Documents');
   const { formatDate } = useDateFormatter();
+  const queryClient = useQueryClient();
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const deleteMutation = useMutation(
+    trpc.document.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success(t('deleted'));
+        queryClient.invalidateQueries(trpc.document.pathFilter());
+        setDeleteOpen(false);
+      },
+      onError: err => toast.error(err.message),
+    }),
+  );
 
   const FileIcon = getFileIcon(doc.mimeType);
   const isPdf = doc.mimeType === 'application/pdf';
@@ -200,6 +227,17 @@ export function DocumentCard({
             <span className="sr-only">{t('uploadNewVersion')}</span>
           </Button>
         )}
+
+        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-destructive hover:text-destructive"
+          onClick={() => setDeleteOpen(true)}
+          disabled={deleteMutation.isPending}>
+          <Trash2 className="size-3.5" />
+          <span className="sr-only">{t('delete')}</span>
+        </Button>
       </div>
 
       {/* PDF Preview dialog */}
@@ -211,6 +249,29 @@ export function DocumentCard({
           onOpenChange={setPreviewOpen}
         />
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {t('deleteTitle', { name: doc.originalFileName })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteBody')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('deleteCancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => deleteMutation.mutate({ documentId: doc.id })}
+              disabled={deleteMutation.isPending}>
+              {t('deleteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -2096,6 +2096,12 @@
     "uploadNewVersion": "Neue Version hochladen",
     "download": "Herunterladen",
     "preview": "Vorschau",
+    "delete": "Löschen",
+    "deleted": "Dokument gelöscht",
+    "deleteTitle": "{name} löschen?",
+    "deleteBody": "Dieses Dokument wird entfernt und die Datei wird aus dem Speicher gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteCancel": "Abbrechen",
+    "deleteConfirm": "Dokument löschen",
     "version": "Version {n}",
     "versionLabel": "Version {n}",
     "currentVersion": "Current",
@@ -5843,6 +5849,7 @@
       "body": "Verbinden Sie unten einen Dienst, um automatische Synchronisierung, Webhook-Verarbeitung und Health-Monitoring zu aktivieren."
     },
     "auditLog": {
+      "title": "Audit-Log",
       "before": "Before",
       "after": "After",
       "noChanges": "Keine Feldänderungen erfasst",

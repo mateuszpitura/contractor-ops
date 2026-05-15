@@ -2096,6 +2096,12 @@
     "uploadNewVersion": "Prześlij nowa wersję",
     "download": "Pobierz",
     "preview": "Podgląd",
+    "delete": "Usuń",
+    "deleted": "Dokument usunięty",
+    "deleteTitle": "Usunąć {name}?",
+    "deleteBody": "Ten dokument zostanie usunięty wraz z plikiem ze storage'u. Tej operacji nie można cofnąć.",
+    "deleteCancel": "Anuluj",
+    "deleteConfirm": "Usuń dokument",
     "version": "Wersja {n}",
     "versionLabel": "Wersja {n}",
     "currentVersion": "Aktualna",
@@ -5843,6 +5849,7 @@
       "body": "Połącz usługę poniżej, aby włączyć automatyczna synchronizację, przetwarzanie webhook i monitorowanie stanu."
     },
     "auditLog": {
+      "title": "Dziennik audytu",
       "before": "Przed",
       "after": "Po",
       "noChanges": "Brak zmian w polach",
