@@ -5392,7 +5392,8 @@
       "auditLog": "سجل التدقيق",
       "billing": "الفوترة",
       "apiKeys": "مفاتيح API",
-      "privacy": "الخصوصية"
+      "privacy": "الخصوصية",
+      "workflowRoles": "أدوار سير العمل"
     },
     "saveCta": "حفظ التغييرات",
     "saving": "جارٍ الحفظ...",
@@ -6421,6 +6422,69 @@
       "dueDateRequired": "Due date مطلوب",
       "netAmountPositive": "يجب أن يكون المبلغ الصافي موجبًا",
       "grossAmountPositive": "يجب أن يكون المبلغ الإجمالي موجبًا"
+    }
+  },
+  "WorkflowRoles": {
+    "title": "أدوار سير العمل",
+    "subtitle": "إدارة قوالب مهام نقل المعرفة لكل دور. القوالب الأساسية للقراءة فقط؛ القوالب المخصصة يمكن تعديلها وحذفها.",
+    "createCta": "قالب دور جديد",
+    "listSectionLabel": "قوالب الأدوار",
+    "emptyState": "لا توجد قوالب أدوار. أنشئ قالبًا لتعريف مهام KT لكل دور.",
+    "table": {
+      "role": "المعرّف",
+      "displayName": "الاسم المعروض",
+      "taskCount": "المهام",
+      "kind": "النوع",
+      "actions": "الإجراءات"
+    },
+    "badge": {
+      "seed": "افتراضي",
+      "custom": "مخصص"
+    },
+    "action": {
+      "edit": "تعديل الدور",
+      "delete": "حذف الدور"
+    },
+    "toast": {
+      "created": "تم إنشاء قالب الدور",
+      "updated": "تم تحديث قالب الدور",
+      "deleted": "تم حذف قالب الدور"
+    },
+    "form": {
+      "titleCreate": "قالب دور جديد",
+      "titleEdit": "تعديل قالب الدور",
+      "description": "حدد المعرّف والأسماء المعروضة لكل لغة وقائمة المهام بترتيب.",
+      "roleSlug": "معرّف الدور",
+      "roleSlugHint": "حروف صغيرة وأرقام وشرطة وشرطة سفلية.",
+      "displayNameEn": "الاسم (EN)",
+      "displayNamePl": "الاسم (PL)",
+      "displayNameDe": "الاسم (DE)",
+      "taskItemsLabel": "المهام",
+      "addTask": "إضافة مهمة",
+      "taskNumber": "المهمة {n}",
+      "moveUp": "أعلى",
+      "moveDown": "أسفل",
+      "removeTask": "حذف المهمة",
+      "titleEn": "العنوان (EN)",
+      "titlePl": "العنوان (PL)",
+      "titleDe": "العنوان (DE)",
+      "descriptionEn": "الوصف (EN)",
+      "dueDayOffset": "أيام الاستحقاق",
+      "requiredDocs": "المستندات المطلوبة (مفصولة بفواصل)",
+      "requiredDocsHint": "doc1, doc2",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "save": "حفظ"
+    },
+    "validation": {
+      "atLeastOneTask": "أضف مهمة واحدة على الأقل",
+      "maxTasks": "الحد الأقصى 20 مهمة لكل قالب"
+    },
+    "deleteDialog": {
+      "title": "حذف {name}؟",
+      "body": "سيتم حذف قالب الدور ومهامه نهائيًا. لن تتأثر سير العمل النشطة. لا يمكن التراجع عن هذا الإجراء.",
+      "cancel": "إلغاء",
+      "confirm": "حذف الدور"
     }
   },
   "Workflow": {

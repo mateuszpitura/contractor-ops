@@ -5392,7 +5392,8 @@
       "auditLog": "Dziennik audytu",
       "billing": "Rozliczenia",
       "apiKeys": "Klucze API",
-      "privacy": "Prywatność"
+      "privacy": "Prywatność",
+      "workflowRoles": "Role workflow"
     },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
@@ -6421,6 +6422,69 @@
       "dueDateRequired": "Termin płatności jest wymagany",
       "netAmountPositive": "Kwota netto musi być dodatnia",
       "grossAmountPositive": "Kwota brutto musi być dodatnia"
+    }
+  },
+  "WorkflowRoles": {
+    "title": "Role workflow",
+    "subtitle": "Zarządzaj szablonami zadań KT (knowledge transfer) per rola. Szablony seed są tylko do odczytu; własne można edytować i usuwać.",
+    "createCta": "Nowy szablon roli",
+    "listSectionLabel": "Szablony ról",
+    "emptyState": "Brak szablonów ról. Utwórz, aby zdefiniować zadania KT dla roli.",
+    "table": {
+      "role": "Slug",
+      "displayName": "Nazwa wyświetlana",
+      "taskCount": "Zadań",
+      "kind": "Typ",
+      "actions": "Akcje"
+    },
+    "badge": {
+      "seed": "Seed",
+      "custom": "Własne"
+    },
+    "action": {
+      "edit": "Edytuj rolę",
+      "delete": "Usuń rolę"
+    },
+    "toast": {
+      "created": "Szablon roli utworzony",
+      "updated": "Szablon roli zaktualizowany",
+      "deleted": "Szablon roli usunięty"
+    },
+    "form": {
+      "titleCreate": "Nowy szablon roli",
+      "titleEdit": "Edycja szablonu roli",
+      "description": "Zdefiniuj slug, nazwy wyświetlane per język oraz uporządkowaną listę zadań KT.",
+      "roleSlug": "Slug roli",
+      "roleSlugHint": "Małe litery, cyfry, myślnik lub podkreślnik.",
+      "displayNameEn": "Nazwa (EN)",
+      "displayNamePl": "Nazwa (PL)",
+      "displayNameDe": "Nazwa (DE)",
+      "taskItemsLabel": "Zadania",
+      "addTask": "Dodaj zadanie",
+      "taskNumber": "Zadanie {n}",
+      "moveUp": "W górę",
+      "moveDown": "W dół",
+      "removeTask": "Usuń zadanie",
+      "titleEn": "Tytuł (EN)",
+      "titlePl": "Tytuł (PL)",
+      "titleDe": "Tytuł (DE)",
+      "descriptionEn": "Opis (EN)",
+      "dueDayOffset": "Termin (dni)",
+      "requiredDocs": "Wymagane dokumenty (po przecinku)",
+      "requiredDocsHint": "doc1, doc2",
+      "cancel": "Anuluj",
+      "create": "Utwórz",
+      "save": "Zapisz"
+    },
+    "validation": {
+      "atLeastOneTask": "Dodaj co najmniej jedno zadanie",
+      "maxTasks": "Maksymalnie 20 zadań na szablon"
+    },
+    "deleteDialog": {
+      "title": "Usunąć {name}?",
+      "body": "Ten szablon roli i jego zadania zostaną trwale usunięte. Aktywne workflow nie zostaną zmienione. Tej operacji nie można cofnąć.",
+      "cancel": "Anuluj",
+      "confirm": "Usuń rolę"
     }
   },
   "Workflow": {

@@ -46,6 +46,10 @@ function SettingsContent() {
         router.push('/settings/members');
         return;
       }
+      if (value === 'workflow-roles') {
+        router.push('/settings/workflow-roles');
+        return;
+      }
       void setActiveTab(value);
     },
     [setActiveTab, router],
@@ -78,6 +82,7 @@ function SettingsContent() {
               </TabsTrigger>
             )}
             <TabsTrigger value="members">{t('tabs.members')}</TabsTrigger>
+            <TabsTrigger value="workflow-roles">{t('tabs.workflowRoles')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="mt-6 space-y-6">

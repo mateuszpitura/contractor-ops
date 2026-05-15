@@ -5392,7 +5392,8 @@
       "auditLog": "Audit-Log",
       "billing": "Abrechnung",
       "apiKeys": "API-Schlüssel",
-      "privacy": "Datenschutz"
+      "privacy": "Datenschutz",
+      "workflowRoles": "Workflow-Rollen"
     },
     "saveCta": "Änderungen speichern",
     "saving": "Wird gespeichert…",
@@ -6421,6 +6422,69 @@
       "dueDateRequired": "Fälligkeitsdatum ist erforderlich",
       "netAmountPositive": "Nettobetrag muss positiv sein",
       "grossAmountPositive": "Bruttobetrag muss positiv sein"
+    }
+  },
+  "WorkflowRoles": {
+    "title": "Workflow-Rollen",
+    "subtitle": "Verwalten Sie Wissenstransfer-Vorlagen pro Rolle. Seed-Vorlagen sind nicht editierbar; eigene Vorlagen können bearbeitet und gelöscht werden.",
+    "createCta": "Neue Rollenvorlage",
+    "listSectionLabel": "Rollenvorlagen",
+    "emptyState": "Noch keine Rollenvorlagen. Erstellen Sie eine, um KT-Aufgaben pro Rolle zu definieren.",
+    "table": {
+      "role": "Slug",
+      "displayName": "Anzeigename",
+      "taskCount": "Aufgaben",
+      "kind": "Art",
+      "actions": "Aktionen"
+    },
+    "badge": {
+      "seed": "Seed",
+      "custom": "Eigene"
+    },
+    "action": {
+      "edit": "Rolle bearbeiten",
+      "delete": "Rolle löschen"
+    },
+    "toast": {
+      "created": "Rollenvorlage erstellt",
+      "updated": "Rollenvorlage aktualisiert",
+      "deleted": "Rollenvorlage gelöscht"
+    },
+    "form": {
+      "titleCreate": "Neue Rollenvorlage",
+      "titleEdit": "Rollenvorlage bearbeiten",
+      "description": "Definieren Sie Slug, Anzeigenamen pro Sprache und die geordnete Liste der Wissenstransfer-Aufgaben.",
+      "roleSlug": "Rollen-Slug",
+      "roleSlugHint": "Kleinbuchstaben, Ziffern, Bindestrich oder Unterstrich.",
+      "displayNameEn": "Anzeigename (EN)",
+      "displayNamePl": "Anzeigename (PL)",
+      "displayNameDe": "Anzeigename (DE)",
+      "taskItemsLabel": "Aufgaben",
+      "addTask": "Aufgabe hinzufügen",
+      "taskNumber": "Aufgabe {n}",
+      "moveUp": "Nach oben",
+      "moveDown": "Nach unten",
+      "removeTask": "Aufgabe entfernen",
+      "titleEn": "Titel (EN)",
+      "titlePl": "Titel (PL)",
+      "titleDe": "Titel (DE)",
+      "descriptionEn": "Beschreibung (EN)",
+      "dueDayOffset": "Fälligkeit (Tage)",
+      "requiredDocs": "Erforderliche Dokumente (kommagetrennt)",
+      "requiredDocsHint": "doc1, doc2",
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "save": "Speichern"
+    },
+    "validation": {
+      "atLeastOneTask": "Mindestens eine Aufgabe erforderlich",
+      "maxTasks": "Maximal 20 Aufgaben pro Rollenvorlage"
+    },
+    "deleteDialog": {
+      "title": "{name} löschen?",
+      "body": "Diese Rollenvorlage und ihre Aufgabendefinitionen werden dauerhaft gelöscht. Aktive Workflows sind nicht betroffen. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "cancel": "Abbrechen",
+      "confirm": "Rolle löschen"
     }
   },
   "Workflow": {

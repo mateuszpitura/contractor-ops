@@ -5397,7 +5397,8 @@
       "auditLog": "Audit log",
       "billing": "Billing",
       "apiKeys": "API keys",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "workflowRoles": "Workflow roles"
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
@@ -6421,6 +6422,69 @@
       "dueDateRequired": "Due date is required",
       "netAmountPositive": "Net amount must be positive",
       "grossAmountPositive": "Gross amount must be positive"
+    }
+  },
+  "WorkflowRoles": {
+    "title": "Workflow roles",
+    "subtitle": "Manage knowledge-transfer task templates per role. Seed templates ship out-of-the-box and are read-only; custom templates can be edited and deleted.",
+    "createCta": "New role template",
+    "listSectionLabel": "Role templates",
+    "emptyState": "No role templates yet. Create one to define KT tasks per role.",
+    "table": {
+      "role": "Slug",
+      "displayName": "Display name",
+      "taskCount": "Tasks",
+      "kind": "Kind",
+      "actions": "Actions"
+    },
+    "badge": {
+      "seed": "Seed",
+      "custom": "Custom"
+    },
+    "action": {
+      "edit": "Edit role",
+      "delete": "Delete role"
+    },
+    "toast": {
+      "created": "Role template created",
+      "updated": "Role template updated",
+      "deleted": "Role template deleted"
+    },
+    "form": {
+      "titleCreate": "New role template",
+      "titleEdit": "Edit role template",
+      "description": "Define the role slug, display name in each locale, and the ordered list of knowledge-transfer tasks.",
+      "roleSlug": "Role slug",
+      "roleSlugHint": "Lowercase letters, digits, hyphen, or underscore.",
+      "displayNameEn": "Display name (EN)",
+      "displayNamePl": "Display name (PL)",
+      "displayNameDe": "Display name (DE)",
+      "taskItemsLabel": "Tasks",
+      "addTask": "Add task",
+      "taskNumber": "Task {n}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "removeTask": "Remove task",
+      "titleEn": "Title (EN)",
+      "titlePl": "Title (PL)",
+      "titleDe": "Title (DE)",
+      "descriptionEn": "Description (EN)",
+      "dueDayOffset": "Due day offset",
+      "requiredDocs": "Required docs (comma-separated)",
+      "requiredDocsHint": "doc1, doc2",
+      "cancel": "Cancel",
+      "create": "Create",
+      "save": "Save"
+    },
+    "validation": {
+      "atLeastOneTask": "Add at least one task",
+      "maxTasks": "Maximum 20 tasks per role template"
+    },
+    "deleteDialog": {
+      "title": "Delete {name}?",
+      "body": "This role template and its task definitions will be permanently deleted. Active workflows using it are not affected. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete role"
     }
   },
   "Workflow": {
