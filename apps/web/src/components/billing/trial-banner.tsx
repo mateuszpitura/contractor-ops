@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { X, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,7 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
         <p className="text-sm font-medium">{message}</p>
         <div className="flex items-center gap-2">
           <Button variant="default" size="sm" onClick={onUpgrade}>
+            <Zap className="me-1.5 size-4" />
             {t('choosePlan')}
           </Button>
           <button

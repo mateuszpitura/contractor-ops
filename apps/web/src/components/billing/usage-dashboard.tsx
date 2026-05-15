@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Crown, RefreshCw } from 'lucide-react';
+import { Crown, RefreshCw, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -114,6 +114,7 @@ export function UsageDashboard() {
         <p className="text-lg font-semibold">{t('noSubscription')}</p>
         <p className="text-sm text-muted-foreground max-w-md">{t('noSubscriptionBody')}</p>
         <Button variant="default" render={<Link href="/settings?tab=billing" />}>
+          <Zap className="me-1.5 size-4" />
           {t('choosePlan')}
         </Button>
       </div>

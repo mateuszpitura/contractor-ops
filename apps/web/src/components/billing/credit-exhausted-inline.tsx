@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowUp, ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
@@ -32,9 +32,11 @@ export function CreditExhaustedInline({ onUpgrade, onBuyCredits }: CreditExhaust
       </div>
       <div className="flex gap-2 ps-8">
         <Button variant="default" size="sm" onClick={onUpgrade}>
+          <ArrowUp className="me-1.5 size-4" />
           {t('upgradePlan')}
         </Button>
         <Button variant="outline" size="sm" onClick={onBuyCredits}>
+          <ShoppingCart className="me-1.5 size-4" />
           {t('buyCredits')}
         </Button>
       </div>

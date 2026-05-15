@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -60,6 +60,7 @@ export function KsefDuplicateBanner({
               {!!onVoid && (
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="destructive" size="sm" onClick={() => setVoidDialogOpen(true)}>
+                  <Trash2 className="me-1.5 size-4" />
                   Void This Invoice
                 </Button>
               )}

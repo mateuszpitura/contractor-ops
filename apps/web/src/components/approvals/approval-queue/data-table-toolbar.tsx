@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, Search, X, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -278,6 +278,7 @@ export function ApprovalQueueToolbar({
             </Button>
             {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="destructive" size="sm" onClick={() => setBulkRejectOpen(true)}>
+              <XCircle className="me-1.5 size-4" />
               {t('bulk.reject', { count })}
             </Button>
             <Button variant="ghost" size="sm" onClick={onClearSelection}>
