@@ -168,7 +168,9 @@
         "import": "Zaimportowano",
         "invite": "Zaproszono",
         "lock": "Zablokowano",
-        "cancel": "Anulowano"
+        "cancel": "Anulowano",
+        "archive": "Zarchiwizowano",
+        "sign": "Podpisano"
       },
       "resources": {
         "contractor": "Kontrahent",
@@ -746,7 +748,16 @@
         "returnRequestCancel": "Wniosek o zwrot anulowany",
         "returnRequestApprove": "Wniosek o zwrot zatwierdzony",
         "returnRequestReject": "Wniosek o zwrot odrzucony",
-        "workflowOffboardingOverrideBlockingTask": "Zadanie blokujące nadpisane"
+        "workflowOffboardingOverrideBlockingTask": "Zadanie blokujące nadpisane",
+        "invoiceUpdate": "Faktura zaktualizowana",
+        "invoiceCreate": "Faktura utworzona",
+        "invoiceApprove": "Faktura zatwierdzona",
+        "invoiceReject": "Faktura odrzucona",
+        "contractorCreate": "Kontrahent utworzony",
+        "contractorUpdate": "Kontrahent zaktualizowany",
+        "contractorArchive": "Kontrahent zarchiwizowany",
+        "contractSign": "Umowa podpisana",
+        "paymentRunComplete": "Przebieg płatności ukończony"
       },
       "resources": {
         "organization": "Organizacja",
@@ -895,6 +906,11 @@
       "subtitle": "Dodaj słowa kluczowe specyficzne dla języka. Wydarzenia w kalendarzu, których tytuły pasują, traktowane są jako urlop.",
       "empty": "Brak dodatkowych słów. Wbudowane słowa kluczowe nadal są aktywne.",
       "addCta": "Dodaj słowo"
+    },
+    "reimport": {
+      "title": "Importuj dane z narzędzi",
+      "description": "Ponownie importuj kontrahentów, umowy i faktury z zewnętrznych narzędzi, takich jak pliki CSV, arkusze kalkulacyjne lub platformy firm trzecich.",
+      "cta": "Ponownie importuj z narzędzi"
     }
   },
   "Users": {
@@ -1265,7 +1281,8 @@
       "activate": "Aktywuj",
       "completeOffboarding": "Zakończ offboarding",
       "archive": "Archiwizuj",
-      "editComingSoon": "Edycja inline wkrótce. Szczegóły dostępne w zakładce Przegląd."
+      "editComingSoon": "Edycja inline wkrótce. Szczegóły dostępne w zakładce Przegląd.",
+      "startWorkflow": "Uruchom workflow"
     },
     "tabs": {
       "overview": "Przegląd",
@@ -2274,7 +2291,10 @@
       "partialMatch": "Częściowe dopasowanie",
       "discrepancy": "Rozbieżność",
       "unmatched": "Nie znaleziono dopasowania",
-      "manualMatch": "Dopasowane ręcznie"
+      "manualMatch": "Dopasowane ręcznie",
+      "partial": "Częściowe",
+      "matched": "Dopasowane",
+      "manuallyConfirmed": "Potwierdzone ręcznie"
     },
     "source": {
       "manualUpload": "Wgranie",
@@ -2436,7 +2456,8 @@
       "contractor": "Kontrahent",
       "amount": "Kwota",
       "submitted": "Zgłoszona",
-      "sla": "Pozostaly SLA"
+      "sla": "Pozostaly SLA",
+      "status": "Status"
     },
     "actions": {
       "approve": "Zaakceptuj",
@@ -3218,6 +3239,16 @@
       "currency": "Waluta",
       "dueDate": "Termin płatności",
       "contractNumber": "Numer umowy"
+    },
+    "saveChanges": "Zapisz zmiany",
+    "actions": {
+      "cancelRun": "Anuluj przebieg",
+      "downloadExport": "Pobierz eksport",
+      "markAllPaid": "Oznacz wszystkie jako opłacone"
+    },
+    "noResults": {
+      "heading": "Nie znaleziono przebiegów płatności",
+      "body": "Spróbuj dostosować filtr statusu lub zakres dat, aby znaleźć to, czego szukasz."
     }
   },
   "Reports": {
@@ -4194,7 +4225,8 @@
       "notes": "Notatki",
       "purchaseDate": "Data zakupu",
       "save": "Zapisz",
-      "cancel": "Anuluj"
+      "cancel": "Anuluj",
+      "purchaseDatePlaceholder": "Wybierz datę"
     },
     "shipment": {
       "createTitle": "Utworz przesylke",

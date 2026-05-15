@@ -168,7 +168,9 @@
         "import": "تم الاستيراد",
         "invite": "تمت الدعوة",
         "lock": "مقفل",
-        "cancel": "ملغى"
+        "cancel": "ملغى",
+        "archive": "أُرشف",
+        "sign": "مُوقَّع"
       },
       "resources": {
         "contractor": "مقاول",
@@ -746,7 +748,16 @@
         "returnRequestCancel": "تم إلغاء طلب الإرجاع",
         "returnRequestApprove": "تمت الموافقة على طلب الإرجاع",
         "returnRequestReject": "تم رفض طلب الإرجاع",
-        "workflowOffboardingOverrideBlockingTask": "تم تجاوز المهمة المحظورة"
+        "workflowOffboardingOverrideBlockingTask": "تم تجاوز المهمة المحظورة",
+        "invoiceUpdate": "تحديث الفاتورة",
+        "invoiceCreate": "إنشاء فاتورة",
+        "invoiceApprove": "الموافقة على الفاتورة",
+        "invoiceReject": "رفض الفاتورة",
+        "contractorCreate": "إنشاء متعاقد",
+        "contractorUpdate": "تحديث المتعاقد",
+        "contractorArchive": "أرشفة المتعاقد",
+        "contractSign": "توقيع العقد",
+        "paymentRunComplete": "اكتمال دورة الدفع"
       },
       "resources": {
         "organization": "المؤسسة",
@@ -895,6 +906,11 @@
       "subtitle": "أضف كلمات مفتاحية خاصة بكل لغة. تُعامَل أحداث التقويم التي تتطابق عناوينها مع هذه الكلمات باعتبارها إجازة مدفوعة.",
       "empty": "لا توجد كلمات مفتاحية إضافية. الكلمات المدمجة لا تزال فعّالة.",
       "addCta": "إضافة كلمة مفتاحية"
+    },
+    "reimport": {
+      "title": "استيراد البيانات من الأدوات",
+      "description": "إعادة استيراد المتعاقدين والعقود والفواتير من أدوات خارجية كملفات CSV أو جداول البيانات أو المنصات الخارجية.",
+      "cta": "إعادة الاستيراد من الأدوات"
     }
   },
   "Users": {
@@ -1265,7 +1281,8 @@
       "activate": "تفعيل",
       "completeOffboarding": "إكمال إنهاء الخدمة",
       "archive": "أرشفة",
-      "editComingSoon": "التحرير المضمّن قادم قريبًا. استخدم علامة تبويب النظرة العامة لعرض التفاصيل."
+      "editComingSoon": "التحرير المضمّن قادم قريبًا. استخدم علامة تبويب النظرة العامة لعرض التفاصيل.",
+      "startWorkflow": "بدء سير العمل"
     },
     "tabs": {
       "overview": "نظرة عامة",
@@ -2274,7 +2291,10 @@
       "partialMatch": "تطابق جزئي",
       "discrepancy": "Discrepancy",
       "unmatched": "لا يوجد تطابق",
-      "manualMatch": "تطابق يدوي"
+      "manualMatch": "تطابق يدوي",
+      "partial": "جزئي",
+      "matched": "متطابق",
+      "manuallyConfirmed": "تأكيد يدوي"
     },
     "source": {
       "manualUpload": "رفع",
@@ -2436,7 +2456,8 @@
       "contractor": "مقاول",
       "amount": "المبلغ",
       "submitted": "تم الإرسال",
-      "sla": "اتفاقية مستوى الخدمة المتبقية"
+      "sla": "اتفاقية مستوى الخدمة المتبقية",
+      "status": "الحالة"
     },
     "actions": {
       "approve": "موافقة",
@@ -3218,6 +3239,16 @@
       "currency": "العملة",
       "dueDate": "تاريخ الاستحقاق",
       "contractNumber": "رقم العقد"
+    },
+    "saveChanges": "حفظ التغييرات",
+    "actions": {
+      "cancelRun": "إلغاء الدورة",
+      "downloadExport": "تنزيل التصدير",
+      "markAllPaid": "تحديد الكل كمدفوع"
+    },
+    "noResults": {
+      "heading": "لم يتم العثور على دورات دفع",
+      "body": "حاول ضبط فلتر الحالة أو نطاق التاريخ للعثور على ما تبحث عنه."
     }
   },
   "Reports": {
@@ -4194,7 +4225,8 @@
       "notes": "Notes",
       "purchaseDate": "تاريخ الشراء",
       "save": "حفظ",
-      "cancel": "إلغاء"
+      "cancel": "إلغاء",
+      "purchaseDatePlaceholder": "اختر تاريخاً"
     },
     "shipment": {
       "createTitle": "إنشاء shipment",
