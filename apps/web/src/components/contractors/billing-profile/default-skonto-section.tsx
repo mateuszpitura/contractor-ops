@@ -135,6 +135,7 @@ export function DefaultSkontoSection({
   };
 
   const handleDelete = () => {
+    if (!window.confirm(t('confirm.deleteDefaultSkonto'))) return;
     deleteMutation.mutate({ billingProfileId });
   };
 

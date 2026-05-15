@@ -174,6 +174,7 @@ export function SkontoFormSection({
 
   const handleDelete = () => {
     if (!invoiceId) return;
+    if (!window.confirm(t('confirm.deleteInvoiceSkonto'))) return;
     deleteMutation.mutate({ invoiceId });
   };
 

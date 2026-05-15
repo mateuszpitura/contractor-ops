@@ -259,11 +259,12 @@ export function SlackUserMapping() {
                       variant="ghost"
                       size="sm"
                       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() =>
+                      onClick={() => {
+                        if (!window.confirm(t('integrations.userMapping.unlinkConfirm'))) return;
                         unlinkMutation.mutate({
                           externalLinkId: mapping.slackLink?.externalLinkId ?? '',
-                        })
-                      }
+                        });
+                      }}
                       disabled={unlinkMutation.isPending}>
                       {t('integrations.userMapping.unlinkUser')}
                     </Button>

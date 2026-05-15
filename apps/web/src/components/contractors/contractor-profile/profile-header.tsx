@@ -8,6 +8,16 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -69,6 +79,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerType, setPickerType] = useState<string | undefined>(undefined);
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
 
   const stage = contractor.lifecycleStage as LifecycleStage;
   const contractorPrefixKey = ['contractor'] as const;
@@ -146,7 +157,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
 
   function dispatchMenuAction(action: ContractorAction) {
     if (action.key === 'profile.archive') {
-      archiveMutation.mutate({ id: contractor.id });
+      setArchiveConfirmOpen(true);
       return;
     }
     const target = LIFECYCLE_TRANSITION_TARGETS[action.key];
@@ -278,6 +289,28 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
         contractorId={contractor.id}
         preFilterType={pickerType}
       />
+
+      {/* Archive confirmation */}
+      <AlertDialog open={archiveConfirmOpen} onOpenChange={setArchiveConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('lifecycle.archiveConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('lifecycle.archiveConfirmBody')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                archiveMutation.mutate({ id: contractor.id });
+                setArchiveConfirmOpen(false);
+              }}
+              disabled={archiveMutation.isPending}
+              variant="destructive">
+              {t('lifecycle.archiveConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

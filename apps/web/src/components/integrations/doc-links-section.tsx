@@ -2,8 +2,19 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
@@ -40,7 +51,9 @@ interface DocLinksSectionProps {
 
 export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSectionProps) {
   const [attachOpen, setAttachOpen] = useState(false);
+  const [pendingDetachId, setPendingDetachId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const t = useTranslations('Integrations');
 
   // Fetch doc links
   const listQuery = useQuery({
@@ -51,22 +64,26 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
   const detachMutation = useMutation({
     ...trpc.docs.detach.mutationOptions(),
     onSuccess: () => {
-      toast.success('Document link removed');
+      toast.success(t('docs.section.toast.removed'));
       void queryClient.invalidateQueries({
         queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
       });
     },
     onError: () => {
-      toast.error('Failed to remove document link');
+      toast.error(t('docs.section.toast.removeFailed'));
     },
   });
 
-  const handleRemove = useCallback(
-    (externalLinkId: string) => {
-      detachMutation.mutate({ externalLinkId });
-    },
-    [detachMutation],
-  );
+  const handleRemove = useCallback((externalLinkId: string) => {
+    setPendingDetachId(externalLinkId);
+  }, []);
+
+  const confirmRemove = useCallback(() => {
+    if (pendingDetachId) {
+      detachMutation.mutate({ externalLinkId: pendingDetachId });
+      setPendingDetachId(null);
+    }
+  }, [detachMutation, pendingDetachId]);
 
   const openAttachDialog = useCallback(() => {
     setAttachOpen(true);
@@ -80,11 +97,11 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm font-semibold">Documents</span>
+          <span className="text-sm font-semibold">{t('docs.section.heading')}</span>
         </div>
         {!readOnly && (
           <Button variant="ghost" size="sm" onClick={openAttachDialog}>
-            Attach Document
+            {t('docs.section.attachButton')}
           </Button>
         )}
       </div>
@@ -96,7 +113,7 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
           <Skeleton className="h-6 w-[140px] rounded-md" />
         </div>
       ) : docLinks.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No documents attached.</p>
+        <p className="text-xs text-muted-foreground">{t('docs.section.noDocuments')}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {docLinks.map(link => {
@@ -107,7 +124,7 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
               <DocLinkChip
                 key={link.id}
                 id={link.id}
-                title={(metadata.title as string) ?? 'Untitled'}
+                title={(metadata.title as string) ?? t('docs.section.untitled')}
                 url={link.externalUrl}
                 provider={provider}
                 lastEditedTime={metadata.lastEditedTime as string | undefined}
@@ -127,6 +144,26 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
           onOpenChange={setAttachOpen}
         />
       )}
+
+      {/* Detach confirmation dialog */}
+      <AlertDialog
+        open={pendingDetachId !== null}
+        onOpenChange={open => {
+          if (!open) setPendingDetachId(null);
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('docs.section.detachConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('docs.section.detachConfirmBody')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('docs.section.detachCancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} disabled={detachMutation.isPending}>
+              {t('docs.section.detachConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
