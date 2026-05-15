@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
-import { Link } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractAction } from '../actions';
@@ -73,9 +73,11 @@ const ROUTED_ELSEWHERE = new Set(['sendForSignature']);
 
 export function DetailHeader({ contract }: DetailHeaderProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const t = useTranslations('ContractDetail');
   const tEnum = useTranslations('Contracts');
   const [terminateOpen, setTerminateOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // ---- Mutations via canonical useResourceMutation ----------------------
   const contractByIdKey = trpc.contract.getById.queryKey();
@@ -110,7 +112,25 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
     },
   );
 
-  const isPending = terminateMutation.isPending || supersedeMutation.isPending;
+  const deleteMutation = useResourceMutation(
+    trpc.contract.delete.mutationOptions({
+      onError: err => toast.error(err.message),
+      onSuccess: () => {
+        toast.success(t('actions.deleteSuccess'));
+        queryClient.invalidateQueries(trpc.contract.pathFilter());
+        router.push('/contracts');
+      },
+    }),
+    {
+      invalidate: [contractByIdKey],
+      successMessage: t('actions.deleteSuccess'),
+      errorMessage: t('actions.deleteError'),
+      onClose: () => setDeleteOpen(false),
+    },
+  );
+
+  const isPending =
+    terminateMutation.isPending || supersedeMutation.isPending || deleteMutation.isPending;
 
   // ---- Registry-driven action inventory ---------------------------------
   const applicable = getDetailContractActions({
@@ -139,6 +159,9 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
         return;
       case 'supersede':
         supersedeMutation.mutate({ id: contract.id, targetStatus: 'SUPERSEDED' });
+        return;
+      case 'delete':
+        setDeleteOpen(true);
         return;
       default:
         return;
@@ -219,6 +242,29 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           </DropdownMenu>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {t('actions.deleteTitle', { title: contract.title ?? '' })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t('actions.deleteBody')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => deleteMutation.mutate({ id: contract.id })}
+              disabled={deleteMutation.isPending}>
+              {t('actions.deleteConfirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Terminate confirmation dialog */}
       <AlertDialog open={terminateOpen} onOpenChange={setTerminateOpen}>

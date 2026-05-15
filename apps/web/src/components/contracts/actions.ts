@@ -137,9 +137,10 @@ const REGISTRY: readonly ContractAction[] = [
     labelKey: 'actions.delete',
     i18nNamespace: 'ContractDetail',
     icon: Trash2,
-    surfaces: ['rowMenu'],
+    surfaces: ['detail', 'rowMenu'],
     variant: 'destructive',
     visibleStages: ['DRAFT'],
+    confirmCopyKey: 'ContractDetail.actions.deleteBody',
   },
 
   // ---- Bulk-only actions ----

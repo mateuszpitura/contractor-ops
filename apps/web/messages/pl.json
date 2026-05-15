@@ -16,7 +16,42 @@
       "deleteDialogTitle": "Usunąć wpis stopy BoE?",
       "deleteDialogBody": "Usunięcie historycznej stopy zmienia obliczenia odsetek dla wszystkich faktur, które stały się przeterminowane w okresie jej obowiązywania. Kontynuuj wyłącznie wtedy, gdy wpis został wprowadzony błędnie.",
       "pollerSuccess": "Ostatnie odpytanie API BOE: {date} — stopa bez zmian / zapisano nową stopę {percent}%",
-      "pollerFailure": "Ostatnie odpytanie API BOE nie powiodło się dnia {date}. Wpis ręczny nadal możliwy; mechanizm ponowi próbę przy kolejnym zaplanowanym uruchomieniu."
+      "pollerFailure": "Ostatnie odpytanie API BOE nie powiodło się dnia {date}. Wpis ręczny nadal możliwy; mechanizm ponowi próbę przy kolejnym zaplanowanym uruchomieniu.",
+      "pollerSuccessUnchanged": "Ostatnie odpytanie API BOE: {date} — stopa bez zmian",
+      "pollerNoData": "Brak danych z API BOE. Stopy są wprowadzane wyłącznie ręcznie.",
+      "ariaPollerStatus": "Status odpytania API BOE",
+      "accessDeniedHeading": "Brak dostępu",
+      "accessDeniedBody": "Nie masz uprawnień do zarządzania danymi referencyjnymi BoE.",
+      "addRate": "Dodaj stopę",
+      "addDialogDesc": "Dodaj nowy wpis stopy bazowej Bank of England do obliczeń odsetek.",
+      "notesOptionalLabel": "Uwagi (opcjonalne)",
+      "noRateEntries": "Brak wpisów stóp",
+      "noRateEntriesBody": "Dodaj wpis stopy, aby rozpocząć śledzenie historii stóp BoE.",
+      "colActions": "Akcje",
+      "ariaEditRate": "Edytuj wpis stopy",
+      "ariaDeleteRate": "Usuń wpis stopy",
+      "toastRateAdded": "Stopa dodana",
+      "toastRateAddedDesc": "Wpis stopy bazowej BoE został zapisany.",
+      "toastRateDeleted": "Stopa usunięta",
+      "toastRateDeletedDesc": "Wpis stopy bazowej BoE został usunięty.",
+      "toastRateUpdated": "Stopa zaktualizowana",
+      "toastRateUpdatedDesc": "Wpis stopy bazowej BoE został zaktualizowany.",
+      "toastError": "Błąd",
+      "toastValidationError": "Błąd walidacji",
+      "validationRateRange": "Stopa musi być pomiędzy 0 a 99,99.",
+      "validationDateRequired": "Data obowiązywania jest wymagana.",
+      "saveRate": "Zapisz stopę",
+      "saveChanges": "Zapisz zmiany",
+      "saving": "Zapisywanie...",
+      "deleteRate": "Usuń stopę",
+      "deleting": "Usuwanie...",
+      "editDialogTitle": "Edytuj stopę bazową BoE",
+      "editDialogDesc": "Zaktualizuj wpis stopy dla {date}.",
+      "editApiSourceWarning": "Ten wpis pochodzi z API BoE. Edycja nadpisze oryginalną wartość. Kolejne odpytanie nie nadpisze Twojej zmiany.",
+      "navLabel": "Stopa BoE",
+      "deleteDialogBodyDynamic": "Usunięcie historycznej stopy dla {date} ({rate}%) zmieni obliczenia odsetek dla faktur objętych tym okresem. Tej operacji nie można cofnąć.",
+      "notesPlaceholder": "np. decyzja MPC 2026-03-20",
+      "editNotesPlaceholder": "np. korekta wartości z crona"
     },
     "ClassificationEngineFlag": {
       "title": "Status flagi Classification Engine",
@@ -24,8 +59,18 @@
       "appSideValue": "Wartość po stronie aplikacji (co widzą użytkownicy)",
       "signoffRegistry": "Rejestr zatwierdzeń",
       "pendingGate": "Flaga włączona w Unleash, ale zablokowana w aplikacji — {count} klauzul(a) OCZEKUJĄCYCH.",
-      "pendingGateResolution": "Rozwiąż, przesyłając PR aktualizujący packages/validators/src/legal/signoff-registry.json"
-    }
+      "pendingGateResolution": "Rozwiąż, przesyłając PR aktualizujący packages/validators/src/legal/signoff-registry.json",
+      "killSwitchDesc": "Wyłącznik silnika klasyfikacji. Tylko do odczytu — przełączanie w konsoli Unleash.",
+      "disclaimerRegistryTitle": "Rejestr zatwierdzeń klauzul",
+      "allKeysMustBeApproved": "Wszystkie klucze muszą być ZATWIERDZONE, aby flaga mogła być włączona na produkcji.",
+      "colDisclaimerKey": "Klucz klauzuli",
+      "colApprovedBy": "Zatwierdzone przez",
+      "colApprovedAt": "Zatwierdzone",
+      "colApproverRole": "Rola zatwierdzającego",
+      "moduleName": "module.classification-engine",
+      "registryPath": "packages/validators/src/legal/signoff-registry.json"
+    },
+    "sidebarHeading": "Administracja"
   },
   "Api": {
     "email": {
@@ -802,6 +847,8 @@
     "signOutFailed": "Nie udało się wylogować. Spróbuj ponownie.",
     "save": "Zapisz",
     "cancel": "Anuluj",
+    "appName": "Contractor Ops",
+    "appTagline": "Platforma do zarządzania wykonawcami i przetwarzania faktur",
     "aria": {
       "previousPage": "Poprzednia strona",
       "nextPage": "Następna strona",
@@ -835,7 +882,14 @@
       "mapTo": "Mapuj \"{header}\" do",
       "overdueTasks": "{count} zaległych zadań",
       "notificationsWithUnread": "{title} — {count} nieprzeczytanych",
-      "teams": "Microsoft Teams"
+      "teams": "Microsoft Teams",
+      "moreActions": "Więcej działań",
+      "cookieConsent": "Zgoda na pliki cookie",
+      "selectAll": "Zaznacz wszystko",
+      "moveUp": "Przesuń w górę",
+      "moveDown": "Przesuń w dół",
+      "removeStep": "Usuń krok",
+      "loading": "Ładowanie"
     },
     "srOnly": {
       "more": "Więcej",
@@ -866,7 +920,22 @@
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
     },
-    "switchToLanguage": "Zmień język na {name}"
+    "switchToLanguage": "Zmień język na {name}",
+    "commandPalette": {
+      "title": "Paleta poleceń",
+      "description": "Wyszukaj polecenie do wykonania..."
+    },
+    "loading": "Ładowanie…",
+    "noData": "Brak danych",
+    "pagination": {
+      "page": "Strona {page} z {pageCount} ({total} łącznie)",
+      "previous": "Poprzednia",
+      "next": "Następna"
+    },
+    "clearDates": "Wyczyść daty",
+    "filterFrom": "Od {date}",
+    "filterTo": "Do {date}",
+    "emailLabel": "E-mail"
   },
   "Consent": {
     "privacyNotice": {
@@ -956,7 +1025,13 @@
       "terminateError": "Nie udało się rozwiązać umowy. Spróbuj ponownie.",
       "supersede": "Oznacz jako zastąpioną",
       "supersedeSuccess": "Umowa oznaczona jako zastąpiona",
-      "supersedeError": "Nie udało się oznaczyć umowy jako zastąpionej. Spróbuj ponownie."
+      "supersedeError": "Nie udało się oznaczyć umowy jako zastąpionej. Spróbuj ponownie.",
+      "delete": "Usuń umowę",
+      "deleteTitle": "Usunąć {title}?",
+      "deleteBody": "Ta umowa w wersji roboczej zostanie trwale usunięta. Tej operacji nie można cofnąć.",
+      "deleteConfirm": "Usuń umowę",
+      "deleteSuccess": "Umowa usunięta",
+      "deleteError": "Nie udało się usunąć umowy. Spróbuj ponownie."
     },
     "error": {
       "notFound": "Nie znaleziono umowy",
@@ -1110,6 +1185,18 @@
         "resendFailed": "Nie udało się wysłać ponownie. Spróbuj ponownie.",
         "sentForSignature": "Dokument wysłany do podpisu",
         "sendFailed": "Nie udało się wysłać do podpisu. Spróbuj ponownie."
+      },
+      "sendButton": "Wyślij do podpisu",
+      "tooltipNoProvider": "Połącz dostawcę podpisu w Ustawieniach",
+      "tooltipNoDocument": "Najpierw prześlij dokument",
+      "auditTrail": {
+        "title": "Historia podpisywania",
+        "emptyTitle": "Brak historii podpisywania",
+        "emptyBody": "Zdarzenia podpisywania pojawią się tutaj po wysłaniu dokumentu do podpisu.",
+        "justNow": "Przed chwilą",
+        "minutesAgo": "{count}m temu",
+        "hoursAgo": "{count}h temu",
+        "daysAgo": "{count}d temu"
       }
     }
   },
@@ -1290,6 +1377,7 @@
       "project": "Projektowa",
       "milestone": "Kamieniowa"
     },
+    "ibanPlaceholder": "PL00 0000 0000 0000 0000 0000 0000",
     "success": "Kontrahent dodany",
     "error": "Nie udało się dodać kontrahenta. Spróbuj ponownie."
   },
@@ -1443,6 +1531,102 @@
           "error": "Nie udało się przeliczyć zgodności"
         }
       }
+    },
+    "compliance": {
+      "de": {
+        "infoBoxTitle": "Identyfikatory DE — wymagane pola zależą od formy prawnej i statusu VAT:",
+        "infoItem1": "Bundesland i Steuernummer są zawsze wymagane.",
+        "infoItem2": "UG, GmbH i AG: wymagany numer Handelsregister.",
+        "infoItem3": "Podatnik VAT (niebędący Kleinunternehmer): wymagany USt-IdNr.",
+        "bundeslandLabel": "Bundesland (kraj związkowy)",
+        "rechtsformLabel": "Rechtsform (forma prawna)",
+        "vatRegisteredLabel": "Podatnik VAT (Umsatzsteuerpflichtig)",
+        "vatNumberPlaceholder": "DE123456789",
+        "steuernummerPlaceholder": "12 345678 A 901"
+      },
+      "uk": {
+        "infoBoxTitle": "Identyfikatory UK — wymagane pola zależą od formy prawnej:",
+        "infoItem1": "Osoby prowadzące jednoosobową działalność (sole trader) muszą podać UTR.",
+        "infoItem2": "Spółki (Ltd / LLP) muszą podać numer Companies House.",
+        "infoItem3": "Podwykonawcy zarejestrowani jako podatnicy VAT muszą podać numer rejestracji VAT.",
+        "entityTypeLabel": "Forma prawna",
+        "utrLabel": "UTR",
+        "utrPlaceholder": "UTR (10 cyfr)",
+        "companiesHouseLabel": "Numer Companies House",
+        "companiesHousePlaceholder": "np. 12345678 lub SC123456",
+        "vatRegisteredLabel": "Podatnik VAT",
+        "vatNumberLabel": "Numer rejestracji VAT",
+        "vatNumberPlaceholder": "GB123456789"
+      }
+    },
+    "handelsregister": {
+      "courtLabel": "Sąd rejestrowy",
+      "courtAriaLabel": "Sąd rejestrowy",
+      "courtPlaceholder": "Szukaj sądu…",
+      "selectCourtPlaceholder": "Wybierz sąd...",
+      "noCourtFound": "Nie znaleziono sądu.",
+      "registerTypeLabel": "Rodzaj rejestru",
+      "registerTypeAriaLabel": "Rodzaj rejestru",
+      "hrbAriaLabel": "HRB (Handelsregister B)",
+      "hraAriaLabel": "HRA (Handelsregister A)",
+      "numberLabel": "Numer rejestru",
+      "numberAriaLabel": "Numer rejestru",
+      "exampleHint": "Przykład: Amtsgericht München · HRB · 123456"
+    },
+    "steuernummer": {
+      "selectBundeslandFirst": "Najpierw wybierz Bundesland",
+      "formatHint": "Format: {example} · {stateName}",
+      "validFormat": "Prawidłowy format",
+      "formatMismatch": "Format Steuernummer nie pasuje do {stateName}. Przykład: {example}."
+    },
+    "billingProfile": {
+      "ukBankAccount": "Konto bankowe UK",
+      "currentlySaved": "Aktualnie zapisane: {value}"
+    },
+    "countryCompliance": {
+      "cardTitle": "Zgodność krajowa — {country}",
+      "incompleteFields": "{count} niekompletne",
+      "vatValidationLabel": "Weryfikacja VAT",
+      "saveButton": "Zapisz pola zgodności",
+      "savedToast": "Pola zgodności zapisane",
+      "saveErrorToast": "Nie udało się zapisać pól zgodności",
+      "classificationHeading": "Klasyfikacja",
+      "loadingEngagements": "Ładowanie zaangażowań…",
+      "defaultEngagementName": "Zaangażowanie",
+      "countries": {
+        "AE": "ZEA",
+        "SA": "Arabia Saudyjska",
+        "GB": "Wielka Brytania",
+        "DE": "Niemcy"
+      },
+      "uae": {
+        "freelancePermitNumberLabel": "Numer zezwolenia freelancera",
+        "freelancePermitNumberPlaceholder": "Wprowadź numer zezwolenia",
+        "tradeLicenseNumberLabel": "Numer licencji handlowej",
+        "tradeLicenseNumberPlaceholder": "Wprowadź numer licencji",
+        "freeZoneLabel": "Strefa wolnocłowa",
+        "tradeLicenseExpiryLabel": "Wygaśnięcie licencji handlowej"
+      },
+      "saudi": {
+        "freelanceSaLicenseLabel": "Licencja Freelance.sa",
+        "freelanceSaLicensePlaceholder": "Wprowadź numer licencji Freelance.sa",
+        "commercialRegistrationLabel": "Rejestracja handlowa",
+        "commercialRegistrationPlaceholder": "Wprowadź numer CR",
+        "crExpiryLabel": "Data wygaśnięcia CR"
+      },
+      "nipLabel": "NIP"
+    },
+    "revalidateVat": {
+      "buttonLabel": "Ponownie zweryfikuj VAT",
+      "buttonAriaLabel": "Ponownie zweryfikuj numer VAT",
+      "successToast": "VAT zweryfikowany pomyślnie",
+      "invalidToast": "Numer VAT jest nieprawidłowy",
+      "unavailableToast": "Weryfikacja VAT na żywo niedostępna — wyświetlany ostatni znany wynik",
+      "errorToast": "Nie udało się ponownie zweryfikować VAT"
+    },
+    "eInvoicing": {
+      "cardTitle": "Fakturowanie elektroniczne",
+      "defaultLeitwegIdLabel": "Domyślny Leitweg-ID"
     }
   },
   "Contracts": {
@@ -1877,6 +2061,21 @@
       "afternoon": "Dobry dzień, {name}",
       "evening": "Dobry wieczór, {name}",
       "subtitle": "Oto, co dzieje się dzisiaj w Twojej organizacji."
+    },
+    "taxObligations": {
+      "title": "Zobowiązania podatkowe",
+      "vatPeriod": "VAT w tym okresie",
+      "collected": "Zebrano:",
+      "owed": "Należne:",
+      "net": "Netto:",
+      "whtPeriod": "Podatek u źródła w tym okresie",
+      "withheld": "Potrącono:",
+      "pending": "Oczekujące:",
+      "statusFiled": "Złożone",
+      "statusPending": "Oczekujące",
+      "certsPattern": "{count} cert.",
+      "itemsPattern": "{count} poz.",
+      "viewDetails": "Pokaż szczegóły"
     }
   },
   "Documents": {
@@ -1955,9 +2154,7 @@
     "scanning": "Skanowanie…"
   },
   "EInvoice": {
-    "_NOTE": "AI-first-pass translation pending review",
     "Settings": {
-      "_NOTE": "AI-first-pass translation pending review",
       "h1": "E-invoicing",
       "subline": "Zarządzaj rejestracją uczestnika Peppol, identyfikatorami Leitweg-ID dla niemieckich faktur sektora publicznego oraz ustawieniami zgodności e-faktur.",
       "PeppolCard": {
@@ -1965,16 +2162,32 @@
         "ctaRegistered": "Zarządzaj uczestnikiem",
         "emptyHeading": "Brak rejestracji w Peppol",
         "emptyBody": "Zarejestruj organizację jednorazowo, aby wysyłać e-faktury XRechnung do brytyjskich nabywców z sektora publicznego i odbierać potwierdzenia dostarczenia.",
-        "pendingHeading": "Rejestracja w toku"
+        "pendingHeading": "Rejestracja w toku",
+        "labelParticipant": "Uczestnik",
+        "labelStatus": "Status",
+        "labelAsp": "ASP",
+        "labelLastCapabilityCheck": "Ostatnie sprawdzenie możliwości",
+        "neverChecked": "Nigdy",
+        "statusActive": "Aktywny",
+        "statusRegistered": "Zarejestrowany",
+        "statusSuspended": "Zawieszony",
+        "statusDeregistered": "Wyrejestrowany",
+        "statusNotRegistered": "Niezarejestrowany"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Utwórz Leitweg-ID",
         "emptyHeading": "Brak zarejestrowanych Leitweg-ID",
-        "emptyBody": "Dodaj Leitweg-ID dla każdego niemieckiego nabywcy z sektora publicznego, któremu wystawiasz faktury. Możesz ustawić wartości domyślne na poziomie kontrahenta oraz nadpisania per umowa."
+        "emptyBody": "Dodaj Leitweg-ID dla każdego niemieckiego nabywcy z sektora publicznego, któremu wystawiasz faktury. Możesz ustawić wartości domyślne na poziomie kontrahenta oraz nadpisania per umowa.",
+        "cardTitle": "Leitweg-IDs",
+        "colValue": "Wartość",
+        "colDescription": "Opis",
+        "colAssignedTo": "Przypisane do",
+        "colDefault": "Domyślny?",
+        "colValidPeriod": "Okres ważności",
+        "colActionsAria": "Akcje"
       }
     },
     "InvoicesList": {
-      "_NOTE": "AI-first-pass translation pending review",
       "SummaryTile": {
         "heading": "Zgodność e-fakturowania",
         "bodyPattern": "{validCount} z {totalCount} faktur jest zgodnych z EN 16931.",
@@ -2005,7 +2218,6 @@
       }
     },
     "InvoiceTab": {
-      "_NOTE": "AI-first-pass translation pending review",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
       "generationNotGeneratedBody": "Dla tej faktury nie wygenerowano jeszcze XML w formacie XRechnung.",
@@ -2038,10 +2250,15 @@
       "leitwegSourceContract": "z nadpisania umowy",
       "leitwegSourceContractorDefault": "z wartości domyślnej kontrahenta",
       "leitwegMissingWarningHeading": "Brak Leitweg-ID dla niemieckiego nabywcy z sektora publicznego",
-      "leitwegMissingWarningBody": "Ten nabywca jest oznaczony jako sektor publiczny. Przed wysyłką dodaj Leitweg-ID do kontrahenta lub umowy."
+      "leitwegMissingWarningBody": "Ten nabywca jest oznaczony jako sektor publiczny. Przed wysyłką dodaj Leitweg-ID do kontrahenta lub umowy.",
+      "addNewLeitwegId": "Dodaj nowy",
+      "svrlSeverityHeader": "Ważność",
+      "svrlRuleIdHeader": "ID reguły",
+      "svrlMessageHeader": "Komunikat",
+      "xmlSourceAria": "Surowe źródło XML XRechnung",
+      "xpathLabel": "XPath:"
     },
     "LeitwegIdDialog": {
-      "_NOTE": "AI-first-pass translation pending review",
       "headingCreate": "Utwórz Leitweg-ID",
       "headingEdit": "Edytuj Leitweg-ID",
       "valueLabel": "Leitweg-ID",
@@ -2057,10 +2274,17 @@
       "saveButton": "Zapisz Leitweg-ID",
       "errorInvalidCheckDigit": "Suma kontrolna tego Leitweg-ID nie zgadza się z częścią zgrubną i dookreśleniem. Zweryfikuj wartość z nabywcą z sektora publicznego.",
       "errorInvalidFormat": "Leitweg-ID musi składać się z 2–12 cyfr, opcjonalnie z `-<do 30 znaków alfanumerycznych wielkich liter>`, następnie `-<2-cyfrowa suma kontrolna>`.",
-      "errorDuplicate": "Ten Leitweg-ID jest już zarejestrowany w Twojej organizacji."
+      "errorDuplicate": "Ten Leitweg-ID jest już zarejestrowany w Twojej organizacji.",
+      "contractIdPlaceholder": "ID umowy (opcjonalnie)"
+    },
+    "LeitwegIdRow": {
+      "defaultBadge": "Domyślny",
+      "actionEdit": "Edytuj",
+      "actionSetDefault": "Ustaw jako domyślny",
+      "actionDelete": "Usuń",
+      "actionsAriaLabel": "Akcje dla {value}"
     },
     "PeppolDialog": {
-      "_NOTE": "AI-first-pass translation pending review",
       "registerHeading": "Zarejestruj uczestnika Peppol",
       "registerBody": "Rejestracja umożliwia wysyłanie e-faktur XRechnung do brytyjskich nabywców z sektora publicznego przez Peppol. Twój identyfikator uczestnika zostanie wpisany do Peppol SML.",
       "schemeLabel": "Schemat identyfikatora",
@@ -2072,10 +2296,11 @@
       "pendingBody": "Storecove rejestruje Twojego uczestnika w Peppol SML. Zwykle trwa to kilka minut. Status zaktualizujemy automatycznie.",
       "activeHeading": "Zarejestrowano w Peppol",
       "activeBodyPattern": "Uczestnik {schemeId}:{value} · Status {status} · Zarejestrowano {relativeTime}",
-      "deregisterButton": "Wyrejestruj uczestnika"
+      "deregisterButton": "Wyrejestruj uczestnika",
+      "peppolIdentifierLegend": "Identyfikator Peppol",
+      "pairError": "Oba pola są wymagane albo oba muszą być puste."
     },
     "Errors": {
-      "_NOTE": "AI-first-pass translation pending review",
       "LEITWEG_ID_MISSING": "Brak Leitweg-ID dla tego niemieckiego nabywcy z sektora publicznego. Dodaj wartość do kontrahenta lub umowy przed wysłaniem przez Peppol.",
       "PARTICIPANT_NOT_REACHABLE": "Odbiorca nie jest zarejestrowany w Peppol lub nie obsługuje XRechnung. Potwierdź ID Peppol nabywcy i spróbuj ponownie.",
       "KOSIT_VALIDATION_FAILED": "Ta e-faktura nie przeszła walidacji KoSIT. Przejrzyj raport walidacji i sfinalizuj ponownie po skorygowaniu danych faktury.",
@@ -2084,7 +2309,6 @@
       "Generic": "Coś poszło nie tak. Spróbuj odświeżyć stronę lub skontaktuj się z pomocą, jeśli problem się utrzymuje."
     },
     "intake": {
-      "_NOTE": "AI-first-pass translation pending review — EN placeholders",
       "splitButtonPrimary": "Nowa faktura",
       "splitButtonImport": "Importuj e-fakturę",
       "sidebarImports": "Imports",
@@ -2190,7 +2414,38 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       },
-      "sendCta": "Wyślij e-fakturę"
+      "sendCta": "Wyślij e-fakturę",
+      "xmlPreviewTitle": "Podgląd XML",
+      "pdfPreviewTitle": "Podgląd PDF",
+      "xmlLoadError": "Nie udało się załadować XML."
+    },
+    "ComplianceDetail": {
+      "heading": "Zgodność e-fakturowania",
+      "subline": "Status połączonych profili e-fakturowania dla Twojej organizacji.",
+      "emptyBody": "Brak skonfigurowanych profili e-fakturowania.",
+      "health": "Kondycja",
+      "lastSync": "Ostatnia sync.:",
+      "error": "Błąd:",
+      "capabilities": "Możliwości",
+      "capGenerate": "Generuj",
+      "capParse": "Parsuj",
+      "capSign": "Podpisz",
+      "capQrCode": "Kod QR",
+      "timeNever": "Nigdy",
+      "timeJustNow": "Przed chwilą",
+      "timeMinutesAgo": "{minutes} min temu",
+      "timeHoursAgo": "{hours} godz. temu",
+      "timeDaysAgo": "{days} dni temu",
+      "stateActive": "Aktywny",
+      "stateSandbox": "Sandbox",
+      "stateDegraded": "Zdegradowany",
+      "stateOnboarding": "Wdrażanie",
+      "stateSuspended": "Zawieszony",
+      "stateError": "Błąd",
+      "stateNotConnected": "Niepołączony"
+    },
+    "ComplianceWidget": {
+      "title": "Zgodność e-fakturowania"
     }
   },
   "EmptyStates": {
@@ -2263,9 +2518,17 @@
         "search": "Szukaj sprzetu...",
         "type": "Typ",
         "status": "Status",
-        "assignee": "Przypisany"
+        "assignee": "Przypisany",
+        "clearAll": "Wyczyść wszystko",
+        "removeFilter": "Usuń filtr: {label}"
       },
-      "unassigned": "Nieprzypisany"
+      "unassigned": "Nieprzypisany",
+      "pagination": {
+        "previous": "Poprzednia",
+        "next": "Następna",
+        "pageOf": "{page} / {total}",
+        "itemCount": "{count, plural, one {# wpis} few {# wpisy} many {# wpisów} other {# wpisu}}"
+      }
     },
     "detail": {
       "info": "Informacje",
@@ -2274,6 +2537,12 @@
       "workflows": "Procesy",
       "edit": "Edytuj",
       "retire": "Wycofaj",
+      "notFound": "Nie znaleziono sprzętu",
+      "backToList": "Wróć do sprzętu",
+      "retry": "Spróbuj ponownie",
+      "noNotes": "Brak notatek",
+      "createdAt": "Utworzono",
+      "updatedAt": "Zaktualizowano",
       "assignToContractor": "Przypisz do wykonawcy",
       "unassignEquipment": "Odlacz sprzet",
       "createShipment": "Utworz przesylke",
@@ -2284,7 +2553,14 @@
       "assignmentsEmpty": "Brak historii przypisan",
       "assignmentsEmptyDescription": "Ten sprzet nie byl jeszcze przypisany do zadnego wykonawcy.",
       "shipmentsEmpty": "Brak przesylek",
-      "shipmentsEmptyDescription": "Utworz przesylke, aby zaczac sledzic dostawe tego sprzetu."
+      "shipmentsEmptyDescription": "Utworz przesylke, aby zaczac sledzic dostawe tego sprzetu.",
+      "colContractor": "Wykonawca",
+      "colAssigned": "Przypisano",
+      "colUnassigned": "Cofnięto przypisanie",
+      "colDuration": "Czas trwania",
+      "colNotes": "Notatki",
+      "badgeCurrent": "Aktualny",
+      "activeSuffix": " (aktywny)"
     },
     "form": {
       "createTitle": "Dodaj sprzet",
@@ -2324,7 +2600,11 @@
         "delivered": "Dostarczona",
         "failed": "Nieudana",
         "returned": "Zwrocona"
-      }
+      },
+      "notesPlaceholder": "Opcjonalne notatki...",
+      "addButton": "Dodaj",
+      "pendingLabel": "(oczekujące)",
+      "statusPlaceholder": "Wybierz status …"
     },
     "status": {
       "available": "Dostepny",
@@ -2380,7 +2660,8 @@
       "retry": "Sprobuj ponownie",
       "loadError": "Nie udalo sie zaladowac mapy Paczkomatow. Sprawdz polaczenie i sprobuj ponownie.",
       "noSelection": "Nie wybrano Paczkomatu",
-      "noSelectionDescription": "Wybierz Paczkomat na mapie, aby ustawic miejsce dostawy."
+      "noSelectionDescription": "Wybierz Paczkomat na mapie, aby ustawic miejsce dostawy.",
+      "paczkomatTitle": "Mapa paczkomatów InPost"
     },
     "label": {
       "download": "Pobierz etykiete",
@@ -2388,6 +2669,14 @@
       "notAvailable": "Etykieta jeszcze niedostepna",
       "notAvailableDescription": "Etykieta pojawi sie tutaj po utworzeniu przesylki w InPost.",
       "downloadError": "Nie udalo sie pobrac etykiety. Sprobuj ponownie."
+    },
+    "shipmentLabel": {
+      "altText": "Etykieta wysyłkowa",
+      "downloadPdf": "Pobierz etykietę (PDF)",
+      "tracking": "Numer śledzenia: {number}",
+      "dropOff": "Punkt nadania: {name}",
+      "download": "Pobierz",
+      "print": "Drukuj"
     },
     "return": {
       "requestedBy": "Zwrot zgloszony przez {name}",
@@ -2441,6 +2730,10 @@
       "standard": "Standard",
       "expressSaver": "Express Saver",
       "express": "Express"
+    },
+    "search": {
+      "placeholder": "Szukaj wykonawców...",
+      "notFound": "Nie znaleziono wykonawców."
     }
   },
   "Errors": {
@@ -2448,7 +2741,8 @@
       "code": "404",
       "heading": "Nie znaleziono strony",
       "body": "Strona, której szukasz, nie istnieje lub została przeniesiona.",
-      "cta": "Powrót do pulpitu"
+      "cta": "Powrót do pulpitu",
+      "ctaGoHome": "Wróć do strony głównej"
     },
     "serverError": {
       "code": "500",
@@ -2473,7 +2767,7 @@
     "contractorHasActiveWorkflows": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",
     "contractorHasActiveContracts": "Nie można zarchiwizować kontrahenta z aktywnymi umowami. Najpierw zakończ lub przypisz umowy inaczej.",
     "contractorInvalidTransition": "Ta zmiana statusu nie jest dozwolona.",
-    "gusLookupFailed": "Wyszukiwanie GUS nie powiodło się.",
+    "companyLookupFailed": "Nie udało się pobrać danych firmy.",
     "contractNotFound": "Nie znaleziono umowy.",
     "contractEndDateBeforeStart": "Data zakończenia musi być po dacie rozpoczęcia.",
     "contractInvalidTransition": "Ta zmiana statusu nie jest dozwolona.",
@@ -2592,7 +2886,19 @@
       "emptyNoUsersBody": "Połączony katalog Google Workspace nie zawiera użytkowników lub konto administratora nie ma dostępu do katalogu.",
       "emptyAllImported": "Wszyscy użytkownicy zaimportowani",
       "emptyAllImportedBody": "Każdy użytkownik z katalogu Google Workspace jest już członkiem tej organizacji.",
-      "fetchError": "Nie udało się załadować katalogu. Sprawdź, czy połączone konto ma dostęp do Admin SDK i spróbuj ponownie."
+      "fetchError": "Nie udało się załadować katalogu. Sprawdź, czy połączone konto ma dostęp do Admin SDK i spróbuj ponownie.",
+      "columns": {
+        "name": "Imię i nazwisko",
+        "email": "E-mail",
+        "department": "Dział",
+        "orgUnit": "Jednostka org."
+      },
+      "pagination": {
+        "of": "z {total}",
+        "previousPage": "Poprzednia strona",
+        "nextPage": "Następna strona"
+      },
+      "selectUser": "Wybierz {name}"
     },
     "sync": {
       "lastSynced": "Ostatnia synchronizacja: {time}",
@@ -2761,6 +3067,30 @@
           "saved": "Mapowanie statusów zapisane",
           "saveFailed": "Nie udało się zapisać mapowania statusów"
         }
+      },
+      "activitySummary": {
+        "title": "Ostatnia aktywność Jira",
+        "relativeTime": {
+          "justNow": "właśnie teraz",
+          "minutesAgo": "{n} min temu",
+          "hoursAgo": "{n} godz. temu",
+          "daysAgo": "{n} dni temu",
+          "monthsAgo": "{n} mies. temu"
+        }
+      },
+      "projectMapping": {
+        "title": "Konfiguruj integrację Jira",
+        "description": "Przypisz to zadanie do projektu i typu zgłoszenia w Jira.",
+        "jiraProject": "Projekt Jira",
+        "selectProject": "Wybierz projekt",
+        "issueType": "Typ zgłoszenia",
+        "selectIssueType": "Wybierz typ zgłoszenia",
+        "discardChanges": "Odrzuć zmiany",
+        "saveMapping": "Zapisz mapowanie",
+        "toast": {
+          "saved": "Konfiguracja zadania Jira zapisana",
+          "saveFailed": "Nie udało się zapisać konfiguracji zadania Jira"
+        }
       }
     },
     "linear": {
@@ -2773,8 +3103,60 @@
         "toast": {
           "saved": "Mapowanie statusów zapisane",
           "saveFailed": "Nie udało się zapisać mapowania statusów. Spróbuj ponownie."
+        },
+        "notMapped": "Nie przypisano",
+        "workflowStatus": {
+          "todo": "Do zrobienia",
+          "inProgress": "W toku",
+          "done": "Zakończone",
+          "blocked": "Zablokowane",
+          "skipped": "Pominięte",
+          "cancelled": "Anulowane"
         }
       }
+    },
+    "docs": {
+      "attachDialog": {
+        "title": "Dołącz dokument",
+        "description": "Wyszukaj stronę, którą chcesz połączyć z tym krokiem.",
+        "searchPlaceholder": "Szukaj stron Notion i Confluence...",
+        "filterAll": "Wszystkie",
+        "filterNotion": "Notion",
+        "filterConfluence": "Confluence",
+        "noResults": "Nie znaleziono stron pasujących do Twojego wyszukiwania.",
+        "toast": {
+          "linked": "„{title}\" połączono z tym krokiem",
+          "attachFailed": "Nie udało się dołączyć dokumentu"
+        }
+      },
+      "section": {
+        "heading": "Dokumenty",
+        "attachButton": "Dołącz dokument",
+        "noDocuments": "Brak dołączonych dokumentów.",
+        "untitled": "Bez tytułu",
+        "toast": {
+          "removed": "Powiązanie z dokumentem usunięte",
+          "removeFailed": "Nie udało się usunąć powiązania z dokumentem"
+        }
+      },
+      "chip": {
+        "openInProvider": "Otwórz {title} w {provider} (nowa karta)",
+        "openSrOnly": "Otwórz {title} w {provider}",
+        "removeAriaLabel": "Usuń powiązanie z {title}",
+        "lastEdited": "Ostatnio edytowano {time}",
+        "openIn": "Otwórz w {provider}",
+        "removeDialog": {
+          "title": "Usuń powiązanie z dokumentem",
+          "description": "Spowoduje to usunięcie powiązania z „{title}\" z tego kroku. Oryginalna strona nie zostanie zmieniona.",
+          "keepLink": "Zachowaj powiązanie",
+          "removeLink": "Usuń powiązanie"
+        }
+      }
+    },
+    "jiraProvider": {
+      "description": "Połącz Jira Cloud, aby synchronizować zadania workflow ze zgłoszeniami Jira.",
+      "scopeWarning": "Wymagane ponowne uwierzytelnienie — nowe uprawnienia potrzebne do tworzenia zgłoszeń i webhooków.",
+      "configureStatusMapping": "Konfiguruj mapowanie statusów"
     }
   },
   "Invoices": {
@@ -2872,7 +3254,10 @@
       "reviewDrafts": "Przejrzyj wersję robocze",
       "emailTip": "Lub wyślij faktury na {email}",
       "error": "Przesyłanie nieudane",
-      "retry": "Ponów"
+      "retry": "Ponów",
+      "hidePdf": "Ukryj PDF",
+      "viewPdf": "Pokaż PDF",
+      "ocrRetriggerError": "Nie udało się ponownie uruchomić OCR. Spróbuj ponownie."
     },
     "detail": {
       "invoiceNumber": "Numer faktury",
@@ -2911,7 +3296,10 @@
       "submitForApproval": "Wyślij do akceptacji",
       "submittingForApproval": "Wysyłanie...",
       "submittedForApprovalToast": "Faktura wysłana do akceptacji",
-      "submitForApprovalError": "Nie udało się wysłać faktury do akceptacji. Spróbuj ponownie."
+      "submitForApprovalError": "Nie udało się wysłać faktury do akceptacji. Spróbuj ponownie.",
+      "pdfNotAvailable": "Podgląd PDF nie jest dostępny w Twojej przeglądarce.",
+      "noPdf": "Brak dostępnego PDF",
+      "moreActions": "Więcej akcji"
     },
     "match": {
       "heading": "Dopasowanie",
@@ -2934,7 +3322,8 @@
       "confirmMatch": "Potwierdź dopasowanie",
       "matchConfirmedToast": "Dopasowanie potwierdzone",
       "matchError": "Nie udało się potwierdźić dopasowania. Spróbuj ponownie.",
-      "noContracts": "Brak aktywnych umów"
+      "noContracts": "Brak aktywnych umów",
+      "noContractorsFound": "Nie znaleziono wykonawców"
     },
     "duplicate": {
       "heading": "Wykryto możliwy duplikat",
@@ -2961,6 +3350,37 @@
         "exempt": "Zwolniony (ZW)",
         "notApplicable": "Nie dotyczy (NP)"
       }
+    },
+    "vatRate": {
+      "loading": "Ładowanie stawek...",
+      "noRates": "Brak skonfigurowanych stawek podatkowych",
+      "placeholder": "Wybierz stawkę VAT",
+      "standardRates": "Stawki standardowe",
+      "reducedRates": "Stawki obniżone",
+      "exempt": "Zwolnione"
+    },
+    "reverseCharge": {
+      "applied": "Zastosowano odwrotne obciążenie",
+      "description": "Transgraniczna transakcja B2B. VAT rozlicza nabywca.",
+      "override": "Zastąp",
+      "remove": "Usuń odwrotne obciążenie",
+      "keep": "Zachowaj odwrotne obciążenie",
+      "removedToast": "Usunięto odwrotne obciążenie"
+    },
+    "reverseChargeToggle": {
+      "label": "Odwrotne obciążenie",
+      "ariaLabel": "Zastosuj odwrotne obciążenie do tej pozycji",
+      "autoDetected": "OO wykryto automatycznie",
+      "overrideDialogTitle": "Zastąpić automatycznie wykryte odwrotne obciążenie?",
+      "overrideDialogDescription": "Wyłączenie odwrotnego obciążenia stosuje stawkę standardową do tej pozycji. Proszę podać uzasadnienie biznesowe — zostanie zapisane w dzienniku audytu faktury.",
+      "reasonLabel": "Powód",
+      "reasonPlaceholder": "np. Klient preferuje stawkę standardową zgodnie z klauzulą 4.2 umowy",
+      "minLengthHint": "Wymagane co najmniej {min} znaków",
+      "charCount": "{current} / {max}",
+      "cancel": "Anuluj",
+      "saving": "Zapisywanie…",
+      "overrideCta": "Zastąp odwrotne obciążenie",
+      "overrideError": "Nie udało się zastąpić odwrotnego obciążenia"
     }
   },
   "Ir35Chain": {
@@ -2998,6 +3418,7 @@
     }
   },
   "Layout": {
+    "skipToContent": "Przejdź do treści",
     "footer": {
       "privacy": "Prywatność",
       "terms": "Regulamin",
@@ -3005,6 +3426,31 @@
     }
   },
   "Legal": {
+    "nav": {
+      "brand": "Contractor Ops",
+      "privacy": "Polityka Prywatności",
+      "terms": "Regulamin",
+      "subProcessors": "Podmioty przetwarzające",
+      "breachNotification": "Zgłaszanie naruszeń"
+    },
+    "privacyIndex": {
+      "heading": "Informacja o prywatności",
+      "description": "Wybierz jurysdykcję, która Cię dotyczy. Jeśli jesteś zalogowany(-a), kierujemy Cię automatycznie na podstawie kraju Twojej organizacji.",
+      "jurisdictions": {
+        "gb": {
+          "label": "Wielka Brytania",
+          "subtitle": "UK RODO · DPA 2018"
+        },
+        "de": {
+          "label": "Niemcy",
+          "subtitle": "RODO · BDSG"
+        },
+        "eu": {
+          "label": "Unia Europejska",
+          "subtitle": "RODO · ogólny fallback"
+        }
+      }
+    },
     "privacy": {
       "title": "Polityka Prywatności",
       "lastUpdated": "Ostatnia aktualizacja: kwiecień 2026",
@@ -3049,6 +3495,15 @@
           "heading": "10. Kontakt",
           "body": "W sprawach związanych z prywatnością skontaktuj się z naszym Inspektorem Ochrony Danych pod adresem privacy@contractorops.com. Jeśli uważasz, że Twoje prawa do ochrony danych zostały naruszone, masz prawo złożyć skargę do właściwego organu nadzorczego. W Polsce jest to Prezes Urzędu Ochrony Danych Osobowych (UODO)."
         }
+      },
+      "skipToContent": "Przejdź do treści",
+      "downloadAsPdf": "Pobierz jako PDF",
+      "downloadAsPdfAriaLabel": "Pobierz informację o prywatności jako PDF",
+      "exportQueued": "Eksport w kolejce – wyślemy Ci link do pobrania e-mailem",
+      "pdfError": "Nie można wygenerować PDF",
+      "toc": {
+        "label": "Spis treści",
+        "heading": "Na tej stronie"
       }
     },
     "terms": {
@@ -3526,7 +3981,54 @@
       "cancel": "Anuluj",
       "confirm": "Uruchom ponownie"
     },
-    "acceptSave": "Zaakceptuj i zapisz"
+    "acceptSave": "Zaakceptuj i zapisz",
+    "lineItems": {
+      "heading": "Pozycje",
+      "itemsCount": "{count} pozycji",
+      "colDescription": "Opis",
+      "colQty": "Ilość",
+      "colUnit": "Jednostka",
+      "colUnitPrice": "Cena jedn.",
+      "colNet": "Netto",
+      "colVatRate": "Stawka VAT",
+      "colVatAmount": "Kwota VAT",
+      "colGross": "Brutto",
+      "colConf": "Pewn.",
+      "removeItemAriaLabel": "Usuń pozycję",
+      "addLineItem": "Dodaj pozycję",
+      "placeholderDescription": "Opis",
+      "placeholderUnit": "szt.",
+      "placeholderVatRate": "23%"
+    },
+    "pdfViewer": {
+      "previousPage": "Poprzednia strona",
+      "nextPage": "Następna strona",
+      "fitWidth": "Dopasuj szerokość",
+      "zoomOut": "Oddal",
+      "zoomIn": "Przybliż",
+      "pageOf": "{current} z {total}"
+    },
+    "processingOverlay": {
+      "analyzing": "Analizowanie faktury...",
+      "takesSeconds": "Zazwyczaj zajmuje to kilka sekund"
+    },
+    "nipBadge": {
+      "validLabel": "Poprawny format NIP",
+      "invalidLabel": "Niepoprawny format NIP",
+      "validTooltip": "NIP {nip} przeszedł walidację sumy kontrolnej modulo 11",
+      "invalidTooltip": "Niepoprawny format NIP — oczekiwano 10 cyfr z poprawną sumą kontrolną"
+    },
+    "extractionStatus": {
+      "statusProcessing": "Przetwarzanie",
+      "statusExtracted": "Wyodrębniono",
+      "statusPartial": "Częściowo",
+      "statusFailed": "Nie powiodło się",
+      "extracting": "Wyodrębnianie danych faktury...",
+      "complete": "Ekstrakcja zakończona — wyodrębniono {fieldCount} pól",
+      "partial": "Częściowa ekstrakcja — wyodrębniono {fieldCount} z {totalFields} pól. Proszę uzupełnić pozostałe pola.",
+      "failed": "Ekstrakcja nie powiodła się. Możesz uruchomić OCR ponownie lub wypełnić pola ręcznie.",
+      "rerunOcr": "Uruchom OCR ponownie"
+    }
   },
   "Offboarding": {
     "Templates": {
@@ -3748,7 +4250,11 @@
       "emptyHeading": "Nie znaleziono czlonkow zespolu",
       "emptyBody": "Wybrane zrodla nie zwrocily zadnych czlonkow zespolu. Sprobuj polaczyc inne narzedzie lub zapros osoby recznie.",
       "conflictTooltip": "Niezgodnosc danych -- kliknij aby rozwiazac",
-      "conflictCustom": "Wartosc niestandardowa"
+      "conflictCustom": "Wartosc niestandardowa",
+      "resolvedAll": "Wszystkie konflikty rozwiązane",
+      "selectedCount": "{count} zaznaczonych",
+      "statusNew": "Nowy",
+      "statusExists": "Istnieje"
     },
     "step3": {
       "heading": "Importuj projekty",
@@ -3758,7 +4264,8 @@
       "syncNote": "Dwukierunkowa synchronizacja zostanie skonfigurowana automatycznie na podstawie importowanych statusow.",
       "addStep": "Dodaj krok",
       "emptyHeading": "Nie znaleziono projektow",
-      "emptyBody": "Nie znaleziono projektow w wybranych narzedziach PM. Mozesz pozniej recznie utworzyc szablony workflow."
+      "emptyBody": "Nie znaleziono projektow w wybranych narzedziach PM. Mozesz pozniej recznie utworzyc szablony workflow.",
+      "stepFallback": "Krok {number}"
     },
     "step4": {
       "heading": "Gotowy do importu",
@@ -3771,7 +4278,8 @@
       "completeBody": "Zaimportowano {imported} osob i {projects} projektow.",
       "completeCta": "Przejdz do pulpitu",
       "retryButton": "Ponow",
-      "errorPrefix": "Nie udalo sie zaimportowac {name}. Kliknij Ponow aby sprobowac ponownie, lub pomin te osobe."
+      "errorPrefix": "Nie udalo sie zaimportowac {name}. Kliknij Ponow aby sprobowac ponownie, lub pomin te osobe.",
+      "processing": "Przetwarzanie..."
     },
     "nav": {
       "back": "Wstecz",
@@ -4071,7 +4579,10 @@
       "locked": "Zablokowane",
       "exported": "Wyeksportowane",
       "completed": "Zakończone",
-      "cancelled": "Anulowane"
+      "cancelled": "Anulowane",
+      "clearDates": "Wyczyść daty",
+      "dateFrom": "Od {date}",
+      "dateTo": "Do {date}"
     },
     "newPaymentRun": "Nowy przebieg płatności",
     "bacs": {
@@ -4094,7 +4605,12 @@
       "modulusWarningTitle": "Weryfikacja sort code",
       "emptyState": "Brak pozycji kwalifikujących się do BACS w tym przebiegu. Dodaj brytyjskich kontrahentów z fakturami w GBP, aby wygenerować plik BACS.",
       "submitterNotConfigured": "Dane nadawcy BACS są wymagane. Skonfiguruj je w Ustawienia → Płatności.",
-      "generateFailure": "Nie udało się wygenerować pliku BACS. Spróbuj ponownie lub skontaktuj się z pomocą, jeśli problem się powtórzy."
+      "generateFailure": "Nie udało się wygenerować pliku BACS. Spróbuj ponownie lub skontaktuj się z pomocą, jeśli problem się powtórzy.",
+      "aria": {
+        "modulusWarning": "Ostrzeżenie o sprawdzeniu modulo",
+        "unmappableError": "Błąd nieodwzorowanego znaku",
+        "transliterationWarning": "Ostrzeżenie o transliteracji"
+      }
     },
     "ukBank": {
       "sortCodeLabel": "Brytyjski sort code",
@@ -4104,7 +4620,16 @@
       "validateButton": "Zweryfikuj sort code",
       "validationSuccess": "Sort code przeszedł kontrolę modulo",
       "validationWarn": "Sort code znajduje się w zakresie wyjątków — kontrola modulo nie jest rozstrzygająca. Kontynuuj, jeśli bank potwierdzi ten rachunek.",
-      "validationFail": "Nieprawidłowy format sort code — wymagane 6 cyfr"
+      "validationFail": "Nieprawidłowy format sort code — wymagane 6 cyfr",
+      "sectionTitle": "Konto bankowe UK",
+      "currentlySaved": "Aktualnie zapisane: {value}",
+      "badgeValid": "WAŻNY",
+      "badgeWarn": "OSTRZEŻENIE",
+      "badgeInvalid": "NIEPRAWIDŁOWY",
+      "badgeValidAriaLabel": "Sort code prawidłowy",
+      "badgeWarnAriaLabel": "Ostrzeżenie sort code",
+      "badgeInvalidAriaLabel": "Sort code nieprawidłowy",
+      "validationFailedFallback": "Weryfikacja nie powiodła się"
     },
     "lateInterest": {
       "sectionHeading": "Ustawowe odsetki za opóźnienie w płatności",
@@ -4272,7 +4797,9 @@
       "amount": "Kwota",
       "currency": "Waluta",
       "dueDate": "Termin płatności",
-      "contractNumber": "Numer umowy"
+      "contractNumber": "Numer umowy",
+      "missingIban": "Brak IBAN",
+      "inRun": "W przebiegu {runNumber}"
     },
     "saveChanges": "Zapisz zmiany",
     "actions": {
@@ -4283,6 +4810,41 @@
     "noResults": {
       "heading": "Nie znaleziono przebiegów płatności",
       "body": "Spróbuj dostosować filtr statusu lub zakres dat, aby znaleźć to, czego szukasz."
+    },
+    "table": {
+      "previous": "Poprzednia",
+      "next": "Następna"
+    },
+    "paymentRef": "Ref: {reference}",
+    "wht": {
+      "dialogTitle": "Podgląd certyfikatu podatku u źródła",
+      "certificateHeading": "Certyfikat podatku u źródła",
+      "certificateNo": "Nr certyfikatu: {number}",
+      "organization": "Organizacja",
+      "contractor": "Wykonawca",
+      "taxId": "NIP",
+      "paymentDate": "Data płatności",
+      "grossAmount": "Kwota brutto",
+      "rate": "Stawka podatku u źródła",
+      "amount": "Kwota podatku u źródła",
+      "netPaid": "Kwota netto do zapłaty",
+      "treaty": "Umowa: {reference}",
+      "close": "Zamknij",
+      "downloadPdf": "Pobierz PDF",
+      "summaryTitle": "Podsumowanie podatku u źródła",
+      "grossTotal": "Łącznie brutto",
+      "whtWithheld": "Potrącony podatek u źródła",
+      "netPayable": "Kwota netto do zapłaty",
+      "itemsWithWht": "Pozycje z podatkiem u źródła: {count} z {total}",
+      "treatyRatesApplied": "Zastosowane stawki umowne: {count}",
+      "generateCertificates": "Generuj certyfikaty",
+      "certificateGenerated": "Certyfikat {number} wygenerowany",
+      "certificateGenerationFailed": "Generowanie certyfikatu nie powiodło się. Sprawdź czy wszystkie dane płatności są kompletne i spróbuj ponownie.",
+      "name": "Nazwa",
+      "country": "Kraj",
+      "residency": "Rezydencja",
+      "standard": "Standardowy",
+      "certFooter": "Niniejszy certyfikat potwierdza, że podatek u źródła został potrącony zgodnie z obowiązującymi przepisami podatkowymi."
     }
   },
   "Peppol": {
@@ -4307,7 +4869,8 @@
       "toast": {
         "disconnected": "Rozłączono z siecią Peppol",
         "disconnectError": "Nie udało się rozłączyć"
-      }
+      },
+      "disconnectedBadge": "Rozłączono"
     },
     "transmission": {
       "title": "Transmisja Peppol",
@@ -4342,6 +4905,16 @@
       "retry": "Spróbuj ponownie",
       "successHeading": "Połączono z siecią Peppol",
       "successDescription": "Możesz teraz wysyłać i odbierać e-faktury przez sieć Peppol."
+    },
+    "inboundBanner": {
+      "title": "Otrzymano przez sieć Peppol",
+      "from": "Od: {participantId}{name}",
+      "documentType": "Typ dokumentu: {type}",
+      "received": "Odebrano: {date}"
+    },
+    "qrDisplay": {
+      "altText": "Kod QR UAE FTA dla faktury {invoiceNumber}",
+      "caption": "Kod QR UAE FTA — Zeskanuj, aby zweryfikować"
     }
   },
   "Portal": {
@@ -4355,7 +4928,8 @@
       "settings": "Ustawienia",
       "signOut": "Wyloguj się",
       "menuDescription": "Menu nawigacji portalu",
-      "time": "Czas"
+      "time": "Czas",
+      "signOutLabel": "Wyloguj się"
     },
     "equipment": {
       "title": "Twoj sprzet",
@@ -4681,6 +5255,20 @@
         "timesheetSubmitted": "Karta pracy przesłana do przeglądu",
         "timesheetSubmitFailed": "Nie udało się przesłać karty pracy"
       }
+    },
+    "pendingChange": {
+      "title": "Zmiany oczekują na zatwierdzenie",
+      "submittedOn": "Przesłałeś zmiany dnia {date}. Twoje aktualne dane pozostają aktywne do momentu zatwierdzenia.",
+      "viewSubmitted": "Wyświetl przesłane zmiany",
+      "fieldBankAccount": "Numer konta bankowego",
+      "fieldBankName": "Nazwa banku",
+      "fieldSwiftBic": "Kod SWIFT/BIC",
+      "fieldTaxId": "NIP"
+    },
+    "activityLog": {
+      "noActivity": "Brak aktywności.",
+      "weeksAgo": "{count} tydz. temu",
+      "monthsAgo": "{count} mies. temu"
     }
   },
   "Reports": {
@@ -4825,10 +5413,12 @@
       "billingEmailOptional": "(opcjonalne)",
       "dateFormat": "Format daty",
       "dateFormatPlaceholder": "Wybierz format daty",
-      "timeFormat": "Format czasu",
-      "timeFormatPlaceholder": "Wybierz format czasu",
-      "timeFormat24h": "24-godzinny",
-      "timeFormat12h": "12-godzinny (AM/PM)"
+      "timeFormat": {
+        "label": "Format czasu",
+        "placeholder": "Wybierz format czasu",
+        "24h": "24-godzinny",
+        "12h": "12-godzinny (AM/PM)"
+      }
     },
     "appearance": {
       "heading": "Język i wyświetlanie",
@@ -5373,7 +5963,10 @@
       "empty": {
         "heading": "Brak wpisów w dzienniku audytu",
         "body": "Zdarzenia audytu pojawią się tutaj w miarę wykonywania akcji w systemie."
-      }
+      },
+      "clearDates": "Wyczyść daty",
+      "dateFromPrefix": "Od {date}",
+      "dateToPrefix": "Do {date}"
     },
     "branding": {
       "heading": "Branding portalu",
@@ -5402,7 +5995,8 @@
       "subdomainMaxLength": "Subdomena może mieć maksymalnie 63 znaki",
       "subdomainFormat": "Dozwolone tylko małe litery, cyfry i myślniki. Musi zaczynać i kończyć się literą lub cyfrą.",
       "previewButton": "Przykładowy przycisk",
-      "previewLink": "Przykładowy link"
+      "previewLink": "Przykładowy link",
+      "colorPlaceholder": "#4f46e5"
     },
     "changeRequest": {
       "title": "Wniosek o zmianę profilu",
@@ -5495,6 +6089,64 @@
       "empty": "Brak dodatkowych słów. Wbudowane słowa kluczowe nadal są aktywne.",
       "addCta": "Dodaj słowo"
     },
+    "apiKeys": {
+      "title": "Klucze API",
+      "description": "Zarządzaj kluczami API dla Enterprise REST API.",
+      "createKeyButton": "Utwórz klucz",
+      "tableHeaders": {
+        "name": "Nazwa",
+        "key": "Klucz",
+        "scopes": "Zakresy",
+        "createdBy": "Utworzone przez",
+        "created": "Utworzone",
+        "lastUsed": "Ostatnio użyty",
+        "status": "Status"
+      },
+      "emptyHeading": "Brak kluczy API",
+      "emptyBody": "Utwórz swój pierwszy klucz API, aby zacząć korzystać z REST API.",
+      "scopeLabels": {
+        "contractorRead": "Wykonawcy (odczyt)",
+        "contractRead": "Umowy (odczyt)",
+        "invoiceRead": "Faktury (odczyt)",
+        "documentRead": "Dokumenty (odczyt)"
+      },
+      "toast": {
+        "created": "Klucz API utworzony",
+        "createFailed": "Nie udało się utworzyć klucza API",
+        "revoked": "Klucz API „{name}\" unieważniony",
+        "revokeFailed": "Nie udało się unieważnić klucza"
+      },
+      "aria": {
+        "keyActions": "Akcje klucza",
+        "copyKey": "Kopiuj klucz"
+      },
+      "revokeAction": "Unieważnij",
+      "createDialog": {
+        "title": "Utwórz klucz API",
+        "description": "Wygeneruj klucz dla Enterprise REST API. Wybierz zakresy dostępu dla tego klucza.",
+        "nameLabel": "Nazwa",
+        "namePlaceholder": "np. Integracja ERP",
+        "scopesLabel": "Zakresy",
+        "expiryLabel": "Data wygaśnięcia (opcjonalnie)",
+        "submitButton": "Utwórz klucz"
+      },
+      "createdDialog": {
+        "title": "Klucz API utworzony",
+        "description": "Skopiuj klucz teraz. Nie będziesz go mógł zobaczyć ponownie.",
+        "securityWarning": "Przechowuj ten klucz bezpiecznie. Nie można go odzyskać po zamknięciu tego okna.",
+        "doneButton": "Gotowe"
+      },
+      "revokeDialog": {
+        "title": "Unieważnij klucz API",
+        "description": "Unieważnić klucz {name}? Jest to natychmiastowe i nieodwracalne. Wszelkie integracje używające tego klucza przestaną działać.",
+        "confirmButton": "Unieważnij klucz"
+      }
+    },
+    "payments": {
+      "noPermission": {
+        "description": "Nie masz uprawnień do konfigurowania eksportów płatności. Skontaktuj się z administratorem organizacji."
+      }
+    },
     "reimport": {
       "title": "Importuj dane z narzędzi",
       "description": "Ponownie importuj kontrahentów, umowy i faktury z zewnętrznych narzędzi, takich jak pliki CSV, arkusze kalkulacyjne lub platformy firm trzecich.",
@@ -5537,7 +6189,9 @@
       "contractor": "Contractor",
       "period": "Period",
       "totalHours": "Łącznie godzin",
-      "status": "Status"
+      "status": "Status",
+      "entries": "Wpisy",
+      "actions": "Akcje"
     },
     "emptyStates": {
       "noPendingReviewsHeading": "Brak oczekujących przeglądów",
@@ -5583,6 +6237,80 @@
       "discardCta": "Discard Entry",
       "addCta": "Add Entry",
       "addingCta": "Adding..."
+    },
+    "approvalQueue": {
+      "selectAll": "Zaznacz wszystkie karty pracy",
+      "approve": "Zatwierdź",
+      "reject": "Odrzuć",
+      "selected": "{count, plural, one {# karta pracy wybrana} few {# karty pracy wybrane} many {# kart pracy wybranych} other {# kart pracy wybranych}}",
+      "clear": "Wyczyść",
+      "rejectAll": "Odrzuć wszystkie",
+      "approveAll": "Zatwierdź wszystkie",
+      "bulkApproveTitle": "{count, plural, one {Zatwierdź # kartę pracy} few {Zatwierdź # karty pracy} many {Zatwierdź # kart pracy} other {Zatwierdź # kart pracy}}",
+      "bulkApproveDescription": "Spowoduje to zatwierdzenie wszystkich wybranych kart pracy. Kontrahenci zostaną powiadomieni."
+    },
+    "review": {
+      "totalHours": "łączna liczba godzin",
+      "project": "Projekt",
+      "total": "Łącznie",
+      "backToQueue": "Powrót do kolejki",
+      "reject": "Odrzuć",
+      "approveTimesheet": "Zatwierdź kartę pracy"
+    },
+    "reconciliation": {
+      "title": "Uzgadnianie czasu pracy",
+      "approvedHours": "Zatwierdzone godziny",
+      "atRate": "po {rate}/h",
+      "expectedAmount": "Kwota oczekiwana",
+      "basedOnApproved": "na podstawie zatwierdzonych godzin",
+      "invoicedAmount": "Kwota zafakturowana",
+      "fromInvoice": "z faktury",
+      "expected": "Oczekiwane",
+      "invoiced": "Zafakturowane",
+      "noDataHeading": "Brak danych uzgadniania",
+      "noDataBody": "Dane uzgadniania pojawiają się, gdy faktury mają pasujące zatwierdzone wpisy czasu pracy.",
+      "deviation": "Odchylenie",
+      "viewInvoice": "Pokaż fakturę",
+      "unknown": "Nieznany"
+    },
+    "rejectionDialog": {
+      "title": "Odrzuć kartę pracy",
+      "bulkTitle": "{count, plural, one {Odrzuć # kartę pracy} few {Odrzuć # karty pracy} many {Odrzuć # kart pracy} other {Odrzuć # kart pracy}}",
+      "description": "Podaj powód odrzucenia. Kontrahent zostanie powiadomiony i będzie mógł ponownie przesłać korekty.",
+      "bulkDescription": "Wszystkie wybrane karty pracy zostaną odrzucone z tym samym powodem.",
+      "reasonLabel": "Powód odrzucenia",
+      "reasonPlaceholder": "Opisz, co wymaga poprawy...",
+      "minLengthError": "Powód musi zawierać co najmniej 10 znaków.",
+      "keepReviewing": "Kontynuuj przegląd",
+      "rejecting": "Odrzucanie...",
+      "rejectButton": "Odrzuć kartę pracy"
+    },
+    "summaryStats": {
+      "thisWeek": "Ten tydzień",
+      "pendingReview": "Oczekujące do przeglądu",
+      "approvedThisMonth": "Zatwierdzone w tym miesiącu"
+    },
+    "grid": {
+      "project": "Projekt",
+      "total": "Łącznie",
+      "noActiveContracts": "Brak aktywnych umów",
+      "rejectionBanner": "Ta karta pracy została odrzucona: {reason}. Proszę poprawić i ponownie przesłać.",
+      "hoursAriaLabel": "Godziny dla {project} w {day}"
+    },
+    "header": {
+      "submitting": "Przesyłanie...",
+      "submitTimesheet": "Prześlij kartę pracy",
+      "prevWeek": "Poprzedni tydzień",
+      "nextWeek": "Następny tydzień"
+    },
+    "externalSync": {
+      "syncFrom": "Synchronizuj z {provider}",
+      "connectHint": "Połącz {provider} w Ustawienia > Integracje, aby importować wpisy czasu pracy",
+      "importing": "Importowanie...",
+      "importFrom": "Importuj z {provider}",
+      "from": "Od",
+      "to": "Do",
+      "importEntries": "Importuj wpisy"
     }
   },
   "TopBar": {
@@ -5794,7 +6522,11 @@
       "template": "Szablon",
       "startedBy": "Rozpoczęte przez",
       "startedOn": "Data rozpoczęcia",
-      "openWorkflow": "Otwórz proces"
+      "openWorkflow": "Otwórz proces",
+      "linkedIssues": "Powiązane zgłoszenia",
+      "noLinkedJiraIssues": "Brak powiązanych zgłoszeń Jira dla tego przepływu.",
+      "linearIssues": "Zgłoszenia Linear",
+      "tasksComplete": "{done} z {total} zadań ukończonych"
     },
     "templatePicker": {
       "title": "Rozpocznij proces",
@@ -6068,7 +6800,171 @@
         "allPassed": "Wszystkie 6 testów zgodności zakończonych powodzeniem. Konfiguracja jest gotowa do produkcji.",
         "someFailed": "Testy zgodności nieudane: {failedCount} test(y) nie przeszły. Sprawdź dane podatkowe i spróbuj ponownie.",
         "error": "Nie udało się uruchomić testów zgodności"
+      },
+      "running": "Trwa",
+      "pending": "Oczekujące"
+    },
+    "page": {
+      "title": "Integracja ZATCA",
+      "description": "Zgodność z e-fakturowaniem w Arabii Saudyjskiej",
+      "backAriaLabel": "Powrót do integracji",
+      "connectTitle": "Połącz z ZATCA",
+      "connectDescription": "Przesyłaj e-faktury do ZATCA w celu rozliczenia i raportowania. Skonfiguruj certyfikat swojej organizacji, aby rozpocząć.",
+      "connectButton": "Połącz z ZATCA",
+      "sandboxBanner": "Tryb piaskownicy — testowe faktury nie są przesyłane do ZATCA. Przełącz się na tryb produkcyjny, gdy będziesz gotowy.",
+      "toast": {
+        "onboardingComplete": "Wdrożenie ZATCA zakończone!"
       }
+    },
+    "statusCard": {
+      "title": "ZATCA",
+      "disconnected": "Odłączono",
+      "description": "Rozliczanie i raportowanie e-faktur w Arabii Saudyjskiej.",
+      "connectButton": "Połącz ZATCA",
+      "onboardingInProgress": "Wdrożenie w toku — kontynuuj kreator konfiguracji.",
+      "continueSetup": "Kontynuuj konfigurację",
+      "manageButton": "Zarządzaj",
+      "disconnectButton": "Odłącz",
+      "disconnectDialog": {
+        "title": "Odłącz ZATCA",
+        "description": "Odłącz ZATCA: aktywne faktury nie będą już przesyłane. Oczekujące przesyłki zostaną anulowane. Kontynuować?",
+        "cancel": "Anuluj",
+        "confirm": "Odłącz"
+      },
+      "statusLabels": {
+        "production": "Produkcja",
+        "sandbox": "Piaskownica",
+        "onboarding": "Wdrożenie",
+        "notConnected": "Nie połączono"
+      },
+      "toast": {
+        "onboardingComplete": "Wdrożenie ZATCA zakończone!"
+      }
+    },
+    "complianceWidget": {
+      "cardTitle": "ZATCA (Arabia Saudyjska)",
+      "status": "Status:",
+      "environment": "Środowisko:",
+      "certificateExpires": "Certyfikat wygasa: ",
+      "certificateExpiryWarning": "Twój certyfikat ZATCA wygasa za {expiryDays} dni. Odnów go, aby uniknąć przerw w przesyłaniu.",
+      "thisPeriod": "Ten okres",
+      "cleared": "Zatwierdzone:",
+      "reported": "Zgłoszone:",
+      "pending": "Oczekujące:",
+      "rejected": "Odrzucone:",
+      "invoices": "{count} faktur",
+      "health": "Kondycja:"
+    },
+    "submissionDetail": {
+      "title": "Szczegóły zgłoszenia ZATCA",
+      "uuid": "UUID",
+      "copyUuid": "Kopiuj UUID",
+      "icv": "ICV",
+      "status": "Status",
+      "type": "Typ",
+      "typeB2B": "Standardowa faktura podatkowa (rozliczenie B2B)",
+      "typeB2C": "Uproszczona faktura podatkowa (raportowanie B2C)",
+      "hashChain": "Łańcuch skrótów",
+      "previousHash": "Poprzedni skrót:",
+      "invoiceHash": "Skrót faktury:",
+      "copyPreviousHash": "Kopiuj poprzedni skrót",
+      "copyInvoiceHash": "Kopiuj skrót faktury",
+      "qrCodeAlt": "Kod QR ZATCA zawierający nazwę sprzedawcy, numer VAT, sumę faktury i kwotę VAT",
+      "qrCodeContains": "Kod QR zawiera:",
+      "qrSellerName": "Nazwa sprzedawcy",
+      "qrVatNumber": "Numer VAT",
+      "qrInvoiceTotal": "Suma faktury (z VAT)",
+      "qrVatAmount": "Kwota VAT",
+      "rejectionReason": "Powód odrzucenia",
+      "viewSignedXml": "Wyświetl podpisany XML",
+      "signedXmlDialogTitle": "Podpisany XML — Faktura {uuid}",
+      "signedXmlNotAvailable": "Podpisany XML niedostępny. XML jest generowany podczas przetwarzania zgłoszenia.",
+      "resubmit": "Prześlij ponownie do ZATCA",
+      "toast": {
+        "resubmitSuccess": "Faktura dodana do kolejki ponownego przesłania do ZATCA",
+        "resubmitError": "Nie udało się przesłać ponownie",
+        "copySuccess": "{label} skopiowano do schowka",
+        "copyError": "Nie udało się skopiować"
+      }
+    },
+    "complianceCsid": {
+      "title": "Krok 3 z 5: Poproś o certyfikat zgodności",
+      "description": "Twój CSR zostanie przesłany do ZATCA w celu uzyskania certyfikatu zgodności do testów.",
+      "requestButton": "Poproś o Compliance CSID",
+      "progressLabel": "Postęp Compliance CSID",
+      "status": {
+        "submittingCsr": "Przesyłanie CSR do ZATCA...",
+        "csidReceived": "Otrzymano Compliance CSID",
+        "certStored": "Certyfikat bezpiecznie zapisany"
+      },
+      "back": "Wstecz",
+      "next": "Dalej",
+      "toast": {
+        "success": "Otrzymano Compliance CSID",
+        "error": "Nie udało się zażądać Compliance CSID"
+      },
+      "loading": "Ładowanie",
+      "complete": "Ukończono",
+      "pending": "Oczekujące"
+    },
+    "environmentToggle": {
+      "label": "Środowisko",
+      "sandbox": "Piaskownica",
+      "sandboxDescription": "Testowe faktury nie są przesyłane do ZATCA",
+      "production": "Produkcja",
+      "productionDescription": "Faktury są przesyłane do ZATCA w celu zatwierdzenia",
+      "productionNotReady": "Ukończ wdrożenie, aby włączyć tryb produkcyjny",
+      "confirmDialog": {
+        "title": "Przełącz na piaskownicę",
+        "description": "Przełącz na piaskownicę: przesyłanie w trybie produkcyjnym zostanie wstrzymane. Oczekujące faktury pozostaną w kolejce. Kontynuować?",
+        "cancel": "Anuluj",
+        "confirm": "Przełącz na piaskownicę"
+      }
+    },
+    "productionCertificate": {
+      "title": "Krok 5 z 5: Aktywuj certyfikat produkcyjny",
+      "description": "Wszystkie testy zgodności zakończone powodzeniem. Wymień certyfikat zgodności na produkcyjny.",
+      "warningTitle": "Aktywacja produkcyjna",
+      "warningDescription": "Po aktywacji wszystkie faktury dla saudyjskich organizacji będą przesyłane do ZATCA.",
+      "completeButton": "Zakończ wdrożenie",
+      "certActive": "Certyfikat produkcyjny aktywny",
+      "certStatus": "Status",
+      "certStatusActive": "Aktywny",
+      "certIssued": "Wystawiony",
+      "certEnvironment": "Środowisko",
+      "certEnvironmentValue": "Produkcja",
+      "back": "Wstecz",
+      "completeAction": "Zakończ",
+      "toast": {
+        "success": "Wdrożenie ZATCA zakończone! Certyfikat produkcyjny aktywowany.",
+        "error": "Nie udało się wymienić certyfikatu produkcyjnego"
+      }
+    },
+    "taxDetailsForm": {
+      "title": "Krok 1 z 5: Dane podatkowe organizacji",
+      "description": "Wprowadź informacje o rejestracji podatkowej swojej organizacji w Arabii Saudyjskiej.",
+      "vatNumber": "Numer rejestracji VAT",
+      "vatNumberHint": "15-cyfrowy saudyjski numer VAT zaczynający i kończący się na 3",
+      "orgNameArabic": "Prawna nazwa organizacji (arabski)",
+      "addressSection": "Adres organizacji",
+      "street": "Ulica",
+      "city": "Miasto",
+      "district": "Dzielnica",
+      "postalCode": "Kod pocztowy",
+      "invoiceTypesSection": "Typy faktur",
+      "standardInvoice": "Standardowe faktury podatkowe (rozliczenie B2B)",
+      "simplifiedInvoice": "Uproszczone faktury podatkowe (raportowanie B2C)",
+      "cancel": "Anuluj",
+      "next": "Dalej",
+      "toast": {
+        "success": "Dane podatkowe zapisane pomyślnie",
+        "error": "Nie udało się zapisać danych podatkowych"
+      },
+      "vatNumberPlaceholder": "3XXXXXXXXXXXXX3"
+    },
+    "stepper": {
+      "onboardingProgress": "Postęp wdrożenia",
+      "stepAriaLabel": "Krok {number}: {label}"
     }
   },
   "contractor": {

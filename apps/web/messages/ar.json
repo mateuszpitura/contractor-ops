@@ -16,7 +16,42 @@
       "deleteDialogTitle": "حذف سجل معدّل BoE؟",
       "deleteDialogBody": "حذف معدّل تاريخي يُغيّر حسابات الفائدة لأي فواتير أصبحت متأخرة خلال فترة سريانه. تابع فقط إذا تم إدخال هذا السجل بالخطأ.",
       "pollerSuccess": "آخر استعلام لـ BoE API: {date} — المعدّل دون تغيير / تم تسجيل معدّل جديد {percent}%",
-      "pollerFailure": "فشل آخر استعلام لـ BoE API في {date}. لا يزال الإدخال اليدوي ممكنًا؛ سيُعاد المحاولة في التشغيل المجدول التالي."
+      "pollerFailure": "فشل آخر استعلام لـ BoE API في {date}. لا يزال الإدخال اليدوي ممكنًا؛ سيُعاد المحاولة في التشغيل المجدول التالي.",
+      "pollerSuccessUnchanged": "آخر استعلام لـ BoE API: {date} — المعدّل دون تغيير",
+      "pollerNoData": "لا تتوفر بيانات استعلام BoE API. يُدخَل المعدّل يدويًا فقط.",
+      "ariaPollerStatus": "حالة استعلام BoE API",
+      "accessDeniedHeading": "تم رفض الوصول",
+      "accessDeniedBody": "ليس لديك صلاحية لإدارة البيانات المرجعية لـ BoE.",
+      "addRate": "إضافة معدّل",
+      "addDialogDesc": "إضافة سجل معدّل أساسي جديد لبنك إنجلترا لحسابات الفائدة.",
+      "notesOptionalLabel": "ملاحظات (اختياري)",
+      "noRateEntries": "لا توجد سجلات معدّلات",
+      "noRateEntriesBody": "أضف سجل معدّل لبدء تتبع تاريخ معدّلات BoE.",
+      "colActions": "إجراءات",
+      "ariaEditRate": "تعديل سجل المعدّل",
+      "ariaDeleteRate": "حذف سجل المعدّل",
+      "toastRateAdded": "تمت إضافة المعدّل",
+      "toastRateAddedDesc": "تم حفظ سجل المعدّل الأساسي لـ BoE.",
+      "toastRateDeleted": "تم حذف المعدّل",
+      "toastRateDeletedDesc": "تمت إزالة سجل المعدّل الأساسي لـ BoE.",
+      "toastRateUpdated": "تم تحديث المعدّل",
+      "toastRateUpdatedDesc": "تم تحديث سجل المعدّل الأساسي لـ BoE.",
+      "toastError": "خطأ",
+      "toastValidationError": "خطأ في التحقق",
+      "validationRateRange": "يجب أن يكون المعدّل بين 0 و99.99.",
+      "validationDateRequired": "تاريخ السريان مطلوب.",
+      "saveRate": "حفظ المعدّل",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ...",
+      "deleteRate": "حذف المعدّل",
+      "deleting": "جارٍ الحذف...",
+      "editDialogTitle": "تعديل المعدّل الأساسي لـ BoE",
+      "editDialogDesc": "تحديث سجل المعدّل للتاريخ {date}.",
+      "editApiSourceWarning": "مصدر هذا السجل هو BoE API. ستؤدي التعديلات إلى تجاوز القيمة الأصلية. لن يُحدَّث سجلك عند الاستعلام التالي.",
+      "navLabel": "معدّل BoE",
+      "deleteDialogBodyDynamic": "حذف المعدّل التاريخي للتاريخ {date} ({rate}٪) سيُغيّر حسابات الفائدة للفواتير المرتبطة بهذه الفترة. لا يمكن التراجع عن هذا الإجراء.",
+      "notesPlaceholder": "مثال: قرار MPC بتاريخ 2026-03-20",
+      "editNotesPlaceholder": "مثال: تصحيح قيمة مصدرها cron"
     },
     "ClassificationEngineFlag": {
       "title": "حالة علم محرّك التصنيف",
@@ -24,8 +59,18 @@
       "appSideValue": "القيمة على جانب التطبيق (ما يراه المستخدمون)",
       "signoffRegistry": "سجل التوقيعات",
       "pendingGate": "العَلم مُفعَّل في Unleash ولكنه مُقيَّد على مستوى التطبيق — {count} إقرار(ات) قيد الانتظار.",
-      "pendingGateResolution": "حلّ المشكلة بإرسال PR يُحدّث packages/validators/src/legal/signoff-registry.json"
-    }
+      "pendingGateResolution": "حلّ المشكلة بإرسال PR يُحدّث packages/validators/src/legal/signoff-registry.json",
+      "killSwitchDesc": "مفتاح إيقاف محرّك التصنيف. للقراءة فقط — التبديل في وحدة تحكم Unleash.",
+      "disclaimerRegistryTitle": "سجل توقيعات الإقرارات",
+      "allKeysMustBeApproved": "يجب أن تكون جميع المفاتيح مُعتمَدة قبل تفعيل العَلم في بيئة الإنتاج.",
+      "colDisclaimerKey": "مفتاح الإقرار",
+      "colApprovedBy": "اعتمد بواسطة",
+      "colApprovedAt": "تاريخ الاعتماد",
+      "colApproverRole": "دور المعتمِد",
+      "moduleName": "module.classification-engine",
+      "registryPath": "packages/validators/src/legal/signoff-registry.json"
+    },
+    "sidebarHeading": "الإدارة"
   },
   "Api": {
     "email": {
@@ -802,6 +847,8 @@
     "signOutFailed": "تعذر تسجيل الخروج. حاول مجددًا.",
     "save": "حفظ",
     "cancel": "إلغاء",
+    "appName": "Contractor Ops",
+    "appTagline": "منصة لإدارة المقاولين ومعالجة الفواتير",
     "aria": {
       "previousPage": "الصفحة السابقة",
       "nextPage": "الصفحة التالية",
@@ -835,7 +882,14 @@
       "mapTo": "ربط \"{header}\" بـ",
       "overdueTasks": "{count} مهام متأخرة",
       "notificationsWithUnread": "{title} — {count} غير مقروء",
-      "teams": "مايكروسوفت تيمز"
+      "teams": "مايكروسوفت تيمز",
+      "moreActions": "المزيد من الإجراءات",
+      "cookieConsent": "موافقة ملفات تعريف الارتباط",
+      "selectAll": "تحديد الكل",
+      "moveUp": "تحريك للأعلى",
+      "moveDown": "تحريك للأسفل",
+      "removeStep": "إزالة الخطوة",
+      "loading": "جارٍ التحميل"
     },
     "srOnly": {
       "more": "المزيد",
@@ -866,7 +920,22 @@
       "kilobytes": "{size} كيلوبايت",
       "megabytes": "{size} ميغابايت"
     },
-    "switchToLanguage": "تغيير اللغة إلى {name}"
+    "switchToLanguage": "تغيير اللغة إلى {name}",
+    "commandPalette": {
+      "title": "لوحة الأوامر",
+      "description": "ابحث عن أمر لتشغيله..."
+    },
+    "loading": "جارِ التحميل…",
+    "noData": "لا توجد بيانات",
+    "pagination": {
+      "page": "الصفحة {page} من {pageCount} ({total} إجمالاً)",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "clearDates": "مسح التواريخ",
+    "filterFrom": "من {date}",
+    "filterTo": "إلى {date}",
+    "emailLabel": "البريد الإلكتروني"
   },
   "Consent": {
     "privacyNotice": {
@@ -956,7 +1025,13 @@
       "terminateError": "تعذر terminate contract. حاول مجددًا.",
       "supersede": "وضع علامة مستبدل",
       "supersedeSuccess": "تم وضع علامة مستبدل على العقد",
-      "supersedeError": "تعذر mark contract as superseded. حاول مجددًا."
+      "supersedeError": "تعذر mark contract as superseded. حاول مجددًا.",
+      "delete": "حذف العقد",
+      "deleteTitle": "حذف {title}؟",
+      "deleteBody": "سيتم حذف هذه المسودة نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+      "deleteConfirm": "حذف العقد",
+      "deleteSuccess": "تم حذف العقد",
+      "deleteError": "تعذر حذف العقد. حاول مجددًا."
     },
     "error": {
       "notFound": "Contract غير موجود.",
@@ -1110,6 +1185,18 @@
         "resendFailed": "فشل resend. يرجى المحاولة مجددًا.",
         "sentForSignature": "تم إرسال المستند للتوقيع",
         "sendFailed": "فشل send for signature. يرجى المحاولة مجددًا."
+      },
+      "sendButton": "إرسال للتوقيع",
+      "tooltipNoProvider": "قم بتوصيل موفر التوقيع في الإعدادات",
+      "tooltipNoDocument": "قم بتحميل مستند أولاً",
+      "auditTrail": {
+        "title": "سجل التوقيع",
+        "emptyTitle": "لا يوجد سجل توقيع",
+        "emptyBody": "ستظهر أحداث التوقيع هنا بمجرد إرسال مستند للتوقيع.",
+        "justNow": "الآن",
+        "minutesAgo": "منذ {count}د",
+        "hoursAgo": "منذ {count}س",
+        "daysAgo": "منذ {count}ي"
       }
     }
   },
@@ -1290,6 +1377,7 @@
       "project": "المشروع",
       "milestone": "مرحلة"
     },
+    "ibanPlaceholder": "PL00 0000 0000 0000 0000 0000 0000",
     "success": "تمت إضافة المقاول",
     "error": "فشل add contractor. حاول مجددًا."
   },
@@ -1443,6 +1531,102 @@
           "error": "فشل في إعادة احتساب الامتثال"
         }
       }
+    },
+    "compliance": {
+      "de": {
+        "infoBoxTitle": "المعرّفات الألمانية — تعتمد الحقول المطلوبة على الشكل القانوني وحالة ضريبة القيمة المضافة:",
+        "infoItem1": "Bundesland و Steuernummer مطلوبان دائمًا.",
+        "infoItem2": "UG وGmbH وAG: يُشترط رقم Handelsregister.",
+        "infoItem3": "المسجّل في ضريبة القيمة المضافة (غير Kleinunternehmer): يُشترط USt-IdNr.",
+        "bundeslandLabel": "Bundesland (الولاية الألمانية)",
+        "rechtsformLabel": "Rechtsform (الشكل القانوني)",
+        "vatRegisteredLabel": "مسجّل في ضريبة القيمة المضافة (Umsatzsteuerpflichtig)",
+        "vatNumberPlaceholder": "DE123456789",
+        "steuernummerPlaceholder": "12 345678 A 901"
+      },
+      "uk": {
+        "infoBoxTitle": "المعرّفات البريطانية — تعتمد الحقول المطلوبة على نوع الكيان:",
+        "infoItem1": "يجب على العاملين لحسابهم الخاص (sole trader) تقديم UTR.",
+        "infoItem2": "يجب على الشركات المحدودة (Ltd / LLP) تقديم رقم Companies House.",
+        "infoItem3": "يجب على المقاولين المسجّلين في ضريبة القيمة المضافة تقديم رقم تسجيل ضريبة القيمة المضافة.",
+        "entityTypeLabel": "نوع الكيان",
+        "utrLabel": "UTR",
+        "utrPlaceholder": "UTR مكوّن من 10 أرقام",
+        "companiesHouseLabel": "رقم Companies House",
+        "companiesHousePlaceholder": "مثال: 12345678 أو SC123456",
+        "vatRegisteredLabel": "مسجّل في ضريبة القيمة المضافة",
+        "vatNumberLabel": "رقم تسجيل ضريبة القيمة المضافة",
+        "vatNumberPlaceholder": "GB123456789"
+      }
+    },
+    "handelsregister": {
+      "courtLabel": "المحكمة التجارية",
+      "courtAriaLabel": "المحكمة التجارية",
+      "courtPlaceholder": "البحث عن المحكمة…",
+      "selectCourtPlaceholder": "اختر المحكمة...",
+      "noCourtFound": "لم يُعثر على محكمة.",
+      "registerTypeLabel": "نوع السجل",
+      "registerTypeAriaLabel": "نوع السجل",
+      "hrbAriaLabel": "HRB (Handelsregister B)",
+      "hraAriaLabel": "HRA (Handelsregister A)",
+      "numberLabel": "رقم السجل",
+      "numberAriaLabel": "رقم السجل",
+      "exampleHint": "مثال: Amtsgericht München · HRB · 123456"
+    },
+    "steuernummer": {
+      "selectBundeslandFirst": "اختر Bundesland أولاً",
+      "formatHint": "التنسيق: {example} · {stateName}",
+      "validFormat": "تنسيق صحيح",
+      "formatMismatch": "تنسيق Steuernummer لا يتطابق مع {stateName}. مثال: {example}."
+    },
+    "billingProfile": {
+      "ukBankAccount": "الحساب البنكي البريطاني",
+      "currentlySaved": "المحفوظ حاليًا: {value}"
+    },
+    "countryCompliance": {
+      "cardTitle": "الامتثال للمتطلبات الوطنية — {country}",
+      "incompleteFields": "{count} غير مكتمل",
+      "vatValidationLabel": "التحقق من ضريبة القيمة المضافة",
+      "saveButton": "حفظ حقول الامتثال",
+      "savedToast": "تم حفظ حقول الامتثال",
+      "saveErrorToast": "فشل حفظ حقول الامتثال",
+      "classificationHeading": "التصنيف",
+      "loadingEngagements": "جارٍ تحميل التعاقدات…",
+      "defaultEngagementName": "التعاقد",
+      "countries": {
+        "AE": "الإمارات العربية المتحدة",
+        "SA": "المملكة العربية السعودية",
+        "GB": "المملكة المتحدة",
+        "DE": "ألمانيا"
+      },
+      "uae": {
+        "freelancePermitNumberLabel": "رقم تصريح العمل الحر",
+        "freelancePermitNumberPlaceholder": "أدخل رقم التصريح",
+        "tradeLicenseNumberLabel": "رقم الرخصة التجارية",
+        "tradeLicenseNumberPlaceholder": "أدخل رقم الرخصة",
+        "freeZoneLabel": "المنطقة الحرة",
+        "tradeLicenseExpiryLabel": "انتهاء صلاحية الرخصة التجارية"
+      },
+      "saudi": {
+        "freelanceSaLicenseLabel": "رخصة Freelance.sa",
+        "freelanceSaLicensePlaceholder": "أدخل رقم رخصة Freelance.sa",
+        "commercialRegistrationLabel": "السجل التجاري",
+        "commercialRegistrationPlaceholder": "أدخل رقم السجل التجاري",
+        "crExpiryLabel": "تاريخ انتهاء السجل التجاري"
+      },
+      "nipLabel": "NIP"
+    },
+    "revalidateVat": {
+      "buttonLabel": "إعادة التحقق من ضريبة القيمة المضافة",
+      "buttonAriaLabel": "إعادة التحقق من رقم ضريبة القيمة المضافة",
+      "successToast": "تم التحقق من ضريبة القيمة المضافة بنجاح",
+      "invalidToast": "رقم ضريبة القيمة المضافة غير صالح",
+      "unavailableToast": "التحقق المباشر من ضريبة القيمة المضافة غير متاح — يتم عرض آخر نتيجة معروفة",
+      "errorToast": "فشل إعادة التحقق من ضريبة القيمة المضافة"
+    },
+    "eInvoicing": {
+      "cardTitle": "الفواتير الإلكترونية",
+      "defaultLeitwegIdLabel": "Leitweg-ID الافتراضي"
     }
   },
   "Contracts": {
@@ -1877,6 +2061,21 @@
       "afternoon": "مساء الخير، {name}",
       "evening": "مساء الخير، {name}",
       "subtitle": "إليك ما يحدث في مؤسستك اليوم."
+    },
+    "taxObligations": {
+      "title": "الالتزامات الضريبية",
+      "vatPeriod": "ضريبة القيمة المضافة لهذه الفترة",
+      "collected": "المحصّل:",
+      "owed": "المستحق:",
+      "net": "الصافي:",
+      "whtPeriod": "ضريبة الاستقطاع لهذه الفترة",
+      "withheld": "المقتطع:",
+      "pending": "قيد الانتظار:",
+      "statusFiled": "مقدَّم",
+      "statusPending": "معلق",
+      "certsPattern": "{count} شهادات",
+      "itemsPattern": "{count} بنود",
+      "viewDetails": "عرض التفاصيل"
     }
   },
   "Documents": {
@@ -1955,9 +2154,7 @@
     "scanning": "Scanning…"
   },
   "EInvoice": {
-    "_NOTE": "AI-first-pass translation pending review",
     "Settings": {
-      "_NOTE": "AI-first-pass translation pending review",
       "h1": "E-invoicing",
       "subline": "أدر تسجيل مشاركتك في Peppol ومُعرّفات Leitweg-ID للفوترة الحكومية الألمانية وإعدادات الامتثال للفوترة الإلكترونية.",
       "PeppolCard": {
@@ -1965,16 +2162,32 @@
         "ctaRegistered": "إدارة المشارك",
         "emptyHeading": "غير مسجّل في Peppol",
         "emptyBody": "سجّل مؤسستك لمرّة واحدة لإرسال فواتير XRechnung الإلكترونية إلى المشترين الحكوميين في المملكة المتحدة وتلقّي إقرارات التسليم.",
-        "pendingHeading": "التسجيل قيد الانتظار"
+        "pendingHeading": "التسجيل قيد الانتظار",
+        "labelParticipant": "المشارك",
+        "labelStatus": "الحالة",
+        "labelAsp": "ASP",
+        "labelLastCapabilityCheck": "آخر فحص للقدرات",
+        "neverChecked": "لم يتم قط",
+        "statusActive": "نشط",
+        "statusRegistered": "مسجل",
+        "statusSuspended": "معلق",
+        "statusDeregistered": "تم إلغاء التسجيل",
+        "statusNotRegistered": "غير مسجل"
       },
       "LeitwegIdCard": {
         "ctaCreate": "إنشاء Leitweg-ID",
         "emptyHeading": "لا يوجد Leitweg-ID مسجّل",
-        "emptyBody": "أضف Leitweg-ID لكل مشتٍ حكومي ألماني ترسل له فواتير. يمكنك تعيين قيم افتراضية لكل مقاول وتجاوزات على مستوى العقد."
+        "emptyBody": "أضف Leitweg-ID لكل مشتٍ حكومي ألماني ترسل له فواتير. يمكنك تعيين قيم افتراضية لكل مقاول وتجاوزات على مستوى العقد.",
+        "cardTitle": "Leitweg-IDs",
+        "colValue": "القيمة",
+        "colDescription": "الوصف",
+        "colAssignedTo": "مخصص لـ",
+        "colDefault": "افتراضي؟",
+        "colValidPeriod": "فترة الصلاحية",
+        "colActionsAria": "الإجراءات"
       }
     },
     "InvoicesList": {
-      "_NOTE": "AI-first-pass translation pending review",
       "SummaryTile": {
         "heading": "الامتثال للفوترة الإلكترونية",
         "bodyPattern": "{validCount} من أصل {totalCount} فاتورة متوافقة مع EN 16931.",
@@ -2005,7 +2218,6 @@
       }
     },
     "InvoiceTab": {
-      "_NOTE": "AI-first-pass translation pending review",
       "tabLabel": "E-invoice",
       "generationHeading": "Generation",
       "generationNotGeneratedBody": "لم يُولَّد بعد ملف XRechnung XML لهذه الفاتورة.",
@@ -2038,10 +2250,15 @@
       "leitwegSourceContract": "من تجاوز العقد",
       "leitwegSourceContractorDefault": "من إعداد المقاول الافتراضي",
       "leitwegMissingWarningHeading": "Leitweg-ID مفقود لمشترٍ حكومي ألماني",
-      "leitwegMissingWarningBody": "تم تمييز هذا المشتري كمشترٍ حكومي. أضف Leitweg-ID لهذا المقاول أو العقد قبل الإرسال."
+      "leitwegMissingWarningBody": "تم تمييز هذا المشتري كمشترٍ حكومي. أضف Leitweg-ID لهذا المقاول أو العقد قبل الإرسال.",
+      "addNewLeitwegId": "إضافة جديد",
+      "svrlSeverityHeader": "الخطورة",
+      "svrlRuleIdHeader": "معرّف القاعدة",
+      "svrlMessageHeader": "الرسالة",
+      "xmlSourceAria": "مصدر XML الخام لـ XRechnung",
+      "xpathLabel": "مسار XPath:"
     },
     "LeitwegIdDialog": {
-      "_NOTE": "AI-first-pass translation pending review",
       "headingCreate": "إنشاء Leitweg-ID",
       "headingEdit": "تعديل Leitweg-ID",
       "valueLabel": "Leitweg-ID",
@@ -2057,10 +2274,17 @@
       "saveButton": "حفظ Leitweg-ID",
       "errorInvalidCheckDigit": "رقم التحقّق لهذا الـ Leitweg-ID لا يتطابق مع الأجزاء الأوّلية + التحسين. يرجى التأكّد مع المشتري الحكومي.",
       "errorInvalidFormat": "يجب أن يكون Leitweg-ID من 2 إلى 12 رقمًا، يتبعها اختياريًا `-<حتى 30 حرفًا أبجديًا رقميًا كبيرًا>` ثم `-<رقم تحقّق من خانتين>`.",
-      "errorDuplicate": "هذا الـ Leitweg-ID مسجّل بالفعل في مؤسستك."
+      "errorDuplicate": "هذا الـ Leitweg-ID مسجّل بالفعل في مؤسستك.",
+      "contractIdPlaceholder": "معرّف العقد (اختياري)"
+    },
+    "LeitwegIdRow": {
+      "defaultBadge": "افتراضي",
+      "actionEdit": "تعديل",
+      "actionSetDefault": "تعيين كافتراضي",
+      "actionDelete": "حذف",
+      "actionsAriaLabel": "إجراءات لـ {value}"
     },
     "PeppolDialog": {
-      "_NOTE": "AI-first-pass translation pending review",
       "registerHeading": "تسجيل مشارك Peppol",
       "registerBody": "يُمكّنك التسجيل من إرسال فواتير XRechnung الإلكترونية إلى المشترين الحكوميين في المملكة المتحدة عبر Peppol. سيُدرَج مُعرّف المشارك في SML الخاص بـ Peppol.",
       "schemeLabel": "نظام المُعرّف",
@@ -2072,10 +2296,11 @@
       "pendingBody": "تقوم Storecove بتسجيل مشاركك في SML الخاص بـ Peppol. عادةً ما يستغرق ذلك بضع دقائق. سنحدّث الحالة تلقائيًا.",
       "activeHeading": "مسجّل في Peppol",
       "activeBodyPattern": "المشارك {schemeId}:{value} · الحالة {status} · تم التسجيل {relativeTime}",
-      "deregisterButton": "إلغاء تسجيل المشارك"
+      "deregisterButton": "إلغاء تسجيل المشارك",
+      "peppolIdentifierLegend": "معرّف Peppol",
+      "pairError": "كلا الحقلين مطلوبان، أو اتركهما فارغَين."
     },
     "Errors": {
-      "_NOTE": "AI-first-pass translation pending review",
       "LEITWEG_ID_MISSING": "Leitweg-ID مفقود لهذا المشتري الحكومي الألماني. أضفه إلى المقاول أو العقد قبل الإرسال عبر Peppol.",
       "PARTICIPANT_NOT_REACHABLE": "المستلم غير مسجّل في Peppol أو لا يدعم XRechnung. تأكّد من مُعرّف Peppol للمشتري وأعد المحاولة.",
       "KOSIT_VALIDATION_FAILED": "لم تجتز هذه الفاتورة الإلكترونية تحقّق KoSIT. راجع تقرير التحقّق وأعد الإنهاء بعد تصحيح بيانات الفاتورة.",
@@ -2084,7 +2309,6 @@
       "Generic": "حدث خطأ ما. جرّب التحديث أو تواصل مع الدعم إذا استمرت المشكلة."
     },
     "intake": {
-      "_NOTE": "AI-first-pass translation pending review — EN placeholders",
       "splitButtonPrimary": "فاتورة جديدة",
       "splitButtonImport": "استيراد فاتورة إلكترونية",
       "sidebarImports": "Imports",
@@ -2190,7 +2414,38 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       },
-      "sendCta": "إرسال الفاتورة الإلكترونية"
+      "sendCta": "إرسال الفاتورة الإلكترونية",
+      "xmlPreviewTitle": "معاينة XML",
+      "pdfPreviewTitle": "معاينة PDF",
+      "xmlLoadError": "فشل تحميل ملف XML."
+    },
+    "ComplianceDetail": {
+      "heading": "امتثال الفوترة الإلكترونية",
+      "subline": "حالة ملفات الفوترة الإلكترونية المتصلة بمؤسستك.",
+      "emptyBody": "لم يتم تكوين أي ملفات للفوترة الإلكترونية.",
+      "health": "الصحة",
+      "lastSync": "آخر مزامنة:",
+      "error": "خطأ:",
+      "capabilities": "القدرات",
+      "capGenerate": "توليد",
+      "capParse": "تحليل",
+      "capSign": "توقيع",
+      "capQrCode": "رمز QR",
+      "timeNever": "أبداً",
+      "timeJustNow": "الآن",
+      "timeMinutesAgo": "منذ {minutes} دقيقة",
+      "timeHoursAgo": "منذ {hours} ساعة",
+      "timeDaysAgo": "منذ {days} أيام",
+      "stateActive": "نشط",
+      "stateSandbox": "بيئة تجريبية",
+      "stateDegraded": "متدهور",
+      "stateOnboarding": "الإعداد",
+      "stateSuspended": "معلق",
+      "stateError": "خطأ",
+      "stateNotConnected": "غير متصل"
+    },
+    "ComplianceWidget": {
+      "title": "امتثال الفوترة الإلكترونية"
     }
   },
   "EmptyStates": {
@@ -2263,9 +2518,17 @@
         "search": "البحث عن equipment...",
         "type": "النوع",
         "status": "الحالة",
-        "assignee": "المكلف"
+        "assignee": "المكلف",
+        "clearAll": "مسح الكل",
+        "removeFilter": "إزالة الفلتر: {label}"
       },
-      "unassigned": "Unassigned"
+      "unassigned": "Unassigned",
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageOf": "{page} / {total}",
+        "itemCount": "{count, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}"
+      }
     },
     "detail": {
       "info": "معلومات",
@@ -2274,6 +2537,12 @@
       "workflows": "سير العمل",
       "edit": "تعديل",
       "retire": "Retire",
+      "notFound": "لم يتم العثور على المعدات",
+      "backToList": "العودة إلى المعدات",
+      "retry": "أعد المحاولة",
+      "noNotes": "لا توجد ملاحظات",
+      "createdAt": "أُنشئ",
+      "updatedAt": "حُدِّث",
       "assignToContractor": "إسناد إلى مقاول",
       "unassignEquipment": "إلغاء إسناد المعدّة",
       "createShipment": "إنشاء shipment",
@@ -2284,7 +2553,14 @@
       "assignmentsEmpty": "لا يوجد سجل إسناد",
       "assignmentsEmptyDescription": "لم تُسنَد هذه المعدّة إلى أي مقاول بعد.",
       "shipmentsEmpty": "لا توجد شحنات",
-      "shipmentsEmptyDescription": "إنشاء a shipment to start tracking delivery for this equipment."
+      "shipmentsEmptyDescription": "إنشاء a shipment to start tracking delivery for this equipment.",
+      "colContractor": "المقاول",
+      "colAssigned": "تاريخ الإسناد",
+      "colUnassigned": "تاريخ إلغاء الإسناد",
+      "colDuration": "المدة",
+      "colNotes": "ملاحظات",
+      "badgeCurrent": "الحالي",
+      "activeSuffix": " (نشط)"
     },
     "form": {
       "createTitle": "إضافة equipment",
@@ -2324,7 +2600,11 @@
         "delivered": "Delivered",
         "failed": "Failed",
         "returned": "Returned"
-      }
+      },
+      "notesPlaceholder": "ملاحظات اختيارية...",
+      "addButton": "إضافة",
+      "pendingLabel": "(قيد الانتظار)",
+      "statusPlaceholder": "اختر الحالة …"
     },
     "status": {
       "available": "Available",
@@ -2380,7 +2660,8 @@
       "retry": "حاول مجددًا",
       "loadError": "تعذّر تحميل خريطة Paczkomat. تحقّق من اتصالك وأعد المحاولة.",
       "noSelection": "لم يُختر Paczkomat",
-      "noSelectionDescription": "اختر خزانة Paczkomat على الخريطة لتحديد وجهة التوصيل."
+      "noSelectionDescription": "اختر خزانة Paczkomat على الخريطة لتحديد وجهة التوصيل.",
+      "paczkomatTitle": "خريطة خزائن InPost Paczkomat"
     },
     "label": {
       "download": "تحميل label",
@@ -2388,6 +2669,14 @@
       "notAvailable": "الملصق غير متوفر بعد",
       "notAvailableDescription": "سيظهر ملصق الشحن هنا بمجرد إنشاء الشحنة عبر InPost.",
       "downloadError": "تعذر download the label. يرجى المحاولة مجددًا."
+    },
+    "shipmentLabel": {
+      "altText": "بطاقة الشحن",
+      "downloadPdf": "تنزيل البطاقة (PDF)",
+      "tracking": "تتبع: {number}",
+      "dropOff": "نقطة الإسقاط: {name}",
+      "download": "تنزيل",
+      "print": "طباعة"
     },
     "return": {
       "requestedBy": "طُلب الإرجاع بواسطة {name}",
@@ -2441,6 +2730,10 @@
       "standard": "Standard",
       "expressSaver": "Express Saver",
       "express": "Express"
+    },
+    "search": {
+      "placeholder": "ابحث عن المقاولين...",
+      "notFound": "لم يتم العثور على مقاولين."
     }
   },
   "Errors": {
@@ -2448,7 +2741,8 @@
       "code": "404",
       "heading": "الصفحة غير موجودة",
       "body": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
-      "cta": "العودة إلى لوحة المعلومات"
+      "cta": "العودة إلى لوحة المعلومات",
+      "ctaGoHome": "العودة للرئيسية"
     },
     "serverError": {
       "code": "500",
@@ -2472,7 +2766,7 @@
     "contractorHasUnpaidInvoices": "لا يمكن أرشفة مقاول لديه فواتير غير مدفوعة. سوِّ جميع المدفوعات المعلّقة أولًا.",
     "contractorHasActiveWorkflows": "لا يمكن أرشفة مقاول لديه Workflows نشطة. أكمل أو ألغِ Workflows أولًا.",
     "contractorInvalidTransition": "هذا الانتقال في الحالة غير مسموح به.",
-    "gusLookupFailed": "فشل البحث في GUS.",
+    "companyLookupFailed": "فشل البحث عن الشركة.",
     "contractNotFound": "Contract غير موجود.",
     "contractEndDateBeforeStart": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء.",
     "contractInvalidTransition": "هذا الانتقال في الحالة غير مسموح به.",
@@ -2592,7 +2886,19 @@
       "emptyNoUsersBody": "دليل Google Workspace المتصل لا يحتوي على مستخدمين، أو يفتقر حساب المسؤول إلى وصول الدليل.",
       "emptyAllImported": "تم استيراد جميع المستخدمين",
       "emptyAllImportedBody": "كل مستخدم في دليل Google Workspace هو بالفعل عضو في هذه المؤسسة.",
-      "fetchError": "تعذّر تحميل الدليل. تأكّد من أن الحساب المتصل لديه وصول Admin SDK وأعد المحاولة."
+      "fetchError": "تعذّر تحميل الدليل. تأكّد من أن الحساب المتصل لديه وصول Admin SDK وأعد المحاولة.",
+      "columns": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "department": "القسم",
+        "orgUnit": "الوحدة التنظيمية"
+      },
+      "pagination": {
+        "of": "من {total}",
+        "previousPage": "الصفحة السابقة",
+        "nextPage": "الصفحة التالية"
+      },
+      "selectUser": "اختر {name}"
     },
     "sync": {
       "lastSynced": "آخر مزامنة: {time}",
@@ -2761,6 +3067,30 @@
           "saved": "تم حفظ ربط الحالات",
           "saveFailed": "فشل حفظ ربط الحالات"
         }
+      },
+      "activitySummary": {
+        "title": "آخر نشاط في Jira",
+        "relativeTime": {
+          "justNow": "الآن",
+          "minutesAgo": "منذ {n} دقيقة",
+          "hoursAgo": "منذ {n} ساعة",
+          "daysAgo": "منذ {n} يوم",
+          "monthsAgo": "منذ {n} شهر"
+        }
+      },
+      "projectMapping": {
+        "title": "تكوين تكامل Jira",
+        "description": "اربط هذه المهمة بمشروع Jira ونوع قضية.",
+        "jiraProject": "مشروع Jira",
+        "selectProject": "اختر مشروعًا",
+        "issueType": "نوع القضية",
+        "selectIssueType": "اختر نوع القضية",
+        "discardChanges": "تجاهل التغييرات",
+        "saveMapping": "حفظ الربط",
+        "toast": {
+          "saved": "تم حفظ تكوين مهمة Jira",
+          "saveFailed": "فشل حفظ تكوين مهمة Jira"
+        }
       }
     },
     "linear": {
@@ -2773,8 +3103,60 @@
         "toast": {
           "saved": "تم حفظ ربط الحالات",
           "saveFailed": "فشل حفظ ربط الحالات. يرجى المحاولة مجددًا."
+        },
+        "notMapped": "غير مرتبط",
+        "workflowStatus": {
+          "todo": "للتنفيذ",
+          "inProgress": "قيد التنفيذ",
+          "done": "مكتمل",
+          "blocked": "محظور",
+          "skipped": "تم التخطي",
+          "cancelled": "ملغى"
         }
       }
+    },
+    "docs": {
+      "attachDialog": {
+        "title": "إرفاق مستند",
+        "description": "ابحث عن صفحة لربطها بهذه الخطوة.",
+        "searchPlaceholder": "ابحث في صفحات Notion وConfluence...",
+        "filterAll": "الكل",
+        "filterNotion": "Notion",
+        "filterConfluence": "Confluence",
+        "noResults": "لا توجد صفحات تطابق بحثك.",
+        "toast": {
+          "linked": "تم ربط \"{title}\" بهذه الخطوة",
+          "attachFailed": "فشل إرفاق المستند"
+        }
+      },
+      "section": {
+        "heading": "المستندات",
+        "attachButton": "إرفاق مستند",
+        "noDocuments": "لا توجد مستندات مرفقة.",
+        "untitled": "بلا عنوان",
+        "toast": {
+          "removed": "تم إزالة رابط المستند",
+          "removeFailed": "فشل إزالة رابط المستند"
+        }
+      },
+      "chip": {
+        "openInProvider": "فتح {title} في {provider} (تبويب جديد)",
+        "openSrOnly": "فتح {title} في {provider}",
+        "removeAriaLabel": "إزالة الرابط إلى {title}",
+        "lastEdited": "آخر تعديل {time}",
+        "openIn": "فتح في {provider}",
+        "removeDialog": {
+          "title": "إزالة رابط المستند",
+          "description": "سيؤدي هذا إلى إزالة الرابط إلى \"{title}\" من هذه الخطوة. لن تتأثر الصفحة الأصلية.",
+          "keepLink": "الاحتفاظ بالرابط",
+          "removeLink": "إزالة الرابط"
+        }
+      }
+    },
+    "jiraProvider": {
+      "description": "اربط Jira Cloud لمزامنة مهام Workflow مع قضايا Jira.",
+      "scopeWarning": "مطلوب إعادة المصادقة — أذونات جديدة مطلوبة لإنشاء القضايا والـ webhooks.",
+      "configureStatusMapping": "تكوين ربط الحالات"
     }
   },
   "Invoices": {
@@ -2872,7 +3254,10 @@
       "reviewDrafts": "مراجعة المسوّدات",
       "emailTip": "أو أرسل الفواتير بالبريد إلى {email}",
       "error": "رفع failed",
-      "retry": "Retry"
+      "retry": "Retry",
+      "hidePdf": "إخفاء PDF",
+      "viewPdf": "عرض PDF",
+      "ocrRetriggerError": "فشل إعادة تشغيل التعرف الضوئي على الحروف. يرجى المحاولة مرة أخرى."
     },
     "detail": {
       "invoiceNumber": "رقم الفاتورة",
@@ -2911,7 +3296,10 @@
       "submitForApproval": "إرسال للموافقة",
       "submittingForApproval": "Submitting...",
       "submittedForApprovalToast": "تم إرسال الفاتورة للموافقة",
-      "submitForApprovalError": "تعذر submit invoice for approval. حاول مجددًا."
+      "submitForApprovalError": "تعذر submit invoice for approval. حاول مجددًا.",
+      "pdfNotAvailable": "معاينة PDF غير متاحة في متصفحك.",
+      "noPdf": "لا يوجد ملف PDF",
+      "moreActions": "مزيد من الإجراءات"
     },
     "match": {
       "heading": "Matching",
@@ -2934,7 +3322,8 @@
       "confirmMatch": "تأكيد التطابق",
       "matchConfirmedToast": "تم تأكيد التطابق",
       "matchError": "تعذر confirm match. حاول مجددًا.",
-      "noContracts": "لا توجد عقود نشطة"
+      "noContracts": "لا توجد عقود نشطة",
+      "noContractorsFound": "لم يُعثر على أي متعاقد"
     },
     "duplicate": {
       "heading": "تم اكتشاف فاتورة مكرّرة محتملة",
@@ -2961,6 +3350,37 @@
         "exempt": "معفى (ZW)",
         "notApplicable": "لا ينطبق (NP)"
       }
+    },
+    "vatRate": {
+      "loading": "جارٍ تحميل المعدلات...",
+      "noRates": "لا توجد معدلات ضريبية مُهيَّأة",
+      "placeholder": "اختر معدل ضريبة القيمة المضافة",
+      "standardRates": "المعدلات القياسية",
+      "reducedRates": "المعدلات المخفضة",
+      "exempt": "معفى"
+    },
+    "reverseCharge": {
+      "applied": "تطبيق الاحتساب العكسي",
+      "description": "معاملة عابرة للحدود بين الشركات. يلتزم المشتري بتسوية ضريبة القيمة المضافة.",
+      "override": "تجاوز",
+      "remove": "إزالة الاحتساب العكسي",
+      "keep": "الإبقاء على الاحتساب العكسي",
+      "removedToast": "تم إزالة الاحتساب العكسي"
+    },
+    "reverseChargeToggle": {
+      "label": "الاحتساب العكسي",
+      "ariaLabel": "تطبيق الاحتساب العكسي على هذا السطر",
+      "autoDetected": "تم الكشف التلقائي عن الاحتساب العكسي",
+      "overrideDialogTitle": "تجاوز الاحتساب العكسي المكتشف تلقائياً؟",
+      "overrideDialogDescription": "يؤدي إيقاف الاحتساب العكسي إلى تطبيق المعدل القياسي على هذا السطر. يرجى توثيق سبب تجاري — سيُكتب في سجل مراجعة الفاتورة.",
+      "reasonLabel": "السبب",
+      "reasonPlaceholder": "مثال: يفضّل العميل المعدل القياسي وفقاً للبند 4.2 من العقد",
+      "minLengthHint": "مطلوب {min} أحرف على الأقل",
+      "charCount": "{current} / {max}",
+      "cancel": "إلغاء",
+      "saving": "جارٍ الحفظ…",
+      "overrideCta": "تجاوز الاحتساب العكسي",
+      "overrideError": "فشل تجاوز الاحتساب العكسي"
     }
   },
   "Ir35Chain": {
@@ -2998,6 +3418,7 @@
     }
   },
   "Layout": {
+    "skipToContent": "انتقل إلى المحتوى",
     "footer": {
       "privacy": "الخصوصية",
       "terms": "الشروط",
@@ -3005,6 +3426,31 @@
     }
   },
   "Legal": {
+    "nav": {
+      "brand": "Contractor Ops",
+      "privacy": "سياسة الخصوصية",
+      "terms": "شروط الخدمة",
+      "subProcessors": "المعالجون الفرعيون",
+      "breachNotification": "إشعار الاختراق"
+    },
+    "privacyIndex": {
+      "heading": "إشعار الخصوصية",
+      "description": "اختر الاختصاص القضائي المنطبق عليك. إذا كنت مسجّل الدخول، فسنوجّهك تلقائيًا بناءً على بلد مؤسستك.",
+      "jurisdictions": {
+        "gb": {
+          "label": "المملكة المتحدة",
+          "subtitle": "UK GDPR · DPA 2018"
+        },
+        "de": {
+          "label": "ألمانيا",
+          "subtitle": "DSGVO · BDSG"
+        },
+        "eu": {
+          "label": "الاتحاد الأوروبي",
+          "subtitle": "GDPR · الاحتياطي العام"
+        }
+      }
+    },
     "privacy": {
       "title": "سياسة الخصوصية",
       "lastUpdated": "آخر تحديث: أبريل 2026",
@@ -3049,6 +3495,15 @@
           "heading": "10. Contact",
           "body": "للاستفسارات المتعلّقة بالخصوصية، تواصل مع مسؤول حماية البيانات لدينا على privacy@contractorops.com. إذا كنت تعتقد أن حقوقك في حماية البيانات قد انتُهكت، يحق لك تقديم شكوى إلى سلطتك الإشرافية المحلية. في بولندا، هذه الجهة هي رئيس مكتب حماية البيانات الشخصية (UODO)."
         }
+      },
+      "skipToContent": "الانتقال إلى المحتوى",
+      "downloadAsPdf": "تحميل كـ PDF",
+      "downloadAsPdfAriaLabel": "تحميل إشعار الخصوصية بصيغة PDF",
+      "exportQueued": "تم وضع التصدير في قائمة الانتظار — سنرسل لك رابط التحميل عبر البريد الإلكتروني",
+      "pdfError": "تعذّر إنشاء ملف PDF",
+      "toc": {
+        "label": "جدول المحتويات",
+        "heading": "في هذه الصفحة"
       }
     },
     "terms": {
@@ -3526,7 +3981,54 @@
       "cancel": "إلغاء",
       "confirm": "إعادة التشغيل"
     },
-    "acceptSave": "قبول وحفظ"
+    "acceptSave": "قبول وحفظ",
+    "lineItems": {
+      "heading": "بنود الفاتورة",
+      "itemsCount": "{count} بنود",
+      "colDescription": "الوصف",
+      "colQty": "الكمية",
+      "colUnit": "الوحدة",
+      "colUnitPrice": "سعر الوحدة",
+      "colNet": "صافي",
+      "colVatRate": "نسبة الضريبة",
+      "colVatAmount": "مبلغ الضريبة",
+      "colGross": "الإجمالي",
+      "colConf": "ثقة",
+      "removeItemAriaLabel": "إزالة البند",
+      "addLineItem": "إضافة بند",
+      "placeholderDescription": "الوصف",
+      "placeholderUnit": "قطعة",
+      "placeholderVatRate": "15%"
+    },
+    "pdfViewer": {
+      "previousPage": "الصفحة السابقة",
+      "nextPage": "الصفحة التالية",
+      "fitWidth": "ملء العرض",
+      "zoomOut": "تصغير",
+      "zoomIn": "تكبير",
+      "pageOf": "{current} من {total}"
+    },
+    "processingOverlay": {
+      "analyzing": "جارٍ تحليل الفاتورة...",
+      "takesSeconds": "يستغرق هذا عادةً بضع ثوانٍ"
+    },
+    "nipBadge": {
+      "validLabel": "تنسيق رقم ضريبي صحيح",
+      "invalidLabel": "تنسيق رقم ضريبي غير صحيح",
+      "validTooltip": "رقم الضريبة {nip} يجتاز التحقق من مجموع المراقبة بنظام modulo-11",
+      "invalidTooltip": "تنسيق رقم ضريبي غير صحيح — يُتوقع 10 أرقام مع مجموع مراقبة صحيح"
+    },
+    "extractionStatus": {
+      "statusProcessing": "جارٍ المعالجة",
+      "statusExtracted": "تم الاستخراج",
+      "statusPartial": "جزئي",
+      "statusFailed": "فشل",
+      "extracting": "جارٍ استخراج بيانات الفاتورة...",
+      "complete": "اكتمل الاستخراج — تم استخراج {fieldCount} حقول",
+      "partial": "استخراج جزئي — تم استخراج {fieldCount} من {totalFields} حقول. يرجى ملء الحقول المتبقية.",
+      "failed": "فشل الاستخراج. يمكنك إعادة تشغيل OCR أو ملء الحقول يدوياً.",
+      "rerunOcr": "إعادة تشغيل OCR"
+    }
   },
   "Offboarding": {
     "Templates": {
@@ -3748,7 +4250,11 @@
       "emptyHeading": "لم يتم العثور على team members",
       "emptyBody": "لم ترجع المصادر المختارة أي أعضاء فريق. جرّب الاتصال بأداة أخرى أو ادعُ الأشخاص يدويًا.",
       "conflictTooltip": "تعارض في البيانات — انقر للحل",
-      "conflictCustom": "قيمة مخصصة"
+      "conflictCustom": "قيمة مخصصة",
+      "resolvedAll": "تم حل جميع التعارضات",
+      "selectedCount": "{count} محدد",
+      "statusNew": "جديد",
+      "statusExists": "موجود"
     },
     "step3": {
       "heading": "استيراد projects",
@@ -3758,7 +4264,8 @@
       "syncNote": "سيتم تكوين المزامنة ثنائية الاتجاه تلقائيًا بناءً على الحالات المستوردة.",
       "addStep": "إضافة step",
       "emptyHeading": "لم يتم العثور على projects",
-      "emptyBody": "لم تُعثَر على مشاريع في أدوات إدارة المشاريع المختارة. يمكنك إنشاء قوالب Workflow يدويًا لاحقًا."
+      "emptyBody": "لم تُعثَر على مشاريع في أدوات إدارة المشاريع المختارة. يمكنك إنشاء قوالب Workflow يدويًا لاحقًا.",
+      "stepFallback": "خطوة {number}"
     },
     "step4": {
       "heading": "جاهز للاستيراد",
@@ -3771,7 +4278,8 @@
       "completeBody": "تم استيراد {imported} أشخاص و {projects} مشاريع بنجاح.",
       "completeCta": "الانتقال إلى لوحة المعلومات",
       "retryButton": "Retry",
-      "errorPrefix": "فشل استيراد {name}. انقر على إعادة المحاولة للمحاولة مجددًا، أو تخطَّ هذا الشخص."
+      "errorPrefix": "فشل استيراد {name}. انقر على إعادة المحاولة للمحاولة مجددًا، أو تخطَّ هذا الشخص.",
+      "processing": "جارِ المعالجة..."
     },
     "nav": {
       "back": "رجوع",
@@ -4071,7 +4579,10 @@
       "locked": "مقفل",
       "exported": "تم التصدير",
       "completed": "مكتمل",
-      "cancelled": "ملغى"
+      "cancelled": "ملغى",
+      "clearDates": "مسح التواريخ",
+      "dateFrom": "من {date}",
+      "dateTo": "إلى {date}"
     },
     "newPaymentRun": "تشغيل دفع جديد",
     "bacs": {
@@ -4094,7 +4605,12 @@
       "modulusWarningTitle": "فحوصات رمز الفرز",
       "emptyState": "لا توجد عناصر مؤهلة لـ BACS في هذه الدفعة. أضف مقاولين من المملكة المتحدة بفواتير بالجنيه الإسترليني لتوليد ملف BACS.",
       "submitterNotConfigured": "بيانات مُرسِل BACS مطلوبة. كوّنها في الإعدادات ← المدفوعات.",
-      "generateFailure": "فشل توليد ملف BACS. حاول مجددًا أو تواصل مع الدعم إذا استمرت المشكلة."
+      "generateFailure": "فشل توليد ملف BACS. حاول مجددًا أو تواصل مع الدعم إذا استمرت المشكلة.",
+      "aria": {
+        "modulusWarning": "تحذير فحص المعامل",
+        "unmappableError": "خطأ في الرمز غير القابل للتعيين",
+        "transliterationWarning": "تحذير النقحرة"
+      }
     },
     "ukBank": {
       "sortCodeLabel": "رمز الفرز البريطاني",
@@ -4104,7 +4620,16 @@
       "validateButton": "التحقق من رمز الفرز",
       "validationSuccess": "اجتاز رمز الفرز فحص المُعامل (modulus)",
       "validationWarn": "رمز الفرز ضمن نطاق استثنائي — فحص المُعامل غير حاسم. تابع إذا أكد البنك صحة هذا الحساب.",
-      "validationFail": "صيغة رمز الفرز غير صالحة — مطلوب 6 أرقام"
+      "validationFail": "صيغة رمز الفرز غير صالحة — مطلوب 6 أرقام",
+      "sectionTitle": "الحساب البنكي البريطاني",
+      "currentlySaved": "المحفوظ حاليًا: {value}",
+      "badgeValid": "صالح",
+      "badgeWarn": "تحذير",
+      "badgeInvalid": "غير صالح",
+      "badgeValidAriaLabel": "رمز الفرز صالح",
+      "badgeWarnAriaLabel": "تحذير رمز الفرز",
+      "badgeInvalidAriaLabel": "رمز الفرز غير صالح",
+      "validationFailedFallback": "فشل التحقق"
     },
     "lateInterest": {
       "sectionHeading": "الفائدة القانونية على التأخر في السداد",
@@ -4272,7 +4797,9 @@
       "amount": "المبلغ",
       "currency": "العملة",
       "dueDate": "تاريخ الاستحقاق",
-      "contractNumber": "رقم العقد"
+      "contractNumber": "رقم العقد",
+      "missingIban": "رقم IBAN مفقود",
+      "inRun": "في الدفعة {runNumber}"
     },
     "saveChanges": "حفظ التغييرات",
     "actions": {
@@ -4283,6 +4810,41 @@
     "noResults": {
       "heading": "لم يتم العثور على دورات دفع",
       "body": "حاول ضبط فلتر الحالة أو نطاق التاريخ للعثور على ما تبحث عنه."
+    },
+    "table": {
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "paymentRef": "مرجع: {reference}",
+    "wht": {
+      "dialogTitle": "معاينة شهادة ضريبة الاستقطاع",
+      "certificateHeading": "شهادة ضريبة الاستقطاع",
+      "certificateNo": "رقم الشهادة: {number}",
+      "organization": "المنظمة",
+      "contractor": "المتعاقد",
+      "taxId": "الرقم الضريبي",
+      "paymentDate": "تاريخ الدفع",
+      "grossAmount": "المبلغ الإجمالي",
+      "rate": "معدل ضريبة الاستقطاع",
+      "amount": "مبلغ ضريبة الاستقطاع",
+      "netPaid": "صافي المدفوع",
+      "treaty": "المعاهدة: {reference}",
+      "close": "إغلاق",
+      "downloadPdf": "تنزيل PDF",
+      "summaryTitle": "ملخص ضريبة الاستقطاع",
+      "grossTotal": "الإجمالي الكلي",
+      "whtWithheld": "ضريبة الاستقطاع المحتجزة",
+      "netPayable": "صافي المستحق",
+      "itemsWithWht": "البنود الخاضعة لضريبة الاستقطاع: {count} من {total}",
+      "treatyRatesApplied": "معدلات المعاهدة المطبقة: {count}",
+      "generateCertificates": "إنشاء الشهادات",
+      "certificateGenerated": "تم إنشاء الشهادة {number}",
+      "certificateGenerationFailed": "فشل إنشاء الشهادة. تحقق من اكتمال جميع تفاصيل الدفع وحاول مرة أخرى.",
+      "name": "الاسم",
+      "country": "البلد",
+      "residency": "الإقامة",
+      "standard": "قياسي",
+      "certFooter": "تؤكد هذه الشهادة أن ضريبة الاستقطاع قد خُصمت من المصدر وفقاً للوائح الضريبية المعمول بها."
     }
   },
   "Peppol": {
@@ -4307,7 +4869,8 @@
       "toast": {
         "disconnected": "تم قطع الاتصال بشبكة Peppol",
         "disconnectError": "فشل قطع الاتصال"
-      }
+      },
+      "disconnectedBadge": "غير متصل"
     },
     "transmission": {
       "title": "إرسال Peppol",
@@ -4342,6 +4905,16 @@
       "retry": "إعادة المحاولة",
       "successHeading": "تم الاتصال بشبكة Peppol",
       "successDescription": "يمكنك الآن إرسال واستقبال الفواتير الإلكترونية عبر شبكة Peppol."
+    },
+    "inboundBanner": {
+      "title": "تم الاستلام عبر شبكة Peppol",
+      "from": "من: {participantId}{name}",
+      "documentType": "نوع المستند: {type}",
+      "received": "تاريخ الاستلام: {date}"
+    },
+    "qrDisplay": {
+      "altText": "رمز QR هيئة الضرائب الإماراتية للفاتورة {invoiceNumber}",
+      "caption": "رمز QR هيئة الضرائب — امسح للتحقق"
     }
   },
   "Portal": {
@@ -4355,7 +4928,8 @@
       "settings": "الإعدادات",
       "signOut": "تسجيل الخروج",
       "menuDescription": "قائمة تنقّل البوابة",
-      "time": "الوقت"
+      "time": "الوقت",
+      "signOutLabel": "تسجيل الخروج"
     },
     "equipment": {
       "title": "معداتك",
@@ -4681,6 +5255,20 @@
         "timesheetSubmitted": "تم إرسال كشف الحضور للمراجعة",
         "timesheetSubmitFailed": "فشل إرسال كشف الحضور"
       }
+    },
+    "pendingChange": {
+      "title": "تغييرات في انتظار الموافقة",
+      "submittedOn": "لقد أرسلت تغييرات بتاريخ {date}. تظل تفاصيلك الحالية نشطة حتى تتم الموافقة عليها.",
+      "viewSubmitted": "عرض التغييرات المقدمة",
+      "fieldBankAccount": "رقم الحساب البنكي",
+      "fieldBankName": "اسم البنك",
+      "fieldSwiftBic": "رمز SWIFT/BIC",
+      "fieldTaxId": "رقم التعريف الضريبي (NIP)"
+    },
+    "activityLog": {
+      "noActivity": "لا يوجد نشاط حتى الآن.",
+      "weeksAgo": "منذ {count} أسبوع",
+      "monthsAgo": "منذ {count} شهر"
     }
   },
   "Reports": {
@@ -4825,10 +5413,12 @@
       "billingEmailOptional": "(اختياري)",
       "dateFormat": "تنسيق التاريخ",
       "dateFormatPlaceholder": "اختر تنسيق التاريخ",
-      "timeFormat": "تنسيق الوقت",
-      "timeFormatPlaceholder": "اختر تنسيق الوقت",
-      "timeFormat24h": "24 ساعة",
-      "timeFormat12h": "12 ساعة (ص/م)"
+      "timeFormat": {
+        "label": "تنسيق الوقت",
+        "placeholder": "اختر تنسيق الوقت",
+        "24h": "نظام 24 ساعة",
+        "12h": "نظام 12 ساعة (ص/م)"
+      }
     },
     "appearance": {
       "heading": "اللغة والعرض",
@@ -5373,7 +5963,10 @@
       "empty": {
         "heading": "لا توجد إدخالات في سجل التدقيق",
         "body": "ستظهر أحداث التدقيق هنا عند تنفيذ الإجراءات في النظام."
-      }
+      },
+      "clearDates": "مسح التواريخ",
+      "dateFromPrefix": "من {date}",
+      "dateToPrefix": "حتى {date}"
     },
     "branding": {
       "heading": "هوية البوابة",
@@ -5402,7 +5995,8 @@
       "subdomainMaxLength": "يجب ألا يتجاوز النطاق الفرعي 63 حرفًا",
       "subdomainFormat": "يُسمح فقط بالأحرف الإنجليزية الصغيرة والأرقام والشرطات. يجب أن يبدأ وينتهي بحرف أو رقم.",
       "previewButton": "زر تجريبي",
-      "previewLink": "رابط تجريبي"
+      "previewLink": "رابط تجريبي",
+      "colorPlaceholder": "#4f46e5"
     },
     "changeRequest": {
       "title": "طلب تعديل ملف شخصي",
@@ -5495,6 +6089,64 @@
       "empty": "لا توجد كلمات مفتاحية إضافية. الكلمات المدمجة لا تزال فعّالة.",
       "addCta": "إضافة كلمة مفتاحية"
     },
+    "apiKeys": {
+      "title": "مفاتيح API",
+      "description": "إدارة مفاتيح API لواجهة برمجة تطبيقات المؤسسة.",
+      "createKeyButton": "إنشاء مفتاح",
+      "tableHeaders": {
+        "name": "الاسم",
+        "key": "المفتاح",
+        "scopes": "الصلاحيات",
+        "createdBy": "أنشأ بواسطة",
+        "created": "تاريخ الإنشاء",
+        "lastUsed": "آخر استخدام",
+        "status": "الحالة"
+      },
+      "emptyHeading": "لا توجد مفاتيح API بعد",
+      "emptyBody": "أنشئ أول مفتاح API لبدء استخدام واجهة برمجة التطبيقات.",
+      "scopeLabels": {
+        "contractorRead": "المقاولون (قراءة)",
+        "contractRead": "العقود (قراءة)",
+        "invoiceRead": "الفواتير (قراءة)",
+        "documentRead": "المستندات (قراءة)"
+      },
+      "toast": {
+        "created": "تم إنشاء مفتاح API",
+        "createFailed": "فشل إنشاء مفتاح API",
+        "revoked": "تم إلغاء مفتاح API \"{name}\"",
+        "revokeFailed": "فشل إلغاء المفتاح"
+      },
+      "aria": {
+        "keyActions": "إجراءات المفتاح",
+        "copyKey": "نسخ المفتاح"
+      },
+      "revokeAction": "إلغاء",
+      "createDialog": {
+        "title": "إنشاء مفتاح API",
+        "description": "أنشئ مفتاحاً لواجهة برمجة تطبيقات المؤسسة. اختر الصلاحيات التي سيمتلكها هذا المفتاح.",
+        "nameLabel": "الاسم",
+        "namePlaceholder": "مثال: تكامل ERP",
+        "scopesLabel": "الصلاحيات",
+        "expiryLabel": "تاريخ الانتهاء (اختياري)",
+        "submitButton": "إنشاء المفتاح"
+      },
+      "createdDialog": {
+        "title": "تم إنشاء مفتاح API",
+        "description": "انسخ مفتاحك الآن. لن تتمكن من رؤيته مرة أخرى.",
+        "securityWarning": "احفظ هذا المفتاح بأمان. لا يمكن استرداده بعد إغلاق هذا الحوار.",
+        "doneButton": "تم"
+      },
+      "revokeDialog": {
+        "title": "إلغاء مفتاح API",
+        "description": "إلغاء {name}؟ هذا فوري ولا يمكن التراجع عنه. ستتوقف أي تكاملات تستخدم هذا المفتاح عن العمل.",
+        "confirmButton": "إلغاء المفتاح"
+      }
+    },
+    "payments": {
+      "noPermission": {
+        "description": "ليس لديك إذن لتكوين تصدير المدفوعات. تواصل مع مسؤول مؤسستك."
+      }
+    },
     "reimport": {
       "title": "استيراد البيانات من الأدوات",
       "description": "إعادة استيراد المتعاقدين والعقود والفواتير من أدوات خارجية كملفات CSV أو جداول البيانات أو المنصات الخارجية.",
@@ -5537,7 +6189,9 @@
       "contractor": "Contractor",
       "period": "Period",
       "totalHours": "إجمالي الساعات",
-      "status": "Status"
+      "status": "Status",
+      "entries": "الإدخالات",
+      "actions": "الإجراءات"
     },
     "emptyStates": {
       "noPendingReviewsHeading": "لا توجد مراجعات معلّقة",
@@ -5583,6 +6237,80 @@
       "discardCta": "Discard Entry",
       "addCta": "Add Entry",
       "addingCta": "Adding..."
+    },
+    "approvalQueue": {
+      "selectAll": "تحديد جميع كشوف الحضور",
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "selected": "{count, plural, one {# كشف حضور محدد} other {# كشوف حضور محددة}}",
+      "clear": "مسح",
+      "rejectAll": "رفض الكل",
+      "approveAll": "اعتماد الكل",
+      "bulkApproveTitle": "{count, plural, one {اعتماد # كشف حضور} other {اعتماد # كشوف حضور}}",
+      "bulkApproveDescription": "سيؤدي هذا إلى اعتماد جميع كشوف الحضور المحددة. سيتم إشعار المتعاقدين."
+    },
+    "review": {
+      "totalHours": "إجمالي الساعات",
+      "project": "المشروع",
+      "total": "المجموع",
+      "backToQueue": "العودة إلى قائمة الانتظار",
+      "reject": "رفض",
+      "approveTimesheet": "اعتماد كشف الحضور"
+    },
+    "reconciliation": {
+      "title": "تسوية الوقت",
+      "approvedHours": "الساعات المعتمدة",
+      "atRate": "بمعدل {rate}/ساعة",
+      "expectedAmount": "المبلغ المتوقع",
+      "basedOnApproved": "بناءً على الساعات المعتمدة",
+      "invoicedAmount": "المبلغ المفوتر",
+      "fromInvoice": "من الفاتورة",
+      "expected": "المتوقع",
+      "invoiced": "المفوتر",
+      "noDataHeading": "لا توجد بيانات تسوية",
+      "noDataBody": "تظهر بيانات التسوية عند وجود فواتير تحتوي على إدخالات وقت معتمدة مطابقة.",
+      "deviation": "الانحراف",
+      "viewInvoice": "عرض الفاتورة",
+      "unknown": "غير معروف"
+    },
+    "rejectionDialog": {
+      "title": "رفض كشف الحضور",
+      "bulkTitle": "{count, plural, one {رفض # كشف حضور} other {رفض # كشوف حضور}}",
+      "description": "يرجى تقديم سبب الرفض. سيتم إشعار المتعاقد ويمكنه إعادة تقديم التصحيحات.",
+      "bulkDescription": "سيتم رفض جميع كشوف الحضور المحددة بنفس السبب.",
+      "reasonLabel": "سبب الرفض",
+      "reasonPlaceholder": "صف ما يجب تصحيحه...",
+      "minLengthError": "يجب أن يتكون السبب من 10 أحرف على الأقل.",
+      "keepReviewing": "متابعة المراجعة",
+      "rejecting": "جارٍ الرفض...",
+      "rejectButton": "رفض كشف الحضور"
+    },
+    "summaryStats": {
+      "thisWeek": "هذا الأسبوع",
+      "pendingReview": "بانتظار المراجعة",
+      "approvedThisMonth": "معتمدة هذا الشهر"
+    },
+    "grid": {
+      "project": "المشروع",
+      "total": "المجموع",
+      "noActiveContracts": "لا توجد عقود نشطة",
+      "rejectionBanner": "تم رفض كشف الحضور هذا: {reason}. يرجى التصحيح وإعادة الإرسال.",
+      "hoursAriaLabel": "ساعات مشروع {project} يوم {day}"
+    },
+    "header": {
+      "submitting": "جارٍ الإرسال...",
+      "submitTimesheet": "إرسال كشف الحضور",
+      "prevWeek": "الأسبوع السابق",
+      "nextWeek": "الأسبوع التالي"
+    },
+    "externalSync": {
+      "syncFrom": "مزامنة من {provider}",
+      "connectHint": "اربط {provider} من الإعدادات > التكاملات لاستيراد إدخالات الوقت",
+      "importing": "جارٍ الاستيراد...",
+      "importFrom": "استيراد من {provider}",
+      "from": "من",
+      "to": "إلى",
+      "importEntries": "استيراد الإدخالات"
     }
   },
   "TopBar": {
@@ -5794,7 +6522,11 @@
       "template": "Template",
       "startedBy": "بدأه",
       "startedOn": "تاريخ البدء",
-      "openWorkflow": "فتح Workflow"
+      "openWorkflow": "فتح Workflow",
+      "linkedIssues": "المشكلات المرتبطة",
+      "noLinkedJiraIssues": "لا توجد مشكلات Jira مرتبطة بهذا سير العمل.",
+      "linearIssues": "مشكلات Linear",
+      "tasksComplete": "{done} من {total} مهمة مكتملة"
     },
     "templatePicker": {
       "title": "بدء Workflow",
@@ -6068,7 +6800,171 @@
         "allPassed": "اجتازت جميع فحوصات الامتثال الستة. الإعداد جاهز للإنتاج.",
         "someFailed": "فشل فحص الامتثال: {failedCount} اختبار لم يجتز. راجع تفاصيلك الضريبية وأعد المحاولة.",
         "error": "فشل تنفيذ فحوصات الامتثال"
+      },
+      "running": "قيد التشغيل",
+      "pending": "قيد الانتظار"
+    },
+    "page": {
+      "title": "تكامل ZATCA",
+      "description": "الامتثال للفوترة الإلكترونية في المملكة العربية السعودية",
+      "backAriaLabel": "العودة إلى التكاملات",
+      "connectTitle": "الاتصال بـ ZATCA",
+      "connectDescription": "أرسل الفواتير الإلكترونية إلى هيئة الزكاة والضريبة والجمارك للإقرار والإبلاغ. قم بإعداد شهادة مؤسستك للبدء.",
+      "connectButton": "الاتصال بـ ZATCA",
+      "sandboxBanner": "وضع بيئة الاختبار — لا تُرسَل فواتير الاختبار إلى هيئة الزكاة والضريبة والجمارك. انتقل إلى وضع الإنتاج عند الاستعداد.",
+      "toast": {
+        "onboardingComplete": "اكتمل إعداد ZATCA!"
       }
+    },
+    "statusCard": {
+      "title": "ZATCA",
+      "disconnected": "غير متصل",
+      "description": "إقرار الفواتير الإلكترونية والإبلاغ عنها في المملكة العربية السعودية.",
+      "connectButton": "ربط ZATCA",
+      "onboardingInProgress": "الإعداد جارٍ — تابع معالج الإعداد.",
+      "continueSetup": "متابعة الإعداد",
+      "manageButton": "إدارة",
+      "disconnectButton": "قطع الاتصال",
+      "disconnectDialog": {
+        "title": "قطع الاتصال بـ ZATCA",
+        "description": "قطع الاتصال بـ ZATCA: لن تُرسَل الفواتير النشطة بعد الآن. ستُلغى التقديمات المعلقة. هل تريد المتابعة؟",
+        "cancel": "إلغاء",
+        "confirm": "قطع الاتصال"
+      },
+      "statusLabels": {
+        "production": "الإنتاج",
+        "sandbox": "بيئة الاختبار",
+        "onboarding": "الإعداد",
+        "notConnected": "غير متصل"
+      },
+      "toast": {
+        "onboardingComplete": "اكتمل إعداد ZATCA!"
+      }
+    },
+    "complianceWidget": {
+      "cardTitle": "هيئة الزكاة والضريبة والجمارك (المملكة العربية السعودية)",
+      "status": "الحالة:",
+      "environment": "البيئة:",
+      "certificateExpires": "انتهاء صلاحية الشهادة: ",
+      "certificateExpiryWarning": "شهادة ZATCA الخاصة بك ستنتهي صلاحيتها خلال {expiryDays} يومًا. جدّدها لتجنب انقطاع الإرسال.",
+      "thisPeriod": "هذه الفترة",
+      "cleared": "مُقرَّة:",
+      "reported": "مُبلَّغ عنها:",
+      "pending": "قيد الانتظار:",
+      "rejected": "مرفوضة:",
+      "invoices": "{count} فاتورة",
+      "health": "الصحة:"
+    },
+    "submissionDetail": {
+      "title": "تفاصيل تقديم ZATCA",
+      "uuid": "UUID",
+      "copyUuid": "نسخ UUID",
+      "icv": "ICV",
+      "status": "الحالة",
+      "type": "النوع",
+      "typeB2B": "فاتورة ضريبية قياسية (إقرار B2B)",
+      "typeB2C": "فاتورة ضريبية مبسّطة (إبلاغ B2C)",
+      "hashChain": "سلسلة التجزئة",
+      "previousHash": "التجزئة السابقة:",
+      "invoiceHash": "تجزئة الفاتورة:",
+      "copyPreviousHash": "نسخ التجزئة السابقة",
+      "copyInvoiceHash": "نسخ تجزئة الفاتورة",
+      "qrCodeAlt": "رمز QR الخاص بـ ZATCA يحتوي على اسم البائع ورقم ضريبة القيمة المضافة وإجمالي الفاتورة ومبلغ ضريبة القيمة المضافة",
+      "qrCodeContains": "يحتوي رمز QR على:",
+      "qrSellerName": "اسم البائع",
+      "qrVatNumber": "رقم ضريبة القيمة المضافة",
+      "qrInvoiceTotal": "إجمالي الفاتورة (شامل ضريبة القيمة المضافة)",
+      "qrVatAmount": "مبلغ ضريبة القيمة المضافة",
+      "rejectionReason": "سبب الرفض",
+      "viewSignedXml": "عرض XML الموقّع",
+      "signedXmlDialogTitle": "XML الموقّع — فاتورة {uuid}",
+      "signedXmlNotAvailable": "XML الموقّع غير متاح. يتم إنشاء XML أثناء معالجة التقديم.",
+      "resubmit": "إعادة التقديم إلى ZATCA",
+      "toast": {
+        "resubmitSuccess": "تمت إضافة الفاتورة إلى قائمة انتظار إعادة التقديم إلى ZATCA",
+        "resubmitError": "فشلت إعادة التقديم",
+        "copySuccess": "تم نسخ {label} إلى الحافظة",
+        "copyError": "فشل النسخ"
+      }
+    },
+    "complianceCsid": {
+      "title": "الخطوة 3 من 5: طلب شهادة الامتثال",
+      "description": "سيتم تقديم طلب توقيع الشهادة الخاص بك إلى ZATCA للحصول على شهادة امتثال للاختبار.",
+      "requestButton": "طلب CSID للامتثال",
+      "progressLabel": "تقدم CSID للامتثال",
+      "status": {
+        "submittingCsr": "جارٍ تقديم CSR إلى ZATCA...",
+        "csidReceived": "تم استلام CSID للامتثال",
+        "certStored": "تم تخزين الشهادة بأمان"
+      },
+      "back": "رجوع",
+      "next": "التالي",
+      "toast": {
+        "success": "تم استلام CSID للامتثال",
+        "error": "فشل طلب CSID للامتثال"
+      },
+      "loading": "جارٍ التحميل",
+      "complete": "مكتمل",
+      "pending": "قيد الانتظار"
+    },
+    "environmentToggle": {
+      "label": "البيئة",
+      "sandbox": "بيئة الاختبار",
+      "sandboxDescription": "لا تُرسَل فواتير الاختبار إلى هيئة الزكاة والضريبة والجمارك",
+      "production": "الإنتاج",
+      "productionDescription": "تُرسَل الفواتير إلى هيئة الزكاة والضريبة والجمارك للإقرار",
+      "productionNotReady": "أكمل عملية الإعداد لتفعيل وضع الإنتاج",
+      "confirmDialog": {
+        "title": "التبديل إلى بيئة الاختبار",
+        "description": "التبديل إلى بيئة الاختبار: ستُوقَف تقديمات الإنتاج. ستبقى الفواتير المعلقة في قائمة الانتظار. هل تريد المتابعة؟",
+        "cancel": "إلغاء",
+        "confirm": "التبديل إلى بيئة الاختبار"
+      }
+    },
+    "productionCertificate": {
+      "title": "الخطوة 5 من 5: تفعيل شهادة الإنتاج",
+      "description": "اجتازت جميع فحوصات الامتثال. استبدل شهادة الامتثال بشهادة إنتاج.",
+      "warningTitle": "تفعيل الإنتاج",
+      "warningDescription": "بعد التفعيل، ستُرسَل جميع فواتير المنظمات السعودية إلى هيئة الزكاة والضريبة والجمارك.",
+      "completeButton": "إتمام الإعداد",
+      "certActive": "شهادة الإنتاج نشطة",
+      "certStatus": "الحالة",
+      "certStatusActive": "نشط",
+      "certIssued": "تاريخ الإصدار",
+      "certEnvironment": "البيئة",
+      "certEnvironmentValue": "الإنتاج",
+      "back": "رجوع",
+      "completeAction": "إتمام",
+      "toast": {
+        "success": "اكتمل إعداد ZATCA! تم تفعيل شهادة الإنتاج.",
+        "error": "فشل استبدال شهادة الإنتاج"
+      }
+    },
+    "taxDetailsForm": {
+      "title": "الخطوة 1 من 5: التفاصيل الضريبية للمنظمة",
+      "description": "أدخل معلومات التسجيل الضريبي السعودي لمؤسستك.",
+      "vatNumber": "رقم التسجيل في ضريبة القيمة المضافة",
+      "vatNumberHint": "رقم ضريبة القيمة المضافة السعودي المكوّن من 15 رقمًا يبدأ وينتهي بالرقم 3",
+      "orgNameArabic": "الاسم القانوني للمنظمة (بالعربية)",
+      "addressSection": "عنوان المنظمة",
+      "street": "الشارع",
+      "city": "المدينة",
+      "district": "الحي",
+      "postalCode": "الرمز البريدي",
+      "invoiceTypesSection": "أنواع الفواتير",
+      "standardInvoice": "الفواتير الضريبية القياسية (إقرار B2B)",
+      "simplifiedInvoice": "الفواتير الضريبية المبسّطة (إبلاغ B2C)",
+      "cancel": "إلغاء",
+      "next": "التالي",
+      "toast": {
+        "success": "تم حفظ التفاصيل الضريبية بنجاح",
+        "error": "فشل حفظ التفاصيل الضريبية"
+      },
+      "vatNumberPlaceholder": "3XXXXXXXXXXXXX3"
+    },
+    "stepper": {
+      "onboardingProgress": "تقدم الإعداد",
+      "stepAriaLabel": "الخطوة {number}: {label}"
     }
   },
   "contractor": {
