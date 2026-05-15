@@ -1,6 +1,6 @@
 'use client';
 
-import { Gem } from 'lucide-react';
+import { Gem, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
@@ -31,6 +31,7 @@ export function UpgradeInlineBanner({ featureName, requiredTier }: UpgradeInline
         {t('requiresTier', { feature: featureName, tier: requiredTier })}
       </p>
       <Button variant="default" size="sm" render={<Link href="/settings?tab=billing" />}>
+        <Zap className="me-1.5 size-4" />
         {t('upgradePlan')}
       </Button>
     </div>

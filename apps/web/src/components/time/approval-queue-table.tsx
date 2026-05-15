@@ -312,7 +312,10 @@ export function ApprovalQueueTable({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkApproveConfirm}>Approve All</AlertDialogAction>
+            <AlertDialogAction onClick={handleBulkApproveConfirm}>
+              <CheckCircle className="me-1.5 size-4" />
+              Approve All
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

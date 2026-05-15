@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -541,7 +542,10 @@ export function OcrReviewPanel({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Keep Data</AlertDialogCancel>
-                        <AlertDialogAction onClick={onDiscard}>Discard</AlertDialogAction>
+                        <AlertDialogAction onClick={onDiscard}>
+                          <Trash2 className="me-1.5 size-4" />
+                          Discard
+                        </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -559,7 +563,10 @@ export function OcrReviewPanel({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onRetrigger}>Re-run</AlertDialogAction>
+                        <AlertDialogAction onClick={onRetrigger}>
+                          <RefreshCw className="me-1.5 size-4" />
+                          Re-run
+                        </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
