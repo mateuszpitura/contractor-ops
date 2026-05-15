@@ -1,6 +1,7 @@
 'use client';
 
 import { iconSize } from '@contractor-ops/ui';
+import { useQueryClient } from '@tanstack/react-query';
 import type { Table } from '@tanstack/react-table';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -43,6 +44,7 @@ interface DataTableBulkActionsProps {
  * supplies the interaction shape.
  */
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
+  const queryClient = useQueryClient();
   const t = useTranslations('Contracts.bulkActions');
   const tc = useTranslations('Contracts');
   const td = useTranslations('Contracts.terminate');
@@ -76,6 +78,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),
     {

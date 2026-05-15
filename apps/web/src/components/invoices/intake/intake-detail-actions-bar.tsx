@@ -85,6 +85,7 @@ export function IntakeDetailActionsBar({
           router.push(`/invoices/${converted.invoiceId}`);
         }
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
@@ -95,6 +96,7 @@ export function IntakeDetailActionsBar({
       onSuccess: () => {
         invalidateBoth();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
@@ -105,6 +107,7 @@ export function IntakeDetailActionsBar({
       onSuccess: () => {
         invalidateBoth();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),
@@ -117,6 +120,7 @@ export function IntakeDetailActionsBar({
         setRejectOpen(false);
         setRejectReason('');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),

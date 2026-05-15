@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -85,12 +85,14 @@ export default function PortalVerifyPage() {
 
   const [state, setState] = useState<VerifyState>({ status: 'verifying' });
   const goToLogin = useCallback(() => router.push('/portal/login'), [router]);
+  const queryClient = useQueryClient();
 
   const verifyMagicLink = useMutation(
     portalTrpc.portal.verifyMagicLink.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );
@@ -100,6 +102,7 @@ export default function PortalVerifyPage() {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );

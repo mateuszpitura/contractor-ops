@@ -12,6 +12,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -22,23 +23,24 @@ interface RevalidateVatButtonProps {
 }
 
 export function RevalidateVatButton({ contractorId }: RevalidateVatButtonProps) {
+  const t = useTranslations('Contractors.revalidateVat');
   const queryClient = useQueryClient();
   const mutation = useMutation(
     trpc.contractor.revalidateVat.mutationOptions({
       onSuccess: (result: { responseStatus: 'valid' | 'invalid' | 'stale' | 'unavailable' }) => {
         if (result.responseStatus === 'valid') {
-          toast.success('VAT validated successfully');
+          toast.success(t('successToast'));
         } else if (result.responseStatus === 'invalid') {
-          toast.error('VAT number is invalid');
+          toast.error(t('invalidToast'));
         } else {
-          toast.warning('Live VAT check unavailable — showing last known result');
+          toast.warning(t('unavailableToast'));
         }
         void queryClient.invalidateQueries({
           queryKey: trpc.contractor.getById.queryKey({ id: contractorId }),
         });
       },
       onError: (err: { message?: string }) => {
-        toast.error(err.message || 'Failed to revalidate VAT');
+        toast.error(err.message || t('errorToast'));
       },
     }),
   );
@@ -54,13 +56,13 @@ export function RevalidateVatButton({ contractorId }: RevalidateVatButtonProps) 
       size="sm"
       onClick={handleClick}
       disabled={mutation.isPending}
-      aria-label="Revalidate VAT number">
+      aria-label={t('buttonAriaLabel')}>
       {mutation.isPending ? (
         <Loader2 className="size-3.5 animate-spin" aria-hidden />
       ) : (
         <RefreshCw className="size-3.5" aria-hidden />
       )}
-      <span>Revalidate VAT</span>
+      <span>{t('buttonLabel')}</span>
     </Button>
   );
 }

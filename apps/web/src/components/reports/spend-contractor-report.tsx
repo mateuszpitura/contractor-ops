@@ -1,7 +1,7 @@
 'use client';
 
 import { SpendReportIllustration } from '@contractor-ops/ui';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -62,6 +62,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
   const chartQuery = useQuery(
     trpc.report.spendByContractorChart.queryOptions({ dateFrom, dateTo }),
   );
+  const queryClient = useQueryClient();
 
   const exportMutation = useMutation(
     trpc.report.exportSpendByContractor.mutationOptions({
@@ -71,6 +72,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
       // by email and is also visible from the in-app exports panel.
       onSuccess: () => {
         toast.success(t('exportQueued'));
+        queryClient.invalidateQueries(trpc.report.pathFilter());
       },
       onError: () => {
         toast.error(t('exportError'));

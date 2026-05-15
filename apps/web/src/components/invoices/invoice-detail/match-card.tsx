@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AlertTriangle, Ban, Info, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -308,11 +308,13 @@ function UnmatchedCard({
   const contracts = contractsQuery.data ?? [];
 
   // Manual match mutation
+  const queryClient = useQueryClient();
   const manualMatchMutation = useMutation(
     trpc.invoice.manualMatch.mutationOptions({
       onSuccess: () => {
         toast.success(t('match.matchConfirmedToast'));
         onMatchConfirmed?.();
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
       onError: () => {
         toast.error(t('match.matchError'));
@@ -360,7 +362,9 @@ function UnmatchedCard({
                         <Skeleton className="h-8 w-full" />
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">No contractors found</span>
+                      <span className="text-sm text-muted-foreground">
+                        {t('match.noContractorsFound')}
+                      </span>
                     )}
                   </CommandEmpty>
                   <CommandGroup>

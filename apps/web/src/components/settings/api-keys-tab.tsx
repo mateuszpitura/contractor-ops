@@ -11,6 +11,7 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { FeatureGate } from '@/components/billing/feature-gate';
@@ -60,10 +61,10 @@ import { trpc } from '@/trpc/init';
 // ---------------------------------------------------------------------------
 
 const AVAILABLE_SCOPES = [
-  { value: 'contractor:read', label: 'Contractors (read)' },
-  { value: 'contract:read', label: 'Contracts (read)' },
-  { value: 'invoice:read', label: 'Invoices (read)' },
-  { value: 'document:read', label: 'Documents (read)' },
+  { value: 'contractor:read', labelKey: 'scopeLabels.contractorRead' },
+  { value: 'contract:read', labelKey: 'scopeLabels.contractRead' },
+  { value: 'invoice:read', labelKey: 'scopeLabels.invoiceRead' },
+  { value: 'document:read', labelKey: 'scopeLabels.documentRead' },
 ] as const;
 
 type ScopeValue = (typeof AVAILABLE_SCOPES)[number]['value'];
@@ -108,6 +109,8 @@ function CreateKeyDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations('Settings.apiKeys');
+  const tCommon = useTranslations('Common');
   const id = useId();
   const queryClient = useQueryClient();
   const [name, setName] = useState('');
@@ -121,10 +124,10 @@ function CreateKeyDialog({
       onSuccess: data => {
         setCreatedKey(data.plaintext);
         void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
-        toast.success('API key created');
+        toast.success(t('toast.created'));
       },
       onError: err => {
-        toast.error(err.message ?? 'Failed to create API key');
+        toast.error(err.message ?? t('toast.createFailed'));
       },
     }),
   );
@@ -170,18 +173,20 @@ function CreateKeyDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Key className="size-4" />
-              API Key Created
+              {t('createdDialog.title')}
             </DialogTitle>
-            <DialogDescription>
-              Copy your key now. You won&apos;t be able to see it again.
-            </DialogDescription>
+            <DialogDescription>{t('createdDialog.description')}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
               {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button variant="ghost" size="icon-sm" onClick={handleCopy} aria-label="Copy key">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleCopy}
+                aria-label={t('aria.copyKey')}>
                 {copied ? (
                   <Check className="size-4 text-green-600" />
                 ) : (
@@ -192,14 +197,12 @@ function CreateKeyDialog({
 
             <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-400">
               <ShieldAlert className="mt-0.5 size-4 shrink-0" />
-              <span>
-                Store this key securely. It cannot be retrieved after closing this dialog.
-              </span>
+              <span>{t('createdDialog.securityWarning')}</span>
             </div>
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button />}>Done</DialogClose>
+            <DialogClose render={<Button />}>{t('createdDialog.doneButton')}</DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -214,20 +217,17 @@ function CreateKeyDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="size-4" />
-            Create API Key
+            {t('createDialog.title')}
           </DialogTitle>
-          <DialogDescription>
-            Generate a key for the Enterprise REST API. Select the scopes this key should have
-            access to.
-          </DialogDescription>
+          <DialogDescription>{t('createDialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`${id}-key-name`}>Name</Label>
+            <Label htmlFor={`${id}-key-name`}>{t('createDialog.nameLabel')}</Label>
             <Input
               id={`${id}-key-name`}
-              placeholder="e.g. ERP Integration"
+              placeholder={t('createDialog.namePlaceholder')}
               value={name}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setName(e.target.value)}
@@ -236,7 +236,7 @@ function CreateKeyDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Scopes</Label>
+            <Label>{t('createDialog.scopesLabel')}</Label>
             <div className="space-y-2 rounded-lg border p-3">
               {AVAILABLE_SCOPES.map(scope => (
                 <label
@@ -249,14 +249,14 @@ function CreateKeyDialog({
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => toggleScope(scope.value)}
                   />
-                  <span>{scope.label}</span>
+                  <span>{t(scope.labelKey as Parameters<typeof t>[0])}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`${id}-key-expiry`}>Expiry (optional)</Label>
+            <Label htmlFor={`${id}-key-expiry`}>{t('createDialog.expiryLabel')}</Label>
             <Input
               id={`${id}-key-expiry`}
               type="date"
@@ -269,13 +269,13 @@ function CreateKeyDialog({
         </div>
 
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
           <Button
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleCreate}
             disabled={!name.trim() || scopes.length === 0 || createMutation.isPending}>
             {!!createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Create Key
+            {t('createDialog.submitButton')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -298,17 +298,19 @@ function RevokeDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useTranslations('Settings.apiKeys');
+  const tCommon = useTranslations('Common');
   const queryClient = useQueryClient();
 
   const revokeMutation = useMutation(
     trpc.apiKey.revoke.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
-        toast.success(`API key "${keyName}" revoked`);
+        toast.success(t('toast.revoked', { name: keyName }));
         onOpenChange(false);
       },
       onError: err => {
-        toast.error(err.message ?? 'Failed to revoke key');
+        toast.error(err.message ?? t('toast.revokeFailed'));
       },
     }),
   );
@@ -320,21 +322,20 @@ function RevokeDialog({
           <AlertDialogMedia className="bg-destructive/10">
             <Trash2 className="size-5 text-destructive" />
           </AlertDialogMedia>
-          <AlertDialogTitle>Revoke API Key</AlertDialogTitle>
+          <AlertDialogTitle>{t('revokeDialog.title')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Revoke <strong>{keyName}</strong>? This is immediate and irreversible. Any integrations
-            using this key will stop working.
+            {t('revokeDialog.description', { name: keyName })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => revokeMutation.mutate({ id: keyId })}
             disabled={revokeMutation.isPending}>
             {!!revokeMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Revoke Key
+            {t('revokeDialog.confirmButton')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -347,6 +348,7 @@ function RevokeDialog({
 // ---------------------------------------------------------------------------
 
 export function ApiKeysTab() {
+  const t = useTranslations('Settings.apiKeys');
   const [createOpen, setCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
 
@@ -357,15 +359,13 @@ export function ApiKeysTab() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold">API Keys</h3>
-            <p className="text-xs text-muted-foreground">
-              Manage API keys for the Enterprise REST API.
-            </p>
+            <h3 className="text-sm font-semibold">{t('title')}</h3>
+            <p className="text-xs text-muted-foreground">{t('description')}</p>
           </div>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button size="sm" onClick={() => setCreateOpen(true)}>
             <Plus className="mr-1.5 size-4" />
-            Create Key
+            {t('createKeyButton')}
           </Button>
         </div>
 
@@ -378,13 +378,13 @@ export function ApiKeysTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Scopes</TableHead>
-                  <TableHead>Created By</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Last Used</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t('tableHeaders.name')}</TableHead>
+                  <TableHead>{t('tableHeaders.key')}</TableHead>
+                  <TableHead>{t('tableHeaders.scopes')}</TableHead>
+                  <TableHead>{t('tableHeaders.createdBy')}</TableHead>
+                  <TableHead>{t('tableHeaders.created')}</TableHead>
+                  <TableHead>{t('tableHeaders.lastUsed')}</TableHead>
+                  <TableHead>{t('tableHeaders.status')}</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -427,7 +427,11 @@ export function ApiKeysTab() {
                           <DropdownMenu>
                             <DropdownMenuTrigger
                               render={
-                                <Button variant="ghost" size="icon-sm" aria-label="Key actions" />
+                                <Button
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  aria-label={t('aria.keyActions')}
+                                />
                               }>
                               <MoreHorizontal className="size-4" />
                             </DropdownMenuTrigger>
@@ -437,7 +441,7 @@ export function ApiKeysTab() {
                                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onClick={() => setRevokeTarget({ id: key.id, name: key.name })}>
                                 <Trash2 className="mr-2 size-4" />
-                                Revoke
+                                {t('revokeAction')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -454,10 +458,8 @@ export function ApiKeysTab() {
             <div className="rounded-lg bg-muted p-2.5">
               <Key className="size-5 text-muted-foreground" />
             </div>
-            <p className="text-sm font-medium">No API keys yet</p>
-            <p className="text-xs text-muted-foreground">
-              Create your first API key to start using the REST API.
-            </p>
+            <p className="text-sm font-medium">{t('emptyHeading')}</p>
+            <p className="text-xs text-muted-foreground">{t('emptyBody')}</p>
             <Button
               size="sm"
               variant="outline"
@@ -465,7 +467,7 @@ export function ApiKeysTab() {
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setCreateOpen(true)}>
               <Plus className="mr-1.5 size-4" />
-              Create Key
+              {t('createKeyButton')}
             </Button>
           </div>
         )}

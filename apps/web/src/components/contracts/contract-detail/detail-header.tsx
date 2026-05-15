@@ -2,6 +2,7 @@
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
+import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment, useState } from 'react';
@@ -71,6 +72,7 @@ const ROUTED_ELSEWHERE = new Set(['sendForSignature']);
 // ---------------------------------------------------------------------------
 
 export function DetailHeader({ contract }: DetailHeaderProps) {
+  const queryClient = useQueryClient();
   const t = useTranslations('ContractDetail');
   const tEnum = useTranslations('Contracts');
   const [terminateOpen, setTerminateOpen] = useState(false);
@@ -82,6 +84,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),
     {
@@ -97,6 +100,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),
     {

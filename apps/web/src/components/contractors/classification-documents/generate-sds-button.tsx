@@ -42,6 +42,7 @@ export function GenerateSdsButton({
         setApproved(true);
         setErrorMessage(null);
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         setErrorMessage(err.message);

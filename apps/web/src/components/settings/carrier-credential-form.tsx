@@ -133,6 +133,7 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
     trpc.equipment.testCourierConnection.mutationOptions({
       onSuccess: () => {
         toast.success(t('connectionVerified'));
+        queryClient.invalidateQueries(trpc.equipment.pathFilter());
       },
       onError: () => {
         toast.error(t('connectionFailed'));

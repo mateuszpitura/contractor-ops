@@ -256,6 +256,7 @@ export function ContractWizardDialog({
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );

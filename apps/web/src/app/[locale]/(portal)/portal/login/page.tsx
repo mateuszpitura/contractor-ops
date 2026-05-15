@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
@@ -59,12 +59,14 @@ export default function PortalLoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '' },
   });
+  const queryClient = useQueryClient();
 
   const requestMagicLink = useMutation(
     portalTrpc.portal.requestMagicLink.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );

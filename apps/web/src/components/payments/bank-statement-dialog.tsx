@@ -74,6 +74,7 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
         setSelectedMatches(matchedIndices);
         setStep('results');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
       onError: err => {
         setParseError(err.message || t('errors.failedToImportStatement'));

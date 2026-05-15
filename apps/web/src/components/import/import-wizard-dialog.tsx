@@ -174,6 +174,7 @@ export function ImportWizardDialog({
         setColumnMapping(result.suggestedMapping);
         setCurrentStep(1);
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.import.pathFilter());
       },
       onError: () => {
         toast.error(t('parseError'));
@@ -188,6 +189,7 @@ export function ImportWizardDialog({
         setValidateResult(result);
         setCurrentStep(2);
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.import.pathFilter());
       },
       onError: () => {
         toast.error(t('validateError'));

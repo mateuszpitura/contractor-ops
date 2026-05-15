@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
@@ -97,12 +97,14 @@ export function StepReview({
   const hasEUR = currencies.includes('EUR');
 
   // Create mutation
+  const queryClient = useQueryClient();
   const createMutation = useMutation(
     trpc.payment.create.mutationOptions({
       onError: err => toast.error(err.message),
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
     }),
   );
@@ -114,6 +116,7 @@ export function StepReview({
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
     }),
   );

@@ -112,6 +112,7 @@ export function TemplatePicker({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
   );

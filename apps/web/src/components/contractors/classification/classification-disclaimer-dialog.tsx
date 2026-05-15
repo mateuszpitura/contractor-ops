@@ -19,7 +19,7 @@ import {
   DISCLAIMER_SCHEIN_ACKNOWLEDGEMENT,
   DISCLAIMER_SCHEIN_BODY,
 } from '@contractor-ops/validators';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -84,12 +84,14 @@ export function ClassificationDisclaimerDialog(props: ClassificationDisclaimerDi
     });
     return () => cancelAnimationFrame(raf);
   }, [open]);
+  const queryClient = useQueryClient();
 
   const ackMutation = useMutation(
     trpc.classification.acknowledgeDisclaimer.mutationOptions({
       onSuccess: () => {
         onAcknowledged();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         toast.error(t('disclaimer.ackFailed'), { description: err.message });

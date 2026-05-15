@@ -1,7 +1,7 @@
 'use client';
 
 import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FolderKanban, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
@@ -82,11 +82,13 @@ export function ConfirmImportStep({
   }, [projectsToImport, projectSelections]);
 
   // Start import mutation
+  const queryClient = useQueryClient();
   const startImportMutation = useMutation({
     ...trpc.onboardingImport.startImport.mutationOptions(),
     onSuccess: data => {
       onJobIdChange(data.jobId);
       toast.success('Done.');
+      queryClient.invalidateQueries(trpc.onboardingImport.pathFilter());
     },
 
     onError: err => toast.error(err.message),

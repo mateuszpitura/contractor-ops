@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText,
   Loader2,
@@ -121,6 +121,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
   const t = useTranslations('Contracts.wizard');
   const tCommon = useTranslations('Common');
   const [files, setFiles] = useState<UploadingFile[]>([]);
+  const queryClient = useQueryClient();
 
   const requestUploadMutation = useMutation(
     trpc.document.requestUpload.mutationOptions({
@@ -128,6 +129,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );
@@ -138,6 +140,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );

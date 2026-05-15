@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { AlertCircle, Loader2, UploadCloud } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -77,6 +77,7 @@ export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogPro
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [localError, setLocalError] = useState<LocalErrorKind | null>(null);
+  const queryClient = useQueryClient();
 
   const uploadMutation = useMutation(
     trpc.invoiceIntake.upload.mutationOptions({
@@ -84,6 +85,7 @@ export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogPro
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
     }),
   );

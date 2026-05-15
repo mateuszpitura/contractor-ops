@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -50,6 +50,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
   const t = useTranslations('Billing.topUp');
   const [selectedBundle, setSelectedBundle] = useState<string>('10');
   const closeDialog = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const queryClient = useQueryClient();
 
   const checkoutMutation = useMutation({
     ...trpc.billing.createTopUpCheckout.mutationOptions(),
@@ -58,6 +59,7 @@ export function TopUpDialog({ open, onOpenChange }: TopUpDialogProps) {
         window.location.href = data.sessionUrl;
       }
       toast.success('Done.');
+      queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
     onError() {
       toast.error(t('errors.checkoutFailed'));

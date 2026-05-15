@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -63,6 +63,7 @@ export function RecomputeComplianceDialog({
 }: RecomputeComplianceDialogProps) {
   const t = useTranslations('Contractors.Compliance.Recompute');
   const [reason, setReason] = useState<RecomputeReason | null>(null);
+  const queryClient = useQueryClient();
 
   const mutation = useMutation(
     trpc.classification.recreateComplianceAssessment.mutationOptions({
@@ -83,6 +84,7 @@ export function RecomputeComplianceDialog({
         setReason(null);
         onOpenChange(false);
         onSuccess?.();
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: (err: { message?: string }) => {
         toast.error(err.message || t('toast.error'));

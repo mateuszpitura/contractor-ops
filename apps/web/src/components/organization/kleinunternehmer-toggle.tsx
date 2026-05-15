@@ -17,6 +17,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -42,6 +43,8 @@ export function KleinunternehmerToggle({
   orgCountryCode,
   isKleinunternehmer,
 }: KleinunternehmerToggleProps) {
+  const t = useTranslations('organization.kleinunternehmer');
+  const tCommon = useTranslations('Common');
   const id = useId();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingValue, setPendingValue] = useState<boolean | null>(null);
@@ -52,15 +55,15 @@ export function KleinunternehmerToggle({
       onSuccess: (result: { isKleinunternehmer: boolean }) => {
         toast.success(
           result.isKleinunternehmer
-            ? 'Kleinunternehmerregelung enabled'
-            : 'Kleinunternehmerregelung disabled',
+            ? `${t('toggleLabel')} enabled`
+            : `${t('toggleLabel')} disabled`,
         );
         void queryClient.invalidateQueries({
           queryKey: trpc.organization.getCurrent.queryKey(),
         });
       },
       onError: (err: { message?: string }) => {
-        toast.error(err.message || 'Failed to update Kleinunternehmer flag');
+        toast.error(err.message || `Failed to update ${t('toggleLabel')}`);
       },
       onSettled: () => {
         setConfirmOpen(false);
@@ -88,13 +91,9 @@ export function KleinunternehmerToggle({
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-1">
           <Label htmlFor={`${id}-kleinunternehmer-switch`} className="text-base font-medium">
-            Kleinunternehmerregelung (§ 19 UStG)
+            {t('toggleLabel')}
           </Label>
-          <p className="text-sm text-muted-foreground max-w-prose">
-            When enabled, all invoice lines are billed at 0% VAT with the § 19 UStG footer notice.
-            The VAT breakdown is hidden on invoices. Only applicable for German small businesses
-            below the § 19 threshold.
-          </p>
+          <p className="text-sm text-muted-foreground max-w-prose">{t('description')}</p>
         </div>
         <Switch
           id={`${id}-kleinunternehmer-switch`}
@@ -102,7 +101,7 @@ export function KleinunternehmerToggle({
           // biome-ignore lint/nursery/noJsxPropsBind: small toggle component
           onCheckedChange={handleCheckedChange}
           disabled={mutation.isPending}
-          aria-label="Toggle Kleinunternehmerregelung"
+          aria-label={t('toggleLabel')}
         />
       </div>
 
@@ -111,25 +110,21 @@ export function KleinunternehmerToggle({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="size-4" />
-              {pendingValue
-                ? 'Enable Kleinunternehmerregelung?'
-                : 'Disable Kleinunternehmerregelung?'}
+              {pendingValue ? t('confirmEnableTitle') : t('confirmDisableTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {pendingValue
-                ? 'All new invoice lines will be billed at 0% VAT with the § 19 UStG footer notice. Confirm to continue.'
-                : 'Future invoices will resume standard German VAT handling (19% / 7% / RC). Existing invoices are unaffected.'}
+              {pendingValue ? t('confirmEnableBody') : t('confirmDisableBody')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={mutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={mutation.isPending}>{tCommon('cancel')}</AlertDialogCancel>
             <Button
               type="button"
               // biome-ignore lint/nursery/noJsxPropsBind: small toggle component
               onClick={handleConfirm}
               disabled={mutation.isPending}
               data-testid="kleinunternehmer-confirm">
-              {mutation.isPending ? 'Saving…' : 'Confirm'}
+              {mutation.isPending ? `${tCommon('save')}…` : tCommon('save')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

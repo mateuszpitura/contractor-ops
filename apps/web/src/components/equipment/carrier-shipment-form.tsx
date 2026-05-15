@@ -164,6 +164,7 @@ export function CarrierShipmentForm({
       onSuccess: () => {
         onMutationSuccess('InPost');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.equipment.pathFilter());
       },
       onError: onMutationError,
     }),
@@ -174,6 +175,7 @@ export function CarrierShipmentForm({
       onSuccess: () => {
         onMutationSuccess('DPD');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.equipment.pathFilter());
       },
       onError: onMutationError,
     }),
@@ -184,6 +186,7 @@ export function CarrierShipmentForm({
       onSuccess: () => {
         onMutationSuccess('UPS');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.equipment.pathFilter());
       },
       onError: onMutationError,
     }),

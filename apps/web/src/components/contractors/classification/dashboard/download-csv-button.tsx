@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Download, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ export interface DownloadCsvButtonProps {
 
 export function DownloadCsvButton({ market }: DownloadCsvButtonProps) {
   const t = useTranslations('Classification.polish.dashboard');
+  const queryClient = useQueryClient();
 
   const mutation = useMutation(
     trpc.classificationDashboard.exportMarketCsv.mutationOptions({
@@ -36,6 +37,7 @@ export function DownloadCsvButton({ market }: DownloadCsvButtonProps) {
           anchor.remove();
         }
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.classificationDashboard.pathFilter());
       },
       onError: () => {
         toast.error(t('downloadCsv'));

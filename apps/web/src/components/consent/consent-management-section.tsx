@@ -56,6 +56,7 @@ export function ConsentManagementSection() {
       onSuccess: data => {
         downloadHtml(data.content, data.filename);
         toast.success(t('settings.dpaDownloaded'));
+        queryClient.invalidateQueries(trpc.consent.pathFilter());
       },
       onError: error => {
         toast.error(error.message);
@@ -68,6 +69,7 @@ export function ConsentManagementSection() {
       onSuccess: data => {
         downloadHtml(data.content, data.filename);
         toast.success(t('settings.sccDownloaded'));
+        queryClient.invalidateQueries(trpc.consent.pathFilter());
       },
       onError: error => {
         if (error.data?.code === 'NOT_FOUND') {

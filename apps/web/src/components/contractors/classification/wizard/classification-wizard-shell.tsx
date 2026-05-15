@@ -101,6 +101,7 @@ export function ClassificationWizardShell({
         setLastSavedAt(updatedAt);
         setAutosaveStatus('saved');
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         setAutosaveStatus('error');

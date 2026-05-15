@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
@@ -48,6 +48,7 @@ export function VoidEnvelopeDialog({
   const t = useTranslations('ContractDetail.signing.voidDialog');
   const tToast = useTranslations('ContractDetail.signing.toast');
   const [reason, setReason] = useState('');
+  const queryClient = useQueryClient();
 
   const voidMutation = useMutation(
     trpc.esign.voidEnvelope.mutationOptions({
@@ -56,6 +57,7 @@ export function VoidEnvelopeDialog({
         onOpenChange(false);
         setReason('');
         onVoided();
+        queryClient.invalidateQueries(trpc.esign.pathFilter());
       },
       onError: () => {
         toast.error(tToast('voidFailed'));

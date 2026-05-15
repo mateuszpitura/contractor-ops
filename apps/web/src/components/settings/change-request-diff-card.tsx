@@ -2,7 +2,7 @@
 
 import type { ChangeRequestStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -84,12 +84,14 @@ export function ChangeRequestDiffCard({
   // -------------------------------------------------------------------------
   // Mutations
   // -------------------------------------------------------------------------
+  const queryClient = useQueryClient();
 
   const approveMutation = useMutation(
     trpc.settings.reviewChangeRequest.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.approved'));
         onApproved?.();
+        queryClient.invalidateQueries(trpc.settings.pathFilter());
       },
       onError: () => {
         toast.error(t('toast.approveFailed'));
@@ -104,6 +106,7 @@ export function ChangeRequestDiffCard({
         setRejectDialogOpen(false);
         setRejectComment('');
         onRejected?.();
+        queryClient.invalidateQueries(trpc.settings.pathFilter());
       },
       onError: () => {
         toast.error(t('toast.rejectFailed'));

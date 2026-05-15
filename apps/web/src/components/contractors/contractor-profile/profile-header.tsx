@@ -2,6 +2,7 @@
 
 import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
+import { useQueryClient } from '@tanstack/react-query';
 import { MoreHorizontal, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -58,6 +59,7 @@ const PRIMARY_BUTTON_KEYS = new Set([
 ]);
 
 export function ProfileHeader({ contractor }: ProfileHeaderProps) {
+  const queryClient = useQueryClient();
   const t = useTranslations('ContractorProfile');
   const tc = useTranslations('Contractors');
   const tBulk = useTranslations('Contractors.bulkActions');
@@ -77,6 +79,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),
     {
@@ -93,6 +96,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),
     {

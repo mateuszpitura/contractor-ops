@@ -1,7 +1,7 @@
 'use client';
 
 import { OverdueInvoicesIllustration } from '@contractor-ops/ui';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
@@ -59,12 +59,14 @@ export function OverdueInvoicesReport({
       sortOrder: sortOrder as 'asc' | 'desc',
     }),
   );
+  const queryClient = useQueryClient();
 
   const exportMutation = useMutation(
     trpc.report.exportOverdueInvoices.mutationOptions({
       // F-SCALE-01 — async export; user receives an email with the link.
       onSuccess: () => {
         toast.success(t('exportQueued'));
+        queryClient.invalidateQueries(trpc.report.pathFilter());
       },
       onError: () => {
         toast.error(t('exportError'));

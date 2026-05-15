@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -36,12 +36,14 @@ export function DuplicateWarning({
   onDismiss,
 }: DuplicateWarningProps) {
   const t = useTranslations('Invoices');
+  const queryClient = useQueryClient();
 
   const dismissMutation = useMutation(
     trpc.invoice.dismissDuplicate.mutationOptions({
       onSuccess: () => {
         toast.success(t('duplicate.dismissedToast'));
         onDismiss?.();
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
 
       onError: err => toast.error(err.message),

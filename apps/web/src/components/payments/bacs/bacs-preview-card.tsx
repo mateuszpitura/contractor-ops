@@ -16,7 +16,7 @@
 
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { Download, FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -54,6 +54,7 @@ export function BacsPreviewCard({ paymentRunId }: BacsPreviewCardProps) {
     enabled: previewVisible,
     retry: false,
   });
+  const queryClient = useQueryClient();
 
   const generateMutation = useMutation(
     trpc.bacs.generateExport.mutationOptions({
@@ -64,6 +65,7 @@ export function BacsPreviewCard({ paymentRunId }: BacsPreviewCardProps) {
           window.open(data.downloadUrl, '_blank', 'noopener,noreferrer');
         }
         toast.success(`${t('downloadAction')} — ${data.filename}`);
+        queryClient.invalidateQueries(trpc.bacs.pathFilter());
       },
       onError: err => {
         // Surface the server-side error message — common cases are

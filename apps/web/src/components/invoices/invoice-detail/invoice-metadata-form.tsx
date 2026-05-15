@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -139,6 +140,7 @@ function dateFieldToOptionalString(value: string | Date | null | undefined): str
 // ---------------------------------------------------------------------------
 
 export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: InvoiceMetadataFormProps) {
+  const queryClient = useQueryClient();
   const t = useTranslations('Invoices');
   const tDetail = useTranslations('Invoices.detail');
   const tBulk = useTranslations('Invoices.bulkActions');
@@ -242,6 +244,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),
     {
@@ -257,6 +260,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       onSuccess: () => {
         onSubmittedForMatching?.();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
 
       onError: err => toast.error(err.message),
@@ -274,6 +278,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),
     {

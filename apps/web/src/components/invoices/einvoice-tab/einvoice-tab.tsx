@@ -116,6 +116,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
           announcementRef.current.textContent = `E-invoice finalized — validation ${status} with ${issueCount} issue(s)`;
         }
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
       },
       onError: err => {
         handleError(extractErrorCode(err));
@@ -130,6 +131,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
         setErrorMessage(null);
         invalidateAll();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
       },
       onError: err => {
         handleError(extractErrorCode(err));
@@ -144,6 +146,7 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
         setErrorMessage(null);
         invalidateAll();
         toast.success(t('sendCta'));
+        queryClient.invalidateQueries(trpc.einvoice.pathFilter());
       },
       onError: err => {
         handleError(extractErrorCode(err));

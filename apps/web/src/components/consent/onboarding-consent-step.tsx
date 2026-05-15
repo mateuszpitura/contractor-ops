@@ -7,7 +7,7 @@ import {
   requiresPrivacyAcknowledgement,
   resolveJurisdiction,
 } from '@contractor-ops/validators';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -75,12 +75,14 @@ function ConsentStepContent({
   const { data: notice, isLoading: noticeLoading } = useQuery(
     trpc.consent.getPrivacyNotice.queryOptions(),
   );
+  const queryClient = useQueryClient();
 
   const bulkGrantMutation = useMutation(
     trpc.consent.bulkGrant.mutationOptions({
       onSuccess: () => {
         onComplete();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.consent.pathFilter());
       },
 
       onError: err => toast.error(err.message),

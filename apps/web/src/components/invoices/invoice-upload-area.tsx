@@ -92,6 +92,7 @@ export function InvoiceUploadArea({
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );
@@ -101,6 +102,7 @@ export function InvoiceUploadArea({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );
@@ -110,6 +112,7 @@ export function InvoiceUploadArea({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),
   );
@@ -119,6 +122,7 @@ export function InvoiceUploadArea({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),
   );
@@ -128,6 +132,7 @@ export function InvoiceUploadArea({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),
   );

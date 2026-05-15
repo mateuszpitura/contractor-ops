@@ -1,6 +1,6 @@
 'use client';
 
-import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Calendar as CalendarIcon, Download, Loader2, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -150,11 +150,13 @@ export function AuditLogTab() {
     placeholderData: keepPreviousData,
   });
   const actorsQuery = useQuery(trpc.audit.actors.queryOptions());
+  const queryClient = useQueryClient();
   const exportMutation = useMutation(
     trpc.audit.export.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.audit.pathFilter());
       },
     }),
   );

@@ -117,6 +117,7 @@ export function DirectoryImportWizard({ open, onOpenChange }: DirectoryImportWiz
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.googleWorkspace.pathFilter());
       },
     }),
   );

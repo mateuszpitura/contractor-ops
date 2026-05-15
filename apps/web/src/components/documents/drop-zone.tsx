@@ -59,6 +59,7 @@ export function DropZone({
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );
@@ -69,6 +70,7 @@ export function DropZone({
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
   );

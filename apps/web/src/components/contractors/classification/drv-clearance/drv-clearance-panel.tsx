@@ -9,7 +9,7 @@
 'use client';
 
 import { DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE } from '@contractor-ops/validators';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useRef, useState } from 'react';
@@ -57,6 +57,7 @@ export function StatusfeststellungsverfahrenPanel({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [hasDecisionLetter, setHasDecisionLetter] = useState(false);
+  const queryClient = useQueryClient();
 
   const uploadMutation = useMutation(
     trpc.classificationDocument.uploadDrvDecisionLetter.mutationOptions({
@@ -64,6 +65,7 @@ export function StatusfeststellungsverfahrenPanel({
         setHasDecisionLetter(true);
         setUploadError(null);
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.classificationDocument.pathFilter());
       },
       onError: err => {
         setUploadError(err.message);

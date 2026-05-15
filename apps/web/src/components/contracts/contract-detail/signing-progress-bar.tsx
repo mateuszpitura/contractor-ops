@@ -118,6 +118,7 @@ export function SigningProgressBar({ envelope }: SigningProgressBarProps) {
     trpc.esign.resendToRecipient.mutationOptions({
       onSuccess: (_data, variables) => {
         toast.success(tToast('reminderSent', { email: variables.recipientEmail }));
+        queryClient.invalidateQueries(trpc.esign.pathFilter());
       },
       onError: () => {
         toast.error(tToast('resendFailed'));

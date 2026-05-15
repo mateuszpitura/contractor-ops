@@ -1,8 +1,8 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, Loader2 } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,19 +24,19 @@ interface WhtSummaryCardProps {
 }
 
 export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummaryCardProps) {
+  const t = useTranslations('Payments.wht');
   const locale = useLocale();
   const whtItems = items.filter(i => i.whtAmountMinor && i.whtAmountMinor > 0);
+  const queryClient = useQueryClient();
 
   const generateMutation = useMutation(
     trpc.tax.generateWhtCertificate.mutationOptions({
       onSuccess: (data: { certificateNumber: string }) => {
-        toast.success(`Certificate ${data.certificateNumber} generated`);
+        toast.success(t('certificateGenerated', { number: data.certificateNumber }));
+        queryClient.invalidateQueries(trpc.tax.pathFilter());
       },
       onError: (err: { message?: string }) => {
-        toast.error(
-          err.message ||
-            'Certificate generation failed. Check that all payment details are complete and try again.',
-        );
+        toast.error(err.message || t('certificateGenerationFailed'));
       },
     }),
   );
@@ -58,24 +58,24 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
   return (
     <Card className="p-6">
       <CardHeader className="p-0 pb-4">
-        <CardTitle className="text-base font-semibold">Withholding Tax Summary</CardTitle>
+        <CardTitle className="text-base font-semibold">{t('summaryTitle')}</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <div className="grid grid-cols-3 gap-8">
           <div>
-            <p className="text-sm text-muted-foreground">Gross Total</p>
+            <p className="text-sm text-muted-foreground">{t('grossTotal')}</p>
             <p className="font-mono text-xl font-semibold">
               {currency} {formatMinorUnits(totalGross, currency, locale)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">WHT Withheld</p>
+            <p className="text-sm text-muted-foreground">{t('whtWithheld')}</p>
             <p className="font-mono text-xl font-semibold">
               {currency} {formatMinorUnits(totalWht, currency, locale)}
             </p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Net Payable</p>
+            <p className="text-sm text-muted-foreground">{t('netPayable')}</p>
             <p className="font-mono text-xl font-semibold">
               {currency} {formatMinorUnits(totalNet, currency, locale)}
             </p>
@@ -83,10 +83,10 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
         </div>
 
         <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-          <span>
-            Items with WHT: {whtItems.length} of {items.length}
-          </span>
-          {treatyCount > 0 && <Badge variant="outline">Treaty rates applied: {treatyCount}</Badge>}
+          <span>{t('itemsWithWht', { count: whtItems.length, total: items.length })}</span>
+          {treatyCount > 0 && (
+            <Badge variant="outline">{t('treatyRatesApplied', { count: treatyCount })}</Badge>
+          )}
         </div>
 
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
@@ -96,7 +96,7 @@ export function WhtSummaryCard({ paymentRunId: _paymentRunId, items }: WhtSummar
           ) : (
             <FileText className="me-2 h-4 w-4" />
           )}
-          Generate Certificates
+          {t('generateCertificates')}
         </Button>
       </CardContent>
     </Card>

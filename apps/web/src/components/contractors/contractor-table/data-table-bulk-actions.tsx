@@ -1,7 +1,7 @@
 'use client';
 
 import { iconSize } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -46,6 +46,7 @@ interface DataTableBulkActionsProps {
  * variant, the consumer supplies the interaction shape.
  */
 export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
+  const queryClient = useQueryClient();
   const t = useTranslations('Contractors.bulkActions');
   const ta = useTranslations('Contractors.archive');
   const tc = useTranslations('Contractors');
@@ -86,6 +87,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),
     {
@@ -104,6 +106,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),
     {
@@ -139,6 +142,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
         a.click();
         URL.revokeObjectURL(url);
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
 
       onError: err => toast.error(err.message),

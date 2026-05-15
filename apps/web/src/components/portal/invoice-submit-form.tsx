@@ -6,7 +6,7 @@ import type {
 } from '@contractor-ops/integrations/types/ocr';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Sentry from '@sentry/nextjs';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { ExternalLink, FileText, Info, Loader2, UploadCloud, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -399,12 +399,14 @@ function useFileUploadWithOcr(t: (key: string) => string) {
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [ocrPopulated, setOcrPopulated] = useState(false);
   const [creditExhausted, setCreditExhausted] = useState(false);
+  const queryClient = useQueryClient();
 
   const getUploadUrl = useMutation(
     portalTrpc.portal.getUploadUrl.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );
@@ -414,6 +416,7 @@ function useFileUploadWithOcr(t: (key: string) => string) {
 
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),
   );
@@ -609,12 +612,14 @@ function useAutoSelectSingleContract(
 // ---------------------------------------------------------------------------
 
 function useInvoiceSubmission(t: (key: string) => string, upload: UploadState) {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const submitInvoice = useMutation(
     portalTrpc.portal.submitInvoice.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );

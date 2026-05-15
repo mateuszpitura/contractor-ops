@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -25,6 +25,7 @@ export function BillingTab() {
   const { data: subscription } = useQuery(trpc.billing.getSubscription.queryOptions());
 
   // Checkout mutation
+  const queryClient = useQueryClient();
   const checkoutMutation = useMutation({
     ...trpc.billing.createCheckoutSession.mutationOptions(),
     onSuccess(data) {
@@ -32,6 +33,7 @@ export function BillingTab() {
         window.location.href = data.sessionUrl;
       }
       toast.success('Done.');
+      queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
     onError() {
       toast.error(t('checkoutFailed'));
@@ -46,6 +48,7 @@ export function BillingTab() {
         window.location.href = data.url;
       }
       toast.success('Done.');
+      queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
     onError() {
       toast.error(t('portalFailed'));

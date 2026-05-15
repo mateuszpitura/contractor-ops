@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { useRouter } from '@/i18n/navigation';
@@ -34,6 +34,7 @@ export function BillingOverlay() {
   const router = useRouter();
 
   const { data: subscription } = useQuery(trpc.billing.getSubscription.queryOptions());
+  const queryClient = useQueryClient();
 
   const checkoutMutation = useMutation({
     ...trpc.billing.createCheckoutSession.mutationOptions(),
@@ -42,6 +43,7 @@ export function BillingOverlay() {
         window.location.href = data.sessionUrl;
       }
       toast.success('Done.');
+      queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
 
     onError: err => toast.error(err.message),

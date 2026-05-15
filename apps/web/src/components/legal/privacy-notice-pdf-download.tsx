@@ -1,7 +1,8 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Download, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
@@ -27,16 +28,19 @@ export interface PrivacyNoticePdfDownloadProps {
 export function PrivacyNoticePdfDownload({
   jurisdiction: _jurisdiction,
 }: PrivacyNoticePdfDownloadProps) {
+  const t = useTranslations('Legal.privacy');
+  const queryClient = useQueryClient();
   const mutation = useMutation(
     trpc.legal.generatePrivacyNoticePdf.mutationOptions({
       // P2-F · F-SCALE-02 — privacy notice PDF render now runs async via
       // QStash. The download link arrives by email and via the in-app
       // exports panel; surface a queued toast immediately.
       onSuccess: () => {
-        toast.success('Export queued — we will email you the download link');
+        toast.success(t('exportQueued'));
+        queryClient.invalidateQueries(trpc.legal.pathFilter());
       },
       onError: error => {
-        const message = error instanceof Error ? error.message : 'Unable to generate PDF';
+        const message = error instanceof Error ? error.message : t('pdfError');
         toast.error(message);
       },
     }),
@@ -51,13 +55,13 @@ export function PrivacyNoticePdfDownload({
       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onClick={() => mutation.mutate(undefined)}
       disabled={mutation.isPending}
-      aria-label="Download privacy notice as PDF">
+      aria-label={t('downloadAsPdfAriaLabel')}>
       {mutation.isPending ? (
         <Loader2 className="size-4 animate-spin" aria-hidden="true" />
       ) : (
         <Download className="size-4" aria-hidden="true" />
       )}
-      Download as PDF
+      {t('downloadAsPdf')}
     </Button>
   );
 }

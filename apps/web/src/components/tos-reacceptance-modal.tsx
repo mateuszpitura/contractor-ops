@@ -17,7 +17,7 @@
 'use client';
 
 import { SOFTWARE_NOT_LEGAL_ADVICE_EN } from '@contractor-ops/validators';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, ScrollText } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -43,6 +43,7 @@ interface TosReacceptanceModalProps {
 export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptanceModalProps) {
   const t = useTranslations('Legal.TermsModal');
   const [open, setOpen] = useState(true);
+  const queryClient = useQueryClient();
 
   const recordToS = useMutation(
     trpc.consent.recordToS.mutationOptions({
@@ -51,6 +52,7 @@ export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptance
         // Force a full reload so the dashboard layout re-queries and confirms acceptance.
         window.location.reload();
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.consent.pathFilter());
       },
 
       onError: err => toast.error(err.message),

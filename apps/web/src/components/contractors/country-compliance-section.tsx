@@ -1,8 +1,9 @@
 'use client';
 
 import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -35,18 +36,21 @@ type EngagementWithClassificationContext = {
 };
 
 export function CountryComplianceSection({ contractorId }: CountryComplianceSectionProps) {
+  const t = useTranslations('Contractors.countryCompliance');
   const configQuery = useQuery(trpc.contractor.getCountryFieldsConfig.queryOptions());
   const fieldsQuery = useQuery(trpc.contractor.getCountryFields.queryOptions({ contractorId }));
   // Phase 57 · Plan 04 — surface latest HMRC/VIES validation state for GB/DE orgs.
   const contractorQuery = useQuery(trpc.contractor.getById.queryOptions({ id: contractorId }));
+  const queryClient = useQueryClient();
   const updateMutation = useMutation(
     trpc.contractor.updateCountryFields.mutationOptions({
       onSuccess: () => {
-        toast.success('Compliance fields saved');
+        toast.success(t('savedToast'));
         void fieldsQuery.refetch();
+        queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
       onError: (err: { message?: string }) => {
-        toast.error(err.message || 'Failed to save compliance fields');
+        toast.error(err.message || t('saveErrorToast'));
       },
     }),
   );
@@ -74,10 +78,10 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
   const merged = { ...existingFields, ...formData };
 
   const COUNTRY_LABELS: Record<string, string> = {
-    AE: 'UAE',
-    SA: 'Saudi Arabia',
-    GB: 'United Kingdom',
-    DE: 'Deutschland',
+    AE: t('countries.AE'),
+    SA: t('countries.SA'),
+    GB: t('countries.GB'),
+    DE: t('countries.DE'),
   };
   const countryLabel = COUNTRY_LABELS[countryCode] ?? countryCode;
 
@@ -98,12 +102,12 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base font-semibold">
-          Country Compliance &mdash; {countryLabel}
+          {t('cardTitle', { country: countryLabel })}
         </CardTitle>
         {missingCount > 0 && (
           <Badge variant="outline" className="border-warning/20 bg-warning/5 text-warning">
             <AlertCircle className="me-1 h-3 w-3" />
-            {missingCount} incomplete
+            {t('incompleteFields', { count: missingCount })}
           </Badge>
         )}
       </CardHeader>
@@ -118,7 +122,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
           <div
             className="flex flex-wrap items-center gap-3 rounded-md border bg-muted/30 p-3"
             data-testid="vat-validation-section">
-            <Label className="text-sm font-medium">VAT validation</Label>
+            <Label className="text-sm font-medium">{t('vatValidationLabel')}</Label>
             <VatValidationStatusPill
               status={
                 (contractorQuery.data?.latestVatValidationStatus ?? null) as
@@ -140,7 +144,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
           ) : (
             <Check className="me-2 h-4 w-4" />
           )}
-          Save Compliance Fields
+          {t('saveButton')}
         </Button>
 
         {/* Phase 58 addition — per-engagement classification per CLASS-11. */}
@@ -157,6 +161,7 @@ export function CountryComplianceSection({ contractorId }: CountryComplianceSect
  * CountryComplianceSection shape untouched — this is an appended block.
  */
 function ClassificationEngagementsBlock({ contractorId }: { contractorId: string }) {
+  const t = useTranslations('Contractors.countryCompliance');
   const engagementsQuery = useQuery(trpc.contractor.listEngagements.queryOptions({ contractorId }));
 
   if (engagementsQuery.isLoading) {
@@ -165,7 +170,7 @@ function ClassificationEngagementsBlock({ contractorId }: { contractorId: string
         data-testid="classification-engagements-loading"
         className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
         <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
-        <span>Loading engagements…</span>
+        <span>{t('loadingEngagements')}</span>
       </div>
     );
   }
@@ -181,14 +186,14 @@ function ClassificationEngagementsBlock({ contractorId }: { contractorId: string
   return (
     <section
       data-testid="classification-section"
-      aria-label="Classification"
+      aria-label={t('classificationHeading')}
       className="mt-6 space-y-3 border-t pt-4">
-      <h3 className="text-sm font-semibold">Classification</h3>
+      <h3 className="text-sm font-semibold">{t('classificationHeading')}</h3>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {eligible.map(engagement => {
           const cc = engagement.contractor?.countryCode?.toUpperCase();
           const countryCode = cc === 'GB' ? 'GB' : 'DE';
-          const projectName = engagement.project?.name ?? 'Engagement';
+          const projectName = engagement.project?.name ?? t('defaultEngagementName');
           const contractorDisplay = engagement.contractor?.displayName ?? projectName;
           return (
             <ClassificationTile
@@ -237,31 +242,32 @@ function UaeFields({
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
+  const tUae = useTranslations('Contractors.countryCompliance.uae');
   const id = useId();
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor={`${id}-freelancePermitNumber`} className="text-sm font-medium">
-          Freelance Permit Number
+          {tUae('freelancePermitNumberLabel')}
         </Label>
         <Input
           id={`${id}-freelancePermitNumber`}
           value={(values.freelancePermitNumber as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelancePermitNumber', e.target.value || undefined)}
-          placeholder="Enter permit number"
+          placeholder={tUae('freelancePermitNumberPlaceholder')}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-tradeLicenseNumber`} className="text-sm font-medium">
-          Trade License Number
+          {tUae('tradeLicenseNumberLabel')}
         </Label>
         <Input
           id={`${id}-tradeLicenseNumber`}
           value={(values.tradeLicenseNumber as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('tradeLicenseNumber', e.target.value || undefined)}
-          placeholder="Enter license number"
+          placeholder={tUae('tradeLicenseNumberPlaceholder')}
         />
       </div>
       <div className="flex items-center gap-2">
@@ -272,12 +278,12 @@ function UaeFields({
           onCheckedChange={checked => onChange('freeZone', checked)}
         />
         <Label htmlFor={`${id}-freeZone`} className="text-sm font-medium">
-          Free Zone
+          {tUae('freeZoneLabel')}
         </Label>
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-tradeLicenseExpiry`} className="text-sm font-medium">
-          Trade License Expiry
+          {tUae('tradeLicenseExpiryLabel')}
         </Label>
         <Input
           id={`${id}-tradeLicenseExpiry`}
@@ -298,36 +304,37 @@ function SaudiFields({
   values: Record<string, unknown>;
   onChange: (key: string, val: unknown) => void;
 }) {
+  const tSaudi = useTranslations('Contractors.countryCompliance.saudi');
   const id = useId();
   return (
     <>
       <div className="space-y-2">
         <Label htmlFor={`${id}-freelanceSaLicense`} className="text-sm font-medium">
-          Freelance.sa License
+          {tSaudi('freelanceSaLicenseLabel')}
         </Label>
         <Input
           id={`${id}-freelanceSaLicense`}
           value={(values.freelanceSaLicense as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('freelanceSaLicense', e.target.value || undefined)}
-          placeholder="Enter Freelance.sa license number"
+          placeholder={tSaudi('freelanceSaLicensePlaceholder')}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-commercialRegistration`} className="text-sm font-medium">
-          Commercial Registration
+          {tSaudi('commercialRegistrationLabel')}
         </Label>
         <Input
           id={`${id}-commercialRegistration`}
           value={(values.commercialRegistration as string) ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => onChange('commercialRegistration', e.target.value || undefined)}
-          placeholder="Enter CR number"
+          placeholder={tSaudi('commercialRegistrationPlaceholder')}
         />
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-commercialRegistrationExpiry`} className="text-sm font-medium">
-          CR Expiry Date
+          {tSaudi('crExpiryLabel')}
         </Label>
         <Input
           id={`${id}-commercialRegistrationExpiry`}

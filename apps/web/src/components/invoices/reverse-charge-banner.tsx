@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -26,11 +26,13 @@ export function ReverseChargeBanner({
   onToggle,
 }: ReverseChargeBannerProps) {
   const t = useTranslations('Invoices.reverseCharge');
+  const queryClient = useQueryClient();
   const toggleMutation = useMutation(
     trpc.invoice.toggleReverseCharge.mutationOptions({
       onSuccess: (_: unknown, vars: { isReverseCharge: boolean }) => {
         toast.success(vars.isReverseCharge ? t('applied') : t('removedToast'));
         onToggle?.(vars.isReverseCharge);
+        queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
 
       onError: err => toast.error(err.message),

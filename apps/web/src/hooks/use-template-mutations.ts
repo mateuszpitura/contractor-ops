@@ -27,6 +27,7 @@ export function useTemplateMutations(t: (key: string) => string): {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
   );
@@ -36,6 +37,7 @@ export function useTemplateMutations(t: (key: string) => string): {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
   );
@@ -45,6 +47,7 @@ export function useTemplateMutations(t: (key: string) => string): {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
   );
