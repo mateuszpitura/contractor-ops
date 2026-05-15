@@ -573,7 +573,10 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('detail.voidConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {t('detail.voidConfirmTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('detail.voidConfirmBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

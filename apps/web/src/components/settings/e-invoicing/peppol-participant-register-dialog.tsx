@@ -21,7 +21,7 @@
 
 import { peppolParticipantPairSchema } from '@contractor-ops/validators';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';

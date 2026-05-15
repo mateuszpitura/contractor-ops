@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -209,7 +210,10 @@ export function IntakeDetailActionsBar({
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('rejectDialogTitle')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <XCircle className="size-4" />
+              {t('rejectDialogTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('rejectDialogBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2 py-2">

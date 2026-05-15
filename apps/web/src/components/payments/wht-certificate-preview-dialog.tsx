@@ -1,6 +1,6 @@
 'use client';
 
-import { Download } from 'lucide-react';
+import { Download, Eye } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {

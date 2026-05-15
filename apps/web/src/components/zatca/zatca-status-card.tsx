@@ -2,7 +2,7 @@
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Unplug } from 'lucide-react';
+import { Settings, Unlink, Unplug } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ZatcaBrandIcon } from '@/components/integrations/brand-icons';

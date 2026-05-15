@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, ShieldCheck, Upload } from 'lucide-react';
+import { Link, Loader2, ShieldCheck, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';

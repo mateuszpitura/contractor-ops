@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, SendHorizontal } from 'lucide-react';
+import { Loader2, Send, SendHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import {
@@ -154,7 +154,10 @@ export function TransmissionSection({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('sendCta')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Send className="size-4" />
+              {t('sendCta')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {/* Re-use transmissionNotSentBody copy for the confirmation body
                   — it states the action will transmit via Peppol. */}

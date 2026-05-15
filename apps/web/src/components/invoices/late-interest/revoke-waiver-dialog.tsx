@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -70,7 +71,10 @@ export function RevokeWaiverDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <XCircle className="size-4" />
+            {t('title')}
+          </AlertDialogTitle>
           <AlertDialogDescription>{t('description')}</AlertDialogDescription>
         </AlertDialogHeader>
 

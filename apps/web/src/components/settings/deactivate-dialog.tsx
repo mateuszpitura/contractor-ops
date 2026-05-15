@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, UserX } from 'lucide-react';
+import { Loader2, UserMinus, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -58,7 +58,10 @@ export function DeactivateDialog({ open, onOpenChange, userId, userName }: Deact
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('title', { userName })}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <UserMinus className="size-4" />
+            {t('title', { userName })}
+          </AlertDialogTitle>
           <AlertDialogDescription>{t('body')}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

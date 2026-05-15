@@ -267,7 +267,10 @@ export function ApprovalChainsTab() {
         }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('approvals.deleteConfirm.title')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {t('approvals.deleteConfirm.title')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('approvals.deleteConfirm.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

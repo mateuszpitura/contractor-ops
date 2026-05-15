@@ -10,7 +10,7 @@
 
 'use client';
 
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle } from 'lucide-react';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {

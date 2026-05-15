@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -60,7 +61,10 @@ export function ClaimDialog({ invoiceId, open, onOpenChange }: ClaimDialogProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <CheckCircle className="size-4" />
+            {t('title')}
+          </DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 

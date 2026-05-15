@@ -1,6 +1,6 @@
 'use client';
 
-import { Cloud, TestTube } from 'lucide-react';
+import { Cloud, Settings, TestTube } from 'lucide-react';
 import { useId, useState } from 'react';
 import {
   AlertDialog,
