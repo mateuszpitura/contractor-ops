@@ -351,7 +351,8 @@ export function ChainEditorDialog({ open, onOpenChange, chainData }: ChainEditor
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isEditMode ? <Save className="size-4" /> : <Plus className="size-4" />}
             {isEditMode ? t('approvals.editor.editTitle') : t('approvals.editor.createTitle')}
           </DialogTitle>
           <DialogDescription>

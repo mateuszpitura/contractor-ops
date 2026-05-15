@@ -168,7 +168,10 @@ function CreateKeyDialog({
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>API Key Created</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="size-4" />
+              API Key Created
+            </DialogTitle>
             <DialogDescription>
               Copy your key now. You won&apos;t be able to see it again.
             </DialogDescription>
@@ -209,7 +212,10 @@ function CreateKeyDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create API Key</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="size-4" />
+            Create API Key
+          </DialogTitle>
           <DialogDescription>
             Generate a key for the Enterprise REST API. Select the scopes this key should have
             access to.

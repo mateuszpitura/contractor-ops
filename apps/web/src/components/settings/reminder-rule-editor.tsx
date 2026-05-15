@@ -3,7 +3,7 @@
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Bell, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -402,7 +402,8 @@ export function ReminderRuleEditor({ open, onOpenChange, rule }: ReminderRuleEdi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[560px] max-h-[70vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isEditMode ? <Save className="size-4" /> : <Bell className="size-4" />}
             {isEditMode
               ? t('reminderRules.editor.editTitle')
               : t('reminderRules.editor.createTitle')}
