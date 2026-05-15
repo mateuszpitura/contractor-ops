@@ -18,7 +18,6 @@ import {
   ensureStripeCustomer,
   getProrationPreview,
   getSubscription,
-  updateSubscriptionSeatCount,
 } from '../../services/billing-service';
 import { getCreditBalance } from '../../services/credit-service';
 
@@ -305,61 +304,6 @@ export const billingRouter = router({
 
       return topup;
     }),
-
-  /**
-   * Sync the subscription seat count with the current number of active contractors.
-   * Admin-only. Call this after adding/removing contractors.
-   */
-  syncSeatCount: adminProcedure.mutation(async ({ ctx }) => {
-    const sub = await getSubscription(ctx.organizationId);
-
-    if (!sub?.stripeSubscriptionItemId) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'No active subscription with a subscription item found',
-      });
-    }
-
-    if (sub.status !== 'ACTIVE' && sub.status !== 'TRIALING') {
-      throw new TRPCError({
-        code: 'PRECONDITION_FAILED',
-        message: 'Subscription is not active',
-      });
-    }
-
-    const contractorCount = await ctx.db.contractor.count({
-      where: { organizationId: ctx.organizationId, status: 'ACTIVE' },
-    });
-    const newQuantity = Math.max(1, contractorCount);
-
-    if (newQuantity === sub.seatCount) {
-      return { updated: false, seatCount: sub.seatCount };
-    }
-
-    await updateSubscriptionSeatCount({
-      stripeSubscriptionId: sub.stripeSubscriptionId,
-      stripeSubscriptionItemId: sub.stripeSubscriptionItemId,
-      newQuantity,
-    });
-
-    return { updated: true, seatCount: newQuantity };
-  }),
-
-  /**
-   * Get the current OCR credit balance for the organization.
-   * Available to all authenticated users (tenantProcedure).
-   */
-  getCreditBalance: tenantProcedure.query(async ({ ctx }) => {
-    return getCreditBalance(ctx.organizationId);
-  }),
-
-  /**
-   * Get static plan configuration for client rendering.
-   * Available to all authenticated users (tenantProcedure).
-   */
-  getPlanConfig: tenantProcedure.query(() => {
-    return PLAN_CONFIG;
-  }),
 
   /**
    * Aggregated usage dashboard data: subscription, credits, active contractors,
