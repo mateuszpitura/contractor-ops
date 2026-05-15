@@ -4870,6 +4870,53 @@
       "paymentFailed": "Płatność nie powiodła się.",
       "paymentFailedBody": "Zaktualizuj metodę płatności, aby uniknąć przerwy w działaniu usługi.",
       "goToBilling": "Przejdź do rozliczeń"
+    },
+    "billingTab": {
+      "checkoutFailed": "Nie udało się rozpocząć płatności. Spróbuj ponownie.",
+      "portalFailed": "Nie udało się otworzyć portalu rozliczeniowego. Spróbuj ponownie.",
+      "subscriptionUpdated": "Subskrypcja została pomyślnie zaktualizowana!",
+      "manageBilling": "Zarządzaj rozliczeniami"
+    },
+    "creditExhausted": {
+      "title": "Kredyty OCR wyczerpane",
+      "description": "Wykorzystałeś wszystkie kredyty OCR w tym miesiącu. Zmień plan, aby otrzymać więcej kredytów, lub kup pakiet doładowania.",
+      "upgradePlan": "Zmień plan",
+      "buyCredits": "Kup kredyty"
+    },
+    "proration": {
+      "errorLoad": "Nie udało się załadować podglądu proporcjonalnego rozliczenia. Spróbuj ponownie.",
+      "title": "Podgląd zmiany planu",
+      "totalLabel": "Łącznie",
+      "creditNote": "Otrzymasz kredyt w wysokości {amount} PLN za niewykorzystaną część obecnego planu.",
+      "chargeNote": "Zostanie pobrana opłata {amount} PLN za pozostały okres rozliczeniowy.",
+      "confirm": "Potwierdź zmianę",
+      "cancel": "Anuluj"
+    },
+    "softBlock": {
+      "title": "Twój okres próbny dobiegł końca",
+      "description": "Twoje dane są bezpieczne. Wybierz plan, aby kontynuować korzystanie z Contractor Ops."
+    },
+    "trial": {
+      "choosePlan": "Wybierz plan",
+      "dismissAria": "Zamknij baner okresu próbnego",
+      "endsInDays": "Twój okres próbny kończy się za {days} dni. Zmień plan, aby zachować dane i pełny dostęp.",
+      "ends7Days": "Twój okres próbny kończy się za 7 dni. Zmień plan, aby zachować dane i pełny dostęp.",
+      "ends3Days": "Twój okres próbny kończy się za 3 dni. Wybierz plan, aby kontynuować bez przerwy.",
+      "ends1Day": "Twój okres próbny kończy się jutro. Zmień plan teraz, aby nie utracić dostępu do funkcji."
+    },
+    "planCard": {
+      "currentPlan": "Obecny plan",
+      "recommended": "Polecany",
+      "perMonth": "/miesiąc",
+      "perContractor": "+{price} PLN za kontrahenta",
+      "creditsIncluded": "{credits} kredytów OCR/miesiąc w zestawie",
+      "ctaChoosePlan": "Wybierz plan",
+      "ctaUpgradePlan": "Zmień plan",
+      "ctaChangePlan": "Zmień plan",
+      "ctaCurrentPlan": "Obecny plan"
+    },
+    "planComparison": {
+      "selectAriaLabel": "Wybierz plan"
     }
   },
   "Time": {
