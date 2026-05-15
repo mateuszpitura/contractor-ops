@@ -189,7 +189,10 @@ export function BankStatementDialog({ runId, open, onOpenChange }: BankStatement
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>{t('bankStatement.title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Upload className="size-4" />
+            {t('bankStatement.title')}
+          </DialogTitle>
         </DialogHeader>
 
         {/* Step 1: Upload */}

@@ -186,7 +186,10 @@ export function IntakeUploadDialog({ open, onOpenChange }: IntakeUploadDialogPro
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{t('uploadDialogTitle')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <UploadCloud className="size-4" />
+            {t('uploadDialogTitle')}
+          </DialogTitle>
           <DialogDescription id="intake-upload-helper">{t('dropZoneSecondary')}</DialogDescription>
         </DialogHeader>
 

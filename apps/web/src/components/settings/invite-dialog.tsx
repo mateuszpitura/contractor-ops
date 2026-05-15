@@ -3,7 +3,7 @@
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
@@ -103,7 +103,10 @@ export function InviteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="size-4" />
+            {t('title')}
+          </DialogTitle>
           <DialogDescription>{t('body', { orgName: '' })}</DialogDescription>
         </DialogHeader>
 

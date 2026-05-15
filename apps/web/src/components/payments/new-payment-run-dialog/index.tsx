@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { CreditCard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
@@ -100,7 +101,10 @@ export function NewPaymentRunDialog({ open, onOpenChange, onViewRun }: NewPaymen
         // Prevent close during locking (Step 2 handles this internally)
       >
         <DialogHeader>
-          <DialogTitle>{t('dialog.title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <CreditCard className="size-4" />
+            {t('dialog.title')}
+          </DialogTitle>
           <StepIndicator currentStep={step} />
         </DialogHeader>
 
