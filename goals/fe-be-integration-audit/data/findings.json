@@ -1020,16 +1020,6 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-009",
-    "severity": "HIGH",
-    "category": "missing-confirmation",
-    "procedure": "skonto.deleteForBillingProfile",
-    "file": "apps/web/src/components/contractors/billing-profile/default-skonto-section.tsx",
-    "line": 72,
-    "problem": "Destructive mutation skonto.deleteForBillingProfile fires without a confirmation dialog in this file.",
-    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
     "id": "F-LOW-012",
     "severity": "LOW",
     "category": "missing-loading-state",
@@ -1048,16 +1038,6 @@
     "line": 91,
     "problem": "Mutation classification.saveAnswer trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-HIGH-010",
-    "severity": "HIGH",
-    "category": "missing-confirmation",
-    "procedure": "contractor.archive",
-    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 95,
-    "problem": "Destructive mutation contractor.archive fires without a confirmation dialog in this file.",
-    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
     "id": "F-LOW-014",
@@ -1170,27 +1150,7 @@
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-HIGH-011",
-    "severity": "HIGH",
-    "category": "missing-confirmation",
-    "procedure": "docs.detach",
-    "file": "apps/web/src/components/integrations/doc-links-section.tsx",
-    "line": 54,
-    "problem": "Destructive mutation docs.detach fires without a confirmation dialog in this file.",
-    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
     "id": "F-LOW-022",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "docs.detach",
-    "file": "apps/web/src/components/integrations/doc-links-section.tsx",
-    "line": 54,
-    "problem": "Mutation docs.detach trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-023",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "document.requestUpload",
@@ -1200,7 +1160,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-024",
+    "id": "F-LOW-023",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "document.confirmUpload",
@@ -1210,7 +1170,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-025",
+    "id": "F-LOW-024",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "invoice.create",
@@ -1220,7 +1180,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-026",
+    "id": "F-LOW-025",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ocr.trigger",
@@ -1230,7 +1190,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-027",
+    "id": "F-LOW-026",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ocr.retrigger",
@@ -1240,7 +1200,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-028",
+    "id": "F-LOW-027",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "invoice.toggleReverseCharge",
@@ -1250,17 +1210,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-012",
-    "severity": "HIGH",
-    "category": "missing-confirmation",
-    "procedure": "skonto.deleteForInvoice",
-    "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
-    "line": 105,
-    "problem": "Destructive mutation skonto.deleteForInvoice fires without a confirmation dialog in this file.",
-    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
-    "id": "F-LOW-029",
+    "id": "F-LOW-028",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "notification.markRead",
@@ -1270,7 +1220,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-030",
+    "id": "F-LOW-029",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "notification.markRead",
@@ -1280,7 +1230,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-031",
+    "id": "F-LOW-030",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "settings.update",
@@ -1290,7 +1240,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-032",
+    "id": "F-LOW-031",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.importStatement",
@@ -1300,7 +1250,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-033",
+    "id": "F-LOW-032",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.create",
@@ -1310,7 +1260,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-034",
+    "id": "F-LOW-033",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.lockAndExport",
@@ -1320,7 +1270,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-035",
+    "id": "F-LOW-034",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.updateItemStatus",
@@ -1330,7 +1280,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-036",
+    "id": "F-LOW-035",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.removeFromRun",
@@ -1340,7 +1290,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-037",
+    "id": "F-LOW-036",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.getUploadUrl",
@@ -1350,7 +1300,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-038",
+    "id": "F-LOW-037",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ocr.portalTrigger",
@@ -1360,7 +1310,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-039",
+    "id": "F-LOW-038",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateNotificationPreference",
@@ -1370,7 +1320,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-040",
+    "id": "F-LOW-039",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateContactInfo",
@@ -1380,7 +1330,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-041",
+    "id": "F-LOW-040",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.submitFinancialChangeRequest",
@@ -1390,7 +1340,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-042",
+    "id": "F-LOW-041",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "settings.getLogoUploadUrl",
@@ -1400,7 +1350,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-043",
+    "id": "F-LOW-042",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "approval.updateChain",
@@ -1410,7 +1360,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-044",
+    "id": "F-LOW-043",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "leitwegId.setDefault",
@@ -1420,7 +1370,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-045",
+    "id": "F-LOW-044",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "reminder.toggleActive",
@@ -1430,7 +1380,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-046",
+    "id": "F-LOW-045",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "integration.linkUser",
@@ -1440,17 +1390,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-013",
-    "severity": "HIGH",
-    "category": "missing-confirmation",
-    "procedure": "integration.unlinkUser",
-    "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 150,
-    "problem": "Destructive mutation integration.unlinkUser fires without a confirmation dialog in this file.",
-    "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
-    "id": "F-LOW-047",
+    "id": "F-LOW-046",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "calendar.saveTaskConfig",
@@ -1460,7 +1400,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-048",
+    "id": "F-LOW-047",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.deleteTemplate",
@@ -1470,7 +1410,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-049",
+    "id": "F-LOW-048",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",
@@ -1480,7 +1420,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-014",
+    "id": "F-HIGH-009",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "approval.reject",
@@ -1490,7 +1430,7 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-HIGH-015",
+    "id": "F-HIGH-010",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "workflow.deleteTemplate",

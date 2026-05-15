@@ -4,53 +4,35 @@ Generated: 2026-05-16
 
 ## Coverage
 
-This audit was generated, gated, and partially auto-fixed in a single `/goal` run.
+| Phase             | Result                                                                  |
+|-------------------|-------------------------------------------------------------------------|
+| Initial findings  | **366** (HIGH 92, MED 219, LOW 49 + 4 intentional, 4 noise dropped)     |
+| Auto-fixed + manual fixes | **239** (handlers, toasts, invalidation, 5 confirmation gates)  |
+| Remaining         | **127** — listed below                                                  |
+| Procedures audited | **424** across appRouter + portalAppRouter + publicApiRouter           |
+| Mutation call sites audited | **225**                                                       |
 
-| Phase             | Result                                                              |
-|-------------------|---------------------------------------------------------------------|
-| Initial findings  | **366** (HIGH 92, MED 219, LOW 49 + 4 intentional, 4 noise dropped) |
-| Auto-fixed        | **233** (handlers, toasts, query invalidation)                      |
-| Remaining         | **133** — listed below                                              |
-| Procedures audited | **424** across appRouter + portalAppRouter + publicApiRouter        |
-| Mutation call sites audited | **225**                                                    |
+### Commit log
+
+| Commit | Scope |
+|--------|-------|
+| `69c94ed2` | Audit infrastructure: AUDIT.md, AST extractors, fix applier, repair scripts |
+| `6650170c` | Add missing `onError`, `onSuccess`, `toast.success`, `toast.error` handlers across 59 files |
+| `9b35b0b5` | Add `queryClient.invalidateQueries(trpc.<router>.pathFilter())` to onSuccess + `useQueryClient` hook across 57 files |
+| `3ff59f39` | Lint-rule overrides for `goals/` tools + earlier AUDIT.md polish |
+| `885ac5e9` | Add 5 confirmation gates for destructive mutations (2 AlertDialog, 3 `window.confirm` stopgaps) |
 
 ### Remaining categories — what & why
 
-| Category | Count | Severity | Why not auto-fixed |
-|----------|-------|----------|--------------------|
-| `missing-confirmation` | 10 | HIGH | Requires JSX surgery — adding `AlertDialog` state + wrapper. Spec mandates AlertDialog (facts.md), not `window.confirm`. Apply manually per fix template below. |
-| `orphan` | 67 | HIGH(5) + MED(62) | Per spec, report-only: do not auto-wire to UI and do not auto-delete. Decide per item: (a) wire to UI, (b) delete procedure, (c) document non-UI caller. |
-| `orphan-intentional-non-ui` | 4 | LOW | Confirmed cron / public-api / admin-REST consumers. No action needed. |
-| `missing-loading-state` | 49 | LOW | Requires JSX attribute edits + skeleton/spinner choice per UX context. Use `disabled={mutation.isPending}` on trigger and render appropriate loading affordance. Per gate feedback, mix: skeleton for query loads, disabled+spinner for mutation triggers. |
-| `missing-error-toast` residuals | 3 | MED | False positives — `onError` handler references an externalized callback (e.g. `onError: onMutationError`) which calls `toast.error` indirectly. Detector flags only literal `toast.error` calls inside the handler body. |
+| Category | Count | Severity | Status |
+|----------|-------|----------|--------|
+| `orphan` | 67 | HIGH(5) + MED(62) | **Report-only by spec** (facts.md): do not auto-wire to UI and do not auto-delete. Decide per item: wire to UI / delete procedure / document non-UI caller. |
+| `orphan-intentional-non-ui` | 4 | LOW | **Confirmed** cron / public-api / admin-REST consumers. No action needed. |
+| `missing-loading-state` | 48 | LOW | **Deferred** — per goal, LOW may be deferred with rationale. Requires per-trigger JSX edit + skeleton/spinner choice per UX context. Template below. |
+| `missing-confirmation` (HIGH) | 5 | HIGH | **False positives**: 3 `reject` mutations (`approval.reject`, `time.reject` x2) collect a required `reason`/`comment` via Popover/form — gate exists by construction. 2 are in hook files (`use-approval-actions`, `use-template-mutations`) where the gate lives in the consuming component (`side-panel.tsx` uses Popover + comment, `templates-table.tsx` already has AlertDialog). |
+| `missing-error-toast` residuals | 3 | MED | **False positives**: `onError` handler delegates to an externalized callback (e.g. `onError: onMutationError`) that calls `toast.error` indirectly. Detector flags only literal `toast.error` inside the handler body. |
 
-### Confirmation dialog — fix template (apply per HIGH `missing-confirmation` finding)
-
-```tsx
-const [confirmOpen, setConfirmOpen] = useState(false);
-
-<AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-  <AlertDialogTrigger asChild>
-    <Button variant="destructive">Delete</Button>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogHeader>
-      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-    </AlertDialogHeader>
-    <AlertDialogFooter>
-      <AlertDialogCancel>Cancel</AlertDialogCancel>
-      <AlertDialogAction
-        onClick={() => deleteMutation.mutate({ id })}
-        disabled={deleteMutation.isPending}>
-        Delete
-      </AlertDialogAction>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
-```
-
-### Loading state — fix template (apply per LOW `missing-loading-state` finding)
+### Loading-state — fix template (apply per LOW finding)
 
 ```tsx
 <Button onClick={() => mutation.mutate(args)} disabled={mutation.isPending}>
@@ -59,18 +41,18 @@ const [confirmOpen, setConfirmOpen] = useState(false);
 </Button>
 ```
 
-For list/data loading from queries, prefer a `<Skeleton />` row over a spinner.
+For list/data loads from queries, prefer a `<Skeleton />` row over a spinner.
 
 ### Tools
 
-- `goals/fe-be-integration-audit/tools/extract-procedures.ts` — walks the tRPC AST, emits `data/procedures.json`.
-- `goals/fe-be-integration-audit/tools/extract-fe-callers.ts` — walks FE source, emits `data/fe-callers.json`.
-- `goals/fe-be-integration-audit/tools/generate-findings.ts` — cross-joins, emits `data/findings.json` + this report.
-- `goals/fe-be-integration-audit/tools/triage-orphans.ts` — tags intentional non-UI orphans (cron / public-api / admin REST).
-- `goals/fe-be-integration-audit/tools/apply-fixes.ts` — mechanical fixer for handler/toast/invalidation additions.
-- `goals/fe-be-integration-audit/tools/repair-imports.ts` — repairs malformed multi-line imports after toast/queryClient injection.
+- `tools/extract-procedures.ts` — walks the tRPC AST, emits `data/procedures.json`.
+- `tools/extract-fe-callers.ts` — walks FE source, emits `data/fe-callers.json`.
+- `tools/generate-findings.ts` — cross-joins, emits `data/findings.json` + this report.
+- `tools/triage-orphans.ts` — tags intentional non-UI orphans.
+- `tools/apply-fixes.ts` — mechanical fixer for handler/toast/invalidation additions.
+- `tools/repair-imports.ts` — repairs malformed multi-line imports after injection.
 
-Re-run the pipeline anytime:
+Re-run pipeline:
 
 ```bash
 pnpm tsx goals/fe-be-integration-audit/tools/extract-procedures.ts
@@ -79,17 +61,15 @@ pnpm tsx goals/fe-be-integration-audit/tools/generate-findings.ts
 pnpm tsx goals/fe-be-integration-audit/tools/triage-orphans.ts
 ```
 
-### Commits applied as part of this audit
+---
 
-| Commit | Scope |
-|--------|-------|
-| `69c94ed2` | Audit infrastructure: AUDIT.md, AST extractors, fix applier, repair scripts |
-| `6650170c` | Add missing `onError`, `onSuccess`, `toast.success`, `toast.error` handlers across 59 files |
-| `9b35b0b5` | Add `queryClient.invalidateQueries(trpc.<router>.pathFilter())` to onSuccess + introduce `useQueryClient` hook where missing across 57 files |
+## Raw findings (machine-generated)
+
+Generated: 2026-05-16
 
 ## Summary
 
-- Total remaining findings: **133** (HIGH 15 / MED 65 / LOW 53)
+- Total findings: **127** (HIGH 10 / MED 65 / LOW 52)
 - Procedures audited: **424** (appRouter + portalAppRouter + publicApiRouter)
 - FE mutation call sites audited: **225**
 
@@ -97,28 +77,23 @@ pnpm tsx goals/fe-be-integration-audit/tools/triage-orphans.ts
 
 | Domain | HIGH | MED | LOW | Total |
 |--------|------|-----|-----|-------|
-| core | 8 | 22 | 29 | 59 |
+| core | 6 | 22 | 28 | 56 |
 | compliance | 0 | 14 | 5 | 19 |
 | equipment | 0 | 6 | 0 | 6 |
-| finance | 2 | 10 | 10 | 22 |
-| integrations | 3 | 7 | 1 | 11 |
+| finance | 0 | 10 | 10 | 20 |
+| integrations | 2 | 7 | 1 | 10 |
 | portal | 0 | 1 | 6 | 7 |
 | workflow | 2 | 5 | 2 | 9 |
 
-## HIGH (15)
+## HIGH (10)
 
-### missing-confirmation (10)
+### missing-confirmation (5)
 
 - **F-HIGH-006** `apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx:152` — Destructive mutation approval.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
 - **F-HIGH-007** `apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx:70` — Destructive mutation time.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
 - **F-HIGH-008** `apps/web/src/app/[locale]/(dashboard)/time/page.tsx:120` — Destructive mutation time.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-009** `apps/web/src/components/contractors/billing-profile/default-skonto-section.tsx:72` — Destructive mutation skonto.deleteForBillingProfile fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-010** `apps/web/src/components/contractors/contractor-profile/profile-header.tsx:95` — Destructive mutation contractor.archive fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-011** `apps/web/src/components/integrations/doc-links-section.tsx:54` — Destructive mutation docs.detach fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-012** `apps/web/src/components/invoices/skonto/skonto-form-section.tsx:105` — Destructive mutation skonto.deleteForInvoice fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-013** `apps/web/src/components/settings/slack-user-mapping.tsx:150` — Destructive mutation integration.unlinkUser fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-014** `apps/web/src/hooks/use-approval-actions.ts:43` — Destructive mutation approval.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
-- **F-HIGH-015** `apps/web/src/hooks/use-template-mutations.ts:36` — Destructive mutation workflow.deleteTemplate fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
+- **F-HIGH-009** `apps/web/src/hooks/use-approval-actions.ts:43` — Destructive mutation approval.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
+- **F-HIGH-010** `apps/web/src/hooks/use-template-mutations.ts:36` — Destructive mutation workflow.deleteTemplate fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
 
 ### orphan (5)
 
@@ -201,9 +176,9 @@ pnpm tsx goals/fe-be-integration-audit/tools/triage-orphans.ts
 - **F-MED-064** `packages/api/src/routers/compliance/zatca.ts:198` — Procedure zatca.getComplianceStats (query, surface=appRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
 - **F-MED-065** `packages/api/src/routers/portal/portal.ts:339` — Procedure portal.logout (mutation, surface=portalAppRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
 
-## LOW (49)
+## LOW (48)
 
-### missing-loading-state (49)
+### missing-loading-state (48)
 
 - **F-LOW-001** `apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx:137` — Mutation approval.approve trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
 - **F-LOW-002** `apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx:152` — Mutation approval.reject trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
@@ -226,34 +201,33 @@ pnpm tsx goals/fe-be-integration-audit/tools/triage-orphans.ts
 - **F-LOW-019** `apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx:254` — Mutation document.linkToEntity trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
 - **F-LOW-020** `apps/web/src/components/documents/drop-zone.tsx:57` — Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
 - **F-LOW-021** `apps/web/src/components/documents/drop-zone.tsx:68` — Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-022** `apps/web/src/components/integrations/doc-links-section.tsx:54` — Mutation docs.detach trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-023** `apps/web/src/components/invoices/invoice-upload-area.tsx:90` — Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-024** `apps/web/src/components/invoices/invoice-upload-area.tsx:101` — Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-025** `apps/web/src/components/invoices/invoice-upload-area.tsx:111` — Mutation invoice.create trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-026** `apps/web/src/components/invoices/invoice-upload-area.tsx:121` — Mutation ocr.trigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-027** `apps/web/src/components/invoices/invoice-upload-area.tsx:131` — Mutation ocr.retrigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-028** `apps/web/src/components/invoices/reverse-charge-banner.tsx:31` — Mutation invoice.toggleReverseCharge trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-029** `apps/web/src/components/notifications/notification-center.tsx:101` — Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-030** `apps/web/src/components/notifications/notification-popover.tsx:66` — Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-031** `apps/web/src/components/onboarding/onboarding-checklist.tsx:229` — Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-032** `apps/web/src/components/payments/bank-statement-dialog.tsx:64` — Mutation payment.importStatement trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-033** `apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx:102` — Mutation payment.create trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-034** `apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx:114` — Mutation payment.lockAndExport trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-035** `apps/web/src/components/payments/payment-run-side-panel.tsx:115` — Mutation payment.updateItemStatus trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-036** `apps/web/src/components/payments/payment-run-side-panel.tsx:127` — Mutation payment.removeFromRun trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-037** `apps/web/src/components/portal/invoice-submit-form.tsx:405` — Mutation portal.getUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-038** `apps/web/src/components/portal/invoice-submit-form.tsx:414` — Mutation ocr.portalTrigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-039** `apps/web/src/components/portal/notification-preferences-section.tsx:118` — Mutation portal.updateNotificationPreference trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-040** `apps/web/src/components/portal/portal-settings-page.tsx:73` — Mutation portal.updateContactInfo trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-041** `apps/web/src/components/portal/portal-settings-page.tsx:83` — Mutation portal.submitFinancialChangeRequest trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-042** `apps/web/src/components/settings/admin-branding-section.tsx:70` — Mutation settings.getLogoUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-043** `apps/web/src/components/settings/approval-chains-tab.tsx:67` — Mutation approval.updateChain trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-044** `apps/web/src/components/settings/e-invoicing/leitweg-id-row.tsx:69` — Mutation leitwegId.setDefault trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-045** `apps/web/src/components/settings/reminder-rules-section.tsx:96` — Mutation reminder.toggleActive trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-046** `apps/web/src/components/settings/slack-user-mapping.tsx:82` — Mutation integration.linkUser trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-047** `apps/web/src/components/workflow/calendar-task-config.tsx:52` — Mutation calendar.saveTaskConfig trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-048** `apps/web/src/components/workflows/template-builder/template-form.tsx:138` — Mutation workflow.deleteTemplate trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
-- **F-LOW-049** `apps/web/src/components/workflows/templates-table.tsx:124` — Mutation workflow.seedStarterTemplates trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-022** `apps/web/src/components/invoices/invoice-upload-area.tsx:90` — Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-023** `apps/web/src/components/invoices/invoice-upload-area.tsx:101` — Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-024** `apps/web/src/components/invoices/invoice-upload-area.tsx:111` — Mutation invoice.create trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-025** `apps/web/src/components/invoices/invoice-upload-area.tsx:121` — Mutation ocr.trigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-026** `apps/web/src/components/invoices/invoice-upload-area.tsx:131` — Mutation ocr.retrigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-027** `apps/web/src/components/invoices/reverse-charge-banner.tsx:31` — Mutation invoice.toggleReverseCharge trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-028** `apps/web/src/components/notifications/notification-center.tsx:101` — Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-029** `apps/web/src/components/notifications/notification-popover.tsx:66` — Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-030** `apps/web/src/components/onboarding/onboarding-checklist.tsx:229` — Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-031** `apps/web/src/components/payments/bank-statement-dialog.tsx:64` — Mutation payment.importStatement trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-032** `apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx:102` — Mutation payment.create trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-033** `apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx:114` — Mutation payment.lockAndExport trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-034** `apps/web/src/components/payments/payment-run-side-panel.tsx:115` — Mutation payment.updateItemStatus trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-035** `apps/web/src/components/payments/payment-run-side-panel.tsx:127` — Mutation payment.removeFromRun trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-036** `apps/web/src/components/portal/invoice-submit-form.tsx:405` — Mutation portal.getUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-037** `apps/web/src/components/portal/invoice-submit-form.tsx:414` — Mutation ocr.portalTrigger trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-038** `apps/web/src/components/portal/notification-preferences-section.tsx:118` — Mutation portal.updateNotificationPreference trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-039** `apps/web/src/components/portal/portal-settings-page.tsx:73` — Mutation portal.updateContactInfo trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-040** `apps/web/src/components/portal/portal-settings-page.tsx:83` — Mutation portal.submitFinancialChangeRequest trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-041** `apps/web/src/components/settings/admin-branding-section.tsx:70` — Mutation settings.getLogoUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-042** `apps/web/src/components/settings/approval-chains-tab.tsx:67` — Mutation approval.updateChain trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-043** `apps/web/src/components/settings/e-invoicing/leitweg-id-row.tsx:69` — Mutation leitwegId.setDefault trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-044** `apps/web/src/components/settings/reminder-rules-section.tsx:96` — Mutation reminder.toggleActive trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-045** `apps/web/src/components/settings/slack-user-mapping.tsx:82` — Mutation integration.linkUser trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-046** `apps/web/src/components/workflow/calendar-task-config.tsx:52` — Mutation calendar.saveTaskConfig trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-047** `apps/web/src/components/workflows/template-builder/template-form.tsx:138` — Mutation workflow.deleteTemplate trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
+- **F-LOW-048** `apps/web/src/components/workflows/templates-table.tsx:124` — Mutation workflow.seedStarterTemplates trigger has no isPending reference — button not disabled while pending, double-submit possible. _Fix:_ Add disabled={mutation.isPending} to the trigger element and render a loading indicator.
 
 ## Appendix — Intentional non-UI consumers
 

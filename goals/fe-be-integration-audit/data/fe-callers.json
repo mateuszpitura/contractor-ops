@@ -1789,7 +1789,7 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -1805,7 +1805,7 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -2164,7 +2164,7 @@
     "path": "contractor.updateLifecycleStage",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 78,
+    "line": 89,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2173,14 +2173,14 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 86,
+    "line": 97,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2189,14 +2189,14 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
     "path": "contractor.archive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 95,
+    "line": 106,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2205,14 +2205,14 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 103,
+    "line": 114,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2221,7 +2221,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -4228,7 +4228,7 @@
     "path": "docs.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/doc-links-section.tsx",
-    "line": 49,
+    "line": 60,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4237,30 +4237,30 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
     "path": "docs.detach",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/integrations/doc-links-section.tsx",
-    "line": 54,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
     "path": "docs.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/doc-links-section.tsx",
-    "line": 58,
+    "line": 69,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4269,7 +4269,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -5757,7 +5757,7 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -5773,7 +5773,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -5789,7 +5789,7 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -5805,7 +5805,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9277,7 +9277,7 @@
       "hasInvalidation": true,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9293,7 +9293,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9309,7 +9309,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9325,7 +9325,7 @@
       "hasInvalidation": true,
       "hasIsPending": true
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9341,7 +9341,7 @@
       "hasInvalidation": false,
       "hasIsPending": false
     },
-    "fileHasAlertDialog": false
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
