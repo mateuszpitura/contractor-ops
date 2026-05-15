@@ -4316,6 +4316,27 @@
         "retryQueued": "Übertragung zur Wiederholung eingereiht",
         "retryFailed": "Wiederholung fehlgeschlagen"
       }
+    },
+    "wizard": {
+      "title": "Mit Peppol-Netzwerk verbinden",
+      "description": "Registrieren Sie Ihre Organisation im Peppol-Netzwerk, um E-Rechnungen mit Handelspartnern in den VAE zu senden und zu empfangen.",
+      "step1Heading": "Schritt 1: Steuerregistrierungsnummer",
+      "participantIdHint": "Die Peppol-Teilnehmer-ID lautet:",
+      "step2Heading": "Schritt 2: ASP-Anbieter auswählen",
+      "storecoveDescription": "Zertifizierter Peppol-ASP — über 60 Länder unterstützt",
+      "moreProviders": "Weitere Anbieter folgen in Kürze.",
+      "step3Heading": "Schritt 3: API-Zugangsdaten",
+      "apiKeyLabel": "Storecove-API-Schlüssel",
+      "apiKeyPlaceholder": "API-Schlüssel eingeben",
+      "apiKeyHint": "Aus dem Storecove-Dashboard beziehen",
+      "step4Heading": "Schritt 4: Teilnehmer registrieren",
+      "participantIdLabel": "Teilnehmer-ID",
+      "aspProviderLabel": "ASP-Anbieter",
+      "registering": "Organisation wird im Peppol-Netzwerk registriert...",
+      "registrationFailed": "Registrierung fehlgeschlagen",
+      "retry": "Erneut versuchen",
+      "successHeading": "Mit Peppol-Netzwerk verbunden",
+      "successDescription": "Sie können nun E-Rechnungen über das Peppol-Netzwerk senden und empfangen."
     }
   },
   "Portal": {

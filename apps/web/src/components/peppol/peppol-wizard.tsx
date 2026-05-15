@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,7 @@ function StepIndicator({ current }: { current: number }) {
 // ---------------------------------------------------------------------------
 
 export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
+  const t = useTranslations('Peppol.wizard');
   const queryClient = useQueryClient();
   const reactId = useId();
 
@@ -134,12 +136,9 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Connect to Peppol Network
+            {t('title')}
           </DialogTitle>
-          <DialogDescription>
-            Register your organization on the Peppol network to send and receive e-invoices with UAE
-            trading partners.
-          </DialogDescription>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <div className="py-4">
@@ -150,7 +149,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 1: TRN Entry */}
           {step === 1 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">Step 1: Tax Registration Number</h3>
+              <h3 className="text-base font-semibold">{t('step1Heading')}</h3>
               <div className="space-y-2">
                 <Label htmlFor={`${reactId}-trn`}>Tax Registration Number (TRN)</Label>
                 <Input
@@ -170,7 +169,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
               </div>
               {!!participantId && (
                 <div className="rounded-lg bg-muted/50 p-3">
-                  <p className="text-sm text-muted-foreground">Peppol Participant ID will be:</p>
+                  <p className="text-sm text-muted-foreground">{t('participantIdHint')}</p>
                   <p className="font-mono text-sm font-medium">{participantId}</p>
                 </div>
               )}
@@ -180,7 +179,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 2: ASP Selection */}
           {step === 2 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">Step 2: Select ASP Provider</h3>
+              <h3 className="text-base font-semibold">{t('step2Heading')}</h3>
               <RadioGroup value={aspProvider} className="space-y-3">
                 <label
                   htmlFor={`${reactId}-storecove`}
@@ -188,22 +187,20 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   <RadioGroupItem value="storecove" id={`${reactId}-storecove`} />
                   <div>
                     <p className="text-sm font-medium">Storecove</p>
-                    <p className="text-sm text-muted-foreground">
-                      Certified Peppol ASP — 60+ countries supported
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('storecoveDescription')}</p>
                   </div>
                 </label>
               </RadioGroup>
-              <p className="text-sm text-muted-foreground">More providers coming soon.</p>
+              <p className="text-sm text-muted-foreground">{t('moreProviders')}</p>
             </div>
           )}
 
           {/* Step 3: API Credentials */}
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">Step 3: API Credentials</h3>
+              <h3 className="text-base font-semibold">{t('step3Heading')}</h3>
               <div className="space-y-2">
-                <Label htmlFor={`${reactId}-apiKey`}>Storecove API Key</Label>
+                <Label htmlFor={`${reactId}-apiKey`}>{t('apiKeyLabel')}</Label>
                 <div className="relative">
                   <Input
                     id={`${reactId}-apiKey`}
@@ -211,7 +208,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     value={apiKey}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e => setApiKey(e.target.value)}
-                    placeholder="Enter your API key"
+                    placeholder={t('apiKeyPlaceholder')}
                   />
                   <Button
                     type="button"
@@ -223,7 +220,7 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                     {showApiKey ? 'Hide' : 'Show'}
                   </Button>
                 </div>
-                <p className="text-sm text-muted-foreground">Obtain from Storecove dashboard</p>
+                <p className="text-sm text-muted-foreground">{t('apiKeyHint')}</p>
               </div>
               <div className="space-y-2">
                 <Label>Environment</Label>
@@ -252,14 +249,14 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
           {/* Step 4: Register Participant */}
           {step === 4 && (
             <div className="space-y-4">
-              <h3 className="text-base font-semibold">Step 4: Register Participant</h3>
+              <h3 className="text-base font-semibold">{t('step4Heading')}</h3>
               <div className="rounded-lg border p-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Participant ID</span>
+                  <span className="text-muted-foreground">{t('participantIdLabel')}</span>
                   <span className="font-mono">{participantId}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">ASP Provider</span>
+                  <span className="text-muted-foreground">{t('aspProviderLabel')}</span>
                   <span>Storecove</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -273,18 +270,18 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
                   <Progress value={null} className="h-2" />
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Registering your organization on the Peppol network...
+                    {t('registering')}
                   </div>
                 </div>
               )}
 
               {!!registrationError && (
                 <Alert variant="destructive">
-                  <AlertTitle>Registration Failed</AlertTitle>
+                  <AlertTitle>{t('registrationFailed')}</AlertTitle>
                   <AlertDescription>{registrationError}</AlertDescription>
                   {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                   <Button variant="outline" size="sm" className="mt-3" onClick={handleRetry}>
-                    Retry
+                    {t('retry')}
                   </Button>
                 </Alert>
               )}
@@ -296,14 +293,12 @@ export function PeppolWizard({ open, onOpenChange }: PeppolWizardProps) {
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <CheckCircle2 className="h-12 w-12 text-success" />
               <div className="space-y-1">
-                <h3 className="text-base font-semibold">Connected to Peppol Network</h3>
-                <p className="text-sm text-muted-foreground">
-                  You can now send and receive e-invoices through the Peppol network.
-                </p>
+                <h3 className="text-base font-semibold">{t('successHeading')}</h3>
+                <p className="text-sm text-muted-foreground">{t('successDescription')}</p>
               </div>
               <div className="rounded-lg border p-4 text-start w-full max-w-sm space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Participant ID</span>
+                  <span className="text-muted-foreground">{t('participantIdLabel')}</span>
                   <span className="font-mono">{participantId}</span>
                 </div>
                 <div className="flex justify-between text-sm">

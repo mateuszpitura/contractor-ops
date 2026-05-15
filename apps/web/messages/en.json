@@ -4313,6 +4313,27 @@
         "retryQueued": "Transmission queued for retry",
         "retryFailed": "Retry failed"
       }
+    },
+    "wizard": {
+      "title": "Connect to Peppol Network",
+      "description": "Register your organization on the Peppol network to send and receive e-invoices with UAE trading partners.",
+      "step1Heading": "Step 1: Tax Registration Number",
+      "participantIdHint": "Peppol Participant ID will be:",
+      "step2Heading": "Step 2: Select ASP Provider",
+      "storecoveDescription": "Certified Peppol ASP — 60+ countries supported",
+      "moreProviders": "More providers coming soon.",
+      "step3Heading": "Step 3: API Credentials",
+      "apiKeyLabel": "Storecove API Key",
+      "apiKeyPlaceholder": "Enter your API key",
+      "apiKeyHint": "Obtain from Storecove dashboard",
+      "step4Heading": "Step 4: Register Participant",
+      "participantIdLabel": "Participant ID",
+      "aspProviderLabel": "ASP Provider",
+      "registering": "Registering your organization on the Peppol network...",
+      "registrationFailed": "Registration Failed",
+      "retry": "Retry",
+      "successHeading": "Connected to Peppol Network",
+      "successDescription": "You can now send and receive e-invoices through the Peppol network."
     }
   },
   "Portal": {

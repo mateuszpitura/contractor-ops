@@ -4321,6 +4321,27 @@
         "retryQueued": "Transmisja zakolejkowana do ponowienia",
         "retryFailed": "Ponowienie nie powiodło się"
       }
+    },
+    "wizard": {
+      "title": "Połącz z siecią Peppol",
+      "description": "Zarejestruj organizację w sieci Peppol, aby wysyłać i odbierać e-faktury z partnerami handlowymi w ZEA.",
+      "step1Heading": "Krok 1: Numer rejestracji podatkowej",
+      "participantIdHint": "Identyfikator uczestnika Peppol będzie:",
+      "step2Heading": "Krok 2: Wybierz dostawcę ASP",
+      "storecoveDescription": "Certyfikowany Peppol ASP — obsługa ponad 60 krajów",
+      "moreProviders": "Wkrótce więcej dostawców.",
+      "step3Heading": "Krok 3: Dane uwierzytelniające API",
+      "apiKeyLabel": "Klucz API Storecove",
+      "apiKeyPlaceholder": "Wprowadź klucz API",
+      "apiKeyHint": "Pobierz z panelu Storecove",
+      "step4Heading": "Krok 4: Zarejestruj uczestnika",
+      "participantIdLabel": "Identyfikator uczestnika",
+      "aspProviderLabel": "Dostawca ASP",
+      "registering": "Rejestrowanie organizacji w sieci Peppol...",
+      "registrationFailed": "Rejestracja nie powiodła się",
+      "retry": "Spróbuj ponownie",
+      "successHeading": "Połączono z siecią Peppol",
+      "successDescription": "Możesz teraz wysyłać i odbierać e-faktury przez sieć Peppol."
     }
   },
   "Portal": {

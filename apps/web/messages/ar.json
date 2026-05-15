@@ -4321,6 +4321,27 @@
         "retryQueued": "تم وضع الإرسال في قائمة الانتظار لإعادة المحاولة",
         "retryFailed": "فشلت إعادة المحاولة"
       }
+    },
+    "wizard": {
+      "title": "الاتصال بشبكة Peppol",
+      "description": "سجّل مؤسستك في شبكة Peppol لإرسال واستقبال الفواتير الإلكترونية مع الشركاء التجاريين في الإمارات.",
+      "step1Heading": "الخطوة 1: رقم التسجيل الضريبي",
+      "participantIdHint": "سيكون معرّف مشارك Peppol:",
+      "step2Heading": "الخطوة 2: اختر مزوّد ASP",
+      "storecoveDescription": "مزوّد Peppol ASP معتمد — دعم أكثر من 60 دولة",
+      "moreProviders": "المزيد من المزوّدين قريبًا.",
+      "step3Heading": "الخطوة 3: بيانات اعتماد API",
+      "apiKeyLabel": "مفتاح Storecove API",
+      "apiKeyPlaceholder": "أدخل مفتاح API الخاص بك",
+      "apiKeyHint": "احصل عليه من لوحة Storecove",
+      "step4Heading": "الخطوة 4: تسجيل المشارك",
+      "participantIdLabel": "معرّف المشارك",
+      "aspProviderLabel": "مزوّد ASP",
+      "registering": "جارٍ تسجيل مؤسستك في شبكة Peppol...",
+      "registrationFailed": "فشل التسجيل",
+      "retry": "إعادة المحاولة",
+      "successHeading": "تم الاتصال بشبكة Peppol",
+      "successDescription": "يمكنك الآن إرسال واستقبال الفواتير الإلكترونية عبر شبكة Peppol."
     }
   },
   "Portal": {
