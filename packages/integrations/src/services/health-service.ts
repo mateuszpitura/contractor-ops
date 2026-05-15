@@ -35,6 +35,7 @@ export async function getProviderHealth(
     return {
       status: 'DISCONNECTED',
       provider: providerSlug,
+      connectionId: null,
       displayName: null,
       connectedAt: null,
       lastSyncAt: null,
@@ -87,6 +88,7 @@ export async function getProviderHealth(
   return {
     status: connection.status as ProviderHealthStatus['status'],
     provider: providerSlug,
+    connectionId: connection.id,
     displayName: connection.displayName,
     connectedAt: connection.connectedAt,
     lastSyncAt: connection.lastSyncAt,

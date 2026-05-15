@@ -122,24 +122,47 @@ export function ProviderConnectionCard({
     }
   }, [searchParams, provider, displayName, t, queryClient]);
 
-  // ---- Disconnect mutation ----
-  const disconnectMutation = useMutation(
+  // ---- Disconnect mutations ----
+  // Common handlers shared across provider-specific disconnect mutations.
+  const onDisconnectSuccess = () => {
+    toast.success(t('providerToasts.disconnected', { provider: displayName }));
+    queryClient.invalidateQueries({
+      queryKey: trpc.integration.getHealth.queryKey({ provider }),
+    });
+    queryClient.invalidateQueries({
+      queryKey: trpc.integration.getAllHealth.queryKey(),
+    });
+    setDisconnectDialogOpen(false);
+  };
+  const onDisconnectError = () => {
+    toast.error(t('providerToasts.disconnectFailed', { provider: displayName }));
+  };
+
+  const genericDisconnect = useMutation(
     trpc.integration.disconnectGeneric.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('providerToasts.disconnected', { provider: displayName }));
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.getHealth.queryKey({ provider }),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.integration.getAllHealth.queryKey(),
-        });
-        setDisconnectDialogOpen(false);
-      },
-      onError: () => {
-        toast.error(t('providerToasts.disconnectFailed', { provider: displayName }));
-      },
+      onSuccess: onDisconnectSuccess,
+      onError: onDisconnectError,
     }),
   );
+  // Provider-specific disconnect procedures perform extra cleanup
+  // (Jira: webhook deregistration; KSeF: QStash schedule deletion) that the
+  // generic procedure does not. Route by provider so we don't leak side-effect
+  // state on disconnect.
+  const jiraDisconnect = useMutation(
+    trpc.jira.disconnect.mutationOptions({
+      onSuccess: onDisconnectSuccess,
+      onError: onDisconnectError,
+    }),
+  );
+  const ksefDisconnect = useMutation(
+    trpc.ksef.disconnect.mutationOptions({
+      onSuccess: onDisconnectSuccess,
+      onError: onDisconnectError,
+    }),
+  );
+
+  const disconnectMutation =
+    provider === 'jira' ? jiraDisconnect : provider === 'ksef' ? ksefDisconnect : genericDisconnect;
 
   // ---- Connect handler (OAuth) ----
   const oauthUrlQuery = useQuery({
@@ -303,7 +326,16 @@ export function ProviderConnectionCard({
               variant="destructive"
               disabled={disconnectMutation.isPending}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => disconnectMutation.mutate({ provider })}>
+              onClick={() => {
+                if (provider === 'jira') {
+                  if (!health?.connectionId) return;
+                  jiraDisconnect.mutate({ connectionId: health.connectionId });
+                } else if (provider === 'ksef') {
+                  ksefDisconnect.mutate();
+                } else {
+                  genericDisconnect.mutate({ provider });
+                }
+              }}>
               {!!disconnectMutation.isPending && (
                 <Loader2 className="me-1.5 size-3.5 animate-spin" />
               )}

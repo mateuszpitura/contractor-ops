@@ -5,6 +5,8 @@
 export interface ProviderHealthStatus {
   status: 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'REAUTH_REQUIRED';
   provider: string;
+  /** IntegrationConnection row id. Null when status is DISCONNECTED and no row exists. */
+  connectionId?: string | null;
   displayName?: string | null;
   connectedAt?: Date | null;
   lastSyncAt?: Date | null;
