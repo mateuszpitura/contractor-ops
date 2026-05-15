@@ -16,6 +16,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -108,7 +109,8 @@ export function KleinunternehmerToggle({
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-4" />
               {pendingValue
                 ? 'Enable Kleinunternehmerregelung?'
                 : 'Disable Kleinunternehmerregelung?'}

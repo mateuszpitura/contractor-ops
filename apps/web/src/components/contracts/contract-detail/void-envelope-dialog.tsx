@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -74,7 +74,10 @@ export function VoidEnvelopeDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('title')}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Trash2 className="size-4" />
+            {t('title')}
+          </AlertDialogTitle>
           <AlertDialogDescription>{t('description')}</AlertDialogDescription>
         </AlertDialogHeader>
 

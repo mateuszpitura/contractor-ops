@@ -18,7 +18,7 @@
 
 import { SOFTWARE_NOT_LEGAL_ADVICE_EN } from '@contractor-ops/validators';
 import { useMutation } from '@tanstack/react-query';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ScrollText } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -65,7 +65,10 @@ export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptance
         onEscapeKeyDown={e => e.preventDefault()}
         onInteractOutside={e => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <ScrollText className="size-4" />
+            {t('title')}
+          </DialogTitle>
           <DialogDescription>{t('description', { version: currentVersion })}</DialogDescription>
         </DialogHeader>
 

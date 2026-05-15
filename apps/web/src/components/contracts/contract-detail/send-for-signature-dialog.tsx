@@ -18,7 +18,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileText, GripVertical, Loader2, Plus } from 'lucide-react';
+import { FileText, GripVertical, Loader2, Plus, Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -255,7 +255,10 @@ export function SendForSignatureDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] p-0">
         <DialogHeader className="px-6 pt-6">
-          <DialogTitle className="text-xl font-semibold">{tSend('title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
+            <Send className="size-4" />
+            {tSend('title')}
+          </DialogTitle>
           <DialogDescription>{tSend('description')}</DialogDescription>
         </DialogHeader>
 

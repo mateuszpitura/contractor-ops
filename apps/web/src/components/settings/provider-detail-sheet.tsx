@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Unlink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -456,7 +456,8 @@ export function ProviderDetailSheet({
       <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Unlink className="size-4" />
               {t('disconnectConfirmGeneric.title', {
                 provider: displayName,
               })}

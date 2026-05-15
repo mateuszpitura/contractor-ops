@@ -257,7 +257,10 @@ export function ZatcaSubmissionDetail({
                 />
                 <DialogContent className="max-h-[80vh] max-w-3xl overflow-auto">
                   <DialogHeader>
-                    <DialogTitle>Signed XML — Invoice {submission.zatcaUuid}</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                      <FileCode className="size-4" />
+                      Signed XML — Invoice {submission.zatcaUuid}
+                    </DialogTitle>
                   </DialogHeader>
                   <pre className="overflow-x-auto rounded-lg bg-muted/30 p-4 font-mono text-xs">
                     {responseData?.signedXml

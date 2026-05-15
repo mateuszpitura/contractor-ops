@@ -98,7 +98,10 @@ export function ReverseChargeLineToggle({
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Override auto-detected reverse charge?</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-4" />
+              Override auto-detected reverse charge?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Turning reverse charge off applies the standard rate to this line. Please record a
               business reason — it will be written to the invoice audit log.

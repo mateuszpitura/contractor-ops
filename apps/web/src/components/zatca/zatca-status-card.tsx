@@ -202,7 +202,10 @@ export function ZatcaStatusCard() {
             />
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Disconnect ZATCA</AlertDialogTitle>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <Unlink className="size-4" />
+                  Disconnect ZATCA
+                </AlertDialogTitle>
                 <AlertDialogDescription>
                   Disconnect ZATCA: Active invoices will no longer be submitted. Pending submissions
                   will be cancelled. Continue?

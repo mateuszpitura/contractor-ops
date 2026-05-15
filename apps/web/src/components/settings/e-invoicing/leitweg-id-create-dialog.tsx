@@ -25,7 +25,7 @@
 
 import { leitwegIdSchema } from '@contractor-ops/validators';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Pencil, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -243,7 +243,10 @@ export function LeitwegIdCreateDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? t('headingEdit') : t('headingCreate')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isEdit ? <Pencil className="size-4" /> : <Plus className="size-4" />}
+            {isEdit ? t('headingEdit') : t('headingCreate')}
+          </DialogTitle>
           <DialogDescription>{t('valueHelper')}</DialogDescription>
         </DialogHeader>
 

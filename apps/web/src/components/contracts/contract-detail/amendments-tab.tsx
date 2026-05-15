@@ -107,7 +107,10 @@ function AddAmendmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('addTitle')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="size-4" />
+            {t('addTitle')}
+          </DialogTitle>
         </DialogHeader>
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -17,6 +17,7 @@
 
 'use client';
 
+import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
 import {
@@ -113,7 +114,10 @@ export function OverrideDialog({
       <Dialog open={open} onOpenChange={attemptClose}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="size-4" />
+              {t('title')}
+            </DialogTitle>
             <DialogDescription>{t('description')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -173,7 +177,10 @@ export function OverrideDialog({
       <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-4" />
+              {t('discardConfirm.title')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

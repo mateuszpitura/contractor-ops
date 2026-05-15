@@ -2,7 +2,7 @@
 
 import { iconSize } from '@contractor-ops/ui';
 import type { Table } from '@tanstack/react-table';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -140,7 +140,10 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
       <AlertDialog open={showTerminateDialog} onOpenChange={setShowTerminateDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{td('titleBulk', { count })}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {td('titleBulk', { count })}
+            </AlertDialogTitle>
             <AlertDialogDescription>{td('bodyBulk')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

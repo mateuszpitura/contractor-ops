@@ -129,7 +129,10 @@ export function OrgSwitcher() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>{t('createTitle')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="size-4" />
+              {t('createTitle')}
+            </DialogTitle>
             <DialogDescription>{t('createDescription')}</DialogDescription>
           </DialogHeader>
           <form

@@ -348,7 +348,8 @@ export function TemplatesTable() {
         onOpenChange={open => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
               {t('templates.deleteTitle', { name: deleteTarget?.name ?? '' })}
             </AlertDialogTitle>
             <AlertDialogDescription>{t('templates.deleteBody')}</AlertDialogDescription>

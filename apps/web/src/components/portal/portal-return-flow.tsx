@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Package } from 'lucide-react';
+import { Loader2, Package, PackageOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -166,7 +166,10 @@ export function PortalReturnFlow({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <PackageOpen className="size-4" />
+              {t('title')}
+            </DialogTitle>
           </DialogHeader>
 
           <StepIndicator currentStep={step} totalSteps={3} />

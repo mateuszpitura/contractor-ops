@@ -76,7 +76,10 @@ export function KsefDuplicateBanner({
       <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Void Invoice</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              Void Invoice
+            </AlertDialogTitle>
             <AlertDialogDescription>
               This invoice will be marked as void. The KSeF version will remain as the authoritative
               record.

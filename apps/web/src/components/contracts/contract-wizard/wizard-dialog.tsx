@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Sentry from '@sentry/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2 } from 'lucide-react';
+import { AlertTriangle, Check, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import type { Resolver } from 'react-hook-form';
@@ -341,7 +341,10 @@ export function ContractWizardDialog({
       <Dialog open={open} onOpenChange={o => !o && handleClose()}>
         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
-            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="size-4" />
+              {t('title')}
+            </DialogTitle>
           </DialogHeader>
 
           {/* Step indicator */}
@@ -394,7 +397,10 @@ export function ContractWizardDialog({
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('discardConfirm.title')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-4" />
+              {t('discardConfirm.title')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

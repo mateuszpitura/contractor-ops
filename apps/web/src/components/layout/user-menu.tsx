@@ -7,6 +7,7 @@ import {
   Maximize2,
   Minimize2,
   Moon,
+  Pencil,
   Settings,
   UserPen,
 } from 'lucide-react';
@@ -231,7 +232,10 @@ export function UserMenu() {
       <Dialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
         <DialogContent className="sm:max-w-[360px]">
           <DialogHeader>
-            <DialogTitle>{t('editName')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="size-4" />
+              {t('editName')}
+            </DialogTitle>
           </DialogHeader>
           <form
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop

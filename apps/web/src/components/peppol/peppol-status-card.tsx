@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Unplug } from 'lucide-react';
+import { Settings, Unlink, Unplug } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -200,7 +200,10 @@ export function PeppolStatusCard() {
             />
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{t('disconnectTitle')}</AlertDialogTitle>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <Unlink className="size-4" />
+                  {t('disconnectTitle')}
+                </AlertDialogTitle>
                 <AlertDialogDescription>{t('disconnectDescription')}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

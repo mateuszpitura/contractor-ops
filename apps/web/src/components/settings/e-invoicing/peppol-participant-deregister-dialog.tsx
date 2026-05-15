@@ -7,7 +7,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Unlink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -61,7 +61,10 @@ export function PeppolParticipantDeregisterDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{DEREGISTER_HEADING}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Unlink className="size-4" />
+            {DEREGISTER_HEADING}
+          </AlertDialogTitle>
           <AlertDialogDescription>{DEREGISTER_BODY}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

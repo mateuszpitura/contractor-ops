@@ -6,7 +6,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -61,7 +61,10 @@ export function LeitwegIdDeleteDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{DELETE_HEADING}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Trash2 className="size-4" />
+            {DELETE_HEADING}
+          </AlertDialogTitle>
           <AlertDialogDescription>{DELETE_BODY}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

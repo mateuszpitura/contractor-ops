@@ -2,7 +2,7 @@
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment, useState } from 'react';
 import {
@@ -203,7 +203,8 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
       <AlertDialog open={terminateOpen} onOpenChange={setTerminateOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
               {t('actions.terminateTitle', { title: contract.title ?? '' })}
             </AlertDialogTitle>
             <AlertDialogDescription>{t('actions.terminateBody')}</AlertDialogDescription>

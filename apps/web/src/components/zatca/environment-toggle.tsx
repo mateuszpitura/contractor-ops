@@ -139,7 +139,10 @@ export function EnvironmentToggle({
       <AlertDialog open={confirmSandbox} onOpenChange={setConfirmSandbox}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Switch to Sandbox</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Settings className="size-4" />
+              Switch to Sandbox
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Switch to Sandbox: Production submissions will pause. Pending invoices will remain
               queued. Continue?

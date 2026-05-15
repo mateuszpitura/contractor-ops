@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { LayoutTemplate, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -179,7 +179,10 @@ export function TemplatePicker({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>{tp('title')}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <LayoutTemplate className="size-4" />
+            {tp('title')}
+          </DialogTitle>
           <DialogDescription>
             {isBulk && contractorIds ? tp('startForCount', { count: contractorIds.length }) : null}
           </DialogDescription>

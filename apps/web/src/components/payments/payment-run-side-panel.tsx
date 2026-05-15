@@ -363,7 +363,8 @@ function CancelRunButton({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <XCircle className="size-4" />
             {isExported ? t('cancelDialog.exportedTitle') : t('cancelDialog.title')}
           </AlertDialogTitle>
           <AlertDialogDescription>

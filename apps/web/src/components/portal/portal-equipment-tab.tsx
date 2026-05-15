@@ -3,7 +3,7 @@
 import { AtelierEmptyState, EquipmentIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, RotateCcw } from 'lucide-react';
+import { Loader2, RotateCcw, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -260,7 +260,10 @@ export function PortalEquipmentTab() {
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{tReturn('cancelConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <XCircle className="size-4" />
+              {tReturn('cancelConfirmTitle')}
+            </AlertDialogTitle>
             <AlertDialogDescription>{tReturn('cancelConfirmDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

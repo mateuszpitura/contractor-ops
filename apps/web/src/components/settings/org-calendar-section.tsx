@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Unlink } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -137,7 +137,10 @@ function OrgCalendarProviderCard({
       <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('disconnectTitle', { provider: displayName })}</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Unlink className="size-4" />
+              {t('disconnectTitle', { provider: displayName })}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('disconnectBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

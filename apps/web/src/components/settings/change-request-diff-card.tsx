@@ -4,6 +4,7 @@ import type { ChangeRequestStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { useMutation } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
+import { XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -237,7 +238,10 @@ export function ChangeRequestDiffCard({
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('rejectTitle')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="size-4" />
+              {t('rejectTitle')}
+            </DialogTitle>
             <DialogDescription>{t('rejectDescription')}</DialogDescription>
           </DialogHeader>
           <Textarea
