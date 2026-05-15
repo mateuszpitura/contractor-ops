@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { UsageDashboard } from './usage-dashboard';
 // ---------------------------------------------------------------------------
 
 export function BillingTab() {
+  const t = useTranslations('Billing.billingTab');
   const searchParams = useSearchParams();
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export function BillingTab() {
       }
     },
     onError() {
-      toast.error('Failed to start checkout. Please try again.');
+      toast.error(t('checkoutFailed'));
     },
   });
 
@@ -44,7 +46,7 @@ export function BillingTab() {
       }
     },
     onError() {
-      toast.error('Failed to open billing portal. Please try again.');
+      toast.error(t('portalFailed'));
     },
   });
 
@@ -52,13 +54,13 @@ export function BillingTab() {
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
     if (sessionId) {
-      toast.success('Subscription updated successfully!');
+      toast.success(t('subscriptionUpdated'));
       // Clean the URL
       const url = new URL(window.location.href);
       url.searchParams.delete('session_id');
       window.history.replaceState({}, '', url.toString());
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   // Plan selection handler
   function _handleSelectPlan(priceId: string) {
@@ -112,7 +114,7 @@ export function BillingTab() {
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         <Button variant="outline" onClick={handlePortal} disabled={portalMutation.isPending}>
           {!!portalMutation.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
-          Manage billing
+          {t('manageBilling')}
         </Button>
       )}
     </div>

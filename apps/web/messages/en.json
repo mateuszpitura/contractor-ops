@@ -4902,6 +4902,53 @@
       "paymentFailed": "Payment failed.",
       "paymentFailedBody": "Update your payment method to avoid service interruption.",
       "goToBilling": "Go to billing"
+    },
+    "billingTab": {
+      "checkoutFailed": "Failed to start checkout. Please try again.",
+      "portalFailed": "Failed to open billing portal. Please try again.",
+      "subscriptionUpdated": "Subscription updated successfully!",
+      "manageBilling": "Manage billing"
+    },
+    "creditExhausted": {
+      "title": "OCR credits exhausted",
+      "description": "You have used all OCR credits this month. Upgrade your plan for more credits or purchase a top-up bundle.",
+      "upgradePlan": "Upgrade plan",
+      "buyCredits": "Buy credits"
+    },
+    "proration": {
+      "errorLoad": "Failed to load proration preview. Please try again.",
+      "title": "Plan change preview",
+      "totalLabel": "Total",
+      "creditNote": "You will receive a credit of {amount} PLN for the unused portion of your current plan.",
+      "chargeNote": "You will be charged {amount} PLN today for the remainder of your billing period.",
+      "confirm": "Confirm change",
+      "cancel": "Cancel"
+    },
+    "softBlock": {
+      "title": "Your trial has ended",
+      "description": "Your data is safe. Choose a plan to continue using Contractor Ops."
+    },
+    "trial": {
+      "choosePlan": "Choose a plan",
+      "dismissAria": "Dismiss trial banner",
+      "endsInDays": "Your trial ends in {days} days. Upgrade to keep your data and full access.",
+      "ends7Days": "Your trial ends in 7 days. Upgrade to keep your data and full access.",
+      "ends3Days": "Your trial ends in 3 days. Choose a plan to continue without interruption.",
+      "ends1Day": "Your trial ends tomorrow. Upgrade now to avoid losing access to features."
+    },
+    "planCard": {
+      "currentPlan": "Current plan",
+      "recommended": "Recommended",
+      "perMonth": "/month",
+      "perContractor": "+{price} PLN per contractor",
+      "creditsIncluded": "{credits} OCR credits/month included",
+      "ctaChoosePlan": "Choose a plan",
+      "ctaUpgradePlan": "Upgrade plan",
+      "ctaChangePlan": "Change plan",
+      "ctaCurrentPlan": "Current plan"
+    },
+    "planComparison": {
+      "selectAriaLabel": "Select a plan"
     }
   },
   "Time": {

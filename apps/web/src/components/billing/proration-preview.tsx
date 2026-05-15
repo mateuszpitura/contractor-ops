@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -22,6 +23,7 @@ interface ProrationPreviewProps {
 // ---------------------------------------------------------------------------
 
 export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationPreviewProps) {
+  const t = useTranslations('Billing.proration');
   const { data, isLoading, isError } = useQuery(
     trpc.billing.getProrationPreview.queryOptions({ newPriceId }),
   );
@@ -42,12 +44,10 @@ export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationP
     return (
       <Card>
         <CardContent className="py-4">
-          <p className="text-sm text-destructive">
-            Failed to load proration preview. Please try again.
-          </p>
+          <p className="text-sm text-destructive">{t('errorLoad')}</p>
           <div className="mt-4 flex gap-2">
             <Button variant="outline" size="sm" onClick={onCancel}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </CardContent>
@@ -61,7 +61,7 @@ export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationP
   return (
     <Card>
       <CardContent className="space-y-4 py-4">
-        <h3 className="text-sm font-semibold">Plan change preview</h3>
+        <h3 className="text-sm font-semibold">{t('title')}</h3>
 
         {/* Line items */}
         <ul className="space-y-2">
@@ -79,22 +79,22 @@ export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationP
 
         {/* Total */}
         <div className="flex items-center justify-between text-sm font-semibold">
-          <span>Total</span>
+          <span>{t('totalLabel')}</span>
           <span className="tabular-nums">{Math.abs(totalPLN).toFixed(2)} PLN</span>
         </div>
 
         <p className="text-sm text-muted-foreground">
           {isCredit
-            ? `You will receive a credit of ${Math.abs(totalPLN).toFixed(2)} PLN for the unused portion of your current plan.`
-            : `You will be charged ${totalPLN.toFixed(2)} PLN today for the remainder of your billing period.`}
+            ? t('creditNote', { amount: Math.abs(totalPLN).toFixed(2) })
+            : t('chargeNote', { amount: totalPLN.toFixed(2) })}
         </p>
 
         <div className="flex gap-2">
           <Button size="sm" onClick={onConfirm}>
-            Confirm change
+            {t('confirm')}
           </Button>
           <Button variant="outline" size="sm" onClick={onCancel}>
-            Cancel
+            {t('cancel')}
           </Button>
         </div>
       </CardContent>

@@ -5015,6 +5015,53 @@
       "paymentFailed": "Zahlung fehlgeschlagen.",
       "paymentFailedBody": "Aktualisieren Sie Ihre Zahlungsmethode, um eine Serviceunterbrechung zu vermeiden.",
       "goToBilling": "Zur Abrechnung"
+    },
+    "billingTab": {
+      "checkoutFailed": "Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+      "portalFailed": "Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.",
+      "subscriptionUpdated": "Abonnement erfolgreich aktualisiert!",
+      "manageBilling": "Abrechnung verwalten"
+    },
+    "creditExhausted": {
+      "title": "OCR-Guthaben aufgebraucht",
+      "description": "Sie haben diesen Monat alle OCR-Guthaben verbraucht. Upgraden Sie Ihren Tarif für mehr Guthaben oder kaufen Sie ein Aufladepaket.",
+      "upgradePlan": "Tarif upgraden",
+      "buyCredits": "Guthaben kaufen"
+    },
+    "proration": {
+      "errorLoad": "Vorschau der anteiligen Berechnung konnte nicht geladen werden. Bitte versuchen Sie es erneut.",
+      "title": "Tarifwechsel-Vorschau",
+      "totalLabel": "Gesamt",
+      "creditNote": "Sie erhalten eine Gutschrift von {amount} PLN für den nicht genutzten Anteil Ihres aktuellen Tarifs.",
+      "chargeNote": "Sie werden heute {amount} PLN für den verbleibenden Abrechnungszeitraum belastet.",
+      "confirm": "Änderung bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "softBlock": {
+      "title": "Ihre Testphase ist beendet",
+      "description": "Ihre Daten sind sicher. Wählen Sie einen Tarif, um Contractor Ops weiterhin zu nutzen."
+    },
+    "trial": {
+      "choosePlan": "Tarif wählen",
+      "dismissAria": "Testphasen-Banner schließen",
+      "endsInDays": "Ihre Testphase endet in {days} Tagen. Upgraden Sie, um Ihre Daten und den vollen Zugriff zu behalten.",
+      "ends7Days": "Ihre Testphase endet in 7 Tagen. Upgraden Sie, um Ihre Daten und den vollen Zugriff zu behalten.",
+      "ends3Days": "Ihre Testphase endet in 3 Tagen. Wählen Sie einen Tarif, um ohne Unterbrechung fortzufahren.",
+      "ends1Day": "Ihre Testphase endet morgen. Upgraden Sie jetzt, um den Zugriff auf Funktionen nicht zu verlieren."
+    },
+    "planCard": {
+      "currentPlan": "Aktueller Tarif",
+      "recommended": "Empfohlen",
+      "perMonth": "/Monat",
+      "perContractor": "+{price} PLN pro Auftragnehmer",
+      "creditsIncluded": "{credits} OCR-Guthaben/Monat enthalten",
+      "ctaChoosePlan": "Tarif wählen",
+      "ctaUpgradePlan": "Tarif upgraden",
+      "ctaChangePlan": "Tarif wechseln",
+      "ctaCurrentPlan": "Aktueller Tarif"
+    },
+    "planComparison": {
+      "selectAriaLabel": "Tarif auswählen"
     }
   },
   "Time": {

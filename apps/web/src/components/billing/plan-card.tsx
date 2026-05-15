@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -39,11 +40,21 @@ function formatPLN(minor: number): string {
   return String(minor / 100);
 }
 
-const CTA_CONFIG: Record<PlanCtaMode, { label: string; variant: 'default' | 'outline' }> = {
-  choose: { label: 'Choose a plan', variant: 'default' },
-  upgrade: { label: 'Upgrade plan', variant: 'default' },
-  change: { label: 'Change plan', variant: 'outline' },
-  current: { label: 'Current plan', variant: 'outline' },
+const CTA_VARIANTS: Record<PlanCtaMode, 'default' | 'outline'> = {
+  choose: 'default',
+  upgrade: 'default',
+  change: 'outline',
+  current: 'outline',
+};
+
+const CTA_KEY: Record<
+  PlanCtaMode,
+  'ctaChoosePlan' | 'ctaUpgradePlan' | 'ctaChangePlan' | 'ctaCurrentPlan'
+> = {
+  choose: 'ctaChoosePlan',
+  upgrade: 'ctaUpgradePlan',
+  change: 'ctaChangePlan',
+  current: 'ctaCurrentPlan',
 };
 
 // ---------------------------------------------------------------------------
@@ -58,8 +69,10 @@ export function PlanCard({
   disabled,
   compact,
 }: PlanCardProps) {
+  const t = useTranslations('Billing.planCard');
   const isCurrentPlan = ctaMode === 'current';
-  const cta = CTA_CONFIG[ctaMode];
+  const ctaVariant = CTA_VARIANTS[ctaMode];
+  const ctaLabel = t(CTA_KEY[ctaMode]);
 
   return (
     <Card
@@ -82,8 +95,8 @@ export function PlanCard({
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{tier.name}</span>
-          {isCurrentPlan && <Badge variant="default">Current plan</Badge>}
-          {isRecommended && !isCurrentPlan && <Badge variant="success">Recommended</Badge>}
+          {isCurrentPlan && <Badge variant="default">{t('currentPlan')}</Badge>}
+          {isRecommended && !isCurrentPlan && <Badge variant="success">{t('recommended')}</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">{tier.description}</p>
       </CardHeader>
@@ -94,15 +107,15 @@ export function PlanCard({
           <span className="font-display text-[28px] font-semibold leading-tight tabular-nums">
             {formatPLN(tier.basePriceMinor)} PLN
           </span>
-          <span className="text-sm text-muted-foreground">/month</span>
+          <span className="text-sm text-muted-foreground">{t('perMonth')}</span>
         </div>
 
         <p className="text-sm text-muted-foreground">
-          +{formatPLN(tier.seatPriceMinor)} PLN per contractor
+          {t('perContractor', { price: formatPLN(tier.seatPriceMinor) })}
         </p>
 
         <p className="text-sm text-muted-foreground">
-          {tier.creditAllowance} OCR credits/month included
+          {t('creditsIncluded', { credits: tier.creditAllowance })}
         </p>
 
         {/* Feature list */}
@@ -125,11 +138,11 @@ export function PlanCard({
 
       <CardFooter>
         <Button
-          variant={cta.variant}
+          variant={ctaVariant}
           className="w-full"
           disabled={isCurrentPlan || disabled}
           onClick={onSelect}>
-          {cta.label}
+          {ctaLabel}
         </Button>
       </CardFooter>
     </Card>

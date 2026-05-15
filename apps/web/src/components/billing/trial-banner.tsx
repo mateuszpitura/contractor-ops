@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -18,6 +19,7 @@ interface TrialBannerProps {
 // ---------------------------------------------------------------------------
 
 export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
+  const t = useTranslations('Billing.trial');
   const [dismissed, setDismissed] = useState(false);
 
   const daysRemaining = Math.ceil((trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -27,7 +29,7 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
     return null;
   }
 
-  const message = getTrialMessage(daysRemaining);
+  const message = getTrialMessage(t, daysRemaining);
 
   return (
     <div
@@ -38,14 +40,14 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
         <p className="text-sm font-medium">{message}</p>
         <div className="flex items-center gap-2">
           <Button variant="default" size="sm" onClick={onUpgrade}>
-            Choose a plan
+            {t('choosePlan')}
           </Button>
           <button
             type="button"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setDismissed(true)}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Dismiss trial banner">
+            aria-label={t('dismissAria')}>
             <X size={16} aria-hidden="true" />
           </button>
         </div>
@@ -58,15 +60,18 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getTrialMessage(daysRemaining: number): string {
+function getTrialMessage(
+  t: ReturnType<typeof useTranslations<'Billing.trial'>>,
+  daysRemaining: number,
+): string {
   switch (daysRemaining) {
     case 7:
-      return 'Your trial ends in 7 days. Upgrade to keep your data and full access.';
+      return t('ends7Days');
     case 3:
-      return 'Your trial ends in 3 days. Choose a plan to continue without interruption.';
+      return t('ends3Days');
     case 1:
-      return 'Your trial ends tomorrow. Upgrade now to avoid losing access to features.';
+      return t('ends1Day');
     default:
-      return `Your trial ends in ${daysRemaining} days. Upgrade to keep your data and full access.`;
+      return t('endsInDays', { days: daysRemaining });
   }
 }

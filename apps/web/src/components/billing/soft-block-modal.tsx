@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ interface SoftBlockModalProps {
 // ---------------------------------------------------------------------------
 
 export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
+  const t = useTranslations('Billing.softBlock');
   return (
     <Dialog open={isOpen}>
       <DialogContent
@@ -36,11 +38,9 @@ export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
         onEscapeKeyDown={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display text-[28px] font-semibold leading-tight">
-            Your trial has ended
+            {t('title')}
           </DialogTitle>
-          <DialogDescription>
-            Your data is safe. Choose a plan to continue using Contractor Ops.
-          </DialogDescription>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
         <div className="mt-4">
