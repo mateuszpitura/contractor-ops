@@ -216,7 +216,9 @@
           },
           "style": {
             "useNamingConvention": "off",
-            "useTemplate": "off"
+            "useTemplate": "off",
+            "noNonNullAssertion": "off",
+            "noParameterAssign": "off"
           },
           "complexity": {
             "noExcessiveCognitiveComplexity": "off"

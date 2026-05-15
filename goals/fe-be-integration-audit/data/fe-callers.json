@@ -932,13 +932,13 @@
     "path": "portal.requestMagicLink",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/login/page.tsx",
-    "line": 63,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -948,13 +948,13 @@
     "path": "portal.verifyMagicLink",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
-    "line": 89,
+    "line": 91,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -964,13 +964,13 @@
     "path": "portal.selectOrg",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
-    "line": 93,
+    "line": 101,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -1476,13 +1476,13 @@
     "path": "billing.createCheckoutSession",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/billing/billing-overlay.tsx",
-    "line": 39,
+    "line": 40,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -1508,13 +1508,13 @@
     "path": "billing.createCheckoutSession",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/billing/billing-tab.tsx",
-    "line": 29,
+    "line": 30,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -1524,13 +1524,13 @@
     "path": "billing.createPortalSession",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/billing/billing-tab.tsx",
-    "line": 43,
+    "line": 45,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -1572,13 +1572,13 @@
     "path": "billing.createTopUpCheckout",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/billing/top-up-dialog.tsx",
-    "line": 55,
+    "line": 56,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -1722,7 +1722,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -1732,13 +1732,13 @@
     "path": "consent.downloadSCC",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/consent/consent-management-section.tsx",
-    "line": 67,
+    "line": 68,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -1764,13 +1764,13 @@
     "path": "consent.bulkGrant",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/consent/onboarding-consent-step.tsx",
-    "line": 80,
+    "line": 81,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -1844,13 +1844,13 @@
     "path": "classification.acknowledgeDisclaimer",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/classification/classification-disclaimer-dialog.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -1876,13 +1876,13 @@
     "path": "classificationDashboard.exportMarketCsv",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx",
-    "line": 26,
+    "line": 27,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -1988,13 +1988,13 @@
     "path": "classificationDocument.uploadDrvDecisionLetter",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/classification/drv-clearance/drv-clearance-panel.tsx",
-    "line": 62,
+    "line": 63,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -2004,7 +2004,7 @@
     "path": "statusfeststellungsverfahren.listByEngagement",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/classification/drv-clearance/drv-clearance-panel.tsx",
-    "line": 105,
+    "line": 107,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2026,7 +2026,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -2036,7 +2036,7 @@
     "path": "classification.submit",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
-    "line": 115,
+    "line": 116,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2106,7 +2106,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -2116,7 +2116,7 @@
     "path": "classificationDocument.generateSds",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/classification-documents/generate-sds-button.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2132,13 +2132,13 @@
     "path": "classification.recreateComplianceAssessment",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/compliance/recompute-compliance-dialog.tsx",
-    "line": 68,
+    "line": 69,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -2164,13 +2164,13 @@
     "path": "contractor.updateLifecycleStage",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 76,
+    "line": 78,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -2180,7 +2180,7 @@
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 80,
+    "line": 86,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2196,13 +2196,13 @@
     "path": "contractor.archive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 88,
+    "line": 95,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -2212,7 +2212,7 @@
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 91,
+    "line": 103,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2436,7 +2436,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2452,13 +2452,13 @@
     "path": "contractor.bulkArchive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 84,
+    "line": 86,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -2468,13 +2468,13 @@
     "path": "contractor.bulkAssignOwner",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 97,
+    "line": 105,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -2484,13 +2484,13 @@
     "path": "contractor.export",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 112,
+    "line": 124,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -2628,13 +2628,13 @@
     "path": "contractor.updateCountryFields",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/country-compliance-section.tsx",
-    "line": 45,
+    "line": 46,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -2644,7 +2644,7 @@
     "path": "contractor.listEngagements",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/country-compliance-section.tsx",
-    "line": 163,
+    "line": 165,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2900,7 +2900,7 @@
     "path": "contract.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 79,
+    "line": 81,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2916,13 +2916,13 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 80,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -2932,13 +2932,13 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 89,
+    "line": 99,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -3130,7 +3130,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -3140,7 +3140,7 @@
     "path": "esign.listEnvelopes",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx",
-    "line": 215,
+    "line": 216,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3156,7 +3156,7 @@
     "path": "contract.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx",
-    "line": 218,
+    "line": 219,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3172,13 +3172,13 @@
     "path": "esign.voidEnvelope",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/void-envelope-dialog.tsx",
-    "line": 53,
+    "line": 54,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -3188,13 +3188,13 @@
     "path": "contract.bulkTransition",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-table/data-table-bulk-actions.tsx",
-    "line": 75,
+    "line": 77,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -3252,13 +3252,13 @@
     "path": "document.requestUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 125,
+    "line": 127,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -3268,13 +3268,13 @@
     "path": "document.confirmUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 131,
+    "line": 138,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -3316,13 +3316,13 @@
     "path": "document.linkToEntity",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx",
-    "line": 253,
+    "line": 254,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": true
@@ -3476,13 +3476,13 @@
     "path": "document.requestUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 56,
+    "line": 57,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -3492,13 +3492,13 @@
     "path": "document.confirmUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 62,
+    "line": 68,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -3508,7 +3508,7 @@
     "path": "document.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 143,
+    "line": 153,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3690,7 +3690,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": false,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -3700,13 +3700,13 @@
     "path": "equipment.createDpdShipment",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 170,
+    "line": 174,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": false,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -3716,13 +3716,13 @@
     "path": "equipment.createUpsShipment",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 177,
+    "line": 185,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": false,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -4138,7 +4138,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -4148,13 +4148,13 @@
     "path": "import.validate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
-    "line": 185,
+    "line": 186,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -4164,7 +4164,7 @@
     "path": "import.commit",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
-    "line": 199,
+    "line": 201,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4212,7 +4212,7 @@
     "path": "docs.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/attach-doc-dialog.tsx",
-    "line": 93,
+    "line": 97,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4292,13 +4292,13 @@
     "path": "googleWorkspace.listUserGroups",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
-    "line": 115,
+    "line": 116,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -4308,7 +4308,7 @@
     "path": "googleWorkspace.bulkImport",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
-    "line": 195,
+    "line": 201,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4324,7 +4324,7 @@
     "path": "googleWorkspace.listDirectory",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
-    "line": 215,
+    "line": 221,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4340,7 +4340,7 @@
     "path": "googleWorkspace.syncStatus",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
-    "line": 218,
+    "line": 224,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5098,7 +5098,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -5108,13 +5108,13 @@
     "path": "einvoice.revalidate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 125,
+    "line": 129,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -5124,13 +5124,13 @@
     "path": "einvoice.send",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 136,
+    "line": 144,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -5140,7 +5140,7 @@
     "path": "einvoice.downloadXml",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 158,
+    "line": 170,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5156,7 +5156,7 @@
     "path": "einvoice.downloadReport",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 173,
+    "line": 185,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5194,7 +5194,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5204,13 +5204,13 @@
     "path": "invoiceIntake.confirmMatch",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 94,
+    "line": 95,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5220,13 +5220,13 @@
     "path": "invoiceIntake.acknowledgeValidation",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 101,
+    "line": 106,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5236,13 +5236,13 @@
     "path": "invoiceIntake.reject",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 108,
+    "line": 117,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5332,13 +5332,13 @@
     "path": "invoiceIntake.upload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/intake/intake-upload-dialog.tsx",
-    "line": 81,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5348,13 +5348,13 @@
     "path": "invoice.dismissDuplicate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/duplicate-warning.tsx",
-    "line": 41,
+    "line": 42,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -5364,7 +5364,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 149,
+    "line": 151,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5380,13 +5380,13 @@
     "path": "invoice.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 240,
+    "line": 243,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5396,13 +5396,13 @@
     "path": "invoice.submitForMatching",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 250,
+    "line": 259,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5412,13 +5412,13 @@
     "path": "invoice.voidInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 266,
+    "line": 277,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -5460,13 +5460,13 @@
     "path": "invoice.manualMatch",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
-    "line": 312,
+    "line": 313,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -5492,13 +5492,13 @@
     "path": "document.requestUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5508,13 +5508,13 @@
     "path": "document.confirmUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 95,
+    "line": 101,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5524,13 +5524,13 @@
     "path": "invoice.create",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 100,
+    "line": 111,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5540,13 +5540,13 @@
     "path": "ocr.trigger",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 105,
+    "line": 121,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5556,13 +5556,13 @@
     "path": "ocr.retrigger",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 110,
+    "line": 131,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5572,7 +5572,7 @@
     "path": "invoice.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 257,
+    "line": 282,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5588,7 +5588,7 @@
     "path": "invoice.statusCounts",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 260,
+    "line": 285,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5716,13 +5716,13 @@
     "path": "invoice.toggleReverseCharge",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
-    "line": 30,
+    "line": 31,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -5860,13 +5860,13 @@
     "path": "legal.generatePrivacyNoticePdf",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/legal/privacy-notice-pdf-download.tsx",
-    "line": 33,
+    "line": 34,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -6036,13 +6036,13 @@
     "path": "onboardingImport.startImport",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/onboarding/confirm-import-step.tsx",
-    "line": 86,
+    "line": 87,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -6292,13 +6292,13 @@
     "path": "bacs.generateExport",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/bacs/bacs-preview-card.tsx",
-    "line": 59,
+    "line": 60,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -6362,7 +6362,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": true
@@ -6372,7 +6372,7 @@
     "path": "payment.confirmStatementMatches",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/bank-statement-dialog.tsx",
-    "line": 88,
+    "line": 89,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6404,13 +6404,13 @@
     "path": "payment.create",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 100,
+    "line": 102,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -6420,13 +6420,13 @@
     "path": "payment.lockAndExport",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 107,
+    "line": 114,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -6548,13 +6548,13 @@
     "path": "tax.generateWhtCertificate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/wht-summary-card.tsx",
-    "line": 32,
+    "line": 33,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -6708,13 +6708,13 @@
     "path": "portal.getUploadUrl",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 403,
+    "line": 405,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -6724,13 +6724,13 @@
     "path": "ocr.portalTrigger",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 406,
+    "line": 414,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -6740,7 +6740,7 @@
     "path": "ocr.portalGetResult",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 413,
+    "line": 425,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6756,13 +6756,13 @@
     "path": "portal.submitInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 604,
+    "line": 618,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -6772,7 +6772,7 @@
     "path": "portal.getActiveContracts",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 951,
+    "line": 970,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6826,7 +6826,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -7044,13 +7044,13 @@
     "path": "portal.updateContactInfo",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 72,
+    "line": 73,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -7060,13 +7060,13 @@
     "path": "portal.submitFinancialChangeRequest",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 77,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -7076,7 +7076,7 @@
     "path": "portal.getProfile",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 96,
+    "line": 106,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7092,7 +7092,7 @@
     "path": "portal.getProfile",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 110,
+    "line": 120,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7140,13 +7140,13 @@
     "path": "report.exportComplianceGaps",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 64,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7188,13 +7188,13 @@
     "path": "report.exportExpiringContracts",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 59,
+    "line": 60,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7220,13 +7220,13 @@
     "path": "report.exportOverdueInvoices",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/overdue-invoices-report.tsx",
-    "line": 64,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7268,13 +7268,13 @@
     "path": "report.exportSpendByContractor",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
-    "line": 67,
+    "line": 68,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7316,13 +7316,13 @@
     "path": "report.exportSpendByTeam",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/spend-team-report.tsx",
-    "line": 60,
+    "line": 61,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7380,13 +7380,13 @@
     "path": "settings.getLogoUploadUrl",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/admin-branding-section.tsx",
-    "line": 69,
+    "line": 70,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
@@ -7396,7 +7396,7 @@
     "path": "settings.updateBranding",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/admin-branding-section.tsx",
-    "line": 74,
+    "line": 80,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7412,7 +7412,7 @@
     "path": "settings.getBranding",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/admin-branding-section.tsx",
-    "line": 78,
+    "line": 84,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7460,7 +7460,7 @@
     "path": "apiKey.revoke",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 308,
+    "line": 306,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7476,7 +7476,7 @@
     "path": "apiKey.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 310,
+    "line": 308,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7492,7 +7492,7 @@
     "path": "apiKey.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 357,
+    "line": 355,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7636,13 +7636,13 @@
     "path": "audit.export",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 153,
+    "line": 155,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7706,7 +7706,7 @@
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -7796,13 +7796,13 @@
     "path": "settings.reviewChangeRequest",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -7812,13 +7812,13 @@
     "path": "settings.reviewChangeRequest",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 101,
+    "line": 103,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -9508,13 +9508,13 @@
     "path": "consent.recordToS",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/tos-reacceptance-modal.tsx",
-    "line": 48,
+    "line": 49,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -9700,13 +9700,13 @@
     "path": "workflow.startRun",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
-    "line": 110,
+    "line": 111,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
@@ -9732,13 +9732,13 @@
     "path": "workflow.seedStarterTemplates",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 123,
+    "line": 124,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": false
     },
     "fileHasAlertDialog": true
@@ -10148,13 +10148,13 @@
     "path": "workflow.updateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 25,
+    "line": 26,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -10164,13 +10164,13 @@
     "path": "workflow.deleteTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 29,
+    "line": 36,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false
@@ -10180,13 +10180,13 @@
     "path": "workflow.duplicateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 33,
+    "line": 46,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
-      "hasInvalidation": false,
+      "hasInvalidation": true,
       "hasIsPending": true
     },
     "fileHasAlertDialog": false

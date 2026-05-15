@@ -980,44 +980,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-067",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.requestMagicLink",
-    "file": "apps/web/src/app/[locale]/(portal)/portal/login/page.tsx",
-    "line": 63,
-    "problem": "Mutation portal.requestMagicLink succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-068",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.verifyMagicLink",
-    "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
-    "line": 89,
-    "problem": "Mutation portal.verifyMagicLink succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-008",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.verifyMagicLink",
     "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
-    "line": 89,
+    "line": 91,
     "problem": "Mutation portal.verifyMagicLink trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-069",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.selectOrg",
-    "file": "apps/web/src/app/[locale]/(portal)/portal/login/verify/page.tsx",
-    "line": 93,
-    "problem": "Mutation portal.selectOrg succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-009",
@@ -1030,34 +1000,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-070",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "billing.createCheckoutSession",
-    "file": "apps/web/src/components/billing/billing-overlay.tsx",
-    "line": 39,
-    "problem": "Mutation billing.createCheckoutSession succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-010",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "billing.createCheckoutSession",
     "file": "apps/web/src/components/billing/billing-overlay.tsx",
-    "line": 39,
+    "line": 40,
     "problem": "Mutation billing.createCheckoutSession trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-071",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "billing.createCheckoutSession",
-    "file": "apps/web/src/components/billing/billing-tab.tsx",
-    "line": 29,
-    "problem": "Mutation billing.createCheckoutSession succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-011",
@@ -1065,59 +1015,9 @@
     "category": "missing-loading-state",
     "procedure": "billing.createCheckoutSession",
     "file": "apps/web/src/components/billing/billing-tab.tsx",
-    "line": 29,
+    "line": 30,
     "problem": "Mutation billing.createCheckoutSession trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-072",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "billing.createPortalSession",
-    "file": "apps/web/src/components/billing/billing-tab.tsx",
-    "line": 43,
-    "problem": "Mutation billing.createPortalSession succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-073",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "billing.createTopUpCheckout",
-    "file": "apps/web/src/components/billing/top-up-dialog.tsx",
-    "line": 55,
-    "problem": "Mutation billing.createTopUpCheckout succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-074",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "consent.downloadDPA",
-    "file": "apps/web/src/components/consent/consent-management-section.tsx",
-    "line": 55,
-    "problem": "Mutation consent.downloadDPA succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-075",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "consent.downloadSCC",
-    "file": "apps/web/src/components/consent/consent-management-section.tsx",
-    "line": 67,
-    "problem": "Mutation consent.downloadSCC succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-076",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "consent.bulkGrant",
-    "file": "apps/web/src/components/consent/onboarding-consent-step.tsx",
-    "line": 80,
-    "problem": "Mutation consent.bulkGrant succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-HIGH-009",
@@ -1130,54 +1030,14 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-MED-077",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classification.acknowledgeDisclaimer",
-    "file": "apps/web/src/components/contractors/classification/classification-disclaimer-dialog.tsx",
-    "line": 89,
-    "problem": "Mutation classification.acknowledgeDisclaimer succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-078",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classificationDashboard.exportMarketCsv",
-    "file": "apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx",
-    "line": 26,
-    "problem": "Mutation classificationDashboard.exportMarketCsv succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-012",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "classificationDashboard.exportMarketCsv",
     "file": "apps/web/src/components/contractors/classification/dashboard/download-csv-button.tsx",
-    "line": 26,
+    "line": 27,
     "problem": "Mutation classificationDashboard.exportMarketCsv trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-079",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classificationDocument.uploadDrvDecisionLetter",
-    "file": "apps/web/src/components/contractors/classification/drv-clearance/drv-clearance-panel.tsx",
-    "line": 62,
-    "problem": "Mutation classificationDocument.uploadDrvDecisionLetter succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-080",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classification.saveAnswer",
-    "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
-    "line": 91,
-    "problem": "Mutation classification.saveAnswer succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-013",
@@ -1190,94 +1050,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-081",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classification.approveSds",
-    "file": "apps/web/src/components/contractors/classification-documents/generate-sds-button.tsx",
-    "line": 40,
-    "problem": "Mutation classification.approveSds succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-082",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "classification.recreateComplianceAssessment",
-    "file": "apps/web/src/components/contractors/compliance/recompute-compliance-dialog.tsx",
-    "line": 68,
-    "problem": "Mutation classification.recreateComplianceAssessment succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-083",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.updateLifecycleStage",
-    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 76,
-    "problem": "Mutation contractor.updateLifecycleStage succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-HIGH-010",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "contractor.archive",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 88,
+    "line": 95,
     "problem": "Destructive mutation contractor.archive fires without a confirmation dialog in this file.",
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
-    "id": "F-MED-084",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.archive",
-    "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 88,
-    "problem": "Mutation contractor.archive succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-085",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.bulkArchive",
-    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 84,
-    "problem": "Mutation contractor.bulkArchive succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-086",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.bulkAssignOwner",
-    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 97,
-    "problem": "Mutation contractor.bulkAssignOwner succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-087",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.export",
-    "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 112,
-    "problem": "Mutation contractor.export succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-088",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contractor.updateCountryFields",
-    "file": "apps/web/src/components/contractors/country-compliance-section.tsx",
-    "line": 45,
-    "problem": "Mutation contractor.updateCountryFields succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-014",
@@ -1310,84 +1090,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-089",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contract.transitionStatus",
-    "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 80,
-    "problem": "Mutation contract.transitionStatus succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-090",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contract.transitionStatus",
-    "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 89,
-    "problem": "Mutation contract.transitionStatus succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-091",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "esign.resendToRecipient",
-    "file": "apps/web/src/components/contracts/contract-detail/signing-progress-bar.tsx",
-    "line": 118,
-    "problem": "Mutation esign.resendToRecipient succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-092",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "esign.voidEnvelope",
-    "file": "apps/web/src/components/contracts/contract-detail/void-envelope-dialog.tsx",
-    "line": 53,
-    "problem": "Mutation esign.voidEnvelope succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-093",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "contract.bulkTransition",
-    "file": "apps/web/src/components/contracts/contract-table/data-table-bulk-actions.tsx",
-    "line": 75,
-    "problem": "Mutation contract.bulkTransition succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-094",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.requestUpload",
-    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 125,
-    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-017",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "document.requestUpload",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 125,
+    "line": 127,
     "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-095",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.confirmUpload",
-    "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 131,
-    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-018",
@@ -1395,19 +1105,9 @@
     "category": "missing-loading-state",
     "procedure": "document.confirmUpload",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 131,
+    "line": 138,
     "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-096",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.linkToEntity",
-    "file": "apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx",
-    "line": 253,
-    "problem": "Mutation document.linkToEntity succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-019",
@@ -1415,19 +1115,9 @@
     "category": "missing-loading-state",
     "procedure": "document.linkToEntity",
     "file": "apps/web/src/components/contracts/contract-wizard/wizard-dialog.tsx",
-    "line": 253,
+    "line": 254,
     "problem": "Mutation document.linkToEntity trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-097",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.requestUpload",
-    "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 56,
-    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-020",
@@ -1435,19 +1125,9 @@
     "category": "missing-loading-state",
     "procedure": "document.requestUpload",
     "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 56,
+    "line": 57,
     "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-098",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.confirmUpload",
-    "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 62,
-    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-021",
@@ -1455,12 +1135,12 @@
     "category": "missing-loading-state",
     "procedure": "document.confirmUpload",
     "file": "apps/web/src/components/documents/drop-zone.tsx",
-    "line": 62,
+    "line": 68,
     "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-099",
+    "id": "F-MED-067",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createInPostShipment",
@@ -1470,74 +1150,24 @@
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-MED-100",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "equipment.createInPostShipment",
-    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 163,
-    "problem": "Mutation equipment.createInPostShipment succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-101",
+    "id": "F-MED-068",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createDpdShipment",
     "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 170,
+    "line": 174,
     "problem": "Mutation equipment.createDpdShipment has onError but does not call toast.error — user sees no error feedback.",
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-MED-102",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "equipment.createDpdShipment",
-    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 170,
-    "problem": "Mutation equipment.createDpdShipment succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-103",
+    "id": "F-MED-069",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createUpsShipment",
     "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 177,
+    "line": 185,
     "problem": "Mutation equipment.createUpsShipment has onError but does not call toast.error — user sees no error feedback.",
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
-  },
-  {
-    "id": "F-MED-104",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "equipment.createUpsShipment",
-    "file": "apps/web/src/components/equipment/carrier-shipment-form.tsx",
-    "line": 177,
-    "problem": "Mutation equipment.createUpsShipment succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-105",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "import.parse",
-    "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
-    "line": 170,
-    "problem": "Mutation import.parse succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-106",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "import.validate",
-    "file": "apps/web/src/components/import/import-wizard-dialog.tsx",
-    "line": 185,
-    "problem": "Mutation import.validate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-HIGH-011",
@@ -1560,174 +1190,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-107",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "googleWorkspace.listUserGroups",
-    "file": "apps/web/src/components/integrations/google-workspace/directory-import-wizard.tsx",
-    "line": 115,
-    "problem": "Mutation googleWorkspace.listUserGroups succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-108",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "einvoice.finalize",
-    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 102,
-    "problem": "Mutation einvoice.finalize succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-109",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "einvoice.revalidate",
-    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 125,
-    "problem": "Mutation einvoice.revalidate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-110",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "einvoice.send",
-    "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 136,
-    "problem": "Mutation einvoice.send succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-111",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoiceIntake.convertToInvoice",
-    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 80,
-    "problem": "Mutation invoiceIntake.convertToInvoice succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-112",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoiceIntake.confirmMatch",
-    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 94,
-    "problem": "Mutation invoiceIntake.confirmMatch succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-113",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoiceIntake.acknowledgeValidation",
-    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 101,
-    "problem": "Mutation invoiceIntake.acknowledgeValidation succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-114",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoiceIntake.reject",
-    "file": "apps/web/src/components/invoices/intake/intake-detail-actions-bar.tsx",
-    "line": 108,
-    "problem": "Mutation invoiceIntake.reject succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-115",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoiceIntake.upload",
-    "file": "apps/web/src/components/invoices/intake/intake-upload-dialog.tsx",
-    "line": 81,
-    "problem": "Mutation invoiceIntake.upload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-116",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.dismissDuplicate",
-    "file": "apps/web/src/components/invoices/invoice-detail/duplicate-warning.tsx",
-    "line": 41,
-    "problem": "Mutation invoice.dismissDuplicate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-117",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.update",
-    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 240,
-    "problem": "Mutation invoice.update succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-118",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.submitForMatching",
-    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 250,
-    "problem": "Mutation invoice.submitForMatching succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-119",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.voidInvoice",
-    "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 266,
-    "problem": "Mutation invoice.voidInvoice succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-120",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.manualMatch",
-    "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
-    "line": 312,
-    "problem": "Mutation invoice.manualMatch succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-121",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.requestUpload",
-    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 89,
-    "problem": "Mutation document.requestUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-023",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "document.requestUpload",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 89,
+    "line": 90,
     "problem": "Mutation document.requestUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-122",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "document.confirmUpload",
-    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 95,
-    "problem": "Mutation document.confirmUpload succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-024",
@@ -1735,19 +1205,9 @@
     "category": "missing-loading-state",
     "procedure": "document.confirmUpload",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 95,
+    "line": 101,
     "problem": "Mutation document.confirmUpload trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-123",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.create",
-    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 100,
-    "problem": "Mutation invoice.create succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-025",
@@ -1755,19 +1215,9 @@
     "category": "missing-loading-state",
     "procedure": "invoice.create",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 100,
+    "line": 111,
     "problem": "Mutation invoice.create trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-124",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "ocr.trigger",
-    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 105,
-    "problem": "Mutation ocr.trigger succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-026",
@@ -1775,19 +1225,9 @@
     "category": "missing-loading-state",
     "procedure": "ocr.trigger",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 105,
+    "line": 121,
     "problem": "Mutation ocr.trigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-125",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "ocr.retrigger",
-    "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 110,
-    "problem": "Mutation ocr.retrigger succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-027",
@@ -1795,19 +1235,9 @@
     "category": "missing-loading-state",
     "procedure": "ocr.retrigger",
     "file": "apps/web/src/components/invoices/invoice-upload-area.tsx",
-    "line": 110,
+    "line": 131,
     "problem": "Mutation ocr.retrigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-126",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "invoice.toggleReverseCharge",
-    "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
-    "line": 30,
-    "problem": "Mutation invoice.toggleReverseCharge succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-028",
@@ -1815,7 +1245,7 @@
     "category": "missing-loading-state",
     "procedure": "invoice.toggleReverseCharge",
     "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
-    "line": 30,
+    "line": 31,
     "problem": "Mutation invoice.toggleReverseCharge trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -1828,16 +1258,6 @@
     "line": 105,
     "problem": "Destructive mutation skonto.deleteForInvoice fires without a confirmation dialog in this file.",
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
-    "id": "F-MED-127",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "legal.generatePrivacyNoticePdf",
-    "file": "apps/web/src/components/legal/privacy-notice-pdf-download.tsx",
-    "line": 33,
-    "problem": "Mutation legal.generatePrivacyNoticePdf succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-029",
@@ -1860,16 +1280,6 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-128",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "onboardingImport.startImport",
-    "file": "apps/web/src/components/onboarding/confirm-import-step.tsx",
-    "line": 86,
-    "problem": "Mutation onboardingImport.startImport succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-031",
     "severity": "LOW",
     "category": "missing-loading-state",
@@ -1878,26 +1288,6 @@
     "line": 229,
     "problem": "Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-129",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "bacs.generateExport",
-    "file": "apps/web/src/components/payments/bacs/bacs-preview-card.tsx",
-    "line": 59,
-    "problem": "Mutation bacs.generateExport succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-130",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "payment.importStatement",
-    "file": "apps/web/src/components/payments/bank-statement-dialog.tsx",
-    "line": 64,
-    "problem": "Mutation payment.importStatement succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-032",
@@ -1910,34 +1300,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-131",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "payment.create",
-    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 100,
-    "problem": "Mutation payment.create succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-033",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.create",
     "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 100,
+    "line": 102,
     "problem": "Mutation payment.create trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-132",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "payment.lockAndExport",
-    "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 107,
-    "problem": "Mutation payment.lockAndExport succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-034",
@@ -1945,7 +1315,7 @@
     "category": "missing-loading-state",
     "procedure": "payment.lockAndExport",
     "file": "apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx",
-    "line": 107,
+    "line": 114,
     "problem": "Mutation payment.lockAndExport trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -1970,44 +1340,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-133",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "tax.generateWhtCertificate",
-    "file": "apps/web/src/components/payments/wht-summary-card.tsx",
-    "line": 32,
-    "problem": "Mutation tax.generateWhtCertificate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-134",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.getUploadUrl",
-    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 403,
-    "problem": "Mutation portal.getUploadUrl succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-037",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.getUploadUrl",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 403,
+    "line": 405,
     "problem": "Mutation portal.getUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-135",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "ocr.portalTrigger",
-    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 406,
-    "problem": "Mutation ocr.portalTrigger succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-038",
@@ -2015,29 +1355,9 @@
     "category": "missing-loading-state",
     "procedure": "ocr.portalTrigger",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 406,
+    "line": 414,
     "problem": "Mutation ocr.portalTrigger trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-136",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.submitInvoice",
-    "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 604,
-    "problem": "Mutation portal.submitInvoice succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-137",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.updateNotificationPreference",
-    "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
-    "line": 118,
-    "problem": "Mutation portal.updateNotificationPreference succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-039",
@@ -2050,34 +1370,14 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-138",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.updateContactInfo",
-    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 72,
-    "problem": "Mutation portal.updateContactInfo succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-040",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateContactInfo",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 72,
+    "line": 73,
     "problem": "Mutation portal.updateContactInfo trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-139",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "portal.submitFinancialChangeRequest",
-    "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 77,
-    "problem": "Mutation portal.submitFinancialChangeRequest succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-041",
@@ -2085,69 +1385,9 @@
     "category": "missing-loading-state",
     "procedure": "portal.submitFinancialChangeRequest",
     "file": "apps/web/src/components/portal/portal-settings-page.tsx",
-    "line": 77,
+    "line": 83,
     "problem": "Mutation portal.submitFinancialChangeRequest trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-140",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "report.exportComplianceGaps",
-    "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 64,
-    "problem": "Mutation report.exportComplianceGaps succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-141",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "report.exportExpiringContracts",
-    "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 59,
-    "problem": "Mutation report.exportExpiringContracts succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-142",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "report.exportOverdueInvoices",
-    "file": "apps/web/src/components/reports/overdue-invoices-report.tsx",
-    "line": 64,
-    "problem": "Mutation report.exportOverdueInvoices succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-143",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "report.exportSpendByContractor",
-    "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
-    "line": 67,
-    "problem": "Mutation report.exportSpendByContractor succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-144",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "report.exportSpendByTeam",
-    "file": "apps/web/src/components/reports/spend-team-report.tsx",
-    "line": 60,
-    "problem": "Mutation report.exportSpendByTeam succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-145",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "settings.getLogoUploadUrl",
-    "file": "apps/web/src/components/settings/admin-branding-section.tsx",
-    "line": 69,
-    "problem": "Mutation settings.getLogoUploadUrl succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-042",
@@ -2155,7 +1395,7 @@
     "category": "missing-loading-state",
     "procedure": "settings.getLogoUploadUrl",
     "file": "apps/web/src/components/settings/admin-branding-section.tsx",
-    "line": 69,
+    "line": 70,
     "problem": "Mutation settings.getLogoUploadUrl trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -2168,46 +1408,6 @@
     "line": 67,
     "problem": "Mutation approval.updateChain trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-MED-146",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "audit.export",
-    "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 153,
-    "problem": "Mutation audit.export succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-147",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "equipment.testCourierConnection",
-    "file": "apps/web/src/components/settings/carrier-credential-form.tsx",
-    "line": 133,
-    "problem": "Mutation equipment.testCourierConnection succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-148",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "settings.reviewChangeRequest",
-    "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 89,
-    "problem": "Mutation settings.reviewChangeRequest succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-149",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "settings.reviewChangeRequest",
-    "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 101,
-    "problem": "Mutation settings.reviewChangeRequest succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
     "id": "F-LOW-044",
@@ -2250,16 +1450,6 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-MED-150",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "consent.recordToS",
-    "file": "apps/web/src/components/tos-reacceptance-modal.tsx",
-    "line": 48,
-    "problem": "Mutation consent.recordToS succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-047",
     "severity": "LOW",
     "category": "missing-loading-state",
@@ -2280,32 +1470,12 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-151",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "workflow.startRun",
-    "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
-    "line": 110,
-    "problem": "Mutation workflow.startRun succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-152",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "workflow.seedStarterTemplates",
-    "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 123,
-    "problem": "Mutation workflow.seedStarterTemplates succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-LOW-049",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 123,
+    "line": 124,
     "problem": "Mutation workflow.seedStarterTemplates trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -2320,43 +1490,13 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-MED-153",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "workflow.updateTemplate",
-    "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 25,
-    "problem": "Mutation workflow.updateTemplate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
     "id": "F-HIGH-015",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "workflow.deleteTemplate",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 29,
+    "line": 36,
     "problem": "Destructive mutation workflow.deleteTemplate fires without a confirmation dialog in this file.",
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
-  },
-  {
-    "id": "F-MED-154",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "workflow.deleteTemplate",
-    "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 29,
-    "problem": "Mutation workflow.deleteTemplate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
-  },
-  {
-    "id": "F-MED-155",
-    "severity": "MED",
-    "category": "missing-invalidation",
-    "procedure": "workflow.duplicateTemplate",
-    "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 33,
-    "problem": "Mutation workflow.duplicateTemplate succeeds without invalidating queries — stale UI until reload.",
-    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   }
 ]

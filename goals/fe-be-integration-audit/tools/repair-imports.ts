@@ -44,7 +44,7 @@ for (const file of files) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (inMultiLineImport) {
-      if (/^\s*import\s*\{\s*toast\s*\}\s*from\s*['"]sonner['"];?\s*$/.test(line)) {
+      if (/^\s*import\s*\{[^}]+\}\s*from\s*['"][^'"]+['"];?\s*$/.test(line)) {
         badIdx = i;
       }
       if (/^\s*\}\s*from\s*['"][^'"]+['"];?\s*$/.test(line)) {

@@ -27,6 +27,7 @@ const FIXABLE_CATEGORIES = new Set([
   'missing-error-toast',
   'missing-success-toast',
   'missing-on-success',
+  'missing-invalidation',
 ]);
 
 const filterArg = process.argv[2]; // optional: 'HIGH' | 'MED' | 'LOW' | category name
@@ -81,6 +82,7 @@ function fixFile(
   let text = readFileSync(filePath, 'utf8');
   const appliedIds: string[] = [];
   let needsToast = false;
+  let needsQueryClient = false;
 
   // Re-parse for each finding (state may have shifted after prior edits)
   for (const f of fileFindings) {
@@ -255,6 +257,36 @@ function fixFile(
         needsToast = true;
         appliedIds.push(f.id);
       }
+      continue;
+    }
+
+    // ---------- Case E: missing-invalidation → add queryClient.invalidateQueries(trpc.<router>.pathFilter()) ----------
+    if (f.category === 'missing-invalidation') {
+      if (!targetObj) continue;
+      const onSuccessProp = targetObj.properties.find(
+        p =>
+          (ts.isPropertyAssignment(p) || ts.isMethodDeclaration(p)) &&
+          p.name &&
+          ts.isIdentifier(p.name) &&
+          p.name.text === 'onSuccess',
+      );
+      if (!onSuccessProp) continue;
+      // Determine client name from procedure path lookup: derive from chain root.
+      // Quick heuristic: scan file for `from '@/trpc/init'` import to find trpc/portalTrpc names.
+      const clientName =
+        text.includes('portalTrpc') && f.procedure?.startsWith('portal')
+          ? 'portalTrpc'
+          : text.includes('zatcaTrpc') && f.procedure?.startsWith('zatca')
+            ? 'zatcaTrpc'
+            : 'trpc';
+      const routerName = f.procedure?.split('.')[0];
+      const stmt = `queryClient.invalidateQueries(${clientName}.${routerName}.pathFilter());`;
+      const inserted = injectToastIntoHandler(text, onSuccessProp, sf, stmt);
+      if (inserted) {
+        text = inserted;
+        needsQueryClient = true;
+        appliedIds.push(f.id);
+      }
     }
   }
 
@@ -262,7 +294,71 @@ function fixFile(
     const r = ensureToastImport(text);
     text = r.text;
   }
+  if (needsQueryClient) {
+    text = ensureQueryClient(text);
+  }
   return { text, appliedIds };
+}
+
+/**
+ * Ensure file has `useQueryClient` import + `const queryClient = useQueryClient();`
+ * inside the component body. Idempotent.
+ */
+function ensureQueryClient(text: string): string {
+  // 1) Import: useQueryClient must come from @tanstack/react-query
+  if (!/useQueryClient/.test(text)) {
+    // Augment existing @tanstack/react-query import or add new
+    const rqImport = /import\s*\{([^}]*)\}\s*from\s*['"]@tanstack\/react-query['"]/;
+    const m = text.match(rqImport);
+    if (m) {
+      const names = m[1]
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+      if (!names.includes('useQueryClient')) {
+        names.push('useQueryClient');
+      }
+      text = text.replace(rqImport, `import { ${names.join(', ')} } from '@tanstack/react-query'`);
+    } else {
+      // No @tanstack/react-query import — insert one after last import
+      const importRegex = /^(import\s+[^\n]+\n)+/m;
+      const m2 = text.match(importRegex);
+      if (m2) {
+        const idx = m2.index! + m2[0].length;
+        text =
+          text.slice(0, idx) +
+          "import { useQueryClient } from '@tanstack/react-query';\n" +
+          text.slice(idx);
+      }
+    }
+  }
+  // 2) Hook call: `const queryClient = useQueryClient();` — must appear before any onSuccess that uses it.
+  if (!/const\s+queryClient\s*=\s*useQueryClient\(\)/.test(text)) {
+    // Inject before the first hook-using line (useMutation, useResourceMutation, etc.).
+    const hookSite = text.search(/\n\s*const\s+\w+\s*=\s*use[A-Z]\w*[Mm]utation\(/);
+    if (hookSite > -1) {
+      let lineStart = hookSite + 1;
+      while (lineStart < text.length && text[lineStart] === ' ') lineStart++;
+      const indent = text.slice(hookSite + 1, lineStart);
+      text =
+        text.slice(0, hookSite + 1) +
+        `${indent}const queryClient = useQueryClient();\n` +
+        text.slice(hookSite + 1);
+    } else {
+      // Fallback: inject after first `function ... {` or `export function ... {`
+      const fnSite = text.search(/\n\s*(?:export\s+)?function\s+\w+[^{]*\{/);
+      if (fnSite > -1) {
+        const closingBrace = text.indexOf('{', fnSite);
+        if (closingBrace > -1) {
+          text =
+            text.slice(0, closingBrace + 1) +
+            `\n  const queryClient = useQueryClient();` +
+            text.slice(closingBrace + 1);
+        }
+      }
+    }
+  }
+  return text;
 }
 
 /** Insert `propText` (e.g. "onError: ...,") into `obj`. Returns updated full source text. */
