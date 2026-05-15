@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Trash2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -190,6 +191,7 @@ export function OcrReviewPanel({
   onRetrigger,
   isPortal = false,
 }: OcrReviewPanelProps) {
+  const t = useTranslations('OcrReview');
   // Polling query: admin vs portal endpoint
   const adminQuery = useQuery({
     ...trpc.ocr.getResult.queryOptions({ extractionId }),
@@ -256,8 +258,8 @@ export function OcrReviewPanel({
     setLineItems(mapLineItems(resultJson.lineItems));
     setHasPopulated(true);
 
-    toast.success('Invoice data extracted -- please review before saving');
-  }, [resultJson, hasPopulated]);
+    toast.success(t('toastExtracted'));
+  }, [resultJson, hasPopulated, t]);
 
   // Computed field counts
   const fieldCount = resultJson
@@ -331,24 +333,24 @@ export function OcrReviewPanel({
             <CardContent className="flex flex-col gap-6 p-6">
               {/* Section 1: Invoice Header */}
               <div>
-                <h3 className="mb-4 text-xl font-semibold">Review Extracted Data</h3>
+                <h3 className="mb-4 text-xl font-semibold">{t('heading')}</h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
-                      label="Invoice Number">
+                      label={t('fields.invoiceNumber')}>
                       <Input
                         value={invoiceNumber}
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setInvoiceNumber(e.target.value)}
-                        placeholder="FV/2026/001"
+                        placeholder={t('fields.invoiceNumberPlaceholder')}
                       />
                     </ConfidenceFieldWrapper>
                   </div>
                   <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
-                      label="Issue Date">
+                      label={t('fields.issueDate')}>
                       <Input
                         type="date"
                         value={issueDate}
@@ -360,7 +362,7 @@ export function OcrReviewPanel({
                   <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
-                      label="Due Date">
+                      label={t('fields.dueDate')}>
                       <Input
                         type="date"
                         value={dueDate}
@@ -372,7 +374,7 @@ export function OcrReviewPanel({
                   <div>
                     <ConfidenceFieldWrapper
                       confidence={getFieldConfidence(resultJson?.fields, 'currency')}
-                      label="Currency">
+                      label={t('fields.currency')}>
                       <Select
                         value={currency}
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
@@ -380,7 +382,7 @@ export function OcrReviewPanel({
                           if (val) setCurrency(val);
                         }}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select currency" />
+                          <SelectValue placeholder={t('fields.currencyPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
                           {CURRENCIES.map(c => (
@@ -402,13 +404,13 @@ export function OcrReviewPanel({
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
-                    label="Seller NIP">
+                    label={t('fields.sellerNip')}>
                     <div className="flex items-center gap-2">
                       <Input
                         value={sellerTaxId}
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setSellerTaxId(e.target.value)}
-                        placeholder="0000000000"
+                        placeholder={t('fields.nipPlaceholder')}
                       />
                       <NipValidationBadge nip={sellerTaxId} />
                     </div>
@@ -417,13 +419,13 @@ export function OcrReviewPanel({
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
-                    label="Buyer NIP">
+                    label={t('fields.buyerNip')}>
                     <div className="flex items-center gap-2">
                       <Input
                         value={buyerTaxId}
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                         onChange={e => setBuyerTaxId(e.target.value)}
-                        placeholder="0000000000"
+                        placeholder={t('fields.nipPlaceholder')}
                       />
                       <NipValidationBadge nip={buyerTaxId} />
                     </div>
@@ -432,24 +434,24 @@ export function OcrReviewPanel({
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
-                    label="Seller Name">
+                    label={t('fields.sellerName')}>
                     <Input
                       value={sellerName}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setSellerName(e.target.value)}
-                      placeholder="Company name"
+                      placeholder={t('fields.companyNamePlaceholder')}
                     />
                   </ConfidenceFieldWrapper>
                 </div>
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
-                    label="Buyer Name">
+                    label={t('fields.buyerName')}>
                     <Input
                       value={buyerName}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setBuyerName(e.target.value)}
-                      placeholder="Company name"
+                      placeholder={t('fields.companyNamePlaceholder')}
                     />
                   </ConfidenceFieldWrapper>
                 </div>
@@ -462,42 +464,42 @@ export function OcrReviewPanel({
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
-                    label="Net Amount">
+                    label={t('fields.netAmount')}>
                     <Input
                       type="number"
                       step="0.01"
                       value={subtotalMinor}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setSubtotalMinor(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={t('fields.amountPlaceholder')}
                     />
                   </ConfidenceFieldWrapper>
                 </div>
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
-                    label="VAT Amount">
+                    label={t('fields.vatAmount')}>
                     <Input
                       type="number"
                       step="0.01"
                       value={vatAmountMinor}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setVatAmountMinor(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={t('fields.amountPlaceholder')}
                     />
                   </ConfidenceFieldWrapper>
                 </div>
                 <div>
                   <ConfidenceFieldWrapper
                     confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
-                    label="Total Gross">
+                    label={t('fields.totalGross')}>
                     <Input
                       type="number"
                       step="0.01"
                       value={totalMinor}
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setTotalMinor(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={t('fields.amountPlaceholder')}
                     />
                   </ConfidenceFieldWrapper>
                 </div>
@@ -509,12 +511,12 @@ export function OcrReviewPanel({
               <div>
                 <ConfidenceFieldWrapper
                   confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
-                  label="Seller Bank Account">
+                  label={t('fields.sellerBankAccount')}>
                   <Input
                     value={sellerBankAccount}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e => setSellerBankAccount(e.target.value)}
-                    placeholder="PL00 0000 0000 0000 0000 0000 0000"
+                    placeholder={t('fields.bankAccountPlaceholder')}
                   />
                 </ConfidenceFieldWrapper>
               </div>
@@ -531,20 +533,18 @@ export function OcrReviewPanel({
                 <div className="flex gap-2">
                   <AlertDialog>
                     <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
-                      Discard Extraction
+                      {t('discard.cta')}
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Discard Extraction</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Discard extracted data and start with an empty form?
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('discard.title')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('discard.description')}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Keep Data</AlertDialogCancel>
+                        <AlertDialogCancel>{t('discard.keep')}</AlertDialogCancel>
                         <AlertDialogAction onClick={onDiscard}>
                           <Trash2 className="me-1.5 size-4" />
-                          Discard
+                          {t('discard.confirm')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -552,20 +552,18 @@ export function OcrReviewPanel({
 
                   <AlertDialog>
                     <AlertDialogTrigger render={<Button type="button" variant="ghost" />}>
-                      Re-run OCR
+                      {t('rerun.cta')}
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Re-run OCR</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Re-running OCR will replace the current extracted data. Continue?
-                        </AlertDialogDescription>
+                        <AlertDialogTitle>{t('rerun.title')}</AlertDialogTitle>
+                        <AlertDialogDescription>{t('rerun.description')}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('rerun.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={onRetrigger}>
                           <RefreshCw className="me-1.5 size-4" />
-                          Re-run
+                          {t('rerun.confirm')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -573,7 +571,7 @@ export function OcrReviewPanel({
                 </div>
 
                 <Button type="button" onClick={handleAccept}>
-                  Accept &amp; Save
+                  {t('acceptSave')}
                 </Button>
               </div>
             </CardContent>
