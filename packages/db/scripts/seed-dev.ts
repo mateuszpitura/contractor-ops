@@ -416,6 +416,7 @@ const PHASE_EMOJI: Record<string, string> = {
   interest: '📈',
   peppol: '🛰️ ',
   zatca: '🏛️ ',
+  esign: '✍️ ',
 };
 
 /**
@@ -476,6 +477,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   interest: 3,
   peppol: 3,
   zatca: 2,
+  esign: 3,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5698,6 +5700,192 @@ async function seedZatca(
 }
 
 // ---------------------------------------------------------------------------
+// eSign envelopes + recipients + events — DocuSign-flavoured demo data so
+// the contracts envelope timeline UI shows a real flow per status.
+// ---------------------------------------------------------------------------
+
+async function seedEsign(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractByContractor: ReadonlyMap<string, string>,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  if (contractByContractor.size === 0) return;
+
+  // SigningEnvelope.integrationConnectionId is required — find an existing
+  // DOCUSIGN connection (created by `seedIntegrationConnections` only when
+  // showcase) or create one inline so envelopes always have a parent.
+  let docusignConnection = await prisma.integrationConnection.findFirst({
+    where: { organizationId: ctx.organizationId, provider: 'DOCUSIGN' },
+    select: { id: true },
+  });
+  if (!docusignConnection) {
+    docusignConnection = await prisma.integrationConnection.create({
+      data: {
+        organizationId: ctx.organizationId,
+        provider: 'DOCUSIGN',
+        status: 'CONNECTED',
+        displayName: 'DocuSign (seed)',
+        configJson: { seeded: true },
+        credentialsRef: `seed:${ctx.org.key}:DOCUSIGN:${tokenHex(4)}`,
+        connectedByUserId: ctx.ownerUserId,
+        connectedAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+      },
+      select: { id: true },
+    });
+  }
+
+  // Pair each contract with its contractor for recipient details.
+  const pairs = [...contractByContractor.entries()].map(([contractorId, contractId]) => ({
+    contractorId,
+    contractId,
+    contractor: contractors.find(c => c.id === contractorId),
+  }));
+  const eligible = pairs.filter(p => p.contractor !== undefined);
+  if (eligible.length === 0) return;
+
+  const subset = ctx.org.showcase
+    ? eligible.slice(0, Math.min(eligible.length, 6))
+    : eligible.filter((_, i) => i % 3 === 0).slice(0, 4);
+  const envelopeStatuses = ['CREATED', 'SENT', 'COMPLETED', 'DECLINED', 'VOIDED'] as const;
+
+  for (const [i, pair] of subset.entries()) {
+    const contractor = pair.contractor;
+    if (!contractor) continue;
+    const status = envelopeStatuses[
+      i % envelopeStatuses.length
+    ] as (typeof envelopeStatuses)[number];
+    const sentAt = status === 'CREATED' ? null : pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt);
+    const completedAt = status === 'COMPLETED' && sentAt ? advanceCapped(sentAt, 3) : null;
+    const voidedAt = status === 'VOIDED' && sentAt ? advanceCapped(sentAt, 5) : null;
+
+    const envelope = await prisma.signingEnvelope.create({
+      data: {
+        organizationId: ctx.organizationId,
+        integrationConnectionId: docusignConnection.id,
+        provider: 'DOCUSIGN',
+        externalEnvelopeId: `env-${tokenHex(8)}`,
+        contractId: pair.contractId,
+        status,
+        message: 'Please sign the attached agreement (seed)',
+        expiresAt: futureDate(ctx.fakers.org, 30),
+        reminderIntervalDays: 3,
+        sentByUserId: ctx.ownerUserId,
+        sentAt,
+        completedAt,
+        voidedAt,
+        voidReason: voidedAt ? 'Engagement cancelled (seed)' : null,
+        createdAt: sentAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
+      },
+      select: { id: true },
+    });
+
+    // 2 recipients: the contractor (signer) + a counter-signer (org owner).
+    await prisma.signingRecipient.create({
+      data: {
+        signingEnvelopeId: envelope.id,
+        externalRecipientId: `rcp-${tokenHex(6)}`,
+        name: contractor.legalName,
+        email: contractor.email,
+        role: 'SIGNER',
+        routingOrder: 1,
+        status:
+          status === 'COMPLETED'
+            ? 'SIGNED'
+            : status === 'DECLINED'
+              ? 'DECLINED'
+              : status === 'CREATED'
+                ? 'PENDING'
+                : 'DELIVERED',
+        signedAt: status === 'COMPLETED' ? completedAt : null,
+        declinedAt: status === 'DECLINED' && sentAt ? advanceCapped(sentAt, 1) : null,
+        declineReason: status === 'DECLINED' ? 'Terms unacceptable (seed)' : null,
+        viewedAt: sentAt ? advanceCapped(sentAt, 1) : null,
+      },
+    });
+    await prisma.signingRecipient.create({
+      data: {
+        signingEnvelopeId: envelope.id,
+        externalRecipientId: `rcp-${tokenHex(6)}`,
+        name: 'Engager Counter-Signer',
+        email: `${ctx.org.key}-countersigner@seed.local`,
+        role: 'COUNTERSIGNER',
+        routingOrder: 2,
+        status: status === 'COMPLETED' ? 'SIGNED' : 'PENDING',
+        signedAt: status === 'COMPLETED' ? completedAt : null,
+        viewedAt: sentAt ?? null,
+      },
+    });
+
+    // 2–4 events spanning the lifecycle.
+    const events: Array<{
+      type:
+        | 'ENVELOPE_CREATED'
+        | 'ENVELOPE_SENT'
+        | 'RECIPIENT_VIEWED'
+        | 'RECIPIENT_SIGNED'
+        | 'RECIPIENT_DECLINED'
+        | 'ENVELOPE_COMPLETED'
+        | 'ENVELOPE_VOIDED';
+      at: Date;
+      description: string;
+    }> = [
+      {
+        type: 'ENVELOPE_CREATED',
+        at: sentAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
+        description: 'Envelope created (seed)',
+      },
+    ];
+    if (sentAt)
+      events.push({
+        type: 'ENVELOPE_SENT',
+        at: sentAt,
+        description: 'Envelope sent to recipients',
+      });
+    if (sentAt)
+      events.push({
+        type: 'RECIPIENT_VIEWED',
+        at: advanceCapped(sentAt, 1),
+        description: 'Signer viewed envelope',
+      });
+    if (status === 'COMPLETED' && completedAt) {
+      events.push({
+        type: 'RECIPIENT_SIGNED',
+        at: completedAt,
+        description: 'All recipients signed',
+      });
+      events.push({
+        type: 'ENVELOPE_COMPLETED',
+        at: completedAt,
+        description: 'Envelope completed',
+      });
+    }
+    if (status === 'DECLINED' && sentAt) {
+      events.push({
+        type: 'RECIPIENT_DECLINED',
+        at: advanceCapped(sentAt, 1),
+        description: 'Signer declined',
+      });
+    }
+    if (status === 'VOIDED' && voidedAt) {
+      events.push({ type: 'ENVELOPE_VOIDED', at: voidedAt, description: 'Voided by sender' });
+    }
+    await prisma.signingEvent.createMany({
+      data: events.map(e => ({
+        organizationId: ctx.organizationId,
+        signingEnvelopeId: envelope.id,
+        eventType: e.type,
+        actorName: contractor.legalName,
+        actorEmail: contractor.email,
+        description: e.description,
+        providerEventId: `evt-${tokenHex(8)}`,
+        occurredAt: e.at,
+      })),
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Tax / legal compliance — Statusfeststellungsverfahren (DE), IR35 chain (UK),
 // SDS approval, TaxIdValidation, EconomicDependencyAlertState,
 // ReassessmentTrigger, WhtCertificate. Showcase intentionally spreads rows
@@ -6264,6 +6452,11 @@ async function seedOrg(
   );
   await gateSection(omitted, 'integration-connections', org.key, undefined, () =>
     seedIntegrationConnections(prisma, ctx),
+  );
+  // eSign sits after integration-connections so the DOCUSIGN connection
+  // exists for SigningEnvelope.integrationConnectionId.
+  await gateSection(omitted, 'esign', org.key, undefined, () =>
+    seedEsign(prisma, ctx, contractByContractor, contractors),
   );
   await gateSection(omitted, 'invoice-documents', org.key, undefined, () =>
     seedInvoiceDocuments(prisma, ctx, invoices),
