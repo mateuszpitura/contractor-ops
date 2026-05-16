@@ -1037,6 +1037,36 @@
       "deleteSuccess": "Umowa usunięta",
       "deleteError": "Nie udało się usunąć umowy. Spróbuj ponownie."
     },
+    "edit": {
+      "title": "Edytuj umowę",
+      "description": "Zaktualizuj nazwę umowy, okres obowiązywania oraz kluczowe warunki handlowe. Zmiany statusu, aneksy i przypomnienia są obsługiwane w osobnych przepływach.",
+      "fields": {
+        "title": "Tytuł",
+        "titlePlaceholder": "np. Umowa ramowa o świadczenie usług",
+        "startDate": "Data rozpoczęcia",
+        "endDate": "Data zakończenia",
+        "currency": "Waluta",
+        "currencyHint": "Trzyliterowy kod ISO 4217 (np. EUR, GBP, PLN).",
+        "value": "Wartość umowy",
+        "valueHint": "Stawka lub wynagrodzenie podstawowe, w walucie umowy."
+      },
+      "actions": {
+        "cancel": "Anuluj",
+        "save": "Zapisz zmiany",
+        "saving": "Zapisywanie…"
+      },
+      "validation": {
+        "titleRequired": "Tytuł jest wymagany.",
+        "startRequired": "Data rozpoczęcia jest wymagana.",
+        "endAfterStart": "Data zakończenia musi być późniejsza niż data rozpoczęcia.",
+        "currencyFormat": "Użyj trzyliterowego kodu waluty ISO 4217.",
+        "valueFormat": "Wartość umowy musi być liczbą nieujemną."
+      },
+      "toast": {
+        "success": "Umowa zaktualizowana",
+        "noChanges": "Brak zmian do zapisania."
+      }
+    },
     "error": {
       "notFound": "Nie znaleziono umowy",
       "backToList": "Powrót do umów",
