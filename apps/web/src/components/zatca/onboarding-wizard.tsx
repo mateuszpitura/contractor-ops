@@ -11,6 +11,7 @@ import { ComplianceCsid } from './compliance-csid';
 import { CsrGeneration } from './csr-generation';
 import { ProductionCertificate } from './production-certificate';
 import type { StepDefinition } from './stepper';
+import { tKey } from '@/i18n/typed-keys';
 import { Stepper } from './stepper';
 import { TaxDetailsForm } from './tax-details-form';
 import { zatcaTrpc } from './zatca-trpc';
@@ -74,8 +75,8 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
     const keys = STEP_TRANSLATION_KEYS[id];
     return {
       id,
-      label: t((keys?.label ?? id)),
-      shortLabel: t((keys?.shortLabel ?? id)),
+      label: tKey(t, keys?.label ?? id),
+      shortLabel: tKey(t, keys?.shortLabel ?? id),
     };
   });
 

@@ -201,14 +201,14 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
                 val && form.setValue('type', val as EquipmentCreateInput['type'])
               }>
               <SelectTrigger className="w-full">
-                <SelectValue>
-                  {(value: string) => (
-                    <div className="flex items-center gap-2">
-                      <EquipmentTypeIcon type={value} />
-                      <span>{tDynLoose(t, 'type', enumKey(value))}</span>
-                    </div>
-                  )}
-                </SelectValue>
+                {watchedType ? (
+                  <div className="flex items-center gap-2">
+                    <EquipmentTypeIcon type={watchedType} />
+                    <span>{tDynLoose(t, 'type', enumKey(watchedType))}</span>
+                  </div>
+                ) : (
+                  <SelectValue />
+                )}
               </SelectTrigger>
               <SelectContent>
                 {EQUIPMENT_TYPES.map(type => (

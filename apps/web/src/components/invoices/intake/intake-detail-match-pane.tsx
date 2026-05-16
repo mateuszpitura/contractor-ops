@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@/i18n/navigation';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 
@@ -175,7 +176,7 @@ export function IntakeDetailMatchPane({
 }
 
 function renderReason(
-  t: ReturnType<typeof useTranslations<string>>,
+  t: LooseTranslator,
   reason: { kind: MatchReason; distance?: number },
 ): string {
   switch (reason.kind) {

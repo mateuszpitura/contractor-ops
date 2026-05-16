@@ -82,12 +82,12 @@ export function ExtractionStatusBar({
         )}
 
         {status === 'EXTRACTED' && (
-          <span className="text-sm text-muted-foreground">{t('complete', { fieldCount })}</span>
+          <span className="text-sm text-muted-foreground">{t('complete', { fieldCount: fieldCount ?? 0 })}</span>
         )}
 
         {status === 'PARTIAL' && (
           <span className="text-sm text-muted-foreground">
-            {t('partial', { fieldCount, totalFields })}
+            {t('partial', { fieldCount: fieldCount ?? 0, totalFields: totalFields ?? 0 })}
           </span>
         )}
 

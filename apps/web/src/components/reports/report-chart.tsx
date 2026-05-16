@@ -147,7 +147,7 @@ export function ReportChart({
               />
               <Tooltip
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={(value: number) => [formatCurrency(Number(value)), '']}
+                formatter={(value) => [formatCurrency(Number(value)), '']}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',
@@ -235,7 +235,7 @@ export function ReportChart({
               />
               <Tooltip
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={(value: number) => [value, '']}
+                formatter={(value) => [Number(value), '']}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',

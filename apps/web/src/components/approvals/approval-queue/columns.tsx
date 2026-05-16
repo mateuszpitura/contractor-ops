@@ -67,9 +67,11 @@ export type ApprovalQueueRow = {
 function RejectPopover({
   onReject,
   t,
+  isRejecting = false,
 }: {
   onReject: (comment: string) => void;
   t: TranslatorOf<'Approvals'>;
+  isRejecting?: boolean;
 }) {
   const reactId = useId();
   const [comment, setComment] = useState('');
@@ -139,7 +141,7 @@ function RejectPopover({
             <Button
               variant="destructive"
               size="sm"
-              disabled={comment.length < 10}
+              disabled={comment.length < 10 || isRejecting}
               // biome-ignore lint/nursery/noJsxPropsBind: local handler in popover
               onClick={handleReject}>
               {t('rejectPopover.confirm')}
@@ -160,6 +162,8 @@ type TranslateFunction = TranslatorOf<'Approvals'>;
 interface ColumnCallbacks {
   onApprove: (stepId: string) => void;
   onReject: (stepId: string, comment: string) => void;
+  isApproving?: boolean;
+  isRejecting?: boolean;
 }
 
 /**
@@ -314,6 +318,7 @@ export function getColumns(
               variant="ghost"
               size="sm"
               className="h-7 gap-1 text-primary hover:text-primary"
+              disabled={callbacks.isApproving}
               // biome-ignore lint/nursery/noJsxPropsBind: column definition
               onClick={e => {
                 e.stopPropagation();
@@ -323,7 +328,11 @@ export function getColumns(
               {t('actions.approve')}
             </Button>
             {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
-            <RejectPopover onReject={comment => callbacks.onReject(step.id, comment)} t={t} />
+            <RejectPopover
+              onReject={comment => callbacks.onReject(step.id, comment)}
+              t={t}
+              isRejecting={callbacks.isRejecting}
+            />
           </div>
         );
       },

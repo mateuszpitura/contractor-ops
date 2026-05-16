@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
+import { tDynLoose, tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,7 +171,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               <SelectContent>
                 {CONDITION_FIELDS.map(field => (
                   <SelectItem key={field} value={field}>
-                    {tDyn(t, 'conditionField', field)}
+                    {tKey(t, `conditionField.${field}`)}
                   </SelectItem>
                 ))}
               </SelectContent>

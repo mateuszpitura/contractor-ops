@@ -54,6 +54,10 @@ interface ApprovalQueueTableProps {
   onBulkReject: (ids: string[], reason: string) => void;
   onNavigateToReview: (contractorId: string, weekStartDate: string) => void;
   isLoading?: boolean;
+  isApproving?: boolean;
+  isRejecting?: boolean;
+  isBulkApproving?: boolean;
+  isBulkRejecting?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +97,10 @@ export function ApprovalQueueTable({
   onBulkApprove,
   onBulkReject,
   onNavigateToReview,
+  isApproving = false,
+  isRejecting = false,
+  isBulkApproving = false,
+  isBulkRejecting = false,
   isLoading = false,
 }: ApprovalQueueTableProps) {
   const t = useTranslations('Time');
@@ -230,8 +238,12 @@ export function ApprovalQueueTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
-                    {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                    <Button size="sm" variant="default" onClick={() => onApprove(ts.id)}>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      disabled={isApproving}
+                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                      onClick={() => onApprove(ts.id)}>
                       <CheckCircle className="me-1.5 h-3.5 w-3.5" />
                       {t('approvalQueue.approve')}
                     </Button>
@@ -239,6 +251,7 @@ export function ApprovalQueueTable({
                       size="sm"
                       variant="outline"
                       className="text-destructive hover:bg-destructive/10"
+                      disabled={isRejecting}
                       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => setRejectingId(ts.id)}>
                       <XCircle className="me-1.5 h-3.5 w-3.5" />
@@ -268,12 +281,16 @@ export function ApprovalQueueTable({
                 variant="outline"
                 size="sm"
                 className="text-destructive hover:bg-destructive/10"
+                disabled={isBulkRejecting}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setBulkRejectOpen(true)}>
                 {t('approvalQueue.rejectAll')}
               </Button>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
+              <Button
+                size="sm"
+                disabled={isBulkApproving}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => setBulkApproveOpen(true)}>
                 {t('approvalQueue.approveAll')}
               </Button>
             </div>

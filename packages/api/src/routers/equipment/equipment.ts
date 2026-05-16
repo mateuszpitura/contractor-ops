@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { mergeRouters, router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { equipmentCouriersRouter } from './equipment-couriers';
 import { equipmentReturnsRouter } from './equipment-returns';
 import {
@@ -187,18 +188,16 @@ const equipmentCoreRouter = router({
       });
 
       // Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name,
-          action: 'equipment.create',
-          resourceType: 'EQUIPMENT',
-          resourceId: equipment.id,
-          resourceName: equipment.name,
-          newValuesJson: input,
-        },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'equipment.create',
+        resourceType: 'EQUIPMENT',
+        resourceId: equipment.id,
+        resourceName: equipment.name,
+        newValues: input,
       });
 
       return equipment;
@@ -242,26 +241,24 @@ const equipmentCoreRouter = router({
         },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name,
-          action: 'equipment.update',
-          resourceType: 'EQUIPMENT',
-          resourceId: equipment.id,
-          resourceName: equipment.name,
-          oldValuesJson: {
-            name: existing.name,
-            serialNumber: existing.serialNumber,
-            type: existing.type,
-            customType: existing.customType,
-            notes: existing.notes,
-            purchaseDate: existing.purchaseDate,
-          },
-          newValuesJson: fields,
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'equipment.update',
+        resourceType: 'EQUIPMENT',
+        resourceId: equipment.id,
+        resourceName: equipment.name,
+        oldValues: {
+          name: existing.name,
+          serialNumber: existing.serialNumber,
+          type: existing.type,
+          customType: existing.customType,
+          notes: existing.notes,
+          purchaseDate: existing.purchaseDate,
         },
+        newValues: fields,
       });
 
       return equipment;
@@ -303,19 +300,17 @@ const equipmentCoreRouter = router({
         data: { status: 'RETIRED' },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name,
-          action: 'equipment.retire',
-          resourceType: 'EQUIPMENT',
-          resourceId: updated.id,
-          resourceName: updated.name,
-          oldValuesJson: { status: equipment.status },
-          newValuesJson: { status: 'RETIRED' },
-        },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'equipment.retire',
+        resourceType: 'EQUIPMENT',
+        resourceId: updated.id,
+        resourceName: updated.name,
+        oldValues: { status: equipment.status },
+        newValues: { status: 'RETIRED' },
       });
 
       return updated;
@@ -384,21 +379,19 @@ const equipmentCoreRouter = router({
         }),
       ]);
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name,
-          action: 'equipment.assign',
-          resourceType: 'EQUIPMENT',
-          resourceId: updated.id,
-          resourceName: updated.name,
-          newValuesJson: {
-            contractorId: input.contractorId,
-            contractorName: contractor.displayName,
-            assignmentId: assignment.id,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'equipment.assign',
+        resourceType: 'EQUIPMENT',
+        resourceId: updated.id,
+        resourceName: updated.name,
+        newValues: {
+          contractorId: input.contractorId,
+          contractorName: contractor.displayName,
+          assignmentId: assignment.id,
         },
       });
 
@@ -458,20 +451,18 @@ const equipmentCoreRouter = router({
         }),
       ]);
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name,
-          action: 'equipment.unassign',
-          resourceType: 'EQUIPMENT',
-          resourceId: updated.id,
-          resourceName: updated.name,
-          oldValuesJson: {
-            contractorId: activeAssignment.contractorId,
-            assignmentId: activeAssignment.id,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name,
+        action: 'equipment.unassign',
+        resourceType: 'EQUIPMENT',
+        resourceId: updated.id,
+        resourceName: updated.name,
+        oldValues: {
+          contractorId: activeAssignment.contractorId,
+          assignmentId: activeAssignment.id,
         },
       });
 

@@ -170,10 +170,19 @@ function ApprovalsContent() {
         {
           onApprove: stepId => approveMutation.mutate({ stepId }),
           onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),
+          isApproving: approveMutation.isPending,
+          isRejecting: rejectMutation.isPending,
         },
         locale,
       ),
-    [t, approveMutation, rejectMutation, locale],
+    [
+      t,
+      approveMutation,
+      rejectMutation,
+      locale,
+      approveMutation.isPending,
+      rejectMutation.isPending,
+    ],
   );
 
   // Row click handler for side panel

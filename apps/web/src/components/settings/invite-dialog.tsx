@@ -138,7 +138,7 @@ export function InviteDialog({
               <SelectTrigger id={`${id}-invite-role`} className="w-full">
                 <SelectValue placeholder={t('rolePlaceholder')} />
               </SelectTrigger>
-              <SelectContent position="popper" side="bottom" className="max-h-64 overflow-y-auto">
+              <SelectContent side="bottom" className="max-h-64 overflow-y-auto">
                 {roleItems.map(item => (
                   <SelectItem key={item.value} value={item.value} className="py-2">
                     <div className="flex flex-col">

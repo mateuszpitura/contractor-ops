@@ -30,7 +30,7 @@ const sampleRow: InvoiceRow = {
 
 function RowTable({ row }: { row: InvoiceRow }) {
   const t = useTranslations('Invoices');
-  const columns = useMemo(() => getColumns(key => t(key)), [t]);
+  const columns = useMemo(() => getColumns(t), [t]);
   const table = useReactTable({
     data: [row],
     columns,

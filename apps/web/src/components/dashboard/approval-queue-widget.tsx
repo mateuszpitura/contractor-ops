@@ -7,6 +7,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -132,7 +133,7 @@ export function ApprovalQueueWidget() {
                         <Badge
                           variant={getSlaVariant(slaStatus)}
                           className={isBreached ? 'badge-glow' : ''}>
-                          {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus))}
+                          {tKey(t, SLA_LABEL_KEYS[slaStatus] ?? slaStatus)}
                         </Badge>
                       )}
                     </div>

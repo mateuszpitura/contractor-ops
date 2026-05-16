@@ -147,3 +147,16 @@ export function tKey<T extends Translator>(
     values,
   );
 }
+
+/**
+ * Existence probe counterpart to `tKey`. Wraps `t.has(key)` so callers
+ * can ask whether an arbitrary runtime string resolves to a defined
+ * translation without writing an inline cast on the strict `has`
+ * signature.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: structural shape over Translator.has overloads.
+type HasMethod = { has: (key: any) => boolean };
+
+export function tHas<T extends HasMethod>(t: T, key: string): boolean {
+  return (t.has as (k: string) => boolean)(key);
+}
