@@ -85,6 +85,16 @@ const whtRates = [
     treatyReference: 'Saudi-Germany DTA Article 12',
     effectiveFrom: new Date('2012-01-01'),
   },
+  {
+    // Saudi-Poland DTA reduces royalty WHT to 10% (PwC SA WHT table).
+    sourceCountry: 'SA',
+    contractorResidency: 'PL',
+    serviceType: 'royalties',
+    standardRate: 15.0,
+    treatyRate: 10.0,
+    treatyReference: 'Saudi-Poland DTA Article 12',
+    effectiveFrom: new Date('2012-01-01'),
+  },
   // Rent/equipment (5% standard, no treaty usually)
   {
     sourceCountry: 'SA',
