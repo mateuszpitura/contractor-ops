@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ThemeProvider } from 'next-themes';
 import { Providers } from '@/app/providers';
 import { CookieConsentBanner } from '@/components/layout/cookie-consent-banner';
+import { ThemeCookieSync } from '@/components/theme/theme-cookie-sync';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { getDir, isRtl } from '@/i18n/config';
@@ -61,6 +62,11 @@ export default async function LocaleLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
+          {/* Mirror next-themes' active theme to a `theme` cookie so the
+              Server Component reader in lib/get-theme-attributes.ts can emit
+              the right `dark` class on first paint — eliminates FOUC for
+              returning users. See goals/production-hardening/ §10.4. */}
+          <ThemeCookieSync />
           <Providers>
             <TooltipProvider delay={300}>
               <div className={isArabic ? notoSansArabic.variable : undefined}>{children}</div>

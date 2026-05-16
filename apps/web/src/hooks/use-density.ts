@@ -12,8 +12,35 @@ interface DensityState {
 }
 
 /**
+ * Cookie attributes mirroring the theme cookie's contract — see
+ * `apps/web/src/components/theme/theme-cookie-sync.tsx` for the rationale on
+ * each flag. Kept inline (rather than imported) so the zustand store has no
+ * cross-package dependency on React component code.
+ */
+const DENSITY_COOKIE_ATTRS = 'path=/; max-age=31536000; samesite=lax';
+
+function writeDensityCookie(value: Density): void {
+  if (typeof document === 'undefined') return;
+  document.cookie = `density=${value}; ${DENSITY_COOKIE_ATTRS}`;
+}
+
+function readDensityCookie(): string | undefined {
+  if (typeof document === 'undefined') return;
+  const parts = document.cookie.split('; ');
+  for (const part of parts) {
+    if (part.startsWith('density=')) {
+      return part.slice('density='.length);
+    }
+  }
+  return;
+}
+
+/**
  * Zustand store for information density preference.
- * Persisted to localStorage. Applied via CSS class "density-compact" on <html>.
+ * Persisted to localStorage AND mirrored to a `density` cookie so the Server
+ * Component reader in `apps/web/src/lib/get-theme-attributes.ts` can emit
+ * `density-compact` on the SSR `<html>` and avoid a layout-shift FOUC for
+ * returning users. Applied via CSS class "density-compact" on <html>.
  */
 const useDensityStore = create<DensityState>()(
   persist(
@@ -27,6 +54,8 @@ const useDensityStore = create<DensityState>()(
           } else {
             document.documentElement.classList.remove('density-compact');
           }
+          // Mirror to cookie so SSR theme reader picks it up on next request.
+          writeDensityCookie(density);
         }
       },
       toggleDensity: () => {
@@ -41,6 +70,12 @@ const useDensityStore = create<DensityState>()(
         // Sync DOM class on rehydration
         if (state?.density === 'compact' && typeof document !== 'undefined') {
           document.documentElement.classList.add('density-compact');
+        }
+        // One-time migration: existing users only have a localStorage entry
+        // from before cookie mirroring landed. Seed the cookie if it's
+        // missing so the SSR theme reader works on the very next request.
+        if (state?.density && typeof document !== 'undefined' && !readDensityCookie()) {
+          writeDensityCookie(state.density);
         }
       },
     },
