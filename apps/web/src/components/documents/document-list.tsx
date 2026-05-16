@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUploadNewVersion } from '@/hooks/use-upload-new-version';
 import { trpc } from '@/trpc/init';
 import { DocumentCard } from './document-card';
 
@@ -22,6 +23,7 @@ type DocumentListProps = {
 
 export function DocumentList({ entityType, entityId }: DocumentListProps) {
   const t = useTranslations('Documents');
+  const onUploadNewVersion = useUploadNewVersion();
 
   const documentsQuery = useQuery(
     trpc.document.list.queryOptions({
@@ -74,7 +76,12 @@ export function DocumentList({ entityType, entityId }: DocumentListProps) {
   return (
     <div className="space-y-3">
       {documents.map((doc, i) => (
-        <DocumentCard key={doc.id} document={doc} versionNumber={documents.length - i} />
+        <DocumentCard
+          key={doc.id}
+          document={doc}
+          versionNumber={documents.length - i}
+          onUploadNewVersion={onUploadNewVersion}
+        />
       ))}
     </div>
   );
