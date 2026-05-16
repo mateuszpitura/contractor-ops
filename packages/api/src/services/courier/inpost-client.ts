@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto';
-import { fetchWithTimeout } from '@contractor-ops/integrations';
+import { deriveIdempotencyKey, fetchWithTimeout } from '@contractor-ops/integrations';
 import { z } from 'zod';
 
 import type {
@@ -94,16 +93,17 @@ export class InPostClient implements CourierClient {
       external_customer_id: inpostParams.organizationId,
     };
 
-    // F-INT-04: server-derived Idempotency-Key prevents duplicate physical
-    // labels when QStash or our own retry logic re-fires after a 5xx that
-    // actually succeeded upstream. The natural key is (orgId, reference) —
-    // ShipX accepts any string ≤255 chars.
-    const idempotencyKey = `inpost-${createHash('sha256')
-      .update(
-        `${inpostParams.organizationId}|${inpostParams.reference}|${inpostParams.targetPoint}`,
-      )
-      .digest('base64url')
-      .slice(0, 48)}`;
+    // F-INT-04 / DRIFT-01: server-derived Idempotency-Key prevents duplicate
+    // physical labels when QStash or our own retry logic re-fires after a 5xx
+    // that actually succeeded upstream. Composed via the canonical
+    // `deriveIdempotencyKey` helper from `@contractor-ops/integrations` so the
+    // wire format matches every other adapter. ShipX accepts any string
+    // ≤255 chars; the helper returns a 64-char lowercase hex digest.
+    const idempotencyKey = deriveIdempotencyKey({
+      orgId: inpostParams.organizationId,
+      operation: 'inpost.shipment.create',
+      businessKey: `${inpostParams.reference}|${inpostParams.targetPoint}`,
+    });
 
     const response = await fetchWithTimeout(url, {
       method: 'POST',

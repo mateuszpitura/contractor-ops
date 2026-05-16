@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { deriveIdempotencyKey, GLOBAL_ORG_SENTINEL } from '@contractor-ops/integrations';
 import { getServerEnv } from '@contractor-ops/validators';
 import nodemailer from 'nodemailer';
 import type { ReactElement } from 'react';
@@ -27,25 +28,37 @@ export type SendAppEmailParams = {
 };
 
 // ---------------------------------------------------------------------------
-// Idempotency-Key derivation (F-INT-04)
+// Idempotency-Key derivation (F-INT-04 / DRIFT-01)
 // ---------------------------------------------------------------------------
 
 /**
  * Best-effort fallback when the caller did not supply an idempotency key:
- * sha256 of from+to+subject+body so two identical payloads (e.g. QStash
- * retry of the same notification) collapse into a single Resend send.
+ * derive a key through the canonical `deriveIdempotencyKey` helper from
+ * `@contractor-ops/integrations`, using a content digest of
+ * from+to+subject+body as the business key. Two identical payloads (e.g.
+ * a QStash retry of the same notification) collapse to a single Resend
+ * send.
  *
  * Resend documents `Idempotency-Key` retention as 24h — adequate for the
- * typical retry window. The output is base64url-trimmed to 64 chars to fit
- * comfortably under any provider limit (Resend has none documented; Stripe
- * caps at 255).
+ * typical retry window. The helper returns a 64-char lowercase hex digest
+ * that fits comfortably under every provider limit.
+ *
+ * `sendAppEmail` has no tenant context at the call site (it serves both
+ * transactional notifications and pre-tenancy auth flows), so we partition
+ * with {@link GLOBAL_ORG_SENTINEL}. Org-scoped callers SHOULD pass an
+ * explicit `idempotencyKey` derived with their orgId for stronger
+ * cross-tenant key isolation.
  */
 function deriveEmailIdempotencyKey(params: SendAppEmailParams, body: string): string {
   const recipients = Array.isArray(params.to) ? params.to.join(',') : params.to;
-  const digest = createHash('sha256')
+  const contentDigest = createHash('sha256')
     .update(`${params.from}|${recipients}|${params.subject}|${body}`)
-    .digest('base64url');
-  return `email:${digest.slice(0, 56)}`;
+    .digest('hex');
+  return deriveIdempotencyKey({
+    orgId: GLOBAL_ORG_SENTINEL,
+    operation: 'resend.email.send',
+    businessKey: contentDigest,
+  });
 }
 
 function isDevSmtpEnabled(

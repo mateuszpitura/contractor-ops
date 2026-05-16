@@ -1,35 +1,26 @@
-import { createHash } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { deriveIdempotencyKey } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import { CacheKeys, CacheTTL, cached } from './cache';
 import { stripe } from './stripe-client';
 
 // ---------------------------------------------------------------------------
-// Idempotency-Key derivation (F-INT-04)
+// Idempotency-Key derivation (F-INT-04 / DRIFT-01)
 // ---------------------------------------------------------------------------
-
-/**
- * Server-derived idempotency key for state-changing Stripe API calls.
- *
- * Stripe documents Idempotency-Key as "any value, up to 255 characters" and
- * dedupes for 24h. We hash a stable business tuple per operation so a QStash
- * retry, a manual user re-click, or a webhook reprocessing can't create
- * duplicate Stripe objects (subscriptions, customers, checkout sessions).
- *
- * NEVER pass through client-supplied input — always derive server-side from
- * (orgId, businessKey, operation).
- */
-function stripeIdempotencyKey(
-  organizationId: string,
-  operation: string,
-  businessKey: string,
-): string {
-  const digest = createHash('sha256')
-    .update(`${organizationId}|${operation}|${businessKey}`)
-    .digest('base64url');
-  // Stripe accepts ≤255 chars; we keep it short for log readability.
-  return `${operation}-${organizationId.slice(0, 12)}-${digest.slice(0, 24)}`;
-}
+//
+// Every state-changing Stripe call derives its Idempotency-Key through the
+// canonical `deriveIdempotencyKey({ orgId, operation, businessKey })` helper
+// from `@contractor-ops/integrations` so that QStash retries, double-clicks,
+// and webhook reprocessing collapse to a single Stripe mutation. The
+// `operation` is the Stripe API surface using the standard
+// `<provider>.<entity>.<verb>` form (e.g. `stripe.checkout.session.create`);
+// the `businessKey` carries the natural id that identifies the business
+// intent (priceId+quantity, organizationId, subscription quantity, ...).
+//
+// Stripe accepts Idempotency-Key values up to 255 chars and dedupes for 24h.
+// The 64-char lowercase hex returned by the helper fits well within that
+// budget and matches the wire format used by every other integration
+// adapter in this monorepo.
 
 const log = createLogger({ service: 'billing-service' });
 
@@ -137,11 +128,11 @@ export async function createCheckoutSession(
         cancel_url: params.cancelUrl,
       },
       {
-        idempotencyKey: stripeIdempotencyKey(
-          params.organizationId,
-          'checkout-sub',
-          `${params.priceId}:${params.quantity}`,
-        ),
+        idempotencyKey: deriveIdempotencyKey({
+          orgId: params.organizationId,
+          operation: 'stripe.checkout.session.create.subscription',
+          businessKey: `${params.priceId}:${params.quantity}`,
+        }),
       },
     );
 
@@ -259,11 +250,11 @@ export async function createTopUpCheckoutSession(
         cancel_url: params.cancelUrl,
       },
       {
-        idempotencyKey: stripeIdempotencyKey(
-          params.organizationId,
-          'checkout-topup',
-          params.priceId,
-        ),
+        idempotencyKey: deriveIdempotencyKey({
+          orgId: params.organizationId,
+          operation: 'stripe.checkout.session.create.topup',
+          businessKey: params.priceId,
+        }),
       },
     );
 
@@ -312,11 +303,14 @@ export async function updateSubscriptionSeatCount(params: {
         proration_behavior: 'create_prorations',
       },
       {
-        idempotencyKey: stripeIdempotencyKey(
-          params.stripeSubscriptionId,
-          'sub-seats',
-          String(params.newQuantity),
-        ),
+        idempotencyKey: deriveIdempotencyKey({
+          // Subscription updates are not org-scoped at this entry point;
+          // pass the subscription id as the tenant partition so two
+          // distinct orgs' subs cannot collide on identical quantities.
+          orgId: params.stripeSubscriptionId,
+          operation: 'stripe.subscription.update.seats',
+          businessKey: String(params.newQuantity),
+        }),
       },
     );
   } catch (error) {
@@ -373,7 +367,11 @@ export async function syncSeatCountForOrg(organizationId: string): Promise<void>
         proration_behavior: 'create_prorations',
       },
       {
-        idempotencyKey: stripeIdempotencyKey(organizationId, 'sub-seats-sync', String(newQuantity)),
+        idempotencyKey: deriveIdempotencyKey({
+          orgId: organizationId,
+          operation: 'stripe.subscription.update.seats-sync',
+          businessKey: String(newQuantity),
+        }),
       },
     );
 
@@ -419,7 +417,11 @@ export async function ensureStripeCustomer(params: EnsureStripeCustomerParams): 
         },
       },
       {
-        idempotencyKey: `create-customer-${params.organizationId}`,
+        idempotencyKey: deriveIdempotencyKey({
+          orgId: params.organizationId,
+          operation: 'stripe.customer.create',
+          businessKey: params.organizationId,
+        }),
       },
     );
 

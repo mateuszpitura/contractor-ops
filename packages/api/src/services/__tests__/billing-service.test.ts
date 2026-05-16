@@ -433,13 +433,17 @@ describe('ensureStripeCustomer', () => {
         name: 'New Org',
         metadata: { organizationId: 'org_new' },
       },
-      {
-        idempotencyKey: 'create-customer-org_new',
-      },
+      // F-INT-04 / DRIFT-01: idempotency key is the 64-char hex digest
+      // returned by `deriveIdempotencyKey` (`@contractor-ops/integrations`).
+      // We assert the format rather than a hard-coded literal — the canonical
+      // helper's own unit tests pin the exact wire format.
+      expect.objectContaining({
+        idempotencyKey: expect.stringMatching(/^[0-9a-f]{64}$/),
+      }),
     );
   });
 
-  it("uses idempotencyKey format 'create-customer-{organizationId}'", async () => {
+  it('derives a stable idempotency key from (orgId, operation, businessKey)', async () => {
     mockPrisma.subscription.findUnique.mockResolvedValue(null);
     mockStripe.customers.create.mockResolvedValue({ id: 'cus_idem' });
 
@@ -448,8 +452,20 @@ describe('ensureStripeCustomer', () => {
       organizationId: 'org_idem_test',
     });
 
+    // F-INT-04 / DRIFT-01: the key is the 64-char lowercase hex digest produced
+    // by `deriveIdempotencyKey({ orgId, operation: 'stripe.customer.create',
+    // businessKey: orgId })`. Stability of the key (re-running the same logical
+    // call yields the same hex) is what makes Stripe collapse retries.
     const options = mockStripe.customers.create.mock.calls[0][1];
-    expect(options.idempotencyKey).toBe('create-customer-org_idem_test');
+    expect(options.idempotencyKey).toMatch(/^[0-9a-f]{64}$/);
+    const firstKey = options.idempotencyKey;
+
+    mockStripe.customers.create.mockClear();
+    await ensureStripeCustomer({
+      ...customerParams,
+      organizationId: 'org_idem_test',
+    });
+    expect(mockStripe.customers.create.mock.calls[0][1].idempotencyKey).toBe(firstKey);
   });
 
   it('creates Stripe customer when DB returns subscription with null stripeCustomerId', async () => {
