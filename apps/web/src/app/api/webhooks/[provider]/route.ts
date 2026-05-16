@@ -4,7 +4,8 @@ import { getAdapter } from '@contractor-ops/integrations/registry';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { validateWebhookPayload } from '@contractor-ops/integrations/services/webhook-schemas';
 import type { WebhookVerificationResult } from '@contractor-ops/integrations/types';
-import { createWebhookLogger } from '@contractor-ops/logger';
+import { createWebhookLogger, getRequestId } from '@contractor-ops/logger';
+import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -205,6 +206,7 @@ export async function POST(
       {
         provider,
         err: parseErr instanceof Error ? parseErr.message : String(parseErr),
+        requestId: getRequestId(),
       },
       'rejected webhook: unparseable JSON body',
     );
@@ -269,6 +271,14 @@ export async function POST(
     },
   });
 
+  // safe-swallow: QStash publish failure marks the WebhookDelivery row as
+  // FAILED so the dead-letter replay cron picks it up; we intentionally
+  // return 2xx to the upstream provider because the payload is already
+  // signature-verified, schema-validated and durably persisted. Returning
+  // non-2xx here would re-deliver the same event and produce a second
+  // WebhookDelivery row (provider redelivery has no awareness of our DB id),
+  // breaking the at-most-once-per-delivery-row invariant the _process
+  // claim-update relies on.
   try {
     const qstash = getQStashClient();
     await qstash.publishJSON({
@@ -278,9 +288,18 @@ export async function POST(
     });
   } catch (queueError) {
     log.error(
-      { err: queueError, provider, deliveryId: delivery.id },
+      {
+        err: queueError,
+        provider,
+        deliveryId: delivery.id,
+        requestId: getRequestId(),
+      },
       'failed to queue for processing',
     );
+    Sentry.captureException(queueError, {
+      tags: { 'webhook.provider': provider, 'webhook.stage': 'qstash-publish' },
+      extra: { deliveryId: delivery.id, requestId: getRequestId() },
+    });
     await prisma.webhookDelivery.update({
       where: { id: delivery.id },
       data: {

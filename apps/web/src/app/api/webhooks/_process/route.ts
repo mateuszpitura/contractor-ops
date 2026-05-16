@@ -7,6 +7,7 @@ import { getAdapter } from '@contractor-ops/integrations/registry';
 import {
   buildContextFromHeaders,
   createWebhookLogger,
+  getRequestId,
   runWithRequestContext,
 } from '@contractor-ops/logger';
 import { webhookIngressReason } from '@contractor-ops/validators';
@@ -58,6 +59,9 @@ async function handler(request: NextRequest) {
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-provider dispatch (Jira/Linear/Resend/e-sign)
 async function handlerInner(request: NextRequest) {
+  // safe-swallow: unparseable JSON falls through to the zod safeParse below,
+  // which returns HTTP 400. We do not need to log here because the 400 is
+  // observable in the access log and re-logging would duplicate noise.
   const rawBody = await request.json().catch(() => null);
   const parsed = webhookProcessBodySchema.safeParse(rawBody);
   if (!parsed.success) {
@@ -187,6 +191,13 @@ async function handlerInner(request: NextRequest) {
       const esignResult = webhookResult as { envelopeId: string; completed: boolean } | undefined;
 
       if (esignResult?.completed && delivery.integrationConnectionId) {
+        // safe-swallow: the webhook adapter has already verified + parsed the
+        // event; `handleSigningCompletion` is a downstream side-effect
+        // (project status flip, notifications). A failure here MUST NOT mark
+        // the WebhookDelivery as FAILED — that would re-deliver the event and
+        // re-invoke the idempotent adapter. We log + Sentry-capture so the
+        // failure is surfaced via the dead-letter dashboard and an operator
+        // can replay completion manually.
         try {
           await handleSigningCompletion(
             esignResult.envelopeId,
@@ -195,9 +206,19 @@ async function handlerInner(request: NextRequest) {
           );
         } catch (completionError) {
           log.error(
-            { err: completionError, envelopeId: esignResult.envelopeId, provider },
+            {
+              err: completionError,
+              envelopeId: esignResult.envelopeId,
+              provider,
+              deliveryId,
+              requestId: getRequestId(),
+            },
             'failed to handle signing completion',
           );
+          Sentry.captureException(completionError, {
+            tags: { 'webhook.provider': provider, 'webhook.stage': 'esign-completion' },
+            extra: { deliveryId, envelopeId: esignResult.envelopeId },
+          });
         }
       }
     }
@@ -223,12 +244,13 @@ async function handlerInner(request: NextRequest) {
         deliveryId,
         provider,
         organizationId: effectiveOrgId,
+        requestId: getRequestId(),
       },
       'webhook processing failed',
     );
     Sentry.captureException(error, {
       tags: { 'webhook.provider': provider },
-      extra: { deliveryId, organizationId: effectiveOrgId },
+      extra: { deliveryId, organizationId: effectiveOrgId, requestId: getRequestId() },
     });
 
     await prisma.webhookDelivery.update({
