@@ -5,6 +5,30 @@ import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Popover — thin wrapper around `@base-ui/react/popover` exposing the four
+ * pieces we use across the app: `Popover`, `PopoverTrigger`, `PopoverContent`,
+ * plus the title/description/header helpers.
+ *
+ * ⚠️ Layout convention — parent of a `<PopoverTrigger>` MUST use
+ * `flex flex-col gap-*` (or any non-sibling-margin layout). Do NOT use
+ * Tailwind's `space-y-*` directly around a popover trigger.
+ *
+ * Why: when the popover is open, Base UI injects two `position: fixed`
+ * `<FocusGuard>` `<span>`s as siblings of the trigger button. That changes
+ * which child is `:last-child` and lets `space-y-*` add an extra
+ * `margin-block-end` to the trigger, causing a visible layout shift around
+ * the input. `flex flex-col gap-*` only accounts for in-flow children, so
+ * fixed-positioned focus guards are ignored.
+ *
+ *   ❌  <div className="space-y-2"><Label/><Popover>…</Popover></div>
+ *   ✅  <div className="flex flex-col gap-2"><Label/><Popover>…</Popover></div>
+ *
+ * A defensive CSS reset in `globals.css` neutralises the worst case for
+ * legacy markup, but all new usages should follow the convention above.
+ * Calendar / date / time pickers (`Calendar`, `TimePicker`,
+ * `DateTimeRangePicker`) all rely on this primitive — the same rule applies.
+ */
 function Popover({ ...props }: PopoverPrimitive.Root.Props) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }

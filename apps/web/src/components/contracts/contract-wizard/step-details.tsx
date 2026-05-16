@@ -79,6 +79,110 @@ function formatDateOrPlaceholder(isoDate: string | undefined, placeholder: strin
 }
 
 // ---------------------------------------------------------------------------
+// Contractor picker field (locked-input vs combobox popover)
+// ---------------------------------------------------------------------------
+
+interface ContractorPickerFieldProps {
+  /** When set, the field is locked to this contractor and not pickable. */
+  lockedContractorId?: string;
+  selectedContractor: ContractorListItem | undefined;
+  selectedContractorId: string | undefined;
+  contractors: ContractorListItem[];
+  contractorsLoading: boolean;
+  search: string;
+  onSearchChange: (next: string) => void;
+  onPick: (contractorId: string) => void;
+  showPii: boolean;
+  label: string;
+  placeholder: string;
+  noResultsLabel: string;
+  errorMessage?: string;
+}
+
+function ContractorPickerField({
+  lockedContractorId,
+  selectedContractor,
+  selectedContractorId,
+  contractors,
+  contractorsLoading,
+  search,
+  onSearchChange,
+  onPick,
+  showPii,
+  label,
+  placeholder,
+  noResultsLabel,
+  errorMessage,
+}: ContractorPickerFieldProps) {
+  const [open, setOpen] = useState(false);
+
+  const inputBlock = (() => {
+    if (lockedContractorId) {
+      if (contractorsLoading) {
+        return <Skeleton className="h-9 w-full rounded-lg" />;
+      }
+      return (
+        <Input
+          value={selectedContractor?.displayName ?? lockedContractorId}
+          readOnly
+          className="bg-muted"
+        />
+      );
+    }
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="outline"
+              className="w-full justify-start font-normal"
+              role="combobox"
+              aria-expanded={open}
+            />
+          }>
+          {selectedContractor?.displayName ?? (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+        </PopoverTrigger>
+        <PopoverContent className="w-(--anchor-width) p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput placeholder={placeholder} value={search} onValueChange={onSearchChange} />
+            <CommandList>
+              <CommandEmpty>{noResultsLabel}</CommandEmpty>
+              <CommandGroup>
+                {contractors.map(contractor => (
+                  <CommandItem
+                    key={contractor.id}
+                    value={contractor.id}
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                    onSelect={() => {
+                      onPick(contractor.id);
+                      setOpen(false);
+                    }}>
+                    <span>{contractor.displayName}</span>
+                    <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  })();
+
+  // `selectedContractorId` is forwarded so any caller relying on it for tests
+  // / accessibility can read it from the underlying input.
+  return (
+    <div className="flex flex-col gap-2" data-selected-contractor-id={selectedContractorId}>
+      <Label className="text-[13px]">{label}</Label>
+      {inputBlock}
+      {!!errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Props
 // ---------------------------------------------------------------------------
 
@@ -98,7 +202,6 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
   const [contractorSearch, setContractorSearch] = useState('');
-  const [contractorPopoverOpen, setContractorPopoverOpen] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
 
@@ -138,6 +241,14 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
     label: t(`typeOptions.${enumKey(type)}`),
   }));
 
+  const handleContractorPick = (nextContractorId: string) => {
+    setValue('contractorId', nextContractorId, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+    setContractorSearch('');
+  };
+
   const handleStartDateSelect = (date: Date | undefined) => {
     if (date) {
       setValue('startDate', date.toISOString(), {
@@ -162,71 +273,22 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
   return (
     <div className="space-y-4">
-      {/* Contractor picker */}
-      <div className="space-y-2">
-        <Label className="text-[13px]">{t('fields.contractor')}</Label>
-        {contractorId ? (
-          contractorsLoading ? (
-            <Skeleton className="h-9 w-full rounded-lg" />
-          ) : (
-            <Input
-              value={selectedContractor?.displayName ?? contractorId}
-              readOnly
-              className="bg-muted"
-            />
-          )
-        ) : (
-          <Popover open={contractorPopoverOpen} onOpenChange={setContractorPopoverOpen}>
-            <PopoverTrigger
-              render={
-                <Button
-                  variant="outline"
-                  className="w-full justify-start font-normal"
-                  role="combobox"
-                  aria-expanded={contractorPopoverOpen}
-                />
-              }>
-              {selectedContractor?.displayName ?? (
-                <span className="text-muted-foreground">{t('fields.contractorPlaceholder')}</span>
-              )}
-            </PopoverTrigger>
-            <PopoverContent className="w-(--anchor-width) p-0" align="start">
-              <Command shouldFilter={false}>
-                <CommandInput
-                  placeholder={t('fields.contractorPlaceholder')}
-                  value={contractorSearch}
-                  onValueChange={setContractorSearch}
-                />
-                <CommandList>
-                  <CommandEmpty>{t('fields.noContractors')}</CommandEmpty>
-                  <CommandGroup>
-                    {contractors.map(contractor => (
-                      <CommandItem
-                        key={contractor.id}
-                        value={contractor.id}
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        onSelect={() => {
-                          setValue('contractorId', contractor.id, {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          });
-                          setContractorPopoverOpen(false);
-                          setContractorSearch('');
-                        }}>
-                        <span>{contractor.displayName}</span>
-                        <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        )}
-        {!!errors.contractorId && (
-          <p className="text-sm text-destructive">{errors.contractorId.message}</p>
-        )}
-      </div>
+      <ContractorPickerField
+        lockedContractorId={contractorId}
+        selectedContractor={selectedContractor}
+        selectedContractorId={selectedContractorId}
+        contractors={contractors}
+        contractorsLoading={contractorsLoading}
+        search={contractorSearch}
+        onSearchChange={setContractorSearch}
+        // biome-ignore lint/nursery/noJsxPropsBind: stable in-render handler
+        onPick={handleContractorPick}
+        showPii={showPii}
+        label={t('fields.contractor')}
+        placeholder={t('fields.contractorPlaceholder')}
+        noResultsLabel={t('fields.noContractors')}
+        errorMessage={errors.contractorId?.message}
+      />
 
       {/* Contract title */}
       <div className="space-y-2">
@@ -265,7 +327,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
       </div>
 
       {/* Start date */}
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <Label className="text-[13px]">{t('fields.startDate')}</Label>
         <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
           <PopoverTrigger
@@ -288,7 +350,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
       </div>
 
       {/* End date (optional) */}
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <Label className="text-[13px]">{t('fields.endDate')}</Label>
         <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
           <PopoverTrigger

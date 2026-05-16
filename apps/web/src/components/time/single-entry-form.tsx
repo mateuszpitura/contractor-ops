@@ -135,7 +135,7 @@ export function SingleEntryForm({
 
         <div className="space-y-4">
           {/* Date picker */}
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Label htmlFor={`${id}-entry-date`}>{t('dateLabel')}</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger

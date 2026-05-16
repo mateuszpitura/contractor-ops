@@ -135,6 +135,192 @@ function dateFieldToOptionalString(value: string | Date | null | undefined): str
   return value instanceof Date ? toDateString(value) : value;
 }
 
+/**
+ * Maps the raw invoice resource into the form's `defaultValues` / `reset`
+ * payload. Centralises the null/undefined coalescing for every optional
+ * field so the component body stays simple.
+ */
+function getDefaultFormValues(invoice: InvoiceMetadataFormProps['invoice']): InvoiceMetadataValues {
+  return {
+    invoiceNumber: invoice.invoiceNumber,
+    issueDate: dateFieldToString(invoice.issueDate),
+    dueDate: dateFieldToString(invoice.dueDate),
+    servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
+    servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
+    sellerTaxId: invoice.sellerTaxId ?? undefined,
+    subtotalMinor: invoice.subtotalMinor,
+    vatRate: invoice.vatRate ?? undefined,
+    vatAmountMinor: invoice.vatAmountMinor ?? undefined,
+    totalMinor: invoice.totalMinor,
+    withholdingMinor: invoice.withholdingMinor ?? undefined,
+    amountToPayMinor: invoice.amountToPayMinor,
+    currency: invoice.currency,
+    sellerBankAccount: invoice.sellerBankAccount ?? undefined,
+  };
+}
+
+/**
+ * Builds the `{id, data}` payload accepted by `invoice.update`, normalising
+ * empty strings to `undefined` for optional fields.
+ */
+function buildUpdatePayload(values: InvoiceMetadataValues, invoiceId: string) {
+  return {
+    id: invoiceId,
+    data: {
+      invoiceNumber: values.invoiceNumber,
+      issueDate: values.issueDate,
+      dueDate: values.dueDate,
+      servicePeriodStart: values.servicePeriodStart || undefined,
+      servicePeriodEnd: values.servicePeriodEnd || undefined,
+      sellerTaxId: values.sellerTaxId || undefined,
+      subtotalMinor: values.subtotalMinor,
+      vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
+      vatAmountMinor: values.vatAmountMinor,
+      totalMinor: values.totalMinor,
+      withholdingMinor: values.withholdingMinor,
+      amountToPayMinor: values.amountToPayMinor,
+      currency: values.currency,
+      sellerBankAccount: values.sellerBankAccount || undefined,
+    },
+  };
+}
+
+/**
+ * Resolves an action label using the namespace declared on the action itself.
+ * Translator instances are passed in so the helper stays free of React deps.
+ */
+function resolveActionLabel(
+  action: InvoiceAction,
+  translators: {
+    t: (key: string) => string;
+    tDetail: (key: string) => string;
+    tBulk: (key: string) => string;
+  },
+): string {
+  if (action.i18nNamespace === 'Invoices.detail') {
+    return translators.tDetail(action.labelKey);
+  }
+  if (action.i18nNamespace === 'Invoices.bulkActions') {
+    return translators.tBulk(action.labelKey);
+  }
+  return translators.t(action.labelKey);
+}
+
+// ---------------------------------------------------------------------------
+// Action bar sub-component (registry-driven save / submit / void)
+// ---------------------------------------------------------------------------
+
+interface InvoiceActionBarProps {
+  editAction: InvoiceAction | undefined;
+  submitForMatchingAction: InvoiceAction | undefined;
+  voidAction: InvoiceAction | undefined;
+  isSubmitting: boolean;
+  isSaving: boolean;
+  isSubmittingForMatching: boolean;
+  onSaveDraft: () => void;
+  onSubmitForMatching: () => void;
+  onOpenVoidDialog: () => void;
+  resolveLabel: (action: InvoiceAction) => string;
+  moreActionsLabel: string;
+}
+
+function InvoiceActionBar({
+  editAction,
+  submitForMatchingAction,
+  voidAction,
+  isSubmitting,
+  isSaving,
+  isSubmittingForMatching,
+  onSaveDraft,
+  onSubmitForMatching,
+  onOpenVoidDialog,
+  resolveLabel,
+  moreActionsLabel,
+}: InvoiceActionBarProps) {
+  const VoidIcon = voidAction?.icon;
+  return (
+    <div className="flex items-center justify-between gap-2 border-t pt-4">
+      <div className="flex items-center gap-2">
+        {!!editAction && (
+          <Button type="button" variant="outline" disabled={isSubmitting} onClick={onSaveDraft}>
+            {!!isSaving && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+            {resolveLabel(editAction)}
+          </Button>
+        )}
+        {!!submitForMatchingAction && (
+          <Button type="button" disabled={isSubmitting} onClick={onSubmitForMatching}>
+            {!!isSubmittingForMatching && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+            {resolveLabel(submitForMatchingAction)}
+          </Button>
+        )}
+      </div>
+
+      {!!voidAction && !!VoidIcon && (
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">{moreActionsLabel}</span>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={onOpenVoidDialog}>
+              <VoidIcon className="me-1.5 h-3.5 w-3.5" />
+              {resolveLabel(voidAction)}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Void confirmation dialog
+// ---------------------------------------------------------------------------
+
+interface VoidConfirmDialogProps {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+  labels: {
+    title: string;
+    body: string;
+    cancel: string;
+    confirm: string;
+  };
+}
+
+function VoidConfirmDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  isPending,
+  labels,
+}: VoidConfirmDialogProps) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Trash2 className="size-4" />
+            {labels.title}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{labels.body}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{labels.cancel}</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+            {!!isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
+            {labels.confirm}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -168,15 +354,12 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const submitForMatchingAction = actionByKey.get('submitForMatching');
   const voidAction = actionByKey.get('void');
 
-  function getActionLabel(action: InvoiceAction): string {
-    if (action.i18nNamespace === 'Invoices.detail') {
-      return tDetail(action.labelKey as Parameters<typeof tDetail>[0]);
-    }
-    if (action.i18nNamespace === 'Invoices.bulkActions') {
-      return tBulk(action.labelKey as Parameters<typeof tBulk>[0]);
-    }
-    return t(action.labelKey as Parameters<typeof t>[0]);
-  }
+  const resolveLabel = (action: InvoiceAction) =>
+    resolveActionLabel(action, {
+      t: (key: string) => t(key as Parameters<typeof t>[0]),
+      tDetail: (key: string) => tDetail(key as Parameters<typeof tDetail>[0]),
+      tBulk: (key: string) => tBulk(key as Parameters<typeof tBulk>[0]),
+    });
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
     tv(key as Parameters<typeof tv>[0]),
@@ -192,42 +375,12 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
     formState: { errors },
   } = useForm<InvoiceMetadataValues>({
     resolver: zodResolver(invoiceMetadataSchema),
-    defaultValues: {
-      invoiceNumber: invoice.invoiceNumber,
-      issueDate: dateFieldToString(invoice.issueDate),
-      dueDate: dateFieldToString(invoice.dueDate),
-      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
-      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
-      sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalMinor: invoice.subtotalMinor,
-      vatRate: invoice.vatRate ?? undefined,
-      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
-      totalMinor: invoice.totalMinor,
-      withholdingMinor: invoice.withholdingMinor ?? undefined,
-      amountToPayMinor: invoice.amountToPayMinor,
-      currency: invoice.currency,
-      sellerBankAccount: invoice.sellerBankAccount ?? undefined,
-    },
+    defaultValues: getDefaultFormValues(invoice),
   });
 
   // Reset form when invoice data changes (e.g. after submission)
   useEffect(() => {
-    reset({
-      invoiceNumber: invoice.invoiceNumber,
-      issueDate: dateFieldToString(invoice.issueDate),
-      dueDate: dateFieldToString(invoice.dueDate),
-      servicePeriodStart: dateFieldToOptionalString(invoice.servicePeriodStart),
-      servicePeriodEnd: dateFieldToOptionalString(invoice.servicePeriodEnd),
-      sellerTaxId: invoice.sellerTaxId ?? undefined,
-      subtotalMinor: invoice.subtotalMinor,
-      vatRate: invoice.vatRate ?? undefined,
-      vatAmountMinor: invoice.vatAmountMinor ?? undefined,
-      totalMinor: invoice.totalMinor,
-      withholdingMinor: invoice.withholdingMinor ?? undefined,
-      amountToPayMinor: invoice.amountToPayMinor,
-      currency: invoice.currency,
-      sellerBankAccount: invoice.sellerBankAccount ?? undefined,
-    });
+    reset(getDefaultFormValues(invoice));
   }, [invoice, reset]);
 
   // Watched values for date pickers
@@ -289,55 +442,16 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   );
 
   function onSaveDraft(values: InvoiceMetadataValues) {
-    saveDraftMutation.mutate({
-      id: invoice.id,
-      data: {
-        invoiceNumber: values.invoiceNumber,
-        issueDate: values.issueDate,
-        dueDate: values.dueDate,
-        servicePeriodStart: values.servicePeriodStart || undefined,
-        servicePeriodEnd: values.servicePeriodEnd || undefined,
-        sellerTaxId: values.sellerTaxId || undefined,
-        subtotalMinor: values.subtotalMinor,
-        vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
-        vatAmountMinor: values.vatAmountMinor,
-        totalMinor: values.totalMinor,
-        withholdingMinor: values.withholdingMinor,
-        amountToPayMinor: values.amountToPayMinor,
-        currency: values.currency,
-        sellerBankAccount: values.sellerBankAccount || undefined,
-      },
-    });
+    saveDraftMutation.mutate(buildUpdatePayload(values, invoice.id));
   }
 
   function onSubmitForMatching(values: InvoiceMetadataValues) {
     // Save first, then submit for matching
-    saveDraftMutation.mutate(
-      {
-        id: invoice.id,
-        data: {
-          invoiceNumber: values.invoiceNumber,
-          issueDate: values.issueDate,
-          dueDate: values.dueDate,
-          servicePeriodStart: values.servicePeriodStart || undefined,
-          servicePeriodEnd: values.servicePeriodEnd || undefined,
-          sellerTaxId: values.sellerTaxId || undefined,
-          subtotalMinor: values.subtotalMinor,
-          vatRate: (values.vatRate as '23' | '8' | '5' | '0' | 'ZW' | 'NP') || undefined,
-          vatAmountMinor: values.vatAmountMinor,
-          totalMinor: values.totalMinor,
-          withholdingMinor: values.withholdingMinor,
-          amountToPayMinor: values.amountToPayMinor,
-          currency: values.currency,
-          sellerBankAccount: values.sellerBankAccount || undefined,
-        },
+    saveDraftMutation.mutate(buildUpdatePayload(values, invoice.id), {
+      onSuccess: () => {
+        submitForMatchingMutation.mutate({ id: invoice.id });
       },
-      {
-        onSuccess: () => {
-          submitForMatchingMutation.mutate({ id: invoice.id });
-        },
-      },
-    );
+    });
   }
 
   const isSubmitting = saveDraftMutation.isPending || submitForMatchingMutation.isPending;
@@ -364,7 +478,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
 
             {/* Issue date + Due date row */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label>{t('detail.issueDate')}</Label>
                 <DatePicker
                   value={issueDateValue}
@@ -377,7 +491,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   <p className="text-xs text-destructive">{errors.issueDate.message}</p>
                 )}
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label>{t('detail.dueDate')}</Label>
                 <DatePicker
                   value={dueDateValue}
@@ -394,7 +508,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
 
             {/* Service period row */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label>{t('detail.servicePeriodStart')}</Label>
                 <DatePicker
                   value={servicePeriodStartValue ?? ''}
@@ -404,7 +518,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
                   pickDateLabel={tMeta('pickDate')}
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <Label>{t('detail.servicePeriodEnd')}</Label>
                 <DatePicker
                   value={servicePeriodEndValue ?? ''}
@@ -541,84 +655,41 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
             </div>
 
             {/* Action bar — sourced from getDetailInvoiceActions() */}
-            <div className="flex items-center justify-between gap-2 border-t pt-4">
-              <div className="flex items-center gap-2">
-                {!!editAction && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting}
-                    onClick={handleSubmit(onSaveDraft)}>
-                    {!!saveDraftMutation.isPending && (
-                      <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-                    )}
-                    {getActionLabel(editAction)}
-                  </Button>
-                )}
-                {!!submitForMatchingAction && (
-                  <Button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleSubmit(onSubmitForMatching)}>
-                    {!!submitForMatchingMutation.isPending && (
-                      <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
-                    )}
-                    {getActionLabel(submitForMatchingAction)}
-                  </Button>
-                )}
-              </div>
-
-              {!!voidAction &&
-                (() => {
-                  const VoidIcon = voidAction.icon;
-                  return (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">{t('detail.moreActions')}</span>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                          onClick={() => setVoidDialogOpen(true)}>
-                          <VoidIcon className="me-1.5 h-3.5 w-3.5" />
-                          {getActionLabel(voidAction)}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  );
-                })()}
-            </div>
+            <InvoiceActionBar
+              editAction={editAction}
+              submitForMatchingAction={submitForMatchingAction}
+              voidAction={voidAction}
+              isSubmitting={isSubmitting}
+              isSaving={saveDraftMutation.isPending}
+              isSubmittingForMatching={submitForMatchingMutation.isPending}
+              onSaveDraft={handleSubmit(onSaveDraft)}
+              onSubmitForMatching={handleSubmit(onSubmitForMatching)}
+              // biome-ignore lint/nursery/noJsxPropsBind: stable in-render handler
+              onOpenVoidDialog={() => setVoidDialogOpen(true)}
+              // biome-ignore lint/nursery/noJsxPropsBind: closure over translators recreated per render
+              resolveLabel={resolveLabel}
+              moreActionsLabel={t('detail.moreActions')}
+            />
           </form>
         </CardContent>
       </Card>
 
-      {/* Void confirmation dialog */}
-      <AlertDialog open={voidDialogOpen} onOpenChange={setVoidDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Trash2 className="size-4" />
-              {t('detail.voidConfirmTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription>{t('detail.voidConfirmBody')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('detail.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                voidMutation.mutate({ id: invoice.id });
-                setVoidDialogOpen(false);
-              }}>
-              {!!voidMutation.isPending && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t('detail.voidInvoiceCta')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <VoidConfirmDialog
+        open={voidDialogOpen}
+        onOpenChange={setVoidDialogOpen}
+        // biome-ignore lint/nursery/noJsxPropsBind: stable in-render handler
+        onConfirm={() => {
+          voidMutation.mutate({ id: invoice.id });
+          setVoidDialogOpen(false);
+        }}
+        isPending={voidMutation.isPending}
+        labels={{
+          title: t('detail.voidConfirmTitle'),
+          body: t('detail.voidConfirmBody'),
+          cancel: t('detail.cancel'),
+          confirm: t('detail.voidInvoiceCta'),
+        }}
+      />
     </>
   );
 }

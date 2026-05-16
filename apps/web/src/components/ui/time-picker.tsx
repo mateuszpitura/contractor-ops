@@ -63,7 +63,7 @@ function parse24(value: string | undefined): { h: number; m: number } | null {
   if (!match) return null;
   const h = Number(match[1]);
   const m = Number(match[2]);
-  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  if (!(Number.isFinite(h) && Number.isFinite(m))) return null;
   if (h < 0 || h > 23 || m < 0 || m > 59) return null;
   return { h, m };
 }
@@ -109,6 +109,31 @@ function nowSnappedToStep(step: number): { h: number; m: number } {
 // Component
 // ---------------------------------------------------------------------------
 
+/**
+ * TimePicker — popover-driven scrollable HH:mm selector (24h or 12h face).
+ *
+ * Usage:
+ *   <TimePicker value={'09:00'} onChange={setValue} format="24h" step={5} />
+ *
+ *   - `value` / `onChange` are canonical 24-hour `HH:mm` strings regardless
+ *     of the `format` prop — display format does not change the wire shape.
+ *   - `step` controls the minute column granularity (defaults to 5).
+ *
+ *   IMPORTANT — popover-trigger parent containers MUST use
+ *   `flex flex-col gap-*`, NOT Tailwind's `space-y-*`. Base UI's
+ *   `Popover.Trigger` inserts two `position: fixed` `<FocusGuard>` spans
+ *   next to the trigger button when the popover opens, which breaks
+ *   `space-y-*`'s `:last-child` margin reset and causes a visible
+ *   layout shift around the input.
+ *
+ *   ❌  <div className="space-y-2"><Label/><TimePicker/></div>
+ *   ✅  <div className="flex flex-col gap-2"><Label/><TimePicker/></div>
+ *
+ *   The same rule applies anywhere a `<Popover>` trigger sits in a
+ *   labelled form row. For a combined date+time control, prefer
+ *   `<DateTimeRangePicker>` instead of stitching `<Calendar>` and
+ *   `<TimePicker>` together by hand.
+ */
 export function TimePicker({
   value,
   onChange,
@@ -124,10 +149,7 @@ export function TimePicker({
   const [focusedColumn, setFocusedColumn] = useState<ColumnKey>('hour');
 
   // ── Lists ───────────────────────────────────────────────────────────────
-  const hourOptions = useMemo<number[]>(
-    () => (format === '12h' ? HOURS_12 : HOURS_24),
-    [format],
-  );
+  const hourOptions = useMemo<number[]>(() => (format === '12h' ? HOURS_12 : HOURS_24), [format]);
   const minuteOptions = useMemo<number[]>(() => buildMinutes(step), [step]);
 
   // ── Refs (for scroll-into-view + programmatic focus) ────────────────────
@@ -193,8 +215,7 @@ export function TimePicker({
         const list = minuteOptions;
         // Snap to the nearest existing minute, then walk.
         const closest = list.reduce(
-          (acc, m) =>
-            Math.abs(m - currentM) < Math.abs(acc - currentM) ? m : acc,
+          (acc, m) => (Math.abs(m - currentM) < Math.abs(acc - currentM) ? m : acc),
           list[0]!,
         );
         const idx = list.indexOf(closest);
@@ -229,7 +250,8 @@ export function TimePicker({
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLDivElement>) => {
-      const columns: ColumnKey[] = format === '12h' ? ['hour', 'minute', 'period'] : ['hour', 'minute'];
+      const columns: ColumnKey[] =
+        format === '12h' ? ['hour', 'minute', 'period'] : ['hour', 'minute'];
       const idx = columns.indexOf(focusedColumn);
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -261,6 +283,7 @@ export function TimePicker({
   );
 
   // ── Scroll selected option into center on open + on commit ──────────────
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentH/currentM are intentional trigger deps — they drive the re-centre on value change
   useEffect(() => {
     if (!open) return;
     // Defer to next frame so the popover finishes mounting + measuring.
@@ -271,7 +294,6 @@ export function TimePicker({
         const target = container.querySelector<HTMLButtonElement>('[data-selected="true"]');
         if (!target) continue;
         // `scrollIntoView({ block: 'nearest' })` would jitter; manually centre.
-        const cTop = container.scrollTop;
         const cMid = container.clientHeight / 2;
         const tTop = target.offsetTop;
         const tMid = target.offsetHeight / 2;
@@ -286,6 +308,7 @@ export function TimePicker({
   }, [open, focusedColumn, currentH, currentM, refByColumn]);
 
   // Centre the selected row whenever the value changes while open.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentH/currentM are intentional trigger deps — they drive the re-centre on value change
   useEffect(() => {
     if (!open) return;
     const container = refByColumn(focusedColumn).current;
@@ -509,4 +532,3 @@ function closestMinute(target: number, options: number[]): number {
     options[0]!,
   );
 }
-

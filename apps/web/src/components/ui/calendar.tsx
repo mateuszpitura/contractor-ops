@@ -54,6 +54,28 @@ function CalendarWeekNumber({
   );
 }
 
+/**
+ * Calendar — date / range / multi-select day grid built on `react-day-picker`.
+ *
+ * Usage:
+ *   Always render inside a `<Popover><PopoverContent>` for date triggers
+ *   (see `<DatePicker>` / `<DateTimeRangePicker>` for ready-made wrappers).
+ *
+ *   IMPORTANT — popover-trigger parent containers MUST use
+ *   `flex flex-col gap-*`, NOT Tailwind's `space-y-*`. Base UI's
+ *   `Popover.Trigger` inserts two `position: fixed` `<FocusGuard>` spans
+ *   as siblings of the trigger button while the popover is open. Those
+ *   invisible siblings shift `:last-child` resolution and cause
+ *   `space-y-*` to add an extra `margin-block-end` to the trigger,
+ *   producing a visible layout jump. `flex flex-col gap-*` only
+ *   accounts for in-flow children, so it is immune.
+ *
+ *   ❌  <div className="space-y-2"><Label/><Popover>…</Popover></div>
+ *   ✅  <div className="flex flex-col gap-2"><Label/><Popover>…</Popover></div>
+ *
+ *   A defensive CSS reset in `globals.css` neutralises the worst case,
+ *   but new pickers should still follow the layout convention.
+ */
 function Calendar({
   className,
   classNames,

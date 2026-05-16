@@ -120,7 +120,7 @@ export function ExternalSyncButton({
           </h4>
 
           {/* From date */}
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             <Label className="text-xs">{t('externalSync.from')}</Label>
             <Popover open={fromCalendarOpen} onOpenChange={setFromCalendarOpen}>
               <PopoverTrigger
@@ -150,7 +150,7 @@ export function ExternalSyncButton({
           </div>
 
           {/* To date */}
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-1.5">
             <Label className="text-xs">{t('externalSync.to')}</Label>
             <Popover open={toCalendarOpen} onOpenChange={setToCalendarOpen}>
               <PopoverTrigger

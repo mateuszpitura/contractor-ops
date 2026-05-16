@@ -235,7 +235,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
           )}
 
           {/* Purchase Date */}
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Label>{t('form.purchaseDate')}</Label>
             <Popover>
               <PopoverTrigger
