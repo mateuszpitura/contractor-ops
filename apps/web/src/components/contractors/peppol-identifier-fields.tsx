@@ -78,7 +78,7 @@ export function PeppolIdentifierFields({
     <fieldset
       className={cn('space-y-3 rounded-md border p-4', disabled && 'opacity-60')}
       data-testid="peppol-identifier-fields">
-      <legend className="px-1 text-sm font-medium">Peppol identifier</legend>
+      <legend className="px-1 text-sm font-medium">{t('peppolIdentifierLegend')}</legend>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
@@ -118,7 +118,7 @@ export function PeppolIdentifierFields({
 
       {invalid ? (
         <p id={pairErrId} role="alert" className="text-sm text-destructive">
-          Both fields are required, or leave both empty.
+          {t('pairError')}
         </p>
       ) : null}
     </fieldset>

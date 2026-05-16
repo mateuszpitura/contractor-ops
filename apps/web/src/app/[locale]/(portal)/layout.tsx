@@ -2,6 +2,7 @@ import { validatePortalSession } from '@contractor-ops/api/services/portal-sessi
 import { prisma } from '@contractor-ops/db';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { PortalTopBar } from '@/components/portal/portal-top-bar';
 
@@ -20,7 +21,7 @@ import { PortalTopBar } from '@/components/portal/portal-top-bar';
  * Content constrained to max-w-[1200px] with centered layout.
  */
 export default async function PortalLayout({ children }: { children: ReactNode }) {
-  const cookieStore = await cookies();
+  const [cookieStore, tLayout] = await Promise.all([cookies(), getTranslations('Layout')]);
   const sessionToken = cookieStore.get('portal_session')?.value;
   const headerStore = await headers();
   const subdomainSlug = headerStore.get('x-portal-org-subdomain');
@@ -63,7 +64,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
       <a
         href="#portal-content"
         className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
-        Skip to content
+        {tLayout('skipToContent')}
       </a>
       <PortalTopBar
         orgName={organization?.name ?? 'Organization'}

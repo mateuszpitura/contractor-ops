@@ -391,6 +391,7 @@ export const ModelName = {
   ApprovalDecision: 'ApprovalDecision',
   AuditLog: 'AuditLog',
   User: 'User',
+  UserPinnedView: 'UserPinnedView',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
@@ -511,7 +512,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1030,6 +1031,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    UserPinnedView: {
+      payload: Prisma.$UserPinnedViewPayload<ExtArgs>
+      fields: Prisma.UserPinnedViewFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserPinnedViewFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserPinnedViewFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        findFirst: {
+          args: Prisma.UserPinnedViewFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserPinnedViewFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        findMany: {
+          args: Prisma.UserPinnedViewFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>[]
+        }
+        create: {
+          args: Prisma.UserPinnedViewCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        createMany: {
+          args: Prisma.UserPinnedViewCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserPinnedViewCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>[]
+        }
+        delete: {
+          args: Prisma.UserPinnedViewDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        update: {
+          args: Prisma.UserPinnedViewUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserPinnedViewDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserPinnedViewUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserPinnedViewUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserPinnedViewUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPinnedViewPayload>
+        }
+        aggregate: {
+          args: Prisma.UserPinnedViewAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUserPinnedView>
+        }
+        groupBy: {
+          args: Prisma.UserPinnedViewGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserPinnedViewGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserPinnedViewCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserPinnedViewCountAggregateOutputType> | number
         }
       }
     }
@@ -8970,6 +9045,17 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const UserPinnedViewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  kind: 'kind',
+  key: 'key',
+  pinnedAt: 'pinnedAt'
+} as const
+
+export type UserPinnedViewScalarFieldEnum = (typeof UserPinnedViewScalarFieldEnum)[keyof typeof UserPinnedViewScalarFieldEnum]
+
+
 export const SessionScalarFieldEnum = {
   id: 'id',
   expiresAt: 'expiresAt',
@@ -12598,6 +12684,7 @@ export type GlobalOmitConfig = {
   approvalDecision?: Prisma.ApprovalDecisionOmit
   auditLog?: Prisma.AuditLogOmit
   user?: Prisma.UserOmit
+  userPinnedView?: Prisma.UserPinnedViewOmit
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit

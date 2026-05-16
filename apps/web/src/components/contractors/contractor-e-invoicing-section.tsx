@@ -39,6 +39,7 @@ export function ContractorEInvoicingSection({
   isPublicSectorBuyer,
 }: ContractorEInvoicingSectionProps) {
   const t = useTranslations('EInvoice.InvoiceTab');
+  const tContractors = useTranslations('Contractors.eInvoicing');
   const [peppol, setPeppol] = useState({ schemeId: '', value: '' });
   const [selectedLeitweg, setSelectedLeitweg] = useState<string | null>(null);
 
@@ -54,7 +55,7 @@ export function ContractorEInvoicingSection({
   return (
     <Card data-testid="contractor-e-invoicing-section">
       <CardHeader>
-        <CardTitle className="text-xl">E-invoicing</CardTitle>
+        <CardTitle className="text-xl">{tContractors('cardTitle')}</CardTitle>
         <p className="text-sm text-muted-foreground">
           {t('leitwegResolvedPattern', {
             leitwegIdValue: '—',
@@ -71,7 +72,7 @@ export function ContractorEInvoicingSection({
           value={selectedLeitweg}
           onChange={setSelectedLeitweg}
           isPublicSectorBuyer={effectiveIsPublicSector}
-          label="Default Leitweg-ID"
+          label={tContractors('defaultLeitwegIdLabel')}
         />
       </CardContent>
     </Card>

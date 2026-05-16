@@ -317,7 +317,7 @@ describe('audit router', () => {
       });
 
       expect(result.items).toHaveLength(1);
-      expect(result.totalCount).toBe(1);
+      expect(result.total).toBe(1);
       expect(result.page).toBe(1);
       expect(result.pageSize).toBe(25);
 

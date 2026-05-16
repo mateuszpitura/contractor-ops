@@ -42,8 +42,10 @@ function WizardStepIndicator({
   currentStep: WizardStep;
   steps: Array<{ step: WizardStep; label: string }>;
 }) {
+  const tAria = useTranslations('Common.aria');
+
   return (
-    <nav className="flex items-center gap-6" aria-label="Wizard steps">
+    <nav className="flex items-center gap-6" aria-label={tAria('wizardProgress')}>
       {steps.map(({ step, label }, index) => {
         const isCurrent = step === currentStep;
         const isCompleted = step < currentStep;

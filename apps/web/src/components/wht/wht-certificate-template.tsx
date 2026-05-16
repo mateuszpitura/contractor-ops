@@ -18,9 +18,53 @@ interface WhtCertificateData {
   treatyReference: string | null;
 }
 
+export interface WhtCertificateLabels {
+  title: string;
+  certificateNo: string;
+  organization: string;
+  contractor: string;
+  name: string;
+  taxId: string;
+  country: string;
+  residency: string;
+  paymentDetails: string;
+  paymentDate: string;
+  grossAmount: string;
+  whtRate: string;
+  treaty: string;
+  standard: string;
+  whtAmount: string;
+  netAmountPaid: string;
+  treatyApplied: string;
+  footer: string;
+}
+
+const DEFAULT_LABELS: WhtCertificateLabels = {
+  title: 'Withholding Tax Certificate',
+  certificateNo: 'Certificate No',
+  organization: 'Organization',
+  contractor: 'Contractor',
+  name: 'Name',
+  taxId: 'Tax ID',
+  country: 'Country',
+  residency: 'Residency',
+  paymentDetails: 'Payment Details',
+  paymentDate: 'Payment Date',
+  grossAmount: 'Gross Amount',
+  whtRate: 'WHT Rate',
+  treaty: 'Treaty',
+  standard: 'Standard',
+  whtAmount: 'WHT Amount',
+  netAmountPaid: 'Net Amount Paid',
+  treatyApplied: 'Treaty Applied',
+  footer:
+    'This certificate confirms that withholding tax has been deducted at source in accordance with applicable tax regulations.',
+};
+
 interface WhtCertificateTemplateProps {
   data: WhtCertificateData;
   branding?: { logoUrl?: string; primaryColor?: string };
+  labels?: Partial<WhtCertificateLabels>;
 }
 
 const styles = StyleSheet.create({
@@ -79,88 +123,90 @@ function formatAmount(minor: number, currency: string): string {
   return `${currency} ${major.toFixed(2)}`;
 }
 
-export function WhtCertificateTemplate({ data, branding }: WhtCertificateTemplateProps) {
+export function WhtCertificateTemplate({ data, branding, labels }: WhtCertificateTemplateProps) {
+  const l: WhtCertificateLabels = { ...DEFAULT_LABELS, ...labels };
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           {!!branding?.logoUrl && <Image src={branding.logoUrl} style={styles.logo} />}
-          <Text style={styles.title}>Withholding Tax Certificate</Text>
-          <Text style={styles.certNumber}>Certificate No: {data.certificateNumber}</Text>
+          <Text style={styles.title}>{l.title}</Text>
+          <Text style={styles.certNumber}>
+            {l.certificateNo}: {data.certificateNumber}
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Organization</Text>
+          <Text style={styles.sectionTitle}>{l.organization}</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>{l.name}</Text>
             <Text style={styles.value}>{data.organizationName}</Text>
           </View>
           {!!data.organizationTaxId && (
             <View style={styles.row}>
-              <Text style={styles.label}>Tax ID</Text>
+              <Text style={styles.label}>{l.taxId}</Text>
               <Text style={styles.value}>{data.organizationTaxId}</Text>
             </View>
           )}
           <View style={styles.row}>
-            <Text style={styles.label}>Country</Text>
+            <Text style={styles.label}>{l.country}</Text>
             <Text style={styles.value}>{data.organizationCountry}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contractor</Text>
+          <Text style={styles.sectionTitle}>{l.contractor}</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>{l.name}</Text>
             <Text style={styles.value}>{data.contractorName}</Text>
           </View>
           {!!data.contractorTaxId && (
             <View style={styles.row}>
-              <Text style={styles.label}>Tax ID</Text>
+              <Text style={styles.label}>{l.taxId}</Text>
               <Text style={styles.value}>{data.contractorTaxId}</Text>
             </View>
           )}
           <View style={styles.row}>
-            <Text style={styles.label}>Residency</Text>
+            <Text style={styles.label}>{l.residency}</Text>
             <Text style={styles.value}>{data.contractorResidency}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Details</Text>
+          <Text style={styles.sectionTitle}>{l.paymentDetails}</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Payment Date</Text>
+            <Text style={styles.label}>{l.paymentDate}</Text>
             <Text style={styles.value}>{data.paymentDate.toISOString().split('T')[0]}</Text>
           </View>
           <View style={styles.amountRow}>
-            <Text style={styles.label}>Gross Amount</Text>
+            <Text style={styles.label}>{l.grossAmount}</Text>
             <Text style={styles.value}>{formatAmount(data.grossAmountMinor, data.currency)}</Text>
           </View>
           <View style={styles.amountRow}>
             <Text style={styles.label}>
-              WHT Rate ({data.treatyApplied ? 'Treaty' : 'Standard'})
+              {l.whtRate} ({data.treatyApplied ? l.treaty : l.standard})
             </Text>
             <Text style={styles.value}>{data.whtRate}%</Text>
           </View>
           <View style={styles.amountRow}>
-            <Text style={styles.label}>WHT Amount</Text>
+            <Text style={styles.label}>{l.whtAmount}</Text>
             <Text style={styles.value}>{formatAmount(data.whtAmountMinor, data.currency)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.label}>Net Amount Paid</Text>
+            <Text style={styles.label}>{l.netAmountPaid}</Text>
             <Text style={styles.value}>{formatAmount(data.netAmountMinor, data.currency)}</Text>
           </View>
         </View>
 
         {!!data.treatyApplied && !!data.treatyReference && (
           <View style={styles.treaty}>
-            <Text style={styles.treatyText}>Treaty Applied: {data.treatyReference}</Text>
+            <Text style={styles.treatyText}>
+              {l.treatyApplied}: {data.treatyReference}
+            </Text>
           </View>
         )}
 
-        <Text style={styles.footer}>
-          This certificate confirms that withholding tax has been deducted at source in accordance
-          with applicable tax regulations.
-        </Text>
+        <Text style={styles.footer}>{l.footer}</Text>
       </Page>
     </Document>
   );

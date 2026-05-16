@@ -1,6 +1,7 @@
 'use client';
 
 import { Cloud, Settings, TestTube } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import {
   AlertDialog,
@@ -43,6 +44,7 @@ export function EnvironmentToggle({
   onChange,
   productionReady = false,
 }: EnvironmentToggleProps) {
+  const t = useTranslations('Zatca.environmentToggle');
   const reactId = useId();
   const [confirmSandbox, setConfirmSandbox] = useState(false);
 
@@ -71,7 +73,7 @@ export function EnvironmentToggle({
   return (
     <>
       <div className="space-y-3">
-        <p className="text-sm font-medium">Environment</p>
+        <p className="text-sm font-medium">{t('label')}</p>
         <RadioGroup
           value={value}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
@@ -93,11 +95,9 @@ export function EnvironmentToggle({
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <TestTube className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                <span className="text-sm font-medium">Sandbox</span>
+                <span className="text-sm font-medium">{t('sandbox')}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Test invoices are not submitted to ZATCA
-              </p>
+              <p className="text-xs text-muted-foreground">{t('sandboxDescription')}</p>
             </div>
           </label>
 
@@ -120,14 +120,12 @@ export function EnvironmentToggle({
             <div className="space-y-1">
               <div className="flex items-center gap-1.5">
                 <Cloud className="h-4 w-4 text-green-600" aria-hidden="true" />
-                <span className="text-sm font-medium">Production</span>
+                <span className="text-sm font-medium">{t('production')}</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Invoices are submitted to ZATCA for clearance
-              </p>
+              <p className="text-xs text-muted-foreground">{t('productionDescription')}</p>
               {!productionReady && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">
-                  Complete onboarding to enable production mode
+                  {t('productionNotReady')}
                 </p>
               )}
             </div>
@@ -141,18 +139,15 @@ export function EnvironmentToggle({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Settings className="size-4" />
-              Switch to Sandbox
+              {t('confirmDialog.title')}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              Switch to Sandbox: Production submissions will pause. Pending invoices will remain
-              queued. Continue?
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('confirmDialog.description')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('confirmDialog.cancel')}</AlertDialogCancel>
             {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <AlertDialogAction onClick={confirmSwitchToSandbox}>
-              Switch to Sandbox
+              {t('confirmDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

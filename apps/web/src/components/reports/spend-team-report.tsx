@@ -1,8 +1,9 @@
 'use client';
 
-import { SpendReportIllustration } from '@contractor-ops/ui';
+import { SectionLabel, SpendReportIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -71,13 +72,13 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
+    const result = tableQuery.data as { items: TeamSpendRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as { items: TeamSpendRow[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = tableQuery.data as { items: TeamSpendRow[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [tableQuery.data]);
 
   const chartData = useMemo(() => {
@@ -174,6 +175,7 @@ export function SpendTeamReport({ dateFrom, dateTo }: SpendTeamReportProps) {
         onClear={handleClearDrillDown}
       />
 
+      <SectionLabel icon={Users}>{t('spendByTeam')}</SectionLabel>
       <ReportTable<TeamSpendRow>
         columns={columns}
         data={tableData}

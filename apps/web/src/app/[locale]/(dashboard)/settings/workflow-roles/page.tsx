@@ -4,6 +4,7 @@ import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
 import { Plus, Users2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import { PinActionButton } from '@/components/settings/pin-action-button';
 import { WorkflowRoleFormDialog } from '@/components/settings/workflow-roles/workflow-role-form-dialog';
 import { WorkflowRolesTable } from '@/components/settings/workflow-roles/workflow-roles-table';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -25,12 +26,15 @@ export default function WorkflowRolesPage() {
           title={t('title')}
           description={t('subtitle')}
           actions={
-            canCreate ? (
-              <Button onClick={openCreate}>
-                <Plus className="me-2 h-4 w-4" />
-                {t('createCta')}
-              </Button>
-            ) : undefined
+            <div className="flex items-center gap-2">
+              <PinActionButton tabKey="workflow-roles" />
+              {canCreate && (
+                <Button onClick={openCreate}>
+                  <Plus className="me-2 h-4 w-4" />
+                  {t('createCta')}
+                </Button>
+              )}
+            </div>
           }
         />
       </AnimateIn>
@@ -38,7 +42,7 @@ export default function WorkflowRolesPage() {
       <AnimateIn delay={1}>
         <section aria-label={t('title')} className="space-y-3">
           <SectionLabel icon={Users2}>{t('listSectionLabel')}</SectionLabel>
-          <WorkflowRolesTable />
+          <WorkflowRolesTable canCreate={canCreate} onCreate={openCreate} />
         </section>
       </AnimateIn>
 

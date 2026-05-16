@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronDown, Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
@@ -17,17 +18,6 @@ interface PendingChangeBannerProps {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-const FIELD_LABELS: Record<string, string> = {
-  bankAccountNumber: 'Bank Account Number',
-  bankName: 'Bank Name',
-  swiftBic: 'SWIFT/BIC Code',
-  taxId: 'Tax ID (NIP)',
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -37,8 +27,16 @@ const FIELD_LABELS: Record<string, string> = {
  * request is pending approval (D-04, UI-SPEC).
  */
 export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBannerProps) {
+  const t = useTranslations('Portal.pendingChange');
   const { formatDate } = usePortalDateFormatter();
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  const fieldLabels: Record<string, string> = {
+    bankAccountNumber: t('fieldBankAccount'),
+    bankName: t('fieldBankName'),
+    swiftBic: t('fieldSwiftBic'),
+    taxId: t('fieldTaxId'),
+  };
 
   const changes = pendingChangeRequest.requestedChanges;
   const changeEntries = Object.entries(changes).filter(
@@ -50,12 +48,9 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
       <div className="flex items-start gap-3">
         <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-400" />
         <div className="flex-1 space-y-1">
-          <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-            Changes Pending Approval
-          </p>
+          <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">{t('title')}</p>
           <p className="text-sm text-amber-700/80 dark:text-amber-400/80">
-            You submitted changes on {formatDate(pendingChangeRequest.createdAt)}. Your current
-            details remain active until approved.
+            {t('submittedOn', { date: formatDate(pendingChangeRequest.createdAt) })}
           </p>
 
           {changeEntries.length > 0 && (
@@ -72,7 +67,7 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
                         detailsOpen ? 'rotate-180' : ''
                       }`}
                     />
-                    View submitted changes
+                    {t('viewSubmitted')}
                   </button>
                 )}
               />
@@ -81,7 +76,7 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
                   {changeEntries.map(([key, value]) => (
                     <div key={key} className="flex items-center justify-between">
                       <span className="text-sm text-amber-700/70 dark:text-amber-400/70">
-                        {FIELD_LABELS[key] ?? key}
+                        {fieldLabels[key] ?? key}
                       </span>
                       <span className="text-sm font-medium text-amber-700 dark:text-amber-400">
                         {String(value)}

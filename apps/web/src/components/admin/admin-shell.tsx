@@ -8,29 +8,31 @@
 import { BarChart3Icon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
-const NAV_ENTRIES = [
-  {
-    label: 'BoE rate',
-    href: '/admin/boe-rate',
-    icon: BarChart3Icon,
-  },
-] as const;
-
 export function AdminShell() {
+  const t = useTranslations('Admin');
   const pathname = usePathname();
+
+  const navEntries = [
+    {
+      label: t('BoeRate.navLabel'),
+      href: '/admin/boe-rate',
+      icon: BarChart3Icon,
+    },
+  ];
 
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-sidebar">
       <div className="border-b border-border p-6">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Admin
+          {t('sidebarHeading')}
         </h2>
       </div>
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
-          {NAV_ENTRIES.map(entry => {
+          {navEntries.map(entry => {
             const isActive = pathname.startsWith(entry.href);
             return (
               <li key={entry.href}>

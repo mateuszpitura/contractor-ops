@@ -82,7 +82,7 @@ export function PeppolStatusCard() {
 
   if (statusQuery.isLoading) {
     return (
-      <Card>
+      <Card className="flex h-full flex-col">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Skeleton className="size-8 rounded" />
@@ -101,7 +101,7 @@ export function PeppolStatusCard() {
   if (!statusQuery.data) {
     return (
       <>
-        <Card>
+        <Card className="flex h-full flex-col">
           <CardHeader>
             <div className="flex items-center gap-2">
               <span className="flex size-8 items-center justify-center">
@@ -109,15 +109,17 @@ export function PeppolStatusCard() {
               </span>
               <h4 className="text-base font-semibold">{t('title')}</h4>
               <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                Disconnected
+                {t('disconnectedBadge')}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col space-y-3">
               <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
+              <div className="mt-auto pt-3">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -131,7 +133,7 @@ export function PeppolStatusCard() {
   const counts = participantQuery.data?._count;
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="flex size-8 items-center justify-center">
@@ -144,7 +146,7 @@ export function PeppolStatusCard() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-1 flex-col space-y-4">
         {/* Details */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
@@ -184,7 +186,7 @@ export function PeppolStatusCard() {
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
+        <div className="mt-auto flex gap-2 pt-2">
           <Button variant="outline" size="sm">
             <Settings className="me-1.5 h-3.5 w-3.5" />
             {t('settings')}

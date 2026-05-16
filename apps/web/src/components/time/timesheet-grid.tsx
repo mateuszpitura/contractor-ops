@@ -2,6 +2,7 @@
 
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -99,6 +100,7 @@ export function TimesheetGrid({
   rejectionReason,
   onSave,
 }: TimesheetGridProps) {
+  const t = useTranslations('Time');
   // Build a lookup: contractId -> dayIndex -> entry
   const entryMap = useMemo(() => {
     const map = new Map<string, Map<number, TimeEntry>>();
@@ -260,7 +262,7 @@ export function TimesheetGrid({
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-sm text-muted-foreground">No active contracts</p>
+          <p className="text-sm text-muted-foreground">{t('grid.noActiveContracts')}</p>
         </CardContent>
       </Card>
     );
@@ -273,7 +275,7 @@ export function TimesheetGrid({
         <div className="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950/30">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-sm text-amber-800 dark:text-amber-300">
-            This timesheet was rejected: {rejectionReason}. Please correct and resubmit.
+            {t('grid.rejectionBanner', { reason: rejectionReason })}
           </p>
         </div>
       )}
@@ -286,7 +288,7 @@ export function TimesheetGrid({
               <thead>
                 <tr className="border-b">
                   <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
-                    Project
+                    {t('grid.project')}
                   </th>
                   {DAY_LABELS.map((day, i) => (
                     <th
@@ -299,7 +301,7 @@ export function TimesheetGrid({
                     </th>
                   ))}
                   <th className="w-16 min-w-[64px] px-2 py-3 text-center text-sm font-semibold">
-                    Total
+                    {t('grid.total')}
                   </th>
                 </tr>
               </thead>
@@ -347,7 +349,10 @@ export function TimesheetGrid({
                                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onKeyDown={e => handleKeyDown(e, contract.id, dayIdx, contractIdx)}
                                 disabled={cellDisabled}
-                                aria-label={`Hours for ${contract.title} on ${DAY_LABELS[dayIdx]}`}
+                                aria-label={t('grid.hoursAriaLabel', {
+                                  project: contract.title,
+                                  day: DAY_LABELS[dayIdx] ?? '',
+                                })}
                               />
                               {source && source !== 'MANUAL' && (
                                 <div className="absolute -top-1 -end-1">
@@ -372,7 +377,7 @@ export function TimesheetGrid({
               {/* Grand total row */}
               <tfoot>
                 <tr className="border-t">
-                  <td className="px-4 py-3 text-sm font-semibold">Total</td>
+                  <td className="px-4 py-3 text-sm font-semibold">{t('grid.total')}</td>
                   {DAY_LABELS.map((_, dayIdx) => {
                     const colTotal = getColumnTotal(dayIdx);
                     return (

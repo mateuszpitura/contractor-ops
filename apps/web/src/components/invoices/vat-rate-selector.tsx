@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   Select,
   SelectContent,
@@ -30,13 +31,14 @@ interface TaxRateOption {
 }
 
 export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorProps) {
+  const t = useTranslations('Invoices.vatRate');
   const ratesQuery = useQuery(trpc.tax.getRates.queryOptions());
 
   if (ratesQuery.isLoading) {
     return (
       <div className="flex h-10 items-center gap-2 rounded-md border border-input bg-background px-4">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Loading rates...</span>
+        <span className="text-sm text-muted-foreground">{t('loading')}</span>
       </div>
     );
   }
@@ -44,7 +46,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
   if (!ratesQuery.data || ratesQuery.data.length === 0) {
     return (
       <div className="flex h-10 items-center rounded-md border border-input bg-muted px-4">
-        <span className="text-sm text-muted-foreground">No tax rates configured</span>
+        <span className="text-sm text-muted-foreground">{t('noRates')}</span>
       </div>
     );
   }
@@ -67,13 +69,13 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
       }}
       disabled={disabled}>
       <SelectTrigger>
-        <SelectValue placeholder="Select VAT rate" />
+        <SelectValue placeholder={t('placeholder')} />
       </SelectTrigger>
       <SelectContent>
         {defaultRates.length > 0 && (
           <SelectGroup>
             <SelectLabel className="text-xs font-medium text-muted-foreground">
-              Standard Rates
+              {t('standardRates')}
             </SelectLabel>
             {defaultRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
@@ -85,7 +87,7 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
         {reducedRates.length > 0 && (
           <SelectGroup>
             <SelectLabel className="text-xs font-medium text-muted-foreground">
-              Reduced Rates
+              {t('reducedRates')}
             </SelectLabel>
             {reducedRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
@@ -96,7 +98,9 @@ export function VatRateSelector({ value, onChange, disabled }: VatRateSelectorPr
         )}
         {exemptRates.length > 0 && (
           <SelectGroup>
-            <SelectLabel className="text-xs font-medium text-muted-foreground">Exempt</SelectLabel>
+            <SelectLabel className="text-xs font-medium text-muted-foreground">
+              {t('exempt')}
+            </SelectLabel>
             {exemptRates.map(rate => (
               <SelectItem key={rate.id} value={rate.code}>
                 {rate.code === 'ZW'

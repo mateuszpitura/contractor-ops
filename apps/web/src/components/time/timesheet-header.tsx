@@ -2,6 +2,7 @@
 
 import { addWeeks, endOfISOWeek, format, startOfISOWeek, subWeeks } from 'date-fns';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -40,6 +41,7 @@ export function TimesheetHeader({
   onSubmit,
   isSubmitting,
 }: TimesheetHeaderProps) {
+  const t = useTranslations('Time');
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const weekEnd = endOfISOWeek(weekStartDate);
@@ -69,7 +71,11 @@ export function TimesheetHeader({
       {/* Left: Week selector */}
       <div className="flex items-center gap-2">
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="ghost" size="icon" onClick={handlePrevWeek} aria-label="Previous week">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handlePrevWeek}
+          aria-label={t('header.prevWeek')}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -90,7 +96,11 @@ export function TimesheetHeader({
         </Popover>
 
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="ghost" size="icon" onClick={handleNextWeek} aria-label="Next week">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleNextWeek}
+          aria-label={t('header.nextWeek')}>
           <ChevronRight className="h-4 w-4" />
         </Button>
 
@@ -108,7 +118,7 @@ export function TimesheetHeader({
           </span>
         </div>
         <Button onClick={onSubmit} disabled={!canSubmit || isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Submit Timesheet'}
+          {isSubmitting ? t('header.submitting') : t('header.submitTimesheet')}
         </Button>
       </div>
     </div>

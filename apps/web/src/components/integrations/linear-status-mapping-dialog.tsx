@@ -38,13 +38,13 @@ import { trpc } from '@/trpc/init';
 // Constants
 // ---------------------------------------------------------------------------
 
-const WORKFLOW_STATUSES = [
-  { value: 'TODO', label: 'To Do' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'DONE', label: 'Done' },
-  { value: 'BLOCKED', label: 'Blocked' },
-  { value: 'SKIPPED', label: 'Skipped' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+const WORKFLOW_STATUS_VALUES = [
+  'TODO',
+  'IN_PROGRESS',
+  'DONE',
+  'BLOCKED',
+  'SKIPPED',
+  'CANCELLED',
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -282,15 +282,23 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {WORKFLOW_STATUSES.map(ws => {
-                  const mappedId = getMappedStateId(ws.value);
+                {WORKFLOW_STATUS_VALUES.map(wsValue => {
+                  const mappedId = getMappedStateId(wsValue);
                   const isUnmapped = !mappedId;
+                  const wsLabelKey = {
+                    TODO: 'workflowStatus.todo',
+                    IN_PROGRESS: 'workflowStatus.inProgress',
+                    DONE: 'workflowStatus.done',
+                    BLOCKED: 'workflowStatus.blocked',
+                    SKIPPED: 'workflowStatus.skipped',
+                    CANCELLED: 'workflowStatus.cancelled',
+                  }[wsValue] as Parameters<typeof tI>[0];
 
                   return (
-                    <TableRow key={ws.value}>
+                    <TableRow key={wsValue}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{ws.label}</span>
+                          <span className="text-sm font-medium">{tI(wsLabelKey)}</span>
                           {isUnmapped && (
                             <TooltipProvider>
                               <Tooltip>
@@ -311,10 +319,10 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                             value={mappedId ?? undefined}
                             // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                             onValueChange={v => {
-                              if (v) handleStateSelect(ws.value, v);
+                              if (v) handleStateSelect(wsValue, v);
                             }}>
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Not mapped" />
+                              <SelectValue placeholder={tI('notMapped')} />
                             </SelectTrigger>
                             <SelectContent>
                               {teamStates.map(state => (

@@ -68,7 +68,7 @@ export function SortCodeValidator({ sortCode, accountNumber }: SortCodeValidator
         setOutcome(data as ValidationOutcome);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Validation failed';
+      const message = err instanceof Error ? err.message : t('validationFailedFallback');
       // Format-level errors (5-digit sort code etc.) bubble up via Zod.
       if (myId === requestIdRef.current) {
         setOutcome({ status: 'INVALID', warnings: [message] });
@@ -107,9 +107,9 @@ function renderBadge(outcome: ValidationOutcome, t: ReturnType<typeof useTransla
   if (outcome.status === 'VALID') {
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="success" aria-label="Sort code valid">
+        <Badge variant="success" aria-label={t('badgeValidAriaLabel')}>
           <CheckCircle2 aria-hidden="true" className="size-3" />
-          VALID
+          {t('badgeValid')}
         </Badge>
         <span className="text-xs text-muted-foreground">{t('validationSuccess')}</span>
       </div>
@@ -119,9 +119,9 @@ function renderBadge(outcome: ValidationOutcome, t: ReturnType<typeof useTransla
   if (outcome.status === 'WARN') {
     return (
       <div className="flex items-start gap-2">
-        <Badge variant="warning" aria-label="Sort code warning">
+        <Badge variant="warning" aria-label={t('badgeWarnAriaLabel')}>
           <ShieldAlert aria-hidden="true" className="size-3" />
-          WARN
+          {t('badgeWarn')}
         </Badge>
         <span className="text-xs text-muted-foreground max-w-md">
           {outcome.warnings.length > 0 ? outcome.warnings.join(' · ') : t('validationWarn')}
@@ -132,9 +132,9 @@ function renderBadge(outcome: ValidationOutcome, t: ReturnType<typeof useTransla
 
   return (
     <div className="flex items-center gap-2">
-      <Badge variant="destructive" aria-label="Sort code invalid">
+      <Badge variant="destructive" aria-label={t('badgeInvalidAriaLabel')}>
         <XCircle aria-hidden="true" className="size-3" />
-        INVALID
+        {t('badgeInvalid')}
       </Badge>
       <span className="text-xs text-destructive">{t('validationFail')}</span>
     </div>

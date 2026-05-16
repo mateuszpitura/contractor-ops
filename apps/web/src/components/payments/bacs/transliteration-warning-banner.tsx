@@ -47,7 +47,7 @@ export function TransliterationWarningBanner({ warnings }: TransliterationWarnin
       <Alert
         variant="destructive"
         role="alert"
-        aria-label="Unmappable character error"
+        aria-label={t('aria.unmappableError')}
         data-testid="transliteration-banner-destructive">
         <AlertOctagon aria-hidden="true" className="size-5" />
         <AlertTitle>{t('unmappableError', { count: totalReplaced })}</AlertTitle>
@@ -77,7 +77,7 @@ export function TransliterationWarningBanner({ warnings }: TransliterationWarnin
     <Alert
       variant="default"
       role="status"
-      aria-label="Transliteration warning"
+      aria-label={t('aria.transliterationWarning')}
       className="border-amber-300/50 bg-amber-500/5"
       data-testid="transliteration-banner-warning">
       <AlertTriangle aria-hidden="true" className="size-5 text-amber-600 dark:text-amber-400" />

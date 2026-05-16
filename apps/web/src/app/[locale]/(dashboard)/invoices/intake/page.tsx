@@ -1,4 +1,5 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
+import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import { Inbox } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
@@ -30,6 +31,7 @@ export default async function IntakeListPage({ searchParams }: IntakePageProps) 
   return (
     <div className="space-y-8">
       <AtelierPageHeader title={t('pageTitle')} description={t('pageSubtitle')} />
+      <SectionLabel icon={Inbox}>{t('pageTitle')}</SectionLabel>
       <Suspense
         fallback={
           <div className="space-y-2">

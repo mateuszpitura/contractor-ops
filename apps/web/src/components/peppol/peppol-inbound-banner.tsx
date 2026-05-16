@@ -1,6 +1,7 @@
 'use client';
 
 import { Globe } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // ---------------------------------------------------------------------------
@@ -28,19 +29,27 @@ export function PeppolInboundBanner({
   documentType,
   receivedAt,
 }: PeppolInboundBannerProps) {
+  const t = useTranslations('Peppol.inboundBanner');
+
   return (
     <Alert className="border-info/20 bg-info/5">
       <Globe className="h-4 w-4 text-info" />
-      <AlertTitle>Received via Peppol Network</AlertTitle>
+      <AlertTitle>{t('title')}</AlertTitle>
       <AlertDescription className="space-y-1">
         <p className="font-mono text-sm">
-          From: {senderParticipantId}
-          {senderName ? ` (${senderName})` : ''}
+          {t('from', {
+            participantId: senderParticipantId,
+            name: senderName ? ` (${senderName})` : '',
+          })}
         </p>
         {!!documentType && (
-          <p className="text-sm text-muted-foreground">Document type: {documentType}</p>
+          <p className="text-sm text-muted-foreground">
+            {t('documentType', { type: documentType })}
+          </p>
         )}
-        <p className="text-sm text-muted-foreground">Received: {receivedAt.toLocaleString()}</p>
+        <p className="text-sm text-muted-foreground">
+          {t('received', { date: receivedAt.toLocaleString() })}
+        </p>
       </AlertDescription>
     </Alert>
   );

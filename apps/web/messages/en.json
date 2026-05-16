@@ -5999,9 +5999,12 @@
       "searchPlaceholder": "Search audit log...",
       "exportCta": "Export audit log",
       "exportToast": "Audit log exported ({count} entries)",
-      "filterActorAll": "All actors",
-      "filterActionAll": "All actions",
-      "filterResourceAll": "All resources",
+      "filterActor": "Actors",
+      "filterActorSearchPlaceholder": "Search actors...",
+      "filterActorShowingHint": "Showing {visible} of {total}. Type to search.",
+      "filterActorNoMatches": "No actors match",
+      "filterAction": "Actions",
+      "filterResource": "Resources",
       "filterDateRange": "Date range",
       "expand": "Expand details",
       "collapse": "Collapse details",
@@ -6579,7 +6582,11 @@
     "subtitle": "Manage knowledge-transfer task templates per role. Seed templates ship out-of-the-box and are read-only; custom templates can be edited and deleted.",
     "createCta": "New role template",
     "listSectionLabel": "Role templates",
-    "emptyState": "No role templates yet. Create one to define KT tasks per role.",
+    "empty": {
+      "heading": "No role templates yet",
+      "body": "Create a role template to define knowledge-transfer tasks per role. Seed templates ship out-of-the-box; custom ones can be edited and deleted.",
+      "cta": "New role template"
+    },
     "table": {
       "role": "Slug",
       "displayName": "Display name",

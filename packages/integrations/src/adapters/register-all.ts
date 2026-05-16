@@ -1,5 +1,10 @@
-import { registerAdapter, registerOcrAdapter } from '../registry.js';
+import {
+  registerAdapter,
+  registerCompanyRegistryAdapter,
+  registerOcrAdapter,
+} from '../registry.js';
 import { ClaudeOcrAdapter } from './claude-ocr-adapter.js';
+import { DataportCompanyRegistryAdapter } from './dataport-company-registry-adapter.js';
 import { KsefAdapter } from './ksef-adapter.js';
 import { ResendAdapter } from './resend-adapter.js';
 import { SlackAdapter } from './slack-adapter.js';
@@ -76,6 +81,7 @@ function startHeavyLoad(): Promise<void> {
       { OutlookCalendarAdapter },
       { LinearAdapter },
       { TeamsAdapter },
+      { Bir1CompanyRegistryAdapter },
     ] = await Promise.all([
       import('./docusign-adapter.js'),
       import('./autenti-adapter.js'),
@@ -88,6 +94,7 @@ function startHeavyLoad(): Promise<void> {
       import('./outlook-calendar-adapter.js'),
       import('./linear-adapter.js'),
       import('./teams-adapter.js'),
+      import('./bir1-company-registry-adapter.js'),
     ]);
     registerAdapter(new DocuSignAdapter());
     registerAdapter(new AutentiAdapter());
@@ -100,6 +107,10 @@ function startHeavyLoad(): Promise<void> {
     registerAdapter(new OutlookCalendarAdapter());
     registerAdapter(new LinearAdapter());
     registerAdapter(new TeamsAdapter());
+    // Bir1 wraps a SOAP client (`bir1` npm package). Lazy-loaded so the SOAP
+    // module graph stays out of cold-start for routes that only ever use the
+    // (default) dataport adapter.
+    registerCompanyRegistryAdapter(new Bir1CompanyRegistryAdapter());
   })();
   return heavyLoadPromise;
 }
@@ -137,6 +148,9 @@ export function registerAllAdapters(): void {
   registerAdapter(new ResendAdapter());
   registerAdapter(new KsefAdapter());
   registerOcrAdapter(new ClaudeOcrAdapter());
+  // Default Polish company-registry adapter (dev). Pure-fetch, no SDK pull,
+  // safe for cold-start and the only one wired for the free-tier dev flow.
+  registerCompanyRegistryAdapter(new DataportCompanyRegistryAdapter());
 
   // HEAVY tier — load already kicked off at module load (see bottom of
   // this file). The promise is shared with `loadHeavyAdapters()` so

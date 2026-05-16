@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
-stopped_at: Phase 78 context gathered
-last_updated: "2026-05-14T22:40:48.130Z"
+stopped_at: context exhaustion at 75% (2026-05-15)
+last_updated: "2026-05-15T22:44:59.739Z"
 last_activity: 2026-04-27 -- Phase 75 planning complete
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 59
   completed_plans: 25
-  percent: 42
+  percent: 27
 ---
 
 # Project State
@@ -295,9 +295,9 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-14T22:40:48.123Z
-Stopped at: Phase 78 context gathered
-Resume file: .planning/phases/78-f2-idp-entra-id-okta-github-adapters-the-differentiator/78-CONTEXT.md
+Last session: 2026-05-15T22:44:59.726Z
+Stopped at: context exhaustion at 75% (2026-05-15)
+Resume file: None
 Next command: `/gsd-plan-phase 74`  (Phase 74 context gathered, ready to plan; 71 + 76 plans already ready to execute)
 
 **Planned Phases (ready to execute):** 71 (F1 Compliance — 7 plans), 76 (F2 IdP — 10 plans, gated on 74 + 75)

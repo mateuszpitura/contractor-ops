@@ -1,12 +1,10 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
+import { Pin, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
 import { BillingTab } from '@/components/billing/billing-tab';
 import { ConsentManagementSection } from '@/components/consent/consent-management-section';
 import { EInvoiceComplianceDetail } from '@/components/einvoice/compliance-detail';
@@ -25,21 +23,18 @@ import { OutOfOfficeSection } from '@/components/settings/out-of-office-section'
 import { PinTabButton } from '@/components/settings/pin-tab-button';
 import { PortalSubdomainSection } from '@/components/settings/portal-subdomain-section';
 import { ReminderRulesSection } from '@/components/settings/reminder-rules-section';
+import { SettingsTabsScroller } from '@/components/settings/settings-tabs-scroller';
 import { TransferTitleSettings } from '@/components/settings/transfer-title-settings';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
+import { useSettingsTabPins } from '@/hooks/use-settings-tab-pins';
 import { Link, useRouter } from '@/i18n/navigation';
 import type { SettingsTabKey } from '@/lib/settings-tabs';
-import { SETTINGS_TABS } from '@/lib/settings-tabs';
+import { isRoutedSettingsTab, SETTINGS_TABS } from '@/lib/settings-tabs';
 import { cn } from '@/lib/utils';
-import { trpc } from '@/trpc/init';
-
-const PIN_KIND = 'settings-tab' as const;
-
-type PinnedView = { kind: string; key: string; pinnedAt: Date };
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -50,10 +45,10 @@ function SettingsContent() {
   const tPin = useTranslations('Settings.pin');
   const router = useRouter();
   const { can } = usePermissions();
-  const queryClient = useQueryClient();
+  const { isPinned, toggle: togglePin, isPending: pinPending } = useSettingsTabPins();
 
   // URL-synced tab state for deep linking (e.g. OAuth callback to ?tab=integrations)
-  const [activeTab, setActiveTab] = useQueryState('tab', parseAsString.withDefault('general'));
+  const [activeTab] = useQueryState('tab', parseAsString.withDefault('general'));
 
   const onSettingsTabChange = useCallback(
     (value: string) => {
@@ -65,61 +60,25 @@ function SettingsContent() {
         router.push('/settings/workflow-roles');
         return;
       }
-      void setActiveTab(value);
+      // Replace the URL with ONLY `?tab=<value>` so per-tab filter params
+      // (audit-log search, pagination, etc.) don't leak across tabs.
+      // nuqs picks up the new `tab` value from the URL on the next render.
+      router.replace(`/settings?tab=${value}`);
     },
-    [setActiveTab, router],
+    [router],
   );
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
   const canViewAuditLog = can('settings', ['read']);
 
-  // ---- Pinned tabs (single source of truth lives in `lib/settings-tabs.ts`) --
-  const pinsQueryOpts = trpc.user.pins.list.queryOptions({ kind: PIN_KIND });
-  const pinsQueryKey = trpc.user.pins.list.queryKey({ kind: PIN_KIND });
-  const pinsQuery = useQuery(pinsQueryOpts);
-  const pinnedKeys = useMemo(() => {
-    const set = new Set<string>();
-    for (const pin of pinsQuery.data ?? []) {
-      if (pin.kind === PIN_KIND) set.add(pin.key);
-    }
-    return set;
-  }, [pinsQuery.data]);
-
-  const pinToggle = useMutation(
-    trpc.user.pins.toggle.mutationOptions({
-      onMutate: async variables => {
-        await queryClient.cancelQueries({ queryKey: pinsQueryKey });
-        const previous = queryClient.getQueryData<PinnedView[]>(pinsQueryKey) ?? [];
-        const exists = previous.some(p => p.kind === variables.kind && p.key === variables.key);
-        const next: PinnedView[] = exists
-          ? previous.filter(p => !(p.kind === variables.kind && p.key === variables.key))
-          : [...previous, { kind: variables.kind, key: variables.key, pinnedAt: new Date() }];
-        queryClient.setQueryData(pinsQueryKey, next);
-        return { previous };
-      },
-      onError: (_err, _variables, context) => {
-        if (context && 'previous' in context) {
-          queryClient.setQueryData(pinsQueryKey, context.previous);
-        }
-        toast.error(tPin('error'));
-      },
-      onSettled: () => {
-        void queryClient.invalidateQueries({ queryKey: pinsQueryKey });
-      },
-    }),
-  );
-
-  const togglePin = useCallback(
-    (key: SettingsTabKey) => {
-      pinToggle.mutate({ kind: PIN_KIND, key });
-    },
-    [pinToggle],
-  );
-
   type RenderableTab = {
     key: SettingsTabKey;
     label: string;
     pinned: boolean;
+    /** Routed tabs (members, workflow-roles) have their own pages; the trigger
+     *  navigates instead of activating a panel, so the inline pin button is
+     *  suppressed — pinning happens on the dedicated page header. */
+    routed: boolean;
     pinAriaLabel: string;
     unpinAriaLabel: string;
   };
@@ -136,12 +95,13 @@ function SettingsContent() {
       return {
         key: tab.key,
         label,
-        pinned: pinnedKeys.has(tab.key),
+        pinned: isPinned(tab.key),
+        routed: isRoutedSettingsTab(tab.key),
         pinAriaLabel: tPin('pin', { tab: label }),
         unpinAriaLabel: tPin('unpin', { tab: label }),
       };
     });
-  }, [t, tPin, pinnedKeys, canManageIntegrations, canManageBilling, canViewAuditLog]);
+  }, [t, tPin, isPinned, canManageIntegrations, canManageBilling, canViewAuditLog]);
 
   return (
     <div className="space-y-6">
@@ -151,32 +111,46 @@ function SettingsContent() {
 
       <AnimateIn delay={1}>
         <Tabs value={activeTab} onValueChange={onSettingsTabChange} className="w-full">
-          <TabsList>
-            {tabsToRender.map(tab => {
-              const isActive = activeTab === tab.key;
-              const showsButton = tab.pinned || isActive;
-              return (
-                <TabsTrigger
-                  key={tab.key}
-                  value={tab.key}
-                  className={cn('gap-1.5', showsButton && 'pe-1.5')}>
-                  <span>{tab.label}</span>
-                  <PinTabButton
-                    tabKey={tab.key}
-                    tabLabel={tab.label}
-                    pinned={tab.pinned}
-                    active={isActive}
-                    disabled={pinToggle.isPending}
-                    pinAriaLabel={tab.pinAriaLabel}
-                    unpinAriaLabel={tab.unpinAriaLabel}
-                    // biome-ignore lint/nursery/noJsxPropsBind: per-row callback
-                    onToggle={() => togglePin(tab.key)}
-                  />
-                </TabsTrigger>
-              );
-            })}
-            <TabsTrigger value="workflow-roles">{t('tabs.workflowRoles')}</TabsTrigger>
-          </TabsList>
+          <SettingsTabsScroller>
+            <TabsList className="no-scrollbar max-w-full justify-start overflow-x-auto [&>*]:shrink-0">
+              {tabsToRender.map(tab => {
+                const isActive = activeTab === tab.key;
+                // Routed tabs route away on click; their toggle lives on the
+                // dedicated page header. They still surface a read-only pin
+                // glyph indicator when pinned so the tab list stays in sync
+                // with the sidebar.
+                const showsIndicator = tab.routed && tab.pinned;
+                const showsToggle = !tab.routed && (tab.pinned || isActive);
+                return (
+                  <TabsTrigger
+                    key={tab.key}
+                    value={tab.key}
+                    className={cn('gap-1.5', (showsToggle || showsIndicator) && 'pe-1.5')}>
+                    <span>{tab.label}</span>
+                    {showsToggle && (
+                      <PinTabButton
+                        tabKey={tab.key}
+                        tabLabel={tab.label}
+                        pinned={tab.pinned}
+                        active={isActive}
+                        disabled={pinPending}
+                        pinAriaLabel={tab.pinAriaLabel}
+                        unpinAriaLabel={tab.unpinAriaLabel}
+                        // biome-ignore lint/nursery/noJsxPropsBind: per-row callback
+                        onToggle={() => togglePin(tab.key)}
+                      />
+                    )}
+                    {showsIndicator && (
+                      <Pin
+                        aria-hidden="true"
+                        className="h-3.5 w-3.5 shrink-0 rotate-45 fill-current text-primary"
+                      />
+                    )}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </SettingsTabsScroller>
 
           <TabsContent value="general" className="mt-6 space-y-6">
             <Card>

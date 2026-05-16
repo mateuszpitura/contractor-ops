@@ -483,7 +483,7 @@ export function OrgSettingsForm() {
           {/* Time format */}
           <div className="space-y-1.5">
             <Label htmlFor={`${id}-timeFormat`} className="text-[13px]">
-              {t('fields.timeFormat')}
+              {t('fields.timeFormat.label')}
             </Label>
             <Select
               value={watch('timeFormat')}
@@ -494,15 +494,15 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
               items={TIME_FORMATS.map(fmt => ({
                 value: fmt,
-                label: `${t(`fields.timeFormat${fmt === '24h' ? '24h' : '12h'}`)} — ${previewTimeFormat(fmt)}`,
+                label: `${t(`fields.timeFormat.${fmt === '24h' ? '24h' : '12h'}`)} — ${previewTimeFormat(fmt)}`,
               }))}>
               <SelectTrigger id={`${id}-timeFormat`} className="w-full">
-                <SelectValue placeholder={t('fields.timeFormatPlaceholder')} />
+                <SelectValue placeholder={t('fields.timeFormat.placeholder')} />
               </SelectTrigger>
               <SelectContent>
                 {TIME_FORMATS.map(fmt => (
                   <SelectItem key={fmt} value={fmt}>
-                    {t(`fields.timeFormat${fmt === '24h' ? '24h' : '12h'}`)}
+                    {t(`fields.timeFormat.${fmt === '24h' ? '24h' : '12h'}`)}
                     <span className="ms-2 text-muted-foreground">{previewTimeFormat(fmt)}</span>
                   </SelectItem>
                 ))}

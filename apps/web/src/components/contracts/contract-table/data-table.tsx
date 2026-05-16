@@ -136,13 +136,13 @@ export function ContractDataTable({
   });
 
   const data = useMemo(() => {
-    const result = contractsQuery.data as { items: ContractRow[]; totalCount: number } | undefined;
+    const result = contractsQuery.data as { items: ContractRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [contractsQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = contractsQuery.data as { items: unknown[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = contractsQuery.data as { items: unknown[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [contractsQuery.data]);
 
   // Column definitions

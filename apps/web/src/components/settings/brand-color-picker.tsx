@@ -43,6 +43,7 @@ interface BrandColorPickerProps {
  */
 export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
   const tAria = useTranslations('Common.aria');
+  const t = useTranslations('Settings.branding');
   const [hexInput, setHexInput] = useState(value);
   const [open, setOpen] = useState(false);
 
@@ -107,7 +108,7 @@ export function BrandColorPicker({ value, onChange }: BrandColorPickerProps) {
             value={hexInput}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleHexChange(e.target.value)}
-            placeholder="#4f46e5"
+            placeholder={t('colorPlaceholder')}
             className="h-8 font-mono text-sm"
             maxLength={7}
             aria-label={tAria('hexColorCode')}

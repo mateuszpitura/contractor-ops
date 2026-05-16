@@ -4,6 +4,7 @@ export { replayWebhook, webhookPayloads } from '../scenarios/webhook-replay.js';
 // These generate realistic payloads for testing webhook handlers,
 // API response parsing, and data transformation.
 
+export { dataportFixtures } from './dataport.js';
 // Phase 57 — HMRC + VIES fixtures
 export {
   HMRC_OAUTH_TOKEN_200,

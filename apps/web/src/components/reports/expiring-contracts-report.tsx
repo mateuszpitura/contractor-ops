@@ -1,8 +1,9 @@
 'use client';
 
-import { ExpiringContractsIllustration } from '@contractor-ops/ui';
+import { ExpiringContractsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -70,13 +71,13 @@ export function ExpiringContractsReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as { items: ExpiringRow[]; totalCount: number } | undefined;
+    const result = tableQuery.data as { items: ExpiringRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as { items: ExpiringRow[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = tableQuery.data as { items: ExpiringRow[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [tableQuery.data]);
 
   const chartData = useMemo(() => {
@@ -173,6 +174,7 @@ export function ExpiringContractsReport({
         isLoading={chartQuery.isLoading}
       />
 
+      <SectionLabel icon={CalendarClock}>{t('expiringContracts')}</SectionLabel>
       <ReportTable<ExpiringRow>
         columns={columns}
         data={tableData}

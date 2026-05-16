@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { ShieldCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -43,6 +44,7 @@ export function ZatcaComplianceWidget({
   environment = 'Production',
   certificateExpiresAt,
 }: ZatcaComplianceWidgetProps) {
+  const t = useTranslations('Zatca.complianceWidget');
   const statsQuery = useQuery(zatcaTrpc.getComplianceStats.queryOptions());
   const stats = statsQuery.data as ComplianceStats | undefined;
 
@@ -82,7 +84,7 @@ export function ZatcaComplianceWidget({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <ShieldCheck className="h-5 w-5" />
-          ZATCA (Saudi Arabia)
+          {t('cardTitle')}
         </CardTitle>
       </CardHeader>
 
@@ -90,7 +92,7 @@ export function ZatcaComplianceWidget({
         {/* Status + Environment row */}
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-2">
-            <span>Status:</span>
+            <span>{t('status')}</span>
             <span className="flex items-center gap-1.5 font-medium capitalize">
               {connectionStatus}
               <span
@@ -100,7 +102,7 @@ export function ZatcaComplianceWidget({
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-muted-foreground">Environment:</span>
+            <span className="text-muted-foreground">{t('environment')}</span>
             <span className="font-medium">{environment}</span>
           </div>
         </div>
@@ -108,14 +110,13 @@ export function ZatcaComplianceWidget({
         {/* Certificate expiry */}
         {expiryDays !== null && (
           <div className="text-sm">
-            <span className="text-muted-foreground">Certificate expires: </span>
+            <span className="text-muted-foreground">{t('certificateExpires')}</span>
             <span className={expiryColor}>
               {certificateExpiresAt?.slice(0, 10)} ({expiryDays} days)
             </span>
             {expiryDays < 30 && (
               <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                Your ZATCA certificate expires in {expiryDays} days. Renew to avoid submission
-                disruption.
+                {t('certificateExpiryWarning', { expiryDays })}
               </p>
             )}
           </div>
@@ -124,23 +125,27 @@ export function ZatcaComplianceWidget({
         {/* Period stats */}
         {!!stats && (
           <div className="space-y-1.5 text-sm">
-            <p className="font-medium text-muted-foreground">This Period</p>
+            <p className="font-medium text-muted-foreground">{t('thisPeriod')}</p>
             <div className="space-y-1 ps-2">
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Cleared:</span>
-                <span className="font-mono text-sm">{stats.cleared} invoices</span>
+                <span className="text-muted-foreground">{t('cleared')}</span>
+                <span className="font-mono text-sm">{t('invoices', { count: stats.cleared })}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Reported:</span>
-                <span className="font-mono text-sm">{stats.reported} invoices</span>
+                <span className="text-muted-foreground">{t('reported')}</span>
+                <span className="font-mono text-sm">
+                  {t('invoices', { count: stats.reported })}
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Pending:</span>
-                <span className="font-mono text-sm">{stats.pending} invoices</span>
+                <span className="text-muted-foreground">{t('pending')}</span>
+                <span className="font-mono text-sm">{t('invoices', { count: stats.pending })}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Rejected:</span>
-                <span className="font-mono text-sm">{stats.rejected} invoices</span>
+                <span className="text-muted-foreground">{t('rejected')}</span>
+                <span className="font-mono text-sm">
+                  {t('invoices', { count: stats.rejected })}
+                </span>
               </div>
             </div>
           </div>
@@ -149,7 +154,7 @@ export function ZatcaComplianceWidget({
         {/* Health bar */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Health:</span>
+            <span className="text-muted-foreground">{t('health')}</span>
             <span className="font-mono text-xs">{healthPercent}%</span>
           </div>
           <Progress value={healthPercent} />

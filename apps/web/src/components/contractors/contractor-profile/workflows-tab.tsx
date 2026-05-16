@@ -1,8 +1,8 @@
 'use client';
 
-import { AtelierEmptyState, WorkflowsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, SectionLabel, WorkflowsIllustration } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { GitBranch, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { JiraActivitySummary } from '@/components/integrations/jira-activity-summary';
@@ -280,8 +280,10 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
       <JiraActivitySummary contractorId={contractorId} />
 
       {/* Header with CTA */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('contractorWorkflowsTab')}</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel icon={GitBranch}>{t('contractorWorkflowsTab')}</SectionLabel>
+        </div>
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="me-1.5 size-3.5" />

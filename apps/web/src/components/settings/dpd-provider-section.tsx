@@ -32,7 +32,7 @@ export function DpdProviderSection() {
 
   if (configsQuery.isLoading) {
     return (
-      <Card>
+      <Card className="flex h-full flex-col">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Skeleton className="size-8 rounded" />
@@ -48,8 +48,8 @@ export function DpdProviderSection() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="flex h-full flex-col gap-4">
+      <Card className="flex h-full flex-col">
         <CardHeader>
           <div className="flex items-center gap-2">
             <DpdBrandIcon className="h-8 w-auto" />
@@ -59,13 +59,15 @@ export function DpdProviderSection() {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col space-y-3">
             <p className="text-sm text-muted-foreground">{t('dpdDescription')}</p>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <Button variant="outline" onClick={() => setConfigOpen(true)}>
-              {t('configureDpd')}
-            </Button>
+            <div className="mt-auto pt-3">
+              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+              <Button variant="outline" onClick={() => setConfigOpen(true)}>
+                {t('configureDpd')}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

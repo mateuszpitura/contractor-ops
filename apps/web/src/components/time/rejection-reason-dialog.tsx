@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,20 +46,21 @@ export function RejectionReasonDialog({
   isBulk = false,
   count = 0,
 }: RejectionReasonDialogProps) {
+  const t = useTranslations('Time');
   const id = useId();
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const title = isBulk ? `Reject ${count} Timesheet${count === 1 ? '' : 's'}` : 'Reject Timesheet';
+  const title = isBulk ? t('rejectionDialog.bulkTitle', { count }) : t('rejectionDialog.title');
 
   const description = isBulk
-    ? 'All selected timesheets will be rejected with the same reason.'
-    : 'Please provide a reason for rejection. The contractor will be notified and can resubmit corrections.';
+    ? t('rejectionDialog.bulkDescription')
+    : t('rejectionDialog.description');
 
   function handleSubmit() {
     const trimmed = reason.trim();
     if (trimmed.length < 10) {
-      setError('Reason must be at least 10 characters.');
+      setError(t('rejectionDialog.minLengthError'));
       return;
     }
     setError(null);
@@ -84,7 +86,7 @@ export function RejectionReasonDialog({
         </DialogHeader>
 
         <div className="space-y-2 py-2">
-          <Label htmlFor={`${id}-rejection-reason`}>Rejection Reason</Label>
+          <Label htmlFor={`${id}-rejection-reason`}>{t('rejectionDialog.reasonLabel')}</Label>
           <Textarea
             id={`${id}-rejection-reason`}
             value={reason}
@@ -93,7 +95,7 @@ export function RejectionReasonDialog({
               setReason(e.target.value);
               if (error) setError(null);
             }}
-            placeholder="Describe what needs to be corrected..."
+            placeholder={t('rejectionDialog.reasonPlaceholder')}
             maxLength={500}
             rows={4}
             className={error ? 'border-destructive' : ''}
@@ -107,14 +109,14 @@ export function RejectionReasonDialog({
         <DialogFooter className="gap-2 sm:gap-0">
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
-            Keep Reviewing
+            {t('rejectionDialog.keepReviewing')}
           </Button>
           <Button
             variant="destructive"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSubmit}
             disabled={isSubmitting || reason.trim().length < 10}>
-            {isSubmitting ? 'Rejecting...' : 'Reject Timesheet'}
+            {isSubmitting ? t('rejectionDialog.rejecting') : t('rejectionDialog.rejectButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

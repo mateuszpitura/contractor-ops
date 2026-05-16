@@ -74,6 +74,7 @@ export function PortalSettingsPage() {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );
@@ -83,6 +84,7 @@ export function PortalSettingsPage() {
       onError: err => toast.error(err.message),
       onSuccess: () => {
         toast.success('Done.');
+        queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
   );

@@ -1,7 +1,7 @@
 'use client';
 
-import { Download, Eye } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { Download } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -39,6 +39,7 @@ export function WhtCertificatePreviewDialog({
   certificate,
   onDownload,
 }: WhtCertificatePreviewProps) {
+  const t = useTranslations('Payments.wht');
   const locale = useLocale();
   if (!certificate) return null;
 
@@ -47,52 +48,52 @@ export function WhtCertificatePreviewDialog({
     <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>WHT Certificate Preview</DialogTitle>
+          <DialogTitle>{t('dialogTitle')}</DialogTitle>
         </DialogHeader>
 
         <div className="rounded-lg border bg-card p-6">
           {/* Certificate preview content */}
           <div className="mb-6 text-center">
             <h2 className="text-lg font-semibold uppercase tracking-wider">
-              Withholding Tax Certificate
+              {t('certificateHeading')}
             </h2>
             <p className="mt-1 font-mono text-sm text-muted-foreground">
-              Certificate No: {certificate.certificateNumber}
+              {t('certificateNo', { number: certificate.certificateNumber })}
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <span className="text-muted-foreground">Organization</span>
+              <span className="text-muted-foreground">{t('organization')}</span>
               <span className="font-medium">{certificate.orgName}</span>
-              <span className="text-muted-foreground">Contractor</span>
+              <span className="text-muted-foreground">{t('contractor')}</span>
               <span className="font-medium">{certificate.contractorName}</span>
               {!!certificate.contractorTaxId && (
                 <>
-                  <span className="text-muted-foreground">Tax ID</span>
+                  <span className="text-muted-foreground">{t('taxId')}</span>
                   <span className="font-medium">{certificate.contractorTaxId}</span>
                 </>
               )}
-              <span className="text-muted-foreground">Payment Date</span>
+              <span className="text-muted-foreground">{t('paymentDate')}</span>
               <span className="font-medium">{certificate.paymentDate}</span>
             </div>
 
             <hr className="border-border" />
 
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <span className="text-muted-foreground">Gross Amount</span>
+              <span className="text-muted-foreground">{t('grossAmount')}</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{' '}
                 {formatMinorUnits(certificate.grossAmountMinor, certificate.currency, locale)}
               </span>
-              <span className="text-muted-foreground">WHT Rate</span>
+              <span className="text-muted-foreground">{t('rate')}</span>
               <span className="font-semibold">{certificate.whtRate}%</span>
-              <span className="text-muted-foreground">WHT Amount</span>
+              <span className="text-muted-foreground">{t('amount')}</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{' '}
                 {formatMinorUnits(certificate.whtAmountMinor, certificate.currency, locale)}
               </span>
-              <span className="text-muted-foreground">Net Paid</span>
+              <span className="text-muted-foreground">{t('netPaid')}</span>
               <span className="font-mono font-semibold">
                 {certificate.currency}{' '}
                 {formatMinorUnits(certificate.netAmountMinor, certificate.currency, locale)}
@@ -101,7 +102,7 @@ export function WhtCertificatePreviewDialog({
 
             {!!certificate.treatyApplied && !!certificate.treatyReference && (
               <p className="text-xs italic text-muted-foreground">
-                Treaty: {certificate.treatyReference}
+                {t('treaty', { reference: certificate.treatyReference })}
               </p>
             )}
           </div>
@@ -109,11 +110,11 @@ export function WhtCertificatePreviewDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Close
+            {t('close')}
           </Button>
           <Button onClick={onDownload}>
             <Download className="me-2 h-4 w-4" />
-            Download PDF
+            {t('downloadPdf')}
           </Button>
         </DialogFooter>
       </DialogContent>

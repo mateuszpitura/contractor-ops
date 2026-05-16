@@ -1,6 +1,7 @@
 'use client';
 
 import { PenLine } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ export function SendForSignatureButton({
   documentId,
   contractParties = [],
 }: SendForSignatureButtonProps) {
+  const t = useTranslations('ContractDetail.signing');
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Only show for DRAFT or ACTIVE contracts
@@ -54,8 +56,8 @@ export function SendForSignatureButton({
   const tooltipMessage = hasDocument
     ? hasConnectedProvider
       ? undefined
-      : 'Connect a signing provider in Settings'
-    : 'Upload a document first';
+      : t('tooltipNoProvider')
+    : t('tooltipNoDocument');
 
   if (isDisabled && tooltipMessage) {
     return (
@@ -66,7 +68,7 @@ export function SendForSignatureButton({
             render={props => (
               <Button {...props} variant="default" size="sm" disabled>
                 <PenLine className="me-1.5 size-4" />
-                Send for Signature
+                {t('sendButton')}
               </Button>
             )}
           />
@@ -81,7 +83,7 @@ export function SendForSignatureButton({
       {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="default" size="sm" onClick={() => setDialogOpen(true)}>
         <PenLine className="me-1.5 size-4" />
-        Send for Signature
+        {t('sendButton')}
       </Button>
 
       <SendForSignatureDialog

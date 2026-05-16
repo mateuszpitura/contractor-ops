@@ -13,7 +13,7 @@ import { ReportSidebar } from '@/components/reports/report-sidebar';
 import { SpendContractorReport } from '@/components/reports/spend-contractor-report';
 import { SpendTeamReport } from '@/components/reports/spend-team-report';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useRouter } from '@/i18n/navigation';
 
@@ -109,14 +109,7 @@ function ReportsContent() {
 
 export default function ReportsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="space-y-4 p-6">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-[240px] w-full" />
-          <Skeleton className="h-[400px] w-full" />
-        </div>
-      }>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <ReportsContent />
     </Suspense>
   );

@@ -5994,9 +5994,12 @@
       "searchPlaceholder": "Audit-Protokoll durchsuchen ...",
       "exportCta": "Audit-Protokoll exportieren",
       "exportToast": "Audit-Protokoll exportiert ({count} Einträge)",
-      "filterActorAll": "Alle Akteure",
-      "filterActionAll": "Alle Aktionen",
-      "filterResourceAll": "Alle Ressourcen",
+      "filterActor": "Akteure",
+      "filterActorSearchPlaceholder": "Akteure suchen...",
+      "filterActorShowingHint": "{visible} von {total} angezeigt. Tippen zum Suchen.",
+      "filterActorNoMatches": "Keine passenden Akteure",
+      "filterAction": "Aktionen",
+      "filterResource": "Ressourcen",
       "filterDateRange": "Zeitraum",
       "expand": "Details einblenden",
       "collapse": "Details ausblenden",
@@ -6579,7 +6582,11 @@
     "subtitle": "Verwalten Sie Wissenstransfer-Vorlagen pro Rolle. Seed-Vorlagen sind nicht editierbar; eigene Vorlagen können bearbeitet und gelöscht werden.",
     "createCta": "Neue Rollenvorlage",
     "listSectionLabel": "Rollenvorlagen",
-    "emptyState": "Noch keine Rollenvorlagen. Erstellen Sie eine, um KT-Aufgaben pro Rolle zu definieren.",
+    "empty": {
+      "heading": "Noch keine Rollenvorlagen",
+      "body": "Erstellen Sie eine Rollenvorlage, um Wissenstransfer-Aufgaben pro Rolle zu definieren. Seed-Vorlagen sind standardmäßig enthalten; eigene können bearbeitet und gelöscht werden.",
+      "cta": "Neue Rollenvorlage"
+    },
     "table": {
       "role": "Slug",
       "displayName": "Anzeigename",

@@ -1,14 +1,21 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, TimeTrackingIllustration } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  SectionLabel,
+  TimeTrackingIllustration,
+} from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, startOfISOWeek } from 'date-fns';
+import { Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import type { TimesheetRow } from '@/components/time/approval-queue-table';
 import { ApprovalQueueTable } from '@/components/time/approval-queue-table';
 import { ReconciliationTable } from '@/components/time/reconciliation-table';
@@ -197,7 +204,7 @@ function TimeTrackingContent() {
         <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
-      <AnimateIn delay={1}>
+      <AnimateIn delay={2}>
         {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
         <Tabs value={tab} onValueChange={value => void setTab(value)}>
           <TabsList>
@@ -215,30 +222,34 @@ function TimeTrackingContent() {
 
           {/* Tab 1: Pending Reviews */}
           <TabsContent value="pending" className="mt-4">
-            {pendingQuery.isLoading ? (
-              <LoadingSkeleton />
-            ) : pendingTimesheets.length === 0 ? (
-              <AtelierEmptyState
-                illustration={TimeTrackingIllustration}
-                heading={t('emptyStates.noPendingReviewsHeading')}
-                body={t('emptyStates.noPendingReviewsBody')}
-                renderAction={renderEmptyStateAction}
-              />
-            ) : (
-              <ApprovalQueueTable
-                timesheets={pendingTimesheets}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                onBulkApprove={handleBulkApprove}
-                onBulkReject={handleBulkReject}
-                onNavigateToReview={handleNavigateToReview}
-              />
-            )}
+            <div className="space-y-4">
+              <SectionLabel icon={Clock}>{t('tabs.pendingReviews')}</SectionLabel>
+              {pendingQuery.isLoading ? (
+                <LoadingSkeleton />
+              ) : pendingTimesheets.length === 0 ? (
+                <AtelierEmptyState
+                  illustration={TimeTrackingIllustration}
+                  heading={t('emptyStates.noPendingReviewsHeading')}
+                  body={t('emptyStates.noPendingReviewsBody')}
+                  renderAction={renderEmptyStateAction}
+                />
+              ) : (
+                <ApprovalQueueTable
+                  timesheets={pendingTimesheets}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                  onBulkApprove={handleBulkApprove}
+                  onBulkReject={handleBulkReject}
+                  onNavigateToReview={handleNavigateToReview}
+                />
+              )}
+            </div>
           </TabsContent>
 
           {/* Tab 2: All Entries */}
           <TabsContent value="all" className="mt-4">
             <div className="space-y-4">
+              <SectionLabel icon={Clock}>{t('tabs.allEntries')}</SectionLabel>
               {/* Filters */}
               <div className="flex items-center gap-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
@@ -302,7 +313,10 @@ function TimeTrackingContent() {
 
           {/* Tab 3: Reconciliation */}
           <TabsContent value="reconciliation" className="mt-4">
-            <ReconciliationTable />
+            <div className="space-y-4">
+              <SectionLabel icon={Clock}>{t('tabs.reconciliation')}</SectionLabel>
+              <ReconciliationTable />
+            </div>
           </TabsContent>
         </Tabs>
       </AnimateIn>
@@ -341,14 +355,7 @@ function LoadingSkeleton() {
  */
 export default function TimePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="space-y-6">
-          <Skeleton className="h-7 w-40" />
-          <Skeleton className="h-10 w-80" />
-          <LoadingSkeleton />
-        </div>
-      }>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <TimeTrackingContent />
     </Suspense>
   );

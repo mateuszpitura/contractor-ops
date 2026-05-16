@@ -5,6 +5,7 @@ import {
   AtelierPageHeader,
   AtelierTableShell,
   DocumentsIllustration,
+  SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
@@ -68,6 +69,10 @@ export default function PortalDocumentsPage() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
+        <SectionLabel variant="portal">{t('documents.title')}</SectionLabel>
+      </AnimateIn>
+
+      <AnimateIn delay={2}>
         {isLoading ? (
           <div className="mt-6">
             <AtelierTableShell isLoading>

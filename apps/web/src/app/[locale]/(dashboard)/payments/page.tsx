@@ -234,6 +234,7 @@ function PaymentsContent() {
               onDateFromChange={handleDateFromChange}
               onDateToChange={handleDateToChange}
               activityDates={activityDates}
+              isLoading={isLoading}
             />
 
             {/* Table */}

@@ -42,6 +42,7 @@ export function ReassessmentTriggerCta({
   className,
 }: ReassessmentTriggerCtaProps) {
   const t = useTranslations('Classification.polish.reassessmentTrigger');
+  const tCommon = useTranslations('Common');
   const [dismissOpen, setDismissOpen] = useState(false);
 
   return (
@@ -53,7 +54,11 @@ export function ReassessmentTriggerCta({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button type="button" variant="ghost" size="icon" aria-label="More actions">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={tCommon('aria.moreActions')}>
               <MoreHorizontal className="size-4" />
             </Button>
           }

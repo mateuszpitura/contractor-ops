@@ -9,6 +9,7 @@ import {
   TAX_STEUERNUMMER_LABEL,
   TAX_USTIDNR_LABEL,
 } from '@contractor-ops/validators';
+import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -126,6 +127,7 @@ function UstIdField({
   error: string | undefined;
   onChange: HandleChange;
 }) {
+  const t = useTranslations('Contractors.compliance.de');
   if (!show) return null;
   return (
     <div className="space-y-2">
@@ -140,7 +142,7 @@ function UstIdField({
         aria-required="true"
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? `${id}-ust-id-error` : undefined}
-        placeholder="DE123456789"
+        placeholder={t('vatNumberPlaceholder')}
         value={value ?? ''}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={e => onChange('ustIdNr', e.target.value || undefined)}
@@ -162,6 +164,7 @@ function SozialversicherungField({
   error: string | undefined;
   onChange: HandleChange;
 }) {
+  const t = useTranslations('Contractors.compliance.de');
   return (
     <div className="space-y-2">
       <Label htmlFor={`${id}-sv`} className="text-sm font-medium">
@@ -171,7 +174,7 @@ function SozialversicherungField({
         id={`${id}-sv`}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? `${id}-sv-error` : undefined}
-        placeholder="12 345678 A 901"
+        placeholder={t('steuernummerPlaceholder')}
         value={value ?? ''}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={e => onChange('sozialversicherungsnummer', e.target.value || undefined)}
@@ -182,6 +185,7 @@ function SozialversicherungField({
 }
 
 export function DeComplianceFields(props: DeComplianceFieldsProps) {
+  const t = useTranslations('Contractors.compliance.de');
   const id = useId();
   const [internal, setInternal] = useState<Partial<DeCountryFields>>({});
 
@@ -217,11 +221,11 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-        DE-Identifikatoren — Pflichtfelder richten sich nach Rechtsform und USt-Status:
+        {t('infoBoxTitle')}
         <ul className="mt-1 list-disc ps-5">
-          <li>Bundesland und Steuernummer sind immer erforderlich.</li>
-          <li>UG, GmbH und AG: Handelsregisternummer erforderlich.</li>
-          <li>Umsatzsteuerpflichtig (kein Kleinunternehmer): USt-IdNr erforderlich.</li>
+          <li>{t('infoItem1')}</li>
+          <li>{t('infoItem2')}</li>
+          <li>{t('infoItem3')}</li>
         </ul>
       </div>
 
@@ -229,7 +233,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
         value={bundesland}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('bundesland', v)}
-        label="Bundesland"
+        label={t('bundeslandLabel')}
         required
         error={errors.bundesland}
       />
@@ -239,7 +243,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
         value={entityType}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('entityType', v)}
-        label="Rechtsform"
+        label={t('rechtsformLabel')}
         required
         error={errors.entityType}
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -260,7 +264,7 @@ export function DeComplianceFields(props: DeComplianceFieldsProps) {
         checked={isVatRegistered}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('isVatRegistered', v)}
-        label="Umsatzsteuerpflichtig"
+        label={t('vatRegisteredLabel')}
       />
 
       <VatRegisteredToggle

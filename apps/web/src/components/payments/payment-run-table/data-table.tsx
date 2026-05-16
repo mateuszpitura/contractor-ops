@@ -73,10 +73,10 @@ export function PaymentRunDataTable({
                 onClick={onPreviousPage}
                 disabled={!hasPreviousPage}>
                 <ChevronLeft className="h-4 w-4" />
-                Previous
+                {t('table.previous')}
               </Button>
               <Button variant="outline" size="sm" onClick={onNextPage} disabled={!hasNextPage}>
-                Next
+                {t('table.next')}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

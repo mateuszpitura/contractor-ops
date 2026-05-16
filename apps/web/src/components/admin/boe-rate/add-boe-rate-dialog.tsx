@@ -5,6 +5,7 @@
 // Phase 63 · Plan 05 · D-10 — Dialog for adding a new BoE base rate entry.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,9 @@ interface AddBoeRateDialogProps {
 }
 
 export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) {
+  const t = useTranslations('Admin.BoeRate');
+  const tCommon = useTranslations('Common');
+
   const [effectiveFrom, setEffectiveFrom] = useState('');
   const [ratePercent, setRatePercent] = useState('');
   const [notes, setNotes] = useState('');
@@ -39,14 +43,14 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
         void queryClient.invalidateQueries({
           queryKey: trpc.adminBoeRate.list.queryKey(),
         });
-        toast.success('Rate added', {
-          description: 'BoE base rate entry has been saved.',
+        toast.success(t('toastRateAdded'), {
+          description: t('toastRateAddedDesc'),
         });
         resetForm();
         onOpenChange(false);
       },
       onError: error => {
-        toast.error('Error', { description: error.message });
+        toast.error(t('toastError'), { description: error.message });
       },
     }),
   );
@@ -62,15 +66,15 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
 
     const rate = parseFloat(ratePercent);
     if (Number.isNaN(rate) || rate < 0 || rate > 99.99) {
-      toast.error('Validation error', {
-        description: 'Rate must be between 0 and 99.99.',
+      toast.error(t('toastValidationError'), {
+        description: t('validationRateRange'),
       });
       return;
     }
 
     if (!effectiveFrom) {
-      toast.error('Validation error', {
-        description: 'Effective date is required.',
+      toast.error(t('toastValidationError'), {
+        description: t('validationDateRequired'),
       });
       return;
     }
@@ -86,14 +90,12 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add BoE base rate</DialogTitle>
-          <DialogDescription>
-            Add a new Bank of England base rate entry for interest calculations.
-          </DialogDescription>
+          <DialogTitle>{t('addDialogTitle')}</DialogTitle>
+          <DialogDescription>{t('addDialogDesc')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="add-effective-from">Effective from</Label>
+            <Label htmlFor="add-effective-from">{t('colEffectiveFrom')}</Label>
             <Input
               id="add-effective-from"
               type="date"
@@ -103,7 +105,7 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="add-rate-percent">Rate %</Label>
+            <Label htmlFor="add-rate-percent">{t('colRatePercent')}</Label>
             <Input
               id="add-rate-percent"
               type="number"
@@ -117,21 +119,21 @@ export function AddBoeRateDialog({ open, onOpenChange }: AddBoeRateDialogProps) 
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="add-notes">Notes (optional)</Label>
+            <Label htmlFor="add-notes">{t('notesOptionalLabel')}</Label>
             <Textarea
               id="add-notes"
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="e.g., MPC decision 2026-03-20"
+              placeholder={t('notesPlaceholder')}
               rows={3}
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={insertMutation.isPending}>
-              {insertMutation.isPending ? 'Saving...' : 'Save rate'}
+              {insertMutation.isPending ? t('saving') : t('saveRate')}
             </Button>
           </DialogFooter>
         </form>

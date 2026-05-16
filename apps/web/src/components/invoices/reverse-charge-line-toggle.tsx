@@ -11,6 +11,7 @@
 'use client';
 
 import { AlertCircle, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -46,6 +47,7 @@ export function ReverseChargeLineToggle({
   onEnable,
   disabled,
 }: ReverseChargeLineToggleProps) {
+  const t = useTranslations('Invoices.reverseChargeToggle');
   const id = useId();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reason, setReason] = useState('');
@@ -72,7 +74,7 @@ export function ReverseChargeLineToggle({
       setDialogOpen(false);
       setReason('');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to override reverse charge');
+      toast.error(err instanceof Error ? err.message : t('overrideError'));
     } finally {
       setSubmitting(false);
     }
@@ -85,13 +87,13 @@ export function ReverseChargeLineToggle({
         // biome-ignore lint/nursery/noJsxPropsBind: small dialog component
         onCheckedChange={handleCheckedChange}
         disabled={disabled || submitting}
-        aria-label="Apply reverse charge to this line"
+        aria-label={t('ariaLabel')}
       />
-      <Label className="text-sm">Reverse charge</Label>
+      <Label className="text-sm">{t('label')}</Label>
       {!!isReverseCharge && (
         <Badge variant="info" data-testid="reverse-charge-chip">
           <AlertCircle className="size-3" aria-hidden />
-          <span>{ruleLabel ?? 'RC auto-detected'}</span>
+          <span>{ruleLabel ?? t('autoDetected')}</span>
         </Badge>
       )}
 
@@ -100,41 +102,38 @@ export function ReverseChargeLineToggle({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="size-4" />
-              Override auto-detected reverse charge?
+              {t('overrideDialogTitle')}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              Turning reverse charge off applies the standard rate to this line. Please record a
-              business reason — it will be written to the invoice audit log.
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('overrideDialogDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-2">
-            <Label htmlFor={`${id}-rc-override-reason`}>Reason</Label>
+            <Label htmlFor={`${id}-rc-override-reason`}>{t('reasonLabel')}</Label>
             <Textarea
               id={`${id}-rc-override-reason`}
               data-testid="reverse-charge-override-reason"
               value={reason}
               // biome-ignore lint/nursery/noJsxPropsBind: small dialog component
               onChange={event => setReason(event.target.value)}
-              placeholder="e.g. Customer prefers standard rate per contract clause 4.2"
+              placeholder={t('reasonPlaceholder')}
               maxLength={MAX_REASON_LENGTH}
               rows={3}
               aria-invalid={!reasonValid && reason.length > 0}
             />
             <p className="text-xs text-muted-foreground">
               {reasonTrim.length < MIN_REASON_LENGTH
-                ? `Minimum ${MIN_REASON_LENGTH} characters required`
-                : `${reasonTrim.length} / ${MAX_REASON_LENGTH}`}
+                ? t('minLengthHint', { min: MIN_REASON_LENGTH })
+                : t('charCount', { current: reasonTrim.length, max: MAX_REASON_LENGTH })}
             </p>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={submitting}>{t('cancel')}</AlertDialogCancel>
             <Button
               type="button"
               // biome-ignore lint/nursery/noJsxPropsBind: small dialog component
               onClick={handleConfirm}
               disabled={!reasonValid || submitting}
               data-testid="reverse-charge-override-confirm">
-              {submitting ? 'Saving…' : 'Override reverse charge'}
+              {submitting ? t('saving') : t('overrideCta')}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

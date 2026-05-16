@@ -5,6 +5,7 @@ import { UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { InviteDialog } from '@/components/settings/invite-dialog';
+import { PinActionButton } from '@/components/settings/pin-action-button';
 import { UsersTable } from '@/components/settings/users-table';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { Button } from '@/components/ui/button';
@@ -29,12 +30,15 @@ export default function MembersPage() {
           title={t('title')}
           description={t('subtitle')}
           actions={
-            canInvite ? (
-              <Button onClick={openInvite}>
-                <UserPlus className="me-2 h-4 w-4" />
-                {t('inviteCta')}
-              </Button>
-            ) : undefined
+            <div className="flex items-center gap-2">
+              <PinActionButton tabKey="members" />
+              {canInvite && (
+                <Button onClick={openInvite}>
+                  <UserPlus className="me-2 h-4 w-4" />
+                  {t('inviteCta')}
+                </Button>
+              )}
+            </div>
           }
         />
       </AnimateIn>

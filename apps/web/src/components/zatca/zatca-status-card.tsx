@@ -3,6 +3,7 @@
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Settings, Unlink, Unplug } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ZatcaBrandIcon } from '@/components/integrations/brand-icons';
@@ -26,17 +27,17 @@ import { OnboardingWizard } from './onboarding-wizard';
 import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
-// Status badge mapping
+// Status badge variant mapping (labels resolved via i18n)
 // ---------------------------------------------------------------------------
 
-const STATUS_CONFIG: Record<
+const STATUS_VARIANT: Record<
   string,
-  { label: string; variant: 'success' | 'warning' | 'info' | 'destructive' | 'outline' }
+  { variant: 'success' | 'warning' | 'info' | 'destructive' | 'outline'; labelKey: string }
 > = {
-  production: { label: 'Production', variant: 'success' },
-  sandbox: { label: 'Sandbox', variant: 'warning' },
-  compliance: { label: 'Onboarding', variant: 'info' },
-  none: { label: 'Not Connected', variant: 'outline' },
+  production: { variant: 'success', labelKey: 'statusLabels.production' },
+  sandbox: { variant: 'warning', labelKey: 'statusLabels.sandbox' },
+  compliance: { variant: 'info', labelKey: 'statusLabels.onboarding' },
+  none: { variant: 'outline', labelKey: 'statusLabels.notConnected' },
 };
 
 // ---------------------------------------------------------------------------
@@ -50,6 +51,7 @@ const STATUS_CONFIG: Record<
  * Pattern matches PeppolStatusCard / KsefProviderSection.
  */
 export function ZatcaStatusCard() {
+  const t = useTranslations('Zatca.statusCard');
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
 
@@ -62,7 +64,7 @@ export function ZatcaStatusCard() {
     : state?.complianceCsidReceived
       ? 'compliance'
       : 'none';
-  const statusConfig = STATUS_CONFIG[certStatus] ?? STATUS_CONFIG.none;
+  const statusConfig = STATUS_VARIANT[certStatus] ?? STATUS_VARIANT.none;
 
   function handleWizardComplete() {
     setWizardOpen(false);
@@ -72,12 +74,12 @@ export function ZatcaStatusCard() {
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getComplianceStats.queryKey(),
     });
-    toast.success('ZATCA onboarding complete!');
+    toast.success(t('toast.onboardingComplete'));
   }
 
   if (stateQuery.isLoading) {
     return (
-      <Card>
+      <Card className="flex h-full flex-col">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Skeleton className="size-8 rounded" />
@@ -96,24 +98,23 @@ export function ZatcaStatusCard() {
   if (!(isConnected || isOnboarding)) {
     return (
       <>
-        <Card>
+        <Card className="flex h-full flex-col">
           <CardHeader>
             <div className="flex items-center gap-2">
               <ZatcaBrandIcon className="h-8 w-auto" />
-              <h4 className="text-base font-semibold">ZATCA</h4>
+              <h4 className="text-base font-semibold">{t('title')}</h4>
               <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                Disconnected
+                {t('disconnected')}
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Submit e-invoices to ZATCA for clearance and reporting. Set up your
-                organization&apos;s certificate to get started.
-              </p>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button onClick={() => setWizardOpen(true)}>Connect ZATCA</Button>
+          <CardContent className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col space-y-3">
+              <p className="text-sm text-muted-foreground">{t('description')}</p>
+              <div className="mt-auto pt-3">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <Button onClick={() => setWizardOpen(true)}>{t('connectButton')}</Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -136,23 +137,25 @@ export function ZatcaStatusCard() {
   if (isOnboarding && !isConnected) {
     return (
       <>
-        <Card>
+        <Card className="flex h-full flex-col">
           <CardHeader>
             <div className="flex items-center gap-2">
               <ZatcaBrandIcon className="h-8 w-auto" />
-              <h4 className="text-base font-semibold">ZATCA</h4>
-              <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+              <h4 className="text-base font-semibold">{t('title')}</h4>
+              <Badge variant={statusConfig.variant}>
+                {t(statusConfig.labelKey as Parameters<typeof t>[0])}
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Onboarding in progress — continue the setup wizard.
-              </p>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button variant="outline" onClick={() => setWizardOpen(true)}>
-                Continue Setup
-              </Button>
+          <CardContent className="flex flex-1 flex-col">
+            <div className="flex flex-1 flex-col space-y-3">
+              <p className="text-sm text-muted-foreground">{t('onboardingInProgress')}</p>
+              <div className="mt-auto pt-3">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <Button variant="outline" onClick={() => setWizardOpen(true)}>
+                  {t('continueSetup')}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -173,30 +176,30 @@ export function ZatcaStatusCard() {
 
   // Connected state
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex items-center gap-2">
           <ZatcaBrandIcon className="h-8 w-auto" />
-          <h4 className="text-base font-semibold">ZATCA</h4>
-          <Badge variant={statusConfig.variant}>{statusConfig.label}</Badge>
+          <h4 className="text-base font-semibold">{t('title')}</h4>
+          <Badge variant={statusConfig.variant}>
+            {t(statusConfig.labelKey as Parameters<typeof t>[0])}
+          </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Saudi Arabia e-invoicing clearance and reporting.
-        </p>
-        <div className="flex gap-2">
+      <CardContent className="flex flex-1 flex-col space-y-3">
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
+        <div className="mt-auto flex gap-2 pt-3">
           <Button variant="outline" size="sm" render={<Link href="/settings/integrations/zatca" />}>
             <Settings className="me-1.5 h-3.5 w-3.5" />
-            Manage
+            {t('manageButton')}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger
               render={
                 <Button variant="ghost" size="sm" className="text-destructive">
                   <Unplug className="me-1.5 h-3.5 w-3.5" />
-                  Disconnect
+                  {t('disconnectButton')}
                 </Button>
               }
             />
@@ -204,17 +207,14 @@ export function ZatcaStatusCard() {
               <AlertDialogHeader>
                 <AlertDialogTitle className="flex items-center gap-2">
                   <Unlink className="size-4" />
-                  Disconnect ZATCA
+                  {t('disconnectDialog.title')}
                 </AlertDialogTitle>
-                <AlertDialogDescription>
-                  Disconnect ZATCA: Active invoices will no longer be submitted. Pending submissions
-                  will be cancelled. Continue?
-                </AlertDialogDescription>
+                <AlertDialogDescription>{t('disconnectDialog.description')}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t('disconnectDialog.cancel')}</AlertDialogCancel>
                 <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Disconnect
+                  {t('disconnectDialog.confirm')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

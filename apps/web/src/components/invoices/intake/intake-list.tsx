@@ -1,19 +1,15 @@
 'use client';
 
+import { AtelierTableShell } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Inbox } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
+import { DataTableBody } from '@/components/shared/data-table-body';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { IntakeFilterChips, parseFilterParam } from './intake-filter-chips';
@@ -26,9 +22,7 @@ import type { ValidationStatus } from './intake-validation-status-pill';
 import { IntakeValidationStatusPill } from './intake-validation-status-pill';
 
 // ---------------------------------------------------------------------------
-// Row shape surfaced by trpc.invoiceIntake.listByOrg. Kept permissive
-// because the router returns the raw Prisma row; unused columns are safely
-// ignored.
+// Row shape
 // ---------------------------------------------------------------------------
 
 interface IntakeRow {
@@ -45,7 +39,6 @@ interface IntakeRow {
 }
 
 interface IntakeListProps {
-  /** URL-derived `status` filter token ('NEEDS_REVIEW', 'MATCHED', …) */
   initialStatus?: string | null;
 }
 
@@ -60,15 +53,13 @@ function formatTotalMinor(amountMinor: unknown, currency: string | null): string
       currency: safeCurrency,
     }).format(minor / 100);
   } catch {
-    // Unknown currency — fall back to a plain number with ISO suffix.
     return `${(minor / 100).toFixed(2)} ${safeCurrency}`;
   }
 }
 
 /**
  * Intake list — cursor-paginated, filter-chip driven. 25 rows per page,
- * "Load more" button beneath the last row (mirrors the invoices-list
- * pagination pattern).
+ * "Load more" button beneath the last row.
  */
 export function IntakeList({ initialStatus }: IntakeListProps) {
   const t = useTranslations('EInvoice.intake');
@@ -77,13 +68,9 @@ export function IntakeList({ initialStatus }: IntakeListProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [cursors, setCursors] = useState<Array<string | undefined>>([undefined]);
 
-  // The IntakeFilterChips component is the source of truth for the URL
-  // query param. Reading it here lets the server-driven list stay in sync
-  // without re-parsing search params twice on the page.
   const currentFilter = parseFilterParam(initialStatus ?? null);
   const statusFilter = currentFilter === 'all' ? undefined : currentFilter;
 
-  // Map the chip value back to the enum the router expects.
   const statusEnum = useMemo(() => {
     if (!statusFilter) return;
     const map: Record<string, IntakeStatus> = {
@@ -113,106 +100,135 @@ export function IntakeList({ initialStatus }: IntakeListProps) {
 
   const rows = (listQuery.data as { items?: IntakeRow[] } | undefined)?.items ?? [];
   const nextCursor = (listQuery.data as { nextCursor?: string } | undefined)?.nextCursor;
-  const isLoading = listQuery.isLoading;
-  const isEmpty = !isLoading && rows.length === 0 && cursors.length === 1;
+
+  const columns: ColumnDef<IntakeRow>[] = useMemo(
+    () => [
+      {
+        id: 'supplier',
+        header: () => tColumn('supplier'),
+        cell: ({ row }) => (
+          <Link
+            href={`/invoices/intake/${row.original.id}`}
+            className="block w-full truncate font-medium hover:underline">
+            {row.original.extractedSupplierName ?? '—'}
+          </Link>
+        ),
+      },
+      {
+        id: 'invoiceNumber',
+        header: () => tColumn('invoiceNumber'),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs">{row.original.extractedInvoiceNumber ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'date',
+        header: () => tColumn('date'),
+        cell: ({ row }) =>
+          row.original.extractedInvoiceDate
+            ? format.dateTime(new Date(row.original.extractedInvoiceDate), 'short')
+            : '—',
+      },
+      {
+        id: 'total',
+        header: () => <span className="block text-right">{tColumn('total')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-right font-mono tabular-nums">
+            {formatTotalMinor(row.original.extractedTotalMinor, row.original.extractedCurrency) ??
+              '—'}
+          </span>
+        ),
+      },
+      {
+        id: 'level',
+        header: () => tColumn('level'),
+        cell: ({ row }) =>
+          row.original.extractedProfileLevel ? (
+            <IntakeProfileLevelBadge level={row.original.extractedProfileLevel} />
+          ) : (
+            '—'
+          ),
+      },
+      {
+        id: 'status',
+        header: () => tColumn('status'),
+        cell: ({ row }) => <IntakeStatusPill status={row.original.status} />,
+      },
+      {
+        id: 'validation',
+        header: () => tColumn('validation'),
+        cell: ({ row }) =>
+          row.original.validationStatus ? (
+            <IntakeValidationStatusPill status={row.original.validationStatus} />
+          ) : (
+            '—'
+          ),
+      },
+    ],
+    [tColumn, format],
+  );
+
+  const table = useReactTable({
+    data: rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getRowId: row => row.id,
+  });
+
+  const loadMoreFooter = nextCursor ? (
+    <div className="flex w-full justify-center border-t p-4">
+      <Button type="button" variant="ghost" onClick={handleLoadMore}>
+        {t('loadMore')}
+      </Button>
+    </div>
+  ) : null;
 
   return (
     <div className="space-y-6" data-slot="intake-list">
       <IntakeFilterChips />
 
-      {isLoading ? (
-        <div className="space-y-2" aria-busy="true" aria-live="polite">
-          {Array.from({ length: 5 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <Skeleton key={`intake-skel-${i}`} className="h-14 w-full rounded-lg" />
-          ))}
-        </div>
-      ) : isEmpty ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed p-12 text-center">
-          <Inbox className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-          <h2 className="font-display text-2xl font-bold">{t('emptyStateHeading')}</h2>
-          <p className="max-w-md text-sm text-muted-foreground">{t('emptyStateBody')}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setUploadOpen(true)}
-            data-testid="intake-list-empty-upload">
-            {t('splitButtonImport')}
-          </Button>
-          <IntakeUploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
-        </div>
-      ) : (
-        <div className="rounded-xl border bg-card">
-          <Table>
-            <caption className="sr-only">{t('pageSubtitle')}</caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{tColumn('supplier')}</TableHead>
-                <TableHead>{tColumn('invoiceNumber')}</TableHead>
-                <TableHead>{tColumn('date')}</TableHead>
-                <TableHead className="text-right">{tColumn('total')}</TableHead>
-                <TableHead>{tColumn('level')}</TableHead>
-                <TableHead>{tColumn('status')}</TableHead>
-                <TableHead>{tColumn('validation')}</TableHead>
+      <AtelierTableShell
+        isLoading={listQuery.isFetching && !listQuery.isLoading}
+        footer={loadMoreFooter}>
+        <Table>
+          <caption className="sr-only">{t('pageSubtitle')}</caption>
+          <TableHeader>
+            {table.getHeaderGroups().map(hg => (
+              <TableRow key={hg.id}>
+                {hg.headers.map(h => (
+                  <TableHead key={h.id}>
+                    {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map(row => {
-                const total = formatTotalMinor(row.extractedTotalMinor, row.extractedCurrency);
-                const dateStr = row.extractedInvoiceDate
-                  ? format.dateTime(new Date(row.extractedInvoiceDate), 'short')
-                  : '—';
-                return (
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer hover:bg-accent/50"
-                    data-slot="intake-row"
-                    data-intake-id={row.id}>
-                    <TableCell>
-                      <Link
-                        href={`/invoices/intake/${row.id}`}
-                        className="block w-full truncate font-medium hover:underline">
-                        {row.extractedSupplierName ?? '—'}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {row.extractedInvoiceNumber ?? '—'}
-                    </TableCell>
-                    <TableCell>{dateStr}</TableCell>
-                    <TableCell className="text-right font-mono tabular-nums">
-                      {total ?? '—'}
-                    </TableCell>
-                    <TableCell>
-                      {row.extractedProfileLevel ? (
-                        <IntakeProfileLevelBadge level={row.extractedProfileLevel} />
-                      ) : (
-                        '—'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <IntakeStatusPill status={row.status} />
-                    </TableCell>
-                    <TableCell>
-                      {row.validationStatus ? (
-                        <IntakeValidationStatusPill status={row.validationStatus} />
-                      ) : (
-                        '—'
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          {nextCursor && (
-            <div className="flex justify-center border-t p-4">
-              <Button type="button" variant="ghost" onClick={handleLoadMore}>
-                {t('loadMore')}
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+            ))}
+          </TableHeader>
+          <DataTableBody
+            table={table}
+            isLoading={listQuery.isLoading}
+            hasFiltersOrSearch={!!statusFilter}
+            emptyIcon={<Inbox className="h-5 w-5" />}
+            emptyTitle={t('emptyStateHeading')}
+            emptyDescription={t('emptyStateBody')}
+            emptyCta={t('splitButtonImport')}
+            onEmptyCta={() => setUploadOpen(true)}
+            noResultsTitle={t('emptyStateHeading')}
+            noResultsDescription={t('emptyStateBody')}
+            skeletonRows={8}
+            skeletonColumns={{
+              supplier: { shape: 'text', width: 'w-40' },
+              invoiceNumber: { shape: 'text', width: 'w-28' },
+              date: { shape: 'text', width: 'w-24' },
+              total: { shape: 'text', width: 'w-20' },
+              level: { shape: 'badge' },
+              status: { shape: 'badge' },
+              validation: { shape: 'badge' },
+            }}
+          />
+        </Table>
+      </AtelierTableShell>
+
+      <IntakeUploadDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </div>
   );
 }

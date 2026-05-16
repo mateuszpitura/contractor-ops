@@ -1,4 +1,5 @@
 import { createIntegrationLogger } from '@contractor-ops/logger';
+import type { CompanyRegistryAdapter, CompanyRegistryProvider } from './types/company-registry.js';
 import type { OcrAdapter } from './types/ocr.js';
 import type { IntegrationProviderAdapter } from './types/provider.js';
 
@@ -54,6 +55,7 @@ export function getAllAdapters(): IntegrationProviderAdapter[] {
 export function clearAdapters(): void {
   adapters.clear();
   ocrAdapters.clear();
+  companyRegistryAdapters.clear();
 }
 
 // ---------------------------------------------------------------------------
@@ -99,4 +101,46 @@ export function getOcrAdapterBySlug(slug: string): OcrAdapter | undefined {
  */
 export function getAllOcrAdapters(): OcrAdapter[] {
   return Array.from(ocrAdapters.values());
+}
+
+// ---------------------------------------------------------------------------
+// Company Registry Adapter Registry
+// ---------------------------------------------------------------------------
+//
+// Polish company-registry adapters (Dataport, GUS BIR1) implement only the
+// `CompanyRegistryAdapter` contract. Like OCR adapters, they have no
+// IntegrationConnection row, no OAuth, no webhooks — so they live in their
+// own dedicated map keyed by lowercased slug, resolved by
+// `getCompanyRegistryAdapter()` in `services/company-registry-service.ts`.
+
+const companyRegistryAdapters = new Map<CompanyRegistryProvider, CompanyRegistryAdapter>();
+
+/**
+ * Registers a company-registry adapter.
+ */
+export function registerCompanyRegistryAdapter(adapter: CompanyRegistryAdapter): void {
+  const slug = adapter.slug;
+  if (companyRegistryAdapters.has(slug)) {
+    log.warn(
+      { slug },
+      'registerCompanyRegistryAdapter: slug already registered — overwriting existing adapter',
+    );
+  }
+  companyRegistryAdapters.set(slug, adapter);
+}
+
+/**
+ * Looks up a registered company-registry adapter by slug.
+ */
+export function getCompanyRegistryAdapterBySlug(
+  slug: CompanyRegistryProvider,
+): CompanyRegistryAdapter | undefined {
+  return companyRegistryAdapters.get(slug);
+}
+
+/**
+ * Returns all registered company-registry adapters.
+ */
+export function getAllCompanyRegistryAdapters(): CompanyRegistryAdapter[] {
+  return Array.from(companyRegistryAdapters.values());
 }

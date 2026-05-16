@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-query', async importOriginal => {
   return {
     ...actual,
     useQuery: vi.fn(() => ({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
       isFetching: false,
       isPending: false,
@@ -91,7 +91,7 @@ describe('ContractDataTable', () => {
     };
 
     vi.mocked(useQuery).mockReturnValue({
-      data: { items: [mockRow], totalCount: 1 },
+      data: { items: [mockRow], total: 1 },
       isLoading: false,
       isFetching: false,
       isPending: false,
@@ -119,7 +119,7 @@ describe('ContractDataTable', () => {
     };
 
     vi.mocked(useQuery).mockReturnValue({
-      data: { items: [mockRow], totalCount: 1 },
+      data: { items: [mockRow], total: 1 },
       isLoading: false,
       isFetching: false,
       isPending: false,
@@ -149,7 +149,7 @@ describe('ContractDataTable', () => {
 
   it('renders refetch overlay when isFetching with existing data', () => {
     vi.mocked(useQuery).mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
       isFetching: true,
       isPending: false,

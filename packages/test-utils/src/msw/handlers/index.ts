@@ -4,6 +4,7 @@ import { autentiHandlers } from './autenti.js';
 import { claudeOcrHandlers } from './claude-ocr.js';
 import { clockifyHandlers } from './clockify.js';
 import { confluenceHandlers } from './confluence.js';
+import { dataportHandlers } from './dataport.js';
 import { docusignHandlers } from './docusign.js';
 import { googleCalendarHandlers } from './google-calendar.js';
 import { googleWorkspaceHandlers } from './google-workspace.js';
@@ -40,6 +41,7 @@ export const handlersByProvider = {
   ksef: ksefHandlers,
   resend: resendHandlers,
   claudeOcr: claudeOcrHandlers,
+  dataport: dataportHandlers,
   qstash: qstashHandlers,
   upstashRedis: upstashRedisHandlers,
   r2: r2Handlers,
@@ -81,6 +83,7 @@ export {
   claudeOcrHandlers,
   clockifyHandlers,
   confluenceHandlers,
+  dataportHandlers,
   docusignHandlers,
   googleCalendarHandlers,
   googleWorkspaceHandlers,

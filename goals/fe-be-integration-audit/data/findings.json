@@ -52,7 +52,7 @@
     "category": "orphan",
     "procedure": "user.setOutOfOffice",
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 394,
+    "line": 395,
     "problem": "Procedure user.setOutOfOffice (mutation, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
@@ -62,7 +62,7 @@
     "category": "orphan",
     "procedure": "user.clearOutOfOffice",
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 420,
+    "line": 421,
     "problem": "Procedure user.clearOutOfOffice (mutation, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
@@ -72,7 +72,7 @@
     "category": "orphan",
     "procedure": "contractor.validateTin",
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1375,
+    "line": 1323,
     "problem": "Procedure contractor.validateTin (query, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
@@ -82,7 +82,7 @@
     "category": "orphan",
     "procedure": "contractor.validateVat",
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1400,
+    "line": 1348,
     "problem": "Procedure contractor.validateVat (mutation, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
@@ -104,23 +104,6 @@
     ]
   },
   {
-    "id": "F-HIGH-001",
-    "severity": "HIGH",
-    "category": "orphan",
-    "procedure": "contract.delete",
-    "file": "packages/api/src/routers/core/contract.ts",
-    "line": 625,
-    "problem": "Procedure contract.delete (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
-    ]
-  },
-  {
     "id": "F-MED-009",
     "severity": "MED",
     "category": "orphan",
@@ -129,23 +112,6 @@
     "line": 435,
     "problem": "Procedure document.uploadNewVersion (mutation, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
-  },
-  {
-    "id": "F-HIGH-002",
-    "severity": "HIGH",
-    "category": "orphan",
-    "procedure": "document.delete",
-    "file": "packages/api/src/routers/core/document.ts",
-    "line": 597,
-    "problem": "Procedure document.delete (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
-    ]
   },
   {
     "id": "F-MED-010",
@@ -161,74 +127,6 @@
     "id": "F-MED-011",
     "severity": "MED",
     "category": "orphan",
-    "procedure": "workflowRoles.list",
-    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
-    "line": 59,
-    "problem": "Procedure workflowRoles.list (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:22:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:26:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:30:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:34:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:37:    featureFlags: { list: vi.fn().mockResolvedValue([]) },"
-    ]
-  },
-  {
-    "id": "F-MED-012",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "workflowRoles.create",
-    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
-    "line": 70,
-    "problem": "Procedure workflowRoles.create (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:42:vi.mock('../lib/create-caller.js', () => ({",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:2: * Unit tests for create-caller.ts",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/__tests__/create-caller.test.ts:32:import { createPublicCaller } from '../create-caller.js';",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/feature-flags.ts:2:import { createPublicCaller } from '../lib/create-caller.js';",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/invoices.ts:2:import { createPublicCaller } from '../lib/create-caller.js';"
-    ]
-  },
-  {
-    "id": "F-MED-013",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "workflowRoles.update",
-    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
-    "line": 112,
-    "problem": "Procedure workflowRoles.update (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
-    ]
-  },
-  {
-    "id": "F-HIGH-003",
-    "severity": "HIGH",
-    "category": "orphan",
-    "procedure": "workflowRoles.delete",
-    "file": "packages/api/src/routers/workflow/workflow-roles.ts",
-    "line": 169,
-    "problem": "Procedure workflowRoles.delete (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:60:  if (oldestKey) windows.delete(oldestKey);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:85:        if (now >= w.resetAt) windows.delete(k);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/lib/rate-limiter.ts:202:      windows.delete(key);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/boe-rate-cache.ts:10: * both the raw `PrismaClient` and the tenant-scoped/soft-delete-extended",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/calendar-event-service.ts:310:    logRejected(results, 'delete');"
-    ]
-  },
-  {
-    "id": "F-MED-014",
-    "severity": "MED",
-    "category": "orphan",
     "procedure": "workflowRoles.selectForContractor",
     "file": "packages/api/src/routers/workflow/workflow-roles.ts",
     "line": 196,
@@ -236,7 +134,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-015",
+    "id": "F-MED-012",
     "severity": "MED",
     "category": "orphan",
     "procedure": "authPermissions.getCurrentUserPermissions",
@@ -246,7 +144,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-016",
+    "id": "F-MED-013",
     "severity": "MED",
     "category": "orphan",
     "procedure": "invoiceIntake.downloadExtractedXml",
@@ -256,7 +154,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-017",
+    "id": "F-MED-014",
     "severity": "MED",
     "category": "orphan",
     "procedure": "invoiceIntake.downloadValidationReport",
@@ -266,7 +164,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-018",
+    "id": "F-MED-015",
     "severity": "MED",
     "category": "orphan",
     "procedure": "approval.getChain",
@@ -276,7 +174,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-019",
+    "id": "F-MED-016",
     "severity": "MED",
     "category": "orphan",
     "procedure": "integration.syncUsers",
@@ -286,7 +184,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-020",
+    "id": "F-MED-017",
     "severity": "MED",
     "category": "orphan",
     "procedure": "payment.getFormatDetection",
@@ -296,7 +194,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-021",
+    "id": "F-MED-018",
     "severity": "MED",
     "category": "orphan",
     "procedure": "dashboard.bootstrap",
@@ -310,7 +208,7 @@
     ]
   },
   {
-    "id": "F-MED-022",
+    "id": "F-MED-019",
     "severity": "MED",
     "category": "orphan",
     "procedure": "ocr.getByDocument",
@@ -320,7 +218,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-023",
+    "id": "F-MED-020",
     "severity": "MED",
     "category": "orphan",
     "procedure": "ocr.portalGetByDocument",
@@ -330,23 +228,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-HIGH-004",
-    "severity": "HIGH",
-    "category": "orphan",
-    "procedure": "ksef.disconnect",
-    "file": "packages/api/src/routers/integrations/ksef.ts",
-    "line": 213,
-    "problem": "Procedure ksef.disconnect (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-ar-translations-v2.ts:843:  'GoogleWorkspace.disconnect.body':",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:210:  'GoogleWorkspace.disconnect.title': 'Google Workspace trennen',",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:211:  'GoogleWorkspace.disconnect.body':",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/migrate-secrets-to-store.ts:142:    await prisma.$disconnect();"
-    ]
-  },
-  {
-    "id": "F-MED-024",
+    "id": "F-MED-021",
     "severity": "MED",
     "category": "orphan",
     "procedure": "latePaymentInterest.downloadClaim",
@@ -356,7 +238,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-025",
+    "id": "F-MED-022",
     "severity": "MED",
     "category": "orphan",
     "procedure": "time.listContractors",
@@ -366,7 +248,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-026",
+    "id": "F-MED-023",
     "severity": "MED",
     "category": "orphan",
     "procedure": "time.getReconciliation",
@@ -376,23 +258,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-HIGH-005",
-    "severity": "HIGH",
-    "category": "orphan",
-    "procedure": "jira.disconnect",
-    "file": "packages/api/src/routers/integrations/jira.ts",
-    "line": 480,
-    "problem": "Procedure jira.disconnect (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-ar-translations-v2.ts:843:  'GoogleWorkspace.disconnect.body':",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:210:  'GoogleWorkspace.disconnect.title': 'Google Workspace trennen',",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/apply-de-translations.part6.ts:211:  'GoogleWorkspace.disconnect.body':",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/scripts/migrate-secrets-to-store.ts:142:    await prisma.$disconnect();"
-    ]
-  },
-  {
-    "id": "F-MED-027",
+    "id": "F-MED-024",
     "severity": "MED",
     "category": "orphan",
     "procedure": "linear.getLinkedIssue",
@@ -402,7 +268,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-028",
+    "id": "F-MED-025",
     "severity": "MED",
     "category": "orphan",
     "procedure": "linear.getLinkedIssues",
@@ -412,7 +278,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-029",
+    "id": "F-MED-026",
     "severity": "MED",
     "category": "orphan",
     "procedure": "docs.refreshMetadata",
@@ -422,44 +288,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-030",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "billing.syncSeatCount",
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 313,
-    "problem": "Procedure billing.syncSeatCount (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
-  },
-  {
-    "id": "F-MED-031",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "billing.getCreditBalance",
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 352,
-    "problem": "Procedure billing.getCreditBalance (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/credit-service.ts:47:export async function getCreditBalance(organizationId: string): Promise<CreditBalance> {",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:50:import { allocateTopUpCredits, checkAndDeductCredit, getCreditBalance } from '../credit-service';",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:116:describe('getCreditBalance', () => {",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:120:    const result = await getCreditBalance(ORG_ID);",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/__tests__/credit-service.test.ts:128:    const result = await getCreditBalance(ORG_ID);"
-    ]
-  },
-  {
-    "id": "F-MED-032",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "billing.getPlanConfig",
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 360,
-    "problem": "Procedure billing.getPlanConfig (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
-  },
-  {
-    "id": "F-MED-033",
+    "id": "F-MED-027",
     "severity": "MED",
     "category": "orphan",
     "procedure": "equipment.getShipment",
@@ -469,7 +298,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-034",
+    "id": "F-MED-028",
     "severity": "MED",
     "category": "orphan",
     "procedure": "equipment.listShipments",
@@ -479,7 +308,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-035",
+    "id": "F-MED-029",
     "severity": "MED",
     "category": "orphan",
     "procedure": "equipment.getShipmentLabel",
@@ -489,7 +318,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-036",
+    "id": "F-MED-030",
     "severity": "MED",
     "category": "orphan",
     "procedure": "gdpr.requestErasure",
@@ -499,7 +328,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-037",
+    "id": "F-MED-031",
     "severity": "MED",
     "category": "orphan",
     "procedure": "gdpr.exportData",
@@ -509,7 +338,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-038",
+    "id": "F-MED-032",
     "severity": "MED",
     "category": "orphan",
     "procedure": "teams.connectionStatus",
@@ -519,7 +348,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-039",
+    "id": "F-MED-033",
     "severity": "MED",
     "category": "orphan",
     "procedure": "teams.setFallbackApprover",
@@ -529,7 +358,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-040",
+    "id": "F-MED-034",
     "severity": "MED",
     "category": "orphan",
     "procedure": "einvoice.listByOrg",
@@ -539,7 +368,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-041",
+    "id": "F-MED-035",
     "severity": "MED",
     "category": "orphan",
     "procedure": "exchangeRate.query",
@@ -556,7 +385,7 @@
     ]
   },
   {
-    "id": "F-MED-042",
+    "id": "F-MED-036",
     "severity": "MED",
     "category": "orphan",
     "procedure": "exchangeRate.latest",
@@ -573,7 +402,7 @@
     ]
   },
   {
-    "id": "F-MED-043",
+    "id": "F-MED-037",
     "severity": "MED",
     "category": "orphan",
     "procedure": "exchangeRate.convert",
@@ -588,7 +417,7 @@
     ]
   },
   {
-    "id": "F-MED-044",
+    "id": "F-MED-038",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "exchangeRate.fetchDaily",
@@ -601,7 +430,7 @@
     ]
   },
   {
-    "id": "F-MED-045",
+    "id": "F-MED-039",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "featureFlags.list",
@@ -614,7 +443,7 @@
     ]
   },
   {
-    "id": "F-MED-046",
+    "id": "F-MED-040",
     "severity": "MED",
     "category": "orphan",
     "procedure": "consent.adminGetUserConsent",
@@ -624,7 +453,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-047",
+    "id": "F-MED-041",
     "severity": "MED",
     "category": "orphan",
     "procedure": "consent.adminGetUserConsentHistory",
@@ -634,7 +463,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-048",
+    "id": "F-MED-042",
     "severity": "MED",
     "category": "orphan",
     "procedure": "peppol.getTransmissionByInvoiceId",
@@ -644,7 +473,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-049",
+    "id": "F-MED-043",
     "severity": "MED",
     "category": "orphan",
     "procedure": "peppol.lookupCapabilities",
@@ -654,7 +483,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-050",
+    "id": "F-MED-044",
     "severity": "MED",
     "category": "orphan",
     "procedure": "tax.getRatesByCountry",
@@ -664,7 +493,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-051",
+    "id": "F-MED-045",
     "severity": "MED",
     "category": "orphan",
     "procedure": "tax.validateRate",
@@ -674,7 +503,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-052",
+    "id": "F-MED-046",
     "severity": "MED",
     "category": "orphan",
     "procedure": "tax.calculateWht",
@@ -687,7 +516,7 @@
     ]
   },
   {
-    "id": "F-MED-053",
+    "id": "F-MED-047",
     "severity": "MED",
     "category": "orphan",
     "procedure": "tax.listWhtCertificates",
@@ -704,7 +533,7 @@
     ]
   },
   {
-    "id": "F-MED-054",
+    "id": "F-MED-048",
     "severity": "MED",
     "category": "orphan",
     "procedure": "tax.getWhtCertificate",
@@ -714,7 +543,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-055",
+    "id": "F-MED-049",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.saveTaxDetails",
@@ -731,7 +560,7 @@
     ]
   },
   {
-    "id": "F-MED-056",
+    "id": "F-MED-050",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.generateCsr",
@@ -746,7 +575,7 @@
     ]
   },
   {
-    "id": "F-MED-057",
+    "id": "F-MED-051",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.requestComplianceCsid",
@@ -763,7 +592,7 @@
     ]
   },
   {
-    "id": "F-MED-058",
+    "id": "F-MED-052",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.runComplianceChecks",
@@ -780,7 +609,7 @@
     ]
   },
   {
-    "id": "F-MED-059",
+    "id": "F-MED-053",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.exchangeProductionCert",
@@ -790,7 +619,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-060",
+    "id": "F-MED-054",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.getOnboardingState",
@@ -807,7 +636,7 @@
     ]
   },
   {
-    "id": "F-MED-061",
+    "id": "F-MED-055",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.getStatus",
@@ -824,7 +653,7 @@
     ]
   },
   {
-    "id": "F-MED-062",
+    "id": "F-MED-056",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.getInvoiceChain",
@@ -834,7 +663,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-063",
+    "id": "F-MED-057",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.resubmit",
@@ -844,7 +673,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-064",
+    "id": "F-MED-058",
     "severity": "MED",
     "category": "orphan",
     "procedure": "zatca.getComplianceStats",
@@ -854,7 +683,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-065",
+    "id": "F-MED-059",
     "severity": "MED",
     "category": "orphan",
     "procedure": "portal.logout",
@@ -867,7 +696,7 @@
     ]
   },
   {
-    "id": "F-MED-066",
+    "id": "F-MED-060",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "featureFlags.list",
@@ -890,7 +719,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-006",
+    "id": "F-HIGH-001",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "approval.reject",
@@ -910,7 +739,17 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-007",
+    "id": "F-MED-061",
+    "severity": "MED",
+    "category": "missing-on-success",
+    "procedure": "user.pins.toggle",
+    "file": "apps/web/src/app/[locale]/(dashboard)/settings/page.tsx",
+    "line": 86,
+    "problem": "Mutation user.pins.toggle has no onSuccess handler — UI never updates or confirms.",
+    "fix": "Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }"
+  },
+  {
+    "id": "F-HIGH-002",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "time.reject",
@@ -935,17 +774,17 @@
     "category": "missing-loading-state",
     "procedure": "time.approve",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 110,
+    "line": 112,
     "problem": "Mutation time.approve trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-008",
+    "id": "F-HIGH-003",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "time.reject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 120,
+    "line": 122,
     "problem": "Destructive mutation time.reject fires without a confirmation dialog in this file.",
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
@@ -955,7 +794,7 @@
     "category": "missing-loading-state",
     "procedure": "time.reject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 120,
+    "line": 122,
     "problem": "Mutation time.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -965,7 +804,7 @@
     "category": "missing-loading-state",
     "procedure": "time.bulkApprove",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 130,
+    "line": 132,
     "problem": "Mutation time.bulkApprove trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -975,7 +814,7 @@
     "category": "missing-loading-state",
     "procedure": "time.bulkReject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 141,
+    "line": 143,
     "problem": "Mutation time.bulkReject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -1120,7 +959,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-067",
+    "id": "F-MED-062",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createInPostShipment",
@@ -1130,7 +969,7 @@
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-MED-068",
+    "id": "F-MED-063",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createDpdShipment",
@@ -1140,7 +979,7 @@
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-MED-069",
+    "id": "F-MED-064",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "equipment.createUpsShipment",
@@ -1235,7 +1074,7 @@
     "category": "missing-loading-state",
     "procedure": "settings.update",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 229,
+    "line": 230,
     "problem": "Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -1370,7 +1209,127 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
+    "id": "F-MED-065",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "integration.disconnectGeneric",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 142,
+    "problem": "Mutation integration.disconnectGeneric has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-066",
+    "severity": "MED",
+    "category": "missing-success-toast",
+    "procedure": "integration.disconnectGeneric",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 142,
+    "problem": "Mutation integration.disconnectGeneric succeeds with no toast.success — user gets no confirmation.",
+    "fix": "Call toast.success(\"...\") inside the existing onSuccess handler."
+  },
+  {
+    "id": "F-MED-067",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "integration.disconnectGeneric",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 142,
+    "problem": "Mutation integration.disconnectGeneric succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
     "id": "F-LOW-044",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "integration.disconnectGeneric",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 142,
+    "problem": "Mutation integration.disconnectGeneric trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-068",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "jira.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 152,
+    "problem": "Mutation jira.disconnect has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-069",
+    "severity": "MED",
+    "category": "missing-success-toast",
+    "procedure": "jira.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 152,
+    "problem": "Mutation jira.disconnect succeeds with no toast.success — user gets no confirmation.",
+    "fix": "Call toast.success(\"...\") inside the existing onSuccess handler."
+  },
+  {
+    "id": "F-MED-070",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "jira.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 152,
+    "problem": "Mutation jira.disconnect succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-045",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "jira.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 152,
+    "problem": "Mutation jira.disconnect trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-MED-071",
+    "severity": "MED",
+    "category": "missing-error-toast",
+    "procedure": "ksef.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 158,
+    "problem": "Mutation ksef.disconnect has onError but does not call toast.error — user sees no error feedback.",
+    "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
+  },
+  {
+    "id": "F-MED-072",
+    "severity": "MED",
+    "category": "missing-success-toast",
+    "procedure": "ksef.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 158,
+    "problem": "Mutation ksef.disconnect succeeds with no toast.success — user gets no confirmation.",
+    "fix": "Call toast.success(\"...\") inside the existing onSuccess handler."
+  },
+  {
+    "id": "F-MED-073",
+    "severity": "MED",
+    "category": "missing-invalidation",
+    "procedure": "ksef.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 158,
+    "problem": "Mutation ksef.disconnect succeeds without invalidating queries — stale UI until reload.",
+    "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
+  },
+  {
+    "id": "F-LOW-046",
+    "severity": "LOW",
+    "category": "missing-loading-state",
+    "procedure": "ksef.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 158,
+    "problem": "Mutation ksef.disconnect trigger has no isPending reference — button not disabled while pending, double-submit possible.",
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+  },
+  {
+    "id": "F-LOW-047",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "reminder.toggleActive",
@@ -1380,17 +1339,37 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-045",
+    "id": "F-LOW-048",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "integration.linkUser",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 82,
+    "line": 79,
     "problem": "Mutation integration.linkUser trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-046",
+    "id": "F-MED-074",
+    "severity": "MED",
+    "category": "missing-on-success",
+    "procedure": "workflowRoles.create",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-role-form-dialog.tsx",
+    "line": 84,
+    "problem": "Mutation workflowRoles.create has no onSuccess handler — UI never updates or confirms.",
+    "fix": "Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }"
+  },
+  {
+    "id": "F-MED-075",
+    "severity": "MED",
+    "category": "missing-on-success",
+    "procedure": "workflowRoles.update",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-role-form-dialog.tsx",
+    "line": 90,
+    "problem": "Mutation workflowRoles.update has no onSuccess handler — UI never updates or confirms.",
+    "fix": "Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }"
+  },
+  {
+    "id": "F-LOW-049",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "calendar.saveTaskConfig",
@@ -1400,7 +1379,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-047",
+    "id": "F-LOW-050",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.deleteTemplate",
@@ -1410,17 +1389,17 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-048",
+    "id": "F-LOW-051",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 124,
+    "line": 125,
     "problem": "Mutation workflow.seedStarterTemplates trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-HIGH-009",
+    "id": "F-HIGH-004",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "approval.reject",
@@ -1430,7 +1409,7 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-HIGH-010",
+    "id": "F-HIGH-005",
     "severity": "HIGH",
     "category": "missing-confirmation",
     "procedure": "workflow.deleteTemplate",

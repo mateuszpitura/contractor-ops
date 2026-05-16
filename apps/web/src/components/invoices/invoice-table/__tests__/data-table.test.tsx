@@ -77,7 +77,7 @@ describe('InvoiceDataTable', () => {
   it('renders invoice rows and calls onRowClick with the row payload', async () => {
     const row = baseRow();
     mockedUseQuery.mockReturnValue({
-      data: { items: [row], totalCount: 1 },
+      data: { items: [row], total: 1 },
       isPending: false,
       isFetching: false,
     } as ReturnType<typeof useQuery>);
@@ -101,7 +101,7 @@ describe('InvoiceDataTable', () => {
 
   it('shows the filtered empty state when there are no rows but search is active', () => {
     mockedUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isPending: false,
       isFetching: false,
     } as ReturnType<typeof useQuery>);
@@ -117,7 +117,7 @@ describe('InvoiceDataTable', () => {
 
   it('shows the default empty state and calls onUpload from the CTA', async () => {
     mockedUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isPending: false,
       isFetching: false,
     } as ReturnType<typeof useQuery>);
@@ -141,7 +141,7 @@ describe('InvoiceDataTable', () => {
     mockedUseQuery.mockReturnValue({
       data: {
         items: [baseRow({ dueDate: pastDue, status: 'RECEIVED' })],
-        totalCount: 1,
+        total: 1,
       },
       isPending: false,
       isFetching: false,

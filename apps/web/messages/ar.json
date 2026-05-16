@@ -5994,9 +5994,12 @@
       "searchPlaceholder": "البحث عن audit log...",
       "exportCta": "تصدير audit log",
       "exportToast": "تم تصدير سجل التدقيق ({count} إدخالات)",
-      "filterActorAll": "جميع الجهات الفاعلة",
-      "filterActionAll": "جميع الإجراءات",
-      "filterResourceAll": "جميع الموارد",
+      "filterActor": "الجهات الفاعلة",
+      "filterActorSearchPlaceholder": "البحث عن جهات فاعلة...",
+      "filterActorShowingHint": "عرض {visible} من {total}. اكتب للبحث.",
+      "filterActorNoMatches": "لا توجد جهات فاعلة مطابقة",
+      "filterAction": "الإجراءات",
+      "filterResource": "الموارد",
       "filterDateRange": "نطاق التاريخ",
       "expand": "تفاصيل Expand",
       "collapse": "تفاصيل Collapse",
@@ -6579,7 +6582,11 @@
     "subtitle": "إدارة قوالب مهام نقل المعرفة لكل دور. القوالب الأساسية للقراءة فقط؛ القوالب المخصصة يمكن تعديلها وحذفها.",
     "createCta": "قالب دور جديد",
     "listSectionLabel": "قوالب الأدوار",
-    "emptyState": "لا توجد قوالب أدوار. أنشئ قالبًا لتعريف مهام KT لكل دور.",
+    "empty": {
+      "heading": "لا توجد قوالب أدوار بعد",
+      "body": "أنشئ قالب دور لتعريف مهام نقل المعرفة لكل دور. القوالب الأساسية مضمّنة جاهزة؛ القوالب المخصصة يمكن تعديلها وحذفها.",
+      "cta": "قالب دور جديد"
+    },
     "table": {
       "role": "المعرّف",
       "displayName": "الاسم المعروض",

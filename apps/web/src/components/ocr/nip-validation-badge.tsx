@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -35,11 +36,14 @@ interface NipValidationBadgeProps {
 }
 
 export function NipValidationBadge({ nip }: NipValidationBadgeProps) {
+  const t = useTranslations('OcrReview.nipBadge');
+
   if (!nip || nip.trim().length === 0) {
     return null;
   }
 
   const isValid = validateNip(nip);
+  const normalizedNip = nip.replace(/[\s-]/g, '');
 
   return (
     <TooltipProvider>
@@ -48,21 +52,17 @@ export function NipValidationBadge({ nip }: NipValidationBadgeProps) {
           {isValid ? (
             <Badge variant="success">
               <CheckCircle2 className="size-3.5" />
-              <span>Valid NIP format</span>
+              <span>{t('validLabel')}</span>
             </Badge>
           ) : (
             <Badge variant="destructive">
               <AlertCircle className="size-3.5" />
-              <span>Invalid NIP format</span>
+              <span>{t('invalidLabel')}</span>
             </Badge>
           )}
         </TooltipTrigger>
         <TooltipContent>
-          <p>
-            {isValid
-              ? `NIP ${nip.replace(/[\s-]/g, '')} passes modulo-11 checksum validation`
-              : 'Invalid NIP format -- expected 10 digits with valid checksum'}
-          </p>
+          <p>{isValid ? t('validTooltip', { nip: normalizedNip }) : t('invalidTooltip')}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

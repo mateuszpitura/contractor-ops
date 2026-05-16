@@ -162,7 +162,7 @@ export const reportRouter = router({
           avgMinor: Number(r.avgMinor),
           lastPaidAt: r.lastPaidAt ? new Date(r.lastPaidAt).toISOString() : null,
         })),
-        totalCount: countResult[0]?.count ?? 0,
+        total: countResult[0]?.count ?? 0,
       };
     }),
 
@@ -239,7 +239,7 @@ export const reportRouter = router({
           invoiceCount: Number(r.invoiceCount),
           totalMinor: Number(r.totalMinor),
         })),
-        totalCount: countResult[0]?.count ?? 0,
+        total: countResult[0]?.count ?? 0,
       };
     }),
 
@@ -272,7 +272,7 @@ export const reportRouter = router({
         deletedAt: null,
       };
 
-      const [contracts, totalCount] = await Promise.all([
+      const [contracts, total] = await Promise.all([
         ctx.db.contract.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
@@ -301,7 +301,7 @@ export const reportRouter = router({
             : 0,
           status: c.status,
         })),
-        totalCount,
+        total,
       };
     }),
 
@@ -333,7 +333,7 @@ export const reportRouter = router({
         deletedAt: null,
       };
 
-      const [invoices, totalCount] = await Promise.all([
+      const [invoices, total] = await Promise.all([
         ctx.db.invoice.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
@@ -362,7 +362,7 @@ export const reportRouter = router({
           daysOverdue: Math.ceil((now.getTime() - inv.dueDate.getTime()) / msPerDay),
           status: inv.paymentStatus,
         })),
-        totalCount,
+        total,
       };
     }),
 
@@ -458,11 +458,11 @@ export const reportRouter = router({
 
       items.sort(sortFn);
 
-      const totalCount = items.length;
+      const total = items.length;
       const offset = (input.page - 1) * input.pageSize;
       const paged = items.slice(offset, offset + input.pageSize);
 
-      return { items: paged, totalCount };
+      return { items: paged, total };
     }),
 
   // =========================================================================

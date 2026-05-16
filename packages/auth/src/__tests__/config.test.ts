@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@contractor-ops/db', () => ({
   prisma: {
     user: { findUnique: vi.fn(), updateMany: vi.fn() },
+    userPinnedView: { create: vi.fn() },
   },
 }));
 
@@ -68,5 +69,39 @@ describe('auth config exports', () => {
     // NODE_ENV is "test" during vitest run — so secure should be false.
     expect(auth.options.advanced?.defaultCookieAttributes?.secure).toBe(false);
     expect(auth.options.advanced?.defaultCookieAttributes?.sameSite).toBe('lax');
+  });
+
+  it('seeds default integrations pin on user.create.after', async () => {
+    const { prisma } = await import('@contractor-ops/db');
+    const { auth } = await import('../config.js');
+    const createMock = prisma.userPinnedView.create as ReturnType<typeof vi.fn>;
+    createMock.mockReset();
+    createMock.mockResolvedValueOnce({});
+    const hook = auth.options.databaseHooks?.user?.create?.after;
+    expect(hook).toBeTypeOf('function');
+    await hook?.({ id: 'usr_123' } as never, {} as never);
+    expect(createMock).toHaveBeenCalledWith({
+      data: { userId: 'usr_123', kind: 'settings-tab', key: 'integrations' },
+    });
+  });
+
+  it('swallows P2002 duplicate-pin error so signup retries stay idempotent', async () => {
+    const { prisma } = await import('@contractor-ops/db');
+    const { auth } = await import('../config.js');
+    const createMock = prisma.userPinnedView.create as ReturnType<typeof vi.fn>;
+    createMock.mockReset();
+    createMock.mockRejectedValueOnce(Object.assign(new Error('duplicate'), { code: 'P2002' }));
+    const hook = auth.options.databaseHooks?.user?.create?.after;
+    await expect(hook?.({ id: 'usr_456' } as never, {} as never)).resolves.toBeUndefined();
+  });
+
+  it('does not throw when default-pin write fails for unrelated reason', async () => {
+    const { prisma } = await import('@contractor-ops/db');
+    const { auth } = await import('../config.js');
+    const createMock = prisma.userPinnedView.create as ReturnType<typeof vi.fn>;
+    createMock.mockReset();
+    createMock.mockRejectedValueOnce(new Error('boom'));
+    const hook = auth.options.databaseHooks?.user?.create?.after;
+    await expect(hook?.({ id: 'usr_789' } as never, {} as never)).resolves.toBeUndefined();
   });
 });

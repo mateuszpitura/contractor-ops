@@ -3,6 +3,7 @@
 import { complianceState } from '@contractor-ops/einvoice/compliance';
 import { useQuery } from '@tanstack/react-query';
 import { FileCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { PeppolComplianceWidget } from '@/components/peppol/peppol-compliance-widget';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,16 +52,6 @@ const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
   },
 };
 
-const stateLabels: Record<string, string> = {
-  active: 'Active',
-  sandbox: 'Sandbox',
-  degraded: 'Degraded',
-  onboarding: 'Onboarding',
-  suspended: 'Suspended',
-  error: 'Error',
-  [complianceState.notConnected]: 'Not Connected',
-};
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -71,7 +62,19 @@ const stateLabels: Record<string, string> = {
  * gray (not connected).
  */
 export function EInvoiceComplianceWidget() {
+  const t = useTranslations('EInvoice');
+  const tDetail = useTranslations('EInvoice.ComplianceDetail');
   const { data, isLoading } = useQuery(trpc.einvoice.complianceStatuses.queryOptions());
+
+  const stateLabels: Record<string, string> = {
+    active: tDetail('stateActive'),
+    sandbox: tDetail('stateSandbox'),
+    degraded: tDetail('stateDegraded'),
+    onboarding: tDetail('stateOnboarding'),
+    suspended: tDetail('stateSuspended'),
+    error: tDetail('stateError'),
+    [complianceState.notConnected]: tDetail('stateNotConnected'),
+  };
   const { data: peppolStatus } = useQuery(trpc.peppol.getStatus.queryOptions());
 
   if (isLoading) {
@@ -109,7 +112,7 @@ export function EInvoiceComplianceWidget() {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <FileCheck className="h-4 w-4 text-muted-foreground" />
-          E-Invoicing Compliance
+          {t('ComplianceWidget.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">

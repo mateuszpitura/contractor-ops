@@ -30,6 +30,7 @@ interface CsrGenerationProps {
  */
 export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
   const t = useTranslations('Zatca.csrGeneration');
+  const tAria = useTranslations('Common.aria');
   const [csrPem, setCsrPem] = useState<string | null>(null);
 
   const generateMutation = useMutation({
@@ -83,7 +84,7 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
             {!!generateMutation.isPending && (
               <Loader2
                 className="me-1.5 h-3.5 w-3.5 animate-spin"
-                aria-label="Loading"
+                aria-label={tAria('loading')}
                 aria-hidden="true"
               />
             )}

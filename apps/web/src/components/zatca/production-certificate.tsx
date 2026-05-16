@@ -2,6 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -30,26 +31,25 @@ interface ProductionCertificateProps {
  * Certificate info card appears after successful exchange.
  */
 export function ProductionCertificate({ onSuccess, onBack }: ProductionCertificateProps) {
+  const t = useTranslations('Zatca.productionCertificate');
   const [completed, setCompleted] = useState(false);
 
   const exchangeMutation = useMutation({
     ...zatcaTrpc.exchangeProductionCert.mutationOptions(),
     onSuccess: () => {
       setCompleted(true);
-      toast.success('ZATCA onboarding complete! Production certificate activated.');
+      toast.success(t('toast.success'));
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to exchange production certificate');
+      toast.error(error.message || t('toast.error'));
     },
   });
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold">Step 5 of 5: Activate Production Certificate</h3>
-        <p className="text-sm text-muted-foreground">
-          All compliance checks passed. Exchange your compliance certificate for a production one.
-        </p>
+        <h3 className="text-base font-semibold">{t('title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       {/* Warning alert */}
@@ -57,10 +57,10 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
         <Alert className="border-amber-500/30 bg-amber-50 dark:bg-amber-950/20">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertTitle className="text-amber-800 dark:text-amber-300">
-            Production Activation
+            {t('warningTitle')}
           </AlertTitle>
           <AlertDescription className="text-amber-700 dark:text-amber-400">
-            Once activated, all invoices for Saudi organizations will be submitted to ZATCA.
+            {t('warningDescription')}
           </AlertDescription>
         </Alert>
       )}
@@ -74,7 +74,7 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
           {!!exchangeMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
-          Complete Onboarding
+          {t('completeButton')}
         </Button>
       )}
 
@@ -84,19 +84,19 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-green-600" />
             <span className="font-medium text-green-700 dark:text-green-400">
-              Production Certificate Active
+              {t('certActive')}
             </span>
           </div>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">Status</dt>
+            <dt className="text-muted-foreground">{t('certStatus')}</dt>
             <dd className="flex items-center gap-1.5 font-medium">
-              Active
+              {t('certStatusActive')}
               <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
             </dd>
-            <dt className="text-muted-foreground">Issued</dt>
+            <dt className="text-muted-foreground">{t('certIssued')}</dt>
             <dd className="font-mono text-sm">{new Date().toISOString().slice(0, 10)}</dd>
-            <dt className="text-muted-foreground">Environment</dt>
-            <dd>Production</dd>
+            <dt className="text-muted-foreground">{t('certEnvironment')}</dt>
+            <dd>{t('certEnvironmentValue')}</dd>
           </dl>
         </div>
       )}
@@ -104,9 +104,9 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack} disabled={completed}>
-          Back
+          {t('back')}
         </Button>
-        {!!completed && <Button onClick={onSuccess}>Complete</Button>}
+        {!!completed && <Button onClick={onSuccess}>{t('completeAction')}</Button>}
       </div>
     </div>
   );

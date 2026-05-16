@@ -1,8 +1,9 @@
 'use client';
 
-import { OverdueInvoicesIllustration } from '@contractor-ops/ui';
+import { OverdueInvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -75,13 +76,13 @@ export function OverdueInvoicesReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as { items: OverdueRow[]; totalCount: number } | undefined;
+    const result = tableQuery.data as { items: OverdueRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as { items: OverdueRow[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = tableQuery.data as { items: OverdueRow[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [tableQuery.data]);
 
   const columns: ColumnDef<OverdueRow>[] = useMemo(
@@ -134,6 +135,7 @@ export function OverdueInvoicesReport({
   return (
     <div className="space-y-4">
       {/* No chart for overdue invoices - table-only report */}
+      <SectionLabel icon={AlertCircle}>{t('overdueInvoices')}</SectionLabel>
       <ReportTable<OverdueRow>
         columns={columns}
         data={tableData}

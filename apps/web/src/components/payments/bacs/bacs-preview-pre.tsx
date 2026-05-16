@@ -8,6 +8,7 @@
 
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface BacsPreviewPreProps {
@@ -15,6 +16,7 @@ interface BacsPreviewPreProps {
 }
 
 export function BacsPreviewPre({ fileText }: BacsPreviewPreProps) {
+  const t = useTranslations('Payments.bacs');
   // The `<pre>` itself is non-interactive (lint rule), so the keyboard
   // scrolling region is hosted on a wrapping <section> with tabIndex=0.
   // tabIndex on a region IS the recommended a11y pattern for an
@@ -25,7 +27,7 @@ export function BacsPreviewPre({ fileText }: BacsPreviewPreProps) {
   return (
     <ScrollArea className="max-h-[420px] rounded-md border bg-muted/30">
       <section
-        aria-label="BACS Std 18 file preview"
+        aria-label={t('previewCardTitle')}
         // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable region needs tabindex for keyboard panning
         tabIndex={0}
         className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">

@@ -320,6 +320,7 @@ export type UserWhereInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventListRelationFilter
   sdsApprovals?: Prisma.SdsApprovalListRelationFilter
   consentEvents?: Prisma.ConsentEventListRelationFilter
+  pinnedViews?: Prisma.UserPinnedViewListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -373,6 +374,7 @@ export type UserOrderByWithRelationInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventOrderByRelationAggregateInput
   sdsApprovals?: Prisma.SdsApprovalOrderByRelationAggregateInput
   consentEvents?: Prisma.ConsentEventOrderByRelationAggregateInput
+  pinnedViews?: Prisma.UserPinnedViewOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -429,6 +431,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventListRelationFilter
   sdsApprovals?: Prisma.SdsApprovalListRelationFilter
   consentEvents?: Prisma.ConsentEventListRelationFilter
+  pinnedViews?: Prisma.UserPinnedViewListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -524,6 +527,7 @@ export type UserCreateInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -577,6 +581,7 @@ export type UserUncheckedCreateInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -630,6 +635,7 @@ export type UserUpdateInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -683,6 +689,7 @@ export type UserUncheckedUpdateInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -863,6 +870,20 @@ export type UserUpdateOneRequiredWithoutApprovalDecisionsNestedInput = {
 
 export type NullableBoolFieldUpdateOperationsInput = {
   set?: boolean | null
+}
+
+export type UserCreateNestedOneWithoutPinnedViewsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPinnedViewsInput, Prisma.UserUncheckedCreateWithoutPinnedViewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPinnedViewsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPinnedViewsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPinnedViewsInput, Prisma.UserUncheckedCreateWithoutPinnedViewsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPinnedViewsInput
+  upsert?: Prisma.UserUpsertWithoutPinnedViewsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPinnedViewsInput, Prisma.UserUpdateWithoutPinnedViewsInput>, Prisma.UserUncheckedUpdateWithoutPinnedViewsInput>
 }
 
 export type UserCreateNestedOneWithoutSessionsInput = {
@@ -1389,6 +1410,7 @@ export type UserCreateWithoutApiKeysInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApiKeysInput = {
@@ -1441,6 +1463,7 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApiKeysInput = {
@@ -1509,6 +1532,7 @@ export type UserUpdateWithoutApiKeysInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApiKeysInput = {
@@ -1561,6 +1585,7 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedApprovalFlowsInput = {
@@ -1613,6 +1638,7 @@ export type UserCreateWithoutCreatedApprovalFlowsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
@@ -1665,6 +1691,7 @@ export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedApprovalFlowsInput = {
@@ -1733,6 +1760,7 @@ export type UserUpdateWithoutCreatedApprovalFlowsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
@@ -1785,6 +1813,7 @@ export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutApprovalStepsInput = {
@@ -1837,6 +1866,7 @@ export type UserCreateWithoutApprovalStepsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovalStepsInput = {
@@ -1889,6 +1919,7 @@ export type UserUncheckedCreateWithoutApprovalStepsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalStepsInput = {
@@ -1957,6 +1988,7 @@ export type UserUpdateWithoutApprovalStepsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalStepsInput = {
@@ -2009,6 +2041,7 @@ export type UserUncheckedUpdateWithoutApprovalStepsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutApprovalDecisionsInput = {
@@ -2061,6 +2094,7 @@ export type UserCreateWithoutApprovalDecisionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
@@ -2113,6 +2147,7 @@ export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalDecisionsInput = {
@@ -2181,6 +2216,7 @@ export type UserUpdateWithoutApprovalDecisionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
@@ -2211,6 +2247,235 @@ export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
   completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
   createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
   approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPinnedViewsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPinnedViewsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPinnedViewsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPinnedViewsInput, Prisma.UserUncheckedCreateWithoutPinnedViewsInput>
+}
+
+export type UserUpsertWithoutPinnedViewsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPinnedViewsInput, Prisma.UserUncheckedUpdateWithoutPinnedViewsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPinnedViewsInput, Prisma.UserUncheckedCreateWithoutPinnedViewsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPinnedViewsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPinnedViewsInput, Prisma.UserUncheckedUpdateWithoutPinnedViewsInput>
+}
+
+export type UserUpdateWithoutPinnedViewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPinnedViewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUncheckedUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUncheckedUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
   createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
   approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
   integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
@@ -2285,6 +2550,7 @@ export type UserCreateWithoutSessionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -2337,6 +2603,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -2405,6 +2672,7 @@ export type UserUpdateWithoutSessionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -2457,6 +2725,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -2509,6 +2778,7 @@ export type UserCreateWithoutAccountsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -2561,6 +2831,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -2629,6 +2900,7 @@ export type UserUpdateWithoutAccountsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -2681,6 +2953,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
@@ -2733,6 +3006,7 @@ export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
@@ -2785,6 +3059,7 @@ export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGeneratedClassificationDocumentsInput = {
@@ -2853,6 +3128,7 @@ export type UserUpdateWithoutGeneratedClassificationDocumentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
@@ -2905,6 +3181,7 @@ export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -2957,6 +3234,7 @@ export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3009,6 +3287,7 @@ export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3066,6 +3345,7 @@ export type UserCreateWithoutDismissedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
@@ -3118,6 +3398,7 @@ export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutDismissedReassessmentTriggersInput = {
@@ -3186,6 +3467,7 @@ export type UserUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3238,6 +3520,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutDismissedReassessmentTriggersInput = {
@@ -3301,6 +3584,7 @@ export type UserUpdateWithoutDismissedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
@@ -3353,6 +3637,7 @@ export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutClassificationEscalationEventsInput = {
@@ -3405,6 +3690,7 @@ export type UserCreateWithoutClassificationEscalationEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
@@ -3457,6 +3743,7 @@ export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutClassificationEscalationEventsInput = {
@@ -3525,6 +3812,7 @@ export type UserUpdateWithoutClassificationEscalationEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
@@ -3577,6 +3865,7 @@ export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSdsApprovalsInput = {
@@ -3629,6 +3918,7 @@ export type UserCreateWithoutSdsApprovalsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSdsApprovalsInput = {
@@ -3681,6 +3971,7 @@ export type UserUncheckedCreateWithoutSdsApprovalsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSdsApprovalsInput = {
@@ -3749,6 +4040,7 @@ export type UserUpdateWithoutSdsApprovalsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
@@ -3801,6 +4093,7 @@ export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConsentRecordsInput = {
@@ -3853,6 +4146,7 @@ export type UserCreateWithoutConsentRecordsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentRecordsInput = {
@@ -3905,6 +4199,7 @@ export type UserUncheckedCreateWithoutConsentRecordsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentRecordsInput = {
@@ -3973,6 +4268,7 @@ export type UserUpdateWithoutConsentRecordsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentRecordsInput = {
@@ -4025,6 +4321,7 @@ export type UserUncheckedUpdateWithoutConsentRecordsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConsentEventsInput = {
@@ -4077,6 +4374,7 @@ export type UserCreateWithoutConsentEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentEventsInput = {
@@ -4129,6 +4427,7 @@ export type UserUncheckedCreateWithoutConsentEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentEventsInput = {
@@ -4197,6 +4496,7 @@ export type UserUpdateWithoutConsentEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentEventsInput = {
@@ -4249,6 +4549,7 @@ export type UserUncheckedUpdateWithoutConsentEventsInput = {
   acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOwnedContractsInput = {
@@ -4301,6 +4602,7 @@ export type UserCreateWithoutOwnedContractsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedContractsInput = {
@@ -4353,6 +4655,7 @@ export type UserUncheckedCreateWithoutOwnedContractsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedContractsInput = {
@@ -4421,6 +4724,7 @@ export type UserUpdateWithoutOwnedContractsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedContractsInput = {
@@ -4473,6 +4777,7 @@ export type UserUncheckedUpdateWithoutOwnedContractsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOwnedContractorsInput = {
@@ -4525,6 +4830,7 @@ export type UserCreateWithoutOwnedContractorsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedContractorsInput = {
@@ -4577,6 +4883,7 @@ export type UserUncheckedCreateWithoutOwnedContractorsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedContractorsInput = {
@@ -4645,6 +4952,7 @@ export type UserUpdateWithoutOwnedContractorsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
@@ -4697,6 +5005,7 @@ export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSentSigningEnvelopesInput = {
@@ -4749,6 +5058,7 @@ export type UserCreateWithoutSentSigningEnvelopesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
@@ -4801,6 +5111,7 @@ export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSentSigningEnvelopesInput = {
@@ -4869,6 +5180,7 @@ export type UserUpdateWithoutSentSigningEnvelopesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
@@ -4921,6 +5233,7 @@ export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutIntegrationConnectionsInput = {
@@ -4973,6 +5286,7 @@ export type UserCreateWithoutIntegrationConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
@@ -5025,6 +5339,7 @@ export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutIntegrationConnectionsInput = {
@@ -5082,6 +5397,7 @@ export type UserCreateWithoutPersonalConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
@@ -5134,6 +5450,7 @@ export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPersonalConnectionsInput = {
@@ -5202,6 +5519,7 @@ export type UserUpdateWithoutIntegrationConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
@@ -5254,6 +5572,7 @@ export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutPersonalConnectionsInput = {
@@ -5317,6 +5636,7 @@ export type UserUpdateWithoutPersonalConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
@@ -5369,6 +5689,7 @@ export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutUploadedIntakesInput = {
@@ -5421,6 +5742,7 @@ export type UserCreateWithoutUploadedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutUploadedIntakesInput = {
@@ -5473,6 +5795,7 @@ export type UserUncheckedCreateWithoutUploadedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutUploadedIntakesInput = {
@@ -5530,6 +5853,7 @@ export type UserCreateWithoutAcknowledgedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
@@ -5582,6 +5906,7 @@ export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAcknowledgedIntakesInput = {
@@ -5650,6 +5975,7 @@ export type UserUpdateWithoutUploadedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
@@ -5702,6 +6028,7 @@ export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutAcknowledgedIntakesInput = {
@@ -5765,6 +6092,7 @@ export type UserUpdateWithoutAcknowledgedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
@@ -5817,6 +6145,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -5869,6 +6198,7 @@ export type UserCreateWithoutNotificationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -5921,6 +6251,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -5989,6 +6320,7 @@ export type UserUpdateWithoutNotificationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -6041,6 +6373,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationPrefsInput = {
@@ -6093,6 +6426,7 @@ export type UserCreateWithoutNotificationPrefsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationPrefsInput = {
@@ -6145,6 +6479,7 @@ export type UserUncheckedCreateWithoutNotificationPrefsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationPrefsInput = {
@@ -6213,6 +6548,7 @@ export type UserUpdateWithoutNotificationPrefsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
@@ -6265,6 +6601,7 @@ export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCommentsInput = {
@@ -6317,6 +6654,7 @@ export type UserCreateWithoutCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCommentsInput = {
@@ -6369,6 +6707,7 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCommentsInput = {
@@ -6437,6 +6776,7 @@ export type UserUpdateWithoutCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -6489,6 +6829,7 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMembersInput = {
@@ -6541,6 +6882,7 @@ export type UserCreateWithoutMembersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMembersInput = {
@@ -6593,6 +6935,7 @@ export type UserUncheckedCreateWithoutMembersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMembersInput = {
@@ -6661,6 +7004,7 @@ export type UserUpdateWithoutMembersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembersInput = {
@@ -6713,6 +7057,7 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutInvitationsInput = {
@@ -6765,6 +7110,7 @@ export type UserCreateWithoutInvitationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutInvitationsInput = {
@@ -6817,6 +7163,7 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutInvitationsInput = {
@@ -6885,6 +7232,7 @@ export type UserUpdateWithoutInvitationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvitationsInput = {
@@ -6937,6 +7285,7 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutManagedTeamsInput = {
@@ -6989,6 +7338,7 @@ export type UserCreateWithoutManagedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutManagedTeamsInput = {
@@ -7041,6 +7391,7 @@ export type UserUncheckedCreateWithoutManagedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutManagedTeamsInput = {
@@ -7098,6 +7449,7 @@ export type UserCreateWithoutFallbackApprovedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
@@ -7150,6 +7502,7 @@ export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutFallbackApprovedTeamsInput = {
@@ -7218,6 +7571,7 @@ export type UserUpdateWithoutManagedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutManagedTeamsInput = {
@@ -7270,6 +7624,7 @@ export type UserUncheckedUpdateWithoutManagedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutFallbackApprovedTeamsInput = {
@@ -7333,6 +7688,7 @@ export type UserUpdateWithoutFallbackApprovedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
@@ -7385,6 +7741,7 @@ export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedPaymentRunsInput = {
@@ -7437,6 +7794,7 @@ export type UserCreateWithoutCreatedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
@@ -7489,6 +7847,7 @@ export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedPaymentRunsInput = {
@@ -7546,6 +7905,7 @@ export type UserCreateWithoutApprovedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
@@ -7598,6 +7958,7 @@ export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovedPaymentRunsInput = {
@@ -7666,6 +8027,7 @@ export type UserUpdateWithoutCreatedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
@@ -7718,6 +8080,7 @@ export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutApprovedPaymentRunsInput = {
@@ -7781,6 +8144,7 @@ export type UserUpdateWithoutApprovedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
@@ -7833,6 +8197,7 @@ export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPaymentExportsInput = {
@@ -7885,6 +8250,7 @@ export type UserCreateWithoutPaymentExportsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPaymentExportsInput = {
@@ -7937,6 +8303,7 @@ export type UserUncheckedCreateWithoutPaymentExportsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPaymentExportsInput = {
@@ -8005,6 +8372,7 @@ export type UserUpdateWithoutPaymentExportsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPaymentExportsInput = {
@@ -8057,6 +8425,7 @@ export type UserUncheckedUpdateWithoutPaymentExportsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReviewedChangeRequestsInput = {
@@ -8109,6 +8478,7 @@ export type UserCreateWithoutReviewedChangeRequestsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
@@ -8161,6 +8531,7 @@ export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewedChangeRequestsInput = {
@@ -8229,6 +8600,7 @@ export type UserUpdateWithoutReviewedChangeRequestsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
@@ -8281,6 +8653,7 @@ export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReviewedTimesheetsInput = {
@@ -8333,6 +8706,7 @@ export type UserCreateWithoutReviewedTimesheetsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
@@ -8385,6 +8759,7 @@ export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewedTimesheetsInput = {
@@ -8453,6 +8828,7 @@ export type UserUpdateWithoutReviewedTimesheetsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
@@ -8505,6 +8881,7 @@ export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutStartedWorkflowRunsInput = {
@@ -8557,6 +8934,7 @@ export type UserCreateWithoutStartedWorkflowRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
@@ -8609,6 +8987,7 @@ export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutStartedWorkflowRunsInput = {
@@ -8677,6 +9056,7 @@ export type UserUpdateWithoutStartedWorkflowRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
@@ -8729,6 +9109,7 @@ export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAssignedWorkflowTasksInput = {
@@ -8781,6 +9162,7 @@ export type UserCreateWithoutAssignedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
@@ -8833,6 +9215,7 @@ export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedWorkflowTasksInput = {
@@ -8890,6 +9273,7 @@ export type UserCreateWithoutCompletedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
@@ -8942,6 +9326,7 @@ export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCompletedWorkflowTasksInput = {
@@ -9010,6 +9395,7 @@ export type UserUpdateWithoutAssignedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
@@ -9062,6 +9448,7 @@ export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutCompletedWorkflowTasksInput = {
@@ -9125,6 +9512,7 @@ export type UserUpdateWithoutCompletedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
@@ -9177,6 +9565,7 @@ export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWorkflowCommentsInput = {
@@ -9229,6 +9618,7 @@ export type UserCreateWithoutWorkflowCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
@@ -9281,6 +9671,7 @@ export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkflowCommentsInput = {
@@ -9349,6 +9740,7 @@ export type UserUpdateWithoutWorkflowCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
@@ -9401,6 +9793,7 @@ export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -9445,6 +9838,7 @@ export type UserCountOutputType = {
   classificationEscalationEvents: number
   sdsApprovals: number
   consentEvents: number
+  pinnedViews: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -9484,6 +9878,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   classificationEscalationEvents?: boolean | UserCountOutputTypeCountClassificationEscalationEventsArgs
   sdsApprovals?: boolean | UserCountOutputTypeCountSdsApprovalsArgs
   consentEvents?: boolean | UserCountOutputTypeCountConsentEventsArgs
+  pinnedViews?: boolean | UserCountOutputTypeCountPinnedViewsArgs
 }
 
 /**
@@ -9748,6 +10143,13 @@ export type UserCountOutputTypeCountConsentEventsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ConsentEventWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPinnedViewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserPinnedViewWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -9800,6 +10202,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   classificationEscalationEvents?: boolean | Prisma.User$classificationEscalationEventsArgs<ExtArgs>
   sdsApprovals?: boolean | Prisma.User$sdsApprovalsArgs<ExtArgs>
   consentEvents?: boolean | Prisma.User$consentEventsArgs<ExtArgs>
+  pinnedViews?: boolean | Prisma.User$pinnedViewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -9892,6 +10295,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   classificationEscalationEvents?: boolean | Prisma.User$classificationEscalationEventsArgs<ExtArgs>
   sdsApprovals?: boolean | Prisma.User$sdsApprovalsArgs<ExtArgs>
   consentEvents?: boolean | Prisma.User$consentEventsArgs<ExtArgs>
+  pinnedViews?: boolean | Prisma.User$pinnedViewsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -9936,6 +10340,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     classificationEscalationEvents: Prisma.$ClassificationEscalationEventPayload<ExtArgs>[]
     sdsApprovals: Prisma.$SdsApprovalPayload<ExtArgs>[]
     consentEvents: Prisma.$ConsentEventPayload<ExtArgs>[]
+    pinnedViews: Prisma.$UserPinnedViewPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -10382,6 +10787,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   classificationEscalationEvents<T extends Prisma.User$classificationEscalationEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$classificationEscalationEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClassificationEscalationEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sdsApprovals<T extends Prisma.User$sdsApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sdsApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SdsApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   consentEvents<T extends Prisma.User$consentEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$consentEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConsentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pinnedViews<T extends Prisma.User$pinnedViewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pinnedViewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPinnedViewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11679,6 +12085,30 @@ export type User$consentEventsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ConsentEventScalarFieldEnum | Prisma.ConsentEventScalarFieldEnum[]
+}
+
+/**
+ * User.pinnedViews
+ */
+export type User$pinnedViewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserPinnedView
+   */
+  select?: Prisma.UserPinnedViewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserPinnedView
+   */
+  omit?: Prisma.UserPinnedViewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserPinnedViewInclude<ExtArgs> | null
+  where?: Prisma.UserPinnedViewWhereInput
+  orderBy?: Prisma.UserPinnedViewOrderByWithRelationInput | Prisma.UserPinnedViewOrderByWithRelationInput[]
+  cursor?: Prisma.UserPinnedViewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserPinnedViewScalarFieldEnum | Prisma.UserPinnedViewScalarFieldEnum[]
 }
 
 /**

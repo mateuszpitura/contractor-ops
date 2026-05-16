@@ -8,9 +8,12 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2Icon, XCircleIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { trpc } from '@/trpc/init';
 
 export function PollerStatusStrip() {
+  const t = useTranslations('Admin.BoeRate');
+
   const { data: entries } = useQuery(trpc.adminBoeRate.list.queryOptions());
 
   if (!entries) {
@@ -24,7 +27,7 @@ export function PollerStatusStrip() {
     return (
       <div className="flex items-center gap-2 rounded-md bg-muted/50 px-4 py-2 text-sm text-muted-foreground">
         <XCircleIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-        <span>No BoE API poll data available. Rates are manual-entry only.</span>
+        <span>{t('pollerNoData')}</span>
       </div>
     );
   }
@@ -43,11 +46,12 @@ export function PollerStatusStrip() {
     <div
       className="flex items-center gap-2 rounded-md bg-muted/50 px-4 py-2 text-sm text-muted-foreground"
       role="status"
-      aria-label="BoE API poll status">
+      aria-label={t('ariaPollerStatus')}>
       <CheckCircle2Icon className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
       <span>
-        Last BoE API poll: {pollDate}
-        {rateChanged ? ` — new rate ${rate}% recorded` : ' — rate unchanged'}
+        {rateChanged
+          ? t('pollerSuccess', { date: pollDate, percent: rate })
+          : t('pollerSuccessUnchanged', { date: pollDate })}
       </span>
     </div>
   );

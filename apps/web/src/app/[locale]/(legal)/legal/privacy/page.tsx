@@ -3,6 +3,7 @@ import { prisma } from '@contractor-ops/db';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { resolvePrivacyRedirect } from './(content)/_resolve';
 
@@ -29,7 +30,10 @@ interface PrivacyIndexPageProps {
  */
 export default async function PrivacyIndexPage({ params }: PrivacyIndexPageProps) {
   const { locale } = await params;
-  const session = await auth.api.getSession({ headers: await headers() });
+  const [session, t] = await Promise.all([
+    auth.api.getSession({ headers: await headers() }),
+    getTranslations('Legal'),
+  ]);
 
   if (session?.session.activeOrganizationId) {
     const org = await prisma.organization.findUnique({
@@ -44,20 +48,31 @@ export default async function PrivacyIndexPage({ params }: PrivacyIndexPageProps
     <div className="mx-auto w-full max-w-4xl py-12">
       <header className="mb-10">
         <h1 className="font-display text-[28px] font-semibold leading-tight tracking-tight">
-          Privacy Notice
+          {t('privacyIndex.heading')}
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Select the jurisdiction that applies to you. If you're signed in, we route you
-          automatically based on your organisation's country.
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('privacyIndex.description')}</p>
       </header>
 
       <ul className="grid gap-4 sm:grid-cols-3">
-        {[
-          { slug: 'gb', label: 'United Kingdom', subtitle: 'UK GDPR · DPA 2018' },
-          { slug: 'de', label: 'Deutschland', subtitle: 'DSGVO · BDSG' },
-          { slug: 'eu', label: 'European Union', subtitle: 'GDPR · general fallback' },
-        ].map(jurisdiction => (
+        {(
+          [
+            {
+              slug: 'gb',
+              label: t('privacyIndex.jurisdictions.gb.label'),
+              subtitle: t('privacyIndex.jurisdictions.gb.subtitle'),
+            },
+            {
+              slug: 'de',
+              label: t('privacyIndex.jurisdictions.de.label'),
+              subtitle: t('privacyIndex.jurisdictions.de.subtitle'),
+            },
+            {
+              slug: 'eu',
+              label: t('privacyIndex.jurisdictions.eu.label'),
+              subtitle: t('privacyIndex.jurisdictions.eu.subtitle'),
+            },
+          ] as const
+        ).map(jurisdiction => (
           <li key={jurisdiction.slug}>
             <Link
               href={`/legal/privacy/${jurisdiction.slug}`}

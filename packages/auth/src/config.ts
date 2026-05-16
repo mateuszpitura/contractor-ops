@@ -246,6 +246,31 @@ export const auth = betterAuth({
         },
       },
     },
+    user: {
+      create: {
+        // Seed the new user's default pinned settings tabs. Non-fatal: if the
+        // pin write fails (DB hiccup, hook retried after the previous attempt
+        // already inserted, etc.) we log and continue so signup still succeeds.
+        after: async user => {
+          const u = user as { id?: string };
+          if (!u.id) return;
+          try {
+            await prisma.userPinnedView.create({
+              data: { userId: u.id, kind: 'settings-tab', key: 'integrations' },
+            });
+          } catch (err) {
+            // P2002 — unique constraint hit because the hook fired twice for
+            // the same user (Better Auth retry, replay). Idempotent: swallow.
+            const code = (err as { code?: string } | null)?.code;
+            if (code === 'P2002') return;
+            log.warn(
+              { event: 'auth.signup.default_pin_failed', userId: u.id, err },
+              'failed to seed default pinned view',
+            );
+          }
+        },
+      },
+    },
   },
 
   hooks: {

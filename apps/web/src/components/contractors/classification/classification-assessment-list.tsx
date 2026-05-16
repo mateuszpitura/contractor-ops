@@ -12,12 +12,12 @@
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -92,16 +92,22 @@ export function ClassificationAssessmentList(props: ClassificationAssessmentList
 
   if (listQuery.isPending) {
     return (
-      <div
-        role="status"
-        aria-live="polite"
-        className="flex min-h-[200px] items-center justify-center gap-2">
-        <Loader2
-          aria-hidden="true"
-          className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none"
-        />
-        <span className="sr-only">{t('outcome.loading')}</span>
-      </div>
+      <Card role="status" aria-live="polite" aria-busy="true">
+        <CardHeader>
+          <Skeleton className="h-5 w-40" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <div key={`skel-${i}`} className="flex items-center gap-4">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     );
   }
 

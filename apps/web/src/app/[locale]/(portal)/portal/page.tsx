@@ -1,5 +1,6 @@
 'use client';
 
+import { SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote, CalendarDays, Clock, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -143,7 +144,7 @@ export default function PortalOverviewPage() {
 
       {/* Recent Activity */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold">{t('dashboard.recentActivity')}</h2>
+        <SectionLabel variant="portal">{t('dashboard.recentActivity')}</SectionLabel>
         <div className="mt-4 space-y-3">
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (

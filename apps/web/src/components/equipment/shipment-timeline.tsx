@@ -134,7 +134,7 @@ export function ShipmentTimeline({
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
               <SelectTrigger id={`${reactId}-shipment-new-status`} className="w-full">
-                <SelectValue placeholder="Select status..." />
+                <SelectValue placeholder={t('shipment.statusPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {UPDATABLE_STATUSES.map(status => (
@@ -156,7 +156,7 @@ export function ShipmentTimeline({
               value={newNotes}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => setNewNotes(e.target.value)}
-              placeholder="Optional notes..."
+              placeholder={t('shipment.notesPlaceholder')}
             />
           </div>
           <Button
@@ -165,7 +165,7 @@ export function ShipmentTimeline({
             onClick={handleAddEvent}
             disabled={!newStatus || addEventMutation.isPending}>
             {!!addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
-            Add
+            {t('shipment.addButton')}
           </Button>
         </div>
       )}
@@ -237,7 +237,9 @@ export function ShipmentTimeline({
                   )}
 
                   {isPending && !event && (
-                    <span className="shrink-0 text-xs text-muted-foreground/40">(pending)</span>
+                    <span className="shrink-0 text-xs text-muted-foreground/40">
+                      {t('shipment.pendingLabel')}
+                    </span>
                   )}
                 </div>
               </div>

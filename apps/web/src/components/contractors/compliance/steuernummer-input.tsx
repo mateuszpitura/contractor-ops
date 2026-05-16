@@ -3,6 +3,7 @@
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { getSteuernummerFormat, getSteuernummerRegex } from '@contractor-ops/validators';
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ export function SteuernummerInput({
   id,
   required = false,
 }: SteuernummerInputProps) {
+  const t = useTranslations('Contractors.steuernummer');
   const reactId = useId();
   const inputId = id ?? `steuernummer-${reactId}`;
   const hintId = `${inputId}-hint`;
@@ -53,8 +55,10 @@ export function SteuernummerInput({
 
   const format = bundesland ? getSteuernummerFormat(bundesland) : undefined;
   const disabled = !bundesland;
-  const placeholder = disabled ? 'Select Bundesland first' : (format?.example ?? '');
-  const hint = format ? `Format: ${format.example} · ${format.germanName}` : undefined;
+  const placeholder = disabled ? t('selectBundeslandFirst') : (format?.example ?? '');
+  const hint = format
+    ? t('formatHint', { example: format.example, stateName: format.germanName })
+    : undefined;
 
   const displayError = error ?? localError;
   const showValid =
@@ -101,7 +105,7 @@ export function SteuernummerInput({
               const ok = getSteuernummerRegex(bundesland).test(value);
               if (!ok && format) {
                 setLocalError(
-                  `Steuernummer format does not match ${format.germanName}. Example: ${format.example}.`,
+                  t('formatMismatch', { stateName: format.germanName, example: format.example }),
                 );
               }
             }
@@ -111,7 +115,7 @@ export function SteuernummerInput({
         {showValid ? (
           <Check
             role="img"
-            aria-label="Valid format"
+            aria-label={t('validFormat')}
             className="pointer-events-none absolute end-2 top-1/2 -translate-y-1/2 text-success"
             size={16}
           />

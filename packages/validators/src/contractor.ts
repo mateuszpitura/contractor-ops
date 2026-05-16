@@ -172,10 +172,12 @@ export type ContractorLifecycleTransitionInput = z.infer<
 >;
 
 /**
- * Schema for GUS BIR1 API lookup by NIP.
+ * Schema for Polish company-registry lookup by NIP. Backed by a swappable
+ * adapter (Dataport in dev, GUS BIR1 in prod) — see
+ * `@contractor-ops/integrations/services/company-registry-service`.
  */
-export const gusLookupSchema = z.object({
+export const companyLookupSchema = z.object({
   nip: z.string().length(10, 'NIP must be exactly 10 digits'),
 });
 
-export type GusLookupInput = z.infer<typeof gusLookupSchema>;
+export type CompanyLookupInput = z.infer<typeof companyLookupSchema>;

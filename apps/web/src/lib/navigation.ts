@@ -11,7 +11,6 @@ import {
   Inbox,
   LayoutDashboard,
   Package,
-  Plug,
   Receipt,
   Settings,
   ShieldCheck,
@@ -172,13 +171,6 @@ export const navigationGroups: NavGroup[] = [
   {
     key: 'system',
     items: [
-      {
-        key: 'integrations',
-        label: 'Integrations',
-        href: '/settings?tab=integrations',
-        icon: Plug,
-        permission: { resource: 'integration', actions: ['read'] },
-      },
       {
         key: 'notifications',
         label: 'Notifications',

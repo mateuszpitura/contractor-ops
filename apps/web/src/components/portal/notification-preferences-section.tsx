@@ -119,6 +119,7 @@ export function NotificationPreferencesSection() {
     onError: err => toast.error(err.message),
     onSuccess: () => {
       toast.success('Done.');
+      queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
     },
   });
 

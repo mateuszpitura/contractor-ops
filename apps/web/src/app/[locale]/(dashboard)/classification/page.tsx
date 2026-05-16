@@ -18,6 +18,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import { MarketCard } from '@/components/contractors/classification/dashboard/market-card';
 import { RefreshDashboardButton } from '@/components/contractors/classification/dashboard/refresh-dashboard-button';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
@@ -90,14 +91,7 @@ function ClassificationDashboardContent() {
 
 export default function ClassificationDashboardPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
-          <Skeleton className="h-10 w-72" />
-          <Skeleton className="h-[400px] w-full" />
-          <Skeleton className="h-[400px] w-full" />
-        </div>
-      }>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <ClassificationDashboardContent />
     </Suspense>
   );

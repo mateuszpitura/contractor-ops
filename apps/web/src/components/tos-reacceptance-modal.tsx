@@ -47,12 +47,12 @@ export function TosReacceptanceModal({ currentVersion, locale }: TosReacceptance
 
   const recordToS = useMutation(
     trpc.consent.recordToS.mutationOptions({
-      onSuccess: () => {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(trpc.consent.pathFilter());
+        toast.success('Done.');
         setOpen(false);
         // Force a full reload so the dashboard layout re-queries and confirms acceptance.
         window.location.reload();
-        toast.success('Done.');
-        queryClient.invalidateQueries(trpc.consent.pathFilter());
       },
 
       onError: err => toast.error(err.message),

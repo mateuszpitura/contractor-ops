@@ -115,7 +115,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: '2026-03-15',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -148,7 +148,7 @@ describe('SpendContractorReport', () => {
 
   it('renders empty state when no data', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -178,7 +178,7 @@ describe('SpendContractorReport', () => {
           { contractorId: 'c-1', contractorName: 'Alpha', totalMinor: 50000, invoiceCount: 3 },
           { contractorId: 'c-2', contractorName: 'Beta', totalMinor: 30000, invoiceCount: 2 },
         ],
-        totalCount: 2,
+        total: 2,
         grandTotalMinor: 80000,
       },
       isLoading: false,
@@ -216,7 +216,7 @@ describe('SpendContractorReport', () => {
       invoiceCount: i + 1,
     }));
     mockUseQuery.mockReturnValue({
-      data: { items, totalCount: 20, grandTotalMinor: 2100000 },
+      data: { items, total: 20, grandTotalMinor: 2100000 },
       isLoading: false,
     } as unknown as never);
     render(<SpendContractorReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -246,7 +246,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: '2026-03-01',
           },
         ],
-        totalCount: 2,
+        total: 2,
       },
       isLoading: false,
     } as unknown as never);
@@ -278,7 +278,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: null,
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -294,7 +294,7 @@ describe('SpendContractorReport', () => {
     ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
+        return { data: { items: [], total: 0 }, isLoading: false } as unknown as never;
       }
       return { data: undefined, isLoading: false } as unknown as never;
     });
@@ -330,7 +330,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: '2026-02-15',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -352,7 +352,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: null,
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -374,7 +374,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: null,
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -413,7 +413,7 @@ describe('SpendContractorReport', () => {
             lastPaidAt: '2026-01-15',
           },
         ],
-        totalCount: 2,
+        total: 2,
       },
       isLoading: false,
     } as unknown as never);
@@ -430,7 +430,7 @@ describe('SpendContractorReport', () => {
     ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
+        return { data: { items: [], total: 0 }, isLoading: false } as unknown as never;
       }
       return { data: undefined, isLoading: false } as unknown as never;
     });
@@ -458,7 +458,7 @@ describe('SpendContractorReport', () => {
                 lastPaidAt: null,
               },
             ],
-            totalCount: 1,
+            total: 1,
           },
           isLoading: false,
         } as unknown as never;

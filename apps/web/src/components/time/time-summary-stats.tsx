@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCircle2, Clock, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-card';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +40,7 @@ export function TimeSummaryStats({
   approvedMonthMinutes,
   isLoading,
 }: TimeSummaryStatsProps) {
+  const t = useTranslations('Time');
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -51,11 +53,15 @@ export function TimeSummaryStats({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <SummaryCard icon={Clock} label="This Week" value={formatHours(currentWeekMinutes)} />
-      <SummaryCard icon={Send} label="Pending Review" value={pendingCount} />
+      <SummaryCard
+        icon={Clock}
+        label={t('summaryStats.thisWeek')}
+        value={formatHours(currentWeekMinutes)}
+      />
+      <SummaryCard icon={Send} label={t('summaryStats.pendingReview')} value={pendingCount} />
       <SummaryCard
         icon={CheckCircle2}
-        label="Approved This Month"
+        label={t('summaryStats.approvedThisMonth')}
         value={formatHours(approvedMonthMinutes)}
       />
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +59,7 @@ function parseNumber(display: string): number | null {
 }
 
 export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsTableProps) {
+  const t = useTranslations('OcrReview.lineItems');
   const updateItem = useCallback(
     (index: number, field: keyof LineItem, value: string) => {
       const updated = [...items];
@@ -116,8 +118,8 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
     <div className="flex flex-col gap-3">
       {/* Heading */}
       <div className="flex items-center gap-3">
-        <h3 className="text-xl font-semibold">Line Items</h3>
-        <Badge variant="secondary">{items.length} items</Badge>
+        <h3 className="text-xl font-semibold">{t('heading')}</h3>
+        <Badge variant="secondary">{t('itemsCount', { count: items.length })}</Badge>
       </div>
 
       {/* Table */}
@@ -125,15 +127,15 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="min-w-[200px]">Description</TableHead>
-              <TableHead className="w-20">Qty</TableHead>
-              <TableHead className="w-20">Unit</TableHead>
-              <TableHead className="w-28">Unit Price</TableHead>
-              <TableHead className="w-28">Net</TableHead>
-              <TableHead className="w-24">VAT Rate</TableHead>
-              <TableHead className="w-28">VAT Amount</TableHead>
-              <TableHead className="w-28">Gross</TableHead>
-              <TableHead className="w-16">Conf.</TableHead>
+              <TableHead className="min-w-[200px]">{t('colDescription')}</TableHead>
+              <TableHead className="w-20">{t('colQty')}</TableHead>
+              <TableHead className="w-20">{t('colUnit')}</TableHead>
+              <TableHead className="w-28">{t('colUnitPrice')}</TableHead>
+              <TableHead className="w-28">{t('colNet')}</TableHead>
+              <TableHead className="w-24">{t('colVatRate')}</TableHead>
+              <TableHead className="w-28">{t('colVatAmount')}</TableHead>
+              <TableHead className="w-28">{t('colGross')}</TableHead>
+              <TableHead className="w-16">{t('colConf')}</TableHead>
               {!readOnly && <TableHead className="w-12" />}
             </TableRow>
           </TableHeader>
@@ -146,7 +148,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'description', v)}
                     readOnly={readOnly}
-                    placeholder="Description"
+                    placeholder={t('placeholderDescription')}
                   />
                 </TableCell>
                 <TableCell>
@@ -165,7 +167,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'unit', v)}
                     readOnly={readOnly}
-                    placeholder="pcs"
+                    placeholder={t('placeholderUnit')}
                   />
                 </TableCell>
                 <TableCell>
@@ -194,7 +196,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={v => updateItem(index, 'vatRate', v)}
                     readOnly={readOnly}
-                    placeholder="23%"
+                    placeholder={t('placeholderVatRate')}
                   />
                 </TableCell>
                 <TableCell>
@@ -227,7 +229,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
                       size="icon-sm"
                       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => removeItem(index)}
-                      aria-label="Remove Item">
+                      aria-label={t('removeItemAriaLabel')}>
                       <Trash2 className="text-muted-foreground" />
                     </Button>
                   </TableCell>
@@ -242,7 +244,7 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
       {!readOnly && (
         <Button variant="ghost" size="sm" onClick={addItem} className="w-fit">
           <Plus />
-          Add line item
+          {t('addLineItem')}
         </Button>
       )}
     </div>

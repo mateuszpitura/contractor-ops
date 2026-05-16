@@ -40,6 +40,8 @@ interface ApprovalQueueToolbarProps {
   selectedIds: string[];
   /** Callback to clear selection */
   onClearSelection: () => void;
+  /** Disables all interactive elements during data load */
+  isLoading?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +71,7 @@ export function ApprovalQueueToolbar({
   isSearching,
   selectedIds,
   onClearSelection,
+  isLoading,
 }: ApprovalQueueToolbarProps) {
   const t = useTranslations('Approvals');
   const tAria = useTranslations('Common.aria');
@@ -184,6 +187,7 @@ export function ApprovalQueueToolbar({
             <Input
               placeholder={t('searchPlaceholder')}
               value={localSearch}
+              disabled={isLoading}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
               onChange={e => handleSearchInput(e.target.value)}
               className="h-9 ps-9 pe-8"
@@ -198,7 +202,7 @@ export function ApprovalQueueToolbar({
             <PopoverTrigger
               // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
               render={props => (
-                <Button {...props} variant="outline" size="lg">
+                <Button {...props} variant="outline" size="lg" disabled={isLoading}>
                   {t('columns.status')}
                   {activeFilterCount > 0 && (
                     <Badge

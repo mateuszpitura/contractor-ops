@@ -5981,9 +5981,12 @@
       "searchPlaceholder": "Szukaj w dzienniku audytu...",
       "exportCta": "Eksportuj dziennik audytu",
       "exportToast": "Dziennik audytu wyeksportowany ({count} wpisów)",
-      "filterActorAll": "Wszyscy aktorzy",
-      "filterActionAll": "Wszystkie akcje",
-      "filterResourceAll": "Wszystkie zasoby",
+      "filterActor": "Aktorzy",
+      "filterActorSearchPlaceholder": "Szukaj aktorów...",
+      "filterActorShowingHint": "Pokazano {visible} z {total}. Wpisz, aby wyszukać.",
+      "filterActorNoMatches": "Brak pasujących aktorów",
+      "filterAction": "Akcje",
+      "filterResource": "Zasoby",
       "filterDateRange": "Zakres dat",
       "expand": "Rozwiń szczegóły",
       "collapse": "Zwin szczegóły",
@@ -6566,7 +6569,11 @@
     "subtitle": "Zarządzaj szablonami zadań KT (knowledge transfer) per rola. Szablony seed są tylko do odczytu; własne można edytować i usuwać.",
     "createCta": "Nowy szablon roli",
     "listSectionLabel": "Szablony ról",
-    "emptyState": "Brak szablonów ról. Utwórz, aby zdefiniować zadania KT dla roli.",
+    "empty": {
+      "heading": "Brak szablonów ról",
+      "body": "Utwórz szablon roli, aby zdefiniować zadania KT (knowledge transfer) per rola. Szablony seed są dostarczane gotowe; własne można edytować i usuwać.",
+      "cta": "Nowy szablon roli"
+    },
     "table": {
       "role": "Slug",
       "displayName": "Nazwa wyświetlana",

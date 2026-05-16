@@ -2,6 +2,7 @@
 
 import type { UkCountryFields } from '@contractor-ops/validators';
 import { ukEntityTypeEnum } from '@contractor-ops/validators';
+import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
@@ -109,6 +110,7 @@ function FieldError({ id, message }: { id: string; message: string | undefined }
 }
 
 export function UkComplianceFields(props: UkComplianceFieldsProps) {
+  const t = useTranslations('Contractors.compliance.uk');
   const id = useId();
   const [internal, setInternal] = useState<Partial<UkCountryFields>>({});
   const merged: Partial<UkCountryFields> = {
@@ -140,11 +142,11 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-dashed border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-        UK identifiers — required fields depend on entity type:
+        {t('infoBoxTitle')}
         <ul className="mt-1 list-disc ps-5">
-          <li>Sole traders must provide a UTR.</li>
-          <li>Limited companies (Ltd / LLP) must provide a Companies House number.</li>
-          <li>VAT-registered contractors must provide a VAT registration number.</li>
+          <li>{t('infoItem1')}</li>
+          <li>{t('infoItem2')}</li>
+          <li>{t('infoItem3')}</li>
         </ul>
       </div>
 
@@ -153,7 +155,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
         value={entityType}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('entityType', v)}
-        label="Entity type"
+        label={t('entityTypeLabel')}
         required
         error={errors.entityType}
         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -162,7 +164,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       <div className="space-y-2">
         <RequiredLabel htmlFor={`${id}-utr`} required={utrRequired}>
-          UTR
+          {t('utrLabel')}
         </RequiredLabel>
         <Input
           id={`${id}-utr`}
@@ -171,7 +173,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
           aria-required={utrRequired ? 'true' : undefined}
           aria-invalid={errors.utr ? 'true' : undefined}
           aria-describedby={errors.utr ? `${id}-utr-error` : undefined}
-          placeholder="10-digit UTR"
+          placeholder={t('utrPlaceholder')}
           value={merged.utr ?? ''}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
           onChange={e => handleChange('utr', e.target.value || undefined)}
@@ -182,7 +184,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
       {isLtdOrLlp ? (
         <div className="space-y-2">
           <RequiredLabel htmlFor={`${id}-ch`} required={chRequired}>
-            Companies House number
+            {t('companiesHouseLabel')}
           </RequiredLabel>
           <Input
             id={`${id}-ch`}
@@ -190,7 +192,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             aria-required={chRequired ? 'true' : undefined}
             aria-invalid={errors.companiesHouseNumber ? 'true' : undefined}
             aria-describedby={errors.companiesHouseNumber ? `${id}-ch-error` : undefined}
-            placeholder="e.g. 12345678 or SC123456"
+            placeholder={t('companiesHousePlaceholder')}
             value={merged.companiesHouseNumber ?? ''}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('companiesHouseNumber', e.target.value || undefined)}
@@ -203,20 +205,20 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
         checked={isVatRegistered}
         // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
         onChange={v => handleChange('isVatRegistered', v)}
-        label="VAT registered"
+        label={t('vatRegisteredLabel')}
       />
 
       {isVatRegistered ? (
         <div className="space-y-2">
           <RequiredLabel htmlFor={`${id}-vat`} required={vatRequired}>
-            VAT registration number
+            {t('vatNumberLabel')}
           </RequiredLabel>
           <Input
             id={`${id}-vat`}
             aria-required={vatRequired ? 'true' : undefined}
             aria-invalid={errors.vatRegistrationNumber ? 'true' : undefined}
             aria-describedby={errors.vatRegistrationNumber ? `${id}-vat-error` : undefined}
-            placeholder="GB123456789"
+            placeholder={t('vatNumberPlaceholder')}
             value={merged.vatRegistrationNumber ?? ''}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleChange('vatRegistrationNumber', e.target.value || undefined)}

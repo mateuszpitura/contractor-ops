@@ -96,7 +96,7 @@ describe('InvoicesTab', () => {
             contractor: null,
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
       isFetching: false,

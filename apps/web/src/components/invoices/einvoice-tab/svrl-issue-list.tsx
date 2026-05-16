@@ -71,9 +71,9 @@ export function SvrlIssueList({ issues }: SvrlIssueListProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-24">Severity</TableHead>
-                <TableHead className="w-40">Rule ID</TableHead>
-                <TableHead>Message</TableHead>
+                <TableHead className="w-24">{t('svrlSeverityHeader')}</TableHead>
+                <TableHead className="w-40">{t('svrlRuleIdHeader')}</TableHead>
+                <TableHead>{t('svrlMessageHeader')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,7 +104,9 @@ export function SvrlIssueList({ issues }: SvrlIssueListProps) {
                           <div className="mt-2 space-y-2 rounded-md bg-muted/30 p-3">
                             <p className="text-sm">{issue.message}</p>
                             <p>
-                              <span className="text-xs text-muted-foreground">XPath:</span>{' '}
+                              <span className="text-xs text-muted-foreground">
+                                {t('xpathLabel')}
+                              </span>{' '}
                               <code className="font-mono text-xs break-all">{issue.xpath}</code>
                             </p>
                           </div>

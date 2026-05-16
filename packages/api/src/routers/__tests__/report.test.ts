@@ -417,7 +417,7 @@ describe('report router', () => {
         invoiceCount: 5,
         totalMinor: 500000,
       });
-      expect(result.totalCount).toBe(1);
+      expect(result.total).toBe(1);
 
       // Two raw queries: data + count
       expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
@@ -434,7 +434,7 @@ describe('report router', () => {
         sortOrder: 'desc',
       });
 
-      expect(result.totalCount).toBe(50);
+      expect(result.total).toBe(50);
       // Verify the raw query was invoked (offset = (3-1)*10 = 20)
       expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
     });
@@ -457,7 +457,7 @@ describe('report router', () => {
       }
     });
 
-    it('returns totalCount for pagination', async () => {
+    it('returns total for pagination', async () => {
       mockPrisma.$queryRaw
         .mockResolvedValueOnce([]) // data query
         .mockResolvedValueOnce([{ count: 42 }]); // count query
@@ -470,7 +470,7 @@ describe('report router', () => {
         sortOrder: 'desc',
       });
 
-      expect(result).toHaveProperty('totalCount', 42);
+      expect(result).toHaveProperty('total', 42);
     });
 
     it('filters by optional contractorId for drill-down', async () => {
@@ -579,7 +579,7 @@ describe('report router', () => {
         sortOrder: 'asc',
       });
 
-      expect(result.totalCount).toBe(15);
+      expect(result.total).toBe(15);
       expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(2);
     });
   });
@@ -752,7 +752,7 @@ describe('report router', () => {
         sortOrder: 'asc',
       });
 
-      expect(result.totalCount).toBe(25);
+      expect(result.total).toBe(25);
 
       const call = mockPrisma.invoice.findMany.mock.calls[0]?.[0];
       expect(call?.skip).toBe(10); // (page 2 - 1) * 10

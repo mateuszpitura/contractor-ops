@@ -676,7 +676,7 @@ export const invoiceRouter = router({
         ];
       }
 
-      const [invoices, totalCount] = await Promise.all([
+      const [invoices, total] = await Promise.all([
         ctx.db.invoice.findMany({
           where,
           skip: (page - 1) * pageSize,
@@ -697,7 +697,7 @@ export const invoiceRouter = router({
         ctx.db.invoice.count({ where }),
       ]);
 
-      return { items: invoices, totalCount, page, pageSize };
+      return { items: invoices, total, page, pageSize };
     }),
 
   /**

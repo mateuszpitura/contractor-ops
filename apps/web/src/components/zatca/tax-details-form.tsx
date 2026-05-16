@@ -5,6 +5,7 @@ import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice/zatca/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -35,6 +36,7 @@ interface TaxDetailsFormProps {
  * Validates client-side with Zod schema, then calls trpc.zatca.saveTaxDetails.
  */
 export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetailsFormProps) {
+  const t = useTranslations('Zatca.taxDetailsForm');
   const reactId = useId();
   const {
     register,
@@ -58,11 +60,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
   const saveMutation = useMutation({
     ...zatcaTrpc.saveTaxDetails.mutationOptions(),
     onSuccess: () => {
-      toast.success('Tax details saved successfully');
+      toast.success(t('toast.success'));
       onSuccess();
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save tax details');
+      toast.error(error.message || t('toast.error'));
     },
   });
 
@@ -75,18 +77,16 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-1">
-        <h3 className="text-base font-semibold">Step 1 of 5: Organization Tax Details</h3>
-        <p className="text-sm text-muted-foreground">
-          Enter your organization&apos;s Saudi tax registration information.
-        </p>
+        <h3 className="text-base font-semibold">{t('title')}</h3>
+        <p className="text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       {/* VAT Registration Number */}
       <div className="space-y-2">
-        <Label htmlFor={`${reactId}-vatNumber`}>VAT Registration Number</Label>
+        <Label htmlFor={`${reactId}-vatNumber`}>{t('vatNumber')}</Label>
         <Input
           id={`${reactId}-vatNumber`}
-          placeholder="3XXXXXXXXXXXXX3"
+          placeholder={t('vatNumberPlaceholder')}
           maxLength={15}
           {...register('vatNumber')}
           aria-invalid={!!errors.vatNumber}
@@ -97,14 +97,12 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
             {errors.vatNumber.message}
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
-          15-digit Saudi VAT number starting and ending with 3
-        </p>
+        <p className="text-xs text-muted-foreground">{t('vatNumberHint')}</p>
       </div>
 
       {/* Organization Legal Name (Arabic) */}
       <div className="space-y-2">
-        <Label htmlFor={`${reactId}-orgNameArabic`}>Organization Legal Name (Arabic)</Label>
+        <Label htmlFor={`${reactId}-orgNameArabic`}>{t('orgNameArabic')}</Label>
         <Input
           id={`${reactId}-orgNameArabic`}
           dir="rtl"
@@ -122,23 +120,23 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
 
       {/* Address Fields */}
       <fieldset className="space-y-4">
-        <legend className="text-sm font-medium">Organization Address</legend>
+        <legend className="text-sm font-medium">{t('addressSection')}</legend>
 
         <div className="space-y-2">
-          <Label htmlFor={`${reactId}-street`}>Street</Label>
+          <Label htmlFor={`${reactId}-street`}>{t('street')}</Label>
           <Input id={`${reactId}-street`} {...register('street')} aria-invalid={!!errors.street} />
           {!!errors.street && <p className="text-xs text-destructive">{errors.street.message}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor={`${reactId}-city`}>City</Label>
+            <Label htmlFor={`${reactId}-city`}>{t('city')}</Label>
             <Input id={`${reactId}-city`} {...register('city')} aria-invalid={!!errors.city} />
             {!!errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`${reactId}-district`}>District</Label>
+            <Label htmlFor={`${reactId}-district`}>{t('district')}</Label>
             <Input
               id={`${reactId}-district`}
               {...register('district')}
@@ -151,7 +149,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`${reactId}-postalCode`}>Postal Code</Label>
+          <Label htmlFor={`${reactId}-postalCode`}>{t('postalCode')}</Label>
           <Input
             id={`${reactId}-postalCode`}
             maxLength={5}
@@ -167,7 +165,7 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
 
       {/* Invoice Types */}
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium">Invoice Types</legend>
+        <legend className="text-sm font-medium">{t('invoiceTypesSection')}</legend>
 
         <Controller
           control={control}
@@ -185,11 +183,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                   onCheckedChange={checked => {
                     const current = field.value ?? [];
                     field.onChange(
-                      checked ? [...current, 'standard'] : current.filter(t => t !== 'standard'),
+                      checked ? [...current, 'standard'] : current.filter(v => v !== 'standard'),
                     );
                   }}
                 />
-                Standard Tax Invoices (B2B clearance)
+                {t('standardInvoice')}
               </label>
               <label
                 htmlFor={`${reactId}-zatca-inv-simplified`}
@@ -203,11 +201,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
                     field.onChange(
                       checked
                         ? [...current, 'simplified']
-                        : current.filter(t => t !== 'simplified'),
+                        : current.filter(v => v !== 'simplified'),
                     );
                   }}
                 />
-                Simplified Tax Invoices (B2C reporting)
+                {t('simplifiedInvoice')}
               </label>
             </div>
           )}
@@ -220,13 +218,13 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {t('cancel')}
         </Button>
         <Button type="submit" disabled={saveMutation.isPending}>
           {!!saveMutation.isPending && (
             <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           )}
-          Next
+          {t('next')}
         </Button>
       </div>
     </form>

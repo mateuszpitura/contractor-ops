@@ -43,6 +43,7 @@ interface ContractorSidePanelProps {
 export function ContractorSidePanel({ contractor, open, onOpenChange }: ContractorSidePanelProps) {
   const t = useTranslations('Contractors');
   const ts = useTranslations('Contractors.sidePanel');
+  const tCommon = useTranslations('Common');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
 
@@ -92,11 +93,11 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
               </h3>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
-                  label="NIP"
+                  label={t('countryCompliance.nipLabel')}
                   value={showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
                   mono
                 />
-                <DetailItem label="Email" value={contractor.email} />
+                <DetailItem label={tCommon('emailLabel')} value={contractor.email} />
                 <DetailItem label={t('columns.billingModel')} value={billingModel} />
                 <DetailItem
                   label={t('columns.rate')}

@@ -1,6 +1,11 @@
 'use client';
 
-import { AtelierPageHeader, AtelierTableShell, TimeTrackingIllustration } from '@contractor-ops/ui';
+import {
+  AtelierPageHeader,
+  AtelierTableShell,
+  SectionLabel,
+  TimeTrackingIllustration,
+} from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
 import { Plus } from 'lucide-react';
@@ -351,7 +356,7 @@ export default function PortalTimePage() {
       {/* Time entry history */}
       <AnimateIn delay={4}>
         <div>
-          <h2 className="text-xl font-semibold mb-4">{t('pastTimesheets')}</h2>
+          <SectionLabel variant="portal">{t('pastTimesheets')}</SectionLabel>
           {historyQuery.isPending ? (
             <AtelierTableShell isLoading>
               <div className="space-y-2 p-4">

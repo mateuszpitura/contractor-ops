@@ -6,6 +6,7 @@
 // AlertDialog with destructive button last in tab order per UI-SPEC.
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -32,6 +33,9 @@ interface DeleteBoeRateDialogProps {
 }
 
 export function DeleteBoeRateDialog({ entry, open, onOpenChange }: DeleteBoeRateDialogProps) {
+  const t = useTranslations('Admin.BoeRate');
+  const tCommon = useTranslations('Common');
+
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation(
@@ -40,13 +44,13 @@ export function DeleteBoeRateDialog({ entry, open, onOpenChange }: DeleteBoeRate
         void queryClient.invalidateQueries({
           queryKey: trpc.adminBoeRate.list.queryKey(),
         });
-        toast.success('Rate deleted', {
-          description: 'BoE base rate entry has been removed.',
+        toast.success(t('toastRateDeleted'), {
+          description: t('toastRateDeletedDesc'),
         });
         onOpenChange(false);
       },
       onError: error => {
-        toast.error('Error', { description: error.message });
+        toast.error(t('toastError'), { description: error.message });
       },
     }),
   );
@@ -58,21 +62,19 @@ export function DeleteBoeRateDialog({ entry, open, onOpenChange }: DeleteBoeRate
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete rate entry</AlertDialogTitle>
+          <AlertDialogTitle>{t('deleteDialogTitle')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Deleting the historical rate for {effectiveDate} ({rate}%) will change interest
-            calculations for any invoices referencing this statutory period. This action cannot be
-            undone.
+            {t('deleteDialogBodyDynamic', { date: effectiveDate, rate })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           {/* Cancel first in tab order; destructive last */}
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             onClick={() => deleteMutation.mutate({ id: entry.id })}
             disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete rate'}
+            {deleteMutation.isPending ? t('deleting') : t('deleteRate')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

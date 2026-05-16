@@ -22,7 +22,7 @@ export const CONTRACTOR_HAS_UNPAID_INVOICES = 'contractorHasUnpaidInvoices';
 export const CONTRACTOR_HAS_ACTIVE_WORKFLOWS = 'contractorHasActiveWorkflows';
 export const CONTRACTOR_HAS_ACTIVE_CONTRACTS = 'contractorHasActiveContracts';
 export const CONTRACTOR_INVALID_TRANSITION = 'contractorInvalidTransition';
-export const GUS_LOOKUP_FAILED = 'gusLookupFailed';
+export const COMPANY_LOOKUP_FAILED = 'companyLookupFailed';
 
 // ─── Contract ────────────────────────────────────────────────────
 export const CONTRACT_NOT_FOUND = 'contractNotFound';

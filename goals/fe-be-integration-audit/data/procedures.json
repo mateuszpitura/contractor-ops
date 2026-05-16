@@ -159,7 +159,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 160
+    "line": 161
   },
   {
     "surface": "appRouter",
@@ -168,7 +168,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 186
+    "line": 187
   },
   {
     "surface": "appRouter",
@@ -177,7 +177,7 @@
     "middleware": "sensitiveActionProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 229
+    "line": 230
   },
   {
     "surface": "appRouter",
@@ -186,7 +186,7 @@
     "middleware": "sensitiveActionProcedure",
     "destructive": true,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 274
+    "line": 275
   },
   {
     "surface": "appRouter",
@@ -195,7 +195,7 @@
     "middleware": "sensitiveActionProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 340
+    "line": 341
   },
   {
     "surface": "appRouter",
@@ -204,7 +204,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 394
+    "line": 395
   },
   {
     "surface": "appRouter",
@@ -213,7 +213,25 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/user.ts",
-    "line": 420
+    "line": 421
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.pins.list",
+    "type": "query",
+    "middleware": "authedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user-pins.ts",
+    "line": 29
+  },
+  {
+    "surface": "appRouter",
+    "path": "user.pins.toggle",
+    "type": "mutation",
+    "middleware": "authedProcedure",
+    "destructive": false,
+    "file": "packages/api/src/routers/core/user-pins.ts",
+    "line": 44
   },
   {
     "surface": "appRouter",
@@ -339,7 +357,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 386
+    "line": 387
   },
   {
     "surface": "appRouter",
@@ -348,7 +366,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 526
+    "line": 527
   },
   {
     "surface": "appRouter",
@@ -357,7 +375,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 628
+    "line": 629
   },
   {
     "surface": "appRouter",
@@ -366,7 +384,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 727
+    "line": 728
   },
   {
     "surface": "appRouter",
@@ -375,7 +393,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 817
+    "line": 818
   },
   {
     "surface": "appRouter",
@@ -384,7 +402,7 @@
     "middleware": "tenantProcedure",
     "destructive": true,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 891
+    "line": 892
   },
   {
     "surface": "appRouter",
@@ -393,7 +411,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1009
+    "line": 1010
   },
   {
     "surface": "appRouter",
@@ -402,7 +420,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1079
+    "line": 1080
   },
   {
     "surface": "appRouter",
@@ -411,16 +429,16 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1103
+    "line": 1104
   },
   {
     "surface": "appRouter",
-    "path": "contractor.gusLookup",
+    "path": "contractor.companyLookup",
     "type": "query",
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1197
+    "line": 1201
   },
   {
     "surface": "appRouter",
@@ -429,7 +447,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1281
+    "line": 1229
   },
   {
     "surface": "appRouter",
@@ -438,7 +456,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1309
+    "line": 1257
   },
   {
     "surface": "appRouter",
@@ -447,7 +465,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1325
+    "line": 1273
   },
   {
     "surface": "appRouter",
@@ -456,7 +474,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1337
+    "line": 1285
   },
   {
     "surface": "appRouter",
@@ -465,7 +483,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1375
+    "line": 1323
   },
   {
     "surface": "appRouter",
@@ -474,7 +492,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1400
+    "line": 1348
   },
   {
     "surface": "appRouter",
@@ -483,7 +501,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1406
+    "line": 1354
   },
   {
     "surface": "appRouter",
@@ -2445,7 +2463,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 99
+    "line": 98
   },
   {
     "surface": "appRouter",
@@ -2454,7 +2472,7 @@
     "middleware": "adminProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 107
+    "line": 106
   },
   {
     "surface": "appRouter",
@@ -2463,7 +2481,7 @@
     "middleware": "adminProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 183
+    "line": 182
   },
   {
     "surface": "appRouter",
@@ -2472,7 +2490,7 @@
     "middleware": "adminProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 225
+    "line": 224
   },
   {
     "surface": "appRouter",
@@ -2481,34 +2499,7 @@
     "middleware": "adminProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 261
-  },
-  {
-    "surface": "appRouter",
-    "path": "billing.syncSeatCount",
-    "type": "mutation",
-    "middleware": "adminProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 313
-  },
-  {
-    "surface": "appRouter",
-    "path": "billing.getCreditBalance",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 352
-  },
-  {
-    "surface": "appRouter",
-    "path": "billing.getPlanConfig",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 360
+    "line": 260
   },
   {
     "surface": "appRouter",
@@ -2517,7 +2508,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/billing.ts",
-    "line": 369
+    "line": 313
   },
   {
     "surface": "appRouter",

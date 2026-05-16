@@ -100,7 +100,7 @@ describe('OverdueInvoicesReport', () => {
             status: 'OVERDUE',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -118,7 +118,7 @@ describe('OverdueInvoicesReport', () => {
 
   it('renders empty state when no data', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<OverdueInvoicesReport dateFrom="2026-01-01" dateTo="2026-03-31" />);

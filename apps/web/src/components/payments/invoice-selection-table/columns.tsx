@@ -123,7 +123,7 @@ export function getColumns(
               <Badge
                 variant="outline"
                 className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-[10px] px-1 py-0">
-                Missing IBAN
+                {t('selection.missingIban')}
               </Badge>
             )}
           </div>
@@ -188,7 +188,7 @@ export function getColumns(
           <Badge
             variant="outline"
             className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-[10px]">
-            In run {inRun}
+            {t('selection.inRun', { runNumber: inRun })}
           </Badge>
         );
       },

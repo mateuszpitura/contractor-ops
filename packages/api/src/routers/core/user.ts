@@ -8,6 +8,7 @@ import { sensitiveActionProcedure } from '../../middleware/sensitive';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
 import type { DbClient } from '../../services/types';
+import { userPinsRouter } from './user-pins';
 
 // ---------------------------------------------------------------------------
 // Deactivation helpers
@@ -425,4 +426,6 @@ export const userRouter = router({
     });
     return { userId };
   }),
+
+  pins: userPinsRouter,
 });

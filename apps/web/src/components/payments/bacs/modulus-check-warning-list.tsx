@@ -54,7 +54,7 @@ export function ModulusCheckWarningList({ warnings }: ModulusCheckWarningListPro
               </span>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0 max-w-[60%]">
-              <Badge variant="warning" aria-label="Modulus check warning">
+              <Badge variant="warning" aria-label={t('aria.modulusWarning')}>
                 WARN
               </Badge>
               {w.warnings.length > 0 && (

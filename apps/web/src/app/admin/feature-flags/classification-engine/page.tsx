@@ -17,6 +17,7 @@ import { evaluate } from '@contractor-ops/feature-flags';
 import { getAllPending, getRegistry, LOCKED_DISCLAIMERS } from '@contractor-ops/validators';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
 
 export default async function ClassificationEngineFlagPage() {
   const { organizationId } = await requirePlatformOperator();
+  const t = await getTranslations('Admin.ClassificationEngineFlag');
 
   const org = await prisma.organization.findFirst({
     where: { id: organizationId },
@@ -58,17 +60,15 @@ export default async function ClassificationEngineFlagPage() {
   return (
     <div className="space-y-8 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">module.classification-engine</h1>
-        <p className="mt-1 text-muted-foreground">
-          Classification engine kill-switch. Read-only — toggle in Unleash console.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('moduleName')}</h1>
+        <p className="mt-1 text-muted-foreground">{t('killSwitchDesc')}</p>
       </div>
 
       {/* Flag state summary */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-lg border p-4">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            App-side value (what users see)
+            {t('appSideValue')}
           </div>
           <div className="mt-2 flex items-center gap-2">
             {evaluated.enabled ? (
@@ -87,7 +87,7 @@ export default async function ClassificationEngineFlagPage() {
 
         <div className="rounded-lg border p-4">
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Signoff registry
+            {t('signoffRegistry')}
           </div>
           <div className="mt-2 flex items-center gap-2">
             {pendingKeys.length === 0 ? (
@@ -113,13 +113,11 @@ export default async function ClassificationEngineFlagPage() {
       {isOverridden && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
           <p className="text-sm font-medium text-amber-900">
-            Flag ON in Unleash but app-gated — {pendingKeys.length} disclaimer
-            {pendingKeys.length === 1 ? '' : 's'} PENDING.
+            {t('pendingGate', { count: pendingKeys.length })}
           </p>
           <p className="mt-1 text-xs text-amber-700">
-            Resolve by submitting a PR updating{' '}
-            <code className="font-mono">packages/validators/src/legal/signoff-registry.json</code>{' '}
-            to set each PENDING key to APPROVED with approvedBy + approvedAt + approverRole. The PR
+            {t('pendingGateResolution')} <code className="font-mono">{t('registryPath')}</code> to
+            set each PENDING key to APPROVED with approvedBy + approvedAt + approverRole. The PR
             requires @contractor-ops/legal-platform review (CODEOWNERS).
           </p>
         </div>
@@ -127,19 +125,17 @@ export default async function ClassificationEngineFlagPage() {
 
       {/* Signoff registry table */}
       <div>
-        <h2 className="text-lg font-semibold">Disclaimer Signoff Registry</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          All keys must be APPROVED before the flag can be enabled in production.
-        </p>
+        <h2 className="text-lg font-semibold">{t('disclaimerRegistryTitle')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('allKeysMustBeApproved')}</p>
         <div className="mt-4 rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Disclaimer Key</TableHead>
+                <TableHead>{t('colDisclaimerKey')}</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Approved By</TableHead>
-                <TableHead>Approved At</TableHead>
-                <TableHead>Approver Role</TableHead>
+                <TableHead>{t('colApprovedBy')}</TableHead>
+                <TableHead>{t('colApprovedAt')}</TableHead>
+                <TableHead>{t('colApproverRole')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -412,7 +412,7 @@ export const documentRouter = router({
         where.status = { in: status };
       }
 
-      const [documents, totalCount] = await Promise.all([
+      const [documents, total] = await Promise.all([
         ctx.db.document.findMany({
           where,
           skip: (page - 1) * pageSize,
@@ -425,7 +425,7 @@ export const documentRouter = router({
         ctx.db.document.count({ where }),
       ]);
 
-      return { items: documents, totalCount, page, pageSize };
+      return { items: documents, total, page, pageSize };
     }),
 
   /**

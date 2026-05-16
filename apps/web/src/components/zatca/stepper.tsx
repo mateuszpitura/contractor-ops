@@ -1,6 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,7 @@ interface StepperProps {
  * - ARIA: role="tablist", aria-current="step" for active
  */
 export function Stepper({ steps, currentStep, onStepClick, className }: StepperProps) {
+  const t = useTranslations('Zatca.stepper');
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!onStepClick) return;
@@ -56,7 +58,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
   return (
     <div
       role="tablist"
-      aria-label="Onboarding progress"
+      aria-label={t('onboardingProgress')}
       className={cn('flex flex-col gap-2 md:flex-row md:items-center md:gap-0', className)}
       onKeyDown={handleKeyDown}>
       {steps.map((step, index) => {
@@ -73,7 +75,7 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
               role="tab"
               aria-selected={isCurrent}
               aria-current={isCurrent ? 'step' : undefined}
-              aria-label={`Step ${index + 1}: ${step.label}`}
+              aria-label={t('stepAriaLabel', { number: index + 1, label: step.label })}
               tabIndex={isCurrent ? 0 : -1}
               disabled={isFuture}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop

@@ -1,6 +1,6 @@
 'use client';
 
-import { AtelierEmptyState, EquipmentIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, EquipmentIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { Loader2, RotateCcw, XCircle } from 'lucide-react';
@@ -100,8 +100,10 @@ export function PortalEquipmentTab() {
   if (equipmentQuery.isPending) {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">{t('title')}</h1>
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <SectionLabel variant="portal">{t('title')}</SectionLabel>
+          </div>
           <Skeleton className="h-9 w-32" />
         </div>
         {/* Equipment card skeletons mirror final layout: icon + name+badge / serial+delivered */}
@@ -137,7 +139,7 @@ export function PortalEquipmentTab() {
   if (equipment.length === 0) {
     return (
       <div className="space-y-8">
-        <h1 className="text-xl font-semibold">{t('title')}</h1>
+        <SectionLabel variant="portal">{t('title')}</SectionLabel>
         <AtelierEmptyState
           variant="subview"
           illustration={EquipmentIllustration}
@@ -174,8 +176,10 @@ export function PortalEquipmentTab() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t('title')}</h1>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel variant="portal">{t('title')}</SectionLabel>
+        </div>
         {canReturn && !hasActiveReturn && (
           // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           <Button onClick={() => setReturnFlowOpen(true)}>

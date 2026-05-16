@@ -1,10 +1,10 @@
 'use client';
 
-import { AuditLogIllustration } from '@contractor-ops/ui';
+import { AtelierTableShell, AuditLogIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { format, formatDistanceToNow } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -237,54 +237,35 @@ export function AuditLogTable({
     getRowId: row => row.id,
   });
 
-  if (isLoading) {
-    return (
-      <div className="rounded-xl border bg-background">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead style={{ width: 140 }}>{t('columns.timestamp')}</TableHead>
-              <TableHead style={{ width: 180 }}>{t('columns.actor')}</TableHead>
-              <TableHead>{t('columns.action')}</TableHead>
-              <TableHead>{t('columns.resource')}</TableHead>
-              <TableHead style={{ width: 40 }} />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 10 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`skeleton-${i}`}>
-                <TableCell>
-                  <Skeleton className="h-4 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-32" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-40" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="size-4" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+  const pagination =
+    totalCount > 0 ? (
+      <div className="flex items-center justify-between px-1 py-1">
+        <p className="text-sm text-muted-foreground">
+          {t('pagination.summary', { page, totalPages })}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => onPageChange(page - 1)}>
+            {t('pagination.previous')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={page >= totalPages}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => onPageChange(page + 1)}>
+            {t('pagination.next')}
+          </Button>
+        </div>
       </div>
-    );
-  }
+    ) : null;
 
   return (
-    <div className="relative rounded-xl border bg-background">
-      {/* Refetch overlay */}
-      {isFetching && !isLoading && (
-        <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-        </div>
-      )}
+    <AtelierTableShell isLoading={isFetching && !isLoading} footer={pagination}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (
@@ -304,7 +285,30 @@ export function AuditLogTable({
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows.length === 0 ? (
+          {isLoading ? (
+            <>
+              {Array.from({ length: 10 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-full max-w-[120px]" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="ms-auto h-4 w-4 rounded-sm" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </>
+          ) : table.getRowModel().rows.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 <div className="mx-auto flex max-w-md flex-col items-center">
@@ -345,33 +349,6 @@ export function AuditLogTable({
           )}
         </TableBody>
       </Table>
-
-      {/* Pagination */}
-      {totalCount > 0 && (
-        <div className="flex items-center justify-between border-t px-4 py-3">
-          <p className="text-sm text-muted-foreground">
-            {t('pagination.summary', { page, totalPages })}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onPageChange(page - 1)}>
-              {t('pagination.previous')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onPageChange(page + 1)}>
-              {t('pagination.next')}
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+    </AtelierTableShell>
   );
 }

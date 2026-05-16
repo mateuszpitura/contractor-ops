@@ -106,7 +106,7 @@ describe('ComplianceGapsReport', () => {
             health: 'red',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -135,7 +135,7 @@ describe('ComplianceGapsReport', () => {
 
   it('renders empty state when no data', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -179,7 +179,7 @@ describe('ComplianceGapsReport', () => {
             health: 'green',
           },
         ],
-        totalCount: 2,
+        total: 2,
       },
       isLoading: false,
     } as unknown as never);
@@ -191,7 +191,7 @@ describe('ComplianceGapsReport', () => {
   // ---- Chart renders with data ----
   it('renders chart component regardless of data state', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -201,7 +201,7 @@ describe('ComplianceGapsReport', () => {
   // ---- Breadcrumb always renders ----
   it('renders breadcrumb in all states', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -211,7 +211,7 @@ describe('ComplianceGapsReport', () => {
   // ---- Export buttons always render ----
   it('renders export buttons in all states', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -227,7 +227,7 @@ describe('ComplianceGapsReport', () => {
       callCount++;
       if (callCount === 1) {
         return {
-          data: { items: [], totalCount: 0 },
+          data: { items: [], total: 0 },
           isLoading: false,
         } as unknown as never;
       }
@@ -254,7 +254,7 @@ describe('ComplianceGapsReport', () => {
             health: 'red',
           },
         ],
-        totalCount: 50,
+        total: 50,
       },
       isLoading: false,
     } as unknown as never);
@@ -292,7 +292,7 @@ describe('ComplianceGapsReport', () => {
             health: 'green',
           },
         ],
-        totalCount: 3,
+        total: 3,
       },
       isLoading: false,
     } as unknown as never);
@@ -320,7 +320,7 @@ describe('ComplianceGapsReport', () => {
     ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
+        return { data: { items: [], total: 0 }, isLoading: false } as unknown as never;
       }
       return { data: undefined, isLoading: false } as unknown as never;
     });
@@ -339,7 +339,7 @@ describe('ComplianceGapsReport', () => {
       health: ['red', 'yellow', 'green'][i % 3] as 'red' | 'yellow' | 'green',
     }));
     mockUseQuery.mockReturnValue({
-      data: { items, totalCount: 20 },
+      data: { items, total: 20 },
       isLoading: false,
     } as unknown as never);
     render(<ComplianceGapsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
@@ -361,7 +361,7 @@ describe('ComplianceGapsReport', () => {
             health: 'green',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -413,7 +413,7 @@ describe('ComplianceGapsReport', () => {
             health: 'green',
           },
         ],
-        totalCount: 2,
+        total: 2,
       },
       isLoading: false,
     } as unknown as never);
@@ -437,7 +437,7 @@ describe('ComplianceGapsReport', () => {
             health: 'red',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -467,7 +467,7 @@ describe('ComplianceGapsReport', () => {
             health: 'green',
           },
         ],
-        totalCount: 2,
+        total: 2,
       },
       isLoading: false,
     } as unknown as never);
@@ -483,7 +483,7 @@ describe('ComplianceGapsReport', () => {
     ).mockImplementation(() => {
       callCount++;
       if (callCount === 1) {
-        return { data: { items: [], totalCount: 0 }, isLoading: false } as unknown as never;
+        return { data: { items: [], total: 0 }, isLoading: false } as unknown as never;
       }
       return { data: undefined, isLoading: false } as unknown as never;
     });
@@ -505,7 +505,7 @@ describe('ComplianceGapsReport', () => {
             health: 'red',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);

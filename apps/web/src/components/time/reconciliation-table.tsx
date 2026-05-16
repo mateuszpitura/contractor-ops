@@ -4,6 +4,7 @@ import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui'
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { DeviationFlag } from '@/components/time/deviation-flag';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -116,6 +117,7 @@ function ReconciliationSkeleton() {
  * with tRPC query.
  */
 export function ReconciliationTable() {
+  const t = useTranslations('Time');
   const query = useQuery(trpc.time.listReconciliations.queryOptions({}));
 
   const data = query.data as { items: ReconciliationItem[]; nextCursor?: string } | undefined;
@@ -129,8 +131,8 @@ export function ReconciliationTable() {
     return (
       <AtelierEmptyState
         illustration={TimeTrackingIllustration}
-        heading="No reconciliation data"
-        body="Reconciliation data appears when invoices have matching approved time entries."
+        heading={t('reconciliation.noDataHeading')}
+        body={t('reconciliation.noDataBody')}
         renderAction={renderEmptyStateAction}
       />
     );
@@ -141,12 +143,12 @@ export function ReconciliationTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Contractor</TableHead>
-            <TableHead>Period</TableHead>
-            <TableHead className="text-end">Approved Hours</TableHead>
-            <TableHead className="text-end">Expected Amount</TableHead>
-            <TableHead className="text-end">Invoiced Amount</TableHead>
-            <TableHead>Deviation</TableHead>
+            <TableHead>{t('columns.contractor')}</TableHead>
+            <TableHead>{t('columns.period')}</TableHead>
+            <TableHead className="text-end">{t('reconciliation.approvedHours')}</TableHead>
+            <TableHead className="text-end">{t('reconciliation.expectedAmount')}</TableHead>
+            <TableHead className="text-end">{t('reconciliation.invoicedAmount')}</TableHead>
+            <TableHead>{t('reconciliation.deviation')}</TableHead>
             <TableHead className="w-10" />
           </TableRow>
         </TableHeader>
@@ -154,7 +156,7 @@ export function ReconciliationTable() {
           {items.map(item => (
             <TableRow key={item.invoice.id}>
               <TableCell className="text-sm font-medium">
-                {item.contractor?.legalName ?? 'Unknown'}
+                {item.contractor?.legalName ?? t('reconciliation.unknown')}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">{formatPeriod(item)}</TableCell>
               <TableCell className="text-end text-sm font-medium tabular-nums">
@@ -183,7 +185,7 @@ export function ReconciliationTable() {
                   href={`/invoices/${item.invoice.id}`}
                   className="text-muted-foreground hover:text-foreground">
                   <ExternalLink className="h-4 w-4" />
-                  <span className="sr-only">View invoice</span>
+                  <span className="sr-only">{t('reconciliation.viewInvoice')}</span>
                 </Link>
               </TableCell>
             </TableRow>

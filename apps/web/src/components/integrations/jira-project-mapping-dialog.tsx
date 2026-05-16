@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -56,6 +57,7 @@ export function JiraProjectMappingDialog({
 }: JiraProjectMappingDialogProps) {
   const queryClient = useQueryClient();
   const reactId = useId();
+  const t = useTranslations('Integrations');
 
   // ---- Local state ----
   const [projectId, setProjectId] = useState<string | undefined>(undefined);
@@ -114,14 +116,14 @@ export function JiraProjectMappingDialog({
   const saveMutation = useMutation({
     ...trpc.jira.saveTaskConfig.mutationOptions(),
     onSuccess: () => {
-      toast.success('Jira task configuration saved');
+      toast.success(t('jira.projectMapping.toast.saved'));
       queryClient.invalidateQueries({
         queryKey: trpc.jira.getTaskConfig.queryKey({ taskTemplateId }),
       });
       onOpenChange(false);
     },
     onError: () => {
-      toast.error('Failed to save Jira task configuration');
+      toast.error(t('jira.projectMapping.toast.saveFailed'));
     },
   });
 
@@ -176,18 +178,18 @@ export function JiraProjectMappingDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Configure Jira Integration</DialogTitle>
-          <DialogDescription>Map this task to a Jira project and issue type.</DialogDescription>
+          <DialogTitle>{t('jira.projectMapping.title')}</DialogTitle>
+          <DialogDescription>{t('jira.projectMapping.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Jira Project selector */}
           <div className="space-y-2">
-            <Label>Jira Project</Label>
+            <Label>{t('jira.projectMapping.jiraProject')}</Label>
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={projectId} onValueChange={handleProjectChange}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a project">
+                <SelectValue placeholder={t('jira.projectMapping.selectProject')}>
                   {!!projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
@@ -203,11 +205,11 @@ export function JiraProjectMappingDialog({
 
           {/* Issue Type selector */}
           <div className="space-y-2">
-            <Label>Issue Type</Label>
+            <Label>{t('jira.projectMapping.issueType')}</Label>
             {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an issue type">
+                <SelectValue placeholder={t('jira.projectMapping.selectIssueType')}>
                   {!!issueTypesQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
                 </SelectValue>
               </SelectTrigger>
@@ -224,7 +226,7 @@ export function JiraProjectMappingDialog({
           {/* Auto-create switch */}
           <div className="flex items-center justify-between gap-4 rounded-md border p-3">
             <Label htmlFor={`${reactId}-jira-auto-create`} className="cursor-pointer">
-              Create Jira issue when task activates
+              {t('jira.taskConfig.enableToggle')}
             </Label>
             <Switch
               id={`${reactId}-jira-auto-create`}
@@ -238,12 +240,12 @@ export function JiraProjectMappingDialog({
         <DialogFooter>
           {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Discard Changes
+            {t('jira.projectMapping.discardChanges')}
           </Button>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave} disabled={!hasChanges || saveMutation.isPending}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
-            Save Mapping
+            {t('jira.projectMapping.saveMapping')}
           </Button>
         </DialogFooter>
       </DialogContent>

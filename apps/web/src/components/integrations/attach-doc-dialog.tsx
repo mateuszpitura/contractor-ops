@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [providerFilter, setProviderFilter] = useState<ProviderFilter>('all');
   const queryClient = useQueryClient();
+  const t = useTranslations('Integrations');
 
   // Debounce search input
   useEffect(() => {
@@ -86,14 +88,18 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
     ...trpc.docs.attach.mutationOptions(),
     onSuccess: (_data, variables) => {
       const metadata = variables.metadata as { title?: string };
-      toast.success(`"${metadata.title ?? 'Document'}" linked to this step`);
+      toast.success(
+        t('docs.attachDialog.toast.linked', {
+          title: metadata.title ?? t('docs.section.untitled'),
+        }),
+      );
       void queryClient.invalidateQueries({
         queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
       });
       onOpenChange(false);
     },
     onError: () => {
-      toast.error('Failed to attach document');
+      toast.error(t('docs.attachDialog.toast.attachFailed'));
     },
   });
 
@@ -123,24 +129,32 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
   };
 
   const filterButtons: { value: ProviderFilter; label: string; icon?: React.ReactNode }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'notion', label: 'Notion', icon: <NotionIcon className="h-3.5 w-3.5" /> },
-    { value: 'confluence', label: 'Confluence', icon: <ConfluenceIcon className="h-3.5 w-3.5" /> },
+    { value: 'all', label: t('docs.attachDialog.filterAll') },
+    {
+      value: 'notion',
+      label: t('docs.attachDialog.filterNotion'),
+      icon: <NotionIcon className="h-3.5 w-3.5" />,
+    },
+    {
+      value: 'confluence',
+      label: t('docs.attachDialog.filterConfluence'),
+      icon: <ConfluenceIcon className="h-3.5 w-3.5" />,
+    },
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Attach Document</DialogTitle>
-          <DialogDescription>Search for a page to link to this step.</DialogDescription>
+          <DialogTitle>{t('docs.attachDialog.title')}</DialogTitle>
+          <DialogDescription>{t('docs.attachDialog.description')}</DialogDescription>
         </DialogHeader>
 
         {/* Search input */}
         <div className="relative">
           <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search Notion and Confluence pages..."
+            placeholder={t('docs.attachDialog.searchPlaceholder')}
             value={query}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setQuery(e.target.value)}
@@ -179,7 +193,7 @@ export function AttachDocDialog({ workflowTaskRunId, open, onOpenChange }: Attac
             </div>
           ) : debouncedQuery.length === 0 ? null : results.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              No pages found matching your search.
+              {t('docs.attachDialog.noResults')}
             </p>
           ) : (
             <div className="space-y-0.5 p-1">

@@ -2,6 +2,7 @@
 
 import { format, formatDistanceToNow } from 'date-fns';
 import { ExternalLink, ShieldCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { CopyableField } from '@/components/shared/copyable-field';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -28,6 +29,7 @@ export function KsefMetadataSection({
   fetchedAt,
   source: _source,
 }: KsefMetadataSectionProps) {
+  const t = useTranslations('ksef');
   const fetchedDate = new Date(fetchedAt);
   const relativeTime = formatDistanceToNow(fetchedDate, { addSuffix: true });
   const exactDate = format(fetchedDate, 'yyyy-MM-dd HH:mm:ss');
@@ -39,13 +41,13 @@ export function KsefMetadataSection({
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-          <h3 className="text-sm font-semibold">KSeF Data</h3>
+          <h3 className="text-sm font-semibold">{t('metadataHeading')}</h3>
           <a
             href={ksefUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="ms-auto inline-flex items-center gap-1 text-sm text-primary hover:underline">
-            View in KSeF
+            {t('viewInKsef')}
             <ExternalLink className="size-3" aria-hidden="true" />
           </a>
         </div>
@@ -54,21 +56,21 @@ export function KsefMetadataSection({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {/* KSeF Reference */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold">KSeF Reference</p>
+            <p className="text-sm font-semibold">{t('referenceLabel')}</p>
             <CopyableField value={ksefReference} ariaLabel="Copy KSeF reference" />
           </div>
 
           {/* UPO Receipt */}
           {!!upoReceipt && (
             <div className="space-y-1">
-              <p className="text-sm font-semibold">UPO Receipt</p>
+              <p className="text-sm font-semibold">{t('upoLabel')}</p>
               <CopyableField value={upoReceipt} ariaLabel="Copy UPO receipt" />
             </div>
           )}
 
           {/* Fetched timestamp */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold">Fetched</p>
+            <p className="text-sm font-semibold">{t('fetchedLabel')}</p>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger className="text-sm text-muted-foreground">
@@ -81,7 +83,7 @@ export function KsefMetadataSection({
 
           {/* Source */}
           <div className="space-y-1">
-            <p className="text-sm font-semibold">Source</p>
+            <p className="text-sm font-semibold">{t('sourceBadge')}</p>
             <KsefSourceBadge fetchedAt={fetchedAt} />
           </div>
         </div>

@@ -51,6 +51,7 @@ interface LinkedJiraIssueData {
  * Only renders when Jira is connected.
  */
 function LinkedIssuesSection({ runId }: { runId: string }) {
+  const ts = useTranslations('Workflows.sidePanel');
   const connectionQuery = useQuery({
     ...trpc.jira.connectionStatus.queryOptions(),
     staleTime: Infinity,
@@ -75,7 +76,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
       <Separator />
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Linked Issues
+          {ts('linkedIssues')}
         </h3>
 
         {issuesQuery.isLoading ? (
@@ -90,7 +91,7 @@ function LinkedIssuesSection({ runId }: { runId: string }) {
             ))}
           </div>
         ) : issues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No linked Jira issues for this workflow.</p>
+          <p className="text-sm text-muted-foreground">{ts('noLinkedJiraIssues')}</p>
         ) : (
           <div className="space-y-2">
             {issues.map(issue => (
@@ -132,6 +133,7 @@ interface LinkedLinearIssueData {
  * Only renders when Linear is connected and has linked issues.
  */
 function LinkedLinearIssuesSection({ runId }: { runId: string }) {
+  const ts = useTranslations('Workflows.sidePanel');
   const connectionQuery = useQuery({
     ...trpc.linear.connectionStatus.queryOptions(),
     staleTime: Infinity,
@@ -158,7 +160,7 @@ function LinkedLinearIssuesSection({ runId }: { runId: string }) {
       <Separator />
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Linear Issues
+          {ts('linearIssues')}
         </h3>
 
         {issuesQuery.isLoading ? (
@@ -301,7 +303,10 @@ export function WorkflowSidePanel({ runId, onClose }: WorkflowSidePanelProps) {
                   </h3>
                   <Progress value={progressPercent} className="h-2" />
                   <p className="text-sm text-muted-foreground">
-                    {taskSummary.done} of {taskSummary.total} tasks complete
+                    {ts('tasksComplete', {
+                      done: taskSummary.done,
+                      total: taskSummary.total,
+                    })}
                   </p>
                 </div>
 

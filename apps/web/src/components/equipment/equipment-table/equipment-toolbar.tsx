@@ -225,6 +225,9 @@ export function EquipmentToolbar({
             <FilterBadge
               key={`type-${type}`}
               label={t(`type.${enumKey(type)}` as Parameters<typeof t>[0])}
+              removeLabel={t('list.filters.removeFilter', {
+                label: t(`type.${enumKey(type)}` as Parameters<typeof t>[0]),
+              })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', type)}
             />
@@ -233,6 +236,9 @@ export function EquipmentToolbar({
             <FilterBadge
               key={`status-${status}`}
               label={t(`status.${enumKey(status)}` as Parameters<typeof t>[0])}
+              removeLabel={t('list.filters.removeFilter', {
+                label: t(`status.${enumKey(status)}` as Parameters<typeof t>[0]),
+              })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', status)}
             />
@@ -242,7 +248,7 @@ export function EquipmentToolbar({
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={clearAllFilters}>
-            Clear all
+            {t('list.filters.clearAll')}
           </button>
         </div>
       )}
@@ -254,7 +260,15 @@ export function EquipmentToolbar({
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
+function FilterBadge({
+  label,
+  removeLabel,
+  onRemove,
+}: {
+  label: string;
+  removeLabel: string;
+  onRemove: () => void;
+}) {
   return (
     <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
@@ -262,7 +276,7 @@ function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void 
         type="button"
         className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
         onClick={onRemove}
-        aria-label={`Remove filter: ${label}`}>
+        aria-label={removeLabel}>
         <X className="h-3 w-3" />
       </button>
     </Badge>

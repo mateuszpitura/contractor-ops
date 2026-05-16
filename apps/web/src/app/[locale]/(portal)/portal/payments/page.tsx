@@ -6,6 +6,7 @@ import {
   AtelierStatusPill,
   AtelierTableShell,
   PaymentsIllustration,
+  SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -66,6 +67,10 @@ export default function PortalPaymentsPage() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
+        <SectionLabel variant="portal">{t('payments.title')}</SectionLabel>
+      </AnimateIn>
+
+      <AnimateIn delay={2}>
         {isLoading ? (
           <div className="mt-6">
             <AtelierTableShell isLoading>

@@ -75,7 +75,9 @@ export function PaymentRunItemRow({
             <Bdi>{item.contractor.legalName}</Bdi>
           </p>
           {item.paymentReference ? (
-            <p className="text-[12px] text-muted-foreground">Ref: {item.paymentReference}</p>
+            <p className="text-[12px] text-muted-foreground">
+              {t('paymentRef', { reference: item.paymentReference })}
+            </p>
           ) : null}
         </div>
         <span className="font-mono text-xs tabular-nums whitespace-nowrap">
@@ -165,7 +167,7 @@ export function PaymentRunItemRow({
                 setActiveAction(null);
                 setReference('');
               }}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -207,7 +209,7 @@ export function PaymentRunItemRow({
                 setActiveAction(null);
                 setFailureReason('');
               }}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -235,7 +237,7 @@ export function PaymentRunItemRow({
               className="h-6 text-xs"
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setActiveAction(null)}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>

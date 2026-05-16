@@ -208,7 +208,7 @@ export function ProviderConnectionCard({
 
   return (
     <>
-      <Card>
+      <Card className="flex h-full flex-col">
         <CardHeader>
           <div className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center">{icon}</span>
@@ -218,10 +218,10 @@ export function ProviderConnectionCard({
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-1 flex-col">
           {/* Connected state */}
           {isConnected && !isReauthRequired && (
-            <div className="space-y-3">
+            <div className="flex flex-1 flex-col space-y-3">
               <div className="space-y-1 text-sm">
                 {!!health?.displayName && (
                   <p>
@@ -244,7 +244,7 @@ export function ProviderConnectionCard({
                   </p>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="mt-auto flex gap-2 pt-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
                   {t('provider.manageCta')}
@@ -262,13 +262,13 @@ export function ProviderConnectionCard({
 
           {/* Re-auth required state */}
           {!!(isReauthRequired || isError) && (
-            <div className="space-y-3">
+            <div className="flex flex-1 flex-col space-y-3">
               <p className="text-sm text-muted-foreground">
                 {isReauthRequired
                   ? t('provider.errorTokenExpired')
                   : t('provider.errorConnectionFailed')}
               </p>
-              <div className="flex gap-2">
+              <div className="mt-auto flex gap-2 pt-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={handleConnect}>
                   {t('provider.reconnectCta')}
@@ -288,12 +288,14 @@ export function ProviderConnectionCard({
 
           {/* Disconnected state */}
           {!(isConnected || isReauthRequired || isError) && (
-            <div className="space-y-3">
+            <div className="flex flex-1 flex-col space-y-3">
               <p className="text-sm text-muted-foreground">{description}</p>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button onClick={handleConnect}>
-                {t('provider.connectCta', { provider: displayName })}
-              </Button>
+              <div className="mt-auto pt-3">
+                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+                <Button onClick={handleConnect}>
+                  {t('provider.connectCta', { provider: displayName })}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

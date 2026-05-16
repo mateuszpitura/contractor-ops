@@ -1,10 +1,10 @@
 'use client';
 
-import { AtelierEmptyState, ContractsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
@@ -83,7 +83,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     () => (queryData?.items ?? []) as unknown as MiniContractRow[],
     [queryData],
   );
-  const totalCount: number = queryData?.totalCount ?? 0;
+  const totalCount: number = queryData?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const columns: ColumnDef<MiniContractRow>[] = useMemo(
@@ -197,8 +197,10 @@ export function TabContracts({ contractorId }: TabContractsProps) {
   return (
     <div className="space-y-4">
       {/* Header with CTA */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel icon={FileText}>{t('contractorTab.heading')}</SectionLabel>
+        </div>
         <Button
           size="sm"
           disabled={isLoading}

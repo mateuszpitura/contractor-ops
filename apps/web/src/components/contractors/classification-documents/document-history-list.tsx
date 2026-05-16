@@ -8,6 +8,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
 
+import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 interface DocumentHistoryListProps {
@@ -56,7 +57,19 @@ export function DocumentHistoryList({ engagementId }: DocumentHistoryListProps) 
       <h3 id={headingId} className="mb-2 text-sm font-semibold">
         {t('documentHistory')}
       </h3>
-      {docs.length === 0 ? (
+      {listQuery.isPending ? (
+        <ul className="flex flex-col gap-2" aria-busy="true">
+          {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <li
+              key={`skel-${i}`}
+              className="flex items-center justify-between rounded-md border px-3 py-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-16" />
+            </li>
+          ))}
+        </ul>
+      ) : docs.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
       ) : (
         <ul className="flex flex-col gap-2">

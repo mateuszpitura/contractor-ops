@@ -119,7 +119,7 @@ export function AssignmentDialog({
 
         <Command shouldFilter={false} className="rounded-lg border">
           <CommandInput
-            placeholder="Search contractors..."
+            placeholder={t('search.placeholder')}
             value={search}
             onValueChange={setSearch}
           />
@@ -130,7 +130,7 @@ export function AssignmentDialog({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 </div>
               ) : (
-                'No contractors found.'
+                t('search.notFound')
               )}
             </CommandEmpty>
             <CommandGroup>

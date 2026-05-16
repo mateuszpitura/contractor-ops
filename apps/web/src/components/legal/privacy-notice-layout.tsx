@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { PrivacyNoticePdfDownload } from './privacy-notice-pdf-download';
 import { PrivacyNoticeToc } from './privacy-notice-toc';
@@ -25,18 +26,20 @@ export interface PrivacyNoticeLayoutProps {
  * legal layout. Uses Typography tokens from `src/mdx-components.tsx` — no
  * Tailwind `prose`.
  */
-export function PrivacyNoticeLayout({
+export async function PrivacyNoticeLayout({
   jurisdiction,
   versionLabel,
   children,
 }: PrivacyNoticeLayoutProps) {
+  const t = await getTranslations('Legal.privacy');
+
   return (
     <>
       {/* Skip-link — first focusable element. WCAG 2.4.1 bypass blocks. */}
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:shadow-lg">
-        Skip to content
+        {t('skipToContent')}
       </a>
 
       <div className="mx-auto w-full max-w-6xl px-6 py-12">

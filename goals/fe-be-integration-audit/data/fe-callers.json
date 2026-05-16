@@ -84,7 +84,7 @@
     "path": "classificationDashboard.globalHeader",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/classification/page.tsx",
-    "line": 27,
+    "line": 28,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -356,7 +356,7 @@
     "path": "equipment.list",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/equipment/page.tsx",
-    "line": 45,
+    "line": 46,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -372,7 +372,7 @@
     "path": "equipment.retire",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/equipment/page.tsx",
-    "line": 50,
+    "line": 51,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -388,7 +388,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/app/[locale]/(dashboard)/equipment/page.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -404,7 +404,7 @@
     "path": "equipment.unassign",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/equipment/page.tsx",
-    "line": 65,
+    "line": 66,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -420,7 +420,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/app/[locale]/(dashboard)/equipment/page.tsx",
-    "line": 69,
+    "line": 70,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -625,6 +625,54 @@
   },
   {
     "client": "trpc",
+    "path": "user.pins.list",
+    "kind": "queryOptions",
+    "file": "apps/web/src/app/[locale]/(dashboard)/settings/page.tsx",
+    "line": 74,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "user.pins.list",
+    "kind": "queryKey",
+    "file": "apps/web/src/app/[locale]/(dashboard)/settings/page.tsx",
+    "line": 75,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "user.pins.toggle",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/app/[locale]/(dashboard)/settings/page.tsx",
+    "line": 86,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": true,
+      "hasInvalidation": false,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
     "path": "time.listAll",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx",
@@ -692,7 +740,7 @@
     "path": "time.listPending",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 70,
+    "line": 72,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -708,7 +756,7 @@
     "path": "time.listAll",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 75,
+    "line": 77,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -724,7 +772,7 @@
     "path": "time.approve",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 110,
+    "line": 112,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -740,7 +788,7 @@
     "path": "time.reject",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 120,
+    "line": 122,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -756,7 +804,7 @@
     "path": "time.bulkApprove",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 130,
+    "line": 132,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -772,7 +820,7 @@
     "path": "time.bulkReject",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 141,
+    "line": 143,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -884,7 +932,7 @@
     "path": "portal.listDocuments",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/documents/page.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -916,7 +964,7 @@
     "path": "portal.listInvoices",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/invoices/page.tsx",
-    "line": 188,
+    "line": 189,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -980,7 +1028,7 @@
     "path": "portal.overview",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/page.tsx",
-    "line": 53,
+    "line": 54,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -996,7 +1044,7 @@
     "path": "portal.getSession",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/page.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1012,7 +1060,7 @@
     "path": "portal.listPayments",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(portal)/portal/payments/page.tsx",
-    "line": 57,
+    "line": 58,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1396,7 +1444,7 @@
     "path": "approval.bulkApprove",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx",
-    "line": 124,
+    "line": 127,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -1412,7 +1460,7 @@
     "path": "approval.bulkReject",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx",
-    "line": 144,
+    "line": 147,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2052,7 +2100,7 @@
     "path": "classificationDocument.listByEngagement",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/classification-documents/document-history-list.tsx",
-    "line": 31,
+    "line": 32,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2068,7 +2116,7 @@
     "path": "classificationDocument.getDownloadUrl",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/classification-documents/document-history-list.tsx",
-    "line": 40,
+    "line": 41,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2276,7 +2324,7 @@
     "path": "document.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/tab-documents.tsx",
-    "line": 28,
+    "line": 29,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2292,7 +2340,7 @@
     "path": "equipment.listByContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/tab-equipment.tsx",
-    "line": 59,
+    "line": 51,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2308,7 +2356,7 @@
     "path": "payment.listByContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/tab-payments.tsx",
-    "line": 70,
+    "line": 71,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2545,10 +2593,10 @@
   },
   {
     "client": "trpc",
-    "path": "contractor.gusLookup",
+    "path": "contractor.companyLookup",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-wizard/step-company.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2900,7 +2948,7 @@
     "path": "contract.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 81,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2916,7 +2964,7 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 83,
+    "line": 85,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2932,7 +2980,23 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 99,
+    "line": 101,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": true,
+      "hasToastError": true,
+      "hasInvalidation": true,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "contract.delete",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
+    "line": 116,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3444,7 +3508,7 @@
     "path": "tax.taxSummary",
     "kind": "queryOptions",
     "file": "apps/web/src/components/dashboard/tax-obligations-widget.tsx",
-    "line": 21,
+    "line": 64,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3454,6 +3518,22 @@
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "document.delete",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/documents/document-card.tsx",
+    "line": 131,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": true,
+      "hasToastError": true,
+      "hasInvalidation": true,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -5316,7 +5396,7 @@
     "path": "invoiceIntake.listByOrg",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/intake/intake-list.tsx",
-    "line": 100,
+    "line": 87,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6100,7 +6180,7 @@
     "path": "settings.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 200,
+    "line": 201,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6116,7 +6196,7 @@
     "path": "consent.hasRequiredConsents",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 220,
+    "line": 221,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6132,7 +6212,7 @@
     "path": "settings.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 229,
+    "line": 230,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6148,7 +6228,7 @@
     "path": "settings.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 232,
+    "line": 233,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6916,7 +6996,7 @@
     "path": "portal.getReturnStatus",
     "kind": "queryKey",
     "file": "apps/web/src/components/portal/portal-equipment-tab.tsx",
-    "line": 251,
+    "line": 255,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6932,7 +7012,7 @@
     "path": "portal.listEquipment",
     "kind": "queryKey",
     "file": "apps/web/src/components/portal/portal-equipment-tab.tsx",
-    "line": 254,
+    "line": 258,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7108,7 +7188,7 @@
     "path": "report.complianceGaps",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 53,
+    "line": 54,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7124,7 +7204,7 @@
     "path": "report.complianceGapsChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7140,7 +7220,7 @@
     "path": "report.exportComplianceGaps",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 65,
+    "line": 66,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7156,7 +7236,7 @@
     "path": "report.expiringContracts",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 47,
+    "line": 48,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7172,7 +7252,7 @@
     "path": "report.expiringContractsChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 56,
+    "line": 57,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7188,7 +7268,7 @@
     "path": "report.exportExpiringContracts",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 60,
+    "line": 61,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7204,7 +7284,7 @@
     "path": "report.overdueInvoices",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/overdue-invoices-report.tsx",
-    "line": 55,
+    "line": 56,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7220,7 +7300,7 @@
     "path": "report.exportOverdueInvoices",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/overdue-invoices-report.tsx",
-    "line": 65,
+    "line": 66,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7236,7 +7316,7 @@
     "path": "report.spendByContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
-    "line": 51,
+    "line": 52,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7252,7 +7332,7 @@
     "path": "report.spendByContractorChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
-    "line": 63,
+    "line": 64,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7268,7 +7348,7 @@
     "path": "report.exportSpendByContractor",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/spend-contractor-report.tsx",
-    "line": 68,
+    "line": 69,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7284,7 +7364,7 @@
     "path": "report.spendByTeam",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/spend-team-report.tsx",
-    "line": 47,
+    "line": 48,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7300,7 +7380,7 @@
     "path": "report.spendByTeamChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/spend-team-report.tsx",
-    "line": 57,
+    "line": 58,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7316,7 +7396,7 @@
     "path": "report.exportSpendByTeam",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/spend-team-report.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7604,7 +7684,7 @@
     "path": "audit.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 149,
+    "line": 150,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7620,7 +7700,7 @@
     "path": "audit.actors",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 152,
+    "line": 153,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7636,7 +7716,7 @@
     "path": "audit.export",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 155,
+    "line": 156,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -8881,26 +8961,10 @@
   },
   {
     "client": "trpc",
-    "path": "integration.disconnectGeneric",
-    "kind": "mutationOptions",
-    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 127,
-    "handlers": {
-      "hasOnSuccess": true,
-      "hasOnError": true,
-      "hasToastSuccess": true,
-      "hasToastError": true,
-      "hasInvalidation": true,
-      "hasIsPending": true
-    },
-    "fileHasAlertDialog": true
-  },
-  {
-    "client": "trpc",
     "path": "integration.getHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 131,
+    "line": 130,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8916,7 +8980,7 @@
     "path": "integration.getAllHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 134,
+    "line": 133,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8929,10 +8993,58 @@
   },
   {
     "client": "trpc",
+    "path": "integration.disconnectGeneric",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 142,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "jira.disconnect",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 152,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "ksef.disconnect",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "line": 158,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
     "path": "integration.getOAuthUrlGeneric",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 146,
+    "line": 169,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9268,7 +9380,7 @@
     "path": "integration.linkUser",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 82,
+    "line": 79,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9284,7 +9396,7 @@
     "path": "integration.listUserMappings",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 86,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9300,7 +9412,7 @@
     "path": "integration.listUserMappings",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 146,
+    "line": 154,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9316,7 +9428,7 @@
     "path": "integration.unlinkUser",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 150,
+    "line": 158,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9332,7 +9444,7 @@
     "path": "integration.listUserMappings",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 154,
+    "line": 162,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9486,6 +9598,70 @@
       "hasIsPending": false
     },
     "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "workflowRoles.create",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-role-form-dialog.tsx",
+    "line": 84,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": true,
+      "hasInvalidation": false,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "workflowRoles.update",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-role-form-dialog.tsx",
+    "line": 90,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": true,
+      "hasToastSuccess": false,
+      "hasToastError": true,
+      "hasInvalidation": false,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "workflowRoles.list",
+    "kind": "queryOptions",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-roles-table.tsx",
+    "line": 36,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "workflowRoles.delete",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/workflow-roles/workflow-roles-table.tsx",
+    "line": 42,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": true,
+      "hasToastError": true,
+      "hasInvalidation": true,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
   },
   {
     "client": "trpc",
@@ -9716,7 +9892,7 @@
     "path": "workflow.listTemplates",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 98,
+    "line": 99,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9732,7 +9908,7 @@
     "path": "workflow.seedStarterTemplates",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 124,
+    "line": 125,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,

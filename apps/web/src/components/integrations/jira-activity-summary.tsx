@@ -1,33 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { JiraIssueChip } from './jira-issue-chip';
 import { JiraLogo } from './jira-logo';
-
-// ---------------------------------------------------------------------------
-// Relative time helper
-// ---------------------------------------------------------------------------
-
-function relativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-
-  const minutes = Math.floor(diffMs / 60_000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
-}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -60,7 +38,27 @@ interface JiraActivitySummaryProps {
 // ---------------------------------------------------------------------------
 
 export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) {
+  const t = useTranslations('Integrations.jira.activitySummary');
   const activityQuery = useQuery(trpc.jira.recentActivity.queryOptions({ contractorId, limit: 5 }));
+
+  const relativeTime = (dateStr: string): string => {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diffMs = now - then;
+
+    const minutes = Math.floor(diffMs / 60_000);
+    if (minutes < 1) return t('relativeTime.justNow');
+    if (minutes < 60) return t('relativeTime.minutesAgo', { n: minutes });
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t('relativeTime.hoursAgo', { n: hours });
+
+    const days = Math.floor(hours / 24);
+    if (days < 30) return t('relativeTime.daysAgo', { n: days });
+
+    const months = Math.floor(days / 30);
+    return t('relativeTime.monthsAgo', { n: months });
+  };
 
   const items = (activityQuery.data ?? []) as unknown as RecentActivityItem[];
 
@@ -92,7 +90,7 @@ export function JiraActivitySummary({ contractorId }: JiraActivitySummaryProps) 
       {/* Header */}
       <div className="flex items-center gap-2">
         <JiraLogo className="size-4" />
-        <h4 className="text-sm font-semibold">Recent Jira Activity</h4>
+        <h4 className="text-sm font-semibold">{t('title')}</h4>
       </div>
 
       {/* Activity list */}

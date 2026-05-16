@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ interface TocHeading {
  * handlers (GC-friendly, respects `prefers-reduced-motion`).
  */
 export function PrivacyNoticeToc() {
+  const t = useTranslations('Legal.privacy');
   const [headings, setHeadings] = useState<TocHeading[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -65,9 +67,9 @@ export function PrivacyNoticeToc() {
   }
 
   return (
-    <nav aria-label="Table of contents" className="sticky top-24">
+    <nav aria-label={t('toc.label')} className="sticky top-24">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        On this page
+        {t('toc.heading')}
       </p>
       <ol className="space-y-1.5 text-sm">
         {headings.map(heading => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 // ---------------------------------------------------------------------------
@@ -20,6 +21,7 @@ type InvoiceDetailLayoutProps = {
  * content panel on the right. Stacks vertically below 1024px breakpoint.
  */
 export function InvoiceDetailLayout({ pdfUrl, children }: InvoiceDetailLayoutProps) {
+  const t = useTranslations('Invoices.detail');
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[60%_1fr] gap-0 lg:gap-8">
       {/* Left: PDF viewer (sticky on desktop, fixed height on mobile) */}
@@ -27,14 +29,12 @@ export function InvoiceDetailLayout({ pdfUrl, children }: InvoiceDetailLayoutPro
         {pdfUrl ? (
           <object data={pdfUrl} type="application/pdf" className="h-full w-full">
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                PDF preview is not available in your browser.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('pdfNotAvailable')}</p>
             </div>
           </object>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-muted-foreground">No PDF available</p>
+            <p className="text-sm text-muted-foreground">{t('noPdf')}</p>
           </div>
         )}
       </div>

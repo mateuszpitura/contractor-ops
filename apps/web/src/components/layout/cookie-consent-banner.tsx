@@ -10,6 +10,7 @@ const COOKIE_CONSENT_KEY = 'cookie-consent-acknowledged';
 
 export function CookieConsentBanner() {
   const t = useTranslations('CookieConsent');
+  const tCommon = useTranslations('Common');
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function CookieConsentBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Cookie consent"
+      aria-label={tCommon('aria.cookieConsent')}
       className="fixed inset-x-0 bottom-0 z-[100] p-4 sm:p-6">
       <div className="mx-auto flex max-w-lg flex-col items-start gap-3 rounded-xl border border-border bg-background/95 p-4 shadow-lg backdrop-blur-sm sm:flex-row sm:items-center sm:gap-4">
         <Cookie className="hidden size-5 shrink-0 text-muted-foreground sm:block" />

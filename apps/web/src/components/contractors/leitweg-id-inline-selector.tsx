@@ -107,7 +107,7 @@ export function LeitwegIdInlineSelector({
           onClick={() => setDialogOpen(true)}
           data-testid="leitweg-inline-add-new">
           <Plus aria-hidden="true" className="me-1 size-3.5" />
-          Add new
+          {t('addNewLeitwegId')}
         </Button>
       </div>
 

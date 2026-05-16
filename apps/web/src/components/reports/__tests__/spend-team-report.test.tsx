@@ -107,7 +107,7 @@ describe('SpendTeamReport', () => {
               totalMinor: 600000,
             },
           ],
-          totalCount: 2,
+          total: 2,
         },
         isLoading: false,
       } as unknown as never)
@@ -146,7 +146,7 @@ describe('SpendTeamReport', () => {
     mockUseQuery.mockReset();
     mockUseQuery
       .mockReturnValueOnce({
-        data: { items: [], totalCount: 0 },
+        data: { items: [], total: 0 },
         isLoading: false,
       } as unknown as never)
       .mockReturnValueOnce({
@@ -186,7 +186,7 @@ describe('SpendTeamReport', () => {
               totalMinor: 100,
             },
           ],
-          totalCount: 1,
+          total: 1,
         },
         isLoading: false,
       } as unknown as never)

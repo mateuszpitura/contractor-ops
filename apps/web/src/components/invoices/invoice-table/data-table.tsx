@@ -127,7 +127,7 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
     complianceFilters.length > 0 && !complianceFilters.includes('all');
 
   const data = useMemo(() => {
-    const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
+    const result = invoicesQuery.data as { items: InvoiceRow[]; total: number } | undefined;
     const rows = result?.items ?? [];
     if (!isComplianceFilterActive) return rows;
     const allowed = new Set(complianceFilters);
@@ -135,12 +135,12 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
   }, [invoicesQuery.data, complianceFilters, isComplianceFilterActive]);
 
   const totalRows = useMemo(() => {
-    const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
+    const result = invoicesQuery.data as { items: unknown[]; total: number } | undefined;
     // When a compliance filter is active we can't report the server's
-    // totalCount (it doesn't know about EInvoiceLifecycle). Report the
+    // total (it doesn't know about EInvoiceLifecycle). Report the
     // client-filtered page size so pagination reflects what's visible.
     if (isComplianceFilterActive) return data.length;
-    return result?.totalCount ?? 0;
+    return result?.total ?? 0;
   }, [invoicesQuery.data, isComplianceFilterActive, data.length]);
 
   // Column definitions

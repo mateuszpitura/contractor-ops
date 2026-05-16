@@ -44,15 +44,15 @@ interface TabAssignmentsProps {
 // ---------------------------------------------------------------------------
 
 export function TabAssignments({ assignments, currentAssignmentId }: TabAssignmentsProps) {
-  const t = useTranslations('Equipment.detail');
+  const t = useTranslations('Equipment');
 
   if (assignments.length === 0) {
     return (
       <AtelierEmptyState
         variant="subview"
         illustration={ContractorsIllustration}
-        heading={t('assignmentsEmpty')}
-        body={t('assignmentsEmptyDescription')}
+        heading={t('detail.assignmentsEmpty')}
+        body={t('detail.assignmentsEmptyDescription')}
         renderAction={renderEmptyStateAction}
       />
     );
@@ -63,11 +63,11 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Contractor</TableHead>
-            <TableHead>Assigned</TableHead>
-            <TableHead>Unassigned</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Notes</TableHead>
+            <TableHead>{t('detail.colContractor')}</TableHead>
+            <TableHead>{t('detail.colAssigned')}</TableHead>
+            <TableHead>{t('detail.colUnassigned')}</TableHead>
+            <TableHead>{t('detail.colDuration')}</TableHead>
+            <TableHead>{t('detail.colNotes')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,7 +78,7 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
                   new Date(assignment.assignedAt),
                   new Date(assignment.unassignedAt),
                 )
-              : `${formatDistanceStrict(new Date(assignment.assignedAt), new Date())} (active)`;
+              : `${formatDistanceStrict(new Date(assignment.assignedAt), new Date())}${t('detail.activeSuffix')}`;
 
             return (
               <TableRow key={assignment.id} className={isCurrent ? 'bg-primary/5' : ''}>
@@ -90,7 +90,7 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
                   </Link>
                   {isCurrent && (
                     <Badge variant="success" className="ms-2">
-                      Current
+                      {t('detail.badgeCurrent')}
                     </Badge>
                   )}
                 </TableCell>

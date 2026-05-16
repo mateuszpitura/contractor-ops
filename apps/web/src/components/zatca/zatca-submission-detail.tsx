@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -55,10 +56,10 @@ function truncateHash(hash?: string | null, length = 8): string {
   return hash.length > length ? `${hash.slice(0, length)}...` : hash;
 }
 
-function copyToClipboard(text: string, label: string) {
+function copyToClipboard(text: string, successMsg: string, errorMsg: string) {
   navigator.clipboard.writeText(text).then(
-    () => toast.success(`${label} copied to clipboard`),
-    () => toast.error('Failed to copy'),
+    () => toast.success(successMsg),
+    () => toast.error(errorMsg),
   );
 }
 
@@ -79,19 +80,20 @@ export function ZatcaSubmissionDetail({
   invoiceId,
   qrCodeBase64,
 }: ZatcaSubmissionDetailProps) {
+  const t = useTranslations('Zatca.submissionDetail');
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const resubmitMutation = useMutation({
     ...zatcaTrpc.resubmit.mutationOptions(),
     onSuccess: () => {
-      toast.success('Invoice queued for ZATCA resubmission');
+      toast.success(t('toast.resubmitSuccess'));
       queryClient.invalidateQueries({
         queryKey: zatcaTrpc.getStatus.queryKey(),
       });
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to resubmit');
+      toast.error(error.message || t('toast.resubmitError'));
     },
   });
 
@@ -107,15 +109,13 @@ export function ZatcaSubmissionDetail({
   const responseData = submission.zatcaResponse as Record<string, unknown> | undefined;
   const invoiceType = responseData?.invoiceType as string | undefined;
   const isB2B = invoiceType === 'standard' || submission.zatcaStatus === 'CLEARED';
-  const typeLabel = isB2B
-    ? 'Standard Tax Invoice (B2B clearance)'
-    : 'Simplified Tax Invoice (B2C reporting)';
+  const typeLabel = isB2B ? t('typeB2B') : t('typeB2C');
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className="rounded-lg border bg-card">
         <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium hover:bg-muted/50 transition-colors">
-          <span>ZATCA Submission Details</span>
+          <span>{t('title')}</span>
           <ChevronDown
             className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-180' : ''}`}
             aria-hidden="true"
@@ -126,23 +126,29 @@ export function ZatcaSubmissionDetail({
           <div className="space-y-4">
             {/* Core fields */}
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-muted-foreground">UUID</dt>
+              <dt className="text-muted-foreground">{t('uuid')}</dt>
               <dd className="flex items-center gap-1.5">
                 <span className="font-mono text-xs break-all">{submission.zatcaUuid}</span>
                 <button
                   type="button"
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => copyToClipboard(submission.zatcaUuid, 'UUID')}
+                  onClick={() =>
+                    copyToClipboard(
+                      submission.zatcaUuid,
+                      t('toast.copySuccess', { label: t('uuid') }),
+                      t('toast.copyError'),
+                    )
+                  }
                   className="shrink-0 text-muted-foreground hover:text-foreground"
-                  aria-label="Copy UUID">
+                  aria-label={t('copyUuid')}>
                   <Copy className="h-3 w-3" />
                 </button>
               </dd>
 
-              <dt className="text-muted-foreground">ICV</dt>
+              <dt className="text-muted-foreground">{t('icv')}</dt>
               <dd className="font-mono text-xs">{submission.icv}</dd>
 
-              <dt className="text-muted-foreground">Status</dt>
+              <dt className="text-muted-foreground">{t('status')}</dt>
               <dd className="flex items-center gap-2">
                 <ZatcaStatusBadge
                   status={submission.zatcaStatus as ZatcaBadgeStatus}
@@ -155,18 +161,18 @@ export function ZatcaSubmissionDetail({
                 )}
               </dd>
 
-              <dt className="text-muted-foreground">Type</dt>
+              <dt className="text-muted-foreground">{t('type')}</dt>
               <dd className="text-sm">{typeLabel}</dd>
             </dl>
 
             {/* Hash Chain */}
             {!!(submission.previousHash || submission.invoiceHash) && (
               <div className="space-y-2">
-                <p className="text-sm font-medium">Hash Chain</p>
+                <p className="text-sm font-medium">{t('hashChain')}</p>
                 <div className="space-y-1 text-sm">
                   {!!submission.previousHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Previous Hash:</span>
+                      <span className="text-muted-foreground">{t('previousHash')}</span>
                       <span className="font-mono text-xs hidden md:inline">
                         {submission.previousHash}
                       </span>
@@ -177,17 +183,21 @@ export function ZatcaSubmissionDetail({
                         type="button"
                         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() =>
-                          copyToClipboard(submission.previousHash ?? '', 'Previous hash')
+                          copyToClipboard(
+                            submission.previousHash ?? '',
+                            t('toast.copySuccess', { label: t('previousHash') }),
+                            t('toast.copyError'),
+                          )
                         }
                         className="shrink-0 text-muted-foreground hover:text-foreground"
-                        aria-label="Copy previous hash">
+                        aria-label={t('copyPreviousHash')}>
                         <Copy className="h-3 w-3" />
                       </button>
                     </div>
                   )}
                   {!!submission.invoiceHash && (
                     <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">Invoice Hash:</span>
+                      <span className="text-muted-foreground">{t('invoiceHash')}</span>
                       <span className="font-mono text-xs hidden md:inline">
                         {submission.invoiceHash}
                       </span>
@@ -198,10 +208,14 @@ export function ZatcaSubmissionDetail({
                         type="button"
                         // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                         onClick={() =>
-                          copyToClipboard(submission.invoiceHash ?? '', 'Invoice hash')
+                          copyToClipboard(
+                            submission.invoiceHash ?? '',
+                            t('toast.copySuccess', { label: t('invoiceHash') }),
+                            t('toast.copyError'),
+                          )
                         }
                         className="shrink-0 text-muted-foreground hover:text-foreground"
-                        aria-label="Copy invoice hash">
+                        aria-label={t('copyInvoiceHash')}>
                         <Copy className="h-3 w-3" />
                       </button>
                     </div>
@@ -216,7 +230,7 @@ export function ZatcaSubmissionDetail({
                 <div className="shrink-0">
                   <Image
                     src={`data:image/png;base64,${qrCodeBase64}`}
-                    alt="ZATCA QR code containing seller name, VAT number, invoice total, and VAT amount"
+                    alt={t('qrCodeAlt')}
                     width={64}
                     height={64}
                     className="rounded border"
@@ -224,12 +238,12 @@ export function ZatcaSubmissionDetail({
                   />
                 </div>
                 <div className="text-xs text-muted-foreground space-y-0.5">
-                  <p>QR code contains:</p>
+                  <p>{t('qrCodeContains')}</p>
                   <ul className="list-inside list-disc">
-                    <li>Seller name</li>
-                    <li>VAT number</li>
-                    <li>Invoice total (with VAT)</li>
-                    <li>VAT amount</li>
+                    <li>{t('qrSellerName')}</li>
+                    <li>{t('qrVatNumber')}</li>
+                    <li>{t('qrInvoiceTotal')}</li>
+                    <li>{t('qrVatAmount')}</li>
                   </ul>
                 </div>
               </div>
@@ -238,7 +252,7 @@ export function ZatcaSubmissionDetail({
             {/* Rejection reason */}
             {!!isRejected && !!submission.rejectionReason && (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
-                <p className="font-medium text-destructive">Rejection Reason</p>
+                <p className="font-medium text-destructive">{t('rejectionReason')}</p>
                 <p className="mt-1 text-destructive/80">{submission.rejectionReason}</p>
               </div>
             )}
@@ -251,7 +265,7 @@ export function ZatcaSubmissionDetail({
                   render={
                     <Button variant="outline" size="sm">
                       <FileCode className="me-1.5 h-3.5 w-3.5" />
-                      View Signed XML
+                      {t('viewSignedXml')}
                     </Button>
                   }
                 />
@@ -259,13 +273,13 @@ export function ZatcaSubmissionDetail({
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                       <FileCode className="size-4" />
-                      Signed XML — Invoice {submission.zatcaUuid}
+                      {t('signedXmlDialogTitle', { uuid: submission.zatcaUuid })}
                     </DialogTitle>
                   </DialogHeader>
                   <pre className="overflow-x-auto rounded-lg bg-muted/30 p-4 font-mono text-xs">
                     {responseData?.signedXml
                       ? String(responseData.signedXml)
-                      : 'Signed XML not available. The XML is generated during submission processing.'}
+                      : t('signedXmlNotAvailable')}
                   </pre>
                 </DialogContent>
               </Dialog>
@@ -287,7 +301,7 @@ export function ZatcaSubmissionDetail({
                   ) : (
                     <RefreshCw className="me-1.5 h-3.5 w-3.5" />
                   )}
-                  Resubmit to ZATCA
+                  {t('resubmit')}
                 </Button>
               )}
             </div>

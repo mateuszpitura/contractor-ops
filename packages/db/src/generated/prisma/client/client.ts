@@ -77,6 +77,11 @@ export type AuditLog = Prisma.AuditLogModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model UserPinnedView
+ * 
+ */
+export type UserPinnedView = Prisma.UserPinnedViewModel
+/**
  * Model Session
  * 
  */

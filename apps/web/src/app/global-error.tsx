@@ -1,6 +1,7 @@
 'use client';
 
 import * as Sentry from '@sentry/nextjs';
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
 export default function GlobalError({
@@ -10,6 +11,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('Errors');
+
   useEffect(() => {
     Sentry.captureException(error);
   }, [error]);
@@ -18,9 +21,9 @@ export default function GlobalError({
     <html lang="en">
       <body>
         <div>
-          <h2>Something went wrong</h2>
+          <h2>{t('serverError.heading')}</h2>
           <button type="button" onClick={reset}>
-            Try again
+            {t('serverError.cta')}
           </button>
         </div>
       </body>

@@ -2,6 +2,7 @@
 
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import {
   AlertDialog,
@@ -94,6 +95,8 @@ export function ApprovalQueueTable({
   onNavigateToReview,
   isLoading = false,
 }: ApprovalQueueTableProps) {
+  const t = useTranslations('Time');
+  const tCommon = useTranslations('Common');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
@@ -178,15 +181,15 @@ export function ApprovalQueueTable({
                 <Checkbox
                   checked={allSelected}
                   onCheckedChange={toggleAll}
-                  aria-label="Select all timesheets"
+                  aria-label={t('approvalQueue.selectAll')}
                 />
               </TableHead>
-              <TableHead>Contractor</TableHead>
-              <TableHead>Period</TableHead>
-              <TableHead className="text-end">Total Hours</TableHead>
-              <TableHead>Entries</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-end">Actions</TableHead>
+              <TableHead>{t('columns.contractor')}</TableHead>
+              <TableHead>{t('columns.period')}</TableHead>
+              <TableHead className="text-end">{t('columns.totalHours')}</TableHead>
+              <TableHead>{t('columns.entries')}</TableHead>
+              <TableHead>{t('columns.status')}</TableHead>
+              <TableHead className="text-end">{t('columns.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -230,7 +233,7 @@ export function ApprovalQueueTable({
                     {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                     <Button size="sm" variant="default" onClick={() => onApprove(ts.id)}>
                       <CheckCircle className="me-1.5 h-3.5 w-3.5" />
-                      Approve
+                      {t('approvalQueue.approve')}
                     </Button>
                     <Button
                       size="sm"
@@ -239,7 +242,7 @@ export function ApprovalQueueTable({
                       // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                       onClick={() => setRejectingId(ts.id)}>
                       <XCircle className="me-1.5 h-3.5 w-3.5" />
-                      Reject
+                      {t('approvalQueue.reject')}
                     </Button>
                   </div>
                 </TableCell>
@@ -254,12 +257,12 @@ export function ApprovalQueueTable({
         <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-card px-6 py-3 shadow-lg animate-in slide-in-from-bottom-4">
           <div className="mx-auto flex max-w-7xl items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {selectedArray.length} timesheet{selectedArray.length === 1 ? '' : 's'} selected
+              {t('approvalQueue.selected', { count: selectedArray.length })}
             </p>
             <div className="flex items-center gap-2">
               {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
-                Clear
+                {t('approvalQueue.clear')}
               </Button>
               <Button
                 variant="outline"
@@ -267,11 +270,11 @@ export function ApprovalQueueTable({
                 className="text-destructive hover:bg-destructive/10"
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setBulkRejectOpen(true)}>
-                Reject All
+                {t('approvalQueue.rejectAll')}
               </Button>
               {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button size="sm" onClick={() => setBulkApproveOpen(true)}>
-                Approve All
+                {t('approvalQueue.approveAll')}
               </Button>
             </div>
           </div>
@@ -304,17 +307,17 @@ export function ApprovalQueueTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Approve {selectedArray.length} Timesheet{selectedArray.length === 1 ? '' : 's'}
+              {t('approvalQueue.bulkApproveTitle', { count: selectedArray.length })}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will approve all selected timesheets. The contractors will be notified.
+              {t('approvalQueue.bulkApproveDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkApproveConfirm}>
               <CheckCircle className="me-1.5 size-4" />
-              Approve All
+              {t('approvalQueue.approveAll')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -229,7 +229,7 @@ export function EquipmentTable({
         {!isLoading && totalRows > 0 && (
           <div className="flex items-center justify-between border-t px-4 py-3">
             <p className="text-sm text-muted-foreground">
-              {totalRows} item{totalRows === 1 ? '' : 's'}
+              {t('list.pagination.itemCount', { count: totalRows })}
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -238,10 +238,10 @@ export function EquipmentTable({
                 disabled={page <= 1}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(p => Math.max(1, p - 1))}>
-                Previous
+                {t('list.pagination.previous')}
               </Button>
               <span className="text-sm text-muted-foreground">
-                {page} / {totalPages}
+                {t('list.pagination.pageOf', { page, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -249,7 +249,7 @@ export function EquipmentTable({
                 disabled={page >= totalPages}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => setPage(p => p + 1)}>
-                Next
+                {t('list.pagination.next')}
               </Button>
             </div>
           </div>

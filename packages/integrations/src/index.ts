@@ -3,6 +3,8 @@
 export { AutentiAdapter } from './adapters/autenti-adapter.js';
 // Adapters
 export { BaseAdapter } from './adapters/base-adapter.js';
+export { Bir1CompanyRegistryAdapter } from './adapters/bir1-company-registry-adapter.js';
+export { DataportCompanyRegistryAdapter } from './adapters/dataport-company-registry-adapter.js';
 export { DocuSignAdapter } from './adapters/docusign-adapter.js';
 export { KsefAdapter } from './adapters/ksef-adapter.js';
 export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
@@ -13,11 +15,20 @@ export {
   clearAdapters,
   getAdapter,
   getAllAdapters,
+  getAllCompanyRegistryAdapters,
   getAllOcrAdapters,
+  getCompanyRegistryAdapterBySlug,
   getOcrAdapterBySlug,
   registerAdapter,
+  registerCompanyRegistryAdapter,
   registerOcrAdapter,
 } from './registry.js';
+// Company Registry Service
+export {
+  getCompanyRegistryAdapter,
+  lookupCompanyByNip,
+  resolveCompanyRegistryProvider,
+} from './services/company-registry-service.js';
 // Concurrency helpers (F-INT-09)
 export type { LimitFunction } from './services/concurrency.js';
 export { pLimit } from './services/concurrency.js';
@@ -116,6 +127,12 @@ export {
   getRegisteredWebhookProviders,
   validateWebhookPayload,
 } from './services/webhook-schemas.js';
+export type {
+  CompanyLookupRequest,
+  CompanyLookupResult,
+  CompanyRegistryAdapter,
+  CompanyRegistryProvider,
+} from './types/company-registry.js';
 export type {
   EmbeddedSigningUrlResult,
   ESignAdapter,

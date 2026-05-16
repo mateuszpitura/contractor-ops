@@ -2,6 +2,7 @@ import { auth } from '@contractor-ops/auth';
 import { prisma } from '@contractor-ops/db';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 export default async function BoeRateAdminLayout({ children }: { children: ReactNode }) {
@@ -26,13 +27,12 @@ export default async function BoeRateAdminLayout({ children }: { children: React
   });
 
   if (membership?.role !== 'platform_operator') {
+    const t = await getTranslations('Admin.BoeRate');
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-foreground">Access Denied</h1>
-          <p className="mt-2 text-muted-foreground">
-            You do not have permission to manage BoE reference data.
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground">{t('accessDeniedHeading')}</h1>
+          <p className="mt-2 text-muted-foreground">{t('accessDeniedBody')}</p>
         </div>
       </div>
     );

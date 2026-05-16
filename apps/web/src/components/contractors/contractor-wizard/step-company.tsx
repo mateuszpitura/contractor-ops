@@ -21,7 +21,8 @@ interface StepCompanyProps {
 const CONTRACTOR_TYPES = ['SOLE_TRADER', 'COMPANY', 'INDIVIDUAL_FREELANCER', 'OTHER'] as const;
 
 /**
- * Step 1: Company details with GUS NIP autofill.
+ * Step 1: Company details with NIP autofill from the configured Polish
+ * company registry (Dataport in dev, GUS BIR1 in prod).
  * Fields: NIP, legal name, type, email, VAT-EU, address.
  */
 export function StepCompany({ form }: StepCompanyProps) {
@@ -29,7 +30,7 @@ export function StepCompany({ form }: StepCompanyProps) {
   const t = useTranslations('ContractorWizard.fields');
   const tv = useTranslations('Validation.contractor');
 
-  const [isGusLoading, setIsGusLoading] = useState(false);
+  const [isLookupLoading, setIsLookupLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -41,22 +42,21 @@ export function StepCompany({ form }: StepCompanyProps) {
 
   const nipValue = watch('taxId');
 
-  const handleGusLookup = async () => {
+  const handleCompanyLookup = async () => {
     const cleanNip = (nipValue ?? '').replace(/[\s-]/g, '');
     if (cleanNip.length !== 10) {
       toast.error(tv('nipFormat'));
       return;
     }
 
-    setIsGusLoading(true);
+    setIsLookupLoading(true);
     try {
       const data = (await queryClient.fetchQuery(
-        trpc.contractor.gusLookup.queryOptions({ nip: cleanNip }),
+        trpc.contractor.companyLookup.queryOptions({ nip: cleanNip }),
       )) as Record<string, unknown>;
 
       if (data?.found) {
-        // Map GUS response fields to form fields
-        const gusFieldMap: [string, keyof WizardFormValues][] = [
+        const fieldMap: [string, keyof WizardFormValues][] = [
           ['legalName', 'legalName'],
           ['legalName', 'displayName'],
           ['regon', 'registrationNumber'],
@@ -64,7 +64,7 @@ export function StepCompany({ form }: StepCompanyProps) {
           ['city', 'city'],
           ['postalCode', 'postalCode'],
         ];
-        for (const [sourceKey, targetKey] of gusFieldMap) {
+        for (const [sourceKey, targetKey] of fieldMap) {
           if (data[sourceKey]) {
             setValue(targetKey, String(data[sourceKey]), { shouldDirty: true });
           }
@@ -76,7 +76,7 @@ export function StepCompany({ form }: StepCompanyProps) {
     } catch {
       toast.error(t('nipError'));
     } finally {
-      setIsGusLoading(false);
+      setIsLookupLoading(false);
     }
   };
 
@@ -100,9 +100,9 @@ export function StepCompany({ form }: StepCompanyProps) {
             size="sm"
             className="whitespace-nowrap"
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleGusLookup}
-            disabled={isGusLoading}>
-            {isGusLoading ? (
+            onClick={handleCompanyLookup}
+            disabled={isLookupLoading}>
+            {isLookupLoading ? (
               <>
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
                 {t('nipFetching')}

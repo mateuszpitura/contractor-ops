@@ -1,6 +1,7 @@
 'use client';
 
 import { Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DeviationFlag } from '@/components/time/deviation-flag';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -76,6 +77,7 @@ function getBorderColor(deviationPercent: number, thresholdPercent: number): str
  * Only rendered when reconciliation data is available (non-null).
  */
 export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) {
+  const t = useTranslations('Time');
   const {
     approvedMinutes,
     rateValueMinor,
@@ -101,7 +103,7 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-semibold">Time Reconciliation</span>
+            <span className="text-sm font-semibold">{t('reconciliation.title')}</span>
           </div>
           <DeviationFlag
             deviationPercent={deviationPercent}
@@ -118,35 +120,41 @@ export function ReconciliationCard({ reconciliation }: ReconciliationCardProps) 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Approved Hours */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">Approved Hours</span>
+            <span className="text-[13px] text-muted-foreground">
+              {t('reconciliation.approvedHours')}
+            </span>
             <p className="text-lg font-semibold tabular-nums">{hours}h</p>
-            <p className="text-xs text-muted-foreground">at {rate}/h</p>
+            <p className="text-xs text-muted-foreground">{t('reconciliation.atRate', { rate })}</p>
           </div>
 
           {/* Expected Amount */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">Expected Amount</span>
+            <span className="text-[13px] text-muted-foreground">
+              {t('reconciliation.expectedAmount')}
+            </span>
             <p className="text-lg font-semibold tabular-nums">
               {formatMinorUnits(expectedAmountMinor)}
             </p>
-            <p className="text-xs text-muted-foreground">based on approved hours</p>
+            <p className="text-xs text-muted-foreground">{t('reconciliation.basedOnApproved')}</p>
           </div>
 
           {/* Invoiced Amount */}
           <div className="space-y-0.5">
-            <span className="text-[13px] text-muted-foreground">Invoiced Amount</span>
+            <span className="text-[13px] text-muted-foreground">
+              {t('reconciliation.invoicedAmount')}
+            </span>
             <p className="text-lg font-semibold tabular-nums">
               {formatMinorUnits(invoicedAmountMinor)}
             </p>
-            <p className="text-xs text-muted-foreground">from invoice</p>
+            <p className="text-xs text-muted-foreground">{t('reconciliation.fromInvoice')}</p>
           </div>
         </div>
 
         {/* Visual comparison bar */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Expected</span>
-            <span>Invoiced</span>
+            <span>{t('reconciliation.expected')}</span>
+            <span>{t('reconciliation.invoiced')}</span>
           </div>
           <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
             {/* Expected portion */}

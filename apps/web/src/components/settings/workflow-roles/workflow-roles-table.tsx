@@ -1,10 +1,12 @@
 'use client';
 
+import { AtelierEmptyState, WorkflowsIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +32,12 @@ import { trpc } from '@/trpc/init';
 import type { WorkflowRoleFormInput } from './workflow-role-form-dialog';
 import { WorkflowRoleFormDialog } from './workflow-role-form-dialog';
 
-export function WorkflowRolesTable() {
+interface WorkflowRolesTableProps {
+  canCreate?: boolean;
+  onCreate?: () => void;
+}
+
+export function WorkflowRolesTable({ canCreate, onCreate }: WorkflowRolesTableProps) {
   const t = useTranslations('WorkflowRoles');
   const queryClient = useQueryClient();
   const listQuery = useQuery(trpc.workflowRoles.list.queryOptions());
@@ -63,9 +70,17 @@ export function WorkflowRolesTable() {
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
-      </div>
+      <AtelierEmptyState
+        illustration={WorkflowsIllustration}
+        heading={t('empty.heading')}
+        body={t('empty.body')}
+        primaryAction={
+          canCreate && onCreate
+            ? { label: t('empty.cta'), onClick: onCreate, icon: Plus }
+            : undefined
+        }
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 

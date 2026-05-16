@@ -47,21 +47,19 @@ export function LinearBrandIcon({ className }: BrandIconProps) {
 }
 
 export function GoogleCalendarBrandIcon({ className }: BrandIconProps) {
-  return <LogoImg src="/logos/google-calendar.svg" alt="Google Calendar" className={className} />;
+  return <LogoImg src="/logos/google-calendar.svg" alt="" className={className} />;
 }
 
 export function NotionBrandIcon({ className }: BrandIconProps) {
-  return <LogoImg src="/logos/notion.svg" alt="Notion" className={className} />;
+  return <LogoImg src="/logos/notion.svg" alt="" className={className} />;
 }
 
 export function ConfluenceBrandIcon({ className }: BrandIconProps) {
-  return <LogoImg src="/logos/confluence.svg" alt="Confluence" className={className} />;
+  return <LogoImg src="/logos/confluence.svg" alt="" className={className} />;
 }
 
 export function OutlookCalendarBrandIcon({ className }: BrandIconProps) {
-  return (
-    <LogoImg src="/logos/microsoft-outlook.svg" alt="Microsoft Outlook" className={className} />
-  );
+  return <LogoImg src="/logos/microsoft-outlook.svg" alt="" className={className} />;
 }
 
 /** Microsoft Teams — from public/logos/ */

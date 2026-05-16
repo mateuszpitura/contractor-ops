@@ -7,6 +7,7 @@ import {
   AtelierStatusPill,
   AtelierTableShell,
   InvoicesIllustration,
+  SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -206,6 +207,10 @@ export default function PortalInvoicesPage() {
 
       {/* Content */}
       <AnimateIn delay={1}>
+        <SectionLabel variant="portal">{t('invoices.title')}</SectionLabel>
+      </AnimateIn>
+
+      <AnimateIn delay={2}>
         {isLoading ? (
           <InvoiceListSkeleton t={t} />
         ) : !invoices || invoices.length === 0 ? (

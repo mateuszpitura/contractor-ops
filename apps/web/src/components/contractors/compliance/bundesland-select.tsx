@@ -18,7 +18,7 @@ export interface BundeslandSelectProps {
 }
 
 /**
- * 16-Bundesland `<select>` rendered alphabetically by German name.
+ * 16-Bundesland &lt;select&gt; rendered alphabetically by German name.
  *
  * Uses a native `<select>` rather than a portaled combobox so the entire option
  * set is present in the accessibility tree without the user having to open the

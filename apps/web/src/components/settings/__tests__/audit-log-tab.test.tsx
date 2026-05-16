@@ -82,9 +82,9 @@ vi.mock('nuqs', () => ({
   },
 }));
 
-let mockListData: { items: unknown[]; totalCount: number } = {
+let mockListData: { items: unknown[]; total: number } = {
   items: [],
-  totalCount: 0,
+  total: 0,
 };
 let mockListPending = false;
 let mockListFetching = false;
@@ -174,7 +174,7 @@ describe('AuditLogTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     queryStateValues = {};
-    mockListData = { items: [], totalCount: 0 };
+    mockListData = { items: [], total: 0 };
     mockListPending = false;
     mockListFetching = false;
     mockActorsData = [];
@@ -208,22 +208,22 @@ describe('AuditLogTab', () => {
     expect(screen.getByText('Export audit log')).toBeInTheDocument();
   });
 
-  it('disables export button when totalCount is 0', () => {
-    mockListData = { items: [], totalCount: 0 };
+  it('disables export button when total is 0', () => {
+    mockListData = { items: [], total: 0 };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     expect(exportBtn).toBeDisabled();
   });
 
-  it('enables export button when totalCount > 0', () => {
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+  it('enables export button when total > 0', () => {
+    mockListData = { items: [{ id: '1' }], total: 1 };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     expect(exportBtn).not.toBeDisabled();
   });
 
   it('calls export mutation on export click', async () => {
-    mockListData = { items: [{ id: '1' }], totalCount: 5 };
+    mockListData = { items: [{ id: '1' }], total: 5 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn!);
@@ -257,7 +257,7 @@ describe('AuditLogTab', () => {
 
   // ---- Table ----
   it('passes data to AuditLogTable', () => {
-    mockListData = { items: [{ id: '1' }, { id: '2' }], totalCount: 2 };
+    mockListData = { items: [{ id: '1' }, { id: '2' }], total: 2 };
     render(<AuditLogTab />);
     expect(screen.getByTestId('audit-log-table')).toBeInTheDocument();
     expect(screen.getByTestId('table-count')).toHaveTextContent('2');
@@ -311,7 +311,7 @@ describe('AuditLogTab', () => {
   // ---- Fetching state indicator ----
   it('passes isFetching to AuditLogTable when refetching', () => {
     mockListFetching = true;
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+    mockListData = { items: [{ id: '1' }], total: 1 };
     render(<AuditLogTab />);
     expect(screen.getByTestId('table-fetching')).toBeInTheDocument();
   });
@@ -326,7 +326,7 @@ describe('AuditLogTab', () => {
   // ---- Export button pending state ----
   it('export button shows pending state when export is in progress', () => {
     mockExportPending = true;
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+    mockListData = { items: [{ id: '1' }], total: 1 };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     expect(exportBtn).toBeInTheDocument();
@@ -346,7 +346,7 @@ describe('AuditLogTab', () => {
 
   // ---- Table receives correct total count ----
   it('passes correct total count to table with data', () => {
-    mockListData = { items: [{ id: '1' }, { id: '2' }, { id: '3' }], totalCount: 3 };
+    mockListData = { items: [{ id: '1' }, { id: '2' }, { id: '3' }], total: 3 };
     render(<AuditLogTab />);
     expect(screen.getByTestId('table-count')).toHaveTextContent('3');
   });
@@ -389,7 +389,7 @@ describe('AuditLogTab', () => {
   it('enables export with large total count', () => {
     mockListData = {
       items: Array.from({ length: 25 }, (_, i) => ({ id: String(i) })),
-      totalCount: 250,
+      total: 250,
     };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
@@ -421,7 +421,7 @@ describe('AuditLogTab', () => {
   it('calls export mutation with current filter state', async () => {
     queryStateValues.actorId = 'u1';
     queryStateValues.actionFilter = 'CREATE';
-    mockListData = { items: [{ id: '1' }], totalCount: 5 };
+    mockListData = { items: [{ id: '1' }], total: 5 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn!);
@@ -470,7 +470,7 @@ describe('AuditLogTab', () => {
   // ---- Export disabled during pending ----
   it('export button is still rendered when export is pending', () => {
     mockExportPending = true;
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+    mockListData = { items: [{ id: '1' }], total: 1 };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     expect(exportBtn).toBeInTheDocument();
@@ -538,7 +538,7 @@ describe('AuditLogTab', () => {
     queryStateValues.resourceType = 'CONTRACT';
     queryStateValues.dateFrom = '2026-01-01';
     queryStateValues.dateTo = '2026-12-31';
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+    mockListData = { items: [{ id: '1' }], total: 1 };
     const { user } = setup(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     await user.click(exportBtn!);
@@ -617,7 +617,7 @@ describe('AuditLogTab', () => {
 
   it('export button is disabled when isPending for export', () => {
     mockExportPending = true;
-    mockListData = { items: [{ id: '1' }], totalCount: 1 };
+    mockListData = { items: [{ id: '1' }], total: 1 };
     render(<AuditLogTab />);
     const exportBtn = screen.getByText('Export audit log').closest('button');
     expect(exportBtn).toBeDisabled();

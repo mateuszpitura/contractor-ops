@@ -1,8 +1,9 @@
 'use client';
 
-import { SpendReportIllustration } from '@contractor-ops/ui';
+import { SectionLabel, SpendReportIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { TrendingUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -81,13 +82,13 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
+    const result = tableQuery.data as { items: SpendRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [tableQuery.data]);
 
   const totalCount = useMemo(() => {
-    const result = tableQuery.data as { items: SpendRow[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = tableQuery.data as { items: SpendRow[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [tableQuery.data]);
 
   const chartData = useMemo(() => {
@@ -179,6 +180,7 @@ export function SpendContractorReport({ dateFrom, dateTo }: SpendContractorRepor
         onClear={handleClearDrillDown}
       />
 
+      <SectionLabel icon={TrendingUp}>{t('spendByContractor')}</SectionLabel>
       <ReportTable<SpendRow>
         columns={columns}
         data={tableData}

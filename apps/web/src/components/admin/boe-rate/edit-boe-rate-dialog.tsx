@@ -7,6 +7,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangleIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,9 @@ interface EditBoeRateDialogProps {
 }
 
 export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDialogProps) {
+  const t = useTranslations('Admin.BoeRate');
+  const tCommon = useTranslations('Common');
+
   const [ratePercent, setRatePercent] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -52,13 +56,13 @@ export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDial
         void queryClient.invalidateQueries({
           queryKey: trpc.adminBoeRate.list.queryKey(),
         });
-        toast.success('Rate updated', {
-          description: 'BoE base rate entry has been updated.',
+        toast.success(t('toastRateUpdated'), {
+          description: t('toastRateUpdatedDesc'),
         });
         onOpenChange(false);
       },
       onError: error => {
-        toast.error('Error', { description: error.message });
+        toast.error(t('toastError'), { description: error.message });
       },
     }),
   );
@@ -68,8 +72,8 @@ export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDial
 
     const rate = parseFloat(ratePercent);
     if (Number.isNaN(rate) || rate < 0 || rate > 99.99) {
-      toast.error('Validation error', {
-        description: 'Rate must be between 0 and 99.99.',
+      toast.error(t('toastValidationError'), {
+        description: t('validationRateRange'),
       });
       return;
     }
@@ -87,27 +91,24 @@ export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit BoE base rate</DialogTitle>
-          <DialogDescription>Update the rate entry for {effectiveDate}.</DialogDescription>
+          <DialogTitle>{t('editDialogTitle')}</DialogTitle>
+          <DialogDescription>{t('editDialogDesc', { date: effectiveDate })}</DialogDescription>
         </DialogHeader>
 
         {entry.source === 'BOE_API' && (
           <div className="flex items-start gap-2 rounded-md bg-warning/10 p-3 text-sm text-warning">
             <AlertTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>
-              This entry was sourced from the BoE API. Editing it will override the original value.
-              The next poll will not overwrite your change.
-            </span>
+            <span>{t('editApiSourceWarning')}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Effective from</Label>
+            <Label>{t('colEffectiveFrom')}</Label>
             <Input type="date" value={effectiveDate} disabled className="bg-muted" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-rate-percent">Rate %</Label>
+            <Label htmlFor="edit-rate-percent">{t('colRatePercent')}</Label>
             <Input
               id="edit-rate-percent"
               type="number"
@@ -121,21 +122,21 @@ export function EditBoeRateDialog({ entry, open, onOpenChange }: EditBoeRateDial
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-notes">Notes</Label>
+            <Label htmlFor="edit-notes">{t('colNotes')}</Label>
             <Textarea
               id="edit-notes"
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="e.g., Corrected from cron-sourced value"
+              placeholder={t('editNotesPlaceholder')}
               rows={3}
             />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? 'Saving...' : 'Save changes'}
+              {updateMutation.isPending ? t('saving') : t('saveChanges')}
             </Button>
           </DialogFooter>
         </form>

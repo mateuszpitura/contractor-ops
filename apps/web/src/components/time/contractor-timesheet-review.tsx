@@ -2,6 +2,7 @@
 
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -98,6 +99,7 @@ export function ContractorTimesheetReview({
   onBack,
   isApproving = false,
 }: ContractorTimesheetReviewProps) {
+  const t = useTranslations('Time');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
 
@@ -157,7 +159,7 @@ export function ContractorTimesheetReview({
           <p className="text-2xl font-semibold text-primary">
             {minutesToHours(timesheet.totalMinutes) || '0'}h
           </p>
-          <p className="text-xs text-muted-foreground">total hours</p>
+          <p className="text-xs text-muted-foreground">{t('review.totalHours')}</p>
         </div>
       </div>
 
@@ -169,7 +171,7 @@ export function ContractorTimesheetReview({
               <thead>
                 <tr className="border-b">
                   <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
-                    Project
+                    {t('review.project')}
                   </th>
                   {DAY_LABELS.map((day, i) => (
                     <th
@@ -182,7 +184,7 @@ export function ContractorTimesheetReview({
                     </th>
                   ))}
                   <th className="w-16 min-w-[64px] px-2 py-3 text-center text-sm font-semibold">
-                    Total
+                    {t('review.total')}
                   </th>
                 </tr>
               </thead>
@@ -228,7 +230,7 @@ export function ContractorTimesheetReview({
               </tbody>
               <tfoot>
                 <tr className="border-t">
-                  <td className="px-4 py-3 text-sm font-semibold">Total</td>
+                  <td className="px-4 py-3 text-sm font-semibold">{t('review.total')}</td>
                   {DAY_LABELS.map((_, dayIdx) => {
                     let colTotal = 0;
                     for (const [, { entries }] of contracts) {
@@ -285,7 +287,7 @@ export function ContractorTimesheetReview({
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={onBack}>
             <ArrowLeft className="me-2 h-4 w-4" />
-            Back to Queue
+            {t('review.backToQueue')}
           </Button>
           <div className="flex items-center gap-2">
             {timesheet.status === 'SUBMITTED' && (
@@ -296,11 +298,11 @@ export function ContractorTimesheetReview({
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setRejectDialogOpen(true)}>
                   <XCircle className="me-2 h-4 w-4" />
-                  Reject
+                  {t('review.reject')}
                 </Button>
                 <Button onClick={onApprove} disabled={isApproving}>
                   <CheckCircle className="me-2 h-4 w-4" />
-                  Approve Timesheet
+                  {t('review.approveTimesheet')}
                 </Button>
               </>
             )}

@@ -151,7 +151,10 @@ function Calendar({
             defaultClassNames.range_start,
           ),
           range_middle: cn(
-            'relative rounded-none after:absolute after:inset-y-0 after:inset-x-0 after:bg-muted after:-z-1',
+            // `isolate z-0` mirrors `range_start`/`range_end` so the `-z-1`
+            // pseudo paints inside this cell's own stacking context (otherwise
+            // it escapes up the tree and gets hidden behind the popover).
+            'relative isolate z-0 rounded-none after:absolute after:inset-y-0 after:inset-x-0 after:bg-muted after:-z-1',
             defaultClassNames.range_middle,
           ),
           range_end: cn(

@@ -124,7 +124,7 @@ function KsefProviderSection() {
   const isConnected = ksefConnection?.status === 'CONNECTED';
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full flex-col gap-4">
       {/* Standard provider card — but KSeF uses custom connect dialog instead of OAuth */}
       <ProviderConnectionCard
         provider="ksef"

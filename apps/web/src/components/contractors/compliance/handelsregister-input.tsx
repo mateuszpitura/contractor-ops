@@ -3,6 +3,7 @@
 import type { HandelsregisterCourt } from '@contractor-ops/validators';
 import { HANDELSREGISTER_COURTS } from '@contractor-ops/validators';
 import { Check, ChevronsUpDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ export interface HandelsregisterInputProps {
 }
 
 /**
- * Composite Handelsregister input rendered as a `<fieldset>` with a single
+ * Composite Handelsregister input rendered as a &lt;fieldset&gt; with a single
  * logical legend. All three parts (court, register type, number) are required
  * together — partial completion is flagged by the schema; the UI echoes the
  * same error via `role="alert"`.
@@ -48,7 +49,7 @@ export interface HandelsregisterInputProps {
  * hint to the browser validator.
  *
  * Accessibility contract (UI-SPEC §5):
- *   - `<fieldset>` with `aria-labelledby` pointing at `<legend>`
+ *   - &lt;fieldset&gt; with aria-labelledby pointing at &lt;legend&gt;
  *   - `aria-describedby` aggregating example + error nodes
  *   - Each sub-control has its own `aria-label` naming its role in the group
  *   - Tab order: court → HRB/HRA → number → next field
@@ -60,6 +61,7 @@ export function HandelsregisterInput({
   legend,
   required = false,
 }: HandelsregisterInputProps) {
+  const t = useTranslations('Contractors.handelsregister');
   const reactId = useId();
   const legendId = `handelsregister-legend-${reactId}`;
   const hintId = `handelsregister-hint-${reactId}`;
@@ -103,7 +105,7 @@ export function HandelsregisterInput({
         {/* Court combobox */}
         <div className="flex-1 min-w-0 space-y-1">
           <Label htmlFor={`${legendId}-court`} className="sr-only">
-            Registry court
+            {t('courtLabel')}
           </Label>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
@@ -113,7 +115,7 @@ export function HandelsregisterInput({
                   type="button"
                   variant="outline"
                   role="combobox"
-                  aria-label="Registry court"
+                  aria-label={t('courtAriaLabel')}
                   aria-expanded={open}
                   aria-invalid={error ? 'true' : undefined}
                   className={cn(
@@ -121,7 +123,7 @@ export function HandelsregisterInput({
                     !selectedCourt && 'text-muted-foreground',
                   )}>
                   <span className="truncate">
-                    {selectedCourt ? selectedCourt.name : 'Select court...'}
+                    {selectedCourt ? selectedCourt.name : t('selectCourtPlaceholder')}
                   </span>
                   <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" aria-hidden="true" />
                 </Button>
@@ -129,9 +131,9 @@ export function HandelsregisterInput({
             />
             <PopoverContent className="p-0" align="start">
               <Command>
-                <CommandInput placeholder="Gericht suchen..." />
+                <CommandInput placeholder={t('courtPlaceholder')} />
                 <CommandList>
-                  <CommandEmpty>No court found.</CommandEmpty>
+                  <CommandEmpty>{t('noCourtFound')}</CommandEmpty>
                   <CommandGroup>
                     {sortedCourts.map(court => (
                       <CommandItem
@@ -161,7 +163,7 @@ export function HandelsregisterInput({
 
         {/* Register type radio group */}
         <div className="w-full sm:w-[132px] space-y-1">
-          <Label className="sr-only">Register type</Label>
+          <Label className="sr-only">{t('registerTypeLabel')}</Label>
           <RadioGroup
             value={current.type ?? 'HRB'}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
@@ -170,26 +172,18 @@ export function HandelsregisterInput({
                 patch({ type: v });
               }
             }}
-            aria-label="Register type"
+            aria-label={t('registerTypeAriaLabel')}
             className="grid-cols-2 sm:grid-cols-2">
             <label
               htmlFor={`${legendId}-hrb`}
               className="flex cursor-pointer items-center gap-1 text-sm">
-              <RadioGroupItem
-                id={`${legendId}-hrb`}
-                value="HRB"
-                aria-label="HRB (Handelsregister B)"
-              />
+              <RadioGroupItem id={`${legendId}-hrb`} value="HRB" aria-label={t('hrbAriaLabel')} />
               <span>HRB</span>
             </label>
             <label
               htmlFor={`${legendId}-hra`}
               className="flex cursor-pointer items-center gap-1 text-sm">
-              <RadioGroupItem
-                id={`${legendId}-hra`}
-                value="HRA"
-                aria-label="HRA (Handelsregister A)"
-              />
+              <RadioGroupItem id={`${legendId}-hra`} value="HRA" aria-label={t('hraAriaLabel')} />
               <span>HRA</span>
             </label>
           </RadioGroup>
@@ -198,7 +192,7 @@ export function HandelsregisterInput({
         {/* Number input */}
         <div className="w-full sm:w-[120px] space-y-1">
           <Label htmlFor={`${legendId}-number`} className="sr-only">
-            Registry number
+            {t('numberLabel')}
           </Label>
           <Input
             id={`${legendId}-number`}
@@ -206,7 +200,7 @@ export function HandelsregisterInput({
             inputMode="numeric"
             pattern="\d{0,7}"
             maxLength={7}
-            aria-label="Registry number"
+            aria-label={t('numberAriaLabel')}
             aria-invalid={error ? 'true' : undefined}
             placeholder="123456"
             value={current.number ?? ''}
@@ -220,7 +214,7 @@ export function HandelsregisterInput({
       </div>
 
       <p id={hintId} className="text-xs text-muted-foreground">
-        Example: Amtsgericht München · HRB · 123456
+        {t('exampleHint')}
       </p>
       {error ? (
         <p id={errorId} role="alert" aria-live="polite" className="text-xs text-destructive">

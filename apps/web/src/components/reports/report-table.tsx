@@ -51,6 +51,7 @@ export function ReportTable<TData>({
   grandTotalValue,
 }: ReportTableProps<TData>) {
   const tAria = useTranslations('Common.aria');
+  const tCommon = useTranslations('Common');
   const pageCount = Math.ceil(totalCount / pageSize);
 
   const sorting = useMemo(() => [{ id: sortBy, desc: sortOrder === 'desc' }], [sortBy, sortOrder]);
@@ -140,7 +141,7 @@ export function ReportTable<TData>({
             <TableRow>
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 {emptyIcon}
-                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? 'No data'}</h3>
+                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? tCommon('noData')}</h3>
                 {!!emptyDescription && (
                   <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
                 )}
@@ -154,7 +155,7 @@ export function ReportTable<TData>({
       {!isLoading && totalCount > 0 && (
         <div className="flex items-center justify-between border-t px-4 py-3">
           <span className="text-sm text-muted-foreground">
-            Page {page} of {pageCount} ({totalCount} total)
+            {tCommon('pagination.page', { page, pageCount, total: totalCount })}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -163,7 +164,7 @@ export function ReportTable<TData>({
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page - 1)}
               disabled={page <= 1}>
-              Previous
+              {tCommon('pagination.previous')}
             </Button>
             <Button
               variant="outline"
@@ -171,7 +172,7 @@ export function ReportTable<TData>({
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => onPageChange(page + 1)}
               disabled={page >= pageCount}>
-              Next
+              {tCommon('pagination.next')}
             </Button>
           </div>
         </div>

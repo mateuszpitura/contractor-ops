@@ -121,7 +121,7 @@ export function UkBankFieldsSection({
             className="w-full justify-between text-sm font-medium">
             <span className="flex items-center gap-2">
               <Wallet aria-hidden="true" className="size-4" />
-              UK bank account
+              {t('sectionTitle')}
             </span>
             <ChevronDown aria-hidden="true" className="size-4 transition-transform" />
           </Button>
@@ -134,7 +134,7 @@ export function UkBankFieldsSection({
           <Label htmlFor={sortCodeInputId}>{t('sortCodeLabel')}</Label>
           {masks?.sortCodeMasked && !value.sortCode ? (
             <p className="text-xs font-mono text-muted-foreground">
-              Currently saved: {masks.sortCodeMasked}
+              {t('currentlySaved', { value: masks.sortCodeMasked })}
             </p>
           ) : null}
           <Input
@@ -155,7 +155,7 @@ export function UkBankFieldsSection({
           <Label htmlFor={accountInputId}>{t('accountNumberLabel')}</Label>
           {masks?.accountNumberMasked && !value.accountNumber ? (
             <p className="text-xs font-mono text-muted-foreground">
-              Currently saved: {masks.accountNumberMasked}
+              {t('currentlySaved', { value: masks.accountNumberMasked })}
             </p>
           ) : null}
           <Input

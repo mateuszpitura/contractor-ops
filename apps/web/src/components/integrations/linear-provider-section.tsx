@@ -41,7 +41,7 @@ export function LinearProviderSection() {
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Linear integration">
-      <div className="space-y-4">
+      <div className="flex h-full flex-col gap-4">
         <ProviderConnectionCard
           provider="linear"
           displayName="Linear"

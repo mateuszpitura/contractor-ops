@@ -74,16 +74,16 @@ export function TabInfo({ equipment, onEdit: _onEdit }: TabInfoProps) {
           {equipment.notes ? (
             <p className="text-sm whitespace-pre-wrap">{equipment.notes}</p>
           ) : (
-            <p className="text-sm text-muted-foreground">No notes</p>
+            <p className="text-sm text-muted-foreground">{t('detail.noNotes')}</p>
           )}
 
           <div className="mt-6 space-y-2 border-t pt-4">
             <InfoRow
-              label="Created"
+              label={t('detail.createdAt')}
               value={format(new Date(equipment.createdAt), 'MMM d, yyyy HH:mm')}
             />
             <InfoRow
-              label="Updated"
+              label={t('detail.updatedAt')}
               value={format(new Date(equipment.updatedAt), 'MMM d, yyyy HH:mm')}
             />
           </div>

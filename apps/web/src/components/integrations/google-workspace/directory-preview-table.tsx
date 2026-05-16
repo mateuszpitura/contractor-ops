@@ -182,7 +182,7 @@ export function DirectoryPreviewTable({
               checked={selectedEmails.has(user.primaryEmail)}
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={() => handleRowSelect(user.primaryEmail)}
-              aria-label={`Select ${user.name.fullName}`}
+              aria-label={t('selectUser', { name: user.name.fullName })}
             />
           );
         },
@@ -206,7 +206,7 @@ export function DirectoryPreviewTable({
       },
       {
         id: 'name',
-        header: 'Name',
+        header: () => t('columns.name'),
         accessorFn: row => row.name.fullName,
         cell: ({ row }) => {
           const user = row.original;
@@ -236,7 +236,7 @@ export function DirectoryPreviewTable({
       },
       {
         id: 'email',
-        header: 'Email',
+        header: () => t('columns.email'),
         accessorKey: 'primaryEmail',
         cell: ({ row }) => (
           <span className="text-sm text-muted-foreground">{row.original.primaryEmail}</span>
@@ -244,7 +244,7 @@ export function DirectoryPreviewTable({
       },
       {
         id: 'department',
-        header: 'Department',
+        header: () => t('columns.department'),
         accessorKey: 'department',
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground">
@@ -255,7 +255,7 @@ export function DirectoryPreviewTable({
       },
       {
         id: 'orgUnit',
-        header: 'Org Unit',
+        header: () => t('columns.orgUnit'),
         accessorKey: 'orgUnitPath',
         cell: ({ row }) => (
           <span className="text-xs text-muted-foreground">
@@ -395,7 +395,7 @@ export function DirectoryPreviewTable({
               (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
               filteredUsers.length,
             )}{' '}
-            of {filteredUsers.length}
+            {t('pagination.of', { total: filteredUsers.length })}
           </span>
           <div className="flex gap-1">
             <Button
@@ -404,7 +404,7 @@ export function DirectoryPreviewTable({
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              aria-label="Previous page">
+              aria-label={t('pagination.previousPage')}>
               <ChevronLeft className="size-4" />
             </Button>
             <Button
@@ -413,7 +413,7 @@ export function DirectoryPreviewTable({
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              aria-label="Next page">
+              aria-label={t('pagination.nextPage')}>
               <ChevronRight className="size-4" />
             </Button>
           </div>

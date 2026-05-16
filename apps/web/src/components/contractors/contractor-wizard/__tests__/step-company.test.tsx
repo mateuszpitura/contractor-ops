@@ -19,9 +19,9 @@ vi.mock('@tanstack/react-query', async importOriginal => {
 vi.mock('@/trpc/init', () => ({
   trpc: {
     contractor: {
-      gusLookup: {
+      companyLookup: {
         queryOptions: (input: unknown) => ({
-          queryKey: ['contractor', 'gusLookup', input],
+          queryKey: ['contractor', 'companyLookup', input],
         }),
       },
     },
@@ -49,7 +49,7 @@ function Wrapper({ defaultValues }: { defaultValues?: Record<string, unknown> })
 }
 
 describe('StepCompany', () => {
-  it('renders NIP input with GUS lookup button', () => {
+  it('renders NIP input with company-lookup button', () => {
     render(<Wrapper />);
     const nipInput = screen.getByPlaceholderText('0000000000');
     expect(nipInput).toBeInTheDocument();
@@ -100,13 +100,12 @@ describe('StepCompany', () => {
     expect(nipInput).toHaveValue('1234567890');
   });
 
-  it('shows error toast when GUS lookup is triggered with invalid NIP', async () => {
+  it('shows error toast when company lookup is triggered with invalid NIP', async () => {
     const { user } = setup(<Wrapper defaultValues={{ taxId: '123' }} />);
-    // Click GUS lookup button with short NIP
     const buttons = screen.getAllByRole('button');
-    const gusButton = buttons.find(b => b.textContent?.includes('Fetch'));
-    if (gusButton) {
-      await user.click(gusButton);
+    const lookupButton = buttons.find(b => b.textContent?.includes('Fetch'));
+    if (lookupButton) {
+      await user.click(lookupButton);
       expect(toast.error).toHaveBeenCalled();
     }
   });

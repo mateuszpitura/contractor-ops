@@ -35,6 +35,8 @@ interface DataTableToolbarProps {
   onDateToChange: (date: Date | undefined) => void;
   /** Dates that have payment run activity — shown as dots on the calendar. */
   activityDates?: Date[];
+  /** Disables all interactive elements during data load */
+  isLoading?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -49,6 +51,7 @@ export function DataTableToolbar({
   onDateFromChange,
   onDateToChange,
   activityDates,
+  isLoading,
 }: DataTableToolbarProps) {
   const t = useTranslations('Payments');
   const tAria = useTranslations('Common.aria');
@@ -98,8 +101,8 @@ export function DataTableToolbar({
     if (dateFrom && dateTo) {
       return `${formatDate(dateFrom)} - ${formatDate(dateTo)}`;
     }
-    if (dateFrom) return `From ${formatDate(dateFrom)}`;
-    if (dateTo) return `To ${formatDate(dateTo)}`;
+    if (dateFrom) return t('filters.dateFrom', { date: formatDate(dateFrom) });
+    if (dateTo) return t('filters.dateTo', { date: formatDate(dateTo) });
     return t('filters.dateRange');
   }, [dateFrom, dateTo, formatDate, t]);
 
@@ -129,7 +132,12 @@ export function DataTableToolbar({
           <PopoverTrigger
             // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
             render={props => (
-              <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
+              <Button
+                {...props}
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5"
+                disabled={isLoading}>
                 {t('filters.status')}
                 {activeFilterCount > 0 && (
                   <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
@@ -164,7 +172,10 @@ export function DataTableToolbar({
 
         {/* Date range filter */}
         <Popover>
-          <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5" />}>
+          <PopoverTrigger
+            render={
+              <Button variant="outline" size="sm" className="h-8 gap-1.5" disabled={isLoading} />
+            }>
             <CalendarIcon className="h-3.5 w-3.5" />
             <span className="text-xs">{dateLabel}</span>
           </PopoverTrigger>
@@ -189,7 +200,7 @@ export function DataTableToolbar({
                     onDateFromChange(undefined);
                     onDateToChange(undefined);
                   }}>
-                  Clear dates
+                  {t('filters.clearDates')}
                 </Button>
               </div>
             )}

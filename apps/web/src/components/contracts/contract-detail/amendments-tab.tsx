@@ -1,8 +1,8 @@
 'use client';
 
-import { AtelierEmptyState, ContractsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -263,17 +263,16 @@ export function AmendmentsTab({ contract }: AmendmentsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header with CTA */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('heading')}</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel icon={FileText}>{t('heading')}</SectionLabel>
+        </div>
         {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCta')}
         </Button>
       </div>
-
-      {/* Timeline */}
       {sorted.length === 0 ? (
         <AtelierEmptyState
           variant="subview"

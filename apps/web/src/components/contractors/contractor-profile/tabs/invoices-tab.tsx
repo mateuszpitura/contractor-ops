@@ -1,10 +1,10 @@
 'use client';
 
-import { AtelierEmptyState, InvoicesIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, InvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Upload } from 'lucide-react';
+import { Receipt, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
@@ -67,13 +67,13 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
   );
 
   const data = useMemo(() => {
-    const result = invoicesQuery.data as { items: InvoiceRow[]; totalCount: number } | undefined;
+    const result = invoicesQuery.data as { items: InvoiceRow[]; total: number } | undefined;
     return result?.items ?? [];
   }, [invoicesQuery.data]);
 
   const totalRows = useMemo(() => {
-    const result = invoicesQuery.data as { items: unknown[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = invoicesQuery.data as { items: unknown[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [invoicesQuery.data]);
 
   // Column definitions - filter out contractor column since we're scoped
@@ -143,8 +143,10 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
   return (
     <div className="space-y-4">
       {/* Header with upload CTA */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('tab.heading')}</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel icon={Receipt}>{t('tab.heading')}</SectionLabel>
+        </div>
         <Button
           size="sm"
           disabled={isLoading}

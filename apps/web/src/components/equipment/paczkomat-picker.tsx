@@ -152,7 +152,7 @@ export function PaczkomatPicker({
                 ref={iframeRef}
                 src={iframeSrc}
                 sandbox="allow-scripts allow-same-origin allow-popups"
-                title="InPost Paczkomat locker map"
+                title={t('paczkomatTitle')}
                 className="h-[400px] w-full rounded-md"
                 allow=""
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop

@@ -138,9 +138,7 @@ export function ConflictResolutionPopover({
           })}
         </div>
 
-        {unresolvedCount === 0 && (
-          <p className="mt-2 text-xs text-green-600">All conflicts resolved</p>
-        )}
+        {unresolvedCount === 0 && <p className="mt-2 text-xs text-green-600">{t('resolvedAll')}</p>}
       </PopoverContent>
     </Popover>
   );

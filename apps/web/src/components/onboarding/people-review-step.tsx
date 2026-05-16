@@ -33,26 +33,6 @@ import { ConflictResolutionPopover } from './conflict-resolution-popover';
 import type { PersonSelection } from './import-wizard';
 
 // ---------------------------------------------------------------------------
-// Role options
-// ---------------------------------------------------------------------------
-
-const ROLE_LABELS: Record<InvitableMemberRole, string> = {
-  admin: 'Admin',
-  finance_admin: 'Finance Admin',
-  ops_manager: 'Ops Manager',
-  team_manager: 'Team Manager',
-  legal_compliance_viewer: 'Legal / Compliance Viewer',
-  it_admin: 'IT Admin',
-  external_accountant: 'External Accountant',
-  readonly: 'Read Only',
-};
-
-const ROLE_OPTIONS = invitableMemberRoleValues.map(value => ({
-  value,
-  label: ROLE_LABELS[value],
-}));
-
-// ---------------------------------------------------------------------------
 // Source badge
 // ---------------------------------------------------------------------------
 
@@ -94,6 +74,23 @@ export function PeopleReviewStep({
   onPersonSelectionsChange,
 }: PeopleReviewStepProps) {
   const t = useTranslations('OnboardingImport.step2');
+  const tRoles = useTranslations('Users.roles');
+  const tAria = useTranslations('Common.aria');
+
+  const ROLE_OPTIONS = invitableMemberRoleValues.map(value => {
+    const roleKeyMap: Record<InvitableMemberRole, Parameters<typeof tRoles>[0]> = {
+      admin: 'admin',
+      finance_admin: 'financeAdmin',
+      ops_manager: 'opsManager',
+      team_manager: 'teamManager',
+      legal_compliance_viewer: 'legalComplianceViewer',
+      it_admin: 'itAdmin',
+      external_accountant: 'externalAccountant',
+      readonly: 'readonly',
+    };
+    return { value, label: tRoles(roleKeyMap[value]) };
+  });
+
   const [activeFilter, setActiveFilter] = useState('all');
   const [checkedEmails, setCheckedEmails] = useState<Set<string>>(new Set());
 
@@ -321,7 +318,9 @@ export function PeopleReviewStep({
           <div
             className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/50 px-3 py-2"
             aria-live="polite">
-            <span className="text-sm font-medium">{checkedEmails.size} selected</span>
+            <span className="text-sm font-medium">
+              {t('selectedCount', { count: checkedEmails.size })}
+            </span>
             <Button size="sm" onClick={handleBatchImport}>
               {t('batchImport')}
             </Button>
@@ -355,7 +354,7 @@ export function PeopleReviewStep({
                       checked={allSelected}
                       indeterminate={someSelected}
                       onCheckedChange={handleSelectAll}
-                      aria-label="Select all"
+                      aria-label={tAria('selectAll')}
                     />
                   </TableHead>
                   <TableHead>{t('columnName')}</TableHead>
@@ -426,7 +425,9 @@ export function PeopleReviewStep({
 
                         {/* Status */}
                         <TableCell>
-                          {person.status === 'new' && <Badge variant="success">New</Badge>}
+                          {person.status === 'new' && (
+                            <Badge variant="success">{t('statusNew')}</Badge>
+                          )}
                           {person.status === 'conflict' && (
                             <ConflictResolutionPopover
                               conflicts={person.conflicts ?? []}
@@ -437,7 +438,9 @@ export function PeopleReviewStep({
                               }
                             />
                           )}
-                          {person.status === 'exists' && <Badge variant="info">Exists</Badge>}
+                          {person.status === 'exists' && (
+                            <Badge variant="info">{t('statusExists')}</Badge>
+                          )}
                         </TableCell>
 
                         {/* Role */}

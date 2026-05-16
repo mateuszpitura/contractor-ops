@@ -251,7 +251,6 @@
     "@upstash/qstash": "^2.10.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "bir1": "^4.2.0",
     "botbuilder": "^4.23.3",
     "clamscan": "^2.4.0",
     "csv-stringify": "^6.7.0",

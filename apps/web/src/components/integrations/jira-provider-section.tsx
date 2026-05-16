@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
@@ -16,6 +17,7 @@ import { JiraStatusMappingDialog } from './jira-status-mapping-dialog';
 
 export function JiraProviderSection() {
   const [mappingDialogOpen, setMappingDialogOpen] = useState(false);
+  const t = useTranslations('Integrations');
 
   const openMappingDialog = useCallback(() => {
     setMappingDialogOpen(true);
@@ -35,26 +37,24 @@ export function JiraProviderSection() {
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Jira integration">
-      <div className="space-y-4">
+      <div className="flex h-full flex-col gap-4">
         <ProviderConnectionCard
           provider="jira"
           displayName="Jira"
           icon={<JiraLogo className="size-8" />}
-          description="Connect Jira Cloud to sync workflow tasks with Jira issues."
+          description={t('jiraProvider.description')}
         />
 
         {!!isConnected && !!connection?.scopeExpansionNeeded && (
           <div className="flex items-center gap-2 rounded-md border border-warning/50 bg-warning/10 p-3">
             <AlertTriangle className="size-4 text-warning" />
-            <span className="text-sm text-warning">
-              Re-auth required — new scopes needed for issue creation and webhooks.
-            </span>
+            <span className="text-sm text-warning">{t('jiraProvider.scopeWarning')}</span>
           </div>
         )}
 
         {isConnected && !connection?.scopeExpansionNeeded && (
           <Button variant="outline" size="sm" onClick={openMappingDialog}>
-            Configure Status Mapping
+            {t('jiraProvider.configureStatusMapping')}
           </Button>
         )}
 

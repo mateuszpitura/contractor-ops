@@ -1045,7 +1045,7 @@ describe('contract router', () => {
       });
 
       expect(result.items).toEqual([]);
-      expect(result.totalCount).toBe(0);
+      expect(result.total).toBe(0);
       // findMany should NOT be called when queryRaw returns empty
       expect(mockPrisma.contract.findMany).not.toHaveBeenCalled();
     });

@@ -1,4 +1,7 @@
+'use client';
+
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,6 +11,7 @@ interface OcrProcessingOverlayProps {
 }
 
 export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
+  const t = useTranslations('OcrReview.processingOverlay');
   return (
     <div className="relative">
       {/* Overlay */}
@@ -20,8 +24,8 @@ export function OcrProcessingOverlay({ progress }: OcrProcessingOverlayProps) {
             </div>
           )}
           <div className="text-center">
-            <p className="text-sm font-semibold">Analyzing invoice...</p>
-            <p className="text-sm text-muted-foreground">This usually takes a few seconds</p>
+            <p className="text-sm font-semibold">{t('analyzing')}</p>
+            <p className="text-sm text-muted-foreground">{t('takesSeconds')}</p>
           </div>
         </div>
       </div>

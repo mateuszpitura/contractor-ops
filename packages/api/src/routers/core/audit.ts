@@ -95,9 +95,9 @@ export const auditRouter = router({
    * Admin-only (settings:read permission per D-13).
    *
    * F-DB-11 — supports two modes:
-   *   - cursor pagination (preferred for deep navigation; no totalCount)
+   *   - cursor pagination (preferred for deep navigation; no total)
    *   - legacy offset pagination via {page, pageSize} kept for back-compat;
-   *     totalCount is bounded to avoid the full-scan-on-deep-page anti-pattern.
+   *     total is bounded to avoid the full-scan-on-deep-page anti-pattern.
    */
   list: tenantProcedure
     .use(settingsRead)
@@ -158,17 +158,17 @@ export const auditRouter = router({
         return {
           items: await enrichResourceNames(ctx.db, trimmed),
           nextCursor: hasMore ? trimmed[trimmed.length - 1]?.id : undefined,
-          // No totalCount in cursor mode — caller relies on nextCursor.
-          totalCount: null,
+          // No total in cursor mode — caller relies on nextCursor.
+          total: null,
           page: null,
           pageSize: input.pageSize,
         };
       }
 
-      // Legacy offset path. Cap totalCount lookup to a sane upper bound to
+      // Legacy offset path. Cap total lookup to a sane upper bound to
       // avoid the full-scan anti-pattern on multi-million-row audit tables.
       const COUNT_CAP = 10_000;
-      const [items, totalCount] = await Promise.all([
+      const [items, total] = await Promise.all([
         ctx.db.auditLog.findMany({
           where,
           skip: (input.page - 1) * input.pageSize,
@@ -180,7 +180,7 @@ export const auditRouter = router({
 
       return {
         items: await enrichResourceNames(ctx.db, items),
-        totalCount,
+        total,
         page: input.page,
         pageSize: input.pageSize,
         nextCursor: undefined as string | undefined,

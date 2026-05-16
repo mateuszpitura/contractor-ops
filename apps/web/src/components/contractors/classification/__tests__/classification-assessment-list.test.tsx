@@ -51,7 +51,7 @@ describe('ClassificationAssessmentList', () => {
     mockListQuery.current = { isPending: false, data: null };
   });
 
-  it('renders a loading spinner while pending', () => {
+  it('renders skeleton rows while pending', () => {
     mockListQuery.current = { isPending: true, data: undefined };
 
     render(<ClassificationAssessmentList contractorId="c-1" />);

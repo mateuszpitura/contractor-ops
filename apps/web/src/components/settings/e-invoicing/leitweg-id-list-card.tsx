@@ -38,7 +38,7 @@ export function LeitwegIdListCard() {
     <Card data-testid="leitweg-id-list-card">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div className="space-y-1">
-          <CardTitle className="text-xl">Leitweg-IDs</CardTitle>
+          <CardTitle className="text-xl">{t('cardTitle')}</CardTitle>
           {isEmpty ? (
             <p className="text-sm text-muted-foreground max-w-prose">{t('emptyBody')}</p>
           ) : null}
@@ -64,12 +64,12 @@ export function LeitwegIdListCard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Value</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Assigned to</TableHead>
-                <TableHead>Default?</TableHead>
-                <TableHead>Valid period</TableHead>
-                <TableHead className="w-12" aria-label="Actions" />
+                <TableHead>{t('colValue')}</TableHead>
+                <TableHead>{t('colDescription')}</TableHead>
+                <TableHead>{t('colAssignedTo')}</TableHead>
+                <TableHead>{t('colDefault')}</TableHead>
+                <TableHead>{t('colValidPeriod')}</TableHead>
+                <TableHead className="w-12" aria-label={t('colActionsAria')} />
               </TableRow>
             </TableHeader>
             <TableBody>

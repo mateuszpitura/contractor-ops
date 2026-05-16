@@ -426,7 +426,7 @@ export const contractRouter = router({
           if (matchingIds.length === 0) {
             return {
               items: [] as Record<string, unknown>[],
-              totalCount: 0,
+              total: 0,
               page,
               pageSize,
             };
@@ -436,7 +436,7 @@ export const contractRouter = router({
         }
       }
 
-      const [contracts, totalCount] = await Promise.all([
+      const [contracts, total] = await Promise.all([
         ctx.db.contract.findMany({
           where,
           skip: (page - 1) * pageSize,
@@ -454,7 +454,7 @@ export const contractRouter = router({
         ctx.db.contract.count({ where }),
       ]);
 
-      return { items: contracts, totalCount, page, pageSize };
+      return { items: contracts, total, page, pageSize };
     }),
 
   /**

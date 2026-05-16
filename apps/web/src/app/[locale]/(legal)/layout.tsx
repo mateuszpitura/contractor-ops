@@ -1,12 +1,15 @@
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 
-export default function LegalLayout({ children }: { children: React.ReactNode }) {
+export default async function LegalLayout({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations('Legal');
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto flex h-14 items-center px-6">
           <Link href="/" className="text-lg font-semibold">
-            Contractor Ops
+            {t('nav.brand')}
           </Link>
         </div>
       </header>
@@ -14,16 +17,16 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       <footer className="border-t py-8">
         <div className="container mx-auto flex gap-6 px-6 text-sm text-muted-foreground">
           <Link href="/legal/privacy" className="hover:underline">
-            Privacy Policy
+            {t('nav.privacy')}
           </Link>
           <Link href="/legal/terms" className="hover:underline">
-            Terms of Service
+            {t('nav.terms')}
           </Link>
           <Link href="/legal/sub-processors" className="hover:underline">
-            Sub-processors
+            {t('nav.subProcessors')}
           </Link>
           <Link href="/legal/breach-notification" className="hover:underline">
-            Breach Notification
+            {t('nav.breachNotification')}
           </Link>
         </div>
       </footer>

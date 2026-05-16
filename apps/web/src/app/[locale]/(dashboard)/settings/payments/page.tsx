@@ -40,6 +40,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 export default function PaymentSettingsPage() {
   const t = useTranslations('Payments.bacs');
   const tSettings = useTranslations('Settings');
+  const tPayments = useTranslations('Settings.payments');
   const bacsEnabled = useFlag('payments.bacs-enabled');
   const { can } = usePermissions();
   const canManageSettings = can('settings', ['update']);
@@ -65,10 +66,7 @@ export default function PaymentSettingsPage() {
               <ShieldOff aria-hidden="true" className="size-5 text-muted-foreground" />
               {t('settingsPageTitle')}
             </CardTitle>
-            <CardDescription>
-              You do not have permission to configure payment exports. Contact your organization
-              admin.
-            </CardDescription>
+            <CardDescription>{tPayments('noPermission.description')}</CardDescription>
           </CardHeader>
         </Card>
       </div>

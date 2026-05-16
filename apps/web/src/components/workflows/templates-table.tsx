@@ -1,5 +1,6 @@
 'use client';
 
+import { SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -183,45 +184,48 @@ export function TemplatesTable() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-background">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('templates.columns.name')}</TableHead>
-              <TableHead>{t('templates.columns.type')}</TableHead>
-              <TableHead>{t('templates.columns.status')}</TableHead>
-              <TableHead>{t('templates.columns.taskCount')}</TableHead>
-              <TableHead>{t('templates.columns.lastUpdated')}</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`skeleton-${i}`}>
-                <TableCell>
-                  <Skeleton className="h-4 w-40" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-16" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-8" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-24" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-4" />
-                </TableCell>
+      <>
+        <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
+        <div className="rounded-xl border bg-background">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('templates.columns.name')}</TableHead>
+                <TableHead>{t('templates.columns.type')}</TableHead>
+                <TableHead>{t('templates.columns.status')}</TableHead>
+                <TableHead>{t('templates.columns.taskCount')}</TableHead>
+                <TableHead>{t('templates.columns.lastUpdated')}</TableHead>
+                <TableHead className="w-10" />
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-8" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-4" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </>
     );
   }
 
@@ -241,6 +245,7 @@ export function TemplatesTable() {
 
   return (
     <>
+      <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
       <div className="rounded-xl border bg-background">
         <Table>
           <TableHeader>

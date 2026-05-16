@@ -1,7 +1,13 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, EquipmentIllustration } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  EquipmentIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Package } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -160,6 +166,10 @@ function EquipmentContent() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
+        <SectionLabel icon={Package}>{t('title')}</SectionLabel>
+      </AnimateIn>
+
+      <AnimateIn delay={2}>
         <EquipmentTable
           onEdit={handleEdit}
           onAssign={handleAssign}

@@ -6,7 +6,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { unstable_cache } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { BillingOverlay } from '@/components/billing/billing-overlay';
 import { AppFooter } from '@/components/layout/app-footer';
@@ -75,26 +75,22 @@ const fetchOrgAndMember = (userId: string, activeOrgId: string) =>
   )();
 
 const fetchLatestTosConsent = (userId: string, activeOrgId: string, version: string) =>
-  unstable_cache(
-    async () =>
-      prisma.consentEvent.findFirst({
-        where: {
-          userId,
-          organizationId: activeOrgId,
-          scope: 'TOS',
-          version,
-        },
-        select: { id: true },
-        orderBy: { acceptedAt: 'desc' },
-      }),
-    [`dashboard-layout-tos`, userId, activeOrgId, version],
-    {
-      revalidate: DASHBOARD_LAYOUT_CACHE_TTL_SECONDS,
-      tags: [`user:${userId}:tos`, `org:${activeOrgId}`],
+  prisma.consentEvent.findFirst({
+    where: {
+      userId,
+      organizationId: activeOrgId,
+      scope: 'TOS',
+      version,
     },
-  )();
+    select: { id: true },
+    orderBy: { acceptedAt: 'desc' },
+  });
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const [reqHeaders, locale] = await Promise.all([headers(), getLocale()]);
+  const [reqHeaders, locale, tLayout] = await Promise.all([
+    headers(),
+    getLocale(),
+    getTranslations('Layout'),
+  ]);
   const session = await auth.api.getSession({ headers: reqHeaders });
 
   if (!session) {
@@ -178,7 +174,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                   <a
                     href="#main-content"
                     className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">
-                    Skip to content
+                    {tLayout('skipToContent')}
                   </a>
                   <AppSidebar />
                   <SidebarInset>

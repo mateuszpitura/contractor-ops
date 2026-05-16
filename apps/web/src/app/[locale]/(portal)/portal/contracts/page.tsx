@@ -1,6 +1,11 @@
 'use client';
 
-import { AtelierEmptyState, AtelierPageHeader, ContractsIllustration } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierPageHeader,
+  ContractsIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ContractCard, ContractCardSkeleton } from '@/components/portal/contract-card';
@@ -34,6 +39,10 @@ export default function PortalContractsPage() {
       </AnimateIn>
 
       <AnimateIn delay={1}>
+        <SectionLabel variant="portal">{t('contracts.title')}</SectionLabel>
+      </AnimateIn>
+
+      <AnimateIn delay={2}>
         {isLoading ? (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <ContractCardSkeleton />

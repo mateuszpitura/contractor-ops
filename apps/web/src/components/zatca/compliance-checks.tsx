@@ -122,12 +122,15 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
                       <X className="h-4 w-4 text-destructive" aria-hidden="true" />
                     )
                   ) : isRunning ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" aria-label="Running" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin text-primary"
+                      aria-label={t('running')}
+                    />
                   ) : isPending ? (
                     <span
                       className="h-4 w-4 rounded-full border-2 border-muted-foreground/30"
                       role="img"
-                      aria-label="Pending"
+                      aria-label={t('pending')}
                     />
                   ) : null}
                   <span className={result ? 'text-foreground' : 'text-muted-foreground'}>

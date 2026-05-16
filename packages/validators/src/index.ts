@@ -86,18 +86,18 @@ export {
   orgExpiryReminderDefaultsSchema,
 } from './contract.js';
 export type {
+  CompanyLookupInput,
   ContractorCreateInput,
   ContractorLifecycleTransitionInput,
   ContractorListInput,
   ContractorUpdateInput,
-  GusLookupInput,
 } from './contractor.js';
 export {
+  companyLookupSchema,
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
   contractorListSchema,
   contractorUpdateSchema,
-  gusLookupSchema,
   isValidNip,
   nipSchema,
 } from './contractor.js';

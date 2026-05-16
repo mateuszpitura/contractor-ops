@@ -1,7 +1,8 @@
 'use client';
 
-import { AtelierEmptyState, DocumentsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, DocumentsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
+import { Files } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DocumentCard } from '@/components/documents/document-card';
 import { DropZone } from '@/components/documents/drop-zone';
@@ -50,9 +51,7 @@ export function TabDocuments({ contractorId }: TabDocumentsProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('contractorTab.heading')}</h3>
-      </div>
+      <SectionLabel icon={Files}>{t('contractorTab.heading')}</SectionLabel>
 
       {/* Drop zone for uploads — disabled while initial list loads */}
       <DropZone entityType="CONTRACTOR" entityId={contractorId} disabled={isLoading} />

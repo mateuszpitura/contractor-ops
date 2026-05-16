@@ -1,8 +1,9 @@
 'use client';
 
-import { ComplianceGapsIllustration } from '@contractor-ops/ui';
+import { ComplianceGapsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
+import { ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -75,7 +76,7 @@ export function ComplianceGapsReport({
   );
 
   const tableData = useMemo(() => {
-    const result = tableQuery.data as { items: ComplianceRow[]; totalCount: number } | undefined;
+    const result = tableQuery.data as { items: ComplianceRow[]; total: number } | undefined;
     let items = result?.items ?? [];
 
     // Client-side filter by health when drilled down
@@ -94,8 +95,8 @@ export function ComplianceGapsReport({
 
   const totalCount = useMemo(() => {
     if (drillDownHealth) return tableData.length;
-    const result = tableQuery.data as { items: ComplianceRow[]; totalCount: number } | undefined;
-    return result?.totalCount ?? 0;
+    const result = tableQuery.data as { items: ComplianceRow[]; total: number } | undefined;
+    return result?.total ?? 0;
   }, [tableQuery.data, drillDownHealth, tableData.length]);
 
   const chartData = useMemo(() => {
@@ -189,6 +190,7 @@ export function ComplianceGapsReport({
         onClear={handleClearDrillDown}
       />
 
+      <SectionLabel icon={ShieldAlert}>{t('complianceGaps')}</SectionLabel>
       <ReportTable<ComplianceRow>
         columns={columns}
         data={tableData}

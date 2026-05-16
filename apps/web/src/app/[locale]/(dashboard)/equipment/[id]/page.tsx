@@ -136,9 +136,9 @@ export default function EquipmentDetailPage() {
     if (isNotFound) {
       return (
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
-          <h2 className="text-lg font-medium">Equipment not found</h2>
+          <h2 className="text-lg font-medium">{t('detail.notFound')}</h2>
           <Button variant="outline" render={<Link href="/equipment" />}>
-            Back to equipment
+            {t('detail.backToList')}
           </Button>
         </div>
       );
@@ -148,7 +148,7 @@ export default function EquipmentDetailPage() {
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{t('error.loadFailed')}</h2>
         <Button variant="outline" onClick={handleRetry}>
-          Retry
+          {t('detail.retry')}
         </Button>
       </div>
     );

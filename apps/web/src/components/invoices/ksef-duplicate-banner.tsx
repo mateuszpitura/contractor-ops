@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -36,6 +37,7 @@ export function KsefDuplicateBanner({
   sellerNip,
   onVoid,
 }: KsefDuplicateBannerProps) {
+  const t = useTranslations('ksef');
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
   return (
@@ -44,28 +46,25 @@ export function KsefDuplicateBanner({
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" aria-hidden="true" />
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold">KSeF Duplicate Found</h4>
+            <h4 className="text-sm font-semibold">{t('duplicateHeading')}</h4>
             <p className="text-sm text-muted-foreground">
-              A matching invoice was found in KSeF (invoice number{' '}
-              <span className="font-medium text-foreground">{invoiceNumber}</span>, seller NIP{' '}
-              <span className="font-medium text-foreground">{sellerNip}</span>
-              ). The KSeF version is government-validated.
+              {t('duplicateBody', { invoiceNumber, sellerNip })}
             </p>
             <div className="flex items-center gap-2">
               <Link
                 href={`/invoices/${duplicateInvoiceId}`}
                 className="text-sm text-primary hover:underline">
-                View KSeF Invoice
+                {t('duplicateViewKsef')}
               </Link>
               {!!onVoid && (
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 <Button variant="destructive" size="sm" onClick={() => setVoidDialogOpen(true)}>
                   <Trash2 className="me-1.5 size-4" />
-                  Void This Invoice
+                  {t('duplicateVoid')}
                 </Button>
               )}
               <Button variant="ghost" size="sm">
-                Keep Both
+                {t('duplicateKeep')}
               </Button>
             </div>
           </div>
@@ -78,15 +77,12 @@ export function KsefDuplicateBanner({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Trash2 className="size-4" />
-              Void Invoice
+              {t('voidConfirmTitle')}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              This invoice will be marked as void. The KSeF version will remain as the authoritative
-              record.
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('voidConfirmBody')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Invoice</AlertDialogCancel>
+            <AlertDialogCancel>{t('voidConfirmCancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -94,7 +90,7 @@ export function KsefDuplicateBanner({
                 onVoid?.();
                 setVoidDialogOpen(false);
               }}>
-              Void Invoice
+              {t('voidConfirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

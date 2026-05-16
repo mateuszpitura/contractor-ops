@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -47,6 +48,7 @@ type SigningAuditTrailProps = {
  * Per UI-SPEC: Sheet from right, 400px wide, newest first.
  */
 export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAuditTrailProps) {
+  const t = useTranslations('ContractDetail.signing.auditTrail');
   const { formatDate, formatDateTime } = useDateFormatter();
 
   function formatRelativeTime(date: Date | string): string {
@@ -57,10 +59,10 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 30) return `${diffDays}d ago`;
+    if (diffMinutes < 1) return t('justNow');
+    if (diffMinutes < 60) return t('minutesAgo', { count: diffMinutes });
+    if (diffHours < 24) return t('hoursAgo', { count: diffHours });
+    if (diffDays < 30) return t('daysAgo', { count: diffDays });
     return formatDate(d);
   }
 
@@ -85,7 +87,7 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[400px] sm:w-[400px]">
         <SheetHeader>
-          <SheetTitle className="text-xl font-semibold">Signing History</SheetTitle>
+          <SheetTitle className="text-xl font-semibold">{t('title')}</SheetTitle>
         </SheetHeader>
 
         <div className="mt-4">
@@ -104,10 +106,8 @@ export function SigningAuditTrail({ envelopeId, open, onOpenChange }: SigningAud
             </div>
           ) : events.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <h4 className="text-sm font-medium text-muted-foreground">No Signing History</h4>
-              <p className="mt-1 max-w-[240px] text-sm text-muted-foreground">
-                Signing events will appear here once a document is sent for signature.
-              </p>
+              <h4 className="text-sm font-medium text-muted-foreground">{t('emptyTitle')}</h4>
+              <p className="mt-1 max-w-[240px] text-sm text-muted-foreground">{t('emptyBody')}</p>
             </div>
           ) : (
             <div className="space-y-0">

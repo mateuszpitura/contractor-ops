@@ -2,6 +2,7 @@
 
 import { endOfISOWeek, format, startOfISOWeek } from 'date-fns';
 import { CalendarDays, Clock, Loader2, Ticket } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -54,6 +55,7 @@ export function ExternalSyncButton({
   onSync,
   isSyncing,
 }: ExternalSyncButtonProps) {
+  const t = useTranslations('Time');
   const config = PROVIDER_CONFIG[provider];
   const Icon = config.icon;
 
@@ -85,11 +87,11 @@ export function ExternalSyncButton({
           <TooltipTrigger render={<span />}>
             <Button variant="outline" disabled className="gap-2">
               <Icon className="h-4 w-4" />
-              Sync from {config.label}
+              {t('externalSync.syncFrom', { provider: config.label })}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Connect {config.label} in Settings &gt; Integrations to import time entries</p>
+            <p>{t('externalSync.connectHint', { provider: config.label })}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -100,7 +102,7 @@ export function ExternalSyncButton({
     return (
       <Button variant="outline" disabled className="gap-2">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Importing...
+        {t('externalSync.importing')}
       </Button>
     );
   }
@@ -109,15 +111,17 @@ export function ExternalSyncButton({
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger render={<Button variant="outline" className="gap-2" />}>
         <Icon className="h-4 w-4" />
-        Sync from {config.label}
+        {t('externalSync.syncFrom', { provider: config.label })}
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold">Import from {config.label}</h4>
+          <h4 className="text-sm font-semibold">
+            {t('externalSync.importFrom', { provider: config.label })}
+          </h4>
 
           {/* From date */}
           <div className="space-y-1.5">
-            <Label className="text-xs">From</Label>
+            <Label className="text-xs">{t('externalSync.from')}</Label>
             <Popover open={fromCalendarOpen} onOpenChange={setFromCalendarOpen}>
               <PopoverTrigger
                 render={
@@ -147,7 +151,7 @@ export function ExternalSyncButton({
 
           {/* To date */}
           <div className="space-y-1.5">
-            <Label className="text-xs">To</Label>
+            <Label className="text-xs">{t('externalSync.to')}</Label>
             <Popover open={toCalendarOpen} onOpenChange={setToCalendarOpen}>
               <PopoverTrigger
                 render={
@@ -177,7 +181,7 @@ export function ExternalSyncButton({
 
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button className="w-full" onClick={handleImport}>
-            Import Entries
+            {t('externalSync.importEntries')}
           </Button>
         </div>
       </PopoverContent>

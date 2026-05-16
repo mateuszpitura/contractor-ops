@@ -56,7 +56,7 @@ export function TeamsProviderSection() {
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Microsoft Teams integration">
-      <div className="space-y-4">
+      <div className="flex h-full flex-col gap-4">
         <ProviderConnectionCard
           provider="microsoft_teams"
           displayName="Microsoft Teams"

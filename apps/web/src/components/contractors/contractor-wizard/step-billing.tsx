@@ -32,6 +32,7 @@ export function StepBilling({ form }: StepBillingProps) {
   const id = useId();
   const t = useTranslations('ContractorWizard.fields');
   const tb = useTranslations('ContractorWizard.billingModelOptions');
+  const tWizard = useTranslations('ContractorWizard');
 
   const billingModelItems = BILLING_MODEL_VALUES.map(v => ({
     value: v,
@@ -175,7 +176,7 @@ export function StepBilling({ form }: StepBillingProps) {
         <Input
           id={`${id}-bankAccount`}
           className="font-mono"
-          placeholder="PL00 0000 0000 0000 0000 0000 0000"
+          placeholder={tWizard('ibanPlaceholder')}
           {...register('bankAccount')}
         />
         {!!errors.bankAccount && (

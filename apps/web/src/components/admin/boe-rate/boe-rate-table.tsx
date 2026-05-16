@@ -9,6 +9,7 @@ import type { AppRouter } from '@contractor-ops/api';
 import { useQuery } from '@tanstack/react-query';
 import type { inferRouterOutputs } from '@trpc/server';
 import { PencilIcon, TrashIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { DeleteBoeRateDialog } from '@/components/admin/boe-rate/delete-boe-rate-dialog';
 import { EditBoeRateDialog } from '@/components/admin/boe-rate/edit-boe-rate-dialog';
@@ -30,6 +31,8 @@ import { trpc } from '@/trpc/init';
 type RateEntry = inferRouterOutputs<AppRouter>['adminBoeRate']['list'][number];
 
 export function BoeRateTable() {
+  const t = useTranslations('Admin.BoeRate');
+
   const [editEntry, setEditEntry] = useState<RateEntry | null>(null);
   const [deleteEntry, setDeleteEntry] = useState<RateEntry | null>(null);
 
@@ -48,10 +51,8 @@ export function BoeRateTable() {
   if (!entries || entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-lg font-medium text-muted-foreground">No rate entries</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add a rate entry to start tracking BoE base rates.
-        </p>
+        <p className="text-lg font-medium text-muted-foreground">{t('noRateEntries')}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('noRateEntriesBody')}</p>
       </div>
     );
   }
@@ -61,13 +62,13 @@ export function BoeRateTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Effective from</TableHead>
-            <TableHead className="text-right">Rate %</TableHead>
-            <TableHead>Source</TableHead>
-            <TableHead>Recorded by</TableHead>
-            <TableHead>Recorded at</TableHead>
-            <TableHead>Notes</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t('colEffectiveFrom')}</TableHead>
+            <TableHead className="text-right">{t('colRatePercent')}</TableHead>
+            <TableHead>{t('colSource')}</TableHead>
+            <TableHead>{t('colRecordedBy')}</TableHead>
+            <TableHead>{t('colRecordedAt')}</TableHead>
+            <TableHead>{t('colNotes')}</TableHead>
+            <TableHead className="text-right">{t('colActions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -82,8 +83,8 @@ export function BoeRateTable() {
               <TableCell>
                 <Badge
                   variant={entry.source === 'BOE_API' ? 'secondary' : 'outline'}
-                  aria-label={`Source: ${entry.source === 'BOE_API' ? 'BoE API' : 'Manual'}`}>
-                  {entry.source === 'BOE_API' ? 'BoE API' : 'Manual'}
+                  aria-label={`Source: ${entry.source === 'BOE_API' ? t('sourceBoeApi') : t('sourceManual')}`}>
+                  {entry.source === 'BOE_API' ? t('sourceBoeApi') : t('sourceManual')}
                 </Badge>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
@@ -101,14 +102,14 @@ export function BoeRateTable() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setEditEntry(entry)}
-                    aria-label="Edit rate entry">
+                    aria-label={t('ariaEditRate')}>
                     <PencilIcon className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setDeleteEntry(entry)}
-                    aria-label="Delete rate entry">
+                    aria-label={t('ariaDeleteRate')}>
                     <TrashIcon className="h-4 w-4" />
                   </Button>
                 </div>

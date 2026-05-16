@@ -58,6 +58,7 @@ export const ModelName = {
   ApprovalDecision: 'ApprovalDecision',
   AuditLog: 'AuditLog',
   User: 'User',
+  UserPinnedView: 'UserPinnedView',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
@@ -307,6 +308,17 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const UserPinnedViewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  kind: 'kind',
+  key: 'key',
+  pinnedAt: 'pinnedAt'
+} as const
+
+export type UserPinnedViewScalarFieldEnum = (typeof UserPinnedViewScalarFieldEnum)[keyof typeof UserPinnedViewScalarFieldEnum]
 
 
 export const SessionScalarFieldEnum = {

@@ -99,6 +99,22 @@ model User {
   classificationEscalationEvents ClassificationEscalationEvent[] @relation("UserEscalationEvents")
   sdsApprovals                   SdsApproval[]                   @relation("UserSdsApprovals")
   consentEvents                  ConsentEvent[]                  @relation("UserConsentEvents")
+
+  // Pinned views (e.g. settings tabs surfaced as sidebar shortcuts)
+  pinnedViews UserPinnedView[]
+}
+
+model UserPinnedView {
+  id       String   @id @default(cuid())
+  userId   String
+  kind     String
+  key      String
+  pinnedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, key])
+  @@index([userId, kind])
 }
 
 model Session {

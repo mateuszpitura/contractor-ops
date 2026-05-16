@@ -53,7 +53,7 @@ export function IntakeDetailPdfPane({ intakeId, sourceKind, className }: IntakeD
           ) : (
             <iframe
               src={url}
-              title={isXml ? 'XML preview' : 'PDF preview'}
+              title={isXml ? t('xmlPreviewTitle') : t('pdfPreviewTitle')}
               className="h-[600px] w-full border-0 bg-muted"
               sandbox="allow-scripts allow-same-origin"
             />
@@ -76,6 +76,8 @@ interface XmlPreviewProps {
 }
 
 function XmlPreview({ url }: XmlPreviewProps) {
+  const t = useTranslations('EInvoice.intake');
+  const tTab = useTranslations('EInvoice.InvoiceTab');
   const textQuery = useQuery({
     queryKey: ['intake-xml-preview', url],
     queryFn: async () => {
@@ -90,13 +92,13 @@ function XmlPreview({ url }: XmlPreviewProps) {
     return <Skeleton className="m-4 h-[560px] w-[calc(100%-2rem)]" />;
   }
   if (textQuery.isError || !textQuery.data) {
-    return <div className="p-6 text-sm text-destructive">Failed to load XML.</div>;
+    return <div className="p-6 text-sm text-destructive">{t('xmlLoadError')}</div>;
   }
 
   return (
     <pre
       className="max-h-[600px] overflow-auto bg-muted/30 p-4 font-mono text-xs whitespace-pre-wrap break-all"
-      aria-label="Raw XRechnung XML source">
+      aria-label={tTab('xmlSourceAria')}>
       {textQuery.data}
     </pre>
   );

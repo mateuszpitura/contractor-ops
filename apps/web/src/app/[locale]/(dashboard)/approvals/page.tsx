@@ -20,7 +20,7 @@ import { ApprovalSidePanel } from '@/components/approvals/approval-queue/side-pa
 import { ChangeRequestDiffCard } from '@/components/settings/change-request-diff-card';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { PageTableSkeleton } from '@/components/shared/page-table-skeleton';
+import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -259,7 +259,8 @@ function ApprovalsContent() {
     }
 
     return (
-      <div className="space-y-4">
+      <section aria-label={t('pageTitle')} className="space-y-4">
+        <SectionLabel icon={ClipboardCheck}>{t('pageTitle')}</SectionLabel>
         <ApprovalQueueToolbar
           activeStatuses={statuses}
           onStatusChange={handleStatusChange}
@@ -269,23 +270,21 @@ function ApprovalsContent() {
           selectedIds={selectedIds}
           // biome-ignore lint/nursery/noJsxPropsBind: simple state reset, component not memoized
           onClearSelection={() => setSelectedIds([])}
+          isLoading={isLoading}
         />
-        <section aria-label={t('pageTitle')} className="space-y-3">
-          <SectionLabel icon={ClipboardCheck}>{t('pageTitle')}</SectionLabel>
-          <ApprovalQueueTable
-            data={data}
-            columns={columns}
-            pageCount={pageCount}
-            page={page}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onRowClick={handleRowClick}
-            onSelectionChange={setSelectedIds}
-            isLoading={isLoading}
-          />
-        </section>
-      </div>
+        <ApprovalQueueTable
+          data={data}
+          columns={columns}
+          pageCount={pageCount}
+          page={page}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          onRowClick={handleRowClick}
+          onSelectionChange={setSelectedIds}
+          isLoading={isLoading}
+        />
+      </section>
     );
   };
 
@@ -381,7 +380,7 @@ function ApprovalsContent() {
  */
 export default function ApprovalsPage() {
   return (
-    <Suspense fallback={<PageTableSkeleton />}>
+    <Suspense fallback={<PageLoadingSpinner />}>
       <ApprovalsContent />
     </Suspense>
   );

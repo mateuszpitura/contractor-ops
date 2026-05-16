@@ -45,7 +45,7 @@ export function GoogleWorkspaceProviderSection() {
 
   return (
     <FeatureGate requiredTier="Pro" featureName="Google Workspace integration">
-      <div className="space-y-4">
+      <div className="flex h-full flex-col gap-4">
         {isConnected && <GoogleWorkspaceReconnectBanner scopeCapabilities={scopeCapabilities} />}
 
         <ProviderConnectionCard

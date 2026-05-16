@@ -21,6 +21,7 @@ import { OnboardingConsentStep } from '@/components/consent/onboarding-consent-s
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -269,8 +270,21 @@ export function OnboardingChecklist() {
     updateMutation.mutate({ onboardingDismissed: false });
   }, [updateMutation]);
 
-  // Visibility: only show for admins when setup is incomplete and not loading
-  if (permissionsLoading || settingsLoading) return null;
+  // Show skeleton while permissions or settings load
+  if (permissionsLoading || settingsLoading) {
+    return (
+      <Card size="sm">
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-6 w-6 rounded" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Only show for admins
   if (!can('settings', ['write'])) return null;
   if (completedCount >= totalCount) return null;
 

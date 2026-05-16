@@ -47,8 +47,7 @@ function ContractsContent() {
   const contractorCountQuery = useQuery(
     trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }),
   );
-  const contractTotal =
-    (contractCountQuery.data as { totalCount: number } | undefined)?.totalCount ?? 0;
+  const contractTotal = (contractCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const isCountLoading = contractCountQuery.isLoading;
 

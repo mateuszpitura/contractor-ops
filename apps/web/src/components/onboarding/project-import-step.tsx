@@ -45,6 +45,7 @@ interface ProjectCardProps {
 
 function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps) {
   const t = useTranslations('OnboardingImport.step3');
+  const tAria = useTranslations('Common.aria');
   const [expanded, setExpanded] = useState(false);
 
   const handleSkip = () => {
@@ -125,7 +126,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
             {selection.steps.map((step, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
               <Badge key={`step-chip-${i}`} variant="secondary">
-                {step.name || `Step ${i + 1}`}
+                {step.name || t('stepFallback', { number: i + 1 })}
               </Badge>
             ))}
           </div>
@@ -142,7 +143,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                   value={step.name}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e => handleRenameStep(i, e.target.value)}
-                  placeholder={`Step ${i + 1}`}
+                  placeholder={t('stepFallback', { number: i + 1 })}
                   className="h-7 flex-1 text-sm"
                 />
                 <Button
@@ -151,7 +152,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleMoveStep(i, 'up')}
                   disabled={i === 0}
-                  aria-label="Move up">
+                  aria-label={tAria('moveUp')}>
                   <ArrowUp className="size-3" />
                 </Button>
                 <Button
@@ -160,7 +161,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleMoveStep(i, 'down')}
                   disabled={i === selection.steps.length - 1}
-                  aria-label="Move down">
+                  aria-label={tAria('moveDown')}>
                   <ArrowDown className="size-3" />
                 </Button>
                 <Button
@@ -168,7 +169,7 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
                   size="icon-xs"
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => handleRemoveStep(i)}
-                  aria-label="Remove step">
+                  aria-label={tAria('removeStep')}>
                   <X className="size-3" />
                 </Button>
               </div>

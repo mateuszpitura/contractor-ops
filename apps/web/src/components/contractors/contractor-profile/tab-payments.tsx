@@ -1,9 +1,10 @@
 'use client';
 
-import { AtelierEmptyState, PaymentsIllustration } from '@contractor-ops/ui';
+import { AtelierEmptyState, PaymentsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { CreditCard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
@@ -216,8 +217,10 @@ export function TabPayments({ contractorId }: TabPaymentsProps) {
   return (
     <div className="space-y-4">
       {/* Header with total paid stat */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium">{t('tabPayments')}</h3>
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <SectionLabel icon={CreditCard}>{t('tabPayments')}</SectionLabel>
+        </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{t('totalPaid')}:</span>
           {isLoading ? (

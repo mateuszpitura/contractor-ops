@@ -103,7 +103,7 @@ describe('ExpiringContractsReport', () => {
             status: 'EXPIRING',
           },
         ],
-        totalCount: 1,
+        total: 1,
       },
       isLoading: false,
     } as unknown as never);
@@ -141,7 +141,7 @@ describe('ExpiringContractsReport', () => {
 
   it('renders empty state when no contracts in range', () => {
     mockUseQuery.mockReturnValue({
-      data: { items: [], totalCount: 0 },
+      data: { items: [], total: 0 },
       isLoading: false,
     } as unknown as never);
     render(<ExpiringContractsReport dateFrom="2026-01-01" dateTo="2026-03-31" />);
