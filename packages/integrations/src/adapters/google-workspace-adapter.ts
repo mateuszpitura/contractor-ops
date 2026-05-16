@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -110,22 +111,27 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://oauth2.googleapis.com/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://oauth2.googleapis.com/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'google-workspace', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -164,21 +170,25 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Google Workspace');
     }
 
-    const response = await fetchWithTimeout(
-      'https://oauth2.googleapis.com/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://oauth2.googleapis.com/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: credentials.refreshToken,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'google-workspace' },
     );
 
     if (!response.ok) {
@@ -225,14 +235,18 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
         url.searchParams.set('pageToken', pageToken);
       }
 
-      const response = await fetchWithTimeout(
-        url.toString(),
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-        { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: DIRECTORY_RETRIES },
+      const response = await withResilience(
+        () =>
+          fetchWithTimeout(
+            url.toString(),
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+            { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: 0 },
+          ),
+        { provider: 'google-workspace', retryAttempts: DIRECTORY_RETRIES },
       );
 
       if (!response.ok) {
@@ -273,14 +287,18 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
         url.searchParams.set('pageToken', pageToken);
       }
 
-      const response = await fetchWithTimeout(
-        url.toString(),
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-        { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: DIRECTORY_RETRIES },
+      const response = await withResilience(
+        () =>
+          fetchWithTimeout(
+            url.toString(),
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+            { timeoutMs: DIRECTORY_TIMEOUT_MS, retries: 0 },
+          ),
+        { provider: 'google-workspace', retryAttempts: DIRECTORY_RETRIES },
       );
 
       // 404 means user is not a member of any groups

@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -81,21 +82,26 @@ export class NotionAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://api.notion.com/v1/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.notion.com/v1/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'notion', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -144,20 +150,24 @@ export class NotionAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Notion');
     }
 
-    const response = await fetchWithTimeout(
-      'https://api.notion.com/v1/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.notion.com/v1/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+            },
+            body: JSON.stringify({
+              grant_type: 'refresh_token',
+              refresh_token: credentials.refreshToken,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'notion' },
     );
 
     if (!response.ok) {
@@ -202,28 +212,28 @@ export class NotionAdapter extends BaseAdapter {
       url: string;
     }>
   > {
-    // Search is a POST but is read-only and idempotent — opt in to retry
-    // on 429/5xx.
-    const response = await fetchWithTimeout(
-      'https://api.notion.com/v1/search',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Notion-Version': NOTION_API_VERSION,
-        },
-        body: JSON.stringify({
-          query,
-          filter: { property: 'object', value: 'page' },
-          page_size: 10,
-        }),
-      },
-      {
-        timeoutMs: SEARCH_TIMEOUT_MS,
-        retries: SEARCH_RETRIES,
-        retryNonIdempotent: true,
-      },
+    // Search is a POST but is read-only and idempotent — outer resilience
+    // layer owns retry on 429/5xx via withResilience.
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.notion.com/v1/search',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Notion-Version': NOTION_API_VERSION,
+            },
+            body: JSON.stringify({
+              query,
+              filter: { property: 'object', value: 'page' },
+              page_size: 10,
+            }),
+          },
+          { timeoutMs: SEARCH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'notion', retryAttempts: SEARCH_RETRIES },
     );
 
     if (!response.ok) {

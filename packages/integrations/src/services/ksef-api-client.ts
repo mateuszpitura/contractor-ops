@@ -1,5 +1,6 @@
 import { constants, createDecipheriv, createPublicKey, publicEncrypt } from 'node:crypto';
 import { fetchWithTimeout } from './fetch-helpers.js';
+import { withResilience } from './resilience.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -543,10 +544,18 @@ export class KsefApiClient {
     attempt: number,
     retries: number,
   ): Promise<Response | null> {
-    const response = await fetchWithTimeout(url, options, {
-      timeoutMs: KSEF_PER_REQUEST_TIMEOUT_MS,
-      retries: 0, // outer loop owns retry decisions
-    });
+    // The KSeF client owns the retry/backoff loop (see fetchWithRetry above
+    // for 429 / 5xx handling) so we wrap each attempt in withResilience with
+    // retryAttempts=0 — the breaker + per-process concurrency cap apply, but
+    // we do not duplicate the inner retry logic.
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(url, options, {
+          timeoutMs: KSEF_PER_REQUEST_TIMEOUT_MS,
+          retries: 0,
+        }),
+      { provider: 'ksef', retryAttempts: 0 },
+    );
 
     if (response.ok) return response;
 

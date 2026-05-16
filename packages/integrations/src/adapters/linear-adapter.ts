@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { ProviderHealthStatus } from '../types/health.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -79,16 +80,21 @@ export class LinearAdapter extends BaseAdapter {
       redirect_uri: redirectUri,
     });
 
-    const response = await fetchWithTimeout(
-      'https://api.linear.app/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.linear.app/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body.toString(),
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'linear', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -137,16 +143,20 @@ export class LinearAdapter extends BaseAdapter {
       refresh_token: credentials.refreshToken,
     });
 
-    const response = await fetchWithTimeout(
-      'https://api.linear.app/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.linear.app/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body.toString(),
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      { provider: 'linear' },
     );
 
     if (!response.ok) {
@@ -328,17 +338,21 @@ export class LinearAdapter extends BaseAdapter {
       }
     }`;
 
-    const response = await fetchWithTimeout(
-      'https://api.linear.app/graphql',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query }),
-      },
-      { timeoutMs: 20_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.linear.app/graphql',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query }),
+          },
+          { timeoutMs: 20_000, retries: 0 },
+        ),
+      { provider: 'linear' },
     );
 
     if (!response.ok) {

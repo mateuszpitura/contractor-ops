@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
@@ -78,22 +79,28 @@ export class JiraAdapter extends BaseAdapter {
       throw new Error('JIRA_CLIENT_ID and JIRA_CLIENT_SECRET environment variables are required');
     }
 
-    const response = await fetchWithTimeout(
-      'https://auth.atlassian.com/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://auth.atlassian.com/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          // Authorization-code redemption is non-idempotent — bound wall-clock
+          // only, retry decisions are owned by the outer resilience layer.
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      { provider: 'jira', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -130,21 +137,25 @@ export class JiraAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Jira');
     }
 
-    const response = await fetchWithTimeout(
-      'https://auth.atlassian.com/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://auth.atlassian.com/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: credentials.refreshToken,
+            }),
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      { provider: 'jira' },
     );
 
     if (!response.ok) {
@@ -291,15 +302,19 @@ export class JiraAdapter extends BaseAdapter {
   async discoverCloudId(
     accessToken: string,
   ): Promise<{ cloudId: string; siteName: string; siteUrl: string }> {
-    const response = await fetchWithTimeout(
-      'https://api.atlassian.com/oauth/token/accessible-resources',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.atlassian.com/oauth/token/accessible-resources',
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            },
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      { provider: 'jira' },
     );
 
     if (!response.ok) {

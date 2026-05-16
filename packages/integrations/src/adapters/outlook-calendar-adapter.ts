@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -130,23 +131,28 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-          scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+              scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'outlook-calendar', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -184,23 +190,28 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     if (!credentials.refreshToken) {
       throw new Error('No refresh token available for Outlook Calendar');
     }
+    const refreshToken = credentials.refreshToken;
 
-    const response = await fetchWithTimeout(
-      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-          scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: refreshToken,
+              scope: OUTLOOK_OAUTH_CONFIG.scopes.join(' '),
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'outlook-calendar' },
     );
 
     if (!response.ok) {
@@ -290,24 +301,27 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       ? encodeMicrosoftClientRequestId(idempotencyKey)
       : newRandomClientRequestId();
 
-    const response = await fetchWithTimeout(
-      'https://graph.microsoft.com/v1.0/me/calendar/events',
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://graph.microsoft.com/v1.0/me/calendar/events',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'client-request-id': clientRequestId,
+            },
+            body: JSON.stringify(body),
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      // Without a deterministic key, a transport retry could create a second
+      // event. With a key, the client-request-id correlates duplicates and the
+      // outer resilience layer can safely retry.
       {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'client-request-id': clientRequestId,
-        },
-        body: JSON.stringify(body),
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        // Without a deterministic key, a transport retry could create a
-        // second event — leave retries disabled. With a key, the
-        // client-request-id correlates duplicates so we opt in to retries.
-        retries: idempotencyKey ? MUTATION_RETRIES : 0,
-        retryNonIdempotent: Boolean(idempotencyKey),
+        provider: 'outlook-calendar',
+        retryAttempts: idempotencyKey ? MUTATION_RETRIES : 0,
       },
     );
 
@@ -374,24 +388,24 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       }));
     }
 
-    const response = await fetchWithTimeout(
-      `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'client-request-id': newRandomClientRequestId(),
-        },
-        body: JSON.stringify(body),
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        // PATCH on a stable eventId is idempotent — replaying the same
-        // partial update yields the same final state. Safe to retry.
-        retries: MUTATION_RETRIES,
-        retryNonIdempotent: true,
-      },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'client-request-id': newRandomClientRequestId(),
+            },
+            body: JSON.stringify(body),
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      // PATCH on a stable eventId is idempotent — replaying the same partial
+      // update yields the same final state. Safe to retry.
+      { provider: 'outlook-calendar', retryAttempts: MUTATION_RETRIES },
     );
 
     if (!response.ok) {
@@ -421,20 +435,20 @@ export class OutlookCalendarAdapter extends BaseAdapter {
    * @param eventId - The event ID to delete
    */
   async deleteEvent(accessToken: string, eventId: string): Promise<void> {
-    const response = await fetchWithTimeout(
-      `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'client-request-id': newRandomClientRequestId(),
-        },
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        retries: MUTATION_RETRIES,
-        retryNonIdempotent: true,
-      },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://graph.microsoft.com/v1.0/me/calendar/events/${eventId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'client-request-id': newRandomClientRequestId(),
+            },
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'outlook-calendar', retryAttempts: MUTATION_RETRIES },
     );
 
     if (!response.ok) {
@@ -454,27 +468,27 @@ export class OutlookCalendarAdapter extends BaseAdapter {
     accessToken: string,
     args: { calendarId?: string; timeMin: string; timeMax: string },
   ): Promise<{ busy: OutlookBusyRange[] }> {
-    // getSchedule is a read-only POST — opt in to retry on 429/5xx.
-    const resp = await fetchWithTimeout(
-      'https://graph.microsoft.com/v1.0/me/calendar/getSchedule',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          schedules: [args.calendarId ?? 'me'],
-          startTime: { dateTime: args.timeMin, timeZone: 'UTC' },
-          endTime: { dateTime: args.timeMax, timeZone: 'UTC' },
-          availabilityViewInterval: 60,
-        }),
-      },
-      {
-        timeoutMs: READ_TIMEOUT_MS,
-        retries: READ_RETRIES,
-        retryNonIdempotent: true,
-      },
+    // getSchedule is a read-only POST — safe to retry under withResilience.
+    const resp = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://graph.microsoft.com/v1.0/me/calendar/getSchedule',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              schedules: [args.calendarId ?? 'me'],
+              startTime: { dateTime: args.timeMin, timeZone: 'UTC' },
+              endTime: { dateTime: args.timeMax, timeZone: 'UTC' },
+              availabilityViewInterval: 60,
+            }),
+          },
+          { timeoutMs: READ_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'outlook-calendar', retryAttempts: READ_RETRIES },
     );
     if (!resp.ok) {
       const body = await resp.text();

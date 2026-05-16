@@ -4,6 +4,7 @@ import { createIntegrationLogger } from '@contractor-ops/logger';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
   EmbeddedSigningUrlResult,
@@ -76,22 +77,26 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://api.autenti.com/api/v2/auth/token',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      // Authorization-code redemption is non-idempotent — bound wall-clock,
-      // no retries.
-      { timeoutMs: 30_000, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.autenti.com/api/v2/auth/token',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          // Authorization-code redemption is non-idempotent — bound wall-clock
+          // only; retry decisions are owned by the outer resilience layer.
+          { timeoutMs: 30_000, retries: 0 },
+        ),
+      { provider: 'autenti', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -128,22 +133,26 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
     if (!credentials.refreshToken) {
       throw new Error('No refresh token available for Autenti');
     }
+    const refreshToken = credentials.refreshToken;
 
-    const response = await fetchWithTimeout(
-      'https://api.autenti.com/api/v2/auth/token',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      // Refresh tokens may be rotated by the server — non-idempotent. Bound
-      // wall-clock, no retries.
-      { timeoutMs: 30_000, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.autenti.com/api/v2/auth/token',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: refreshToken,
+            }),
+          },
+          // Refresh tokens may be rotated by the server — non-idempotent.
+          { timeoutMs: 30_000, retries: 0 },
+        ),
+      { provider: 'autenti', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -448,19 +457,20 @@ export class AutentiAdapter extends BaseAdapter implements ESignAdapter {
       (options?.method ?? 'GET').toUpperCase() === 'GET' ||
       (options?.method ?? 'GET').toUpperCase() === 'HEAD';
 
-    const response = await fetchWithTimeout(
-      `${AUTENTI_API_BASE}${path}`,
-      {
-        method: options?.method ?? 'GET',
-        headers: fetchHeaders,
-        body: options?.body,
-      },
-      {
-        timeoutMs,
-        // Only retry idempotent ops; never retry POST/PATCH/DELETE
-        // (could re-issue an envelope creation after a 5xx that succeeded).
-        retries: isIdempotent ? 2 : 0,
-      },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          `${AUTENTI_API_BASE}${path}`,
+          {
+            method: options?.method ?? 'GET',
+            headers: fetchHeaders,
+            body: options?.body,
+          },
+          { timeoutMs, retries: 0 },
+        ),
+      // Only retry idempotent ops; never retry POST/PATCH/DELETE (could
+      // re-issue an envelope creation after a 5xx that succeeded).
+      { provider: 'autenti', retryAttempts: isIdempotent ? 2 : 0 },
     );
 
     if (!response.ok) {

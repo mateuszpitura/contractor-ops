@@ -1,6 +1,7 @@
 import type { LimitFunction } from '../services/concurrency.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -162,16 +163,21 @@ export class TeamsAdapter extends BaseAdapter {
       scope: TEAMS_OAUTH_CONFIG.scopes.join(' '),
     });
 
-    const response = await fetchWithTimeout(
-      TEAMS_OAUTH_CONFIG.tokenUrl,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          TEAMS_OAUTH_CONFIG.tokenUrl,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body.toString(),
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'microsoft-teams', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -224,16 +230,20 @@ export class TeamsAdapter extends BaseAdapter {
       scope: TEAMS_OAUTH_CONFIG.scopes.join(' '),
     });
 
-    const response = await fetchWithTimeout(
-      TEAMS_OAUTH_CONFIG.tokenUrl,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: body.toString(),
-      },
-      { timeoutMs: 10_000 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          TEAMS_OAUTH_CONFIG.tokenUrl,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body.toString(),
+          },
+          { timeoutMs: 10_000, retries: 0 },
+        ),
+      { provider: 'microsoft-teams' },
     );
 
     if (!response.ok) {

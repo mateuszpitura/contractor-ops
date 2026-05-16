@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -134,22 +135,27 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://oauth2.googleapis.com/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://oauth2.googleapis.com/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent.
+      { provider: 'google-calendar', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -188,21 +194,25 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Google Calendar');
     }
 
-    const response = await fetchWithTimeout(
-      'https://oauth2.googleapis.com/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://oauth2.googleapis.com/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: credentials.refreshToken,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'google-calendar' },
     );
 
     if (!response.ok) {
@@ -274,23 +284,26 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       body.id = encodeGoogleEventId(idempotencyKey);
     }
 
-    const response = await fetchWithTimeout(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      // Without an idempotency key, a transport-level retry could double-insert
+      // the event — keep retries at 0. With a key, Google dedups by event id
+      // and the outer resilience loop is safe to retry.
       {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        // Without an idempotency key, a transport-level retry could
-        // double-insert the event — keep retries at 0. With a key, Google
-        // dedups by event id and a retry is safe.
-        retries: idempotencyKey ? MUTATION_RETRIES : 0,
-        retryNonIdempotent: Boolean(idempotencyKey),
+        provider: 'google-calendar',
+        retryAttempts: idempotencyKey ? MUTATION_RETRIES : 0,
       },
     );
 
@@ -349,26 +362,25 @@ export class GoogleCalendarAdapter extends BaseAdapter {
       body.attendees = event.attendees.map(email => ({ email }));
     }
 
-    const response = await fetchWithTimeout(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'If-Match': etag,
-        },
-        body: JSON.stringify(body),
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        // PATCH on a stable eventId with `If-Match: etag` is idempotent —
-        // the etag check on the server prevents lost updates if a retry
-        // races with a concurrent edit (we'll surface 412 Precondition
-        // Failed and the caller refetches).
-        retries: MUTATION_RETRIES,
-        retryNonIdempotent: true,
-      },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+          {
+            method: 'PATCH',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'If-Match': etag,
+            },
+            body: JSON.stringify(body),
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      // PATCH on a stable eventId with `If-Match: etag` is idempotent — the
+      // etag check on the server prevents lost updates if a retry races with
+      // a concurrent edit (we surface 412 Precondition Failed instead).
+      { provider: 'google-calendar', retryAttempts: MUTATION_RETRIES },
     );
 
     if (!response.ok) {
@@ -400,19 +412,19 @@ export class GoogleCalendarAdapter extends BaseAdapter {
    * @param eventId - The event ID to delete
    */
   async deleteEvent(accessToken: string, eventId: string): Promise<void> {
-    const response = await fetchWithTimeout(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-      {
-        timeoutMs: MUTATION_TIMEOUT_MS,
-        retries: MUTATION_RETRIES,
-        retryNonIdempotent: true,
-      },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+          { timeoutMs: MUTATION_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'google-calendar', retryAttempts: MUTATION_RETRIES },
     );
 
     if (!response.ok) {
@@ -438,23 +450,23 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     args: { calendarId?: string; timeMin: string; timeMax: string },
   ): Promise<{ busy: GoogleBusyRange[] }> {
     const calendarId = args.calendarId ?? 'primary';
-    // freeBusy is a read-only POST — opt in to retry on 429/5xx.
-    const fbResp = await fetchWithTimeout(
-      'https://www.googleapis.com/calendar/v3/freeBusy',
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          timeMin: args.timeMin,
-          timeMax: args.timeMax,
-          items: [{ id: calendarId }],
-        }),
-      },
-      {
-        timeoutMs: READ_TIMEOUT_MS,
-        retries: READ_RETRIES,
-        retryNonIdempotent: true,
-      },
+    // freeBusy is a read-only POST — safe to retry under withResilience.
+    const fbResp = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://www.googleapis.com/calendar/v3/freeBusy',
+          {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              timeMin: args.timeMin,
+              timeMax: args.timeMax,
+              items: [{ id: calendarId }],
+            }),
+          },
+          { timeoutMs: READ_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'google-calendar', retryAttempts: READ_RETRIES },
     );
     if (!fbResp.ok) {
       const text = await fbResp.text();
@@ -472,12 +484,16 @@ export class GoogleCalendarAdapter extends BaseAdapter {
     eventsUrl.searchParams.set('timeMin', args.timeMin);
     eventsUrl.searchParams.set('timeMax', args.timeMax);
     eventsUrl.searchParams.set('singleEvents', 'true');
-    const evResp = await fetchWithTimeout(
-      eventsUrl.toString(),
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      },
-      { timeoutMs: READ_TIMEOUT_MS, retries: READ_RETRIES },
+    const evResp = await withResilience(
+      () =>
+        fetchWithTimeout(
+          eventsUrl.toString(),
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          },
+          { timeoutMs: READ_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'google-calendar', retryAttempts: READ_RETRIES },
     );
     if (!evResp.ok) {
       // Enrichment failure is non-fatal — return ranges without titles.

@@ -1,4 +1,5 @@
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
@@ -78,22 +79,27 @@ export class ConfluenceAdapter extends BaseAdapter {
       );
     }
 
-    const response = await fetchWithTimeout(
-      'https://auth.atlassian.com/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'authorization_code',
-          client_id: clientId,
-          client_secret: clientSecret,
-          code,
-          redirect_uri: redirectUri,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://auth.atlassian.com/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'authorization_code',
+              client_id: clientId,
+              client_secret: clientSecret,
+              code,
+              redirect_uri: redirectUri,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      // Authorization-code redemption is non-idempotent; disable outer retries.
+      { provider: 'confluence', retryAttempts: 0 },
     );
 
     if (!response.ok) {
@@ -132,21 +138,25 @@ export class ConfluenceAdapter extends BaseAdapter {
       throw new Error('No refresh token available for Confluence');
     }
 
-    const response = await fetchWithTimeout(
-      'https://auth.atlassian.com/oauth/token',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grant_type: 'refresh_token',
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: credentials.refreshToken,
-        }),
-      },
-      { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://auth.atlassian.com/oauth/token',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              grant_type: 'refresh_token',
+              client_id: clientId,
+              client_secret: clientSecret,
+              refresh_token: credentials.refreshToken,
+            }),
+          },
+          { timeoutMs: OAUTH_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'confluence' },
     );
 
     if (!response.ok) {
@@ -188,15 +198,20 @@ export class ConfluenceAdapter extends BaseAdapter {
   async discoverCloudId(
     accessToken: string,
   ): Promise<{ cloudId: string; siteName: string; siteUrl: string }> {
-    const response = await fetchWithTimeout(
-      'https://api.atlassian.com/oauth/token/accessible-resources',
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-      },
-      { timeoutMs: REST_TIMEOUT_MS, retries: REST_RETRIES },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          'https://api.atlassian.com/oauth/token/accessible-resources',
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            },
+          },
+          // Outer resilience layer owns retry decisions.
+          { timeoutMs: REST_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'confluence', retryAttempts: REST_RETRIES },
     );
 
     if (!response.ok) {
@@ -254,15 +269,19 @@ export class ConfluenceAdapter extends BaseAdapter {
     const cql = `type=page AND title~"${query}"`;
     const searchUrl = `https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/search?cql=${encodeURIComponent(cql)}&limit=10`;
 
-    const response = await fetchWithTimeout(
-      searchUrl,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: 'application/json',
-        },
-      },
-      { timeoutMs: REST_TIMEOUT_MS, retries: REST_RETRIES },
+    const response = await withResilience(
+      () =>
+        fetchWithTimeout(
+          searchUrl,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              Accept: 'application/json',
+            },
+          },
+          { timeoutMs: REST_TIMEOUT_MS, retries: 0 },
+        ),
+      { provider: 'confluence', retryAttempts: REST_RETRIES },
     );
 
     if (!response.ok) {
