@@ -1247,90 +1247,175 @@ function makeEquipmentSerial(type: string, faker: Faker): string {
  * Production reference data (Tax_Rate, Wht_Rate, B_o_E_Base_Rate_History,
  * KOSIT schematron caches, etc.) is intentionally NOT in this list.
  */
-const WIPE_TABLES_IN_ORDER: readonly string[] = [
+interface WipeEntry {
+  table: string;
+  /**
+   * Section that owns this table. When the section is in the omit set, the
+   * table is left untouched by --confirm. `undefined` = foundational (always
+   * wiped, including User / Organization / Document and the org-structure
+   * tables that have no per-section gate).
+   */
+  section?: SectionKey;
+}
+
+const WIPE_TABLES_IN_ORDER: readonly WipeEntry[] = [
   // Audit / outbox / webhook / notification noise first
-  '"AuditLog"',
-  '"OutboxEvent"',
-  '"WebhookDelivery"',
-  '"IntegrationSyncLog"',
-  '"ExternalLink"',
-  '"IntegrationConnection"',
-  '"NotificationCronDedup"',
-  '"Notification"',
-  '"UserNotificationPreference"',
-  '"Comment"',
-  '"ReminderInstance"',
-  '"ReminderRule"',
-  // Approval chain
-  '"ApprovalDecision"',
-  '"ApprovalStep"',
-  '"ApprovalFlow"',
-  '"ApprovalChainConfig"',
+  { table: '"AuditLog"', section: 'audit-logs' },
+  { table: '"OutboxEvent"', section: 'outbox' },
+  { table: '"WebhookDelivery"', section: 'webhook-deliveries' },
+  { table: '"IntegrationSyncLog"', section: 'cron-state' },
+  { table: '"ExternalLink"', section: 'integration-connections' },
+  { table: '"IntegrationConnection"', section: 'integration-connections' },
+  { table: '"NotificationCronDedup"', section: 'cron-state' },
+  { table: '"Notification"', section: 'notifications' },
+  { table: '"UserNotificationPreference"', section: 'notifications' },
+  { table: '"Comment"', section: 'comments' },
+  { table: '"ReminderInstance"', section: 'reminders' },
+  { table: '"ReminderRule"', section: 'reminders' },
+  // Approval chain — implicit dep of invoices
+  { table: '"ApprovalDecision"', section: 'invoices' },
+  { table: '"ApprovalStep"', section: 'invoices' },
+  { table: '"ApprovalFlow"', section: 'invoices' },
+  { table: '"ApprovalChainConfig"', section: 'invoices' },
   // Payments
-  '"PaymentExport"',
-  '"PaymentRunItem"',
-  '"PaymentRun"',
-  '"InvoicePayment"',
+  { table: '"PaymentExport"', section: 'payment-runs' },
+  // WhtCertificate references PaymentRunItem — wipe before PaymentRunItem
+  { table: '"WhtCertificate"', section: 'tax-compliance' },
+  { table: '"SkontoApplication"', section: 'skonto' },
+  { table: '"PaymentRunItem"', section: 'payment-runs' },
+  { table: '"PaymentRun"', section: 'payment-runs' },
+  { table: '"InvoicePayment"', section: 'invoices' },
   // Billing (Subscription + OCR ledger — wiped per org, reseeded per org)
-  '"Subscription"',
-  '"OcrCreditLedger"',
-  // Invoices + e-invoice
-  '"EInvoiceLifecycleEvent"',
-  '"EInvoiceLifecycle"',
-  '"PeppolCapabilityCache"',
-  '"InvoiceMatchResult"',
-  '"InvoiceFile"',
-  '"InvoiceLine"',
-  '"Invoice"',
+  { table: '"Subscription"', section: 'subscription' },
+  { table: '"OcrCreditLedger"', section: 'subscription' },
+  // Invoices + e-invoice + zatca + peppol (transmission/participant before invoice)
+  { table: '"OcrExtraction"', section: 'ocr' },
+  { table: '"EInvoiceLifecycleEvent"', section: 'e-invoice-lifecycle' },
+  { table: '"EInvoiceLifecycle"', section: 'e-invoice-lifecycle' },
+  { table: '"PeppolTransmission"', section: 'peppol' },
+  { table: '"PeppolCapabilityCache"', section: 'peppol' },
+  { table: '"PeppolParticipant"', section: 'peppol' },
+  { table: '"ZatcaInvoiceChain"', section: 'zatca' },
+  { table: '"LeitwegId"', section: 'peppol' },
+  { table: '"InvoiceIntakeRequest"', section: 'invoices' },
+  { table: '"InvoiceMatchResult"', section: 'invoices' },
+  { table: '"SkontoSnapshot"', section: 'skonto' },
+  { table: '"SkontoTerm"', section: 'skonto' },
+  { table: '"InvoiceInterestWaiver"', section: 'interest' },
+  { table: '"InvoiceInterestCompensation"', section: 'interest' },
+  { table: '"InvoiceInterestClaim"', section: 'interest' },
+  { table: '"InvoiceFile"', section: 'invoices' },
+  { table: '"InvoiceLine"', section: 'invoices' },
+  { table: '"Invoice"', section: 'invoices' },
+  // eSign — recipient + event before envelope
+  { table: '"SigningEvent"', section: 'esign' },
+  { table: '"SigningRecipient"', section: 'esign' },
+  { table: '"SigningEnvelope"', section: 'esign' },
   // Equipment / shipments
-  '"ShipmentEvent"',
-  '"ReturnRequest"',
-  '"Shipment"',
-  '"EquipmentAssignment"',
-  '"Equipment"',
-  '"CourierConfig"',
+  { table: '"ShipmentEvent"', section: 'equipment' },
+  { table: '"ReturnRequest"', section: 'equipment' },
+  { table: '"Shipment"', section: 'equipment' },
+  { table: '"EquipmentAssignment"', section: 'equipment' },
+  { table: '"Equipment"', section: 'equipment' },
+  { table: '"CourierConfig"', section: 'courier-configs' },
   // Contracts
-  '"ContractRatePeriod"',
-  '"ContractAmendment"',
-  '"Contract"',
+  { table: '"ContractRatePeriod"', section: 'contracts' },
+  { table: '"ContractAmendment"', section: 'contracts' },
+  { table: '"Contract"', section: 'contracts' },
   // Compliance / templates
-  '"ContractorComplianceItem"',
-  '"ComplianceRequirementTemplate"',
+  { table: '"ContractorComplianceItem"', section: 'contractors' },
+  { table: '"ComplianceRequirementTemplate"', section: 'contractors' },
+  // Workflow runs + supporting (children before parent)
+  { table: '"WorkflowAttachment"', section: 'workflow-runs' },
+  { table: '"WorkflowComment"', section: 'workflow-runs' },
+  { table: '"WorkflowTaskRun"', section: 'workflow-runs' },
+  { table: '"WorkflowRun"', section: 'workflow-runs' },
+  { table: '"WorkflowTaskTemplate"', section: 'workflow-templates' },
+  { table: '"WorkflowTemplate"', section: 'workflow-templates' },
   // Workflow role / task templates (Phase 74) — children before parent
-  '"WorkflowRoleTaskTemplate"',
-  '"WorkflowRoleTemplate"',
+  { table: '"WorkflowRoleTaskTemplate"', section: 'workflow-templates' },
+  { table: '"WorkflowRoleTemplate"', section: 'workflow-templates' },
+  // Tax-compliance models (child rows before assessments)
+  { table: '"SdsApproval"', section: 'classification' },
+  { table: '"ReassessmentTrigger"', section: 'tax-compliance' },
+  { table: '"ClassificationEscalationEvent"', section: 'classification' },
+  { table: '"ClassificationDocument"', section: 'classification' },
+  { table: '"ClassificationAssessment"', section: 'classification' },
+  { table: '"Statusfeststellungsverfahren"', section: 'tax-compliance' },
+  { table: '"Ir35OtherClientAttestation"', section: 'tax-compliance' },
+  { table: '"Ir35ChainParticipant"', section: 'tax-compliance' },
+  { table: '"TaxIdValidation"', section: 'tax-compliance' },
+  { table: '"EconomicDependencyAlertState"', section: 'tax-compliance' },
+  // Timesheets — child rows before parent
+  { table: '"TimeEntry"', section: 'timesheets' },
+  { table: '"Timesheet"', section: 'timesheets' },
+  // Consent / privacy
+  { table: '"ConsentEvent"', section: 'consent' },
+  { table: '"ConsentRecord"', section: 'consent' },
+  { table: '"PrivacyNotice"', section: 'consent' },
+  // Per-user admin surfaces
+  { table: '"UserPinnedView"', section: 'pinned-views' },
+  { table: '"OrganizationApiKey"', section: 'api-keys' },
+  // Gov-API audit + cron singletons
+  { table: '"GovApiAuditLog"', section: 'cron-state' },
+  { table: '"CronScanState"', section: 'cron-state' },
   // Contractor sub-records
-  '"ContractorTagLink"',
-  '"ContractorTag"',
-  '"ContractorAssignment"',
-  '"ContractorBillingProfile"',
-  '"ContractorContact"',
-  '"ContractorChangeRequest"',
-  '"ContractorNotificationPreference"',
-  '"PortalSession"',
-  '"PortalMagicToken"',
-  '"PendingUpload"',
-  '"Contractor"',
+  { table: '"ContractorTagLink"', section: 'contractors' },
+  { table: '"ContractorTag"', section: 'contractors' },
+  { table: '"ContractorAssignment"', section: 'contractors' },
+  { table: '"ContractorBillingProfile"', section: 'contractors' },
+  { table: '"ContractorContact"', section: 'contractors' },
+  { table: '"ContractorChangeRequest"', section: 'consent' },
+  { table: '"ContractorNotificationPreference"', section: 'consent' },
+  { table: '"PortalSession"', section: 'portal-sessions' },
+  { table: '"PortalMagicToken"', section: 'auth-surface' },
+  { table: '"PendingUpload"', section: 'ocr' },
+  { table: '"Contractor"', section: 'contractors' },
   // Documents (after Contractor — InvoiceFile is wiped earlier; DocumentLink
-  // cascades from Document)
-  '"DocumentLink"',
-  '"Document"',
-  // Org structure
-  '"CostCenter"',
-  '"Project"',
-  '"Team"',
-  '"Invitation"',
-  '"Member"',
+  // cascades from Document). Foundational — touched by many sections, so
+  // wiped unconditionally.
+  { table: '"DocumentLink"' },
+  { table: '"Document"' },
+  // OAuth challenges + StripeEvents (global tables)
+  { table: '"OAuthChallenge"', section: 'auth-surface' },
+  { table: '"StripeEvent"', section: 'cron-state' },
+  // ExchangeRate is global; wiping per region risks nuking another region's
+  // history mid-run — keep it conditional on the `exchange-rates` section.
+  { table: '"ExchangeRate"', section: 'exchange-rates' },
+  // Org structure — foundational
+  { table: '"CostCenter"' },
+  { table: '"Project"' },
+  { table: '"Team"' },
+  { table: '"Invitation"' },
+  { table: '"Member"' },
   // Auth (after Member, since Member references both User and Organization)
-  '"Session"',
-  '"Account"',
-  '"Verification"',
-  '"User"',
-  '"Organization"',
+  { table: '"Session"', section: 'auth-surface' },
+  { table: '"Account"', section: 'auth-surface' },
+  { table: '"Verification"', section: 'auth-surface' },
+  { table: '"User"' },
+  { table: '"Organization"' },
 ];
 
-async function wipeAllTenantData(prisma: PrismaClient, regionLabel: string): Promise<void> {
-  log.warn({ region: regionLabel, tables: WIPE_TABLES_IN_ORDER.length }, 'wiping tenant tables');
+function effectiveWipeList(omitted: ReadonlySet<SectionKey>): string[] {
+  return WIPE_TABLES_IN_ORDER.filter(e => e.section === undefined || !omitted.has(e.section)).map(
+    e => e.table,
+  );
+}
+
+async function wipeAllTenantData(
+  prisma: PrismaClient,
+  regionLabel: string,
+  omitted: ReadonlySet<SectionKey>,
+): Promise<void> {
+  const tables = effectiveWipeList(omitted);
+  log.warn(
+    {
+      region: regionLabel,
+      tables: tables.length,
+      omittedSections: [...omitted],
+    },
+    'wiping tenant tables',
+  );
   // One TRUNCATE per table — safer than CASCADE which would also nuke
   // production reference tables that share FKs (none today, but defensive).
   // Wrap in transaction so a failure rolls back nothing-half-done. Bump
@@ -1343,7 +1428,7 @@ async function wipeAllTenantData(prisma: PrismaClient, regionLabel: string): Pro
   // subsequent statement silently no-ops.
   await prisma.$transaction(
     async tx => {
-      for (const table of WIPE_TABLES_IN_ORDER) {
+      for (const table of tables) {
         const savepoint = `sp_wipe_${table.replace(/[^a-zA-Z0-9_]/g, '_')}`;
         await tx.$executeRawUnsafe(`SAVEPOINT ${savepoint}`);
         try {
@@ -7190,7 +7275,7 @@ async function runSeed(flags: CliFlags): Promise<void> {
   } else {
     log.warn({ regions: [...regionUrls.keys()] }, 'wipe phase starting (--confirm)');
     for (const [region, client] of clients) {
-      await wipeAllTenantData(client, region);
+      await wipeAllTenantData(client, region, omitResolution.resolved);
     }
   }
 
