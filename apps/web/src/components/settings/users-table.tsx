@@ -3,11 +3,12 @@
 import type { MemberStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, AtelierTableShell, statusToVariant } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserX } from 'lucide-react';
+import { ShieldCheck, UserX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { DeactivateDialog } from '@/components/settings/deactivate-dialog';
+import { UserConsentSheet } from '@/components/settings/user-consent-sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -82,6 +83,75 @@ function displayStatus(member: Member): string {
   return s;
 }
 
+// ---------------------------------------------------------------------------
+// MemberActionsCell — extracted so UsersTable stays below the
+// cognitive-complexity ceiling after adding the "View consent" action.
+// ---------------------------------------------------------------------------
+
+interface MemberActionsCellProps {
+  memberId: string;
+  memberName: string;
+  isSelf: boolean;
+  isDisabled: boolean;
+  canManageMembers: boolean;
+  canDeleteMembers: boolean;
+  canReadConsent: boolean;
+  reactivatePending: boolean;
+  onReactivate: (userId: string) => void;
+  onDeactivate: (userId: string, name: string) => void;
+  onViewConsent: (userId: string, name: string) => void;
+  t: ReturnType<typeof useTranslations<'Users'>>;
+}
+
+function MemberActionsCell({
+  memberId,
+  memberName,
+  isSelf,
+  isDisabled,
+  canManageMembers,
+  canDeleteMembers,
+  canReadConsent,
+  reactivatePending,
+  onReactivate,
+  onDeactivate,
+  onViewConsent,
+  t,
+}: MemberActionsCellProps) {
+  return (
+    <div className="flex items-center justify-end gap-1.5">
+      {!!canReadConsent && (
+        <Button
+          variant="ghost"
+          size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => onViewConsent(memberId, memberName)}>
+          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          {t('actions.viewConsent')}
+        </Button>
+      )}
+      {isDisabled && canManageMembers ? (
+        <Button
+          variant="outline"
+          size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => onReactivate(memberId)}
+          disabled={reactivatePending}>
+          {t('actions.reactivate')}
+        </Button>
+      ) : !(isDisabled || isSelf) && canDeleteMembers ? (
+        <Button
+          variant="destructive"
+          size="sm"
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => onDeactivate(memberId, memberName)}>
+          <UserX className="h-3.5 w-3.5" aria-hidden="true" />
+          {t('actions.deactivate')}
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function UsersTable() {
   const t = useTranslations('Users');
   const tToast = useTranslations('Settings.toast');
@@ -91,8 +161,16 @@ export function UsersTable() {
   const currentUserId = session.data?.user?.id;
   const canManageMembers = can('member', ['update']);
   const canDeleteMembers = can('member', ['delete']);
+  // Consent inspection requires settings:read — same gate as the BE admin
+  // procedures (`consent.adminGetUserConsent` /
+  // `consent.adminGetUserConsentHistory`).
+  const canReadConsent = can('settings', ['read']);
 
   const [deactivateTarget, setDeactivateTarget] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
+  const [consentTarget, setConsentTarget] = useState<{
     userId: string;
     name: string;
   } | null>(null);
@@ -106,11 +184,15 @@ export function UsersTable() {
   }, [membersQuery.data]);
 
   const showActionsColumn =
-    (canManageMembers || canDeleteMembers) &&
+    (canManageMembers || canDeleteMembers || canReadConsent) &&
     members.some(m => {
       const isSelf = m.userId === currentUserId;
       const isDisabled = displayStatus(m) === 'disabled';
-      return (isDisabled && canManageMembers) || (!(isDisabled || isSelf) && canDeleteMembers);
+      return (
+        (isDisabled && canManageMembers) ||
+        (!(isDisabled || isSelf) && canDeleteMembers) ||
+        canReadConsent
+      );
     });
 
   const updateRoleMutation = useMutation(
@@ -285,30 +367,23 @@ export function UsersTable() {
                   </TableCell>
                   {showActionsColumn && (
                     <TableCell className="text-end">
-                      {isDisabled && canManageMembers ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                          onClick={() => reactivateMutation.mutate({ userId: memberId })}
-                          disabled={reactivateMutation.isPending}>
-                          {t('actions.reactivate')}
-                        </Button>
-                      ) : !(isDisabled || isSelf) && canDeleteMembers ? (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                          onClick={() =>
-                            setDeactivateTarget({
-                              userId: memberId,
-                              name: displayName(m),
-                            })
-                          }>
-                          <UserX className="h-3.5 w-3.5" aria-hidden="true" />
-                          {t('actions.deactivate')}
-                        </Button>
-                      ) : null}
+                      <MemberActionsCell
+                        memberId={memberId}
+                        memberName={displayName(m)}
+                        isSelf={isSelf}
+                        isDisabled={isDisabled}
+                        canManageMembers={canManageMembers}
+                        canDeleteMembers={canDeleteMembers}
+                        canReadConsent={canReadConsent}
+                        reactivatePending={reactivateMutation.isPending}
+                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+                        onReactivate={uid => reactivateMutation.mutate({ userId: uid })}
+                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+                        onDeactivate={(uid, name) => setDeactivateTarget({ userId: uid, name })}
+                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+                        onViewConsent={(uid, name) => setConsentTarget({ userId: uid, name })}
+                        t={t}
+                      />
                     </TableCell>
                   )}
                 </TableRow>
@@ -329,6 +404,16 @@ export function UsersTable() {
           userName={deactivateTarget.name}
         />
       )}
+
+      <UserConsentSheet
+        userId={consentTarget?.userId ?? null}
+        userName={consentTarget?.name ?? ''}
+        open={!!consentTarget}
+        // biome-ignore lint/nursery/noJsxPropsBind: sheet state handler
+        onOpenChange={openState => {
+          if (!openState) setConsentTarget(null);
+        }}
+      />
     </>
   );
 }
