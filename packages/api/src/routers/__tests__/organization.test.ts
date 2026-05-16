@@ -369,52 +369,11 @@ describe('organization.getCurrent', () => {
   });
 });
 
-describe('organization.update', () => {
-  it('passes name as top-level and other fields as metadata', async () => {
-    await caller.organization.update({
-      name: 'Updated Corp',
-      legalName: 'Updated Corp Sp. z o.o.',
-      fiscalYearStartMonth: 4,
-    });
-
-    expect(auth.api.updateOrganization).toHaveBeenCalledWith(
-      expect.objectContaining({
-        body: {
-          organizationId: ORG_ID,
-          data: {
-            name: 'Updated Corp',
-            metadata: {
-              legalName: 'Updated Corp Sp. z o.o.',
-              fiscalYearStartMonth: 4,
-            },
-          },
-        },
-      }),
-    );
-  });
-
-  it('omits metadata key when only name is provided', async () => {
-    await caller.organization.update({ name: 'Just Name' });
-
-    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
-      body: { data: Record<string, unknown> };
-    };
-    expect(call.body.data.name).toBe('Just Name');
-    expect(call.body.data.metadata).toBeUndefined();
-  });
-
-  it('omits name key when only metadata fields are provided', async () => {
-    await caller.organization.update({ billingEmail: 'billing@corp.com' });
-
-    const call = vi.mocked(auth.api.updateOrganization).mock.calls[0]?.[0] as {
-      body: { data: Record<string, unknown> };
-    };
-    expect(call.body.data.name).toBeUndefined();
-    expect(call.body.data.metadata).toEqual({
-      billingEmail: 'billing@corp.com',
-    });
-  });
-});
+// NOTE — `organization.create` / `organization.update` tRPC procedures were
+// removed in favour of Better Auth's `authClient.organization.*` (which the
+// web client already calls directly). The corresponding test blocks have
+// been deleted alongside the procedures; coverage for the Better Auth wiring
+// belongs in the auth package, not in this tRPC router suite.
 
 // ---------------------------------------------------------------------------
 // Phase 57 · Plan 04 + Phase 66 · Plan 02 — setKleinunternehmer DE-only gate
