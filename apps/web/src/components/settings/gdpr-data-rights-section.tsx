@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Download, Loader2, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -31,6 +32,7 @@ const CONFIRM_PHRASE = 'DELETE ALL DATA';
 export function GdprDataRightsSection() {
   const t = useTranslations('Settings.gdpr');
   const queryClient = useQueryClient();
+  const router = useRouter();
   const utils = trpc;
 
   const [erasureOpen, setErasureOpen] = useState(false);
@@ -59,19 +61,16 @@ export function GdprDataRightsSection() {
     }
   }
 
-  // NOTE: No queryClient.invalidateQueries — this is a soft-delete-self
-  // operation. The erasure flow soft-deletes the entire org and ends the
-  // session shortly after (the user is redirected to /goodbye by middleware on
-  // the next request). There are no queries left to invalidate because the
-  // session is gone and the next request hits the deleted-org branch.
-  // See AUDIT.md Appendix B (soft-delete-self) and the 2026-05-16
-  // reclassification section.
+  // soft-delete-self: org erasure is terminal. Clear client cache + redirect
+  // to /login so the user is signed out instead of stranded on a stale page.
   const erasureMutation = useMutation(
     trpc.gdpr.requestErasure.mutationOptions({
       onSuccess: () => {
         toast.success(t('toast.erasureRequested'));
         setErasureOpen(false);
         setConfirmInput('');
+        queryClient.clear();
+        router.push('/login');
       },
       onError: err => toast.error(err.message || t('toast.erasureFailed')),
     }),
