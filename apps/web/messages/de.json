@@ -5557,6 +5557,7 @@
       "auditLog": "Audit-Log",
       "billing": "Abrechnung",
       "apiKeys": "API-Schlüssel",
+      "featureFlags": "Feature-Flags",
       "privacy": "Datenschutz",
       "workflowRoles": "Workflow-Rollen",
       "tax": "Steuern"
@@ -6370,13 +6371,21 @@
         "created": "API-Schlüssel erstellt",
         "createFailed": "API-Schlüssel konnte nicht erstellt werden",
         "revoked": "API-Schlüssel „{name}\" widerrufen",
-        "revokeFailed": "Schlüssel konnte nicht widerrufen werden"
+        "revokeFailed": "Schlüssel konnte nicht widerrufen werden",
+        "updated": "API-Schlüssel „{name}\" aktualisiert",
+        "updateFailed": "API-Schlüssel konnte nicht aktualisiert werden"
       },
       "aria": {
         "keyActions": "Schlüsselaktionen",
         "copyKey": "Schlüssel kopieren"
       },
+      "editAction": "Bearbeiten",
       "revokeAction": "Widerrufen",
+      "editDialog": {
+        "title": "API-Schlüssel bearbeiten",
+        "description": "Benennen Sie den Schlüssel um oder ändern Sie die zugewiesenen Berechtigungen. Änderungen werden sofort wirksam.",
+        "submitButton": "Änderungen speichern"
+      },
       "createDialog": {
         "title": "API-Schlüssel erstellen",
         "description": "Generieren Sie einen Schlüssel für die Enterprise REST API. Wählen Sie die Berechtigungen aus.",
@@ -6397,6 +6406,24 @@
         "description": "Schlüssel {name} widerrufen? Dies ist sofortig und unwiderruflich. Alle Integrationen, die diesen Schlüssel verwenden, werden aufhören zu funktionieren.",
         "confirmButton": "Schlüssel widerrufen"
       }
+    },
+    "featureFlags": {
+      "title": "Feature-Flags",
+      "description": "Schreibgeschützte Ansicht des aufgelösten Unleash-Flag-Zustands für diese Organisation. Schalter umlegen erfolgt im Unleash-Admin.",
+      "tableHeaders": {
+        "flag": "Flag",
+        "category": "Kategorie",
+        "jurisdiction": "Jurisdiktion",
+        "state": "Status"
+      },
+      "state": {
+        "on": "An",
+        "off": "Aus"
+      },
+      "emptyHeading": "Keine Flags deklariert",
+      "emptyBody": "Das Flag-Register ist leer.",
+      "loadFailedTitle": "Feature-Flags konnten nicht geladen werden",
+      "loadFailedBody": "Der Flag-Resolver hat einen Fehler zurückgegeben. Prüfen Sie den Unleash-Dienst oder versuchen Sie es erneut."
     },
     "payments": {
       "noPermission": {

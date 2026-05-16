@@ -5606,6 +5606,7 @@
       "auditLog": "Audit log",
       "billing": "Billing",
       "apiKeys": "API keys",
+      "featureFlags": "Feature flags",
       "privacy": "Privacy",
       "workflowRoles": "Workflow roles",
       "tax": "Tax"
@@ -6375,13 +6376,21 @@
         "created": "API key created",
         "createFailed": "Failed to create API key",
         "revoked": "API key \"{name}\" revoked",
-        "revokeFailed": "Failed to revoke key"
+        "revokeFailed": "Failed to revoke key",
+        "updated": "API key \"{name}\" updated",
+        "updateFailed": "Failed to update API key"
       },
       "aria": {
         "keyActions": "Key actions",
         "copyKey": "Copy key"
       },
+      "editAction": "Edit",
       "revokeAction": "Revoke",
+      "editDialog": {
+        "title": "Edit API Key",
+        "description": "Rename the key or change which scopes it can access. Changes apply immediately.",
+        "submitButton": "Save Changes"
+      },
       "createDialog": {
         "title": "Create API Key",
         "description": "Generate a key for the Enterprise REST API. Select the scopes this key should have access to.",
@@ -6402,6 +6411,24 @@
         "description": "Revoke {name}? This is immediate and irreversible. Any integrations using this key will stop working.",
         "confirmButton": "Revoke Key"
       }
+    },
+    "featureFlags": {
+      "title": "Feature flags",
+      "description": "Read-only view of resolved Unleash flag state for this organization. Use the Unleash admin UI to flip toggles.",
+      "tableHeaders": {
+        "flag": "Flag",
+        "category": "Category",
+        "jurisdiction": "Jurisdiction",
+        "state": "State"
+      },
+      "state": {
+        "on": "On",
+        "off": "Off"
+      },
+      "emptyHeading": "No flags declared",
+      "emptyBody": "The flag registry is empty.",
+      "loadFailedTitle": "Couldn't load feature flags",
+      "loadFailedBody": "The flag resolver returned an error. Check the Unleash service or retry."
     },
     "payments": {
       "noPermission": {

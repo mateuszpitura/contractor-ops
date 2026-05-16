@@ -1,34 +1,6 @@
 [
   {
     "id": "F-MED-001",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "apiKey.update",
-    "file": "packages/api/src/routers/core/api-key.ts",
-    "line": 133,
-    "problem": "Procedure apiKey.update (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
-    ],
-    "featureGap": {
-      "procedure": "apiKey.update",
-      "file": "packages/api/src/routers/core/api-key.ts",
-      "category": "orphan",
-      "gapKind": "missing-ui",
-      "summary": "API-key admin UI exposes create / list / revoke but not update. The procedure validates input, scopes the lookup by organizationId, refuses to touch revoked keys, and writes an audit log on success — production-ready BE waiting for a settings tab affordance.",
-      "actions": [
-        "Add a rename / scope-edit action to the apiKey row in apps/web/src/components/settings/api-keys-tab.tsx.",
-        "Invalidate trpc.apiKey.list on success (and keep the existing audit-log side-effect)."
-      ]
-    }
-  },
-  {
-    "id": "F-MED-002",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "exchangeRate.fetchDaily",
@@ -38,47 +10,6 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
     "intentionalCallers": [
       "(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:16)"
-    ]
-  },
-  {
-    "id": "F-MED-003",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "featureFlags.list",
-    "file": "packages/api/src/routers/core/feature-flags.ts",
-    "line": 19,
-    "problem": "Procedure featureFlags.list (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/feature-flags.ts:15:  const flags = await caller.featureFlags.list();",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/__tests__/feature-flags.test.ts:4: * Covers: GET / calls caller.featureFlags.list() and wraps result as { data }.",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/__tests__/feature-flags.test.ts:49:  it('calls caller.featureFlags.list()', async () => {",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:22:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
-      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:26:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),"
-    ],
-    "featureGap": {
-      "procedure": "featureFlags.list",
-      "file": "packages/api/src/routers/core/feature-flags.ts",
-      "category": "orphan",
-      "gapKind": "missing-ui",
-      "summary": "Self-hosted Unleash-backed flag introspection for the web dashboard. The appRouter procedure is wired (tenantFlaggedProcedure middleware) and the comment in root.ts marks it for the web dashboard, but no FE caller exists. The publicApiRouter sibling at packages/api/src/routers/public-api/feature-flags.ts is consumed by the REST route in apps/public-api/src/routes/feature-flags.ts; the two share the same dotted path but are wired into different routers.",
-      "actions": [
-        "Expose under Settings → Admin (or a Flags tab) as a read-only matrix of the resolved Unleash state for the org.",
-        "Optional: surface in the AdminPanel debug drawer for support."
-      ]
-    }
-  },
-  {
-    "id": "F-MED-004",
-    "severity": "LOW",
-    "category": "orphan-intentional-non-ui",
-    "procedure": "featureFlags.list",
-    "file": "packages/api/src/routers/public-api/feature-flags.ts",
-    "line": 13,
-    "problem": "Procedure featureFlags.list (query, surface=publicApiRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)"
     ]
   },
   {
@@ -202,7 +133,7 @@
     }
   },
   {
-    "id": "F-MED-005",
+    "id": "F-MED-002",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "portal.logout",
@@ -217,7 +148,7 @@
     }
   },
   {
-    "id": "F-MED-006",
+    "id": "F-MED-003",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "portal.logout",
@@ -232,7 +163,7 @@
     }
   },
   {
-    "id": "F-MED-007",
+    "id": "F-MED-004",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "gdpr.requestErasure",
@@ -307,7 +238,7 @@
     }
   },
   {
-    "id": "F-MED-008",
+    "id": "F-MED-005",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.runComplianceChecks",
@@ -322,7 +253,7 @@
     }
   },
   {
-    "id": "F-MED-009",
+    "id": "F-MED-006",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.requestComplianceCsid",
@@ -337,7 +268,7 @@
     }
   },
   {
-    "id": "F-MED-010",
+    "id": "F-MED-007",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.generateCsr",
@@ -352,7 +283,7 @@
     }
   },
   {
-    "id": "F-MED-011",
+    "id": "F-MED-008",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.exchangeProductionCert",
@@ -367,7 +298,7 @@
     }
   },
   {
-    "id": "F-MED-012",
+    "id": "F-MED-009",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.saveTaxDetails",
@@ -397,7 +328,7 @@
     }
   },
   {
-    "id": "F-MED-013",
+    "id": "F-MED-010",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "user.pins.toggle",
@@ -427,7 +358,7 @@
     }
   },
   {
-    "id": "F-MED-014",
+    "id": "F-MED-011",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "document.uploadNewVersion",
@@ -442,7 +373,7 @@
     }
   },
   {
-    "id": "F-MED-015",
+    "id": "F-MED-012",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "document.confirmUpload",

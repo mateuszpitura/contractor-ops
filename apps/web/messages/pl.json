@@ -5557,6 +5557,7 @@
       "auditLog": "Dziennik audytu",
       "billing": "Rozliczenia",
       "apiKeys": "Klucze API",
+      "featureFlags": "Flagi funkcji",
       "privacy": "Prywatność",
       "workflowRoles": "Role workflow",
       "tax": "Podatki"
@@ -6370,13 +6371,21 @@
         "created": "Klucz API utworzony",
         "createFailed": "Nie udało się utworzyć klucza API",
         "revoked": "Klucz API „{name}\" unieważniony",
-        "revokeFailed": "Nie udało się unieważnić klucza"
+        "revokeFailed": "Nie udało się unieważnić klucza",
+        "updated": "Klucz API „{name}\" zaktualizowany",
+        "updateFailed": "Nie udało się zaktualizować klucza API"
       },
       "aria": {
         "keyActions": "Akcje klucza",
         "copyKey": "Kopiuj klucz"
       },
+      "editAction": "Edytuj",
       "revokeAction": "Unieważnij",
+      "editDialog": {
+        "title": "Edytuj klucz API",
+        "description": "Zmień nazwę klucza lub jego zakresy dostępu. Zmiany obowiązują natychmiast.",
+        "submitButton": "Zapisz zmiany"
+      },
       "createDialog": {
         "title": "Utwórz klucz API",
         "description": "Wygeneruj klucz dla Enterprise REST API. Wybierz zakresy dostępu dla tego klucza.",
@@ -6397,6 +6406,24 @@
         "description": "Unieważnić klucz {name}? Jest to natychmiastowe i nieodwracalne. Wszelkie integracje używające tego klucza przestaną działać.",
         "confirmButton": "Unieważnij klucz"
       }
+    },
+    "featureFlags": {
+      "title": "Flagi funkcji",
+      "description": "Widok tylko do odczytu rozstrzygniętego stanu flag Unleash dla tej organizacji. Przełączanie flag odbywa się w panelu Unleash.",
+      "tableHeaders": {
+        "flag": "Flaga",
+        "category": "Kategoria",
+        "jurisdiction": "Jurysdykcja",
+        "state": "Stan"
+      },
+      "state": {
+        "on": "Wł.",
+        "off": "Wył."
+      },
+      "emptyHeading": "Brak zadeklarowanych flag",
+      "emptyBody": "Rejestr flag jest pusty.",
+      "loadFailedTitle": "Nie udało się załadować flag",
+      "loadFailedBody": "Resolver flag zwrócił błąd. Sprawdź usługę Unleash lub spróbuj ponownie."
     },
     "payments": {
       "noPermission": {

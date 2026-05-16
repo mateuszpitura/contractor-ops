@@ -7,6 +7,7 @@ import {
   Key,
   Loader2,
   MoreHorizontal,
+  Pencil,
   Plus,
   ShieldAlert,
   Trash2,
@@ -344,6 +345,144 @@ function RevokeDialog({
 }
 
 // ---------------------------------------------------------------------------
+// Edit API Key Dialog (rename + scope edit)
+// ---------------------------------------------------------------------------
+
+interface EditKeyDialogProps {
+  keyId: string;
+  initialName: string;
+  initialScopes: readonly string[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function EditKeyDialog({
+  keyId,
+  initialName,
+  initialScopes,
+  open,
+  onOpenChange,
+}: EditKeyDialogProps) {
+  const t = useTranslations('Settings.apiKeys');
+  const tCommon = useTranslations('Common');
+  const id = useId();
+  const queryClient = useQueryClient();
+  const [name, setName] = useState(initialName);
+  const initialScopeSet = initialScopes.filter((s): s is ScopeValue =>
+    AVAILABLE_SCOPES.some(a => a.value === s),
+  );
+  const [scopes, setScopes] = useState<ScopeValue[]>(initialScopeSet);
+
+  const updateMutation = useMutation(
+    trpc.apiKey.update.mutationOptions({
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: trpc.apiKey.list.queryKey() });
+        toast.success(t('toast.updated', { name }));
+        onOpenChange(false);
+      },
+      onError: err => {
+        toast.error(err.message ?? t('toast.updateFailed'));
+      },
+    }),
+  );
+
+  // Detect diff vs. initial values so we only send fields that actually
+  // changed — keeps the audit log entry on the BE meaningful and avoids
+  // surprising no-op updates.
+  const trimmedName = name.trim();
+  const nameChanged = trimmedName !== initialName && trimmedName.length > 0;
+  const sortedInitial = [...initialScopeSet].sort();
+  const sortedCurrent = [...scopes].sort();
+  const scopesChanged =
+    sortedCurrent.length !== sortedInitial.length ||
+    sortedCurrent.some((s, i) => s !== sortedInitial[i]);
+  const hasDiff = nameChanged || scopesChanged;
+  const canSubmit = hasDiff && scopes.length > 0 && !updateMutation.isPending;
+
+  function handleSubmit() {
+    if (!canSubmit) return;
+    updateMutation.mutate({
+      id: keyId,
+      ...(nameChanged ? { name: trimmedName } : {}),
+      ...(scopesChanged ? { scopes } : {}),
+    });
+  }
+
+  function handleClose(value: boolean) {
+    if (!value) {
+      setName(initialName);
+      setScopes(initialScopeSet);
+      updateMutation.reset();
+    }
+    onOpenChange(value);
+  }
+
+  function toggleScope(scope: ScopeValue) {
+    setScopes(prev => (prev.includes(scope) ? prev.filter(s => s !== scope) : [...prev, scope]));
+  }
+
+  return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Pencil className="size-4" />
+            {t('editDialog.title')}
+          </DialogTitle>
+          <DialogDescription>{t('editDialog.description')}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor={`${id}-edit-name`}>{t('createDialog.nameLabel')}</Label>
+            <Input
+              id={`${id}-edit-name`}
+              placeholder={t('createDialog.namePlaceholder')}
+              value={name}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setName(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('createDialog.scopesLabel')}</Label>
+            <div className="space-y-2 rounded-lg border p-3">
+              {AVAILABLE_SCOPES.map(scope => (
+                <label
+                  key={scope.value}
+                  htmlFor={`${id}-edit-scope-${scope.value}`}
+                  className="flex cursor-pointer items-center gap-2.5 text-sm">
+                  <Checkbox
+                    id={`${id}-edit-scope-${scope.value}`}
+                    checked={scopes.includes(scope.value)}
+                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                    onCheckedChange={() => toggleScope(scope.value)}
+                  />
+                  <span>{t(scope.labelKey)}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
+          <Button
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={handleSubmit}
+            disabled={!canSubmit}>
+            {!!updateMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {t('editDialog.submitButton')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -351,6 +490,11 @@ export function ApiKeysTab() {
   const t = useTranslations('Settings.apiKeys');
   const [createOpen, setCreateOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
+  const [editTarget, setEditTarget] = useState<{
+    id: string;
+    name: string;
+    scopes: readonly string[];
+  } | null>(null);
 
   const { data: keys, isLoading } = useQuery(trpc.apiKey.list.queryOptions());
 
@@ -437,6 +581,18 @@ export function ApiKeysTab() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
+                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                                onClick={() =>
+                                  setEditTarget({
+                                    id: key.id,
+                                    name: key.name,
+                                    scopes: key.scopes,
+                                  })
+                                }>
+                                <Pencil className="mr-2 size-4" />
+                                {t('editAction')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
                                 className="text-destructive"
                                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                                 onClick={() => setRevokeTarget({ id: key.id, name: key.name })}>
@@ -473,6 +629,19 @@ export function ApiKeysTab() {
         )}
 
         <CreateKeyDialog open={createOpen} onOpenChange={setCreateOpen} />
+
+        {editTarget != null && (
+          <EditKeyDialog
+            keyId={editTarget.id}
+            initialName={editTarget.name}
+            initialScopes={editTarget.scopes}
+            open={!!editTarget}
+            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+            onOpenChange={open => {
+              if (!open) setEditTarget(null);
+            }}
+          />
+        )}
 
         {revokeTarget != null && (
           <RevokeDialog

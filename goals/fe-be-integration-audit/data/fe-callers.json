@@ -4932,7 +4932,7 @@
     "path": "linear.connectionStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 121,
+    "line": 122,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4948,7 +4948,7 @@
     "path": "linear.teams",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 128,
+    "line": 129,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4964,7 +4964,7 @@
     "path": "linear.getStatusMapping",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 135,
+    "line": 136,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4980,7 +4980,7 @@
     "path": "linear.saveStatusMapping",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 163,
+    "line": 164,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4996,7 +4996,7 @@
     "path": "linear.getStatusMapping",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 167,
+    "line": 168,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5012,7 +5012,7 @@
     "path": "integration.getHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 172,
+    "line": 173,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5028,7 +5028,7 @@
     "path": "linear.connectionStatus",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/linear-status-mapping-dialog.tsx",
-    "line": 175,
+    "line": 176,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5332,7 +5332,7 @@
     "path": "invoice.getById",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5348,7 +5348,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 85,
+    "line": 86,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5364,7 +5364,7 @@
     "path": "einvoice.finalize",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 102,
+    "line": 103,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5380,7 +5380,7 @@
     "path": "einvoice.revalidate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 129,
+    "line": 130,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5396,7 +5396,7 @@
     "path": "einvoice.send",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 144,
+    "line": 145,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5412,7 +5412,7 @@
     "path": "einvoice.downloadXml",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 170,
+    "line": 171,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5428,7 +5428,7 @@
     "path": "einvoice.downloadReport",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/einvoice-tab/einvoice-tab.tsx",
-    "line": 185,
+    "line": 186,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6820,7 +6820,7 @@
     "path": "payment.getFormatDetection",
     "kind": "queryOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 78,
+    "line": 74,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6836,7 +6836,7 @@
     "path": "payment.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 131,
+    "line": 127,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6852,7 +6852,7 @@
     "path": "payment.markAllPaid",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 151,
+    "line": 147,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6868,7 +6868,7 @@
     "path": "payment.cancel",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 163,
+    "line": 159,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6884,7 +6884,7 @@
     "path": "payment.updateItemStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 176,
+    "line": 172,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6900,7 +6900,7 @@
     "path": "payment.removeFromRun",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 188,
+    "line": 184,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7844,7 +7844,7 @@
     "path": "apiKey.create",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 123,
+    "line": 124,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7860,7 +7860,7 @@
     "path": "apiKey.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 126,
+    "line": 127,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7876,7 +7876,7 @@
     "path": "apiKey.revoke",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 306,
+    "line": 307,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7892,7 +7892,39 @@
     "path": "apiKey.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 308,
+    "line": 309,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "apiKey.update",
+    "kind": "mutationOptions",
+    "file": "apps/web/src/components/settings/api-keys-tab.tsx",
+    "line": 377,
+    "handlers": {
+      "hasOnSuccess": true,
+      "hasOnError": true,
+      "hasToastSuccess": true,
+      "hasToastError": true,
+      "hasInvalidation": true,
+      "hasIsPending": true
+    },
+    "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "apiKey.list",
+    "kind": "queryKey",
+    "file": "apps/web/src/components/settings/api-keys-tab.tsx",
+    "line": 379,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7908,7 +7940,7 @@
     "path": "apiKey.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/api-keys-tab.tsx",
-    "line": 355,
+    "line": 499,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8645,6 +8677,22 @@
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/expiry-reminder-defaults.tsx",
     "line": 63,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "featureFlags.list",
+    "kind": "queryOptions",
+    "file": "apps/web/src/components/settings/feature-flags-tab.tsx",
+    "line": 29,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,

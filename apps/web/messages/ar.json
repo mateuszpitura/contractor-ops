@@ -5557,6 +5557,7 @@
       "auditLog": "سجل التدقيق",
       "billing": "الفوترة",
       "apiKeys": "مفاتيح API",
+      "featureFlags": "إعلامات الميزات",
       "privacy": "الخصوصية",
       "workflowRoles": "أدوار سير العمل",
       "tax": "الضرائب"
@@ -6370,13 +6371,21 @@
         "created": "تم إنشاء مفتاح API",
         "createFailed": "فشل إنشاء مفتاح API",
         "revoked": "تم إلغاء مفتاح API \"{name}\"",
-        "revokeFailed": "فشل إلغاء المفتاح"
+        "revokeFailed": "فشل إلغاء المفتاح",
+        "updated": "تم تحديث مفتاح API \"{name}\"",
+        "updateFailed": "فشل تحديث مفتاح API"
       },
       "aria": {
         "keyActions": "إجراءات المفتاح",
         "copyKey": "نسخ المفتاح"
       },
+      "editAction": "تعديل",
       "revokeAction": "إلغاء",
+      "editDialog": {
+        "title": "تعديل مفتاح API",
+        "description": "أعد تسمية المفتاح أو غيّر صلاحياته. تُطبَّق التغييرات فوراً.",
+        "submitButton": "حفظ التغييرات"
+      },
       "createDialog": {
         "title": "إنشاء مفتاح API",
         "description": "أنشئ مفتاحاً لواجهة برمجة تطبيقات المؤسسة. اختر الصلاحيات التي سيمتلكها هذا المفتاح.",
@@ -6397,6 +6406,24 @@
         "description": "إلغاء {name}؟ هذا فوري ولا يمكن التراجع عنه. ستتوقف أي تكاملات تستخدم هذا المفتاح عن العمل.",
         "confirmButton": "إلغاء المفتاح"
       }
+    },
+    "featureFlags": {
+      "title": "إعلامات الميزات",
+      "description": "عرض للقراءة فقط لحالة إعلامات Unleash المُحلَّلة لهذه المؤسسة. يتم تبديل الإعلامات من واجهة Unleash الإدارية.",
+      "tableHeaders": {
+        "flag": "الإعلام",
+        "category": "الفئة",
+        "jurisdiction": "الولاية القضائية",
+        "state": "الحالة"
+      },
+      "state": {
+        "on": "مُفعّل",
+        "off": "مُعطّل"
+      },
+      "emptyHeading": "لا توجد إعلامات مُعرّفة",
+      "emptyBody": "سجل الإعلامات فارغ.",
+      "loadFailedTitle": "تعذّر تحميل إعلامات الميزات",
+      "loadFailedBody": "أعاد مُحلِّل الإعلامات خطأً. تحقق من خدمة Unleash أو أعد المحاولة."
     },
     "payments": {
       "noPermission": {

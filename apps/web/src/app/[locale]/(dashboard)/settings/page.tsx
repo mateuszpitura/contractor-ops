@@ -13,6 +13,7 @@ import { ApiKeysTab } from '@/components/settings/api-keys-tab';
 import { ApprovalChainsTab } from '@/components/settings/approval-chains-tab';
 import { AuditLogTab } from '@/components/settings/audit-log-tab';
 import { ExpiryReminderDefaults } from '@/components/settings/expiry-reminder-defaults';
+import { FeatureFlagsTab } from '@/components/settings/feature-flags-tab';
 import { GdprDataRightsSection } from '@/components/settings/gdpr-data-rights-section';
 import { IntegrationsTab } from '@/components/settings/integrations-tab';
 import { InvoiceMatchingSettings } from '@/components/settings/invoice-matching-settings';
@@ -32,10 +33,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useSettingsTabPins } from '@/hooks/use-settings-tab-pins';
 import { Link, useRouter } from '@/i18n/navigation';
+import { tDyn } from '@/i18n/typed-keys';
 import type { SettingsTabKey } from '@/lib/settings-tabs';
 import { isRoutedSettingsTab, SETTINGS_TABS } from '@/lib/settings-tabs';
 import { cn } from '@/lib/utils';
-import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -95,6 +96,7 @@ function SettingsContent() {
       if (tab.key === 'billing') return canManageBilling;
       if (tab.key === 'audit-log') return canViewAuditLog;
       if (tab.key === 'api-keys') return canManageIntegrations;
+      if (tab.key === 'feature-flags') return canViewAuditLog;
       if (tab.key === 'tax') return canViewTaxAdmin;
       return true;
     }).map(tab => {
@@ -226,6 +228,12 @@ function SettingsContent() {
           {canManageIntegrations && (
             <TabsContent value="api-keys" className="mt-6">
               <ApiKeysTab />
+            </TabsContent>
+          )}
+
+          {canViewAuditLog && (
+            <TabsContent value="feature-flags" className="mt-6">
+              <FeatureFlagsTab />
             </TabsContent>
           )}
         </Tabs>

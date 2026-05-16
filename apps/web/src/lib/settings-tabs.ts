@@ -3,6 +3,7 @@ import {
   Bell,
   Building2,
   FileLock2,
+  Flag,
   Key,
   Percent,
   Plug,
@@ -31,6 +32,7 @@ export type SettingsTabKey =
   | 'audit-log'
   | 'privacy'
   | 'api-keys'
+  | 'feature-flags'
   | 'members'
   | 'workflow-roles'
   | 'tax';
@@ -81,6 +83,12 @@ export const SETTINGS_TABS: readonly SettingsTabDef[] = [
     i18nKey: 'apiKeys',
     icon: Key,
     permission: { resource: 'organization', actions: ['update'] },
+  },
+  {
+    key: 'feature-flags',
+    i18nKey: 'featureFlags',
+    icon: Flag,
+    permission: { resource: 'settings', actions: ['read'] },
   },
   { key: 'members', i18nKey: 'members', icon: Users, permission: null },
   { key: 'workflow-roles', i18nKey: 'workflowRoles', icon: Users2, permission: null },
