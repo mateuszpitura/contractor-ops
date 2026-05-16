@@ -5,9 +5,12 @@
 # production-hardening B.2.c — lint:audit-log enforces the writeAuditLog helper.
 # production-hardening B.3.d — lint:raw-fetch forbids unannotated raw fetch()
 # in adapter/service paths.
+# production-hardening B.4.b — lint:idempotency forbids hand-rolled
+# createHash('sha256') idempotency keys outside deriveIdempotencyKey().
 # Lint + format check are quick. Typecheck and full build are too slow for
 # every push, so they are left to CI.
 
 pnpm run format:check && pnpm run lint && pnpm run check:no-process-env \
   && pnpm run lint:schema && pnpm run lint:logs && pnpm run lint:raw-sql \
-  && pnpm run lint:audit-log && pnpm run lint:raw-fetch && pnpm run i18n:parity
+  && pnpm run lint:audit-log && pnpm run lint:raw-fetch \
+  && pnpm run lint:idempotency && pnpm run i18n:parity

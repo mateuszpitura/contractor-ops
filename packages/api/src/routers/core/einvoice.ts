@@ -361,6 +361,9 @@ export const einvoiceRouter = router({
       // 4. Content-addressed idempotency — if the lifecycle already has a
       //    matching sha, re-sign the existing object and return. Append no
       //    second event.
+      // lint-idempotency-OK reason=content-fingerprint not provider key — this
+      // sha identifies the PDF bytes for storage dedup; it is NEVER sent to a
+      // provider as an Idempotency-Key header.
       const sha = createHash('sha256').update(Buffer.from(pdfBytes)).digest('hex');
       const key = `einvoice-pdf/${ctx.organizationId}/${input.invoiceId}/${sha.slice(0, 16)}.pdf`;
 
