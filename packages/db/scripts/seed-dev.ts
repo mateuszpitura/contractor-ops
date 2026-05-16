@@ -407,6 +407,7 @@ const PHASE_EMOJI: Record<string, string> = {
   comments: '💬',
   'workflow-runs': '🔁',
   timesheets: '🕒',
+  classification: '🧠',
 };
 
 /**
@@ -461,6 +462,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   comments: 3,
   'workflow-runs': 4,
   timesheets: 4,
+  classification: 3,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5072,6 +5074,152 @@ async function seedWorkflowRuns(
 }
 
 // ---------------------------------------------------------------------------
+// Classification — IR35 / Schein-Selbständigkeit assessments + supporting
+// documents + amber-verdict escalation events. Sets up the data prerequisites
+// for tax-compliance (SdsApproval, ReassessmentTrigger).
+// ---------------------------------------------------------------------------
+
+const CLASSIFICATION_RULE_SET_VERSION = '2025.04';
+const CLASSIFICATION_POLICY_VERSION = '2025.04';
+const SDS_APPROVAL_STATEMENT_SNAPSHOT =
+  'I, the engager, confirm that this Status Determination Statement reflects ' +
+  "reasonable care taken to determine the worker's employment status under IR35.";
+
+async function seedClassification(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  if (contractors.length === 0) return;
+
+  // ContractorAssignment is the FK target for assessments. Not every
+  // contractor has one (only those with a team / project / cost-centre), so
+  // restrict to that set.
+  const assignments = await prisma.contractorAssignment.findMany({
+    where: {
+      organizationId: ctx.organizationId,
+      contractorId: { in: contractors.map(c => c.id) },
+    },
+    select: { id: true, contractorId: true },
+  });
+  if (assignments.length === 0) return;
+
+  // Showcase: every assignment gets an assessment so escalation + SDS UI
+  // surfaces are guaranteed populated. Other profiles: sample ~25%.
+  const subset = ctx.org.showcase
+    ? assignments
+    : assignments.filter(() => ctx.fakers.org.datatype.boolean({ probability: 0.25 }));
+  if (subset.length === 0) return;
+
+  const verdicts = ['IR35_OUTSIDE', 'IR35_INSIDE', 'IR35_INDETERMINATE'] as const;
+  const escalationKinds = ['AMBER_VERDICT_AUTO', 'GET_EXPERT_HELP_CLICK', 'MANUAL_FLAG'] as const;
+
+  for (const [i, a] of subset.entries()) {
+    const completedAtBase = pastDateAfter(ctx.fakers.org, 270, ctx.foundedAt);
+    const isCompleted = ctx.org.showcase || ctx.fakers.org.datatype.boolean({ probability: 0.7 });
+    const verdict = verdicts[i % verdicts.length] as (typeof verdicts)[number];
+    const completedAt = isCompleted ? completedAtBase : null;
+
+    const assessment = await prisma.classificationAssessment.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorAssignmentId: a.id,
+        countryCode: ctx.profile.countryCode,
+        ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
+        policyRuleSetVersion: CLASSIFICATION_POLICY_VERSION,
+        status: isCompleted ? 'completed' : 'draft',
+        questionsSnapshot: isCompleted
+          ? { questions: ['SUBSTITUTION', 'CONTROL', 'MUTUALITY', 'EQUIPMENT', 'FINANCIAL_RISK'] }
+          : Prisma.JsonNull,
+        answers: { SUBSTITUTION: 'YES', CONTROL: 'NO', MUTUALITY: 'NO' },
+        outcome: isCompleted
+          ? {
+              verdict,
+              score: ctx.fakers.org.number.float({ min: 0.3, max: 0.95, fractionDigits: 2 }),
+            }
+          : Prisma.JsonNull,
+        completedAt,
+        disclaimerAcknowledgedAt: completedAt,
+        immutableAfter: completedAt ? new Date(completedAt.getTime() + 30 * 86_400_000) : null,
+        createdAt: completedAtBase,
+      },
+      select: { id: true },
+    });
+
+    if (!isCompleted) continue;
+
+    // 1–3 supporting documents per completed assessment.
+    const docKinds = ['SDS', 'DRV_DEFENSE_BUNDLE', 'DRV_DECISION_LETTER'] as const;
+    const docCount = ctx.org.showcase
+      ? docKinds.length
+      : ctx.fakers.org.number.int({ min: 1, max: 2 });
+    for (let d = 0; d < docCount; d += 1) {
+      const kind = docKinds[d] as (typeof docKinds)[number];
+      const byteSize = ctx.fakers.org.number.int({ min: 8 * 1024, max: 1024 * 1024 });
+      await prisma.classificationDocument.create({
+        data: {
+          organizationId: ctx.organizationId,
+          classificationAssessmentId: assessment.id,
+          kind,
+          pdfKey: `seed/classification/${assessment.id}/${kind.toLowerCase()}.pdf`,
+          sha256Hash: tokenHex(32),
+          byteSize,
+          rendererVersion: '1.0.0-seed',
+          ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
+          generatedAt: completedAtBase,
+          generatedByUserId: ctx.ownerUserId,
+          createdAt: completedAtBase,
+        },
+      });
+    }
+
+    // Escalation event for amber verdicts (and a handful of explicit clicks
+    // in showcase) so the escalation log isn't empty.
+    if (verdict === 'IR35_INDETERMINATE' || (ctx.org.showcase && i < 2)) {
+      const triggerKind = escalationKinds[
+        i % escalationKinds.length
+      ] as (typeof escalationKinds)[number];
+      await prisma.classificationEscalationEvent.create({
+        data: {
+          organizationId: ctx.organizationId,
+          userId: ctx.ownerUserId,
+          contractorId: a.contractorId,
+          assessmentId: assessment.id,
+          verdict,
+          triggerKind,
+          referralTarget:
+            triggerKind === 'GET_EXPERT_HELP_CLICK'
+              ? 'https://example.com/expert'
+              : 'INTERNAL_PAGE',
+          ipAddress: '127.0.0.1',
+          userAgent: 'seed-dev',
+          createdAt: completedAtBase,
+        },
+      });
+    }
+
+    // SdsApproval — one per completed assessment (unique). Only create for a
+    // subset so the approval queue shows pending+approved variety.
+    const seedApproval = ctx.org.showcase
+      ? i % 2 === 0
+      : ctx.fakers.org.datatype.boolean({ probability: 0.5 });
+    if (seedApproval) {
+      await prisma.sdsApproval.create({
+        data: {
+          organizationId: ctx.organizationId,
+          assessmentId: assessment.id,
+          approvedByUserId: ctx.ownerUserId,
+          approvedAt: advanceCapped(completedAtBase, ctx.fakers.org.number.int({ min: 1, max: 7 })),
+          clientName: `${ctx.fakers.ascii.company.name()} Ltd.`,
+          approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_SNAPSHOT,
+          createdAt: completedAtBase,
+        },
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Timesheets — weekly time-tracking sheets with individual time entries.
 // ---------------------------------------------------------------------------
 
@@ -5358,6 +5506,9 @@ async function seedOrg(
     seedCourierConfigs(prisma, ctx),
   );
   await gateSection(omitted, 'comments', org.key, undefined, () => seedComments(prisma, ctx, refs));
+  await gateSection(omitted, 'classification', org.key, undefined, () =>
+    seedClassification(prisma, ctx, contractors),
+  );
   await gateSection(omitted, 'workflow-runs', org.key, undefined, () =>
     seedWorkflowRuns(prisma, ctx, contractors),
   );
