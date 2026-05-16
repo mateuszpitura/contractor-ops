@@ -188,7 +188,6 @@ export default function EquipmentDetailPage() {
           }
           shipmentsContent={
             <TabShipments
-              shipments={equipment.shipments ?? []}
               equipmentId={equipment.id}
               onCreateShipment={handleOpenShipment}
               pendingReturn={pendingReturnData}

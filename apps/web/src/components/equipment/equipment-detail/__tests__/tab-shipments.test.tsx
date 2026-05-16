@@ -1,21 +1,64 @@
 import { render, screen, setup } from '@/test/test-utils';
 import { TabShipments } from '../tab-shipments';
 
+// Shared mutable state for useQuery mocks so we can flip results per test.
+let listShipmentsResult: {
+  data: ReturnType<typeof makeShipment>[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
+} = { data: [], isLoading: false, isError: false };
+
+let getShipmentResult: {
+  data: ReturnType<typeof makeShipment> | undefined;
+  isLoading: boolean;
+  isError: boolean;
+} = { data: undefined, isLoading: false, isError: false };
+
 vi.mock('@tanstack/react-query', async importOriginal => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
   return {
     ...actual,
     useMutation: () => ({ mutate: vi.fn(), isPending: false }),
-    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+    useQueryClient: () => ({
+      invalidateQueries: vi.fn(),
+      fetchQuery: vi.fn().mockResolvedValue({
+        data: 'base64data',
+        contentType: 'application/pdf',
+        filename: 'label.pdf',
+      }),
+    }),
+    useQuery: (opts: { queryKey?: unknown[]; enabled?: boolean }) => {
+      const key = JSON.stringify(opts.queryKey ?? []);
+      if (key.includes('listShipments')) {
+        return {
+          ...listShipmentsResult,
+          refetch: vi.fn(),
+        };
+      }
+      if (key.includes('getShipment')) {
+        return getShipmentResult;
+      }
+      return { data: undefined, isLoading: false, isError: false };
+    },
   };
 });
+
 vi.mock('@/trpc/init', () => ({
   trpc: {
     equipment: {
+      listShipments: {
+        queryOptions: (input: unknown) => ({ queryKey: ['equipment.listShipments', input] }),
+      },
+      getShipment: {
+        queryOptions: (input: unknown) => ({ queryKey: ['equipment.getShipment', input] }),
+      },
+      getShipmentLabel: {
+        queryOptions: (input: unknown) => ({ queryKey: ['equipment.getShipmentLabel', input] }),
+      },
       deleteShipment: {
         mutationOptions: (opts: Record<string, unknown>) => ({ mutationFn: vi.fn(), ...opts }),
       },
-      getById: { queryKey: () => ['equipment.getById'] },
+      pathFilter: () => ({ queryKey: ['equipment'] }),
     },
   },
 }));
@@ -50,26 +93,28 @@ function makeShipment(overrides: Record<string, unknown> = {}) {
 }
 
 describe('TabShipments', () => {
+  beforeEach(() => {
+    listShipmentsResult = { data: [], isLoading: false, isError: false };
+    getShipmentResult = { data: undefined, isLoading: false, isError: false };
+  });
+
   it('renders empty state when no shipments', () => {
-    render(<TabShipments shipments={[]} equipmentId="eq-1" onCreateShipment={vi.fn()} />);
+    render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
     expect(screen.getByText(/no shipments/i)).toBeInTheDocument();
   });
 
-  it('renders shipment card with tracking number and carrier', () => {
-    render(
-      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
-    );
+  it('renders shipment row with tracking number and carrier', () => {
+    listShipmentsResult = { data: [makeShipment()], isLoading: false, isError: false };
+    render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
     expect(screen.getByText('TR-12345')).toBeInTheDocument();
     expect(screen.getByText('InPost')).toBeInTheDocument();
   });
 
-  it('shows create shipment button', async () => {
+  it('invokes onCreateShipment from empty state CTA', async () => {
     const onCreateShipment = vi.fn();
-    const { user } = setup(
-      <TabShipments shipments={[]} equipmentId="eq-1" onCreateShipment={onCreateShipment} />,
-    );
+    const { user } = setup(<TabShipments equipmentId="eq-1" onCreateShipment={onCreateShipment} />);
 
     const btn = screen.getByRole('button', { name: /create shipment/i });
     await user.click(btn);
@@ -79,7 +124,6 @@ describe('TabShipments', () => {
   it('renders return approval banner when pendingReturn is provided', () => {
     render(
       <TabShipments
-        shipments={[]}
         equipmentId="eq-1"
         onCreateShipment={vi.fn()}
         pendingReturn={{
@@ -95,106 +139,82 @@ describe('TabShipments', () => {
     expect(screen.getByTestId('return-banner')).toBeInTheDocument();
   });
 
-  it('shows delete button for CREATED shipments', () => {
-    render(
-      <TabShipments
-        shipments={[makeShipment({ currentStatus: 'CREATED' })]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
+  it('shows delete button only for CREATED shipments', () => {
+    listShipmentsResult = {
+      data: [makeShipment({ currentStatus: 'CREATED' })],
+      isLoading: false,
+      isError: false,
+    };
+    const { container } = render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
-    // Delete button exists (trash icon)
-    const deleteButtons = screen.getAllByRole('button');
-    expect(deleteButtons.length).toBeGreaterThan(0);
+    const trash = container.querySelector('.text-destructive');
+    expect(trash).toBeTruthy();
   });
 
-  it('does not show delete button for non-CREATED shipments', () => {
-    const { container } = render(
-      <TabShipments
-        shipments={[makeShipment({ currentStatus: 'IN_TRANSIT' })]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
+  it('hides delete button for non-CREATED shipments', () => {
+    listShipmentsResult = {
+      data: [makeShipment({ currentStatus: 'IN_TRANSIT' })],
+      isLoading: false,
+      isError: false,
+    };
+    const { container } = render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
-    // Trash icon should not be present
-    const trashIcons = container.querySelectorAll('.text-destructive');
-    expect(trashIcons.length).toBe(0);
+    expect(container.querySelector('button.text-destructive')).toBeNull();
   });
 
-  it('renders return direction label', () => {
-    render(
-      <TabShipments
-        shipments={[makeShipment({ direction: 'RETURN' })]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText('Return (from contractor)')).toBeInTheDocument();
-  });
-
-  it('renders outbound direction label', () => {
-    render(
-      <TabShipments
-        shipments={[makeShipment({ direction: 'OUTBOUND' })]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText('Outbound (to contractor)')).toBeInTheDocument();
-  });
-
-  it('renders multiple shipments', () => {
-    render(
-      <TabShipments
-        shipments={[
-          makeShipment({ id: 's-1' }),
-          makeShipment({ id: 's-2', trackingNumber: 'TR-99999' }),
-        ]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-      />,
-    );
+  it('renders multiple shipments as table rows', () => {
+    listShipmentsResult = {
+      data: [makeShipment({ id: 's-1' }), makeShipment({ id: 's-2', trackingNumber: 'TR-99999' })],
+      isLoading: false,
+      isError: false,
+    };
+    render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
     expect(screen.getByText('TR-12345')).toBeInTheDocument();
     expect(screen.getByText('TR-99999')).toBeInTheDocument();
   });
 
-  it('renders shipment timeline component', () => {
-    render(
-      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
-    );
+  it('shows label action only for InPost shipments', () => {
+    listShipmentsResult = {
+      data: [
+        makeShipment({ id: 's-inpost', carrier: 'InPost' }),
+        makeShipment({ id: 's-other', carrier: 'DPD' }),
+      ],
+      isLoading: false,
+      isError: false,
+    };
+    render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
+    const labelButtons = screen.queryAllByLabelText(/label/i);
+    expect(labelButtons.length).toBe(1);
+  });
+
+  it('opens detail sheet when View action is clicked', async () => {
+    listShipmentsResult = {
+      data: [makeShipment()],
+      isLoading: false,
+      isError: false,
+    };
+    getShipmentResult = { data: makeShipment(), isLoading: false, isError: false };
+
+    const { user } = setup(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
+
+    const viewButtons = screen.getAllByLabelText(/view/i);
+    expect(viewButtons.length).toBeGreaterThan(0);
+    const viewBtn = viewButtons[0];
+    if (!viewBtn) throw new Error('view button missing');
+    await user.click(viewBtn);
+
+    // Timeline is rendered inside the sheet content
     expect(screen.getByTestId('shipment-timeline')).toBeInTheDocument();
   });
 
-  it('renders return banner with shipments present', () => {
-    render(
-      <TabShipments
-        shipments={[makeShipment()]}
-        equipmentId="eq-1"
-        onCreateShipment={vi.fn()}
-        pendingReturn={{
-          id: 'r-1',
-          contractorName: 'Jan',
-          itemCount: 2,
-          targetPointName: 'WAW123',
-          createdAt: '2026-03-01',
-        }}
-      />,
-    );
+  it('shows loading skeleton while shipments are loading', () => {
+    listShipmentsResult = { data: undefined, isLoading: true, isError: false };
+    const { container } = render(<TabShipments equipmentId="eq-1" onCreateShipment={vi.fn()} />);
 
-    expect(screen.getByTestId('return-banner')).toBeInTheDocument();
-  });
-
-  it('renders date for shipment', () => {
-    render(
-      <TabShipments shipments={[makeShipment()]} equipmentId="eq-1" onCreateShipment={vi.fn()} />,
-    );
-
-    expect(screen.getByText('Mar 1, 2026')).toBeInTheDocument();
+    expect(
+      container.querySelectorAll('[data-slot="skeleton"], .animate-pulse').length,
+    ).toBeGreaterThan(0);
   });
 });

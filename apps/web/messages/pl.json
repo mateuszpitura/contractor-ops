@@ -2612,6 +2612,31 @@
       "pendingLabel": "(oczekujące)",
       "statusPlaceholder": "Wybierz status …"
     },
+    "shipmentsTable": {
+      "col": {
+        "trackingNumber": "Numer śledzenia",
+        "carrier": "Kurier",
+        "status": "Status",
+        "created": "Utworzono",
+        "actions": "Akcje"
+      },
+      "action": {
+        "view": "Pokaż szczegóły przesyłki",
+        "label": "Otwórz etykietę kuriera"
+      },
+      "labelPopupBlocked": "Wyskakujące okno zablokowane. Zezwól na wyskakujące okna, aby otworzyć etykietę.",
+      "detail": {
+        "title": "Szczegóły przesyłki",
+        "subtitle": "Pełny rekord, oś czasu statusu i historia.",
+        "direction": "Kierunek",
+        "carrier": "Kurier",
+        "trackingNumber": "Numer śledzenia",
+        "status": "Status",
+        "expectedDelivery": "Oczekiwana dostawa",
+        "equipment": "Sprzęt",
+        "timeline": "Oś czasu statusu"
+      }
+    },
     "status": {
       "available": "Dostepny",
       "assigned": "Przypisany",

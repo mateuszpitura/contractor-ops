@@ -2612,6 +2612,31 @@
       "pendingLabel": "(pending)",
       "statusPlaceholder": "Select status…"
     },
+    "shipmentsTable": {
+      "col": {
+        "trackingNumber": "Tracking number",
+        "carrier": "Carrier",
+        "status": "Status",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "action": {
+        "view": "View shipment details",
+        "label": "Open carrier label"
+      },
+      "labelPopupBlocked": "Pop-up blocked. Allow pop-ups to open the label.",
+      "detail": {
+        "title": "Shipment details",
+        "subtitle": "Full record, status timeline, and history.",
+        "direction": "Direction",
+        "carrier": "Carrier",
+        "trackingNumber": "Tracking number",
+        "status": "Status",
+        "expectedDelivery": "Expected delivery",
+        "equipment": "Equipment",
+        "timeline": "Status timeline"
+      }
+    },
     "status": {
       "available": "Available",
       "assigned": "Assigned",

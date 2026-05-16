@@ -2612,6 +2612,31 @@
       "pendingLabel": "(قيد الانتظار)",
       "statusPlaceholder": "اختر الحالة …"
     },
+    "shipmentsTable": {
+      "col": {
+        "trackingNumber": "رقم التتبّع",
+        "carrier": "الناقل",
+        "status": "الحالة",
+        "created": "تاريخ الإنشاء",
+        "actions": "الإجراءات"
+      },
+      "action": {
+        "view": "عرض تفاصيل الشحنة",
+        "label": "فتح ملصق الشحن"
+      },
+      "labelPopupBlocked": "تم حظر النافذة المنبثقة. اسمح بالنوافذ المنبثقة لفتح الملصق.",
+      "detail": {
+        "title": "تفاصيل الشحنة",
+        "subtitle": "السجل الكامل والمخطط الزمني للحالة والسجل.",
+        "direction": "الاتجاه",
+        "carrier": "الناقل",
+        "trackingNumber": "رقم التتبّع",
+        "status": "الحالة",
+        "expectedDelivery": "موعد التسليم المتوقّع",
+        "equipment": "المعدّات",
+        "timeline": "المخطط الزمني للحالة"
+      }
+    },
     "status": {
       "available": "Available",
       "assigned": "تم التعيين",
