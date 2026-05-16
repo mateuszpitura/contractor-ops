@@ -87,12 +87,20 @@ function DashboardContent() {
   const lateInterestEnabled = useFlag('payments.late-interest-enabled');
   const classificationEnabled = useFlag('module.classification-engine');
 
-  // Fetch KPIs to check for empty state — gate on this before rendering widgets
-  const { data: kpis, isLoading: kpisLoading } = useQuery(trpc.dashboard.kpis.queryOptions());
+  // Fetch a single bundled bootstrap payload (KPIs + spendTrend + deadlines +
+  // activity) so the dashboard entry-point makes one batched round-trip
+  // instead of seven independent widget calls. The bootstrap procedure shares
+  // the same Redis cache slots as the per-widget queries, so leaf widgets
+  // that still call their own procedures continue to work without
+  // double-spending cache entries (see dashboard.bootstrap JSDoc).
+  const { data: bootstrap, isLoading: bootstrapLoading } = useQuery(
+    trpc.dashboard.bootstrap.queryOptions({ spendMonths: '6' }),
+  );
+  const kpis = bootstrap?.kpis;
 
-  // While KPIs are loading, show the skeleton fallback to avoid a flash of
-  // individual widget skeletons that then snap to the empty state.
-  if (kpisLoading) {
+  // While the bootstrap payload is loading, show the skeleton fallback to avoid
+  // a flash of individual widget skeletons that then snap to the empty state.
+  if (bootstrapLoading) {
     return <DashboardSkeleton />;
   }
 
