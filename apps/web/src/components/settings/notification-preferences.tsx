@@ -313,7 +313,7 @@ export function NotificationPreferences() {
                             <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
-                              aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
+                              aria-label={tAria('teams')}
                             />
                           )}
                         />
@@ -323,7 +323,7 @@ export function NotificationPreferences() {
                             <Switch
                               checked={false}
                               disabled
-                              aria-label={tAria('teams' as Parameters<typeof tAria>[0])}
+                              aria-label={tAria('teams')}
                             />
                           </TooltipTrigger>
                           <TooltipContent>

@@ -173,7 +173,7 @@ export function EquipmentDetailHeader({
                 <Button {...props} variant="outline" size="icon-sm">
                   <MoreHorizontal className="size-4" />
                   <span className="sr-only">
-                    {tCommon('srOnly.moreActions' as Parameters<typeof tCommon>[0])}
+                    {tCommon('srOnly.moreActions')}
                   </span>
                 </Button>
               )}

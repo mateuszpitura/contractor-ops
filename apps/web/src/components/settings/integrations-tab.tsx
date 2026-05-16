@@ -131,7 +131,7 @@ function KsefProviderSection() {
         displayName="KSeF"
         icon={<KsefBrandIcon className="size-8" />}
         description={tIntegrations(
-          'ksef.descriptionDisconnected' as Parameters<typeof tIntegrations>[0],
+          'ksef.descriptionDisconnected',
         )}
       />
 

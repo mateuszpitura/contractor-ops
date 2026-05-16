@@ -44,6 +44,8 @@ export const CronMonitors = {
   // Phase 63 · Plan 03 — daily Bank of England base rate polling (LPCDA §4(1)).
   BOE_RATE_POLL: 'boe-rate-poll',
   LATE_INTEREST_PDF_REAPER: 'late-interest-pdf-reaper',
+  // GDPR-driven nightly purge of OAuth challenge records and expired pending uploads.
+  DATA_PURGE: 'data-purge',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

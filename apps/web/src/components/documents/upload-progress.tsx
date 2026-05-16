@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -118,7 +119,7 @@ export function UploadProgress({ file, onRemove }: UploadProgressProps) {
           <span className="text-xs text-muted-foreground">
             {(() => {
               const { key, size } = formatFileSizeData(file.file.size);
-              return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size });
+              return tDynLoose(tCommon, 'fileSize', key, { size });
             })()}
           </span>
           {file.status === 'uploading' ? (

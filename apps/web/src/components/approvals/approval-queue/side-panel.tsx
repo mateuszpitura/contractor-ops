@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tKey, type TranslatorOf } from '@/i18n/typed-keys';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -150,7 +150,7 @@ function ChainStepRow({
   const approverLabel = step.approverUserId
     ? t('sidePanel.specificUser')
     : step.approverRole
-      ? tRoles(enumKey(step.approverRole) as Parameters<typeof tRoles>[0])
+      ? tKey(tRoles, enumKey(step.approverRole))
       : t('sidePanel.unassigned');
   const stateClass = isCurrent
     ? 'text-foreground font-medium'

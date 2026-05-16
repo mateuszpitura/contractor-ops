@@ -200,7 +200,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               {tDynLoose(t, 'lifecycle', enumKey(stage)) ?? stage}
             </AtelierStatusPill>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
+              {tDynLoose(tc, 'type', enumKey(contractor.type))}
             </Badge>
           </div>
           {!!contractor.owner && (

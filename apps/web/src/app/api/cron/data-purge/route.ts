@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       // TODO(typecheck-pass-2): register `data-purge` in
       // `packages/api/src/services/cron-monitor.ts > CronMonitors` so this
       // cast is no longer required. Cast keeps runtime behaviour identical.
-      withCronMonitor('data-purge' as Parameters<typeof withCronMonitor>[0], async () => {
+      withCronMonitor('data-purge', async () => {
         try {
           const cutoff = new Date();
           cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);

@@ -10,6 +10,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
+import { tDynLoose } from '@/i18n/typed-keys';
 
 type HealthFactor = {
   key: 'documents' | 'contract' | 'tasks' | 'invoices';
@@ -154,7 +155,7 @@ export function TabOverview({ contractor }: TabOverviewProps) {
           <FieldRow label={t('fields.displayName')} value={contractor.displayName} />
           <FieldRow
             label={t('fields.type')}
-            value={tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
+            value={tDynLoose(tc, 'type', enumKey(contractor.type))}
           />
           <FieldRow
             label={t('fields.nip')}

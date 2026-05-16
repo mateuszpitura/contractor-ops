@@ -358,12 +358,12 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
   const resolveLabel = (action: InvoiceAction) =>
     resolveActionLabel(action, {
       t: (key: string) => tKey(t, key),
-      tDetail: (key: string) => tDetail(key as Parameters<typeof tDetail>[0]),
-      tBulk: (key: string) => tBulk(key as Parameters<typeof tBulk>[0]),
+      tDetail: (key: string) => tKey(tDetail, key),
+      tBulk: (key: string) => tKey(tBulk, key),
     });
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
-    tv(key as Parameters<typeof tv>[0]),
+    tKey(tv, key),
   );
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 

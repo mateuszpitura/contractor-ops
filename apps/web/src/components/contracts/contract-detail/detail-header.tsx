@@ -33,7 +33,7 @@ import type { ContractAction } from '../actions';
 import { getDetailContractActions } from '../actions';
 import { EditContractDialog } from './edit-contract-dialog';
 import { SendForSignatureButton } from './send-for-signature-button';
-import { tKey } from '@/i18n/typed-keys';
+import { tDynLoose, tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -193,7 +193,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           </h1>
           <AtelierStatusPill
             variant={statusToVariant('contract', contract.status as ContractStatusInput)}>
-            {tEnum(`status.${enumKey(contract.status)}` as Parameters<typeof tEnum>[0])}
+            {tDynLoose(tEnum, 'status', enumKey(contract.status))}
           </AtelierStatusPill>
         </div>
         {!!contract.contractor && (

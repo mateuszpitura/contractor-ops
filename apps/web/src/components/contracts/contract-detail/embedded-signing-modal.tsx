@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import type { LooseTranslator } from '@/i18n/typed-keys';
+import { tKey, type LooseTranslator } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -196,7 +196,7 @@ export function EmbeddedSigningModal({
       if (!signingEvent) return;
 
       const action = SIGNING_EVENT_ACTIONS[signingEvent];
-      toast[action.toastFn](tToast(action.toastKey as Parameters<typeof tToast>[0]));
+      toast[action.toastFn](tKey(tToast, action.toastKey));
       if (action.triggerComplete) onComplete();
       onOpenChange(false);
     },

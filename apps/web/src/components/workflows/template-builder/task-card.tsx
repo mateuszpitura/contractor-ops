@@ -141,7 +141,7 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
   }));
 
   const conditionSummary = getConditionSummary(
-    conditions as Parameters<typeof getConditionSummary>[0],
+    conditions,
     t as (key: string, values?: Record<string, string | number>) => string,
   );
 

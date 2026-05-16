@@ -6,6 +6,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 import { DownloadZugferdPdfButton } from './download-zugferd-pdf-button';
 import { GenerationSection } from './generation-section';
@@ -88,9 +89,9 @@ export function EInvoiceTab({ data, invoiceId }: EInvoiceTabProps) {
 
   const handleError = useCallback(
     (errorCode: string | undefined) => {
-      const key = (errorCode ?? 'Generic') as Parameters<typeof tErr>[0];
+      const key = errorCode ?? 'Generic';
       try {
-        setErrorMessage(tErr(key));
+        setErrorMessage(tKey(tErr, key));
       } catch {
         setErrorMessage(tErr('Generic'));
       }

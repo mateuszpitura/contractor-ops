@@ -32,6 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -292,13 +293,13 @@ export function LinearStatusMappingDialog({ open, onOpenChange }: LinearStatusMa
                     BLOCKED: 'workflowStatus.blocked',
                     SKIPPED: 'workflowStatus.skipped',
                     CANCELLED: 'workflowStatus.cancelled',
-                  }[wsValue] as Parameters<typeof tI>[0];
+                  }[wsValue];
 
                   return (
                     <TableRow key={wsValue}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{tI(wsLabelKey)}</span>
+                          <span className="text-sm font-medium">{tKey(tI, wsLabelKey)}</span>
                           {isUnmapped && (
                             <TooltipProvider>
                               <Tooltip>

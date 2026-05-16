@@ -126,7 +126,7 @@ export function RecentCommandItem({
         </Badge>
       )}
       <span className="text-xs text-muted-foreground">
-        {tTime(key as Parameters<typeof tTime>[0], params)}
+        {tTime(key, params)}
       </span>
     </CommandItem>
   );

@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { trpc } from '@/trpc/init';
+import { tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -290,7 +291,7 @@ export function StepDocuments({ onSkip, onDocumentsChange }: StepDocumentsProps)
                   <span className="text-xs text-muted-foreground">
                     {(() => {
                       const { key, size } = formatFileSizeData(item.file.size);
-                      return tCommon(`fileSize.${key}` as Parameters<typeof tCommon>[0], { size });
+                      return tDynLoose(tCommon, 'fileSize', key, { size });
                     })()}
                   </span>
                   {item.status === 'uploading' ? (
