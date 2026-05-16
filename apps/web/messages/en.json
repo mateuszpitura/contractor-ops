@@ -6501,6 +6501,38 @@
       "viewInvoice": "View invoice",
       "unknown": "Unknown"
     },
+    "spotCheck": {
+      "title": "Spot-check a contract",
+      "description": "Compute time vs. invoiced amount reconciliation for a specific contract and period. Useful before issuing or reviewing an invoice.",
+      "contractorLabel": "Contractor",
+      "contractorPlaceholder": "Select contractor",
+      "loadingContractors": "Loading contractors...",
+      "noContractors": "No contractors with timesheets yet",
+      "contractLabel": "Contract",
+      "contractPlaceholder": "Select contract",
+      "selectContractorFirst": "Select a contractor first",
+      "loadingContracts": "Loading contracts...",
+      "noContracts": "No contracts for this contractor",
+      "invoicedAmountLabel": "Invoiced amount",
+      "invoicedAmountHint": "Amount in contract currency (e.g. 1500.00)",
+      "periodStartLabel": "Period start",
+      "periodEndLabel": "Period end",
+      "runCta": "Run reconciliation",
+      "emptyState": "Pick a contractor and contract, set the period and invoiced amount, then run the reconciliation.",
+      "noResult": "No reconciliation result. The contract may not be time-based (only PER_HOUR and PER_DAY are supported) or there are no approved time entries in this period.",
+      "resultTitle": "Reconciliation result",
+      "withinThreshold": "Within threshold",
+      "exceedsThreshold": "Exceeds threshold",
+      "thresholdSuffix": "(threshold: {percent}%)",
+      "approvedHours": "Approved hours",
+      "expectedAmount": "Expected amount",
+      "invoicedAmount": "Invoiced amount",
+      "deviation": "Deviation",
+      "rateFootnote": "Computed at {rateType} · {rate} per unit",
+      "toast": {
+        "failed": "Failed to compute reconciliation"
+      }
+    },
     "rejectionDialog": {
       "title": "Reject Timesheet",
       "bulkTitle": "{count, plural, one {Reject # Timesheet} other {Reject # Timesheets}}",

@@ -18,6 +18,7 @@ import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
 import type { TimesheetRow } from '@/components/time/approval-queue-table';
 import { ApprovalQueueTable } from '@/components/time/approval-queue-table';
+import { ReconciliationSpotCheck } from '@/components/time/reconciliation-spot-check';
 import { ReconciliationTable } from '@/components/time/reconciliation-table';
 import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge';
 import {
@@ -313,8 +314,9 @@ function TimeTrackingContent() {
 
           {/* Tab 3: Reconciliation */}
           <TabsContent value="reconciliation" className="mt-4">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <SectionLabel icon={Clock}>{t('tabs.reconciliation')}</SectionLabel>
+              <ReconciliationSpotCheck />
               <ReconciliationTable />
             </div>
           </TabsContent>
