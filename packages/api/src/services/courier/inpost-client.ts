@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { z } from 'zod';
 
 import type {
@@ -104,7 +105,7 @@ export class InPostClient implements CourierClient {
       .digest('base64url')
       .slice(0, 48)}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: {
         ...this.headers,
@@ -140,7 +141,7 @@ export class InPostClient implements CourierClient {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}/label`;
     const accept = format === 'zpl' ? 'application/zpl' : 'application/pdf';
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${this.apiToken}`,
@@ -165,7 +166,7 @@ export class InPostClient implements CourierClient {
   async getStatus(shipmentExternalId: string): Promise<CourierStatusResult> {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: this.headers,
     });
@@ -194,7 +195,7 @@ export class InPostClient implements CourierClient {
   async cancelShipment(shipmentExternalId: string): Promise<void> {
     const url = `${this.baseUrl}/v1/shipments/${shipmentExternalId}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'DELETE',
       headers: this.headers,
     });

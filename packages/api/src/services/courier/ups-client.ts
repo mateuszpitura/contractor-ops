@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { z } from 'zod';
 
 import type {
@@ -130,7 +131,7 @@ export class UPSClient implements CourierClient {
       return this.tokenCache.token;
     }
 
-    const res = await globalThis.fetch(`${this.baseUrl}/security/v1/oauth/token`, {
+    const res = await fetchWithTimeout(`${this.baseUrl}/security/v1/oauth/token`, {
       method: 'POST',
       headers: {
         Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64')}`,
@@ -228,7 +229,7 @@ export class UPSClient implements CourierClient {
       },
     };
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -265,7 +266,7 @@ export class UPSClient implements CourierClient {
     const url = `${this.baseUrl}/api/shipments/v2409/label/${shipmentExternalId}`;
     const headers = await this.authHeaders();
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { ...headers, Accept: 'application/pdf' },
     });
@@ -288,7 +289,7 @@ export class UPSClient implements CourierClient {
     const url = `${this.baseUrl}/api/track/v1/details/${shipmentExternalId}`;
     const headers = await this.authHeaders();
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers,
     });
@@ -322,7 +323,7 @@ export class UPSClient implements CourierClient {
     const url = `${this.baseUrl}/api/shipments/v2409/void/cancel/${shipmentExternalId}`;
     const headers = await this.authHeaders();
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'DELETE',
       headers,
     });

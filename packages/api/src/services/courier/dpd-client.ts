@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { z } from 'zod';
 
 import type {
@@ -128,7 +129,7 @@ export class DPDClient implements CourierClient {
       ],
     };
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -161,7 +162,7 @@ export class DPDClient implements CourierClient {
   async getLabel(shipmentExternalId: string, _format: LabelFormat = 'pdf'): Promise<Buffer> {
     const url = `${this.baseUrl}/label/${shipmentExternalId}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { Accept: 'application/pdf' },
     });
@@ -183,7 +184,7 @@ export class DPDClient implements CourierClient {
   async getStatus(shipmentExternalId: string): Promise<CourierStatusResult> {
     const url = `${this.baseUrl}/tracking/${shipmentExternalId}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -212,7 +213,7 @@ export class DPDClient implements CourierClient {
   async cancelShipment(shipmentExternalId: string): Promise<void> {
     const url = `${this.baseUrl}/cancel/${shipmentExternalId}`;
 
-    const response = await globalThis.fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
