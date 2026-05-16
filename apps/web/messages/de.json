@@ -6497,6 +6497,38 @@
       "viewInvoice": "Rechnung anzeigen",
       "unknown": "Unbekannt"
     },
+    "spotCheck": {
+      "title": "Vertrag stichprobenartig prüfen",
+      "description": "Berechnen Sie den Abgleich zwischen erfasster Zeit und Rechnungsbetrag für einen bestimmten Vertrag und Zeitraum. Nützlich vor dem Ausstellen oder Prüfen einer Rechnung.",
+      "contractorLabel": "Auftragnehmer",
+      "contractorPlaceholder": "Auftragnehmer auswählen",
+      "loadingContractors": "Auftragnehmer werden geladen...",
+      "noContractors": "Noch keine Auftragnehmer mit Arbeitszeitnachweisen",
+      "contractLabel": "Vertrag",
+      "contractPlaceholder": "Vertrag auswählen",
+      "selectContractorFirst": "Zuerst einen Auftragnehmer auswählen",
+      "loadingContracts": "Verträge werden geladen...",
+      "noContracts": "Keine Verträge für diesen Auftragnehmer",
+      "invoicedAmountLabel": "Fakturierter Betrag",
+      "invoicedAmountHint": "Betrag in Vertragswährung (z. B. 1500.00)",
+      "periodStartLabel": "Zeitraum von",
+      "periodEndLabel": "Zeitraum bis",
+      "runCta": "Abgleich starten",
+      "emptyState": "Wählen Sie Auftragnehmer und Vertrag, legen Sie Zeitraum und fakturierten Betrag fest und starten Sie dann den Abgleich.",
+      "noResult": "Kein Abgleichsergebnis. Der Vertrag ist möglicherweise nicht zeitbasiert (unterstützt werden nur PER_HOUR und PER_DAY) oder es gibt keine genehmigten Zeiteinträge in diesem Zeitraum.",
+      "resultTitle": "Abgleichsergebnis",
+      "withinThreshold": "Innerhalb des Schwellenwerts",
+      "exceedsThreshold": "Schwellenwert überschritten",
+      "thresholdSuffix": "(Schwelle: {percent}%)",
+      "approvedHours": "Genehmigte Stunden",
+      "expectedAmount": "Erwarteter Betrag",
+      "invoicedAmount": "Fakturierter Betrag",
+      "deviation": "Abweichung",
+      "rateFootnote": "Berechnet mit {rateType} · {rate} pro Einheit",
+      "toast": {
+        "failed": "Abgleich konnte nicht berechnet werden"
+      }
+    },
     "rejectionDialog": {
       "title": "Arbeitszeitnachweis ablehnen",
       "bulkTitle": "{count, plural, one {# Arbeitszeitnachweis ablehnen} other {# Arbeitszeitnachweise ablehnen}}",

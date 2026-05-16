@@ -6484,6 +6484,38 @@
       "viewInvoice": "Pokaż fakturę",
       "unknown": "Nieznany"
     },
+    "spotCheck": {
+      "title": "Wyrywkowe sprawdzenie umowy",
+      "description": "Oblicz uzgodnienie czasu pracy względem zafakturowanej kwoty dla wybranej umowy i okresu. Przydatne przed wystawieniem lub weryfikacją faktury.",
+      "contractorLabel": "Kontrahent",
+      "contractorPlaceholder": "Wybierz kontrahenta",
+      "loadingContractors": "Ładowanie kontrahentów...",
+      "noContractors": "Brak kontrahentów z kartami pracy",
+      "contractLabel": "Umowa",
+      "contractPlaceholder": "Wybierz umowę",
+      "selectContractorFirst": "Najpierw wybierz kontrahenta",
+      "loadingContracts": "Ładowanie umów...",
+      "noContracts": "Brak umów dla tego kontrahenta",
+      "invoicedAmountLabel": "Kwota z faktury",
+      "invoicedAmountHint": "Kwota w walucie umowy (np. 1500.00)",
+      "periodStartLabel": "Początek okresu",
+      "periodEndLabel": "Koniec okresu",
+      "runCta": "Uruchom uzgadnianie",
+      "emptyState": "Wybierz kontrahenta i umowę, ustaw okres oraz kwotę z faktury, a następnie uruchom uzgadnianie.",
+      "noResult": "Brak wyniku uzgadniania. Umowa może nie być rozliczana czasowo (obsługiwane tylko PER_HOUR i PER_DAY) lub w tym okresie nie ma zatwierdzonych wpisów czasu pracy.",
+      "resultTitle": "Wynik uzgadniania",
+      "withinThreshold": "W granicach progu",
+      "exceedsThreshold": "Przekroczono próg",
+      "thresholdSuffix": "(próg: {percent}%)",
+      "approvedHours": "Zatwierdzone godziny",
+      "expectedAmount": "Kwota oczekiwana",
+      "invoicedAmount": "Kwota zafakturowana",
+      "deviation": "Odchylenie",
+      "rateFootnote": "Obliczono dla {rateType} · {rate} za jednostkę",
+      "toast": {
+        "failed": "Nie udało się obliczyć uzgodnienia"
+      }
+    },
     "rejectionDialog": {
       "title": "Odrzuć kartę pracy",
       "bulkTitle": "{count, plural, one {Odrzuć # kartę pracy} few {Odrzuć # karty pracy} many {Odrzuć # kart pracy} other {Odrzuć # kart pracy}}",

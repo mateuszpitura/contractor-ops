@@ -6497,6 +6497,38 @@
       "viewInvoice": "عرض الفاتورة",
       "unknown": "غير معروف"
     },
+    "spotCheck": {
+      "title": "فحص عقد عشوائي",
+      "description": "احسب تسوية الوقت مقابل المبلغ المفوتر لعقد وفترة محددين. مفيد قبل إصدار فاتورة أو مراجعتها.",
+      "contractorLabel": "المتعاقد",
+      "contractorPlaceholder": "اختر متعاقدًا",
+      "loadingContractors": "جارٍ تحميل المتعاقدين...",
+      "noContractors": "لا يوجد متعاقدون لديهم كشوف حضور بعد",
+      "contractLabel": "العقد",
+      "contractPlaceholder": "اختر عقدًا",
+      "selectContractorFirst": "اختر متعاقدًا أولاً",
+      "loadingContracts": "جارٍ تحميل العقود...",
+      "noContracts": "لا توجد عقود لهذا المتعاقد",
+      "invoicedAmountLabel": "المبلغ المفوتر",
+      "invoicedAmountHint": "المبلغ بعملة العقد (مثلاً 1500.00)",
+      "periodStartLabel": "بداية الفترة",
+      "periodEndLabel": "نهاية الفترة",
+      "runCta": "تشغيل التسوية",
+      "emptyState": "اختر متعاقدًا وعقدًا، وحدد الفترة والمبلغ المفوتر، ثم شغّل التسوية.",
+      "noResult": "لا توجد نتيجة للتسوية. قد لا يكون العقد قائمًا على الوقت (المدعوم فقط PER_HOUR و PER_DAY) أو لا توجد إدخالات وقت معتمدة في هذه الفترة.",
+      "resultTitle": "نتيجة التسوية",
+      "withinThreshold": "ضمن الحد المسموح",
+      "exceedsThreshold": "يتجاوز الحد المسموح",
+      "thresholdSuffix": "(الحد: {percent}%)",
+      "approvedHours": "الساعات المعتمدة",
+      "expectedAmount": "المبلغ المتوقع",
+      "invoicedAmount": "المبلغ المفوتر",
+      "deviation": "الانحراف",
+      "rateFootnote": "محسوب بمعدل {rateType} · {rate} للوحدة",
+      "toast": {
+        "failed": "تعذر حساب التسوية"
+      }
+    },
     "rejectionDialog": {
       "title": "رفض كشف الحضور",
       "bulkTitle": "{count, plural, one {رفض # كشف حضور} other {رفض # كشوف حضور}}",
