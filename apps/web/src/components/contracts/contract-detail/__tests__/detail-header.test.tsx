@@ -13,7 +13,10 @@ vi.mock('@/trpc/init', () => ({
   trpc: {
     contract: {
       transitionStatus: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      update: { mutationOptions: (opts: Record<string, unknown>) => opts },
+      delete: { mutationOptions: (opts: Record<string, unknown>) => opts },
       getById: { queryKey: () => ['contract', 'getById'] },
+      pathFilter: () => ({ queryKey: ['contract'] }),
     },
   },
 }));
@@ -43,6 +46,10 @@ describe('DetailHeader', () => {
     id: 'ct1',
     title: 'B2B Master Agreement',
     status: 'ACTIVE',
+    startDate: '2025-01-01T00:00:00.000Z',
+    endDate: '2025-12-31T00:00:00.000Z',
+    currency: 'EUR',
+    rateValueMinor: 5000,
     contractor: {
       id: 'c1',
       legalName: 'ACME Sp. z o.o.',

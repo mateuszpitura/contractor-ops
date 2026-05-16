@@ -1033,6 +1033,36 @@
       "deleteSuccess": "Contract deleted",
       "deleteError": "Could not delete contract. Try again."
     },
+    "edit": {
+      "title": "Edit contract",
+      "description": "Update the contract's identity, date window and headline commercial terms. Status changes, amendments and reminder intervals are handled in their own flows.",
+      "fields": {
+        "title": "Title",
+        "titlePlaceholder": "e.g. Master Services Agreement",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "currency": "Currency",
+        "currencyHint": "3-letter ISO 4217 code (e.g. EUR, GBP, PLN).",
+        "value": "Contract value",
+        "valueHint": "Headline rate or fee amount, in the contract currency."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "save": "Save changes",
+        "saving": "Saving…"
+      },
+      "validation": {
+        "titleRequired": "Title is required.",
+        "startRequired": "Start date is required.",
+        "endAfterStart": "End date must be after the start date.",
+        "currencyFormat": "Use a 3-letter ISO 4217 currency code.",
+        "valueFormat": "Contract value must be a non-negative number."
+      },
+      "toast": {
+        "success": "Contract updated",
+        "noChanges": "No changes to save."
+      }
+    },
     "error": {
       "notFound": "Contract not found",
       "backToList": "Back to contracts",

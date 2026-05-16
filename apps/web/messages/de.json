@@ -1033,6 +1033,36 @@
       "deleteSuccess": "Vertrag gelöscht",
       "deleteError": "Vertrag konnte nicht gelöscht werden. Versuchen Sie es erneut."
     },
+    "edit": {
+      "title": "Vertrag bearbeiten",
+      "description": "Aktualisieren Sie Vertragsbezeichnung, Laufzeit und wirtschaftliche Eckdaten. Statuswechsel, Nachträge und Erinnerungsintervalle werden in eigenen Abläufen verwaltet.",
+      "fields": {
+        "title": "Titel",
+        "titlePlaceholder": "z. B. Rahmendienstleistungsvertrag",
+        "startDate": "Startdatum",
+        "endDate": "Enddatum",
+        "currency": "Währung",
+        "currencyHint": "3-stelliger ISO-4217-Code (z. B. EUR, GBP, PLN).",
+        "value": "Vertragswert",
+        "valueHint": "Headline-Satz oder Honorar in der Vertragswährung."
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "save": "Änderungen speichern",
+        "saving": "Speichern…"
+      },
+      "validation": {
+        "titleRequired": "Titel ist erforderlich.",
+        "startRequired": "Startdatum ist erforderlich.",
+        "endAfterStart": "Enddatum muss nach dem Startdatum liegen.",
+        "currencyFormat": "Bitte einen 3-stelligen ISO-4217-Währungscode verwenden.",
+        "valueFormat": "Vertragswert muss eine nicht negative Zahl sein."
+      },
+      "toast": {
+        "success": "Vertrag aktualisiert",
+        "noChanges": "Keine Änderungen zu speichern."
+      }
+    },
     "error": {
       "notFound": "Vertrag nicht gefunden",
       "backToList": "Zurück zu Verträgen",

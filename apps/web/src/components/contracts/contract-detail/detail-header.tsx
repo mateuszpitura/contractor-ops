@@ -31,6 +31,7 @@ import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractAction } from '../actions';
 import { getDetailContractActions } from '../actions';
+import { EditContractDialog } from './edit-contract-dialog';
 import { SendForSignatureButton } from './send-for-signature-button';
 
 // ---------------------------------------------------------------------------
@@ -42,6 +43,11 @@ type DetailHeaderProps = {
     id: string;
     title: string | null;
     status: string;
+    /** Date-window + commercial-terms fields fed to the edit dialog */
+    startDate: string | Date | null;
+    endDate: string | Date | null;
+    currency: string;
+    rateValueMinor: number | null;
     contractor: {
       id: string;
       legalName: string;
@@ -78,6 +84,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
   const tEnum = useTranslations('Contracts');
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   // ---- Mutations via canonical useResourceMutation ----------------------
   const contractByIdKey = trpc.contract.getById.queryKey();
@@ -149,11 +156,14 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
 
   // Action keys that are wired in the UI but their backend/UX is not yet
   // implemented — they render disabled in the menu, no-op when clicked.
-  const NOT_IMPLEMENTED = new Set(['edit', 'addAmendment', 'uploadDocument']);
+  const NOT_IMPLEMENTED = new Set(['addAmendment', 'uploadDocument']);
 
   function dispatchMenuAction(action: ContractAction) {
     if (NOT_IMPLEMENTED.has(action.key)) return;
     switch (action.key) {
+      case 'edit':
+        setEditOpen(true);
+        return;
       case 'terminate':
         setTerminateOpen(true);
         return;
@@ -265,6 +275,20 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit contract dialog */}
+      <EditContractDialog
+        contract={{
+          id: contract.id,
+          title: contract.title,
+          startDate: contract.startDate,
+          endDate: contract.endDate,
+          currency: contract.currency,
+          rateValueMinor: contract.rateValueMinor,
+        }}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
 
       {/* Terminate confirmation dialog */}
       <AlertDialog open={terminateOpen} onOpenChange={setTerminateOpen}>
