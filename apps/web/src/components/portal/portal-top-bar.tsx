@@ -113,8 +113,16 @@ export function PortalTopBar({
   // (also calls deletePortalSession internally). The cookie is httpOnly so
   // we still need the /api/portal/clear-session route to actually delete it
   // from the browser — the tRPC mutation is the canonical audit-logged
-  // sign-out path, and the route is the cookie eraser.
-  const logoutMutation = useMutation(portalTrpc.portal.logout.mutationOptions());
+  // sign-out path, and the route is the cookie eraser. Errors are intentionally
+  // swallowed: the clear-session HTTP route is the hard guarantee that the
+  // cookie is gone, so a flaky tRPC call must not block sign-out.
+  const logoutMutation = useMutation(
+    portalTrpc.portal.logout.mutationOptions({
+      onError: () => {
+        // intentional no-op — see comment above
+      },
+    }),
+  );
 
   const handleLogout = async () => {
     try {
