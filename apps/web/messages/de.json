@@ -2686,6 +2686,31 @@
       "pendingLabel": "(ausstehend)",
       "statusPlaceholder": "Status auswählen …"
     },
+    "shipmentsTable": {
+      "col": {
+        "trackingNumber": "Sendungsnummer",
+        "carrier": "Versanddienst",
+        "status": "Status",
+        "created": "Erstellt",
+        "actions": "Aktionen"
+      },
+      "action": {
+        "view": "Versanddetails anzeigen",
+        "label": "Versandetikett öffnen"
+      },
+      "labelPopupBlocked": "Pop-up blockiert. Erlauben Sie Pop-ups, um das Etikett zu öffnen.",
+      "detail": {
+        "title": "Versanddetails",
+        "subtitle": "Vollständiger Datensatz, Status-Zeitachse und Verlauf.",
+        "direction": "Richtung",
+        "carrier": "Versanddienst",
+        "trackingNumber": "Sendungsnummer",
+        "status": "Status",
+        "expectedDelivery": "Voraussichtliche Lieferung",
+        "equipment": "Ausrüstung",
+        "timeline": "Status-Zeitachse"
+      }
+    },
     "status": {
       "available": "Available",
       "assigned": "Zugewiesen",
