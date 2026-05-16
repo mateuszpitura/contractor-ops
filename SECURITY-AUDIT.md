@@ -1,5 +1,7 @@
 # Security audit report — contractor-ops
 
+> **Status (as of 2026-05-16):** This file is preserved as a **2026-04-11 snapshot** of the launch security audit. For the canonical post-launch tracker, see [`docs/PRODUCTION-CHECKLIST.md`](docs/PRODUCTION-CHECKLIST.md) and the 2026-05-11 closure at [`.audit-2026-05-03/AUDIT-CLOSURE-2026-05-11.md`](.audit-2026-05-03/AUDIT-CLOSURE-2026-05-11.md).
+
 **Original audit date:** 2026-04-11  
 **Last progress update:** 2026-04-11 (xlsx → exceljs + CSV helpers)  
 **Scope:** Canonical source under `apps/` (excluding large generated `out/`, `.next`), `packages/`, `docker/`. `.claude/worktrees` excluded from scans.

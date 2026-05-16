@@ -153,3 +153,7 @@ Worth documenting so a future audit doesn't re-flag these:
 ---
 
 **Audit is closed.** The remaining Tier-2 items in §2.1 are not part of this audit's scope and have their own pickup criteria.
+
+---
+
+Reconciled into `docs/PRODUCTION-CHECKLIST.md` on 2026-05-16.
