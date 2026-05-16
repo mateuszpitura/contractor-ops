@@ -3119,6 +3119,10 @@
           "skipped": "Übersprungen",
           "cancelled": "Abgebrochen"
         }
+      },
+      "linkedIssuesPanel": {
+        "title": "Verknüpfte Linear-Tickets",
+        "count": "{count, plural, one {# Ticket} other {# Tickets}}"
       }
     },
     "docs": {
@@ -3142,7 +3146,9 @@
         "untitled": "Ohne Titel",
         "toast": {
           "removed": "Dokumentverknüpfung entfernt",
-          "removeFailed": "Dokumentverknüpfung konnte nicht entfernt werden"
+          "removeFailed": "Dokumentverknüpfung konnte nicht entfernt werden",
+          "refreshed": "Dokument-Metadaten aktualisiert",
+          "refreshFailed": "Aktualisierung der Dokument-Metadaten fehlgeschlagen"
         }
       },
       "chip": {
@@ -3156,7 +3162,8 @@
           "description": "Dadurch wird die Verknüpfung zu „{title}\" aus diesem Schritt entfernt. Die ursprüngliche Seite bleibt unverändert.",
           "keepLink": "Verknüpfung behalten",
           "removeLink": "Verknüpfung entfernen"
-        }
+        },
+        "refreshAriaLabel": "Metadaten für {title} aktualisieren"
       }
     },
     "jiraProvider": {
@@ -4921,6 +4928,19 @@
     "qrDisplay": {
       "altText": "UAE FTA QR-Code für Rechnung {invoiceNumber}",
       "caption": "UAE FTA QR-Code — Zum Verifizieren scannen"
+    },
+    "statusBadge": {
+      "label": "Peppol",
+      "ariaLabel": "Peppol-Übertragungsstatus: {status}",
+      "receiver": "Empfänger",
+      "aspRef": "ASP-Referenz"
+    },
+    "capabilities": {
+      "recheckCapabilities": "Funktionen erneut prüfen",
+      "rechecking": "Wird geprüft…",
+      "xrechnungCiiSupported": "Peppol-Teilnehmer unterstützt XRechnung (CII)",
+      "xrechnungCiiUnsupported": "Peppol-Teilnehmer kündigt keine XRechnung-(CII)-Unterstützung an",
+      "recheckFailed": "Funktionsprüfung fehlgeschlagen"
     }
   },
   "Portal": {
@@ -5693,7 +5713,19 @@
         "linkUser": "Benutzer verknüpfen",
         "unlinkUser": "Verknüpfung aufheben",
         "searchPlaceholder": "Slack-Benutzer suchen ...",
-        "mappingStats": "{matched} von {total} Benutzern zugeordnet"
+        "mappingStats": "{matched} von {total} Benutzern zugeordnet",
+        "unlinkConfirm": "Diesen Slack-Benutzer von diesem Konto trennen?",
+        "syncUsers": {
+          "cta": "Benutzer synchronisieren",
+          "syncing": "Synchronisiere…",
+          "confirmTitle": "Benutzer aus Slack synchronisieren?",
+          "confirmDescription": "Dadurch werden alle Slack-Workspace-Mitglieder abgerufen. Seit der letzten Synchronisierung manuell gepflegte Zuordnungen können überschrieben werden.",
+          "confirm": "Jetzt synchronisieren",
+          "cancel": "Abbrechen",
+          "toast": {
+            "success": "Benutzersynchronisierung gestartet"
+          }
+        }
       },
       "disconnectConfirm": {
         "title": "Slack trennen?",
@@ -5836,7 +5868,21 @@
         "categoryInvoices": "Rechnungen",
         "categoryContracts": "Verträge",
         "categoryTasks": "Aufgaben",
-        "categoryEquipment": "Ausstattung"
+        "categoryEquipment": "Ausstattung",
+        "fallbackApprover": {
+          "cardTitle": "Vertretungsfreigeber",
+          "cardBody": "Legen Sie fest, wer Anfragen freigibt, wenn der primäre Freigeber abwesend ist.",
+          "configureCta": "Konfigurieren",
+          "title": "Vertretungsfreigeber festlegen",
+          "description": "Wenn der primäre Freigeber nicht verfügbar ist, werden Anfragen an diese Person weitergeleitet.",
+          "approverLabel": "Freigeber",
+          "save": "Speichern",
+          "saving": "Speichern…",
+          "clear": "Zurücksetzen",
+          "toast": {
+            "saved": "Vertretungsfreigeber aktualisiert"
+          }
+        }
       },
       "syncFailedToast": "Synchronisierung fehlgeschlagen. Bitte erneut versuchen.",
       "syncNow": "Jetzt synchronisieren",
@@ -6017,6 +6063,7 @@
         "body": "Audit-Ereignisse erscheinen hier, sobald Aktionen im System ausgeführt werden."
       },
       "clearDates": "Daten zurücksetzen",
+      "clearAll": "Alle löschen",
       "dateFromPrefix": "Ab {date}",
       "dateToPrefix": "Bis {date}"
     },

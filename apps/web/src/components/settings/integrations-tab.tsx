@@ -22,6 +22,7 @@ import { KsefSetupDialog } from './ksef-setup-dialog';
 import { KsefSyncHistory } from './ksef-sync-history';
 import { OrgCalendarSection } from './org-calendar-section';
 import { ProviderConnectionCard } from './provider-connection-card';
+import { SlackSyncButton } from './slack-sync-button';
 import { SlackUserMapping } from './slack-user-mapping';
 
 // ---------------------------------------------------------------------------
@@ -223,7 +224,14 @@ export function IntegrationsTab() {
       <OrgCalendarSection />
 
       {/* Slack-specific user mapping (preserved for backward compatibility) */}
-      {isSlackConnected && <SlackUserMapping />}
+      {isSlackConnected && (
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <SlackSyncButton />
+          </div>
+          <SlackUserMapping />
+        </div>
+      )}
     </div>
   );
 }

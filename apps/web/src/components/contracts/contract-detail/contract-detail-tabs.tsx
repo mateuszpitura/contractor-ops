@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActivityTab } from './activity-tab';
 import { AmendmentsTab } from './amendments-tab';
 import { DocumentsTab } from './documents-tab';
+import { LinearLinkedIssuesPanel } from './linear-linked-issues-panel';
 import { OverviewTab } from './overview-tab';
 
 const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity'] as const;
@@ -74,9 +75,35 @@ export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {
         <AmendmentsTab contract={contract} />
       </TabsContent>
 
-      <TabsContent value="activity" className="mt-4 min-h-[400px]">
+      <TabsContent value="activity" className="mt-4 min-h-[400px] space-y-6">
         <ActivityTab contract={contract} />
+        {/*
+          Linear linked-issues sidebar. Linear issues are stored against
+          workflow task runs server-side — when a contract has no associated
+          task runs the panel renders nothing (no surface noise).
+        */}
+        <LinearLinkedIssuesPanel taskRunIds={extractContractTaskRunIds(contract)} />
       </TabsContent>
     </Tabs>
   );
+}
+
+/**
+ * Best-effort extraction of workflow task-run IDs reachable from a contract
+ * payload. Today `contract.getById` does not eagerly include workflow runs,
+ * so this returns an empty list — keeping the panel correctly hidden until
+ * the contract router exposes task-run linkage.
+ */
+function extractContractTaskRunIds(contract: ContractDetail): string[] {
+  const maybeRuns = (
+    contract as unknown as { workflowRuns?: Array<{ tasks?: Array<{ id: string }> }> }
+  ).workflowRuns;
+  if (!Array.isArray(maybeRuns)) return [];
+  const ids: string[] = [];
+  for (const run of maybeRuns) {
+    for (const task of run.tasks ?? []) {
+      if (typeof task.id === 'string') ids.push(task.id);
+    }
+  }
+  return ids;
 }

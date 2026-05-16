@@ -40,6 +40,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
+import { LinearTaskIssueChip } from './linear-task-issue-chip';
 import { TaskAttachments } from './task-attachments';
 import { TaskComments } from './task-comments';
 
@@ -348,6 +349,11 @@ function TaskExpandedDetails({
       {/* Metadata */}
       <div className="flex items-center gap-4 text-xs text-muted-foreground">
         {!!task.createdAt && <span>Created {formatDateTime(task.createdAt)}</span>}
+      </div>
+
+      {/* Linked Linear issue (if any) */}
+      <div className="empty:hidden">
+        <LinearTaskIssueChip taskRunId={task.id} />
       </div>
 
       {/* Attachments */}

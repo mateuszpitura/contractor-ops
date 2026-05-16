@@ -3119,6 +3119,10 @@
           "skipped": "Pominięte",
           "cancelled": "Anulowane"
         }
+      },
+      "linkedIssuesPanel": {
+        "title": "Powiązane zgłoszenia Linear",
+        "count": "{count, plural, one {# zgłoszenie} few {# zgłoszenia} many {# zgłoszeń} other {# zgłoszeń}}"
       }
     },
     "docs": {
@@ -3142,7 +3146,9 @@
         "untitled": "Bez tytułu",
         "toast": {
           "removed": "Powiązanie z dokumentem usunięte",
-          "removeFailed": "Nie udało się usunąć powiązania z dokumentem"
+          "removeFailed": "Nie udało się usunąć powiązania z dokumentem",
+          "refreshed": "Metadane dokumentu odświeżone",
+          "refreshFailed": "Nie udało się odświeżyć metadanych dokumentu"
         }
       },
       "chip": {
@@ -3156,7 +3162,8 @@
           "description": "Spowoduje to usunięcie powiązania z „{title}\" z tego kroku. Oryginalna strona nie zostanie zmieniona.",
           "keepLink": "Zachowaj powiązanie",
           "removeLink": "Usuń powiązanie"
-        }
+        },
+        "refreshAriaLabel": "Odśwież metadane dla {title}"
       }
     },
     "jiraProvider": {
@@ -5693,7 +5700,19 @@
         "linkUser": "Połącz użytkownika",
         "unlinkUser": "Rozłącz użytkownika",
         "searchPlaceholder": "Szukaj użytkowników Slack...",
-        "mappingStats": "{matched} z {total} użytkowników dopasowanych"
+        "mappingStats": "{matched} z {total} użytkowników dopasowanych",
+        "unlinkConfirm": "Odłączyć tego użytkownika Slack od tego konta?",
+        "syncUsers": {
+          "cta": "Synchronizuj użytkowników",
+          "syncing": "Synchronizowanie…",
+          "confirmTitle": "Zsynchronizować użytkowników ze Slacka?",
+          "confirmDescription": "Pobierze to wszystkich członków obszaru roboczego Slack. Może nadpisać ręczne mapowania utworzone po ostatniej synchronizacji.",
+          "confirm": "Synchronizuj teraz",
+          "cancel": "Anuluj",
+          "toast": {
+            "success": "Synchronizacja użytkowników rozpoczęta"
+          }
+        }
       },
       "disconnectConfirm": {
         "title": "Rozłączyć Slack?",
@@ -5836,7 +5855,21 @@
         "categoryInvoices": "Faktury",
         "categoryContracts": "Umowy",
         "categoryTasks": "Zadania",
-        "categoryEquipment": "Sprzet"
+        "categoryEquipment": "Sprzet",
+        "fallbackApprover": {
+          "cardTitle": "Zastępczy zatwierdzający",
+          "cardBody": "Wybierz osobę, która zatwierdza wnioski, gdy główny zatwierdzający jest nieobecny.",
+          "configureCta": "Konfiguruj",
+          "title": "Ustaw zastępczego zatwierdzającego",
+          "description": "Gdy główny zatwierdzający jest niedostępny, wnioski trafią do tej osoby.",
+          "approverLabel": "Zatwierdzający",
+          "save": "Zapisz",
+          "saving": "Zapisywanie…",
+          "clear": "Wyczyść",
+          "toast": {
+            "saved": "Zaktualizowano zastępczego zatwierdzającego"
+          }
+        }
       },
       "syncFailedToast": "Synchronizacja nie powiodła się. Spróbuj ponownie.",
       "syncNow": "Synchronizuj teraz",
@@ -6017,6 +6050,7 @@
         "body": "Zdarzenia audytu pojawią się tutaj w miarę wykonywania akcji w systemie."
       },
       "clearDates": "Wyczyść daty",
+      "clearAll": "Wyczyść wszystko",
       "dateFromPrefix": "Od {date}",
       "dateToPrefix": "Do {date}"
     },

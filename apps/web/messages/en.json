@@ -3119,6 +3119,10 @@
           "skipped": "Skipped",
           "cancelled": "Cancelled"
         }
+      },
+      "linkedIssuesPanel": {
+        "title": "Linked Linear issues",
+        "count": "{count, plural, one {# issue} other {# issues}}"
       }
     },
     "docs": {
@@ -3142,7 +3146,9 @@
         "untitled": "Untitled",
         "toast": {
           "removed": "Document link removed",
-          "removeFailed": "Failed to remove document link"
+          "removeFailed": "Failed to remove document link",
+          "refreshed": "Document metadata refreshed",
+          "refreshFailed": "Failed to refresh document metadata"
         }
       },
       "chip": {
@@ -3156,7 +3162,8 @@
           "description": "This will remove the link to \"{title}\" from this step. The original page will not be affected.",
           "keepLink": "Keep Link",
           "removeLink": "Remove Link"
-        }
+        },
+        "refreshAriaLabel": "Refresh metadata for {title}"
       }
     },
     "jiraProvider": {
@@ -4921,6 +4928,19 @@
     "qrDisplay": {
       "altText": "UAE FTA QR code for invoice {invoiceNumber}",
       "caption": "UAE FTA QR Code — Scan to verify"
+    },
+    "statusBadge": {
+      "label": "Peppol",
+      "ariaLabel": "Peppol transmission status: {status}",
+      "receiver": "Receiver",
+      "aspRef": "ASP reference"
+    },
+    "capabilities": {
+      "recheckCapabilities": "Re-check capabilities",
+      "rechecking": "Re-checking…",
+      "xrechnungCiiSupported": "Peppol participant supports XRechnung (CII)",
+      "xrechnungCiiUnsupported": "Peppol participant does not advertise XRechnung (CII) support",
+      "recheckFailed": "Capability re-check failed"
     }
   },
   "Portal": {
@@ -5698,7 +5718,19 @@
         "linkUser": "Link user",
         "unlinkUser": "Unlink user",
         "searchPlaceholder": "Search Slack users...",
-        "mappingStats": "{matched} of {total} users matched"
+        "mappingStats": "{matched} of {total} users matched",
+        "unlinkConfirm": "Unlink this Slack user from this account?",
+        "syncUsers": {
+          "cta": "Sync users",
+          "syncing": "Syncing…",
+          "confirmTitle": "Sync users from Slack?",
+          "confirmDescription": "This will pull all Slack workspace members and may overwrite manual mappings made since the last sync.",
+          "confirm": "Sync now",
+          "cancel": "Cancel",
+          "toast": {
+            "success": "User sync started"
+          }
+        }
       },
       "disconnectConfirm": {
         "title": "Disconnect Slack?",
@@ -5841,7 +5873,21 @@
         "categoryInvoices": "Invoices",
         "categoryContracts": "Contracts",
         "categoryTasks": "Tasks",
-        "categoryEquipment": "Equipment"
+        "categoryEquipment": "Equipment",
+        "fallbackApprover": {
+          "cardTitle": "Fallback approver",
+          "cardBody": "Choose who approves requests when the primary approver is out of office.",
+          "configureCta": "Configure",
+          "title": "Set fallback approver",
+          "description": "When the primary approver is unavailable, requests route to this person.",
+          "approverLabel": "Approver",
+          "save": "Save",
+          "saving": "Saving…",
+          "clear": "Clear",
+          "toast": {
+            "saved": "Fallback approver updated"
+          }
+        }
       },
       "syncFailedToast": "Sync failed. Please try again.",
       "syncNow": "Sync now",
@@ -6022,6 +6068,7 @@
         "body": "Audit events will appear here as actions are performed in the system."
       },
       "clearDates": "Clear dates",
+      "clearAll": "Clear all",
       "dateFromPrefix": "From {date}",
       "dateToPrefix": "To {date}"
     },

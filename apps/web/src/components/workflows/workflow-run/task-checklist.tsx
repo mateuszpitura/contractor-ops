@@ -2,7 +2,9 @@
 
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
+import { LinearLinkedIssuesPanel } from '@/components/contracts/contract-detail/linear-linked-issues-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TaskCardRun } from './task-card-run';
 
@@ -34,7 +36,7 @@ interface TaskChecklistProps {
   runId: string;
   currentUserId: string | null;
   isLoading?: boolean;
-  /** Map of taskRunId -> task title for dependency tooltip display */
+  /** Map of taskRunId to task title for dependency tooltip display */
   taskTitleMap?: Map<string, string>;
 }
 
@@ -76,6 +78,11 @@ export function TaskChecklist({
   // Build task title map for dependency tooltips if not provided
   const titleMap = taskTitleMap ?? new Map(tasks.map(task => [task.id, task.title]));
 
+  // Batch-fetch Linear linked issues for every task in this checklist via
+  // `linear.getLinkedIssues`. The panel is self-hiding when no issues exist
+  // or Linear is not connected.
+  const taskRunIds = useMemo(() => tasks.map(task => task.id), [tasks]);
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -88,6 +95,7 @@ export function TaskChecklist({
   return (
     <div className="space-y-4">
       <h2 className="text-[20px] font-semibold leading-[1.2]">{t('tasksHeading')}</h2>
+      <LinearLinkedIssuesPanel taskRunIds={taskRunIds} />
       <div className="space-y-3">
         {tasks.map(task => {
           const isConditionSkipped =

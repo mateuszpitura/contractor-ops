@@ -3119,6 +3119,10 @@
           "skipped": "تم التخطي",
           "cancelled": "ملغى"
         }
+      },
+      "linkedIssuesPanel": {
+        "title": "مهام Linear المرتبطة",
+        "count": "{count, plural, zero {لا توجد مهام} one {مهمة واحدة} two {مهمتان} few {# مهام} many {# مهمة} other {# مهمة}}"
       }
     },
     "docs": {
@@ -3142,7 +3146,9 @@
         "untitled": "بلا عنوان",
         "toast": {
           "removed": "تم إزالة رابط المستند",
-          "removeFailed": "فشل إزالة رابط المستند"
+          "removeFailed": "فشل إزالة رابط المستند",
+          "refreshed": "تم تحديث البيانات الوصفية للمستند",
+          "refreshFailed": "فشل تحديث البيانات الوصفية للمستند"
         }
       },
       "chip": {
@@ -3156,7 +3162,8 @@
           "description": "سيؤدي هذا إلى إزالة الرابط إلى \"{title}\" من هذه الخطوة. لن تتأثر الصفحة الأصلية.",
           "keepLink": "الاحتفاظ بالرابط",
           "removeLink": "إزالة الرابط"
-        }
+        },
+        "refreshAriaLabel": "تحديث البيانات الوصفية لـ {title}"
       }
     },
     "jiraProvider": {
@@ -4921,6 +4928,19 @@
     "qrDisplay": {
       "altText": "رمز QR هيئة الضرائب الإماراتية للفاتورة {invoiceNumber}",
       "caption": "رمز QR هيئة الضرائب — امسح للتحقق"
+    },
+    "statusBadge": {
+      "label": "Peppol",
+      "ariaLabel": "حالة إرسال Peppol: {status}",
+      "receiver": "المستلم",
+      "aspRef": "مرجع ASP"
+    },
+    "capabilities": {
+      "recheckCapabilities": "إعادة فحص القدرات",
+      "rechecking": "جارٍ الفحص…",
+      "xrechnungCiiSupported": "مشارك Peppol يدعم XRechnung (CII)",
+      "xrechnungCiiUnsupported": "مشارك Peppol لا يُعلن عن دعم XRechnung (CII)",
+      "recheckFailed": "تعذّر إعادة فحص القدرات"
     }
   },
   "Portal": {
@@ -5693,7 +5713,19 @@
         "linkUser": "ربط مستخدم",
         "unlinkUser": "إلغاء ربط مستخدم",
         "searchPlaceholder": "البحث عن Slack users...",
-        "mappingStats": "{matched} من {total} مستخدمين متطابقون"
+        "mappingStats": "{matched} من {total} مستخدمين متطابقون",
+        "unlinkConfirm": "هل تريد إلغاء ربط مستخدم Slack هذا بهذا الحساب؟",
+        "syncUsers": {
+          "cta": "مزامنة المستخدمين",
+          "syncing": "جارٍ المزامنة…",
+          "confirmTitle": "هل تريد مزامنة المستخدمين من Slack؟",
+          "confirmDescription": "سيؤدي ذلك إلى جلب جميع أعضاء مساحة عمل Slack وقد يستبدل عمليات الربط اليدوية التي أُجريت منذ آخر مزامنة.",
+          "confirm": "مزامنة الآن",
+          "cancel": "إلغاء",
+          "toast": {
+            "success": "بدأت مزامنة المستخدمين"
+          }
+        }
       },
       "disconnectConfirm": {
         "title": "فصل Slack?",
@@ -5836,7 +5868,21 @@
         "categoryInvoices": "الفواتير",
         "categoryContracts": "العقود",
         "categoryTasks": "المهام",
-        "categoryEquipment": "المعدات"
+        "categoryEquipment": "المعدات",
+        "fallbackApprover": {
+          "cardTitle": "المعتمِد البديل",
+          "cardBody": "اختر من يعتمد الطلبات عندما يكون المعتمِد الأساسي خارج المكتب.",
+          "configureCta": "تكوين",
+          "title": "تعيين معتمِد بديل",
+          "description": "عندما يكون المعتمِد الأساسي غير متاح، تُوجَّه الطلبات إلى هذا الشخص.",
+          "approverLabel": "المعتمِد",
+          "save": "حفظ",
+          "saving": "جارٍ الحفظ…",
+          "clear": "مسح",
+          "toast": {
+            "saved": "تم تحديث المعتمِد البديل"
+          }
+        }
       },
       "syncFailedToast": "فشلت المزامنة. يرجى المحاولة مرة أخرى.",
       "syncNow": "المزامنة الآن",
@@ -6017,6 +6063,7 @@
         "body": "ستظهر أحداث التدقيق هنا عند تنفيذ الإجراءات في النظام."
       },
       "clearDates": "مسح التواريخ",
+      "clearAll": "مسح الكل",
       "dateFromPrefix": "من {date}",
       "dateToPrefix": "حتى {date}"
     },

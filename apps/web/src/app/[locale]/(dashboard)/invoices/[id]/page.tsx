@@ -15,6 +15,7 @@ import { DuplicateWarning } from '@/components/invoices/invoice-detail/duplicate
 import { InvoiceDetailLayout } from '@/components/invoices/invoice-detail/invoice-detail-layout';
 import { InvoiceMetadataForm } from '@/components/invoices/invoice-detail/invoice-metadata-form';
 import { MatchCard } from '@/components/invoices/invoice-detail/match-card';
+import { PeppolStatusBadge } from '@/components/invoices/invoice-detail/peppol-status-badge';
 import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
 import { KsefDuplicateBanner } from '@/components/invoices/ksef-duplicate-banner';
 import { KsefMetadataSection } from '@/components/invoices/ksef-metadata-section';
@@ -361,6 +362,8 @@ export default function InvoiceDetailPage() {
         {!!zatcaSubmission && (
           <ZatcaStatusBadge status={zatcaSubmission.zatcaStatus as ZatcaBadgeStatus} />
         )}
+        {/* Peppol transmission badge — polls latest transmission status */}
+        <PeppolStatusBadge invoiceId={params.id} />
       </div>
 
       {/*
