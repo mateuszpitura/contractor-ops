@@ -5395,6 +5395,25 @@
       "privacy": "Datenschutz",
       "workflowRoles": "Workflow-Rollen"
     },
+    "pin": {
+      "pin": "{tab} an Seitenleiste anheften",
+      "unpin": "{tab} aus Seitenleiste lösen",
+      "error": "Angeheftete Tabs konnten nicht aktualisiert werden. Bitte erneut versuchen."
+    },
+    "outOfOffice": {
+      "title": "Abwesenheit",
+      "description": "Markieren Sie sich als abwesend. Freigaben werden in diesem Zeitraum an Ihren Vertreter weitergeleitet.",
+      "from": "Von",
+      "until": "Bis",
+      "reason": "Grund (optional)",
+      "reasonPlaceholder": "Urlaub, Reise usw.",
+      "saveCta": "Speichern",
+      "clearCta": "Zurücksetzen",
+      "toast": {
+        "saved": "Abwesenheit gespeichert",
+        "cleared": "Abwesenheit zurückgesetzt"
+      }
+    },
     "saveCta": "Änderungen speichern",
     "saving": "Wird gespeichert…",
     "savedToast": "Einstellungen gespeichert",

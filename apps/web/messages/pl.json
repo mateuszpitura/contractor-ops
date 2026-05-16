@@ -5395,6 +5395,25 @@
       "privacy": "Prywatność",
       "workflowRoles": "Role workflow"
     },
+    "pin": {
+      "pin": "Przypnij {tab} do paska bocznego",
+      "unpin": "Odepnij {tab} z paska bocznego",
+      "error": "Nie udało się zaktualizować przypiętych zakładek. Spróbuj ponownie."
+    },
+    "outOfOffice": {
+      "title": "Nieobecność",
+      "description": "Oznacz się jako nieobecny. W tym okresie zadania zatwierdzania będą przekazywane Twojemu zastępcy.",
+      "from": "Od",
+      "until": "Do",
+      "reason": "Powód (opcjonalnie)",
+      "reasonPlaceholder": "Urlop, podróż itp.",
+      "saveCta": "Zapisz",
+      "clearCta": "Wyczyść",
+      "toast": {
+        "saved": "Nieobecność zapisana",
+        "cleared": "Nieobecność wyczyszczona"
+      }
+    },
     "saveCta": "Zapisz zmiany",
     "saving": "Zapisywanie...",
     "savedToast": "Ustawienia zapisane",

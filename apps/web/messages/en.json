@@ -5388,6 +5388,20 @@
       "description": "Re-import contractors, contracts, and invoices from external tools like CSV files, spreadsheets, or third-party platforms.",
       "cta": "Re-import from tools"
     },
+    "outOfOffice": {
+      "title": "Out of office",
+      "description": "Mark yourself as out of office. Approval requests routed to you will fall back to your delegate during this window.",
+      "from": "From",
+      "until": "Until",
+      "reason": "Reason (optional)",
+      "reasonPlaceholder": "Annual leave, travel, etc.",
+      "saveCta": "Save",
+      "clearCta": "Clear",
+      "toast": {
+        "saved": "Out-of-office set",
+        "cleared": "Out-of-office cleared"
+      }
+    },
     "tabs": {
       "general": "General",
       "members": "Members",
@@ -5399,6 +5413,11 @@
       "apiKeys": "API keys",
       "privacy": "Privacy",
       "workflowRoles": "Workflow roles"
+    },
+    "pin": {
+      "pin": "Pin {tab} to sidebar",
+      "unpin": "Unpin {tab} from sidebar",
+      "error": "Couldn't update your pinned tabs. Please retry."
     },
     "saveCta": "Save changes",
     "saving": "Saving...",
