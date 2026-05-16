@@ -430,6 +430,28 @@ function useFileUploadWithOcr(t: (key: string) => string) {
     },
   });
 
+  // Recovery path: if the upload completed but we lost the extraction id
+  // (e.g. the `portalTrigger` call failed transiently after the file
+  // landed, or the component remounted), look up the latest extraction
+  // for the uploaded document so the user is never stranded re-uploading
+  // a file the server already accepted.
+  const uploadedDocumentId = upload.status === 'uploaded' ? upload.documentId : null;
+  // `portalGetByDocument` is a portal-scoped procedure exposed by the main
+  // `ocrRouter` (mounted on the standard `trpc` proxy, not `portalTrpc`)
+  // — matches how `portalGetResult` is called above.
+  const recoveryQuery = useQuery({
+    ...trpc.ocr.portalGetByDocument.queryOptions({ documentId: uploadedDocumentId ?? '' }),
+    enabled: !!uploadedDocumentId && !extractionId,
+  });
+
+  useEffect(() => {
+    if (extractionId) return;
+    const recovered = recoveryQuery.data;
+    if (recovered?.id) {
+      setExtractionId(recovered.id);
+    }
+  }, [extractionId, recoveryQuery.data]);
+
   const extraction = ocrQuery.data;
   const extractionStatus = extraction?.status ?? (extractionId ? 'PENDING' : null);
   const resultJson = extraction?.resultJson as OcrExtractionResult | null | undefined;
