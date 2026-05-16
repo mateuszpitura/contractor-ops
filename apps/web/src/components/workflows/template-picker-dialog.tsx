@@ -1,9 +1,9 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LayoutTemplate, Search } from 'lucide-react';
+import { LayoutTemplate, Search, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,54 @@ type TemplateOption = {
     tasks: number;
   };
 };
+
+// ---------------------------------------------------------------------------
+// Suggested-template hook
+//
+// Phase 74 Plan 05 — Auto-select KT template for offboarding workflows.
+// When the user picks a contractor and the picker is filtered to
+// OFFBOARDING, ask the BE which WorkflowRoleTemplate maps to the
+// contractor's role and surface it as a "Suggested template" hint.
+// ---------------------------------------------------------------------------
+
+function useSuggestedTemplate({
+  open,
+  preFilterType,
+  contractorId,
+  isBulk,
+  templates,
+  selectedId,
+  setSelectedId,
+}: {
+  open: boolean;
+  preFilterType: string | undefined;
+  contractorId: string | undefined;
+  isBulk: boolean;
+  templates: TemplateOption[];
+  selectedId: string | null;
+  setSelectedId: (v: string) => void;
+}) {
+  const enabled = open && preFilterType === 'OFFBOARDING' && !!contractorId && !isBulk;
+  const suggestionQuery = useQuery({
+    ...trpc.workflowRoles.selectForContractor.queryOptions({ contractorId: contractorId ?? '' }),
+    enabled,
+  });
+  const suggestedTemplateId = suggestionQuery.data?.templateId ?? null;
+  const suggestedTemplate = useMemo(() => {
+    if (!suggestedTemplateId) return null;
+    return templates.find(tmpl => tmpl.id === suggestedTemplateId) ?? null;
+  }, [suggestedTemplateId, templates]);
+
+  // Pre-select the suggestion once on open if the user hasn't picked one yet.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately omits selectedId so we don't re-apply after the user deselects
+  useEffect(() => {
+    if (suggestedTemplateId && !selectedId) {
+      setSelectedId(suggestedTemplateId);
+    }
+  }, [suggestedTemplateId]);
+
+  return { enabled, suggestedTemplate };
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -117,8 +165,18 @@ export function TemplatePicker({
     }),
   );
 
-  const isBulk = contractorIds && contractorIds.length > 0;
+  const isBulk = Boolean(contractorIds && contractorIds.length > 0);
   const effectiveContractorId = contractorId ?? contractorIds?.[0];
+
+  const { enabled: suggestionEnabled, suggestedTemplate } = useSuggestedTemplate({
+    open,
+    preFilterType,
+    contractorId,
+    isBulk,
+    templates,
+    selectedId,
+    setSelectedId,
+  });
 
   const executeRuns = useCallback(
     async (templateId: string): Promise<number> => {
@@ -221,6 +279,21 @@ export function TemplatePicker({
               onClick={() => setTypeFilter(null)}>
               {t('clearAll')}
             </button>
+          </div>
+        )}
+
+        {/* Suggested template hint for offboarding workflows. The suggestion
+            is derived server-side from Contractor.workflowRoleId via
+            workflowRoles.selectForContractor — see Phase 74 Plan 05. */}
+        {suggestionEnabled && !!suggestedTemplate && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-2.5 flex items-start gap-2">
+            <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" aria-hidden="true" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-medium text-foreground">{tp('suggestedHeading')}</p>
+              <p className="text-[12px] text-muted-foreground truncate">
+                {tp('suggestedBody', { name: suggestedTemplate.name })}
+              </p>
+            </div>
           </div>
         )}
 
