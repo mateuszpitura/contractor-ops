@@ -118,30 +118,12 @@
   },
   {
     "surface": "appRouter",
-    "path": "organization.create",
-    "type": "mutation",
-    "middleware": "authedProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/core/organization.ts",
-    "line": 35
-  },
-  {
-    "surface": "appRouter",
     "path": "organization.getCurrent",
     "type": "query",
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/organization.ts",
-    "line": 85
-  },
-  {
-    "surface": "appRouter",
-    "path": "organization.update",
-    "type": "mutation",
-    "middleware": "adminProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/core/organization.ts",
-    "line": 98
+    "line": 20
   },
   {
     "surface": "appRouter",
@@ -150,7 +132,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/organization.ts",
-    "line": 154
+    "line": 41
   },
   {
     "surface": "appRouter",
@@ -357,7 +339,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 387
+    "line": 386
   },
   {
     "surface": "appRouter",
@@ -366,7 +348,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 527
+    "line": 526
   },
   {
     "surface": "appRouter",
@@ -375,7 +357,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 629
+    "line": 628
   },
   {
     "surface": "appRouter",
@@ -384,7 +366,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 728
+    "line": 727
   },
   {
     "surface": "appRouter",
@@ -393,7 +375,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 818
+    "line": 817
   },
   {
     "surface": "appRouter",
@@ -402,7 +384,7 @@
     "middleware": "tenantProcedure",
     "destructive": true,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 892
+    "line": 891
   },
   {
     "surface": "appRouter",
@@ -411,7 +393,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1010
+    "line": 1009
   },
   {
     "surface": "appRouter",
@@ -420,7 +402,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1080
+    "line": 1079
   },
   {
     "surface": "appRouter",
@@ -429,7 +411,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1104
+    "line": 1103
   },
   {
     "surface": "appRouter",
@@ -438,7 +420,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1201
+    "line": 1200
   },
   {
     "surface": "appRouter",
@@ -447,7 +429,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1229
+    "line": 1228
   },
   {
     "surface": "appRouter",
@@ -456,7 +438,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1257
+    "line": 1256
   },
   {
     "surface": "appRouter",
@@ -465,7 +447,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1273
+    "line": 1272
   },
   {
     "surface": "appRouter",
@@ -474,25 +456,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1285
-  },
-  {
-    "surface": "appRouter",
-    "path": "contractor.validateTin",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1323
-  },
-  {
-    "surface": "appRouter",
-    "path": "contractor.validateVat",
-    "type": "mutation",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1348
+    "line": 1284
   },
   {
     "surface": "appRouter",
@@ -501,7 +465,7 @@
     "middleware": "tenantProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/core/contractor.ts",
-    "line": 1354
+    "line": 1337
   },
   {
     "surface": "appRouter",
@@ -3034,39 +2998,12 @@
   },
   {
     "surface": "appRouter",
-    "path": "exchangeRate.query",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/exchange-rate.ts",
-    "line": 16
-  },
-  {
-    "surface": "appRouter",
-    "path": "exchangeRate.latest",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/exchange-rate.ts",
-    "line": 40
-  },
-  {
-    "surface": "appRouter",
-    "path": "exchangeRate.convert",
-    "type": "query",
-    "middleware": "tenantProcedure",
-    "destructive": false,
-    "file": "packages/api/src/routers/finance/exchange-rate.ts",
-    "line": 55
-  },
-  {
-    "surface": "appRouter",
     "path": "exchangeRate.fetchDaily",
     "type": "mutation",
     "middleware": "cronProcedure",
     "destructive": false,
     "file": "packages/api/src/routers/finance/exchange-rate.ts",
-    "line": 67
+    "line": 16
   },
   {
     "surface": "appRouter",

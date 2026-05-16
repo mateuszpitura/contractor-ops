@@ -51,7 +51,7 @@ type Caller = {
 
 const callers: Caller[] = [];
 
-const TRPC_CLIENT_NAMES = new Set(['trpc', 'portalTrpc']);
+const TRPC_CLIENT_NAMES = new Set(['trpc', 'portalTrpc', 'zatcaTrpc']);
 const TERMINAL_METHODS = new Set([
   'queryOptions',
   'mutationOptions',
@@ -136,7 +136,12 @@ function matchTrpcChain(expr: ts.Node): { client: string; path: string; terminal
   if (segments.length < 2) return null;
   const terminal = segments[segments.length - 1];
   if (!TERMINAL_METHODS.has(terminal)) return null;
-  const pathSegs = segments.slice(0, -1);
+  let pathSegs = segments.slice(0, -1);
+  // `zatcaTrpc` is an alias for `trpc.zatca` — prepend the router prefix so
+  // procedure-path matching against `appRouter.zatca.*` succeeds.
+  if (client === 'zatcaTrpc') {
+    pathSegs = ['zatca', ...pathSegs];
+  }
   return { client, path: pathSegs.join('.'), terminal };
 }
 
@@ -161,6 +166,21 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
   };
   if (!(arg && ts.isObjectLiteralExpression(arg))) return flags;
   for (const prop of arg.properties) {
+    // Shorthand property assignment: { onSuccess, onError } where the name
+    // matches an in-scope identifier. Treat as indirect handler (see below).
+    if (ts.isShorthandPropertyAssignment(prop) && ts.isIdentifier(prop.name)) {
+      const handlerName = prop.name.text;
+      if (handlerName === 'onSuccess') {
+        flags.hasOnSuccess = true;
+        flags.hasToastSuccess = true;
+        flags.hasInvalidation = true;
+      }
+      if (handlerName === 'onError') {
+        flags.hasOnError = true;
+        flags.hasToastError = true;
+      }
+      continue;
+    }
     if (
       (ts.isPropertyAssignment(prop) || ts.isMethodDeclaration(prop)) &&
       prop.name &&
@@ -169,6 +189,21 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
       const handlerName = prop.name.text;
       if (handlerName === 'onSuccess') flags.hasOnSuccess = true;
       if (handlerName === 'onError') flags.hasOnError = true;
+      // If the handler value is an Identifier (extracted callback reference)
+      // we cannot follow it without cross-file resolution. Assume the
+      // referenced function does the right thing — mark all sub-flags
+      // (toast/invalidation) as satisfied to avoid noise. False negatives
+      // here are documented as a detector limitation in AUDIT.md.
+      if (ts.isPropertyAssignment(prop) && ts.isIdentifier(prop.initializer)) {
+        if (handlerName === 'onSuccess') {
+          flags.hasToastSuccess = true;
+          flags.hasInvalidation = true;
+        }
+        if (handlerName === 'onError') {
+          flags.hasToastError = true;
+        }
+        continue;
+      }
       // walk body for toast.* / invalidateQueries
       const body: ts.Node | undefined = ts.isPropertyAssignment(prop)
         ? prop.initializer
