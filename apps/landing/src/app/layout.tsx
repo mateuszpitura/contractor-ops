@@ -31,40 +31,29 @@ export const metadata: Metadata = {
     'Contracts, onboarding, invoices, approvals, payments and offboarding — all in one place.',
 };
 
+/**
+ * Root layout for the landing app.
+ *
+ * Phase C.1.a (production-hardening): the previous inline
+ * `<script dangerouslySetInnerHTML>` bootstrap (lang/dir detection + dark-mode
+ * preference) has been removed to unblock a nonce-based CSP roll-out. Replacements:
+ *
+ * - Dark mode: handled purely by CSS `@media (prefers-color-scheme: dark)`.
+ *   The landing app has no per-user theme toggle, so there is no persisted
+ *   preference to honour at first paint.
+ * - Locale `lang`/`dir`/font: applied by the client-only
+ *   `<LocaleHtmlAttributes>` effect mounted from `[locale]/layout.tsx`.
+ *   Pre-hydration HTML uses the defaults set here (`lang="en"`, default
+ *   font stack); crawlers still receive per-locale `<link rel="alternate" hreflang>`
+ *   and `og:locale` metadata for SEO.
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
+      dir="ltr"
       className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} ${notoSansArabic.variable} font-sans`}
       suppressHydrationWarning>
-      <head>
-        <script
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered theme script with no user input
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                let theme = localStorage.getItem('theme');
-                if (theme === '"dark"' || theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                }
-                // Set lang and dir from URL locale segment
-                const seg = location.pathname.split('/')[1];
-                if (seg === 'ar') {
-                  document.documentElement.lang = 'ar';
-                  document.documentElement.dir = 'rtl';
-                  document.documentElement.classList.add('font-arabic');
-                  document.documentElement.classList.remove('font-sans');
-                } else if (seg === 'pl') {
-                  document.documentElement.lang = 'pl';
-                } else if (seg === 'de') {
-                  document.documentElement.lang = 'de';
-                }
-              // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-              } catch(e) {}
-            `,
-          }}
-        />
-      </head>
       <body data-intensity="exhibition">
         <PostHogProvider>{children}</PostHogProvider>
       </body>

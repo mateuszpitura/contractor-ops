@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 // Phase 64 D-10 — register classification disclaimer gate at app boot
 import '@/lib/feature-flags-init';
+import { getThemeAttributes } from '@/lib/get-theme-attributes';
 
 const outfit = Outfit({
   subsets: ['latin', 'latin-ext'],
@@ -28,32 +29,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Resolve theme/density server-side from cookies. Removes the inline
+  // <script dangerouslySetInnerHTML> block that previously read localStorage
+  // pre-hydration — see `lib/get-theme-attributes.ts` for the FOUC trade-off
+  // and Phase C.1.a in `goals/production-hardening/plan.md`.
+  const { themeClass, densityClass } = await getThemeAttributes();
+
+  const classes = [
+    outfit.variable,
+    bricolageGrotesque.variable,
+    jetbrainsMono.variable,
+    'font-sans',
+    themeClass,
+    densityClass,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <html
-      lang="en"
-      className={`${outfit.variable} ${bricolageGrotesque.variable} ${jetbrainsMono.variable} font-sans`}
-      suppressHydrationWarning>
-      <head>
-        <script
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered theme script with no user input
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                let theme = localStorage.getItem('theme');
-                if (theme === '"dark"' || theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                }
-                let density = localStorage.getItem('density');
-                if (density === '"compact"' || density === 'compact') {
-                  document.documentElement.classList.add('density-compact');
-                }
-              // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-              } catch(e) {}
-            `,
-          }}
-        />
-      </head>
+    <html lang="en" className={classes} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

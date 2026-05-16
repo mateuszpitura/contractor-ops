@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { LocaleHtmlAttributes } from '@/components/locale-html-attributes';
 import { defaultLocale, getTranslations, isValidLocale, localeConfigs, locales } from '@/i18n';
 
 export function generateStaticParams() {
@@ -67,7 +68,17 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Layout just passes children through — root layout handles html/body.
-  // Locale-specific lang/dir is set via client script in root layout.
-  return <>{children}</>;
+  const config = localeConfigs[localeParam];
+
+  // Phase C.1.a (production-hardening): lang/dir/font for the locale are
+  // applied via a client-only effect (no inline <script>). The root layout
+  // renders `<html lang="en" dir="ltr">` by default; this component swaps
+  // those attributes once React hydrates. SEO crawlers still receive correct
+  // per-locale metadata via `generateMetadata` above (hreflang, og:locale).
+  return (
+    <>
+      <LocaleHtmlAttributes lang={localeParam} dir={config.dir} isArabic={localeParam === 'ar'} />
+      {children}
+    </>
+  );
 }
