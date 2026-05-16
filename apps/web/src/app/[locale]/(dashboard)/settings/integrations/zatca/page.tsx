@@ -4,6 +4,7 @@ import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types'
 import { AtelierPageHeader, IntegrationsIllustration } from '@contractor-ops/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
@@ -11,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { EnvironmentToggle } from '@/components/zatca/environment-toggle';
 import { OnboardingWizard } from '@/components/zatca/onboarding-wizard';
 import { ZatcaComplianceWidget } from '@/components/zatca/zatca-compliance-widget';
+import { ZatcaConnectionPill } from '@/components/zatca/zatca-connection-pill';
+import { ZatcaInvoiceChainTable } from '@/components/zatca/zatca-invoice-chain-table';
+import { ZatcaStatsCards } from '@/components/zatca/zatca-stats-cards';
 import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
 import { Link } from '@/i18n/navigation';
 
@@ -25,6 +29,7 @@ import { Link } from '@/i18n/navigation';
  * Connected: compliance widget + environment toggle + manage actions.
  */
 export default function ZatcaSettingsPage() {
+  const t = useTranslations('Zatca.page');
   const queryClient = useQueryClient();
   const [wizardOpen, setWizardOpen] = useState(false);
   const openWizard = useCallback(() => setWizardOpen(true), []);
@@ -48,7 +53,7 @@ export default function ZatcaSettingsPage() {
     queryClient.invalidateQueries({
       queryKey: zatcaTrpc.getComplianceStats.queryKey(),
     });
-    toast.success('ZATCA onboarding complete!');
+    toast.success(t('toast.onboardingComplete'));
   }
 
   return (
@@ -56,14 +61,14 @@ export default function ZatcaSettingsPage() {
       {/* Header */}
       <AnimateIn delay={0}>
         <AtelierPageHeader
-          title="ZATCA Integration"
-          description="Saudi Arabia e-invoicing compliance"
+          title={t('title')}
+          description={t('description')}
           actions={
             <Button
               variant="ghost"
               size="icon"
               render={<Link href="/settings?tab=integrations" />}
-              aria-label="Back to integrations">
+              aria-label={t('backAriaLabel')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           }
@@ -77,13 +82,10 @@ export default function ZatcaSettingsPage() {
             <div className="text-primary/70">
               <IntegrationsIllustration className="h-24 w-24" />
             </div>
-            <h2 className="mt-5 text-lg font-semibold">Connect to ZATCA</h2>
-            <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Submit e-invoices to ZATCA for clearance and reporting. Set up your
-              organization&apos;s certificate to get started.
-            </p>
+            <h2 className="mt-5 text-lg font-semibold">{t('connectTitle')}</h2>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('connectDescription')}</p>
             <Button className="mt-6" onClick={openWizard}>
-              Connect to ZATCA
+              {t('connectButton')}
             </Button>
           </div>
         </AnimateIn>
@@ -99,26 +101,46 @@ export default function ZatcaSettingsPage() {
       {/* Connected State */}
       {isConnected && (
         <>
+          {/* Status header — connection pill */}
+          <AnimateIn delay={1}>
+            <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">{t('dashboard.statusLabel')}</p>
+                <p className="text-xs text-muted-foreground">{t('dashboard.statusHint')}</p>
+              </div>
+              <ZatcaConnectionPill />
+            </div>
+          </AnimateIn>
+
           {/* Sandbox Banner */}
           {environment === 'sandbox' && (
             <AnimateIn delay={1}>
               <div className="rounded-lg border border-blue-500/30 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:bg-blue-950/20 dark:text-blue-400">
-                Sandbox mode — Test invoices are not submitted to ZATCA. Switch to production when
-                ready.
+                {t('sandboxBanner')}
               </div>
             </AnimateIn>
           )}
 
-          {/* Compliance Widget */}
+          {/* Stats summary cards */}
           <AnimateIn delay={1}>
+            <ZatcaStatsCards />
+          </AnimateIn>
+
+          {/* Compliance Widget */}
+          <AnimateIn delay={2}>
             <ZatcaComplianceWidget
               connectionStatus={environment}
               environment={environment === 'production' ? 'Production' : 'Sandbox'}
             />
           </AnimateIn>
 
-          {/* Environment Toggle */}
+          {/* Invoice chain table with per-row resubmit */}
           <AnimateIn delay={2}>
+            <ZatcaInvoiceChainTable />
+          </AnimateIn>
+
+          {/* Environment Toggle */}
+          <AnimateIn delay={3}>
             <EnvironmentToggle
               value={environment}
               onChange={setEnvironment}

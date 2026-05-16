@@ -6929,6 +6929,10 @@
       "sandboxBanner": "Sandbox-Modus — Testrechnungen werden nicht an ZATCA übermittelt. Wechseln Sie in den Produktionsmodus, wenn Sie bereit sind.",
       "toast": {
         "onboardingComplete": "ZATCA-Einrichtung abgeschlossen!"
+      },
+      "dashboard": {
+        "statusLabel": "Verbindung",
+        "statusHint": "Aktueller ZATCA-Verbindungsstatus, alle 30 Sekunden aktualisiert."
       }
     },
     "statusCard": {
@@ -7080,6 +7084,47 @@
     "stepper": {
       "onboardingProgress": "Einrichtungsfortschritt",
       "stepAriaLabel": "Schritt {number}: {label}"
+    },
+    "connectionPill": {
+      "status": {
+        "CONNECTED": "Verbunden",
+        "IN_PROGRESS": "Einrichtung läuft",
+        "DISCONNECTED": "Nicht verbunden",
+        "ERROR": "Verbindungsfehler"
+      }
+    },
+    "statsCards": {
+      "successRate": "Erfolgsquote",
+      "successRateDetail": "{successful} von {total} freigegeben oder gemeldet",
+      "pending": "Ausstehend",
+      "pendingHint": "Warten auf ZATCA-Antwort",
+      "rejected": "Abgelehnt",
+      "rejectedHint": "Einreichungen, die Aufmerksamkeit erfordern"
+    },
+    "invoiceChain": {
+      "title": "Aktuelle Einreichungen",
+      "refresh": "Aktualisieren",
+      "emptyState": "Noch keine ZATCA-Einreichungen. Neue Rechnungen an saudische Kunden erscheinen hier.",
+      "table": {
+        "icv": "ICV",
+        "invoice": "Rechnungs-UUID",
+        "submitted": "Eingereicht",
+        "status": "ZATCA-Status",
+        "actions": "Aktionen"
+      },
+      "action": {
+        "resubmit": "Erneut einreichen"
+      },
+      "toast": {
+        "resubmitSuccess": "Rechnung zur erneuten Einreichung bei ZATCA in die Warteschlange gestellt.",
+        "resubmitError": "Erneute Einreichung konnte nicht eingereiht werden."
+      },
+      "resubmitDialog": {
+        "title": "Rechnung {icv} erneut einreichen?",
+        "description": "Die Rechnung wird erneut für die ZATCA-Einreichung eingereiht. Dies ist für abgelehnte oder ausstehende Einträge unbedenklich.",
+        "cancel": "Abbrechen",
+        "confirm": "An ZATCA senden"
+      }
     }
   },
   "contractor": {

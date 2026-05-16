@@ -49,6 +49,21 @@ export interface ZatcaSubmissionResult {
   previousHash: string;
 }
 
+export interface ZatcaChainEntry {
+  id: string;
+  icv: number;
+  invoiceId: string;
+  zatcaUuid: string;
+  zatcaStatus: string;
+  submittedAt?: string | Date | null;
+  createdAt: string | Date;
+}
+
+export interface ZatcaChainPage {
+  entries: ZatcaChainEntry[];
+  nextCursor?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Typed accessor
 // ---------------------------------------------------------------------------
@@ -70,20 +85,37 @@ interface ZatcaTrpcProxy {
     mutationOptions: () => Record<string, unknown>;
   };
   getOnboardingState: {
-    queryOptions: () => { queryKey: unknown[] };
+    queryOptions: (
+      input?: undefined,
+      opts?: { refetchInterval?: number },
+    ) => { queryKey: unknown[] };
     queryKey: () => unknown[];
   };
   getComplianceStats: {
-    queryOptions: () => { queryKey: unknown[] };
+    queryOptions: (
+      input?: undefined,
+      opts?: { refetchInterval?: number },
+    ) => { queryKey: unknown[] };
     queryKey: () => unknown[];
   };
   getStatus: {
     queryOptions: (input: { invoiceId: string }) => { queryKey: unknown[] };
     queryKey: () => unknown[];
   };
-  resubmit: {
-    mutationOptions: () => Record<string, unknown>;
+  getInvoiceChain: {
+    queryOptions: (
+      input: { limit?: number; cursor?: string },
+      opts?: { refetchInterval?: number },
+    ) => { queryKey: unknown[] };
+    queryKey: (input?: { limit?: number; cursor?: string }) => unknown[];
   };
+  resubmit: {
+    mutationOptions: (opts?: {
+      onSuccess?: () => void;
+      onError?: (err: Error) => void;
+    }) => Record<string, unknown>;
+  };
+  pathFilter: () => { queryKey: unknown[] };
 }
 
 export const zatcaTrpc = (trpc as unknown as Record<string, unknown>).zatca as ZatcaTrpcProxy;

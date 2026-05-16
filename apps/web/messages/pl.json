@@ -6929,6 +6929,10 @@
       "sandboxBanner": "Tryb piaskownicy — testowe faktury nie są przesyłane do ZATCA. Przełącz się na tryb produkcyjny, gdy będziesz gotowy.",
       "toast": {
         "onboardingComplete": "Wdrożenie ZATCA zakończone!"
+      },
+      "dashboard": {
+        "statusLabel": "Połączenie",
+        "statusHint": "Bieżący status połączenia ZATCA, odświeżany co 30 sekund."
       }
     },
     "statusCard": {
@@ -7080,6 +7084,47 @@
     "stepper": {
       "onboardingProgress": "Postęp wdrożenia",
       "stepAriaLabel": "Krok {number}: {label}"
+    },
+    "connectionPill": {
+      "status": {
+        "CONNECTED": "Połączono",
+        "IN_PROGRESS": "Konfiguracja w toku",
+        "DISCONNECTED": "Nie połączono",
+        "ERROR": "Błąd połączenia"
+      }
+    },
+    "statsCards": {
+      "successRate": "Skuteczność",
+      "successRateDetail": "{successful} z {total} zaakceptowanych lub zgłoszonych",
+      "pending": "Oczekujące",
+      "pendingHint": "Oczekiwanie na odpowiedź ZATCA",
+      "rejected": "Odrzucone",
+      "rejectedHint": "Zgłoszenia wymagające uwagi"
+    },
+    "invoiceChain": {
+      "title": "Ostatnie zgłoszenia",
+      "refresh": "Odśwież",
+      "emptyState": "Brak zgłoszeń do ZATCA. Nowe faktury dla saudyjskich klientów pojawią się tutaj.",
+      "table": {
+        "icv": "ICV",
+        "invoice": "UUID faktury",
+        "submitted": "Wysłano",
+        "status": "Status ZATCA",
+        "actions": "Akcje"
+      },
+      "action": {
+        "resubmit": "Wyślij ponownie"
+      },
+      "toast": {
+        "resubmitSuccess": "Faktura dodana do kolejki ponownego wysłania do ZATCA.",
+        "resubmitError": "Nie udało się zakolejkować ponownego wysłania."
+      },
+      "resubmitDialog": {
+        "title": "Wysłać ponownie fakturę {icv}?",
+        "description": "Faktura zostanie ponownie zakolejkowana do wysłania do ZATCA. Operacja jest bezpieczna dla wpisów odrzuconych lub oczekujących.",
+        "cancel": "Anuluj",
+        "confirm": "Wyślij do ZATCA"
+      }
     }
   },
   "contractor": {

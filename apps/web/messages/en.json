@@ -6929,6 +6929,10 @@
       "sandboxBanner": "Sandbox mode — Test invoices are not submitted to ZATCA. Switch to production when ready.",
       "toast": {
         "onboardingComplete": "ZATCA onboarding complete!"
+      },
+      "dashboard": {
+        "statusLabel": "Connection",
+        "statusHint": "Live ZATCA connection status, refreshed every 30 seconds."
       }
     },
     "statusCard": {
@@ -7080,6 +7084,47 @@
     "stepper": {
       "onboardingProgress": "Onboarding progress",
       "stepAriaLabel": "Step {number}: {label}"
+    },
+    "connectionPill": {
+      "status": {
+        "CONNECTED": "Connected",
+        "IN_PROGRESS": "Setup in progress",
+        "DISCONNECTED": "Not connected",
+        "ERROR": "Connection error"
+      }
+    },
+    "statsCards": {
+      "successRate": "Success rate",
+      "successRateDetail": "{successful} of {total} cleared or reported",
+      "pending": "Pending",
+      "pendingHint": "Awaiting ZATCA response",
+      "rejected": "Rejected",
+      "rejectedHint": "Submissions that need attention"
+    },
+    "invoiceChain": {
+      "title": "Recent submissions",
+      "refresh": "Refresh",
+      "emptyState": "No ZATCA submissions yet. New invoices issued to Saudi customers will appear here.",
+      "table": {
+        "icv": "ICV",
+        "invoice": "Invoice UUID",
+        "submitted": "Submitted",
+        "status": "ZATCA status",
+        "actions": "Actions"
+      },
+      "action": {
+        "resubmit": "Resubmit"
+      },
+      "toast": {
+        "resubmitSuccess": "Invoice queued for ZATCA resubmission.",
+        "resubmitError": "Failed to queue resubmission."
+      },
+      "resubmitDialog": {
+        "title": "Resubmit invoice {icv}?",
+        "description": "The invoice will be re-queued for ZATCA submission. This is safe for rejected or pending entries.",
+        "cancel": "Cancel",
+        "confirm": "Resubmit to ZATCA"
+      }
     }
   },
   "contractor": {

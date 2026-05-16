@@ -6929,6 +6929,10 @@
       "sandboxBanner": "وضع بيئة الاختبار — لا تُرسَل فواتير الاختبار إلى هيئة الزكاة والضريبة والجمارك. انتقل إلى وضع الإنتاج عند الاستعداد.",
       "toast": {
         "onboardingComplete": "اكتمل إعداد ZATCA!"
+      },
+      "dashboard": {
+        "statusLabel": "الاتصال",
+        "statusHint": "حالة اتصال زاتكا الحالية، يتم تحديثها كل 30 ثانية."
       }
     },
     "statusCard": {
@@ -7080,6 +7084,47 @@
     "stepper": {
       "onboardingProgress": "تقدم الإعداد",
       "stepAriaLabel": "الخطوة {number}: {label}"
+    },
+    "connectionPill": {
+      "status": {
+        "CONNECTED": "متصل",
+        "IN_PROGRESS": "الإعداد قيد التنفيذ",
+        "DISCONNECTED": "غير متصل",
+        "ERROR": "خطأ في الاتصال"
+      }
+    },
+    "statsCards": {
+      "successRate": "معدل النجاح",
+      "successRateDetail": "{successful} من أصل {total} تم تخليصها أو الإبلاغ عنها",
+      "pending": "قيد الانتظار",
+      "pendingHint": "في انتظار رد زاتكا",
+      "rejected": "مرفوضة",
+      "rejectedHint": "إرساليات تحتاج إلى مراجعة"
+    },
+    "invoiceChain": {
+      "title": "أحدث الإرساليات",
+      "refresh": "تحديث",
+      "emptyState": "لا توجد إرساليات إلى زاتكا حتى الآن. ستظهر هنا الفواتير الجديدة الصادرة للعملاء السعوديين.",
+      "table": {
+        "icv": "رقم العداد ICV",
+        "invoice": "معرّف الفاتورة UUID",
+        "submitted": "وقت الإرسال",
+        "status": "حالة زاتكا",
+        "actions": "إجراءات"
+      },
+      "action": {
+        "resubmit": "إعادة الإرسال"
+      },
+      "toast": {
+        "resubmitSuccess": "تمت إضافة الفاتورة إلى قائمة إعادة الإرسال إلى زاتكا.",
+        "resubmitError": "تعذّر إضافة طلب إعادة الإرسال إلى القائمة."
+      },
+      "resubmitDialog": {
+        "title": "إعادة إرسال الفاتورة رقم {icv}؟",
+        "description": "ستتم إعادة إدراج الفاتورة في قائمة الإرسال إلى زاتكا. هذه العملية آمنة للسجلات المرفوضة أو قيد الانتظار.",
+        "cancel": "إلغاء",
+        "confirm": "إرسال إلى زاتكا"
+      }
     }
   },
   "contractor": {
