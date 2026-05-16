@@ -14,6 +14,7 @@ import { ChainTracker } from '@/components/approvals/chain-tracker';
 import { DuplicateWarning } from '@/components/invoices/invoice-detail/duplicate-warning';
 import { InvoiceDetailLayout } from '@/components/invoices/invoice-detail/invoice-detail-layout';
 import { InvoiceMetadataForm } from '@/components/invoices/invoice-detail/invoice-metadata-form';
+import { InvoiceOcrSection } from '@/components/invoices/invoice-detail/invoice-ocr-section';
 import { MatchCard } from '@/components/invoices/invoice-detail/match-card';
 import { PeppolStatusBadge } from '@/components/invoices/invoice-detail/peppol-status-badge';
 import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
@@ -271,6 +272,7 @@ function useInvoiceDetailQueries(invoiceId: string) {
   return {
     invoiceQuery,
     invoice,
+    documentId: documentId ?? null,
     pdfUrl: pdfUrlQuery.data?.url ?? null,
     reconciliation: reconciliationQuery.data,
     peppolTransmission: peppolTransmissionQuery.data as PeppolTransmissionResult | undefined,
@@ -283,8 +285,15 @@ export default function InvoiceDetailPage() {
   const t = useTranslations('Invoices');
   const queryClient = useQueryClient();
 
-  const { invoiceQuery, invoice, pdfUrl, reconciliation, peppolTransmission, zatcaSubmission } =
-    useInvoiceDetailQueries(params.id);
+  const {
+    invoiceQuery,
+    invoice,
+    documentId,
+    pdfUrl,
+    reconciliation,
+    peppolTransmission,
+    zatcaSubmission,
+  } = useInvoiceDetailQueries(params.id);
 
   useBreadcrumbOverride(params.id, invoice?.invoiceNumber);
 
@@ -428,6 +437,10 @@ export default function InvoiceDetailPage() {
 
             {/* Audit timeline (per D-11, D-12, D-13) */}
             {!!flags.hasApprovalFlow && <AuditTimeline invoiceId={invoice.id} />}
+
+            {/* OCR extraction summary (read-only). Renders nothing when
+                the source document has no extraction on file. */}
+            {!!documentId && <InvoiceOcrSection documentId={documentId} />}
 
             {/* Metadata form */}
             <InvoiceMetadataForm

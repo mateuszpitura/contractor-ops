@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { XCircle } from 'lucide-react';
+import { Download, FileText, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -66,6 +66,8 @@ export function IntakeDetailActionsBar({
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectError, setRejectError] = useState<string | null>(null);
+  const [isXmlPending, setIsXmlPending] = useState(false);
+  const [isReportPending, setIsReportPending] = useState(false);
 
   const invalidateBoth = useCallback(() => {
     void queryClient.invalidateQueries({
@@ -141,6 +143,46 @@ export function IntakeDetailActionsBar({
   const showAccept = needsValidationAck;
   const canReject = status !== 'CONVERTED' && status !== 'REJECTED';
 
+  // `downloadExtractedXml` / `downloadValidationReport` are *queries* that
+  // return a signed 300-second R2 URL. We fetch eagerly on click rather
+  // than mounting them as hooks so the click always returns a fresh URL
+  // and the queries never auto-fire on mount.
+  const handleDownloadXml = useCallback(async () => {
+    setIsXmlPending(true);
+    try {
+      const result = await queryClient.fetchQuery(
+        trpc.invoiceIntake.downloadExtractedXml.queryOptions({ intakeId }),
+      );
+      if (!result?.url) {
+        toast.error(t('downloadXmlError'));
+        return;
+      }
+      window.open(result.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('downloadXmlError'));
+    } finally {
+      setIsXmlPending(false);
+    }
+  }, [intakeId, queryClient, t]);
+
+  const handleDownloadReport = useCallback(async () => {
+    setIsReportPending(true);
+    try {
+      const result = await queryClient.fetchQuery(
+        trpc.invoiceIntake.downloadValidationReport.queryOptions({ intakeId }),
+      );
+      if (!result?.url) {
+        toast.info(t('downloadReportNotAvailable'));
+        return;
+      }
+      window.open(result.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('downloadReportError'));
+    } finally {
+      setIsReportPending(false);
+    }
+  }, [intakeId, queryClient, t]);
+
   const handleRejectConfirm = useCallback(() => {
     if (rejectReason.trim().length < 3) {
       setRejectError(t('rejectReasonTooShort'));
@@ -156,67 +198,100 @@ export function IntakeDetailActionsBar({
         role="toolbar"
         aria-label={t('pageTitle')}
         className={cn(
-          'sticky bottom-0 left-0 z-20 flex flex-wrap items-center justify-end gap-2 border-t bg-card/95 p-4 backdrop-blur supports-backdrop-filter:bg-card/75 md:static md:rounded-xl md:border md:bg-card md:p-4',
+          'sticky bottom-0 left-0 z-20 flex flex-wrap items-center justify-between gap-2 border-t bg-card/95 p-4 backdrop-blur supports-backdrop-filter:bg-card/75 md:static md:rounded-xl md:border md:bg-card md:p-4',
           className,
         )}
         data-slot="intake-detail-actions-bar">
-        {showAccept && (
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="secondary"
-            onClick={() => acknowledgeMutation.mutate({ intakeId })}
-            disabled={acknowledgeMutation.isPending}
-            data-testid="intake-accept-despite-issues">
-            {t('ctaAcceptDespiteIssues')}
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadXml}
+            disabled={isXmlPending}
+            data-testid="intake-download-xml">
+            {isXmlPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('ctaDownloadXml')}
           </Button>
-        )}
-
-        {canReject && (
           <Button
             type="button"
-            variant="ghost"
-            onClick={() => {
-              setRejectReason('');
-              setRejectError(null);
-              setRejectOpen(true);
-            }}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-            data-testid="intake-reject-trigger">
-            {t('ctaRejectImport')}
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadReport}
+            disabled={isReportPending}
+            data-testid="intake-download-report">
+            {isReportPending ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            {t('ctaDownloadValidationReport')}
           </Button>
-        )}
+        </div>
 
-        {showConfirmMatch && (
-          <Button
-            type="button"
-            onClick={() => {
-              // Confirm-match is fired by the match-pane which tracks the
-              // selected candidate. Parents may also wire this button via
-              // hasSelectedCandidate (this branch simply surfaces the CTA).
-            }}
-            disabled={confirmMatchMutation.isPending}
-            data-testid="intake-confirm-match-placeholder">
-            {t('ctaConfirmMatch')}
-          </Button>
-        )}
-
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                type="button"
-                onClick={() => convertMutation.mutate({ intakeId })}
-                disabled={!canConvert}
-                data-testid="intake-convert-cta"
-                aria-describedby={convertTooltip ? 'intake-convert-tooltip' : undefined}
-              />
-            }>
-            {t('ctaConvert')}
-          </TooltipTrigger>
-          {convertTooltip && (
-            <TooltipContent id="intake-convert-tooltip">{convertTooltip}</TooltipContent>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {showAccept && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => acknowledgeMutation.mutate({ intakeId })}
+              disabled={acknowledgeMutation.isPending}
+              data-testid="intake-accept-despite-issues">
+              {t('ctaAcceptDespiteIssues')}
+            </Button>
           )}
-        </Tooltip>
+
+          {canReject && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setRejectReason('');
+                setRejectError(null);
+                setRejectOpen(true);
+              }}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              data-testid="intake-reject-trigger">
+              {t('ctaRejectImport')}
+            </Button>
+          )}
+
+          {showConfirmMatch && (
+            <Button
+              type="button"
+              onClick={() => {
+                // Confirm-match is fired by the match-pane which tracks the
+                // selected candidate. Parents may also wire this button via
+                // hasSelectedCandidate (this branch simply surfaces the CTA).
+              }}
+              disabled={confirmMatchMutation.isPending}
+              data-testid="intake-confirm-match-placeholder">
+              {t('ctaConfirmMatch')}
+            </Button>
+          )}
+
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  onClick={() => convertMutation.mutate({ intakeId })}
+                  disabled={!canConvert}
+                  data-testid="intake-convert-cta"
+                  aria-describedby={convertTooltip ? 'intake-convert-tooltip' : undefined}
+                />
+              }>
+              {t('ctaConvert')}
+            </TooltipTrigger>
+            {convertTooltip && (
+              <TooltipContent id="intake-convert-tooltip">{convertTooltip}</TooltipContent>
+            )}
+          </Tooltip>
+        </div>
       </div>
 
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>

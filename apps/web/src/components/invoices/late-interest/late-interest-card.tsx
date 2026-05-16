@@ -1,9 +1,10 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Download, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -80,10 +81,12 @@ export function LateInterestCard({
   currency,
 }: LateInterestCardProps) {
   const t = useTranslations('Payments.lateInterest');
+  const queryClient = useQueryClient();
 
   const [claimDialogOpen, setClaimDialogOpen] = useState(false);
   const [waiveDialogOpen, setWaiveDialogOpen] = useState(false);
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
+  const [isDownloadClaimPending, setIsDownloadClaimPending] = useState(false);
 
   // Gate: only show for GB B2B GBP invoices with flag on
   const isApplicable =
@@ -96,6 +99,34 @@ export function LateInterestCard({
   const handleClaimClick = useCallback(() => setClaimDialogOpen(true), []);
   const handleWaiveClick = useCallback(() => setWaiveDialogOpen(true), []);
   const handleRevokeClick = useCallback(() => setRevokeDialogOpen(true), []);
+
+  // `latePaymentInterest.downloadClaim` is a *query* returning a signed R2
+  // URL alongside the PDF render status. We fetch it eagerly on click
+  // rather than mounting it as a hook so the click always returns the
+  // freshest URL (signed for 300s) and we avoid auto-fetching on every
+  // render of the card.
+  const handleDownloadClaim = useCallback(
+    async (claimId: string) => {
+      setIsDownloadClaimPending(true);
+      try {
+        const result = await queryClient.fetchQuery(
+          trpc.latePaymentInterest.downloadClaim.queryOptions({ claimId }),
+        );
+        if (result.pdfStatus !== 'READY' || !result.downloadUrl) {
+          toast.error(result.pdfError ?? t('downloadClaimNotReady'));
+          return;
+        }
+        // `noopener,noreferrer` mitigates reverse-tabnabbing on the
+        // signed-URL navigation.
+        window.open(result.downloadUrl, '_blank', 'noopener,noreferrer');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t('downloadClaimError'));
+      } finally {
+        setIsDownloadClaimPending(false);
+      }
+    },
+    [queryClient, t],
+  );
 
   // Not applicable — no render
   if (!isApplicable) return null;
@@ -256,12 +287,17 @@ export function LateInterestCard({
           <div className="flex items-center gap-2 pt-2">
             {latestClaim?.pdfStatus === 'READY' && (
               <Button
+                type="button"
                 variant="outline"
                 size="sm"
-                render={
-                  <a href={`/api/late-interest/download?claimId=${latestClaim.id}`} download />
-                }>
-                <Download className="mr-1.5 h-3.5 w-3.5" />
+                disabled={isDownloadClaimPending}
+                onClick={() => handleDownloadClaim(latestClaim.id)}
+                data-testid="late-interest-download-claim">
+                {isDownloadClaimPending ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="mr-1.5 h-3.5 w-3.5" />
+                )}
                 {t('downloadClaimLetter')}
               </Button>
             )}

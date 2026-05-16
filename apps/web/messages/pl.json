@@ -2369,6 +2369,11 @@
       "ctaCreateContractor": "Utwórz nowego kontrahenta z tych danych",
       "ctaUseThisContractor": "Użyj tego kontrahenta",
       "ctaDownloadZugferd": "Pobierz PDF ZUGFeRD",
+      "ctaDownloadXml": "Pobierz XML",
+      "ctaDownloadValidationReport": "Pobierz raport walidacji",
+      "downloadXmlError": "Nie udało się przygotować pliku XML do pobrania. Spróbuj ponownie.",
+      "downloadReportNotAvailable": "Dla tego importu nie jest dostępny raport walidacji.",
+      "downloadReportError": "Nie udało się przygotować raportu walidacji. Spróbuj ponownie.",
       "ctaRejectImport": "Odrzuć import",
       "emptyStateHeading": "Brak importów",
       "emptyStateBody": "Przychodzące pliki XML XRechnung oraz PDF ZUGFeRD pojawiają się tutaj. Aby przesłać plik, użyj opcji „Importuj e-fakturę” ze strony Faktury.",
@@ -3411,7 +3416,8 @@
       "submitForApprovalError": "Nie udało się wysłać faktury do akceptacji. Spróbuj ponownie.",
       "pdfNotAvailable": "Podgląd PDF nie jest dostępny w Twojej przeglądarce.",
       "noPdf": "Brak dostępnego PDF",
-      "moreActions": "Więcej akcji"
+      "moreActions": "Więcej akcji",
+      "ocrSectionHeading": "Ekstrakcja OCR"
     },
     "match": {
       "heading": "Dopasowanie",
@@ -4774,6 +4780,8 @@
       "revokeReasonPlaceholder": "Powód cofnięcia (wymagany) — np. klient odmówił ugody",
       "b2cNotApplicable": "Odsetki ustawowe nie mają zastosowania do transakcji B2C.",
       "downloadClaimLetter": "Pobierz pismo roszczenia",
+      "downloadClaimNotReady": "PDF roszczenia jest jeszcze generowany. Spróbuj ponownie za chwilę.",
+      "downloadClaimError": "Nie udało się przygotować pliku roszczenia do pobrania. Spróbuj ponownie.",
       "heading": "Ustawowe odsetki za opóźnienie w płatności",
       "notYetOverdue": "Faktura nie jest jeszcze przeterminowana. Odsetki zaczną być naliczane po upływie terminu płatności.",
       "rateTooltipAriaLabel": "Pokaż szczegóły obliczania stopy",

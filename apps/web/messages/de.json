@@ -2369,6 +2369,11 @@
       "ctaCreateContractor": "Neuen Auftragnehmer aus diesen Daten anlegen",
       "ctaUseThisContractor": "Diesen Auftragnehmer verwenden",
       "ctaDownloadZugferd": "ZUGFeRD-PDF herunterladen",
+      "ctaDownloadXml": "XML herunterladen",
+      "ctaDownloadValidationReport": "Prüfbericht herunterladen",
+      "downloadXmlError": "Der XML-Download konnte nicht vorbereitet werden. Bitte erneut versuchen.",
+      "downloadReportNotAvailable": "Für diesen Import liegt kein Prüfbericht vor.",
+      "downloadReportError": "Der Prüfbericht konnte nicht vorbereitet werden. Bitte erneut versuchen.",
       "ctaRejectImport": "Import ablehnen",
       "emptyStateHeading": "Noch keine Importe",
       "emptyStateBody": "Eingehende XRechnung-XML- und ZUGFeRD-PDF-Dateien erscheinen hier. Verwenden Sie 'E-Rechnung importieren' auf der Rechnungsseite, um eine hochzuladen.",
@@ -3411,7 +3416,8 @@
       "submitForApprovalError": "Aktion fehlgeschlagen: submit invoice for approval. Versuchen Sie es erneut.",
       "pdfNotAvailable": "PDF-Vorschau ist in Ihrem Browser nicht verfügbar.",
       "noPdf": "Kein PDF verfügbar",
-      "moreActions": "Weitere Aktionen"
+      "moreActions": "Weitere Aktionen",
+      "ocrSectionHeading": "OCR-Extraktion"
     },
     "match": {
       "heading": "Matching",
@@ -4774,6 +4780,8 @@
       "revokeReasonPlaceholder": "Begründung für den Widerruf (erforderlich) — z. B. Kunde hat Vergleich abgelehnt",
       "b2cNotApplicable": "Gesetzliche Verzugszinsen gelten nicht für B2C-Transaktionen.",
       "downloadClaimLetter": "Forderungsschreiben herunterladen",
+      "downloadClaimNotReady": "Die Forderungs-PDF wird noch erstellt. Bitte versuchen Sie es in einem Moment erneut.",
+      "downloadClaimError": "Der Download des Forderungsschreibens konnte nicht vorbereitet werden. Bitte erneut versuchen.",
       "heading": "Gesetzliche Verzugszinsen",
       "notYetOverdue": "Die Rechnung ist noch nicht überfällig. Zinsen werden ab Ablauf der Zahlungsfrist berechnet.",
       "rateTooltipAriaLabel": "Berechnung des Zinssatzes anzeigen",

@@ -2369,6 +2369,11 @@
       "ctaCreateContractor": "إنشاء مقاول جديد من هذه البيانات",
       "ctaUseThisContractor": "استخدام هذا المقاول",
       "ctaDownloadZugferd": "تنزيل ZUGFeRD PDF",
+      "ctaDownloadXml": "تنزيل XML",
+      "ctaDownloadValidationReport": "تنزيل تقرير التحقق",
+      "downloadXmlError": "تعذّر تجهيز ملف XML للتنزيل. يرجى المحاولة مرة أخرى.",
+      "downloadReportNotAvailable": "لا يوجد تقرير تحقق متاح لهذا الاستيراد.",
+      "downloadReportError": "تعذّر تجهيز تقرير التحقق. يرجى المحاولة مرة أخرى.",
       "ctaRejectImport": "رفض الاستيراد",
       "emptyStateHeading": "لا توجد استيرادات بعد",
       "emptyStateBody": "تظهر هنا ملفات XRechnung XML و ZUGFeRD PDF الواردة. استخدم 'استيراد فاتورة إلكترونية' من صفحة الفواتير لرفع ملف.",
@@ -3411,7 +3416,8 @@
       "submitForApprovalError": "تعذر submit invoice for approval. حاول مجددًا.",
       "pdfNotAvailable": "معاينة PDF غير متاحة في متصفحك.",
       "noPdf": "لا يوجد ملف PDF",
-      "moreActions": "مزيد من الإجراءات"
+      "moreActions": "مزيد من الإجراءات",
+      "ocrSectionHeading": "استخراج OCR"
     },
     "match": {
       "heading": "Matching",
@@ -4774,6 +4780,8 @@
       "revokeReasonPlaceholder": "سبب الإلغاء (مطلوب) — مثلاً: رفض العميل التسوية",
       "b2cNotApplicable": "لا تنطبق الفوائد القانونية على معاملات الأفراد (B2C).",
       "downloadClaimLetter": "تنزيل خطاب المطالبة",
+      "downloadClaimNotReady": "لا يزال ملف PDF للمطالبة قيد الإنشاء. يرجى المحاولة بعد لحظات.",
+      "downloadClaimError": "تعذّر تجهيز خطاب المطالبة للتنزيل. يرجى المحاولة مرة أخرى.",
       "heading": "الفوائد القانونية على التأخر في السداد",
       "notYetOverdue": "الفاتورة ليست متأخرة بعد. ستبدأ الفوائد بالتراكم بعد انتهاء شروط السداد.",
       "rateTooltipAriaLabel": "إظهار تفاصيل احتساب الفائدة",
