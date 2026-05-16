@@ -1,12 +1,12 @@
 import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import { lookupCompanyByNip } from '@contractor-ops/integrations/services/company-registry-service';
 import {
+  companyLookupSchema,
   contractorCreateSchema,
   contractorLifecycleTransitionSchema,
   contractorListSchema,
   contractorUpdateSchema,
   countryFieldsSchemaMap,
-  gusLookupSchema,
-  validateTin,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -1192,80 +1192,27 @@ export const contractorRouter = router({
     }),
 
   /**
-   * Look up company data from GUS BIR1 API by NIP.
+   * Look up Polish company data by NIP from the configured registry adapter
+   * (Dataport in dev, GUS BIR1 in prod). Provider is selected via the
+   * `COMPANY_REGISTRY_PROVIDER` env var; the underlying retry / error
+   * normalisation lives in the company-registry service.
    */
-  gusLookup: tenantProcedure
+  companyLookup: tenantProcedure
     .use(requirePermission({ contractor: ['create'] }))
-    .input(gusLookupSchema)
+    .input(companyLookupSchema)
     .query(async ({ input }) => {
-      const NETWORK_ERROR_CODES = new Set([
-        'ECONNREFUSED',
-        'ECONNRESET',
-        'ETIMEDOUT',
-        'ENOTFOUND',
-        'EAI_AGAIN',
-      ]);
-
-      const isNetworkError = (err: unknown): boolean => {
-        if (err instanceof Error) {
-          const code = (err as NodeJS.ErrnoException).code;
-          if (code && NETWORK_ERROR_CODES.has(code)) return true;
-          if (err.name === 'FetchError' || err.name === 'AbortError') return true;
-          if (err.message.includes('fetch failed') || err.message.includes('network')) return true;
-        }
-        return false;
-      };
-
-      const attempt = async () => {
-        const birModule = await import('bir1');
-        const Bir = birModule.default;
-        const bir = new Bir();
-
-        try {
-          await bir.login();
-          const result = await bir.search({ nip: input.nip });
-
-          if (!result) {
-            return { found: false as const };
-          }
-
-          // BIR1 returns an object (or array) with company details
-          const entity = Array.isArray(result) ? result[0] : result;
-
-          if (!entity) {
-            return { found: false as const };
-          }
-
-          return {
-            found: true as const,
-            legalName: (entity as Record<string, string>).Nazwa ?? '',
-            regon: (entity as Record<string, string>).Regon ?? '',
-            addressLine1:
-              `${(entity as Record<string, string>).Ulica ?? ''} ${(entity as Record<string, string>).NrNieruchomosci ?? ''}`.trim(),
-            city: (entity as Record<string, string>).Miejscowosc ?? '',
-            postalCode: (entity as Record<string, string>).KodPocztowy ?? '',
-          };
-        } finally {
-          await bir.logout().catch(() => {
-            // Ignore logout errors
-          });
-        }
-      };
-
-      try {
-        return await attempt();
-      } catch (err) {
-        // Retry once after 2s for network errors
-        if (isNetworkError(err)) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          try {
-            return await attempt();
-          } catch {
-            return { found: false as const, error: E.GUS_LOOKUP_FAILED };
-          }
-        }
-        return { found: false as const, error: E.GUS_LOOKUP_FAILED };
+      const result = await lookupCompanyByNip(input.nip);
+      if (!result.found) {
+        return { found: false as const, error: E.COMPANY_LOOKUP_FAILED };
       }
+      return {
+        found: true as const,
+        legalName: result.legalName ?? '',
+        regon: result.regon ?? '',
+        addressLine1: result.addressLine1 ?? '',
+        city: result.city ?? '',
+        postalCode: result.postalCode ?? '',
+      };
     }),
 
   // ---------------------------------------------------------------------------
@@ -1371,38 +1318,22 @@ export const contractorRouter = router({
       });
     }),
 
-  /** Validate a TIN for a given country */
-  validateTin: tenantProcedure
-    .input(
-      z.object({
-        countryCode: z.string().length(2),
-        tin: z.string().min(1),
-      }),
-    )
-    .query(({ input }) => {
-      const valid = validateTin(input.countryCode, input.tin);
-      return { valid };
-    }),
-
   // ---------------------------------------------------------------------------
   // Phase 57 · Plan 04 — HMRC / VIES VAT-ID validation
   // ---------------------------------------------------------------------------
   //
-  // D-07 trigger 3 (`validateVat`) and explicit-revalidate (`revalidateVat`).
-  // Both mutations route through the Plan 57-03 orchestrator which handles
-  // pre-flight checksum, gov-api dispatch, atomic dual-write, and soft-fail.
+  // Explicit-revalidate (`revalidateVat`) routes through the Plan 57-03
+  // orchestrator which handles pre-flight checksum, gov-api dispatch, atomic
+  // dual-write, and soft-fail. Tenant isolation: the contractor is loaded
+  // with `organizationId: ctx.organizationId` — cross-tenant calls surface
+  // as NOT_FOUND.
   //
-  // Tenant isolation: the contractor is loaded with `organizationId:
-  // ctx.organizationId` — cross-tenant calls surface as NOT_FOUND.
+  // D-07 trigger 3 calls `validateContractorVatId` directly from the
+  // contractor.update path; there is no separate `validateVat` tRPC
+  // procedure (it was a duplicate alias, removed during the FE↔BE audit).
   // ---------------------------------------------------------------------------
 
-  /** Validate a contractor's VAT / USt-IdNr against HMRC / VIES (D-07 trigger 3). */
-  validateVat: tenantProcedure
-    .use(requirePermission({ contractor: ['update'] }))
-    .input(z.object({ contractorId: z.string().min(1) }))
-    .mutation(({ ctx, input }) => validateContractorVatId(ctx, input.contractorId)),
-
-  /** Re-validate on demand (same pipeline; distinguished only by procedure name in tRPC logs). */
+  /** Re-validate VAT/USt-IdNr on demand against HMRC / VIES. */
   revalidateVat: tenantProcedure
     .use(requirePermission({ contractor: ['update'] }))
     .input(z.object({ contractorId: z.string().min(1) }))

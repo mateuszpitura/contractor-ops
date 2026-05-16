@@ -792,11 +792,12 @@ describe('contractor router', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 57 — RED scaffolds: contractor.validateVat / revalidateVat (PAY-03, PAY-05)
-// Implemented in Plan 57-03.
+// Phase 57 — contractor.revalidateVat (PAY-03, PAY-05). Implemented Plan 57-03.
+// Originally also had a `validateVat` alias which has been removed; the
+// orchestrator's D-07 trigger 3 calls `validateContractorVatId` directly.
 // ---------------------------------------------------------------------------
 
-describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
+describe('contractor.revalidateVat (Phase 57 · Plan 04)', () => {
   beforeEach(() => {
     validateTaxIdMock.mockClear();
     validateTaxIdMock.mockResolvedValue({
@@ -808,14 +809,14 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     });
   });
 
-  it('validateVat dispatches GB_VAT for a UK contractor and returns the orchestrator result', async () => {
+  it('revalidateVat dispatches GB_VAT for a UK contractor and returns the orchestrator result', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValueOnce({
       id: CONTRACTOR_ID,
       countryCode: 'GB',
       vatId: 'GB193054661',
     });
 
-    const result = await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+    const result = await caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID });
 
     expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
     expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
@@ -831,21 +832,21 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     });
   });
 
-  it('validateVat dispatches DE_USTIDNR for a DE contractor', async () => {
+  it('revalidateVat dispatches DE_USTIDNR for a DE contractor', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValueOnce({
       id: CONTRACTOR_ID,
       countryCode: 'DE',
       vatId: 'DE123456789',
     });
 
-    await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+    await caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID });
 
     expect(validateTaxIdMock.mock.calls[0]?.[0]).toMatchObject({
       taxIdType: 'DE_USTIDNR',
     });
   });
 
-  it('validateVat throws BAD_REQUEST for a non-GB/DE contractor', async () => {
+  it('revalidateVat throws BAD_REQUEST for a non-GB/DE contractor', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValueOnce({
       id: CONTRACTOR_ID,
       countryCode: 'PL',
@@ -853,21 +854,21 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     });
 
     await expect(
-      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+      caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID }),
     ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
     expect(validateTaxIdMock).not.toHaveBeenCalled();
   });
 
-  it('validateVat throws NOT_FOUND for a contractor in another organization', async () => {
+  it('revalidateVat throws NOT_FOUND for a contractor in another organization', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValueOnce(null);
 
     await expect(
-      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+      caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID }),
     ).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect(validateTaxIdMock).not.toHaveBeenCalled();
   });
 
-  it('validateVat throws BAD_REQUEST when contractor has no VAT ID', async () => {
+  it('revalidateVat throws BAD_REQUEST when contractor has no VAT ID', async () => {
     mockPrisma.contractor.findFirst.mockResolvedValueOnce({
       id: CONTRACTOR_ID,
       countryCode: 'GB',
@@ -875,7 +876,7 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     });
 
     await expect(
-      caller.contractor.validateVat({ contractorId: CONTRACTOR_ID }),
+      caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID }),
     ).rejects.toMatchObject({ code: 'BAD_REQUEST' });
   });
 
@@ -916,7 +917,7 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
     expect(result.source).toBe('stale-cache');
   });
 
-  it('validateVat surfaces responseStatus=invalid to the caller (HMRC 404 sad path) — §2', async () => {
+  it('revalidateVat surfaces responseStatus=invalid to the caller (HMRC 404 sad path) — §2', async () => {
     // Plan 57-04 Task 3 §2 manual scenario:
     // "Change the same contractor's VAT ID to GB555555555 (HMRC sandbox 404
     // fixture). Click Revalidate VAT. Expected: pill flips to red Invalid;
@@ -946,7 +947,7 @@ describe('contractor.validateVat / revalidateVat (Phase 57 · Plan 04)', () => {
       vatId: 'GB555555555',
     });
 
-    const result = await caller.contractor.validateVat({ contractorId: CONTRACTOR_ID });
+    const result = await caller.contractor.revalidateVat({ contractorId: CONTRACTOR_ID });
 
     expect(validateTaxIdMock).toHaveBeenCalledTimes(1);
     expect(result.responseStatus).toBe('invalid');

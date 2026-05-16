@@ -4,9 +4,9 @@
 //
 // Reads HMRC/VIES environment configuration once at first call and caches the
 // `HmrcVatClient` + `ViesClient` instances for the process lifetime. The
-// orchestrator (Plan 57-03 `validateTaxId`) and tRPC routers (Plan 57-04
-// `contractor.validateVat` / `revalidateVat`) consume these through the
-// exported `getHmrcVatClient()` / `getViesClient()` getters.
+// orchestrator (Plan 57-03 `validateTaxId`) and the `contractor.revalidateVat`
+// tRPC mutation consume these through the exported `getHmrcVatClient()` /
+// `getViesClient()` getters.
 //
 // Security / correctness invariants:
 //   - `HMRC_PLATFORM_VRN` MUST be non-empty when `HMRC_ENV === 'production'`.
