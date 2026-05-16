@@ -9,6 +9,7 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
+import { ScrollText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
 import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
@@ -20,6 +21,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
 // Page
@@ -28,6 +31,7 @@ import {
 export default function EInvoicingSettingsPage() {
   const t = useTranslations('EInvoice.Settings');
   const tSettings = useTranslations('Settings');
+  const tLog = useTranslations('EInvoice.TransmissionsLog');
 
   return (
     <div className="space-y-6">
@@ -43,7 +47,13 @@ export default function EInvoicingSettingsPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <AtelierPageHeader title={t('h1')} description={t('subline')} />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <AtelierPageHeader title={t('h1')} description={t('subline')} />
+        <Button variant="outline" size="sm" render={<Link href="/settings/e-invoicing/log" />}>
+          <ScrollText className="me-1.5 h-4 w-4" />
+          {tLog('viewLog')}
+        </Button>
+      </div>
 
       <div className="space-y-6">
         <PeppolParticipantCard />
