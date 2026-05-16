@@ -51,7 +51,22 @@ type Caller = {
 
 const callers: Caller[] = [];
 
-const TRPC_CLIENT_NAMES = new Set(['trpc', 'portalTrpc', 'zatcaTrpc']);
+const TRPC_CLIENT_NAMES = new Set(['trpc', 'portalTrpc']);
+
+type AliasTarget = { client: string; prefix: string[] };
+
+/**
+ * Module-level identifiers that re-export a slice of a tRPC client. Used by
+ * typed-accessor files that work around TypeScript depth limits (e.g.
+ * apps/web/src/lib/peppol-trpc.ts) or expose a sub-router shortcut (e.g.
+ * zatcaTrpc → trpc.zatca). The detector treats calls rooted at these names
+ * as if they were rooted at `<client>.<prefix>.*`.
+ */
+const MODULE_ALIASES: Record<string, AliasTarget> = {
+  zatcaTrpc: { client: 'trpc', prefix: ['zatca'] },
+  peppolTrpc: { client: 'trpc', prefix: ['peppol'] },
+};
+
 const TERMINAL_METHODS = new Set([
   'queryOptions',
   'mutationOptions',
@@ -111,16 +126,56 @@ function collectFiles(dir: string): string[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Match a PropertyAccessExpression chain rooted at `trpc.` or `portalTrpc.`.
- * Returns { client, pathSegments, terminal } where terminal is the last method (queryOptions, etc.)
- * if it is a TERMINAL_METHOD. The pathSegments are everything between the client and the terminal.
+ * Build a file-local alias map by scanning top-level `const X = Y;` declarations
+ * where Y is either a known tRPC client, a module-level accessor, or another
+ * local alias. Resolves `const utils = trpc;` and chains like
+ * `const a = utils; const b = a;`.
+ */
+function collectLocalAliases(sf: ts.SourceFile): Map<string, AliasTarget> {
+  const map = new Map<string, AliasTarget>();
+  const visit = (n: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(n) &&
+      ts.isIdentifier(n.name) &&
+      n.initializer &&
+      ts.isIdentifier(n.initializer)
+    ) {
+      const aliasName = n.name.text;
+      const target = n.initializer.text;
+      if (TRPC_CLIENT_NAMES.has(target)) {
+        map.set(aliasName, { client: target, prefix: [] });
+      } else if (MODULE_ALIASES[target]) {
+        map.set(aliasName, MODULE_ALIASES[target]);
+      } else if (map.has(target)) {
+        const existing = map.get(target);
+        if (existing) map.set(aliasName, existing);
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return map;
+}
+
+function resolveRoot(id: string, localAliases: Map<string, AliasTarget>): AliasTarget | null {
+  if (TRPC_CLIENT_NAMES.has(id)) return { client: id, prefix: [] };
+  if (MODULE_ALIASES[id]) return MODULE_ALIASES[id];
+  return localAliases.get(id) ?? null;
+}
+
+/**
+ * Match a PropertyAccessExpression chain rooted at a tRPC client, a module
+ * alias (zatcaTrpc, peppolTrpc), or a file-local alias (const utils = trpc).
  *
  * Example AST: `trpc.equipment.equipment.assign.mutationOptions`
  *   client = 'trpc'
  *   pathSegments = ['equipment','equipment','assign']
  *   terminal = 'mutationOptions'
  */
-function matchTrpcChain(expr: ts.Node): { client: string; path: string; terminal: string } | null {
+function matchTrpcChain(
+  expr: ts.Node,
+  localAliases: Map<string, AliasTarget>,
+): { client: string; path: string; terminal: string } | null {
   if (!ts.isPropertyAccessExpression(expr)) return null;
   const segments: string[] = [];
   let node: ts.Expression = expr;
@@ -130,19 +185,16 @@ function matchTrpcChain(expr: ts.Node): { client: string; path: string; terminal
     node = node.expression;
   }
   if (!ts.isIdentifier(node)) return null;
-  if (!TRPC_CLIENT_NAMES.has(node.text)) return null;
-  const client = node.text;
-  // segments is e.g. ['equipment','equipment','assign','mutationOptions']
+  const resolved = resolveRoot(node.text, localAliases);
+  if (!resolved) return null;
+  // Need at least a procedure name + terminal (when prefix is empty); when an
+  // alias already provides a prefix, a 2-segment chain still has 1 segment
+  // before the terminal which is enough.
   if (segments.length < 2) return null;
   const terminal = segments[segments.length - 1];
   if (!TERMINAL_METHODS.has(terminal)) return null;
-  let pathSegs = segments.slice(0, -1);
-  // `zatcaTrpc` is an alias for `trpc.zatca` — prepend the router prefix so
-  // procedure-path matching against `appRouter.zatca.*` succeeds.
-  if (client === 'zatcaTrpc') {
-    pathSegs = ['zatca', ...pathSegs];
-  }
-  return { client, path: pathSegs.join('.'), terminal };
+  const pathSegs = [...resolved.prefix, ...segments.slice(0, -1)];
+  return { client: resolved.client, path: pathSegs.join('.'), terminal };
 }
 
 function lineOf(node: ts.Node, sf: ts.SourceFile): number {
@@ -287,6 +339,7 @@ for (const file of files) {
   const text = readFileSync(file, 'utf8');
   if (!(text.includes('trpc') || text.includes('portalTrpc'))) continue;
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
+  const localAliases = collectLocalAliases(sf);
   const fileHasAlertDialog =
     text.includes('AlertDialog') ||
     text.includes("from '@/components/ui/alert-dialog'") ||
@@ -295,7 +348,7 @@ for (const file of files) {
 
   const visit = (node: ts.Node) => {
     if (ts.isCallExpression(node)) {
-      const match = matchTrpcChain(node.expression);
+      const match = matchTrpcChain(node.expression, localAliases);
       if (match) {
         const enclosingVar = findEnclosingVarName(node);
         let handlers =

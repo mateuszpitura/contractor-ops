@@ -1,10 +1,10 @@
 # FE↔BE Integration Audit Report
 
-Generated: 2026-05-16T10:39:16.999Z
+Generated: 2026-05-16T10:56:11.918Z
 
 ## Summary
 
-- Total findings: **55** (HIGH 5 / MED 13 / LOW 37)
+- Total findings: **53** (HIGH 5 / MED 11 / LOW 37)
 - Procedures audited: **416** (appRouter + portalAppRouter + publicApiRouter)
 - FE mutation call sites audited: **251**
 
@@ -13,10 +13,10 @@ Generated: 2026-05-16T10:39:16.999Z
 | Domain | HIGH | MED | LOW | Total |
 |--------|------|-----|-----|-------|
 | core | 4 | 3 | 17 | 24 |
-| compliance | 0 | 7 | 5 | 12 |
+| compliance | 0 | 6 | 5 | 11 |
 | equipment | 0 | 0 | 0 | 0 |
 | finance | 0 | 0 | 7 | 7 |
-| integrations | 0 | 1 | 4 | 5 |
+| integrations | 0 | 0 | 4 | 4 |
 | portal | 0 | 2 | 2 | 4 |
 | workflow | 1 | 0 | 2 | 3 |
 
@@ -30,32 +30,27 @@ Generated: 2026-05-16T10:39:16.999Z
 - **F-HIGH-004** `apps/web/src/hooks/use-approval-actions.ts:43` — Destructive mutation approval.reject fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
 - **F-HIGH-005** `apps/web/src/hooks/use-template-mutations.ts:36` — Destructive mutation workflow.deleteTemplate fires without a confirmation dialog in this file. _Fix:_ Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick.
 
-## MED (13)
+## MED (11)
 
 ### missing-error-toast (1)
 
-- **F-MED-007** `apps/web/src/components/portal/portal-top-bar.tsx:120` — Mutation portal.logout has onError but does not call toast.error — user sees no error feedback. _Fix:_ Inside the existing onError handler, call toast.error(err.message) (or a translated message).
+- **F-MED-005** `apps/web/src/components/portal/portal-top-bar.tsx:120` — Mutation portal.logout has onError but does not call toast.error — user sees no error feedback. _Fix:_ Inside the existing onError handler, call toast.error(err.message) (or a translated message).
 
 ### missing-invalidation (6)
 
-- **F-MED-009** `apps/web/src/components/settings/gdpr-data-rights-section.tsx:63` — Mutation gdpr.requestErasure succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
-- **F-MED-010** `apps/web/src/components/zatca/compliance-checks.tsx:54` — Mutation zatca.runComplianceChecks succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
-- **F-MED-011** `apps/web/src/components/zatca/compliance-csid.tsx:70` — Mutation zatca.requestComplianceCsid succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
-- **F-MED-012** `apps/web/src/components/zatca/csr-generation.tsx:37` — Mutation zatca.generateCsr succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
-- **F-MED-013** `apps/web/src/components/zatca/production-certificate.tsx:38` — Mutation zatca.exchangeProductionCert succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
-- **F-MED-014** `apps/web/src/components/zatca/tax-details-form.tsx:61` — Mutation zatca.saveTaxDetails succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-007** `apps/web/src/components/settings/gdpr-data-rights-section.tsx:63` — Mutation gdpr.requestErasure succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-008** `apps/web/src/components/zatca/compliance-checks.tsx:54` — Mutation zatca.runComplianceChecks succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-009** `apps/web/src/components/zatca/compliance-csid.tsx:70` — Mutation zatca.requestComplianceCsid succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-010** `apps/web/src/components/zatca/csr-generation.tsx:37` — Mutation zatca.generateCsr succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-011** `apps/web/src/components/zatca/production-certificate.tsx:38` — Mutation zatca.exchangeProductionCert succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
+- **F-MED-012** `apps/web/src/components/zatca/tax-details-form.tsx:61` — Mutation zatca.saveTaxDetails succeeds without invalidating queries — stale UI until reload. _Fix:_ Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.
 
 ### missing-on-success (4)
 
-- **F-MED-008** `apps/web/src/components/portal/portal-top-bar.tsx:120` — Mutation portal.logout has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
-- **F-MED-015** `apps/web/src/hooks/use-settings-tab-pins.ts:40` — Mutation user.pins.toggle has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
-- **F-MED-016** `apps/web/src/hooks/use-upload-new-version.ts:52` — Mutation document.uploadNewVersion has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
-- **F-MED-017** `apps/web/src/hooks/use-upload-new-version.ts:58` — Mutation document.confirmUpload has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
-
-### orphan (2)
-
-- **F-MED-002** `packages/api/src/routers/compliance/gdpr.ts:283` — Procedure gdpr.exportData (query, surface=appRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
-- **F-MED-005** `packages/api/src/routers/integrations/peppol.ts:349` — Procedure peppol.getTransmissionByInvoiceId (query, surface=appRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
+- **F-MED-006** `apps/web/src/components/portal/portal-top-bar.tsx:120` — Mutation portal.logout has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
+- **F-MED-013** `apps/web/src/hooks/use-settings-tab-pins.ts:40` — Mutation user.pins.toggle has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
+- **F-MED-014** `apps/web/src/hooks/use-upload-new-version.ts:52` — Mutation document.uploadNewVersion has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
+- **F-MED-015** `apps/web/src/hooks/use-upload-new-version.ts:58` — Mutation document.confirmUpload has no onSuccess handler — UI never updates or confirms. _Fix:_ Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }
 
 ## LOW (33)
 
@@ -101,9 +96,9 @@ These procedures have no FE caller because they are invoked from non-UI consumer
 
 - **F-MED-001** `apiKey.update` — caller(s):
   - `(middleware=apiKeyAdminProcedure on packages/api/src/routers/core/api-key.ts:133)`
-- **F-MED-003** `exchangeRate.fetchDaily` — caller(s):
+- **F-MED-002** `exchangeRate.fetchDaily` — caller(s):
   - `(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:16)`
-- **F-MED-004** `featureFlags.list` — caller(s):
+- **F-MED-003** `featureFlags.list` — caller(s):
   - `(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)`
-- **F-MED-006** `featureFlags.list` — caller(s):
+- **F-MED-004** `featureFlags.list` — caller(s):
   - `(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)`
