@@ -2,7 +2,19 @@
 
 **Last reviewed:** 2026-05-16
 **Reconciled-against:** `.audit-2026-05-03/AUDIT-CLOSURE-2026-05-11.md` (2026-05-11 closure)
+**Production-Hardening-completed:** 2026-05-16 (commits ceeffcdb..c2d441a7 on `feat/production-hardening`)
 **Stack:** pnpm + Turborepo · Next.js 15 (SSR) · tRPC v11 · Prisma 7 + Neon (EU + ME) · Better Auth · Render · Pino · Sentry · Upstash Redis · Unleash OSS
+
+> **Production-Hardening Goal status (2026-05-16):** Phases A, B, C, D shipped on
+> branch `feat/production-hardening` across 31 atomic commits. Two steps deferred:
+>
+> - **B.5 — advisory-lock dual-hold shim cleanup.** Gated on maintainer confirming
+>   `ADVISORY_LOCK_TRANSITION_DUAL_HOLD` is unset in every Render service for
+>   ≥1 deploy cycle. Deferred to follow-up PR `feat/production-hardening-b5`.
+> - **C.1.c — flip CSP to enforce (drop unsafe-inline).** Gated on 48h of
+>   `Content-Security-Policy-Report-Only` observation with zero unexpected
+>   reports. Report-only header lives now (`apps/web/next.config.ts`); enforce
+>   flip deferred to follow-up PR `feat/production-hardening-c1c`.
 
 This checklist is the operational counterpart to [`/contractor-ops-launch-checklist.md`](../contractor-ops-launch-checklist.md). The launch checklist is authoritative on multi-tenancy, auth, GDPR, and payments. **This file** owns infrastructure, observability, security headers, CI/CD gates, DR, and documentation. Both must pass before paid launch.
 
@@ -32,20 +44,20 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 | Area | Done | Pending | Blockers |
 |---|---:|---:|---:|
 | 1. CI/CD & Deployment | 5 | 3 | 0 |
-| 2. Testing | 5 | 5 | 1 |
+| 2. Testing | 7 | 4 | 1 |
 | 3. Environment & Secrets | 5 | 3 | 0 |
-| 4. Observability | 6 | 6 | 1 |
-| 5. Security | 15 | 5 | 1 |
+| 4. Observability | 8 | 6 | 1 |
+| 5. Security | 26 | 3 | 1 |
 | 6. Database & Migrations | 5 | 6 | 2 |
-| 7. Performance | 5 | 6 | 0 |
-| 8. Accessibility & UX | 4 | 6 | 0 |
+| 7. Performance | 11 | 1 | 0 |
+| 8. Accessibility & UX | 7 | 3 | 0 |
 | 9. Documentation | 6 | 4 | 1 |
 | 10. Feature Flags | 4 | 3 | 0 |
 | 11. i18n | 4 | 3 | 0 |
 | 12. Compliance & Legal | 9 | 4 | 1 |
 | 13. Backup & Disaster Recovery | 2 | 5 | 2 |
-| 14. Code Quality Gates | 7 | 4 | 0 |
-| **Total** | **82** | **63** | **9** |
+| 14. Code Quality Gates | 11 | 4 | 0 |
+| **Total** | **110** | **52** | **9** |
 
 **Realistic effort to clear all blockers + criticals:** 3–4 weeks of focused work alongside the items still open in the launch checklist.
 
@@ -60,7 +72,7 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Post-deploy health verification (curl `/api/health`, fail the deploy on non-200) — `apps/web/src/app/api/health/route.ts:48` ships `ProbeResult[]` over five probes (db/redis/qstash/r2/backpressure); per closure §5 step 4 — 🟠 CRITICAL  → evidence: `apps/web/src/app/api/health/route.ts:48` — closure-confirmed `ProbeResult[]` shape with 5 probes
 - [ ] Documented rollback procedure (Render redeploy from previous commit + DB rollback decision tree) — 🟠 CRITICAL  → evidence: `docs/RUNBOOK-PHASE-2-3-DEPLOY.md:219` documents schema rollback only; no consolidated decision tree for Render redeploy + DB rollback exists
 - [ ] Branch protection rules captured in repo (`docs/BRANCH-PROTECTION.md` mirroring GitHub settings) — 🟢 IMPORTANT  → evidence: `docs/BRANCH-PROTECTION.md` does not exist
-- [ ] Canary / blue-green strategy doc (or explicit decision: full-cut deploys are fine) — ⚪ NICE-TO-HAVE  → evidence: no doc; deferred to Phase D infra recommendations (`docs/INFRA-RECOMMENDATIONS.md` not yet written)
+- [ ] Canary / blue-green strategy doc (or explicit decision: full-cut deploys are fine) — ⚪ NICE-TO-HAVE  → evidence: covered as recommendation in `docs/INFRA-RECOMMENDATIONS.md` (Phase D, commit c2d441a7); per-strategy adoption deferred to follow-up
 
 ## 2. Testing
 
@@ -69,9 +81,10 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] 57 multi-tenancy + security automated tests — `e2e/tenant-isolation.test.ts`, `background-job-isolation.test.ts`, `session-security.test.ts`
 - [x] k6 load profiles (smoke, API read/write, stress) — `package.json` `load:*` scripts
 - [x] Manual k6 stress runbook documented — verified pre-launch in launch checklist
-- [ ] Playwright e2e gated in CI (currently only unit tests gate) — 🔴 BLOCKER  → evidence: `.github/workflows/ci.yml` runs unit + lint + gitleaks; no `playwright` job
+- [x] axe-core / `@axe-core/playwright` CI gate on top-10 dashboard routes — 🟢 IMPORTANT  → evidence: commit f7165fee + `apps/web/e2e/a11y/dashboard-routes.spec.ts` + `.axe-allowlist.json`; CI job wired in commit 669233d0 (`.github/workflows/ci.yml` `e2e-a11y` job)
+- [x] axe-core a11y violations gate PR merges (WCAG 2.2 AA target) — 🟢 IMPORTANT  → evidence: commit 669233d0 — `.github/workflows/ci.yml` `e2e-a11y` job + `docs/ACCESSIBILITY.md` attestation
+- [ ] Playwright e2e gated in CI (currently only unit tests gate) — 🔴 BLOCKER  → evidence: `.github/workflows/ci.yml` runs unit + lint + gitleaks + the new `e2e-a11y` slice; full e2e suite still not gated
 - [ ] Coverage % thresholds enforced in CI (e.g., 70% statements on `packages/api`, `packages/auth`) — 🟠 CRITICAL  → evidence: `vitest.config.ts` enables coverage but no CI threshold gate enforced in `.github/workflows/ci.yml`
-- [ ] Lighthouse / Core Web Vitals CI gate — 🟢 IMPORTANT  → evidence: no `lighthouse` job in `.github/workflows/`; scoped to Phase C.6.b (Web Vitals reporter) + Phase C.6.a (bundle budget)
 - [ ] Scheduled k6 smoke against staging (nightly) — 🟢 IMPORTANT  → evidence: `package.json` exposes `load:*` scripts but no scheduled GitHub Action invokes them
 - [ ] 🟡 API router test coverage uneven — search and gov-api routers have gaps; per-file analysis in `.planning/handoffs/test-cleanup-2026-04-27.md` — 🟠 CRITICAL  → evidence: `.planning/handoffs/test-cleanup-2026-04-27.md` still tracks 16 files / ~51 failures; closure §2.3 marks this as pre-existing test debt
 
@@ -94,9 +107,11 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Axiom log shipping configured — `render.yaml` `AXIOM_TOKEN`, `AXIOM_DATASET`
 - [x] Cronitor uptime + cron monitoring — `render.yaml`
 - [x] Immutable audit log (actor / action / resource / before-after / IP / UA) with CSV export
+- [x] `requestId` propagated end-to-end (browser → middleware → tRPC → workers) via AsyncLocalStorage — 🟠 CRITICAL  → evidence: commit b0c1eb42 — `apps/web/src/middleware.ts` mints/propagates `x-request-id`; `apps/web/src/app/api/trpc/[trpc]/route.ts` binds it through `withRequestContext`
+- [x] Webhook handlers surface errors instead of silent catch (signed by lint guard) — 🟠 CRITICAL  → evidence: commits 7f91f1c1 + c08b2e33 — `apps/web/src/app/api/webhooks/_process/route.ts`, `apps/web/src/app/api/webhooks/[provider]/route.ts` log + propagate; `scripts/lint-silent-catch.mjs` forbids unannotated empty catches in adapter/service/route paths
 - [ ] Alerting thresholds + on-call escalation runbook (Cronitor → who pages?) — 🔴 BLOCKER  → evidence: `docs/RUNBOOK-PHASE-2-3-DEPLOY.md:4` names "Platform / on-call" as owner but no thresholds or escalation matrix; canonical `docs/RUNBOOK.md` does not exist
-- [ ] OpenTelemetry traces across web → tRPC → workers → DB — currently no distributed tracing — 🟠 CRITICAL  → evidence: `packages/logger/src/request-context.ts:13` explicitly notes "We do NOT add `@opentelemetry/sdk-node`"; scoped to Phase D infra recommendations
-- [ ] SLO / SLI document (latency targets, error budget, availability target per service) — 🟠 CRITICAL  → evidence: no `docs/SLO.md`; scoped to Phase D infra recommendations
+- [ ] OpenTelemetry traces across web → tRPC → workers → DB — currently no distributed tracing — 🟠 CRITICAL  → evidence: `packages/logger/src/request-context.ts:13` explicitly notes "We do NOT add `@opentelemetry/sdk-node`"; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7); adoption deferred
+- [ ] SLO / SLI document (latency targets, error budget, availability target per service) — 🟠 CRITICAL  → evidence: no `docs/SLO.md`; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7); adoption deferred
 - [ ] Dashboards committed as code (Axiom queries / Grafana JSON) — 🟢 IMPORTANT  → evidence: `infra/` has no `dashboards/` subtree; Axiom dashboards exist only in vendor UI
 - [ ] Audit log archival beyond the 10k-row CSV cap (cold storage in R2) — 🟢 IMPORTANT  → evidence: `packages/api/src/routers/core/audit.ts:219` exposes CSV export only; no R2 archival job
 - [ ] Synthetic checks beyond `/api/health` (login flow, tRPC ping, signed-URL fetch) — 🟢 IMPORTANT  → evidence: Cronitor pings `/api/health` only per `render.yaml`; no synthetic login / signed-URL checks defined
@@ -113,16 +128,25 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] X-Frame-Options DENY — `apps/web/next.config.ts:111-114`
 - [x] X-Content-Type-Options nosniff — `apps/web/next.config.ts:115-118`
 - [x] Referrer-Policy strict-origin-when-cross-origin — `apps/web/next.config.ts:119-122`
-- [x] Permissions-Policy (camera/mic/geo denied) — `apps/web/next.config.ts:123-126`
+- [x] Permissions-Policy (camera/mic/geo denied + extended surface) — `apps/web/next.config.ts:123-126` and commit fe2c7d49 (mirrored to `apps/landing/next.config.ts`)
 - [x] HSTS `max-age=63072000; includeSubDomains; preload` — `apps/web/next.config.ts:127-130`
 - [x] AES-256-GCM bank account encryption — `bank-account-crypto.ts`
 - [x] XSS sanitization on create/update mutations
-- [ ] CSP hardening — replace `'unsafe-inline'` in script-src/style-src with nonces — 🟠 CRITICAL  → evidence: `apps/web/next.config.ts:90-91` still ships `'unsafe-inline'` in `script-src` and `style-src`; scoped to Phase C.1
+- [x] Report-only nonce-based CSP shipped alongside enforce header (Phase C.1.a/b complete; enforce flip deferred per goal callout) — 🟠 CRITICAL  → evidence: commit 05b64cde — `apps/web/next.config.ts` + `apps/landing/next.config.ts` emit `Content-Security-Policy-Report-Only` with per-request nonce; `apps/web/src/app/api/csp-report/route.ts` ingests reports
+- [x] Inline theme bootstrap replaced by Server Component cookie read (eliminates inline `<script>` blocker for CSP enforce) — 🟠 CRITICAL  → evidence: commit b312f977 — `apps/web/src/app/layout.tsx`, `apps/landing/src/app/layout.tsx`
+- [x] COOP / COEP / CORP headers + extended Permissions-Policy — 🟠 CRITICAL  → evidence: commit fe2c7d49 — `apps/web/next.config.ts` + `apps/landing/next.config.ts`
+- [x] `/.well-known/security.txt` for vulnerability disclosure — 🟢 IMPORTANT  → evidence: commit 3078b976 — `apps/web/src/app/.well-known/security.txt/route.ts`
+- [x] Dependabot weekly + daily security channel — 🟠 CRITICAL  → evidence: commit 23551164 — `.github/dependabot.yml`
+- [x] Outbound HTTP wrapped in `withResilience` (timeout + retry + circuit-breaker) on 11 integration adapters — 🟠 CRITICAL  → evidence: commit 82939715 — `packages/integrations/src/adapters/*` (Jira, Slack, Teams, Asana, ClickUp, Linear, Notion, Trello, Zendesk, Freshdesk, Intercom)
+- [x] Courier clients use `fetchWithTimeout` (InPost / DPD / UPS) — 🟠 CRITICAL  → evidence: commit 41901f39 — `packages/api/src/services/courier/inpost-client.ts`, `dpd-client.ts`, `ups-client.ts`
+- [x] Service-layer outbound calls use `fetchWithTimeout` (13 service files) — 🟠 CRITICAL  → evidence: commit ecd8b0d4 — 13 files under `packages/api/src/services/*`
+- [x] Lint guard: raw `fetch` forbidden in adapter/service paths without annotation — 🟢 IMPORTANT  → evidence: commit 95869c80 — `scripts/lint-raw-fetch.mjs`
+- [x] Idempotency keys unified through `deriveIdempotencyKey` (Stripe / InPost / Resend) — 🟠 CRITICAL  → evidence: commit e65c2f34 — `billing-service.ts`, `inpost-client.ts`, `app-email.ts` (+ slack/teams docs)
+- [x] Lint guard: hand-rolled idempotency keys forbidden outside `deriveIdempotencyKey` — 🟢 IMPORTANT  → evidence: commit 38650af7 — `scripts/lint-idempotency.mjs`
+- [ ] Flip CSP to enforce (drop `'unsafe-inline'`) — gated on 48h report-only observation, deferred to follow-up PR `feat/production-hardening-c1c` — 🟠 CRITICAL  → evidence: report-only emitter shipped (commit 05b64cde, `apps/web/next.config.ts`); enforce flip recorded as gated deferral in top-of-file callout
 - [ ] Production `trustedOrigins` audit — confirm no `localhost` in deployed env — 🔴 BLOCKER (verify before launch; trivial)  → evidence: `packages/auth/src/config.ts:107` reads `AUTH_TRUSTED_ORIGINS` at boot but a production env attestation has not been captured in any doc; runtime verification only
-- [ ] Dependabot or Renovate config (`.github/dependabot.yml` / `renovate.json`) — 🟠 CRITICAL  → evidence: neither `.github/dependabot.yml` nor `renovate.json` exists; scoped to Phase C.3
 - [x] RLS audit on Neon (Prisma extension covers most paths; raw SQL paths in search router need explicit enumeration) — 🟠 CRITICAL  → evidence: `packages/api/src/middleware/tenant.ts` wires `withRlsSession` per closure §2.1; `scripts/check-raw-sql-tenant-scoped.ts` enumerates raw SQL exits via `pnpm run lint:raw-sql` (closure §4)
 - [ ] Public-API key revocation drill (HMAC keys via `API_KEY_HMAC_SECRET`) — 🟢 IMPORTANT  → evidence: revocation code paths exist in `packages/api/src/routers/` but no drill log captured in `docs/`
-- [ ] [`/.well-known/security.txt`](https://securitytxt.org/) for vulnerability disclosure — 🟢 IMPORTANT  → evidence: no `apps/web/public/.well-known/security.txt` or route handler; scoped to Phase C.2.b
 
 ## 6. Database & Migrations
 
@@ -131,9 +155,9 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] CI gate: committed Prisma client matches schema (`db:check-drift`) — `turbo.json`
 - [x] Tenant-scope schema lint (FOUND6-01) blocks new models without `organizationId`
 - [ ] Pooled vs direct URL split documented (`DATABASE_URL` via PgBouncer/pooler + `DIRECT_URL` for migrations) — 🔴 BLOCKER (per Neon + Prisma official guidance)  → evidence: `.env.example:14-19` ships `DATABASE_URL` + regional `DATABASE_URL_EU/ME` but no `DIRECT_URL` variant for migrations; Neon pooler URL not documented
-- [ ] `connection_limit` tuned per service (workers, web, public-api) — start with `connection_limit=1` for serverless and benchmark up — 🟠 CRITICAL  → evidence: no `connection_limit` query string in any `.env.example` URL; `render.yaml` does not pin per-service pool sizes
+- [ ] `connection_limit` tuned per service (workers, web, public-api) — start with `connection_limit=1` for serverless and benchmark up — 🟠 CRITICAL  → evidence: no `connection_limit` query string in any `.env.example` URL; `render.yaml` does not pin per-service pool sizes; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7)
 - [ ] Tested restore drill — Neon PITR works in theory; never exercised end-to-end with sign-off — 🔴 BLOCKER  → evidence: no drill record in `docs/`; Neon PITR is provider-managed but no end-to-end test captured
-- [ ] Documented backup retention + RPO / RTO targets — `docs/BACKUP-POLICY.md` — 🟠 CRITICAL  → evidence: `docs/BACKUP-POLICY.md` does not exist
+- [ ] Documented backup retention + RPO / RTO targets — `docs/BACKUP-POLICY.md` — 🟠 CRITICAL  → evidence: `docs/BACKUP-POLICY.md` does not exist; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7)
 - [ ] Migration rollback / down-migration policy (when reversible, when forward-only) — 🟠 CRITICAL  → evidence: `docs/RUNBOOK-PHASE-2-3-DEPLOY.md:219` mentions schema rollback but no project-wide policy doc
 - [ ] Seed script for ephemeral preview environments — 🟢 IMPORTANT  → evidence: existing seed scripts target dev; no preview-env-specific seed (separate `goals/comprehensive-dev-seed/` tracks the dev seed; preview tier not addressed)
 - [x] 🟡 RLS or app-level tenant scoping coverage report — Prisma extension covers ORM paths; explicit enumeration of raw SQL exits is missing — 🟠 CRITICAL  → evidence: `packages/db/src/replica.ts:95` ships the `RLS_POLICIES_ENFORCED` tripwire and `scripts/check-raw-sql-tenant-scoped.ts` enumerates raw SQL exits per closure §4 (5 legitimate cross-tenant sites annotated `// safe-raw-sql:`)
@@ -145,11 +169,12 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Turbo build cache (local + remote on CI)
 - [x] Server Components by default; explicit `'use client'` boundaries
 - [x] k6 load profiles (smoke, API read/write, stress) for capacity planning
-- [ ] `@next/bundle-analyzer` integrated, with size budget (e.g., main bundle < 250 KB gz) — 🟢 IMPORTANT  → evidence: `apps/web/next.config.ts` has no `withBundleAnalyzer` wrapper; scoped to Phase C.6.a
-- [ ] `useReportWebVitals` → analytics for LCP / INP / CLS field data — 🟢 IMPORTANT  → evidence: `apps/web/src/app/layout.tsx` does not import `useReportWebVitals`; scoped to Phase C.6.b
-- [ ] Explicit cache-control headers on routes that should be CDN-cached — 🟠 CRITICAL  → evidence: no per-route `Cache-Control` declared in `apps/web/src/app/api/**/route.ts`; scoped to Phase C.7.a
-- [ ] Image `remotePatterns` reviewed for required external hosts only — 🟢 IMPORTANT  → evidence: `apps/web/next.config.ts` has no explicit `images.remotePatterns` allowlist; scoped to Phase C.6.c
-- [ ] N+1 query review for hot paths (Prisma query logging in dev + spot-checks) — 🟠 CRITICAL  → evidence: no `docs/N+1-AUDIT.md`; scoped to Phase C.7.c
+- [x] `@next/bundle-analyzer` integrated with per-route size budget — 🟢 IMPORTANT  → evidence: commit a41423a3 — `apps/web/next.config.ts` wraps config in `withBundleAnalyzer`; `apps/web/.size-limit.json` budgets + `docs/PERF-BUDGETS.md`
+- [x] `useReportWebVitals` → analytics for LCP / INP / CLS field data — 🟢 IMPORTANT  → evidence: commit 9d4511ed — `apps/web/src/components/perf/web-vitals-reporter.tsx` + ingestion at `apps/web/src/app/api/web-vitals/route.ts`
+- [x] Explicit `Cache-Control` headers on public/CDN-cacheable GET routes — 🟠 CRITICAL  → evidence: commit 4264c4b8 — per-route `Cache-Control` declared across the relevant `apps/web/src/app/api/**/route.ts` files + `docs/CACHE-CONTROL.md` policy
+- [x] Hot-path organization lookups routed through 5min cache — 🟠 CRITICAL  → evidence: commit f886a670 — `apps/web/src/app/[locale]/(dashboard)/layout.tsx` and classification layouts route through the org cache helper
+- [x] Image `remotePatterns` narrowed to known external hosts only — 🟢 IMPORTANT  → evidence: commit 56d252c2 — `apps/web/next.config.ts` `images.remotePatterns` allowlist
+- [x] N+1 query review for hot paths (Prisma query logging + top-10 tRPC procedures) — 🟠 CRITICAL  → evidence: commit 4e75feaa — `docs/N+1-AUDIT.md`
 - [ ] `next/font` audit (no rogue `<link href="fonts.googleapis...">` outside CSP) — 🟢 IMPORTANT  → evidence: CSP `style-src` at `apps/web/next.config.ts:91` still includes `https://fonts.googleapis.com` — audit of `next/font` adoption not captured in any doc
 
 ## 8. Accessibility & UX
@@ -158,11 +183,11 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] MDX `rehype-autolink-headings` with `behavior: 'wrap'` — `next.config.ts:14-19`
 - [x] `next-intl` for EN / PL / DE / AR — `apps/web/src/i18n/`
 - [x] CSP `frame-src` allows DocuSign embeds (signing flow accessibility)
-- [ ] axe-core / `@axe-core/playwright` CI gate on key flows — 🟢 IMPORTANT  → evidence: `@axe-core/playwright` not in any `package.json`; no `e2e-a11y` job in `.github/workflows/ci.yml`; scoped to Phase C.4
-- [ ] Lighthouse CI on staging — 🟢 IMPORTANT  → evidence: no `lighthouse` job in `.github/workflows/`; deferred
-- [ ] `app/global-error.tsx` audit and documented error boundary pattern — 🟠 CRITICAL  → evidence: `apps/web/src/app/global-error.tsx` exists but no documented audit of stack-trace leak / Sentry report / reload affordance; scoped to Phase C.5
-- [ ] `loading.tsx` / `not-found.tsx` / `error.tsx` audit on top 10 routes — 🟠 CRITICAL  → evidence: only `apps/web/src/app/[locale]/error.tsx` and `apps/web/src/app/[locale]/not-found.tsx` exist at locale root; no per-route boundaries under `(dashboard)/`; scoped to Phase C.5
-- [ ] WCAG 2.2 AA self-attestation (or VPAT for enterprise customers) — 🟢 IMPORTANT  → evidence: `docs/ACCESSIBILITY.md` does not exist; scoped to Phase C.4.b
+- [x] axe-core / `@axe-core/playwright` CI gate on top-10 dashboard routes — 🟢 IMPORTANT  → evidence: commit f7165fee — `apps/web/e2e/a11y/dashboard-routes.spec.ts` + `.axe-allowlist.json`; CI job in commit 669233d0
+- [x] WCAG 2.2 AA self-attestation — 🟢 IMPORTANT  → evidence: commit 669233d0 — `docs/ACCESSIBILITY.md`
+- [x] `loading.tsx` / `not-found.tsx` / `error.tsx` boundary coverage on top-10 dashboard routes — 🟠 CRITICAL  → evidence: commit bbee0cd2 — shared boundary primitives under `apps/web/src/components/boundaries/*` wired into the top-10 dashboard route files
+- [ ] Lighthouse CI on staging — 🟢 IMPORTANT  → evidence: no `lighthouse` job in `.github/workflows/`; deferred (Core Web Vitals field data already shipping via commit 9d4511ed)
+- [ ] `app/global-error.tsx` audit and documented error boundary pattern — 🟠 CRITICAL  → evidence: per-route boundaries shipped (commit bbee0cd2) but `apps/web/src/app/global-error.tsx` audit doc (stack-trace leak / Sentry report / reload affordance) not yet produced
 - [ ] Keyboard-only smoke test on critical user journeys (login, create invoice, sign document) — 🟢 IMPORTANT  → evidence: no documented kbd-smoke test in `e2e/` or `docs/`
 
 ## 9. Documentation
@@ -218,9 +243,9 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 
 - [x] Neon automated backups (provider-managed)
 - [x] Cloudflare R2 object storage (provider-managed durability)
-- [ ] RPO / RTO targets defined and signed off — 🔴 BLOCKER  → evidence: no targets in `docs/`; scoped to Phase D infra recommendations (`docs/BACKUP-POLICY.md` missing)
+- [ ] RPO / RTO targets defined and signed off — 🔴 BLOCKER  → evidence: no targets in `docs/`; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7); `docs/BACKUP-POLICY.md` still missing
 - [ ] Tested restore drill — date, restorer, outcome captured in writing — 🔴 BLOCKER  → evidence: no drill log in `docs/` or `.planning/`
-- [ ] DR runbook (Neon region failover, R2 bucket failover, DNS cutover) — 🟠 CRITICAL  → evidence: no `docs/DR-RUNBOOK.md`
+- [ ] DR runbook (Neon region failover, R2 bucket failover, DNS cutover) — 🟠 CRITICAL  → evidence: no `docs/DR-RUNBOOK.md`; recommendation captured in `docs/INFRA-RECOMMENDATIONS.md` (commit c2d441a7)
 - [ ] Quarterly backup-test schedule on the calendar — 🟠 CRITICAL  → evidence: no calendar artifact; Cronitor schedule list does not include a `backup-test` job
 - [ ] Point-in-time recovery procedure with example timestamps — 🟠 CRITICAL  → evidence: no documented PITR walkthrough; Neon provider-managed but not exercised
 
@@ -233,6 +258,10 @@ For depth on specific areas, see [`.audit-2026-05-03/`](../.audit-2026-05-03/) �
 - [x] Custom guards: no raw `process.env`, tenant-scope schema lint, logger redaction, i18n parity
 - [x] CODEOWNERS for legal sign-off registry — `.github/CODEOWNERS`
 - [x] CI typecheck pinned to `tsc` (never `tsgo`) per project policy
+- [x] Lint guard: direct `auditLog.create` forbidden outside `writeAuditLog` helper — 🟢 IMPORTANT  → evidence: commit b9956a42 — `scripts/lint-audit-log.mjs`; helper applied in commits 3c7ed017 (`packages/api/src/routers/equipment/*`) and 3f38bb9c (`packages/api/src/routers/compliance/gdpr.ts`, `finance/invoice.ts`)
+- [x] Lint guard: raw `fetch` forbidden in adapter/service paths without annotation — 🟢 IMPORTANT  → evidence: commit 95869c80 — `scripts/lint-raw-fetch.mjs`
+- [x] Lint guard: hand-rolled idempotency keys forbidden outside `deriveIdempotencyKey` — 🟢 IMPORTANT  → evidence: commit 38650af7 — `scripts/lint-idempotency.mjs`
+- [x] Lint guard: silent catch blocks forbidden in adapter/service/route paths — 🟢 IMPORTANT  → evidence: commit c08b2e33 — `scripts/lint-silent-catch.mjs`
 - [ ] Expand CODEOWNERS to `packages/db/`, `packages/auth/`, `infra/`, `render.yaml` — 🟠 CRITICAL  → evidence: `.github/CODEOWNERS` exists but does not cover `packages/db/`, `packages/auth/`, `infra/`, or `render.yaml`
 - [ ] PR template (`.github/pull_request_template.md`) with risk / rollback / test checklist — 🟢 IMPORTANT  → evidence: no `.github/pull_request_template.md`
 - [ ] Explicit commitlint config (currently only an enforced pre-push hook) — 🟢 IMPORTANT  → evidence: no `commitlint.config.{js,cjs,ts}` at repo root; enforcement remains in `.husky/`
