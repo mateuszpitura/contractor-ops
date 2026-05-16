@@ -412,6 +412,8 @@ const PHASE_EMOJI: Record<string, string> = {
   timesheets: '🕒',
   classification: '🧠',
   'tax-compliance': '⚖️ ',
+  skonto: '💸',
+  interest: '📈',
 };
 
 /**
@@ -468,6 +470,8 @@ const PHASE_WEIGHTS: Record<string, number> = {
   timesheets: 4,
   classification: 3,
   'tax-compliance': 3,
+  skonto: 4,
+  interest: 3,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5225,6 +5229,279 @@ async function seedClassification(
 }
 
 // ---------------------------------------------------------------------------
+// Invoice extensions — Skonto (early-payment discount), late-payment interest
+// claims, match results, and intake-request precursors.
+// ---------------------------------------------------------------------------
+
+async function seedSkonto(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+): Promise<void> {
+  if (invoices.length === 0) return;
+
+  // SkontoTerm.invoiceId is @unique — one term per invoice.
+  for (const inv of invoices) {
+    const discountPct = ctx.fakers.org.helpers.arrayElement(['1.00', '2.00', '3.00']);
+    const discountPeriodDays = ctx.fakers.org.helpers.arrayElement([7, 10, 14]);
+    const netPeriodDays = ctx.fakers.org.helpers.arrayElement([30, 45, 60]);
+    await prisma.skontoTerm.create({
+      data: {
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        discountPercent: discountPct,
+        discountPeriodDays,
+        netPeriodDays,
+        createdAt: inv.receivedAt,
+      },
+    });
+  }
+
+  // Snapshots — only for paid invoices (effectivePaymentDate references the
+  // actual payment moment).
+  const paidInvoices = invoices.filter(i => i.status === 'PAID' && i.paidAt);
+  const snapshotSubset = ctx.org.showcase
+    ? paidInvoices
+    : paidInvoices.filter((_, i) => i % 2 === 0).slice(0, 5);
+  for (const inv of snapshotSubset) {
+    if (!inv.paidAt) continue;
+    const term = await prisma.skontoTerm.findUnique({
+      where: { invoiceId: inv.id },
+      select: { id: true, discountPercent: true },
+    });
+    if (!term) continue;
+    const eligible = ctx.org.showcase
+      ? ((snapshotSubset.indexOf(inv) % 2 === 0) as boolean)
+      : ctx.fakers.org.datatype.boolean({ probability: 0.7 });
+    const eligibility = eligible ? 'ELIGIBLE' : 'NOT_ELIGIBLE';
+    const discountPctNum = Number.parseFloat(term.discountPercent.toString());
+    const discountAppliedMinor = eligible ? Math.round((inv.totalMinor * discountPctNum) / 100) : 0;
+    await prisma.skontoSnapshot.create({
+      data: {
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        skontoTermId: term.id,
+        eligibilityAtPayment: eligibility,
+        discountAppliedMinor,
+        effectivePaymentDate: dateOnly(inv.paidAt),
+        createdAt: inv.paidAt,
+      },
+    });
+
+    // SkontoApplication — paymentRunItemId @unique. Find the matching
+    // PaymentRunItem (if any) and attach.
+    if (!eligible) continue;
+    const paymentItem = await prisma.paymentRunItem.findFirst({
+      where: { organizationId: ctx.organizationId, invoiceId: inv.id },
+      select: { id: true, skontoApplication: { select: { id: true } } },
+    });
+    if (!paymentItem || paymentItem.skontoApplication) continue;
+    await prisma.skontoApplication.create({
+      data: {
+        organizationId: ctx.organizationId,
+        paymentRunItemId: paymentItem.id,
+        skontoTermId: term.id,
+        discountPercentApplied: term.discountPercent,
+        discountAmountMinor: discountAppliedMinor,
+        createdAt: inv.paidAt,
+      },
+    });
+  }
+}
+
+async function seedInvoiceInterest(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+): Promise<void> {
+  if (invoices.length === 0) return;
+
+  // Overdue = past due date, not yet PAID/VOID/REJECTED.
+  const now = Date.now();
+  const overdue = invoices.filter(
+    i =>
+      i.dueDate.getTime() < now &&
+      i.status !== 'PAID' &&
+      i.status !== 'VOID' &&
+      i.status !== 'REJECTED',
+  );
+  if (overdue.length === 0) return;
+
+  const claimSubset = ctx.org.showcase ? overdue.slice(0, 6) : overdue.slice(0, 3);
+  for (const [i, inv] of claimSubset.entries()) {
+    const daysOverdue = Math.max(1, Math.floor((now - inv.dueDate.getTime()) / 86_400_000));
+    // Statutory interest rate (placeholder: BoE base 5.25 + 8 = 13.25). Decimal(5,2).
+    const ratePct = '13.25';
+    const interestMinor = Math.round((inv.totalMinor * 13.25 * daysOverdue) / (100 * 365));
+    // Compensation tier per UK Late Payment Act: £40 / £70 / £100 by debt size.
+    const compMinor =
+      inv.totalMinor < 100_000 ? 4_000 : inv.totalMinor < 1_000_000 ? 7_000 : 10_000;
+
+    const claim = await prisma.invoiceInterestClaim.create({
+      data: {
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        claimedByUserId: ctx.ownerUserId,
+        claimedAt: pastDateAfter(ctx.fakers.org, 14, inv.dueDate),
+        snapshotInterestMinor: interestMinor,
+        snapshotCompensationMinor: compMinor,
+        snapshotRateUsed: ratePct,
+        snapshotDaysOverdue: daysOverdue,
+        pdfStatus: i % 3 === 0 ? 'READY' : 'PENDING_RENDER',
+        pdfKey: i % 3 === 0 ? `seed/interest-claim/${inv.id}.pdf` : null,
+        pdfReadyAt: i % 3 === 0 ? pastDateAfter(ctx.fakers.org, 1, inv.dueDate) : null,
+      },
+      select: { id: true },
+    });
+
+    // Compensation row — invoiceId @unique, only for the first overdue tier
+    // we touch so we don't violate the unique.
+    if (i < 3) {
+      const existing = await prisma.invoiceInterestCompensation.findUnique({
+        where: { invoiceId: inv.id },
+        select: { id: true },
+      });
+      if (!existing) {
+        await prisma.invoiceInterestCompensation.create({
+          data: {
+            organizationId: ctx.organizationId,
+            invoiceId: inv.id,
+            tierMinor: compMinor,
+            invoiceTotalAtOverdueMinor: inv.totalMinor,
+            firstOverdueDate: dateOnly(inv.dueDate),
+          },
+        });
+      }
+    }
+
+    // Waiver — every other claim gets one (mix of waived + active).
+    if (i % 2 === 0) {
+      await prisma.invoiceInterestWaiver.create({
+        data: {
+          organizationId: ctx.organizationId,
+          invoiceId: inv.id,
+          waiveType: ctx.fakers.org.helpers.arrayElement([
+            'STATUTORY_INTEREST',
+            'COMPENSATION',
+            'BOTH',
+          ] as const),
+          reason: 'Goodwill gesture (seeded)',
+          waivedByUserId: ctx.ownerUserId,
+          waivedAt: pastDateAfter(ctx.fakers.org, 7, inv.dueDate),
+        },
+      });
+    }
+    // Reference the claim id so unused-let-binding lint stays happy
+    void claim.id;
+  }
+}
+
+async function seedInvoiceMatchAndIntake(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+): Promise<void> {
+  if (invoices.length === 0) return;
+
+  // -------------------------------------------------------------------
+  // InvoiceMatchResult — sample with mixed statuses spanning every enum.
+  // -------------------------------------------------------------------
+  const matchStatuses = [
+    'MATCHED',
+    'PARTIAL',
+    'UNMATCHED',
+    'DISCREPANCY',
+    'MANUALLY_CONFIRMED',
+  ] as const;
+  const matchedBys = ['RULE_ENGINE', 'OCR_EXTRACTION', 'MANUAL', 'INTEGRATION'] as const;
+  const matchSubset = ctx.org.showcase
+    ? invoices.slice(0, Math.min(invoices.length, 10))
+    : invoices.filter((_, i) => i % 4 === 0).slice(0, 6);
+  for (const [i, inv] of matchSubset.entries()) {
+    const status = matchStatuses[i % matchStatuses.length] as (typeof matchStatuses)[number];
+    const matchedBy = matchedBys[i % matchedBys.length] as (typeof matchedBys)[number];
+    const score =
+      status === 'UNMATCHED'
+        ? null
+        : ctx.fakers.org.helpers.arrayElement(['65.00', '80.00', '92.50', '99.00']);
+    const expectedAmount = status === 'UNMATCHED' ? null : Math.round(inv.totalMinor * 0.95);
+    const delta = expectedAmount === null ? null : inv.totalMinor - expectedAmount;
+    await prisma.invoiceMatchResult.create({
+      data: {
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        matchedContractorId: status === 'UNMATCHED' ? null : inv.contractorId,
+        matchScore: score,
+        expectedAmountMinor: expectedAmount,
+        expectedCurrency: status === 'UNMATCHED' ? null : inv.currency,
+        amountDeltaMinor: delta,
+        amountDeltaPercent:
+          delta === null || expectedAmount === null || expectedAmount === 0
+            ? null
+            : ((delta / expectedAmount) * 100).toFixed(4),
+        matchedBy,
+        status,
+        explanationJson: { reason: status, source: 'seed' },
+        createdAt: inv.receivedAt,
+        createdByUserId: matchedBy === 'MANUAL' ? ctx.ownerUserId : null,
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // InvoiceIntakeRequest — historical intake history (uploaded XML/PDF
+  // that became real invoices). One per sampled invoice.
+  // -------------------------------------------------------------------
+  const intakeSubset = ctx.org.showcase
+    ? invoices.slice(0, Math.min(invoices.length, 6))
+    : invoices.filter((_, i) => i % 5 === 0).slice(0, 4);
+  const intakeStatuses = ['PARSED', 'NEEDS_REVIEW', 'MATCHED', 'CONVERTED', 'REJECTED'] as const;
+  const intakeProfiles = ['XRECHNUNG', 'COMFORT', 'EXTENDED'] as const;
+  for (const [i, inv] of intakeSubset.entries()) {
+    const sourceKind = i % 2 === 0 ? 'UPLOAD_XML' : 'UPLOAD_PDF';
+    const status = intakeStatuses[i % intakeStatuses.length] as (typeof intakeStatuses)[number];
+    const profile = intakeProfiles[i % intakeProfiles.length] as (typeof intakeProfiles)[number];
+    // convertedInvoiceId @unique — only set when status=CONVERTED.
+    const convertedId = status === 'CONVERTED' ? inv.id : null;
+    // Ensure no other intake already converted this invoice (prior loop iter).
+    if (convertedId) {
+      const existing = await prisma.invoiceIntakeRequest.findUnique({
+        where: { convertedInvoiceId: convertedId },
+        select: { id: true },
+      });
+      if (existing) continue;
+    }
+    await prisma.invoiceIntakeRequest.create({
+      data: {
+        organizationId: ctx.organizationId,
+        uploadedByUserId: ctx.ownerUserId,
+        sourceKind,
+        rawFileKey: `seed/intake/${inv.id}/${tokenHex(4)}.${sourceKind === 'UPLOAD_XML' ? 'xml' : 'pdf'}`,
+        rawFileSha256: tokenHex(32),
+        rawFileMime: sourceKind === 'UPLOAD_XML' ? 'application/xml' : 'application/pdf',
+        rawFileSizeBytes: ctx.fakers.org.number.int({ min: 4 * 1024, max: 256 * 1024 }),
+        profileLevel: profile,
+        parsedInvoiceJson: {
+          seeded: true,
+          invoiceNumber: inv.invoiceNumber,
+          totalMinor: inv.totalMinor,
+        },
+        extractedSupplierName: ctx.fakers.org.company.name(),
+        extractedInvoiceNumber: inv.invoiceNumber,
+        extractedInvoiceDate: inv.issueDate,
+        extractedTotalMinor: BigInt(inv.totalMinor),
+        extractedCurrency: inv.currency,
+        matchedContractorId: status === 'PARSED' ? null : inv.contractorId,
+        convertedInvoiceId: convertedId,
+        status,
+        validationStatus: status === 'REJECTED' ? 'INVALID' : 'VALID',
+        createdAt: inv.receivedAt,
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Tax / legal compliance — Statusfeststellungsverfahren (DE), IR35 chain (UK),
 // SDS approval, TaxIdValidation, EconomicDependencyAlertState,
 // ReassessmentTrigger, WhtCertificate. Showcase intentionally spreads rows
@@ -5730,8 +6007,26 @@ async function seedOrg(
     ? null
     : await seedApprovalChainConfig(prisma, ctx);
 
-  const invoices = await gateSection(omitted, 'invoices', org.key, [] as SeededInvoice[], () =>
-    seedInvoices(prisma, ctx, contractors, contractByContractor, approvalChainConfigId, refs),
+  const invoices = await gateSection(
+    omitted,
+    'invoices',
+    org.key,
+    [] as SeededInvoice[],
+    async () => {
+      const seeded = await seedInvoices(
+        prisma,
+        ctx,
+        contractors,
+        contractByContractor,
+        approvalChainConfigId,
+        refs,
+      );
+      // Match results + intake history bundle into the invoices section (no
+      // separate omit key) — they're invoice metadata, not standalone
+      // surfaces.
+      await seedInvoiceMatchAndIntake(prisma, ctx, seeded);
+      return seeded;
+    },
   );
 
   // Equipment is seeded BEFORE payment runs / reminders so its refs are
@@ -5741,6 +6036,12 @@ async function seedOrg(
   );
   await gateSection(omitted, 'payment-runs', org.key, undefined, () =>
     seedPaymentRuns(prisma, ctx, invoices, refs),
+  );
+  // Skonto sits after payment-runs because SkontoApplication FK targets a
+  // PaymentRunItem.
+  await gateSection(omitted, 'skonto', org.key, undefined, () => seedSkonto(prisma, ctx, invoices));
+  await gateSection(omitted, 'interest', org.key, undefined, () =>
+    seedInvoiceInterest(prisma, ctx, invoices),
   );
   await gateSection(omitted, 'reminders', org.key, undefined, () =>
     seedReminders(prisma, ctx, invoices, refs),
