@@ -127,11 +127,16 @@ export function Ir35ChainPanel({ engagementId }: Ir35ChainPanelProps) {
   );
 }
 
+interface MutationLike<I> {
+  mutate: (vars: I) => void;
+  isPending: boolean;
+}
+
 interface ConnectedParticipantRowProps {
   row: Ir35ChainParticipantRow;
-  markDelivered: { mutate: (vars: { id: string; note: string | null }) => void };
-  markAcknowledged: { mutate: (vars: { id: string; note: string | null }) => void };
-  removeParticipant: { mutate: (vars: { id: string }) => void };
+  markDelivered: MutationLike<{ id: string; note: string | null }>;
+  markAcknowledged: MutationLike<{ id: string; note: string | null }>;
+  removeParticipant: MutationLike<{ id: string }>;
 }
 
 function ConnectedParticipantRow({
@@ -159,6 +164,9 @@ function ConnectedParticipantRow({
       onMarkDelivered={handleMarkDelivered}
       onMarkAcknowledged={handleMarkAcknowledged}
       onRemove={handleRemove}
+      isMarkingDelivered={markDelivered.isPending}
+      isMarkingAcknowledged={markAcknowledged.isPending}
+      isRemoving={removeParticipant.isPending}
     />
   );
 }

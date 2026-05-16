@@ -164,7 +164,12 @@
     "file": "apps/web/src/app/[locale]/(portal)/portal/time/page.tsx",
     "line": 118,
     "problem": "Mutation portalTime.saveDraftEntries trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
+    "triage": {
+      "status": "false-positive",
+      "pattern": "cell-blur-autosave",
+      "reason": "Mutation fires from TimesheetGrid's cell-blur handler, not a discrete Button. The grid's `disabled` prop is already wired (set by submitted/approved timesheet state), and saves are batched on blur — there is no static trigger to disable mid-flight."
+    }
   },
   {
     "id": "F-LOW-008",
@@ -220,46 +225,6 @@
     "id": "F-LOW-012",
     "severity": "LOW",
     "category": "missing-loading-state",
-    "procedure": "ir35Chain.markDelivered",
-    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
-    "line": 31,
-    "problem": "Mutation ir35Chain.markDelivered trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-013",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "ir35Chain.markAcknowledged",
-    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
-    "line": 42,
-    "problem": "Mutation ir35Chain.markAcknowledged trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-014",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "ir35Chain.removeParticipant",
-    "file": "apps/web/src/components/contractors/ir35-chain/ir35-chain-panel.tsx",
-    "line": 53,
-    "problem": "Mutation ir35Chain.removeParticipant trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-015",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "settings.update",
-    "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 231,
-    "problem": "Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-016",
-    "severity": "LOW",
-    "category": "missing-loading-state",
     "procedure": "payment.importStatement",
     "file": "apps/web/src/components/payments/bank-statement-dialog.tsx",
     "line": 64,
@@ -272,27 +237,7 @@
     }
   },
   {
-    "id": "F-LOW-017",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "payment.updateItemStatus",
-    "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 176,
-    "problem": "Mutation payment.updateItemStatus trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-018",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "payment.removeFromRun",
-    "file": "apps/web/src/components/payments/payment-run-side-panel.tsx",
-    "line": 188,
-    "problem": "Mutation payment.removeFromRun trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-019",
+    "id": "F-LOW-013",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateNotificationPreference",
@@ -352,7 +297,7 @@
     }
   },
   {
-    "id": "F-LOW-020",
+    "id": "F-LOW-014",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "integration.disconnectGeneric",
@@ -367,7 +312,7 @@
     }
   },
   {
-    "id": "F-LOW-021",
+    "id": "F-LOW-015",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "jira.disconnect",
@@ -382,7 +327,7 @@
     }
   },
   {
-    "id": "F-LOW-022",
+    "id": "F-LOW-016",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ksef.disconnect",
@@ -397,7 +342,7 @@
     }
   },
   {
-    "id": "F-LOW-023",
+    "id": "F-LOW-017",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",

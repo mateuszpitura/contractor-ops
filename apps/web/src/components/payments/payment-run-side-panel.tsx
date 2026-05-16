@@ -393,6 +393,8 @@ export function PaymentRunSidePanel({
                         invoiceId,
                       })
                     }
+                    isUpdating={updateItemStatusMutation.isPending}
+                    isRemoving={removeFromRunMutation.isPending}
                   />
                 ))}
               </div>
@@ -457,6 +459,8 @@ function PaymentRunItemRow({
   runStatus,
   onUpdateStatus,
   onRemoveFromRun,
+  isUpdating = false,
+  isRemoving = false,
 }: {
   item: {
     id: string;
@@ -476,6 +480,8 @@ function PaymentRunItemRow({
     reason?: string,
   ) => void;
   onRemoveFromRun: (invoiceId: string) => void;
+  isUpdating?: boolean;
+  isRemoving?: boolean;
 }) {
   const t = useTranslations('Payments');
   const locale = useLocale();
@@ -537,13 +543,16 @@ function PaymentRunItemRow({
             <DropdownMenuContent align="end">
               {!isTerminal && (
                 <>
-                  {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                  <DropdownMenuItem onClick={() => setActiveAction('paid')}>
+                  <DropdownMenuItem
+                    disabled={isUpdating}
+                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                    onClick={() => setActiveAction('paid')}>
                     <CheckCircle2 className="me-2 h-4 w-4" />
                     {t('sidePanel.markPaid')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
+                    disabled={isUpdating}
                     // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => setActiveAction('failed')}>
                     <XCircle className="me-2 h-4 w-4" />
@@ -554,6 +563,7 @@ function PaymentRunItemRow({
               {isDraft && (
                 <DropdownMenuItem
                   className="text-destructive"
+                  disabled={isRemoving}
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => setActiveAction('remove')}>
                   <Trash2 className="me-2 h-4 w-4" />

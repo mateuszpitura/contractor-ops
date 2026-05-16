@@ -2795,7 +2795,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -2811,7 +2811,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -2827,7 +2827,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5556,7 +5556,7 @@
     "path": "invoiceIntake.getMatchCandidates",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/intake/intake-detail-match-pane.tsx",
-    "line": 55,
+    "line": 56,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5572,7 +5572,7 @@
     "path": "invoiceIntake.confirmMatch",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/intake/intake-detail-match-pane.tsx",
-    "line": 71,
+    "line": 72,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5588,7 +5588,7 @@
     "path": "invoiceIntake.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/intake/intake-detail-match-pane.tsx",
-    "line": 74,
+    "line": 75,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6507,7 +6507,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -6891,7 +6891,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -6907,7 +6907,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -11028,7 +11028,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryOptions",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 83,
+    "line": 82,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11044,7 +11044,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryKey",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 100,
+    "line": 99,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,

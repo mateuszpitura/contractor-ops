@@ -166,5 +166,12 @@
     "category": "missing-loading-state",
     "pattern": "autosave-status-machine",
     "reason": "Autosave pattern \u2014 `onMutate` flips a separate `autosaveStatus` state to 'saving' so the UI can render saving/saved/error indicators around the wizard. No discrete Button to disable; commitAnswer fires on every input change."
+  },
+  {
+    "procedure": "portalTime.saveDraftEntries",
+    "file": "apps/web/src/app/[locale]/(portal)/portal/time/page.tsx",
+    "category": "missing-loading-state",
+    "pattern": "cell-blur-autosave",
+    "reason": "Mutation fires from TimesheetGrid's cell-blur handler, not a discrete Button. The grid's `disabled` prop is already wired (set by submitted/approved timesheet state), and saves are batched on blur \u2014 there is no static trigger to disable mid-flight."
   }
 ]
