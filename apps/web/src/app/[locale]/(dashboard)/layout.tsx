@@ -1,3 +1,4 @@
+import { getOrgMeta } from '@contractor-ops/api/services/org-cache';
 import { auth } from '@contractor-ops/auth';
 import { prisma } from '@contractor-ops/db';
 import type { FlagValues } from '@contractor-ops/feature-flags';
@@ -40,34 +41,21 @@ import { TOS_CURRENT_VERSION } from '@/lib/tos';
  * Better Auth session lookup is already cached by Better Auth itself.
  */
 
-// 60 s tag-able cache for the per-user / per-org lookups that don't
-// change often. Shorter than the dashboard KPI cache because role
-// changes / ToS acceptance need to be visible faster.
+// 60 s tag-able cache for the per-user member lookup. ToS / role changes
+// must surface quickly so this stays at 60 s. The org row itself flows
+// through the cross-pod Upstash org-cache (5 min TTL) via getOrgMeta below,
+// because every dashboard navigation hits the same org row across the
+// fleet and 5 min is well within the audit decision (F-DB-03).
 const DASHBOARD_LAYOUT_CACHE_TTL_SECONDS = 60;
 
-const fetchOrgAndMember = (userId: string, activeOrgId: string) =>
+const fetchMember = (userId: string, activeOrgId: string) =>
   unstable_cache(
-    async () => {
-      const [org, member] = await Promise.all([
-        prisma.organization.findUnique({
-          where: { id: activeOrgId },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo: true,
-            dataRegion: true,
-            countryCode: true,
-          },
-        }),
-        prisma.member.findFirst({
-          where: { organizationId: activeOrgId, userId },
-          select: { role: true },
-        }),
-      ]);
-      return { org, member };
-    },
-    [`dashboard-layout-org-member`, userId, activeOrgId],
+    () =>
+      prisma.member.findFirst({
+        where: { organizationId: activeOrgId, userId },
+        select: { role: true },
+      }),
+    [`dashboard-layout-member`, userId, activeOrgId],
     {
       revalidate: DASHBOARD_LAYOUT_CACHE_TTL_SECONDS,
       tags: [`org:${activeOrgId}`, `user:${userId}:org:${activeOrgId}`],
@@ -124,8 +112,13 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   let latestTosConsent: { id: string } | null = null;
 
   if (activeOrgId) {
-    const [{ org, member }, tosConsent] = await Promise.all([
-      fetchOrgAndMember(session.user.id, activeOrgId),
+    // F-DB-03 / Phase C.7.b — org meta flows through the cross-pod Upstash
+    // cache (5 min TTL), member + ToS consent still through the per-user
+    // unstable_cache (60 s TTL). Org-cache invalidation on `organization.update`
+    // covers `slug`, `logo`, `countryCode` since they all ride the same envelope.
+    const [org, member, tosConsent] = await Promise.all([
+      getOrgMeta(activeOrgId),
+      fetchMember(session.user.id, activeOrgId),
       fetchLatestTosConsent(session.user.id, activeOrgId, TOS_CURRENT_VERSION),
     ]);
 

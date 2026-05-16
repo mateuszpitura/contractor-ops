@@ -11,8 +11,8 @@
 //   - <ClassificationAdvisoryBanner> is rendered above {children} (LEGAL-03).
 //   - Every classification page inherits the banner without per-page plumbing.
 
+import { getOrgMeta } from '@contractor-ops/api/services/org-cache';
 import { auth } from '@contractor-ops/auth';
-import { prisma } from '@contractor-ops/db';
 import { evaluate } from '@contractor-ops/feature-flags';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -31,10 +31,9 @@ export default async function ClassificationLayout({ children }: ClassificationL
     notFound();
   }
 
-  const org = await prisma.organization.findFirst({
-    where: { id: session.session.activeOrganizationId },
-    select: { countryCode: true, dataRegion: true },
-  });
+  // F-DB-03 / Phase C.7.b — countryCode + dataRegion ride the cached
+  // org-meta envelope. Cache invalidation on organization.update covers both.
+  const org = await getOrgMeta(session.session.activeOrganizationId);
 
   const region = org?.dataRegion === 'ME' ? ('ME' as const) : ('EU' as const);
   const result = evaluate('module.classification-engine', {

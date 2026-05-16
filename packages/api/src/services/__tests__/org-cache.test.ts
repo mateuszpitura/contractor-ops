@@ -88,13 +88,20 @@ describe('ORG_META_TTL_SECONDS', () => {
 
 describe('getOrgMeta', () => {
   it('returns the cached envelope without calling Prisma on cache hit', async () => {
-    mockGet.mockResolvedValueOnce({
-      __co_v: { id: 'org_1', dataRegion: 'EU', status: 'ACTIVE', name: 'Acme' },
-    });
+    const cachedEnvelope = {
+      id: 'org_1',
+      dataRegion: 'EU',
+      status: 'ACTIVE',
+      name: 'Acme',
+      slug: 'acme',
+      logo: null,
+      countryCode: 'GB',
+    };
+    mockGet.mockResolvedValueOnce({ __co_v: cachedEnvelope });
 
     const meta = await getOrgMeta('org_1');
 
-    expect(meta).toEqual({ id: 'org_1', dataRegion: 'EU', status: 'ACTIVE', name: 'Acme' });
+    expect(meta).toEqual(cachedEnvelope);
     expect(mockFindUnique).not.toHaveBeenCalled();
     expect(mockGet).toHaveBeenCalledWith('co:org:org_1:meta');
   });
@@ -106,22 +113,49 @@ describe('getOrgMeta', () => {
       dataRegion: 'ME',
       status: 'ACTIVE',
       name: 'Globex',
+      slug: 'globex',
+      logo: 'https://r2.example/logo.png',
+      countryCode: 'SA',
     });
 
     const meta = await getOrgMeta('org_2');
 
-    expect(meta).toEqual({ id: 'org_2', dataRegion: 'ME', status: 'ACTIVE', name: 'Globex' });
+    expect(meta).toEqual({
+      id: 'org_2',
+      dataRegion: 'ME',
+      status: 'ACTIVE',
+      name: 'Globex',
+      slug: 'globex',
+      logo: 'https://r2.example/logo.png',
+      countryCode: 'SA',
+    });
     expect(mockFindUnique).toHaveBeenCalledTimes(1);
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { id: 'org_2' },
-      select: { id: true, dataRegion: true, status: true, name: true },
+      select: {
+        id: true,
+        dataRegion: true,
+        status: true,
+        name: true,
+        slug: true,
+        logo: true,
+        countryCode: true,
+      },
     });
     // Write-back is fire-and-forget — assert eventual call shape.
     await new Promise(resolve => setImmediate(resolve));
     expect(mockSet).toHaveBeenCalledWith(
       'co:org:org_2:meta',
       {
-        __co_v: { id: 'org_2', dataRegion: 'ME', status: 'ACTIVE', name: 'Globex' },
+        __co_v: {
+          id: 'org_2',
+          dataRegion: 'ME',
+          status: 'ACTIVE',
+          name: 'Globex',
+          slug: 'globex',
+          logo: 'https://r2.example/logo.png',
+          countryCode: 'SA',
+        },
       },
       { ex: 300 },
     );

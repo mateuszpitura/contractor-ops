@@ -1,3 +1,4 @@
+import { getOrgMeta } from '@contractor-ops/api/services/org-cache';
 import { validatePortalSession } from '@contractor-ops/api/services/portal-session';
 import { prisma } from '@contractor-ops/db';
 import { cookies, headers } from 'next/headers';
@@ -29,13 +30,16 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   // No session cookie: try to resolve org from subdomain for branding
   if (!sessionToken) {
     if (subdomainSlug) {
+      // Subdomain → org lookup is NOT covered by getOrgMeta (the org cache
+      // is keyed by id, not by portalSubdomain). This branch only runs on
+      // anonymous portal landing requests (no session cookie), so the
+      // per-request cost is bounded and not on the per-navigation hot path.
+      // A subdomain → orgId cache would be a future Phase-D follow-up.
       const org = await prisma.organization.findFirst({
         where: { portalSubdomain: subdomainSlug },
-        select: { name: true, logo: true, settingsJson: true },
+        select: { name: true, logo: true },
       });
       if (org) {
-        const settings = (org.settingsJson as Record<string, unknown>) ?? {};
-        const _brandColor = (settings.brandColor as string) ?? null;
         return <div className="min-h-screen bg-background">{children}</div>;
       }
     }
@@ -49,15 +53,13 @@ export default async function PortalLayout({ children }: { children: ReactNode }
     redirect('/portal/login');
   }
 
-  // Fetch organization info for the top bar + branding (session.organizationId is authoritative)
-  const organization = await prisma.organization.findUnique({
-    where: { id: session.organizationId },
-    select: { name: true, logo: true, settingsJson: true },
-  });
-
-  // Extract brand color from org settings for CSS custom property injection (D-12)
-  const settings = (organization?.settingsJson as Record<string, unknown>) ?? {};
-  const _brandColor = (settings.brandColor as string) ?? null;
+  // F-DB-03 / Phase C.7.b — top-bar branding (name + logo) flows through
+  // the cross-pod Upstash org-cache (5 min TTL). settingsJson.brandColor is
+  // currently unused (`_brandColor` discarded below); when D-12 wires it up
+  // it should land via a dedicated org-branding cache row, not the meta
+  // envelope — keeping settingsJson out of the broad meta cache prevents
+  // accidentally widening what other callers consume.
+  const organization = await getOrgMeta(session.organizationId);
 
   return (
     <div className="min-h-screen bg-background">

@@ -38,6 +38,16 @@ export interface OrgMeta {
   dataRegion: string;
   status: string;
   name: string;
+  /**
+   * Phase C.7.b — added so dashboard + portal layout reads (which run on
+   * every navigation) can serve from cache instead of issuing per-request
+   * `findUnique` round-trips. Still org-meta (no credentials, no settings
+   * JSON), still invalidated by the existing `organization.update`/`delete`
+   * Prisma extension in `packages/api/src/middleware/tenant.ts`.
+   */
+  slug: string;
+  logo: string | null;
+  countryCode: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -68,7 +78,15 @@ export async function getOrgMeta(orgId: string): Promise<OrgMeta | null> {
   return await cached(orgMetaKey(orgId), ORG_META_TTL_SECONDS, async () => {
     const row = await prisma.organization.findUnique({
       where: { id: orgId },
-      select: { id: true, dataRegion: true, status: true, name: true },
+      select: {
+        id: true,
+        dataRegion: true,
+        status: true,
+        name: true,
+        slug: true,
+        logo: true,
+        countryCode: true,
+      },
     });
 
     if (!row) return null;
@@ -78,6 +96,9 @@ export async function getOrgMeta(orgId: string): Promise<OrgMeta | null> {
       dataRegion: row.dataRegion,
       status: row.status,
       name: row.name,
+      slug: row.slug,
+      logo: row.logo,
+      countryCode: row.countryCode,
     } satisfies OrgMeta;
   });
 }
