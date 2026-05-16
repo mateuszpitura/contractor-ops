@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
@@ -20,12 +21,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useApprovalActions } from '@/hooks/use-approval-actions';
 import { Link } from '@/i18n/navigation';
-
+import { enumKey } from '@/lib/enum-key';
 import { formatAmount } from '@/lib/format-currency';
+import { trpc } from '@/trpc/init';
 import { SlaBadge } from '../sla-badge';
 import type { ApprovalQueueRow } from './columns';
 
@@ -105,6 +108,115 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Resolved-chain section — fetches the chain config that produced this step
+// via `approval.getChain` and lists the resolved approver line-up
+// ("this request goes through: User A → Role X").
+// ---------------------------------------------------------------------------
+
+type ChainStep = {
+  name: string;
+  approverUserId: string | null | undefined;
+  approverRole: string | null | undefined;
+  slaHours: number;
+  required: boolean;
+};
+
+type ResolvedChain = {
+  name: string;
+  stepsJson: ChainStep[] | unknown;
+};
+
+function ChainStepRow({
+  step,
+  order,
+  isCurrent,
+  isPast,
+  t,
+  tRoles,
+}: {
+  step: ChainStep;
+  order: number;
+  isCurrent: boolean;
+  isPast: boolean;
+  t: ReturnType<typeof useTranslations<'Approvals'>>;
+  tRoles: ReturnType<typeof useTranslations<'Users.roles'>>;
+}) {
+  const approverLabel = step.approverUserId
+    ? t('sidePanel.specificUser')
+    : step.approverRole
+      ? tRoles(enumKey(step.approverRole) as Parameters<typeof tRoles>[0])
+      : t('sidePanel.unassigned');
+  const stateClass = isCurrent
+    ? 'text-foreground font-medium'
+    : isPast
+      ? 'line-through opacity-70'
+      : '';
+  return (
+    <li className={`flex items-baseline gap-1.5 ${stateClass}`}>
+      <span className="tabular-nums">{order}.</span>
+      <span className="flex-1">{step.name}</span>
+      <span className="text-[12px]">&middot; {approverLabel}</span>
+    </li>
+  );
+}
+
+function ResolvedChainSection({
+  chainConfigId,
+  currentStepOrder,
+  t,
+}: {
+  chainConfigId: string;
+  currentStepOrder: number;
+  t: ReturnType<typeof useTranslations<'Approvals'>>;
+}) {
+  const tRoles = useTranslations('Users.roles');
+  const chainQuery = useQuery({
+    ...trpc.approval.getChain.queryOptions({ id: chainConfigId }),
+  });
+
+  const chain = chainQuery.data as ResolvedChain | undefined;
+  const steps: ChainStep[] = Array.isArray(chain?.stepsJson)
+    ? (chain.stepsJson as ChainStep[])
+    : [];
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-[12px] font-medium text-muted-foreground">
+        {t('sidePanel.resolvedChain')}
+      </h4>
+      {chainQuery.isLoading ? (
+        <div className="space-y-1.5">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      ) : chain ? (
+        <div className="space-y-1.5">
+          <p className="text-[13px] font-medium text-foreground">{chain.name}</p>
+          <ol className="space-y-1 text-[13px] text-muted-foreground">
+            {steps.map((s, i) => {
+              const order = i + 1;
+              return (
+                <ChainStepRow
+                  key={`${s.name}-${order}`}
+                  step={s}
+                  order={order}
+                  isCurrent={order === currentStepOrder}
+                  isPast={order < currentStepOrder}
+                  t={t}
+                  tRoles={tRoles}
+                />
+              );
+            })}
+          </ol>
+        </div>
+      ) : (
+        <p className="text-[13px] text-muted-foreground">{t('sidePanel.resolvedChainEmpty')}</p>
+      )}
     </div>
   );
 }
@@ -340,6 +452,16 @@ export function ApprovalSidePanel({ step, open, onOpenChange }: ApprovalSidePane
             </h4>
             <MiniChainTracker step={step} />
           </div>
+
+          {/* Resolved chain config — fetched via `approval.getChain` so the
+              approver can see the full upstream line-up before deciding */}
+          {!!step.approvalFlow.chainConfigId && (
+            <ResolvedChainSection
+              chainConfigId={step.approvalFlow.chainConfigId}
+              currentStepOrder={step.stepOrder}
+              t={t}
+            />
+          )}
 
           {/* Contractor */}
           {!!invoice?.contractor && (
