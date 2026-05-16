@@ -62,6 +62,60 @@ export const taxRates = [
     isExempt: true,
     effectiveFrom: new Date('2011-01-01'),
   },
+  {
+    // Polish reverse-charge for exchange-traded gas / electricity / emission
+    // allowances supplies (art. 17(1)(8) UoVAT) — extension confirmed through
+    // 31 December 2026.
+    countryCode: 'PL',
+    code: 'RC',
+    description: 'Odwrotne obciążenie (gas/electricity/CO2 allowances)',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: true,
+    isExempt: false,
+    effectiveFrom: new Date('2017-01-01'),
+  },
+  // Netherlands (NL)
+  {
+    countryCode: 'NL',
+    code: '21',
+    description: 'Standard rate (Hoog tarief)',
+    ratePercent: 21.0,
+    isDefault: true,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('2012-10-01'),
+  },
+  {
+    countryCode: 'NL',
+    code: '9',
+    description: 'Reduced rate (Laag tarief)',
+    ratePercent: 9.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('2019-01-01'),
+  },
+  {
+    countryCode: 'NL',
+    code: '0',
+    description: 'Zero rate',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: false,
+    isExempt: false,
+    effectiveFrom: new Date('1969-01-01'),
+  },
+  {
+    countryCode: 'NL',
+    code: 'RC',
+    description: 'Verleggingsregeling (B2B reverse charge)',
+    ratePercent: 0.0,
+    isDefault: false,
+    isReverseCharge: true,
+    isExempt: false,
+    effectiveFrom: new Date('1969-01-01'),
+  },
   // UAE (AE)
   {
     countryCode: 'AE',
