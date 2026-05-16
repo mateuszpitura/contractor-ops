@@ -72,24 +72,77 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
+    // Phase C.1.b (production-hardening): the existing enforce CSP is
+    // unchanged. A second `Content-Security-Policy-Report-Only` header ships
+    // the future-state nonce-friendly directives (drops `'unsafe-inline'`
+    // from script-src, narrows img-src). Violations stream to
+    // `/api/csp-report` for the 48h observation window before C.1.c flips
+    // the enforce policy.
+    const enforceCsp = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://unpkg.com https://*.sentry-cdn.com`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https:",
+      "connect-src 'self' https://*.docusign.com https://unpkg.com https://*.sentry.io https://*.ingest.sentry.io",
+      "frame-src 'self' https://*.docusign.com https://*.docusign.net https://apps-d.docusign.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
+    // Future-state directives mirrored in report-only mode. Differences vs
+    // enforce:
+    //   - script-src drops 'unsafe-inline' (relies on prior C.1.a removal of
+    //     dangerouslySetInnerHTML; next-themes injects a small inline script
+    //     that may still report — tracked for C.1.c follow-up).
+    //   - style-src keeps 'unsafe-inline' because Next.js + Tailwind ship
+    //     inline <style> tags; dropping it requires a hashed/nonce-based
+    //     style pipeline that is out of scope here.
+    //   - img-src narrows `https:` -> Cloudflare R2 + Google avatar host.
+    //   - connect-src adds the explicit Sentry tunnel route via /monitoring
+    //     handled by withSentryConfig; the wildcard is already covered.
+    //   - report-to + report-uri pipe violations to /api/csp-report.
+    const reportOnlyCsp = [
+      "default-src 'self'",
+      `script-src 'self'${isDev ? " 'unsafe-eval'" : ''} https://unpkg.com https://*.sentry-cdn.com`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.googleusercontent.com",
+      "connect-src 'self' https://*.docusign.com https://unpkg.com https://*.sentry.io https://*.ingest.sentry.io",
+      "frame-src 'self' https://*.docusign.com https://*.docusign.net https://apps-d.docusign.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      'report-uri /api/csp-report',
+      'report-to csp-endpoint',
+    ].join('; ');
+
+    // Reporting API v1 endpoint group declaration. Modern browsers honour
+    // `Report-To` -> POSTs `application/reports+json` payloads to the URL.
+    // Legacy browsers fall back to `report-uri` -> `application/csp-report`.
+    const reportToHeader = JSON.stringify({
+      group: 'csp-endpoint',
+      max_age: 10886400,
+      endpoints: [{ url: '/api/csp-report' }],
+      include_subdomains: true,
+    });
+
     return [
       {
         source: '/(.*)',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://unpkg.com https://*.sentry-cdn.com`,
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https:",
-              "connect-src 'self' https://*.docusign.com https://unpkg.com https://*.sentry.io https://*.ingest.sentry.io",
-              "frame-src 'self' https://*.docusign.com https://*.docusign.net https://apps-d.docusign.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; '),
+            value: enforceCsp,
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: reportOnlyCsp,
+          },
+          {
+            key: 'Report-To',
+            value: reportToHeader,
           },
           {
             key: 'X-Frame-Options',
