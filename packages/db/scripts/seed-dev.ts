@@ -268,7 +268,10 @@ const SECTION_DEPENDENCIES: Readonly<Record<SectionKey, readonly SectionKey[]>> 
   comments: [],
   'workflow-runs': ['workflow-templates', 'contractors'],
   timesheets: ['contractors', 'contracts'],
-  'tax-compliance': ['contractors'],
+  // tax-compliance touches ReassessmentTrigger which references
+  // ClassificationAssessment, so omitting `classification` must transitively
+  // omit `tax-compliance` too.
+  'tax-compliance': ['contractors', 'classification', 'payment-runs'],
   classification: ['contractors'],
   skonto: ['invoices'],
   interest: ['invoices'],
@@ -408,6 +411,7 @@ const PHASE_EMOJI: Record<string, string> = {
   'workflow-runs': '🔁',
   timesheets: '🕒',
   classification: '🧠',
+  'tax-compliance': '⚖️ ',
 };
 
 /**
@@ -463,6 +467,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   'workflow-runs': 4,
   timesheets: 4,
   classification: 3,
+  'tax-compliance': 3,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5220,6 +5225,272 @@ async function seedClassification(
 }
 
 // ---------------------------------------------------------------------------
+// Tax / legal compliance — Statusfeststellungsverfahren (DE), IR35 chain (UK),
+// SDS approval, TaxIdValidation, EconomicDependencyAlertState,
+// ReassessmentTrigger, WhtCertificate. Showcase intentionally spreads rows
+// across jurisdictions so every dashboard widget renders non-empty even
+// though a single org normally only has one residency.
+// ---------------------------------------------------------------------------
+
+async function seedTaxCompliance(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  if (contractors.length === 0) return;
+
+  const assignments = await prisma.contractorAssignment.findMany({
+    where: {
+      organizationId: ctx.organizationId,
+      contractorId: { in: contractors.map(c => c.id) },
+    },
+    select: { id: true, contractorId: true },
+  });
+  if (assignments.length === 0) return;
+  const assignmentByContractor = new Map<string, string>();
+  for (const a of assignments) assignmentByContractor.set(a.contractorId, a.id);
+
+  const eligible = contractors.filter(c => assignmentByContractor.has(c.id));
+  if (eligible.length === 0) return;
+
+  const orgCountry = ctx.profile.countryCode;
+  const showcase = ctx.org.showcase;
+
+  // -------------------------------------------------------------------
+  // Statusfeststellungsverfahren — DE only in real life; showcase forces
+  // a tranche so the DRV dashboard renders in any-country showcase orgs.
+  // -------------------------------------------------------------------
+  const statusEligible = showcase
+    ? eligible.slice(0, Math.max(1, Math.floor(eligible.length / 3)))
+    : orgCountry === 'DE'
+      ? eligible.filter((_, i) => i % 4 === 0).slice(0, 5)
+      : [];
+  const statusOutcomes = ['PENDING', 'SELBSTANDIG', 'ABHANGIG', 'WITHDRAWN'] as const;
+  for (const [i, c] of statusEligible.entries()) {
+    const assignmentId = assignmentByContractor.get(c.id);
+    if (!assignmentId) continue;
+    const outcome = statusOutcomes[i % statusOutcomes.length] as (typeof statusOutcomes)[number];
+    const filedAt = pastDateAfter(ctx.fakers.org, 540, ctx.foundedAt);
+    const validFromDate = outcome === 'PENDING' ? null : advanceCapped(filedAt, 30);
+    const validToDate = outcome === 'PENDING' ? null : futureDate(ctx.fakers.org, 365);
+    await prisma.statusfeststellungsverfahren.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorAssignmentId: assignmentId,
+        filedAt: dateOnly(filedAt),
+        drvReference: `DRV-${tokenHex(4).toUpperCase()}`,
+        outcome,
+        validFrom: validFromDate ? dateOnly(validFromDate) : null,
+        validTo: validToDate ? dateOnly(validToDate) : null,
+        notes: ctx.fakers.org.lorem.sentence(),
+        createdAt: filedAt,
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // IR35 chain participants + other-client attestation — UK/GB.
+  // -------------------------------------------------------------------
+  const ir35Eligible = showcase
+    ? eligible.slice(
+        Math.floor(eligible.length / 3),
+        Math.max(1, Math.floor((2 * eligible.length) / 3)),
+      )
+    : orgCountry === 'GB'
+      ? eligible.filter((_, i) => i % 4 === 0).slice(0, 5)
+      : [];
+  const ir35Roles = ['CLIENT', 'AGENCY', 'PSC', 'WORKER'] as const;
+  for (const c of ir35Eligible) {
+    const assignmentId = assignmentByContractor.get(c.id);
+    if (!assignmentId) continue;
+    for (const [orderIndex, role] of ir35Roles.entries()) {
+      const sdsDeliveredAt =
+        role === 'CLIENT' ? null : pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt);
+      await prisma.ir35ChainParticipant.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: assignmentId,
+          role,
+          orderIndex,
+          displayName: role === 'WORKER' ? c.legalName : ctx.fakers.org.company.name(),
+          contactEmail: role === 'WORKER' ? c.email : ctx.fakers.ascii.internet.email(),
+          sdsDeliveredAt,
+          sdsAcknowledgedAt: sdsDeliveredAt
+            ? advanceCapped(sdsDeliveredAt, ctx.fakers.org.number.int({ min: 1, max: 7 }))
+            : null,
+          createdAt: sdsDeliveredAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
+        },
+      });
+    }
+    // OtherClientAttestation has @unique on contractorAssignmentId — skip if
+    // a prior insert already exists.
+    const existingAttestation = await prisma.ir35OtherClientAttestation.findUnique({
+      where: { contractorAssignmentId: assignmentId },
+    });
+    if (!existingAttestation) {
+      const signedAt = pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt);
+      await prisma.ir35OtherClientAttestation.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorAssignmentId: assignmentId,
+          statementText: ctx.fakers.org.lorem.paragraph(),
+          signedName: c.legalName,
+          signedAt,
+          createdAt: signedAt,
+        },
+      });
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // TaxIdValidation — audit-trail rows in mixed states. Only TaxIdType
+  // values supported by the schema enum (GB_VAT, DE_USTIDNR).
+  // -------------------------------------------------------------------
+  const taxValEligible = eligible.filter((_, i) => i % 3 === 0).slice(0, 8);
+  const taxValStatuses = ['valid', 'invalid', 'stale', 'unavailable'] as const;
+  const taxIdType = orgCountry === 'GB' ? 'GB_VAT' : 'DE_USTIDNR';
+  for (const [i, c] of taxValEligible.entries()) {
+    const status = taxValStatuses[i % taxValStatuses.length] as (typeof taxValStatuses)[number];
+    const requestedAt = pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt);
+    const taxIdValue = makeVatId(orgCountry, ctx.fakers.org).slice(0, 20);
+    await prisma.taxIdValidation.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorId: c.id,
+        taxIdType,
+        taxIdValue,
+        apiProvider: orgCountry === 'GB' ? 'HMRC' : 'VIES',
+        requestedAt,
+        validFrom:
+          status === 'valid' ? dateBetween(ctx.fakers.org, ctx.foundedAt, requestedAt) : null,
+        validTo: status === 'valid' ? futureDate(ctx.fakers.org, 365) : null,
+        confirmationRef: status === 'valid' ? `CONF-${tokenHex(6).toUpperCase()}` : null,
+        responseStatus: status,
+        responseBody: { seeded: true, status },
+        errorMessage: status === 'unavailable' ? 'upstream timeout (seeded)' : null,
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // EconomicDependencyAlertState — unique per assignment so we have to
+  // skip-on-conflict.
+  // -------------------------------------------------------------------
+  const ecoEligible = eligible.filter((_, i) => i % 5 === 0).slice(0, 6);
+  const ecoBands = ['safe', 'warning', 'critical'] as const;
+  // Schema says Decimal(5,4) — 4 fractional digits, ≤1 (share).
+  const lastBillingShareByBand: Record<(typeof ecoBands)[number], string> = {
+    safe: '0.4500',
+    warning: '0.7200',
+    critical: '0.8500',
+  };
+  for (const [i, c] of ecoEligible.entries()) {
+    const assignmentId = assignmentByContractor.get(c.id);
+    if (!assignmentId) continue;
+    const band = ecoBands[i % ecoBands.length] as (typeof ecoBands)[number];
+    const existing = await prisma.economicDependencyAlertState.findUnique({
+      where: { contractorAssignmentId: assignmentId },
+    });
+    if (existing) continue;
+    await prisma.economicDependencyAlertState.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorAssignmentId: assignmentId,
+        currentBand: band,
+        lastBillingShare: lastBillingShareByBand[band],
+        lastScannedAt: pastDate(ctx.fakers.org, 1),
+        lastCrossedAt: band === 'safe' ? null : pastDate(ctx.fakers.org, 30),
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // ReassessmentTrigger — needs ClassificationAssessment rows; harmless
+  // no-op when classification produced none.
+  // -------------------------------------------------------------------
+  const assessmentRows = await prisma.classificationAssessment.findMany({
+    where: { organizationId: ctx.organizationId, status: 'completed' },
+    select: { id: true, contractorAssignmentId: true },
+    take: showcase ? 6 : 3,
+  });
+  const triggerStatuses = ['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'DISMISSED'] as const;
+  for (const [i, a] of assessmentRows.entries()) {
+    const status = triggerStatuses[i % triggerStatuses.length] as (typeof triggerStatuses)[number];
+    const triggeredAt = pastDate(ctx.fakers.org, 60);
+    await prisma.reassessmentTrigger.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorAssignmentId: a.contractorAssignmentId,
+        priorAssessmentId: a.id,
+        triggeredAt,
+        triggerReasons: {
+          reasons: ['MATERIAL_CHANGE_RATE', 'MATERIAL_CHANGE_SCOPE'],
+          source: 'seed',
+        },
+        status,
+        acknowledgedByUserId: status === 'OPEN' ? null : ctx.ownerUserId,
+        acknowledgedAt:
+          status === 'OPEN'
+            ? null
+            : advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 1, max: 5 })),
+        resolvedAt:
+          status === 'RESOLVED'
+            ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
+            : null,
+        dismissedByUserId: status === 'DISMISSED' ? ctx.ownerUserId : null,
+        dismissedAt:
+          status === 'DISMISSED'
+            ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
+            : null,
+        dismissedReason: status === 'DISMISSED' ? 'False positive (seeded)' : null,
+        createdAt: triggeredAt,
+      },
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // WhtCertificate — needs PaymentRunItem (FK). Sample a handful.
+  // -------------------------------------------------------------------
+  const paymentItems = await prisma.paymentRunItem.findMany({
+    where: { organizationId: ctx.organizationId },
+    select: {
+      id: true,
+      contractorId: true,
+      amountMinor: true,
+      currency: true,
+    },
+    take: showcase ? 5 : 3,
+  });
+  for (const item of paymentItems) {
+    const c = contractors.find(co => co.id === item.contractorId);
+    if (!c) continue;
+    const ratePct = ctx.fakers.org.helpers.arrayElement(['5.00', '10.00', '15.00']);
+    const rateNum = Number.parseFloat(ratePct);
+    const whtAmt = Math.round((item.amountMinor * rateNum) / 100);
+    const certNumber = `WHT-${ctx.org.key}-${tokenHex(4).toUpperCase()}`;
+    await prisma.whtCertificate.create({
+      data: {
+        organizationId: ctx.organizationId,
+        paymentRunItemId: item.id,
+        certificateNumber: certNumber,
+        grossAmountMinor: item.amountMinor,
+        whtRate: ratePct,
+        whtAmountMinor: whtAmt,
+        netAmountMinor: item.amountMinor - whtAmt,
+        currency: item.currency,
+        contractorName: c.legalName,
+        contractorTaxId: makeTaxId(orgCountry, ctx.fakers.org),
+        contractorCountry: orgCountry,
+        treatyApplied: ctx.fakers.org.datatype.boolean({ probability: 0.3 }),
+        treatyReference: null,
+        paymentDate: dateOnly(pastDate(ctx.fakers.org, 30)),
+        generatedByUserId: ctx.ownerUserId,
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Timesheets — weekly time-tracking sheets with individual time entries.
 // ---------------------------------------------------------------------------
 
@@ -5508,6 +5779,9 @@ async function seedOrg(
   await gateSection(omitted, 'comments', org.key, undefined, () => seedComments(prisma, ctx, refs));
   await gateSection(omitted, 'classification', org.key, undefined, () =>
     seedClassification(prisma, ctx, contractors),
+  );
+  await gateSection(omitted, 'tax-compliance', org.key, undefined, () =>
+    seedTaxCompliance(prisma, ctx, contractors),
   );
   await gateSection(omitted, 'workflow-runs', org.key, undefined, () =>
     seedWorkflowRuns(prisma, ctx, contractors),
