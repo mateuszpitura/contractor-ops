@@ -1,8 +1,17 @@
+import bundleAnalyzer from '@next/bundle-analyzer';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+// Phase C.6.a (production-hardening): wrap the build with @next/bundle-analyzer
+// when ANALYZE=true. Output is written to .next/analyze/* and surfaced via
+// docs/PERF-BUDGETS.md. CI gate (`size-limit`) consumes the actual chunk
+// artifacts produced by the regular build, not this analyzer.
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -188,7 +197,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(withNextIntl(nextConfig), {
+export default withSentryConfig(withBundleAnalyzer(withNextIntl(nextConfig)), {
   // Sentry org/project — set via env or replace with your values
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,

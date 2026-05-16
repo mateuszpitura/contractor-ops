@@ -139,6 +139,37 @@ jobs:
           path: apps/web/playwright-report/
           retention-days: 14
 
+  bundle-size:
+    name: Bundle size budget (C.6.a)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [ci]
+    # Gate every PR + push so a route-level regression surfaces before merge.
+    # Budgets + glob entries live in apps/web/.size-limit.json; the published
+    # numbers are in docs/PERF-BUDGETS.md. Bumping a budget requires a
+    # reviewed PR — see PERF-BUDGETS.md "Process".
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web app
+        run: pnpm --filter=@contractor-ops/web run build
+
+      - name: Enforce bundle-size budgets
+        run: pnpm --filter=@contractor-ops/web exec size-limit
+
   secrets-scan:
     name: Gitleaks (secret scan)
     runs-on: ubuntu-latest

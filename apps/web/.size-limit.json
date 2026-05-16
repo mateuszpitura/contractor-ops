@@ -1,0 +1,32 @@
+[
+  {
+    "name": "App shell (shared chunks)",
+    "path": ".next/static/chunks/main-app-*.js",
+    "limit": "300 KB"
+  },
+  {
+    "name": "Framework chunk (react/next runtime)",
+    "path": ".next/static/chunks/framework-*.js",
+    "limit": "200 KB"
+  },
+  {
+    "name": "Dashboard route bundle",
+    "path": ".next/static/chunks/app/**/dashboard/**/*.js",
+    "limit": "250 KB"
+  },
+  {
+    "name": "Contractors route bundle",
+    "path": ".next/static/chunks/app/**/contractors/**/*.js",
+    "limit": "300 KB"
+  },
+  {
+    "name": "Contracts route bundle",
+    "path": ".next/static/chunks/app/**/contracts/**/*.js",
+    "limit": "300 KB"
+  },
+  {
+    "name": "Invoices route bundle",
+    "path": ".next/static/chunks/app/**/invoices/**/*.js",
+    "limit": "300 KB"
+  }
+]
