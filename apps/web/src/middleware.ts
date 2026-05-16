@@ -1,8 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import proxyAddr from 'proxy-addr';
 import { routing } from '@/i18n/routing';
@@ -481,6 +480,34 @@ async function applyRateLimits(
  * 4. Redirects authenticated users from auth routes to / (or redirectTo param).
  * 5. Falls through to next-intl middleware for i18n.
  */
+/**
+ * F-OBS-09 — mint `x-request-id` at the edge when the upstream caller did
+ * not supply one, and forward it on the request headers so every downstream
+ * handler (Better Auth catch-all, tRPC HTTP route, webhook routes, RSC) sees
+ * one stable id per HTTP call. Combined with `buildContextFromHeaders` +
+ * `runWithRequestContext` at each route entrypoint, this gives us a single
+ * correlation id across Pino logs, Sentry events, and outbound integration
+ * HTTP for the lifetime of the request.
+ *
+ * `crypto.randomUUID()` is available in the Edge Runtime; using UUID v4 here
+ * keeps the edge mint cheap and avoids pulling the UUID v7 helper (which
+ * lives in the Node-only logger package).
+ */
+function ensureRequestIdHeader(request: NextRequest): {
+  headers: Headers;
+  requestId: string;
+  minted: boolean;
+} {
+  const incoming = request.headers.get('x-request-id')?.trim();
+  if (incoming) {
+    return { headers: request.headers, requestId: incoming, minted: false };
+  }
+  const requestId = crypto.randomUUID();
+  const headers = new Headers(request.headers);
+  headers.set('x-request-id', requestId);
+  return { headers, requestId, minted: true };
+}
+
 export default async function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') ?? '';
   // F-SEC-17: walk the X-Forwarded-For chain right-to-left, terminating at
@@ -488,6 +515,12 @@ export default async function middleware(request: NextRequest) {
   // the request lands on a misconfigured proxy chain.
   const ip = extractClientIp(request);
   const pathname = request.nextUrl.pathname;
+
+  // F-OBS-09 — mint or pass-through the request correlation id. The same
+  // Headers instance is forwarded on every NextResponse below so the id
+  // reaches both auth and tRPC handlers.
+  const { headers: forwardHeaders, minted } = ensureRequestIdHeader(request);
+  const forwardInit = minted ? { request: { headers: forwardHeaders } } : undefined;
 
   // ── Rate limiting (API routes) ────────────────────────────────────────
 
@@ -500,7 +533,9 @@ export default async function middleware(request: NextRequest) {
     const subdomain = hostname.replace(`.${PORTAL_BASE_DOMAIN}`, '');
 
     if (subdomain && !subdomain.includes('.')) {
-      const requestHeaders = new Headers(request.headers);
+      // Start from the (potentially mint-augmented) forward headers so the
+      // request id rides along on the portal rewrite/next path too.
+      const requestHeaders = new Headers(forwardHeaders);
       requestHeaders.set('x-portal-org-subdomain', subdomain);
 
       const url = request.nextUrl.clone();
@@ -521,7 +556,7 @@ export default async function middleware(request: NextRequest) {
 
   // ── API routes: skip auth guards and intl (rate limiting already handled above)
   if (pathname.startsWith('/api/')) {
-    return NextResponse.next();
+    return NextResponse.next(forwardInit);
   }
 
   // ── Auth guards for non-portal routes ─────────────────────────────────
@@ -529,7 +564,15 @@ export default async function middleware(request: NextRequest) {
   const authRedirect = applyAuthGuards(request, pathname);
   if (authRedirect) return authRedirect;
 
-  // Default: next-intl middleware for non-portal requests
+  // Default: next-intl middleware for non-portal requests. When we minted a
+  // requestId we hand next-intl the augmented headers so locale negotiation
+  // and any RSC render reachable via this branch sees the id. The API
+  // boundaries that actually thread the id into ALS (auth, tRPC, webhooks)
+  // are covered by the explicit `/api/*` branch above.
+  if (minted) {
+    const mintedRequest = new NextRequest(request, { headers: forwardHeaders });
+    return intlMiddleware(mintedRequest);
+  }
   return intlMiddleware(request);
 }
 

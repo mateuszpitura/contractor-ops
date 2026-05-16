@@ -1,5 +1,9 @@
 import { appRouter, createContext } from '@contractor-ops/api';
-import { createLogger } from '@contractor-ops/logger';
+import {
+  buildContextFromHeaders,
+  createLogger,
+  runWithRequestContext,
+} from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
@@ -70,19 +74,29 @@ const handler = async (req: Request) => {
 
   log.info({ method, url: `${pathname}${search}`, procedure }, `→ ${method} ${pathname}${search}`);
 
-  const res = await Sentry.withIsolationScope(() =>
-    fetchRequestHandler({
-      endpoint: '/api/trpc',
-      req,
-      router: appRouter,
-      createContext: () => createContext({ headers: req.headers }),
-      onError({ error, path: procedurePath }) {
-        Sentry.captureException(error, {
-          tags: { 'trpc.path': procedurePath },
-        });
-      },
-    }),
-  );
+  // F-OBS-09 — seed an ALS frame from the incoming `x-request-id` /
+  // `traceparent` headers (or mint a fresh requestId when absent) so every
+  // procedure inside a batched tRPC call shares one correlation id across
+  // Pino logs, Sentry events, and downstream outbound HTTP. Mirrors
+  // apps/web/src/app/api/auth/[...all]/route.ts.
+  const requestCtx = buildContextFromHeaders(req.headers);
+
+  const res = await Sentry.withIsolationScope(scope => {
+    scope.setTag('requestId', requestCtx.requestId);
+    return runWithRequestContext(requestCtx, () =>
+      fetchRequestHandler({
+        endpoint: '/api/trpc',
+        req,
+        router: appRouter,
+        createContext: () => createContext({ headers: req.headers }),
+        onError({ error, path: procedurePath }) {
+          Sentry.captureException(error, {
+            tags: { 'trpc.path': procedurePath },
+          });
+        },
+      }),
+    );
+  });
 
   const durationMs = Math.round(performance.now() - start);
   const status = res.status;
