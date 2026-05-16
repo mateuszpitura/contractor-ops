@@ -4,12 +4,13 @@ import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-function getSteps(t: (key: string) => string) {
+function getSteps(t: LooseTranslator) {
   return [
     { key: 'submitted', label: t('submitted') },
     { key: 'review', label: t('inReview') },

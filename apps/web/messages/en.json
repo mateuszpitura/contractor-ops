@@ -1341,7 +1341,10 @@
       "offboarding": "Offboarding",
       "ended": "Ended",
       "transitioned": "Status changed to {stage}",
-      "archived": "Contractor archived"
+      "archived": "Contractor archived",
+      "archiveConfirm": "Archive contractor",
+      "archiveConfirmTitle": "Archive this contractor?",
+      "archiveConfirmBody": "Archived contractors are hidden from the active list and excluded from new contracts. You can restore them later from the archived view."
     },
     "error": {
       "loadFailed": "Could not load contractor profile. Try again.",
@@ -3253,7 +3256,11 @@
           "removeFailed": "Failed to remove document link",
           "refreshed": "Document metadata refreshed",
           "refreshFailed": "Failed to refresh document metadata"
-        }
+        },
+        "detachConfirm": "Detach document",
+        "detachCancel": "Keep linked",
+        "detachConfirmTitle": "Detach this document?",
+        "detachConfirmBody": "Detaching unlinks the document from this section but does not delete the file itself."
       },
       "chip": {
         "openInProvider": "Open {title} in {provider} (new tab)",
@@ -3499,6 +3506,16 @@
       "saving": "Saving…",
       "overrideCta": "Override reverse charge",
       "overrideError": "Failed to override reverse charge"
+    },
+    "bulkActions": {
+      "selected": "{count} selected",
+      "export": "Export",
+      "exportCsv": "Export as CSV",
+      "exportXlsx": "Export as XLSX",
+      "submitForMatching": "Submit for matching",
+      "void": "Void",
+      "approve": "Approve",
+      "reject": "Reject"
     }
   },
   "Ir35Chain": {
@@ -4833,6 +4850,12 @@
           "COMPENSATION": "Fixed compensation only",
           "BOTH": "Interest and compensation"
         }
+      },
+      "status": {
+        "notApplicable": "Not applicable",
+        "accruing": "Accruing",
+        "claimed": "Claimed",
+        "waived": "Waived"
       }
     },
     "overdueInterest": {
@@ -4885,6 +4908,9 @@
           "daysOrdering": "Discount period must be shorter than the net period.",
           "invalidDays": "Enter a whole number of days (1 or more).",
           "percentOutOfRange": "Discount must be between 0 and 50%."
+        },
+        "confirm": {
+          "deleteDefaultSkonto": "Remove this default Skonto term from the billing profile?"
         }
       },
       "form": {
@@ -4906,6 +4932,9 @@
           "daysOrdering": "Discount period must be shorter than the net period.",
           "invalidDays": "Enter a whole number of days (1 or more).",
           "percentOutOfRange": "Discount must be between 0 and 50%."
+        },
+        "confirm": {
+          "deleteInvoiceSkonto": "Remove the Skonto term from this invoice?"
         }
       },
       "paymentRun": {
@@ -4914,6 +4943,13 @@
         "newAmount": "New amount: {amount}",
         "pastWindowDescription": "Discount window expired on {date} — full amount applies",
         "pastWindowLabel": "Skonto unavailable — discount window expired"
+      },
+      "eligibility": {
+        "eligible": "Skonto available",
+        "pastWindow": "Discount window expired",
+        "notConfigured": "No Skonto term",
+        "takenAtPayment": "Skonto taken",
+        "notTakenAtPayment": "Skonto not taken"
       }
     },
     "dashboard": {

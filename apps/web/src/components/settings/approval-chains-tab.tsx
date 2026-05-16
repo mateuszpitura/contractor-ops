@@ -217,6 +217,7 @@ export function ApprovalChainsTab() {
                   checked={chain.isActive}
                   // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onCheckedChange={() => handleToggleActive(chain)}
+                  disabled={toggleActiveMutation.isPending}
                   aria-label={tAria('toggleActive', { name: chain.name })}
                 />
               </div>

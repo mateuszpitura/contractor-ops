@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contract.list response shape
@@ -51,7 +51,7 @@ const riskBadgeColors: Record<string, string> = {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string, params?: Record<string, string | number>) => string;
+type TranslateFunction = TranslatorOf<'Contracts'>;
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
 /**
@@ -130,7 +130,7 @@ export function getColumns(
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {tDyn(t, 'type', enumKey(row.original.type))}
+          {tDynLoose(t, 'type', enumKey(row.original.type))}
         </Badge>
       ),
     },
@@ -143,7 +143,7 @@ export function getColumns(
         const status = row.original.status as ContractStatusInput;
         return (
           <AtelierStatusPill variant={statusToVariant('contract', status)}>
-            {tDyn(t, 'status', enumKey(status))}
+            {tDynLoose(t, 'status', enumKey(status))}
           </AtelierStatusPill>
         );
       },
@@ -231,7 +231,7 @@ export function getColumns(
       header: t('columns.billingCycle'),
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="text-sm">{tDyn(t, 'billingModel', enumKey(row.original.billingModel))}</span>
+        <span className="text-sm">{tDynLoose(t, 'billingModel', enumKey(row.original.billingModel))}</span>
       ),
     },
 
@@ -256,7 +256,7 @@ export function getColumns(
         if (!risk) return <span className="text-muted-foreground">&mdash;</span>;
         return (
           <Badge variant="secondary" className={riskBadgeColors[risk] ?? ''}>
-            {tDyn(t, 'risk', enumKey(risk))}
+            {tDynLoose(t, 'risk', enumKey(risk))}
           </Badge>
         );
       },

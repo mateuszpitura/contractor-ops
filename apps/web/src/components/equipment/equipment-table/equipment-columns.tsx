@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Link } from '@/i18n/navigation';
-import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tKey, type TranslatorOf } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
@@ -57,7 +57,7 @@ interface ColumnActions {
 
 export function getEquipmentColumns(
   t: TranslateFunction,
-  tCommon: TranslateFunction,
+  tCommon: TranslatorOf<'Common'>,
   actions: ColumnActions,
 ): ColumnDef<EquipmentRow>[] {
   return [

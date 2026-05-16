@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { enumKey } from '@/lib/enum-key';
 import { ComplianceHealthBadge } from '../compliance-health-badge';
-import { tDyn, type TranslatorOf } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape
@@ -100,7 +100,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {tDyn(t, 'type', enumKey(row.original.type))}
+          {tDynLoose(t, 'type', enumKey(row.original.type))}
         </Badge>
       ),
     },
@@ -113,7 +113,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
         const stage = row.original.lifecycleStage as ContractorLifecycleStageInput;
         return (
           <AtelierStatusPill variant={statusToVariant('contractor-lifecycle', stage)}>
-            {tDyn(t, 'lifecycle', enumKey(stage))}
+            {tDynLoose(t, 'lifecycle', enumKey(stage))}
           </AtelierStatusPill>
         );
       },
@@ -152,7 +152,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
             ? (custom as Record<string, unknown>).billingModel
             : null;
         return model ? (
-          <span className="text-sm">{tDyn(t, 'billingModel', enumKey(String(model)))}</span>
+          <span className="text-sm">{tDynLoose(t, 'billingModel', enumKey(String(model)))}</span>
         ) : (
           <span className="text-muted-foreground">&mdash;</span>
         );

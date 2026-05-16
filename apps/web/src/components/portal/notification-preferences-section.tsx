@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { portalTrpc } from '@/trpc/init';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -31,7 +32,7 @@ interface CategoryConfig {
   locked?: boolean;
 }
 
-function getCategories(t: (key: string) => string): CategoryConfig[] {
+function getCategories(t: LooseTranslator): CategoryConfig[] {
   return [
     {
       category: 'INVOICE_UPDATES',

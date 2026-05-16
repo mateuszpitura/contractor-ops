@@ -152,7 +152,9 @@ export function LeitwegIdRow({ row }: LeitwegIdRowProps) {
                 {t('actionEdit')}
               </DropdownMenuItem>
               <DropdownMenuItem
-                disabled={!row.contractorId || row.isDefaultForContractor}
+                disabled={
+                  !row.contractorId || row.isDefaultForContractor || setDefaultMutation.isPending
+                }
                 onClick={() => {
                   (setDefaultMutation.mutate as (input: { id: string }) => void)({
                     id: row.id,

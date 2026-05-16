@@ -140,7 +140,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
     // namespace so the right `t()` is used.
     if (action.i18nNamespace === 'ContractorProfile') return tKey(t, action.labelKey);
     if (action.i18nNamespace === 'Contractors.bulkActions') return tKey(tBulk, action.labelKey);
-    return tc(action.labelKey);
+    return tKey(tc, action.labelKey);
   }
 
   function dispatchPrimaryAction(action: ContractorAction) {

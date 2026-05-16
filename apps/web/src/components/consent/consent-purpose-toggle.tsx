@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -33,8 +34,8 @@ export function ConsentPurposeToggle({
   const t = useTranslations('Consent');
 
   const purposeKey = purpose.toLowerCase().replace(/_/g, '-');
-  const label = t(`purposes.${purposeKey}.label`);
-  const description = t(`purposes.${purposeKey}.description`);
+  const label = tKey(t, `purposes.${purposeKey}.label`);
+  const description = tKey(t, `purposes.${purposeKey}.description`);
 
   const switchId = `consent-${purpose}`;
 

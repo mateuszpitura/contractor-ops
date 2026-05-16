@@ -69,7 +69,7 @@ function RejectPopover({
   t,
 }: {
   onReject: (comment: string) => void;
-  t: (key: string) => string;
+  t: TranslatorOf<'Approvals'>;
 }) {
   const reactId = useId();
   const [comment, setComment] = useState('');

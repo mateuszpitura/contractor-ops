@@ -35,12 +35,13 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { portalTrpc, trpc } from '@/trpc/init';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-function createInvoiceSubmitSchema(t: (key: string) => string) {
+function createInvoiceSubmitSchema(t: LooseTranslator) {
   return z
     .object({
       contractId: z.string().min(1, t('errors.selectContract')),
@@ -94,7 +95,7 @@ type UploadState =
 
 function formatFileSize(
   bytes: number,
-  tc: (key: string, values?: Record<string, string | number | Date>) => string,
+  tc: LooseTranslator,
 ): string {
   if (bytes < 1024) return tc('bytes', { size: bytes });
   if (bytes < 1024 * 1024) return tc('kilobytes', { size: (bytes / 1024).toFixed(1) });
@@ -161,9 +162,9 @@ function UploadSection({
   removeFile: () => void;
   creditExhausted: boolean;
   onNavigateBilling: () => void;
-  t: (key: string, values?: Record<string, string | number | Date>) => string;
-  tc: (key: string, values?: Record<string, string | number | Date>) => string;
-  tAria: (key: string) => string;
+  t: LooseTranslator;
+  tc: LooseTranslator;
+  tAria: LooseTranslator;
 }) {
   const openPdfPreview = useCallback(() => {
     if (pdfBlobUrl) window.open(pdfBlobUrl, '_blank');
@@ -267,7 +268,7 @@ function ReviewSummary({
   netAmount: string;
   grossAmount: string;
   upload: UploadState;
-  t: (key: string) => string;
+  t: LooseTranslator;
 }) {
   if (!(invoiceNumber || selectedContract) && upload.status !== 'uploaded') return null;
 
@@ -343,7 +344,7 @@ function NipFieldsSection({
   t,
 }: {
   resultJson: OcrExtractionResult;
-  t: (key: string) => string;
+  t: LooseTranslator;
 }) {
   if (!resultJson.fields?.sellerNip) return null;
 
@@ -393,7 +394,7 @@ function NipFieldsSection({
 // Upload + OCR hook (reduces main component complexity)
 // ---------------------------------------------------------------------------
 
-function useFileUploadWithOcr(t: (key: string) => string) {
+function useFileUploadWithOcr(t: LooseTranslator) {
   const [upload, setUpload] = useState<UploadState>({ status: 'idle' });
   const [extractionId, setExtractionId] = useState<string | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
@@ -568,7 +569,7 @@ function useOcrPrefill(
   ocrPopulated: boolean,
   setOcrPopulated: (v: boolean) => void,
   setValue: (key: string, value: string, opts?: { shouldValidate: boolean }) => void,
-  t: (key: string) => string,
+  t: LooseTranslator,
 ) {
   useEffect(() => {
     if (!resultJson || ocrPopulated) return;
@@ -633,7 +634,7 @@ function useAutoSelectSingleContract(
 // Invoice submission hook (tRPC mutation + success/error handling)
 // ---------------------------------------------------------------------------
 
-function useInvoiceSubmission(t: (key: string) => string, upload: UploadState) {
+function useInvoiceSubmission(t: LooseTranslator, upload: UploadState) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const submitInvoice = useMutation(
@@ -704,7 +705,7 @@ function ContractSelectionSection({
   selectedContract: ContractOption | null | undefined;
   onContractChange: (val: string | null) => void;
   errorMessage: string | undefined;
-  t: (key: string, values?: Record<string, string | number | Date>) => string;
+  t: LooseTranslator;
 }) {
   return (
     <div className="space-y-4">
@@ -773,7 +774,7 @@ function InvoiceMetadataSection({
   resultJson: OcrExtractionResult | null | undefined;
   isOcrProcessing: boolean;
   selectedContract: ContractOption | null | undefined;
-  t: (key: string) => string;
+  t: LooseTranslator;
 }) {
   const fields = resultJson?.fields;
   const netLabel = `${t('netAmount')}${selectedContract ? ` (${selectedContract.currency})` : ''}`;
@@ -897,7 +898,7 @@ function OcrStatusBanner({
   totalFields: number;
   resultJson: OcrExtractionResult | null | undefined;
   ocrPopulated: boolean;
-  t: (key: string) => string;
+  t: LooseTranslator;
 }) {
   const showStatusBar = !!extractionStatus && extractionStatus !== 'PENDING';
 
@@ -932,7 +933,7 @@ function SubmitInvoiceButton({
 }: {
   disabled: boolean;
   isPending: boolean;
-  t: (key: string) => string;
+  t: LooseTranslator;
 }) {
   return (
     <Button type="submit" className="w-full md:w-auto" disabled={disabled}>

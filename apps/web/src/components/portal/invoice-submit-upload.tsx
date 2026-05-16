@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { CreditExhaustedInline } from '@/components/billing/credit-exhausted-inline';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Upload state
@@ -28,7 +29,7 @@ export type UploadState =
 
 export function formatFileSize(
   bytes: number,
-  tc: (key: string, values?: Record<string, string | number | Date>) => string,
+  tc: LooseTranslator,
 ): string {
   if (bytes < 1024) return tc('bytes', { size: bytes });
   if (bytes < 1024 * 1024) return tc('kilobytes', { size: (bytes / 1024).toFixed(1) });
@@ -48,9 +49,9 @@ export interface UploadSectionProps {
   removeFile: () => void;
   creditExhausted: boolean;
   onNavigateBilling: () => void;
-  t: (key: string, values?: Record<string, string | number | Date>) => string;
-  tc: (key: string, values?: Record<string, string | number | Date>) => string;
-  tAria: (key: string) => string;
+  t: LooseTranslator;
+  tc: LooseTranslator;
+  tAria: LooseTranslator;
 }
 
 export function UploadSection({

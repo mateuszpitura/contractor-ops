@@ -24,6 +24,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
+import { tKey } from '@/i18n/typed-keys';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 
@@ -116,9 +117,9 @@ function StepItem({
   current: boolean;
   t: ReturnType<typeof useTranslations<'Onboarding'>>;
 }) {
-  const title = t(`steps.${step.stepKey}.title` as Parameters<typeof t>[0]);
-  const description = t(`steps.${step.stepKey}.description` as Parameters<typeof t>[0]);
-  const cta = t(`steps.${step.stepKey}.cta` as Parameters<typeof t>[0]);
+  const title = tKey(t, `steps.${step.stepKey}.title`);
+  const description = tKey(t, `steps.${step.stepKey}.description`);
+  const cta = tKey(t, `steps.${step.stepKey}.cta`);
 
   return (
     <div className="flex gap-3">
@@ -341,11 +342,7 @@ export function OnboardingChecklist() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={updateMutation.isPending}
-          onClick={handleDismiss}>
+        <Button variant="ghost" size="sm" onClick={handleDismiss}>
           <ChevronUp className="me-1 h-3.5 w-3.5" />
           {t('dismiss')}
         </Button>

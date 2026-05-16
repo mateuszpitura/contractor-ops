@@ -48,7 +48,7 @@ function makeRow(overrides: Partial<EquipmentRow> = {}): EquipmentRow {
 
 function renderCell(columnId: string, row: EquipmentRow) {
   const t = createMockTranslator<'Equipment'>();
-  const tCommon = (key: string) => key;
+  const tCommon = createMockTranslator<"Common">();
   const actions = {
     onEdit: vi.fn(),
     onAssign: vi.fn(),
@@ -72,7 +72,7 @@ function renderCell(columnId: string, row: EquipmentRow) {
 
 describe('getEquipmentColumns', () => {
   const t = createMockTranslator<'Equipment'>();
-  const tCommon = (key: string) => key;
+  const tCommon = createMockTranslator<"Common">();
   const actions = {
     onEdit: vi.fn(),
     onAssign: vi.fn(),

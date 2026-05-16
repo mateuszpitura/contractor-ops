@@ -138,5 +138,26 @@
     "category": "missing-loading-state",
     "pattern": "effect-driven-mutation",
     "reason": "Mutation auto-fires from a `useEffect` (line 144) on first visit when `templates.length === 0` and `seedAttempted.current` is false. There is no user-triggered Button to disable; the `seedAttempted` ref prevents double-fire."
+  },
+  {
+    "procedure": "integration.disconnectGeneric",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "category": "missing-loading-state",
+    "pattern": "routed-mutation",
+    "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound \u2014 the detector just doesn't follow the conditional-alias pattern."
+  },
+  {
+    "procedure": "jira.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "category": "missing-loading-state",
+    "pattern": "routed-mutation",
+    "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound \u2014 the detector just doesn't follow the conditional-alias pattern."
+  },
+  {
+    "procedure": "ksef.disconnect",
+    "file": "apps/web/src/components/settings/provider-connection-card.tsx",
+    "category": "missing-loading-state",
+    "pattern": "routed-mutation",
+    "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound \u2014 the detector just doesn't follow the conditional-alias pattern."
   }
 ]

@@ -3,11 +3,12 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import { trpc } from '@/trpc/init';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 /**
  * Encapsulates workflow template CRUD mutations with cache invalidation.
  */
-export function useTemplateMutations(t: (key: string) => string): {
+export function useTemplateMutations(t: LooseTranslator): {
   activate: (id: string) => void;
   archive: (id: string) => void;
   duplicate: (id: string) => void;

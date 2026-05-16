@@ -1341,7 +1341,10 @@
       "offboarding": "إنهاء الخدمة",
       "ended": "Ended",
       "transitioned": "تغيّرت الحالة إلى {stage}",
-      "archived": "تمت أرشفة المقاول"
+      "archived": "تمت أرشفة المقاول",
+      "archiveConfirm": "Archive contractor",
+      "archiveConfirmTitle": "Archive this contractor?",
+      "archiveConfirmBody": "Archived contractors are hidden from the active list and excluded from new contracts. You can restore them later from the archived view."
     },
     "error": {
       "loadFailed": "تعذر load contractor profile. حاول مجددًا.",
@@ -3253,7 +3256,11 @@
           "removeFailed": "فشل إزالة رابط المستند",
           "refreshed": "تم تحديث البيانات الوصفية للمستند",
           "refreshFailed": "فشل تحديث البيانات الوصفية للمستند"
-        }
+        },
+        "detachConfirm": "Detach document",
+        "detachCancel": "Keep linked",
+        "detachConfirmTitle": "Detach this document?",
+        "detachConfirmBody": "Detaching unlinks the document from this section but does not delete the file itself."
       },
       "chip": {
         "openInProvider": "فتح {title} في {provider} (تبويب جديد)",
@@ -3499,6 +3506,16 @@
       "saving": "جارٍ الحفظ…",
       "overrideCta": "تجاوز الاحتساب العكسي",
       "overrideError": "فشل تجاوز الاحتساب العكسي"
+    },
+    "bulkActions": {
+      "selected": "{count} selected",
+      "export": "Export",
+      "exportCsv": "Export as CSV",
+      "exportXlsx": "Export as XLSX",
+      "submitForMatching": "Submit for matching",
+      "void": "Void",
+      "approve": "Approve",
+      "reject": "Reject"
     }
   },
   "Ir35Chain": {
@@ -4823,6 +4840,12 @@
           "COMPENSATION": "التعويض الثابت فقط",
           "BOTH": "الفوائد والتعويض معًا"
         }
+      },
+      "status": {
+        "notApplicable": "Not applicable",
+        "accruing": "Accruing",
+        "claimed": "Claimed",
+        "waived": "Waived"
       }
     },
     "overdueInterest": {
@@ -4875,6 +4898,9 @@
           "daysOrdering": "يجب أن تكون فترة الخصم أقصر من فترة الصافي.",
           "invalidDays": "أدخل عددًا صحيحًا من الأيام (1 أو أكثر).",
           "percentOutOfRange": "يجب أن تتراوح نسبة الخصم بين 0 و50%."
+        },
+        "confirm": {
+          "deleteDefaultSkonto": "Remove this default Skonto term from the billing profile?"
         }
       },
       "form": {
@@ -4896,6 +4922,9 @@
           "daysOrdering": "يجب أن تكون فترة الخصم أقصر من فترة الصافي.",
           "invalidDays": "أدخل عددًا صحيحًا من الأيام (1 أو أكثر).",
           "percentOutOfRange": "يجب أن تتراوح نسبة الخصم بين 0 و50%."
+        },
+        "confirm": {
+          "deleteInvoiceSkonto": "Remove the Skonto term from this invoice?"
         }
       },
       "paymentRun": {
@@ -4904,6 +4933,13 @@
         "newAmount": "المبلغ الجديد: {amount}",
         "pastWindowDescription": "انتهت نافذة الخصم بتاريخ {date} — يُطبَّق المبلغ الكامل",
         "pastWindowLabel": "Skonto غير متاح — انتهت نافذة الخصم"
+      },
+      "eligibility": {
+        "eligible": "Skonto available",
+        "pastWindow": "Discount window expired",
+        "notConfigured": "No Skonto term",
+        "takenAtPayment": "Skonto taken",
+        "notTakenAtPayment": "Skonto not taken"
       }
     },
     "dashboard": {

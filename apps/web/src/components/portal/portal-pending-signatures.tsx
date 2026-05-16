@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { trpc } from '@/trpc/init';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,7 +18,7 @@ import { trpc } from '@/trpc/init';
 
 function formatRelativeTime(
   date: Date | string,
-  t: (key: string, values?: Record<string, string | number | Date>) => string,
+  t: LooseTranslator,
   formatDate: (value: Date | string | null | undefined) => string,
 ): string {
   const d = typeof date === 'string' ? new Date(date) : date;

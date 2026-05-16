@@ -249,6 +249,7 @@ export function ReminderRulesSection() {
                     checked={rule.active}
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => handleToggleActive(rule)}
+                    disabled={toggleActiveMutation.isPending}
                     aria-label={tAria('toggleActive', { name: rule.name })}
                   />
                 </div>

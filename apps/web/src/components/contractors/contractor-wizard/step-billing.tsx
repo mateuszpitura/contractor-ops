@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+import { tKey } from '@/i18n/typed-keys';
+import { enumKey } from '@/lib/enum-key';
 import type { WizardFormValues } from './wizard-dialog';
 
 interface StepBillingProps {
@@ -36,7 +38,7 @@ export function StepBilling({ form }: StepBillingProps) {
 
   const billingModelItems = BILLING_MODEL_VALUES.map(v => ({
     value: v,
-    label: tb(v),
+    label: tKey(tb, enumKey(v)),
   }));
 
   const _currencyItems = CURRENCIES.map(c => ({

@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { PenLine } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { DocumentList } from '@/components/documents/document-list';
 import { DropZone } from '@/components/documents/drop-zone';
@@ -21,7 +20,6 @@ type DocumentsTabProps = {
 };
 
 export function DocumentsTab({ contractId, contractParties = [] }: DocumentsTabProps) {
-  const _t = useTranslations('ContractDetail.documents');
   const [signDialogOpen, setSignDialogOpen] = useState(false);
   const [selectedDocId, setSelectedDocId] = useState('');
 

@@ -10,6 +10,7 @@
 import { Check, CircleAlert, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 import { cn } from '@/lib/utils';
 
@@ -87,7 +88,7 @@ export function ClassificationAutosaveIndicator({
 
 function resolveVisual(
   status: AutosaveStatus,
-  t: (key: string, vars?: Record<string, string>) => string,
+  t: LooseTranslator,
   relativeTime: string,
 ): { label: string; Icon: typeof Loader2 | null; variant: AutosaveStatus } {
   switch (status) {

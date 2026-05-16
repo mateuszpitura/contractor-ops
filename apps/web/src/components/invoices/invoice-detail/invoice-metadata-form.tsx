@@ -43,13 +43,13 @@ import {
 } from '@/components/ui/select';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { trpc } from '@/trpc/init';
-import { tKey } from '@/i18n/typed-keys';
+import { tKey, type LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
 // ---------------------------------------------------------------------------
 
-function createInvoiceMetadataSchema(tv: (key: string) => string) {
+function createInvoiceMetadataSchema(tv: LooseTranslator) {
   return z.object({
     invoiceNumber: z.string().min(1, tv('invoiceNumberRequired')).max(100),
     issueDate: z.string().min(1, tv('issueDateRequired')),
@@ -193,9 +193,9 @@ function buildUpdatePayload(values: InvoiceMetadataValues, invoiceId: string) {
 function resolveActionLabel(
   action: InvoiceAction,
   translators: {
-    t: (key: string) => string;
-    tDetail: (key: string) => string;
-    tBulk: (key: string) => string;
+    t: LooseTranslator;
+    tDetail: LooseTranslator;
+    tBulk: LooseTranslator;
   },
 ): string {
   if (action.i18nNamespace === 'Invoices.detail') {

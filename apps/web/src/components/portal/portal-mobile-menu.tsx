@@ -23,12 +23,13 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Navigation items (same as top bar)
 // ---------------------------------------------------------------------------
 
-function getNavItems(t: (key: string) => string) {
+function getNavItems(t: LooseTranslator) {
   return [
     { label: t('overview'), href: '/portal', icon: LayoutDashboard },
     { label: t('contracts'), href: '/portal/contracts', icon: FileText },

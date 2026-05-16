@@ -50,6 +50,17 @@ import type { useTranslations } from 'next-intl';
 type Translator = (key: any, ...rest: any[]) => string;
 
 /**
+ * Bivariant translator shape for "adapter" slots — schema validators,
+ * form-state helpers, etc. that just need to forward a translated string
+ * without caring about namespace specifics. Real `Translator<Messages, NS>`
+ * values from `useTranslations(NS)` are assignable thanks to the `any`
+ * parameter (bivariance), so callers don't need a `(key: string) => t(key)`
+ * rewrapper.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: bivariant by design — narrow translators flow in unchanged.
+export type LooseTranslator = (key: any, values?: any) => string;
+
+/**
  * Concrete shape of `useTranslations(ns)` for a given namespace. Use as a
  * function parameter type when a helper / column factory needs to accept
  * a translator scoped to one specific namespace:
@@ -60,7 +71,7 @@ type Translator = (key: any, ...rest: any[]) => string;
  * with no `(key: string) => t(key)` re-wrapping.
  */
 export type TranslatorOf<
-  NS extends Parameters<typeof useTranslations>[0] = Parameters<typeof useTranslations>[0],
+  NS extends NonNullable<Parameters<typeof useTranslations>[0]> = NonNullable<Parameters<typeof useTranslations>[0]>,
 > = ReturnType<typeof useTranslations<NS>>;
 
 /**
@@ -70,8 +81,8 @@ export type TranslatorOf<
  * up the full `NextIntlClientProvider`.
  */
 export function createMockTranslator<
-  NS extends Parameters<typeof useTranslations>[0] = Parameters<typeof useTranslations>[0],
->(impl: (key: string, values?: Record<string, unknown>) => string = (k) => k): TranslatorOf<NS> {
+  NS extends NonNullable<Parameters<typeof useTranslations>[0]> = NonNullable<Parameters<typeof useTranslations>[0]>,
+>(impl: LooseTranslator = (k) => k): TranslatorOf<NS> {
   const fn = ((key: string, values?: Record<string, unknown>) => impl(key, values)) as unknown as TranslatorOf<NS>;
   type MutableTranslator = Record<string, unknown>;
   const mut = fn as unknown as MutableTranslator;

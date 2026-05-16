@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
+import { tKey } from '@/i18n/typed-keys';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import { ExportButtons } from './export-buttons';
@@ -158,7 +159,7 @@ export function ExpiringContractsReport({
               setDays(d);
               setPage(1);
             }}>
-            {t(`days${d}` as Parameters<typeof t>[0])}
+            {tKey(t, `days${d}`)}
           </Button>
         ))}
       </div>

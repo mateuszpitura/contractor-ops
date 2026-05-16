@@ -22,6 +22,7 @@ import { navigationItems } from '@/lib/navigation';
 import { trpc } from '@/trpc/init';
 import type { RecentItem } from './search-provider';
 import { useSearch } from './search-provider';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -149,7 +150,7 @@ function RecentCommandItem({
 }: {
   item: RecentItem;
   onSelect: (item: RecentItem) => void;
-  tTime: (key: string, params?: Record<string, number>) => string;
+  tTime: LooseTranslator;
 }) {
   const handleSelect = useCallback(() => onSelect(item), [onSelect, item]);
   const { key, params } = formatRelativeTimeData(item.viewedAt);

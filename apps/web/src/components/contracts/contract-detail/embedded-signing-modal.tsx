@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -80,7 +81,7 @@ function SigningBody({
   documentTitle: string;
   iframeRef: React.RefObject<HTMLIFrameElement | null>;
   onOpenChange: (open: boolean) => void;
-  t: (key: string, values?: Record<string, string>) => string;
+  t: LooseTranslator;
 }) {
   if (isPending) {
     return (

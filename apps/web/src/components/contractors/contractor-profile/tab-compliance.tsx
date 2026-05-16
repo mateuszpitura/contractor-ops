@@ -11,6 +11,8 @@ import { DropZone } from '@/components/documents/drop-zone';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { tDynLoose } from '@/i18n/typed-keys';
+import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 
 type ComplianceItem = {
@@ -110,14 +112,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
 
               <div className="flex items-center gap-3">
                 <Badge variant="secondary" className={statusBadgeStyles[statusKey] ?? ''}>
-                  {t(
-                    `status.${statusKey}` as
-                      | 'status.SATISFIED'
-                      | 'status.MISSING'
-                      | 'status.EXPIRED'
-                      | 'status.PENDING'
-                      | 'status.WAIVED',
-                  )}
+                  {tDynLoose(t, 'status', enumKey(statusKey))}
                 </Badge>
 
                 {isMissing && (

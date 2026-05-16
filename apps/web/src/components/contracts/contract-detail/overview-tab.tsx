@@ -12,6 +12,7 @@ import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -191,7 +192,7 @@ function getNoticeDeadline(endDate: string | Date | null, noticeDays: number | n
 function translateEnum(
   value: string | null | undefined,
   prefix: string,
-  tEnum: (key: string) => string,
+  tEnum: LooseTranslator,
 ): string | null {
   return value ? tEnum(`${prefix}.${enumKey(value)}` as string) : null;
 }
@@ -223,7 +224,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
         <CardContent className="grid gap-3">
           <FieldRow
             label={t('fields.type')}
-            value={translateEnum(contract.type, 'type', tEnum as (key: string) => string)}
+            value={translateEnum(contract.type, 'type', tEnum as LooseTranslator)}
           />
           <FieldRow
             label={t('fields.autoRenewal')}
@@ -263,12 +264,12 @@ export function OverviewTab({ contract }: OverviewTabProps) {
             value={translateEnum(
               contract.billingModel,
               'billingModel',
-              tEnum as (key: string) => string,
+              tEnum as LooseTranslator,
             )}
           />
           <FieldRow
             label={t('fields.rateType')}
-            value={translateEnum(contract.rateType, 'rateType', tEnum as (key: string) => string)}
+            value={translateEnum(contract.rateType, 'rateType', tEnum as LooseTranslator)}
           />
           {contract.paymentTermsDays != null && (
             <FieldRow
@@ -283,7 +284,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
             value={translateEnum(
               contract.invoiceCycle,
               'invoiceCycle',
-              tEnum as (key: string) => string,
+              tEnum as LooseTranslator,
             )}
           />
           {contract.retainerAmountMinor != null && (

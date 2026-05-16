@@ -6,7 +6,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn, type TranslatorOf } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC workflow.listRuns response shape
@@ -134,7 +134,7 @@ export function getColumns(
         <Badge
           variant="secondary"
           className={templateTypeBadgeColors[row.original.workflowTemplate.type] ?? ''}>
-          {tDyn(t, 'templateType', enumKey(row.original.workflowTemplate.type))}
+          {tDynLoose(t, 'templateType', enumKey(row.original.workflowTemplate.type))}
         </Badge>
       ),
       enableSorting: false,
@@ -149,7 +149,7 @@ export function getColumns(
         return (
           <AtelierStatusPill
             variant={statusToVariant('workflow-run', status as WorkflowRunStatusInput)}>
-            {tDyn(t, 'runStatus', enumKey(status))}
+            {tDynLoose(t, 'runStatus', enumKey(status))}
           </AtelierStatusPill>
         );
       },

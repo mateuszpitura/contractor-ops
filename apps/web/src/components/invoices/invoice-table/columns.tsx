@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn, type TranslatorOf } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -302,7 +302,7 @@ export function getColumns(
         return (
           <AtelierStatusPill variant={variant}>
             {Icon ? <Icon className="h-3 w-3" /> : null}
-            {tDyn(t, 'status', enumKey(status))}
+            {tDynLoose(t, 'status', enumKey(status))}
           </AtelierStatusPill>
         );
       },
@@ -321,7 +321,7 @@ export function getColumns(
         const variant = statusToVariant('invoice-match', matchStatus as InvoiceMatchStatusInput);
         return (
           <AtelierStatusPill variant={variant}>
-            {tDyn(t, 'matchStatus', enumKey(labelKey))}
+            {tDynLoose(t, 'matchStatus', enumKey(labelKey))}
           </AtelierStatusPill>
         );
       },
