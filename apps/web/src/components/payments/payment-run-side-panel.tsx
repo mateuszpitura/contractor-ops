@@ -1,9 +1,17 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Download, FileUp, MoreHorizontal, Trash2, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Download,
+  FileUp,
+  Lightbulb,
+  MoreHorizontal,
+  Trash2,
+  XCircle,
+} from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { WhtSummaryCard } from '@/components/payments/wht-summary-card';
 import {
@@ -48,6 +56,59 @@ interface PaymentRunSidePanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportStatement?: (runId: string) => void;
+}
+
+// ---------------------------------------------------------------------------
+// DetectedFormatHint — surfaces `payment.getFormatDetection` recommendations
+// alongside the user's chosen export format so DRAFT runs can be sanity-
+// checked before lock-and-export. Extracted so PaymentRunSidePanel stays
+// below the cognitive-complexity ceiling.
+// ---------------------------------------------------------------------------
+
+function DetectedFormatHint({
+  runId,
+  enabled,
+  t,
+}: {
+  runId: string;
+  enabled: boolean;
+  t: ReturnType<typeof useTranslations<'Payments'>>;
+}) {
+  const formatDetectionQuery = useQuery({
+    ...trpc.payment.getFormatDetection.queryOptions({ paymentRunId: runId }),
+    enabled,
+  });
+  const detectedFormatCounts = useMemo(() => {
+    const detections = (formatDetectionQuery.data ?? []) as Array<{ format: string }>;
+    const counts: Record<string, number> = {};
+    for (const it of detections) {
+      const key = it.format || 'UNKNOWN';
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [formatDetectionQuery.data]);
+  if (!enabled || detectedFormatCounts.length === 0) return null;
+  return (
+    <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <Lightbulb className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+        <span className="text-[12px] font-medium text-foreground">
+          {t('sidePanel.detectedFormatTitle')}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {detectedFormatCounts.map(([format, count]) => (
+          <span
+            key={format}
+            className="inline-flex items-center gap-1 rounded-md bg-background border border-border px-1.5 py-0.5 text-[12px]">
+            <span className="font-medium">{format}</span>
+            <span className="text-muted-foreground tabular-nums">×{count}</span>
+          </span>
+        ))}
+      </div>
+      <p className="text-[12px] text-muted-foreground">{t('sidePanel.detectedFormatHint')}</p>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -232,6 +293,11 @@ export function PaymentRunSidePanel({
                 />
               )}
             </div>
+
+            {/* Auto-detected format hint — shown only while the run is still
+                editable (DRAFT). After EXPORTED/LOCKED the chosen format is
+                binding so the hint is suppressed to avoid noise. */}
+            <DetectedFormatHint runId={safeRunId} enabled={status === 'DRAFT' && open} t={t} />
 
             <Separator />
 
@@ -439,7 +505,9 @@ function PaymentRunItemRow({
             <Bdi>{item.contractor.legalName}</Bdi>
           </p>
           {!!item.paymentReference && (
-            <p className="text-[12px] text-muted-foreground">Ref: {item.paymentReference}</p>
+            <p className="text-[12px] text-muted-foreground">
+              {t('paymentRef', { reference: item.paymentReference })}
+            </p>
           )}
         </div>
         <span className="font-mono text-xs tabular-nums whitespace-nowrap">
@@ -529,7 +597,7 @@ function PaymentRunItemRow({
                 setActiveAction(null);
                 setReference('');
               }}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -571,7 +639,7 @@ function PaymentRunItemRow({
                 setActiveAction(null);
                 setFailureReason('');
               }}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -599,7 +667,7 @@ function PaymentRunItemRow({
               className="h-6 text-xs"
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={() => setActiveAction(null)}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
