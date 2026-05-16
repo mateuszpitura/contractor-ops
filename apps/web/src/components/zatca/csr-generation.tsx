@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -72,10 +72,14 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
+          <ArrowLeft className="h-3.5 w-3.5" />
           {t('back')}
         </Button>
         {csrPem ? (
-          <Button onClick={onSuccess}>{t('next')}</Button>
+          <Button onClick={onSuccess}>
+            {t('next')}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
         ) : (
           <Button
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop

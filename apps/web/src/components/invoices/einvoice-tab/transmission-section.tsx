@@ -81,7 +81,11 @@ export function TransmissionSection({
 
   const sendButton = (
     <Button onClick={handleOpenConfirm} disabled={isSendDisabled} data-slot="einvoice-send-button">
-      {isSendPending ? <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+      {isSendPending ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+      ) : (
+        <Send className="h-3.5 w-3.5" aria-hidden="true" />
+      )}
       {t('sendCta')}
     </Button>
   );

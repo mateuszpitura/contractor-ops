@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -161,10 +161,12 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack}>
+          <ArrowLeft className="h-3.5 w-3.5" />
           {t('back')}
         </Button>
         <Button onClick={onSuccess} disabled={!allPassed}>
           {t('next')}
+          <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

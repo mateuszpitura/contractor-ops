@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { AlertTriangle, Loader2, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Check, Loader2, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -104,9 +104,15 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onBack} disabled={completed}>
+          <ArrowLeft className="h-3.5 w-3.5" />
           {t('back')}
         </Button>
-        {!!completed && <Button onClick={onSuccess}>{t('completeAction')}</Button>}
+        {!!completed && (
+          <Button onClick={onSuccess}>
+            <Check className="h-3.5 w-3.5" />
+            {t('completeAction')}
+          </Button>
+        )}
       </div>
     </div>
   );

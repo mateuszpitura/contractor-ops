@@ -2,6 +2,7 @@
 
 import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useMemo } from 'react';
@@ -106,7 +107,7 @@ function ContractorReviewContent() {
         illustration={TimeTrackingIllustration}
         heading={t('detail.notFoundHeading')}
         body={t('detail.notFoundBody')}
-        primaryAction={{ label: t('detail.backToTimeTracking'), href: '/time' }}
+        primaryAction={{ label: t('detail.backToTimeTracking'), href: '/time', icon: ArrowLeft }}
         renderAction={renderEmptyStateAction}
       />
     );

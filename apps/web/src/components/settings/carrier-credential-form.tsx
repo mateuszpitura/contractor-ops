@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye, EyeOff, Loader2, Truck } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Save, Truck, Wifi } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -250,11 +250,19 @@ export function CarrierCredentialForm({ carrier, carrierLabel }: CarrierCredenti
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" size="sm" onClick={handleTest} disabled={isPending}>
-            {!!testMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            {testMutation.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Wifi className="h-3.5 w-3.5" />
+            )}
             {t('testConnection')}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isPending}>
-            {!!saveMutation.isPending && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            {saveMutation.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Save className="h-3.5 w-3.5" />
+            )}
             {t('saveCredentials')}
           </Button>
         </div>

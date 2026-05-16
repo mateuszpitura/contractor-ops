@@ -4,6 +4,7 @@ import { AtelierTableShell, InvoicesIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Upload } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
@@ -316,6 +317,7 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}
             onEmptyCta={onUpload}
+            emptyCtaIcon={Upload}
             noResultsTitle={t('noResults.heading')}
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}

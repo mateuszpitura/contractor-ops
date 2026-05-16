@@ -88,10 +88,12 @@ export function CountryRatesSection() {
         <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-2 sm:max-w-xs">
-          <Label htmlFor="tax-country">{t('countryLabel')}</Label>
+        <div className="space-y-1.5 sm:max-w-xs">
+          <Label htmlFor="tax-country" className="text-[13px]">
+            {t('countryLabel')}
+          </Label>
           <Select value={country} onValueChange={value => setCountry(value as SupportedCountry)}>
-            <SelectTrigger id="tax-country">
+            <SelectTrigger id="tax-country" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -153,8 +155,10 @@ export function CountryRatesSection() {
             <p className="text-sm text-muted-foreground">{t('validation.description')}</p>
           </div>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-            <div className="flex-1 sm:max-w-xs">
-              <Label htmlFor="tax-validate-code">{t('validation.codeLabel')}</Label>
+            <div className="flex-1 space-y-1.5 sm:max-w-xs">
+              <Label htmlFor="tax-validate-code" className="text-[13px]">
+                {t('validation.codeLabel')}
+              </Label>
               <Input
                 id="tax-validate-code"
                 value={validateCode}

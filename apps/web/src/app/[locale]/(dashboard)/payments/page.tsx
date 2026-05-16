@@ -7,7 +7,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { CreditCard, Plus } from 'lucide-react';
+import { CreditCard, FileText, Plus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useMemo, useState } from 'react';
@@ -214,9 +214,13 @@ function PaymentsContent() {
             illustration={PaymentsIllustration}
             heading={te('payments.heading')}
             body={te('payments.body')}
-            primaryAction={{ label: te('payments.cta'), href: '/invoices' }}
+            primaryAction={{ label: te('payments.cta'), href: '/invoices', icon: FileText }}
             prerequisiteMissing={contractorCount === 0}
-            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            prerequisiteAction={{
+              label: te('prerequisite.cta'),
+              href: '/contractors',
+              icon: Users,
+            }}
             renderAction={renderEmptyStateAction}
           />
         </AnimateIn>

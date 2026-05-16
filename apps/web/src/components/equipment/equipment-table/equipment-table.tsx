@@ -3,7 +3,7 @@
 import { EquipmentIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -218,6 +218,7 @@ export function EquipmentTable({
             emptyDescription={t('list.emptyDescription')}
             emptyCta={t('addEquipment')}
             onEmptyCta={onAddEquipment}
+            emptyCtaIcon={Plus}
             noResultsTitle={t('noResults.heading')}
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}

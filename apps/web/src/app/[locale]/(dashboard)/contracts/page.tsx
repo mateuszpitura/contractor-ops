@@ -7,7 +7,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { FileText } from 'lucide-react';
+import { FileText, Plus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -80,9 +80,13 @@ function ContractsContent() {
             illustration={ContractsIllustration}
             heading={te('contracts.heading')}
             body={te('contracts.body')}
-            primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract }}
+            primaryAction={{ label: te('contracts.cta'), onClick: handleNewContract, icon: Plus }}
             prerequisiteMissing={contractorCount === 0}
-            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            prerequisiteAction={{
+              label: te('prerequisite.cta'),
+              href: '/contractors',
+              icon: Users,
+            }}
             renderAction={renderEmptyStateAction}
           />
         </AnimateIn>

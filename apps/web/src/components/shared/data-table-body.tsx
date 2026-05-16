@@ -2,8 +2,8 @@
 
 import type { Row, Table } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import { SearchX } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { FilterX, SearchX } from 'lucide-react';
+import type { ComponentType, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -50,6 +50,8 @@ interface DataTableBodyProps<TData> {
   emptyDescription?: string;
   emptyCta?: string;
   onEmptyCta?: () => void;
+  /** Optional icon component rendered before the empty-state CTA label. */
+  emptyCtaIcon?: ComponentType<{ className?: string }>;
   noResultsTitle: string;
   noResultsDescription?: string;
   noResultsCta?: string;
@@ -123,6 +125,7 @@ function EmptyState({
   description,
   cta,
   onCta,
+  ctaIcon: CtaIcon,
 }: {
   colSpan: number;
   icon?: ReactNode;
@@ -130,6 +133,7 @@ function EmptyState({
   description?: string;
   cta?: string;
   onCta?: () => void;
+  ctaIcon?: ComponentType<{ className?: string }>;
 }) {
   return (
     <TableRow className="hover:bg-transparent">
@@ -146,6 +150,7 @@ function EmptyState({
           )}
           {!!cta && !!onCta && (
             <Button size="sm" className="mt-5" onClick={onCta}>
+              {CtaIcon ? <CtaIcon className="h-3.5 w-3.5" /> : null}
               {cta}
             </Button>
           )}
@@ -185,6 +190,7 @@ function NoResultsState({
           )}
           {!!cta && !!onClearFilters && (
             <Button variant="outline" size="sm" className="mt-5" onClick={onClearFilters}>
+              <FilterX className="h-3.5 w-3.5" />
               {cta}
             </Button>
           )}
@@ -246,6 +252,7 @@ export function DataTableBody<TData>({
   emptyDescription,
   emptyCta,
   onEmptyCta,
+  emptyCtaIcon,
   noResultsTitle,
   noResultsDescription,
   noResultsCta,
@@ -279,6 +286,7 @@ export function DataTableBody<TData>({
           description={emptyDescription}
           cta={emptyCta}
           onCta={onEmptyCta}
+          ctaIcon={emptyCtaIcon}
         />
       )}
     </TableBody>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Package, PackageOpen } from 'lucide-react';
+import { ArrowRight, Loader2, Package, PackageOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -223,6 +223,7 @@ export function PortalReturnFlow({
                 {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
                   {t('next')}
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </DialogFooter>
             </div>

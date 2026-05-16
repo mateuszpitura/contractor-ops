@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronDown, Info, Lock, Pencil } from 'lucide-react';
+import { ChevronDown, Info, Loader2, Lock, Pencil, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -209,6 +209,11 @@ export function ProfileSection({
                   {/* Action buttons */}
                   <div className="flex gap-2 pt-2">
                     <Button type="submit" size="sm" disabled={saving}>
+                      {saving ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Save className="h-3.5 w-3.5" />
+                      )}
                       {saving ? t('saving') : t('saveChanges')}
                     </Button>
                     <Button

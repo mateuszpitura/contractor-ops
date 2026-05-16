@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, ChevronsUpDown, Plus } from 'lucide-react';
+import { Building2, ChevronsUpDown, Loader2, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
 import { toast } from 'sonner';
@@ -164,6 +164,11 @@ export function OrgSwitcher() {
                 {t('cancel')}
               </Button>
               <Button type="submit" disabled={isCreating || !newOrgName.trim()}>
+                {isCreating ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Plus className="size-3.5" />
+                )}
                 {isCreating ? t('creating') : t('create')}
               </Button>
             </div>

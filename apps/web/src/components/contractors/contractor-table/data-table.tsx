@@ -4,6 +4,7 @@ import { AtelierTableShell, ContractorsIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -319,6 +320,7 @@ export function ContractorDataTable({
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}
             onEmptyCta={onAddContractor}
+            emptyCtaIcon={Plus}
             noResultsTitle={t('noResults.heading')}
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}

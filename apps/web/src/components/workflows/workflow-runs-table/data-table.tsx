@@ -4,6 +4,7 @@ import { AtelierTableShell, WorkflowsIllustration } from '@contractor-ops/ui';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -265,6 +266,7 @@ export function WorkflowRunsDataTable({
             emptyDescription={t('empty.body')}
             emptyCta={t('empty.cta')}
             onEmptyCta={onStartWorkflow}
+            emptyCtaIcon={Play}
             noResultsTitle={t('noResults.heading')}
             noResultsDescription={t('noResults.body')}
             noResultsCta={t('noResults.cta')}

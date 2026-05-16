@@ -96,7 +96,9 @@ export function WhtCalculatorSection() {
       <CardContent className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label htmlFor="wht-gross">{t('grossAmountLabel')}</Label>
+            <Label htmlFor="wht-gross" className="text-[13px]">
+              {t('grossAmountLabel')}
+            </Label>
             <Input
               id="wht-gross"
               type="text"
@@ -110,11 +112,13 @@ export function WhtCalculatorSection() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="wht-country">{t('residencyLabel')}</Label>
+            <Label htmlFor="wht-country" className="text-[13px]">
+              {t('residencyLabel')}
+            </Label>
             <Select
               value={contractorResidency}
               onValueChange={value => setContractorResidency(value as ContractorCountry)}>
-              <SelectTrigger id="wht-country">
+              <SelectTrigger id="wht-country" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -128,11 +132,13 @@ export function WhtCalculatorSection() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="wht-service">{t('serviceTypeLabel')}</Label>
+            <Label htmlFor="wht-service" className="text-[13px]">
+              {t('serviceTypeLabel')}
+            </Label>
             <Select
               value={serviceType}
               onValueChange={value => setServiceType(value as WhtServiceType)}>
-              <SelectTrigger id="wht-service">
+              <SelectTrigger id="wht-service" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

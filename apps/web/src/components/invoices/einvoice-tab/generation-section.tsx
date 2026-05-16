@@ -1,6 +1,6 @@
 'use client';
 
-import { FileCode2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Download, FileCode2, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
@@ -63,11 +63,18 @@ export function GenerationSection({
             <div className="flex flex-wrap gap-2">
               <Button onClick={handleFinalize} disabled={isFinalizePending}>
                 {isFinalizePending ? (
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : null}
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
                 {t('finalizeCta')}
               </Button>
               <Button variant="outline" onClick={handleDownload} disabled={isDownloadXmlPending}>
+                {isDownloadXmlPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
                 {t('downloadXmlButton')}
               </Button>
             </div>
@@ -79,8 +86,10 @@ export function GenerationSection({
             <p className="text-sm text-muted-foreground">{t('generationNotGeneratedBody')}</p>
             <Button onClick={handleFinalize} disabled={isFinalizePending}>
               {isFinalizePending ? (
-                <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
-              ) : null}
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+              ) : (
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
               {t('generateCta')}
             </Button>
           </div>

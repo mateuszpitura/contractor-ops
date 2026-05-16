@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Plus, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -232,6 +233,7 @@ export function SkontoFormSection({
       {/* No default, no term: "Add Skonto" button */}
       {!(profileDefault || invoiceTerm || showInputs) && (
         <Button variant="outline" size="sm" onClick={() => setShowInputs(true)}>
+          <Plus className="h-3.5 w-3.5" />
           {t('addSkonto')}
         </Button>
       )}
@@ -299,6 +301,11 @@ export function SkontoFormSection({
 
           <div className="flex items-center gap-2">
             <Button onClick={handleSave} size="sm" disabled={upsertMutation.isPending}>
+              {upsertMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Save className="h-3.5 w-3.5" />
+              )}
               {upsertMutation.isPending ? t('saving') : t('saveTerm')}
             </Button>
 

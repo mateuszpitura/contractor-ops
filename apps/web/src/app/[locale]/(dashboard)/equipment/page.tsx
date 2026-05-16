@@ -7,7 +7,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Package } from 'lucide-react';
+import { Package, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Suspense, useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -146,7 +146,7 @@ function EquipmentContent() {
             illustration={EquipmentIllustration}
             heading={te('equipment.heading')}
             body={te('equipment.body')}
-            primaryAction={{ label: te('equipment.cta'), onClick: handleAddEquipment }}
+            primaryAction={{ label: te('equipment.cta'), onClick: handleAddEquipment, icon: Plus }}
             renderAction={renderEmptyStateAction}
           />
         </AnimateIn>

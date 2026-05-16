@@ -130,6 +130,7 @@ function WorkflowsContent() {
           actions={
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             <Button size="sm" onClick={handleStartWorkflow}>
+              <Play className="h-3.5 w-3.5" aria-hidden="true" />
               {t('startWorkflow')}
             </Button>
           }

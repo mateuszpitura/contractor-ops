@@ -7,7 +7,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Check, Copy, Mail, Receipt, Upload } from 'lucide-react';
+import { Check, Copy, Mail, Receipt, Upload, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -156,7 +156,11 @@ function InvoicesContent() {
             primaryAction={{ label: te('invoices.cta'), onClick: handleUpload, icon: Upload }}
             secondaryAction={{ label: te('invoices.secondary'), href: '/settings', icon: Mail }}
             prerequisiteMissing={contractorCount === 0}
-            prerequisiteAction={{ label: te('prerequisite.cta'), href: '/contractors' }}
+            prerequisiteAction={{
+              label: te('prerequisite.cta'),
+              href: '/contractors',
+              icon: Users,
+            }}
             renderAction={renderEmptyStateAction}
           />
         ) : (

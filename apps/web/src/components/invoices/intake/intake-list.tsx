@@ -4,7 +4,7 @@ import { AtelierTableShell } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Inbox } from 'lucide-react';
+import { Inbox, Upload } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
@@ -212,6 +212,7 @@ export function IntakeList({ initialStatus }: IntakeListProps) {
             emptyDescription={t('emptyStateBody')}
             emptyCta={t('splitButtonImport')}
             onEmptyCta={() => setUploadOpen(true)}
+            emptyCtaIcon={Upload}
             noResultsTitle={t('emptyStateHeading')}
             noResultsDescription={t('emptyStateBody')}
             skeletonRows={8}

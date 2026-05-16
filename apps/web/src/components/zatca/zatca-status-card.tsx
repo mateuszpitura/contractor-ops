@@ -2,7 +2,7 @@
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Settings, Unlink, Unplug } from 'lucide-react';
+import { ArrowRight, Settings, Unlink, Unplug } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -153,6 +153,7 @@ export function ZatcaStatusCard() {
               <div className="mt-auto pt-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
                 <Button variant="outline" onClick={() => setWizardOpen(true)}>
+                  <ArrowRight className="h-3.5 w-3.5" />
                   {t('continueSetup')}
                 </Button>
               </div>

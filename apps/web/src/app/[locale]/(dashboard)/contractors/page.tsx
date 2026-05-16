@@ -7,7 +7,7 @@ import {
   SectionLabel,
 } from '@contractor-ops/ui';
 import { useQuery } from '@tanstack/react-query';
-import { Users } from 'lucide-react';
+import { Plus, Upload, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -78,10 +78,15 @@ function ContractorsContent() {
             illustration={ContractorsIllustration}
             heading={te('contractors.heading')}
             body={te('contractors.body')}
-            primaryAction={{ label: te('contractors.cta'), onClick: handleAddContractor }}
+            primaryAction={{
+              label: te('contractors.cta'),
+              onClick: handleAddContractor,
+              icon: Plus,
+            }}
             secondaryAction={{
               label: te('contractors.secondary'),
               onClick: handleOpenImportWizard,
+              icon: Upload,
             }}
             renderAction={renderEmptyStateAction}
           />
