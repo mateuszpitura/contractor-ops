@@ -237,7 +237,14 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
   return flags;
 }
 
-/** Detect any reference to `<varName>.isPending` in a SourceFile (used to flag missing loading state). */
+/**
+ * Detect any reference to `<varName>.isPending` OR `<varName>.mutateAsync`
+ * in a SourceFile. Both count as "loading-state handled":
+ *   - `.isPending` → UI bound directly.
+ *   - `.mutateAsync` → caller awaits inside an async pipeline; loading state
+ *     is managed by the caller's own state machine (upload progress, wizard
+ *     advance, etc.), not by a single trigger button.
+ */
 function fileHasIsPendingFor(sf: ts.SourceFile, mutationVar: string | null): boolean {
   if (!mutationVar) return false;
   let found = false;
@@ -248,7 +255,7 @@ function fileHasIsPendingFor(sf: ts.SourceFile, mutationVar: string | null): boo
       ts.isIdentifier(n.expression) &&
       n.expression.text === mutationVar &&
       ts.isIdentifier(n.name) &&
-      (n.name.text === 'isPending' || n.name.text === 'isLoading')
+      (n.name.text === 'isPending' || n.name.text === 'isLoading' || n.name.text === 'mutateAsync')
     ) {
       found = true;
       return;

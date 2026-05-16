@@ -1019,7 +1019,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -3403,7 +3403,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -3419,7 +3419,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -3467,7 +3467,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -3643,7 +3643,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -3659,7 +3659,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5803,7 +5803,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5819,7 +5819,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5835,7 +5835,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5851,7 +5851,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -5867,7 +5867,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -6068,7 +6068,7 @@
     "path": "skonto.upsertForInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6084,7 +6084,7 @@
     "path": "skonto.evaluateForInvoice",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
-    "line": 94,
+    "line": 95,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6100,7 +6100,7 @@
     "path": "skonto.deleteForInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
-    "line": 105,
+    "line": 106,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6116,7 +6116,7 @@
     "path": "skonto.evaluateForInvoice",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/skonto/skonto-form-section.tsx",
-    "line": 111,
+    "line": 112,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6747,7 +6747,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -6763,7 +6763,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7067,7 +7067,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7083,7 +7083,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7419,7 +7419,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7435,7 +7435,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7483,7 +7483,7 @@
       "hasToastSuccess": false,
       "hasToastError": false,
       "hasInvalidation": false,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7771,7 +7771,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -11387,7 +11387,7 @@
       "hasToastSuccess": false,
       "hasToastError": true,
       "hasInvalidation": false,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -11403,7 +11403,7 @@
       "hasToastSuccess": false,
       "hasToastError": true,
       "hasInvalidation": false,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
