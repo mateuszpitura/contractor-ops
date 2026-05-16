@@ -17,6 +17,7 @@
     "lint:schema": "tsx scripts/lint-schema.mjs",
     "lint:logs": "tsx scripts/lint-logs.mjs",
     "lint:raw-sql": "tsx scripts/check-raw-sql-tenant-scoped.ts",
+    "lint:audit-log": "node scripts/lint-audit-log.mjs",
     "i18n:parity": "tsx scripts/i18n-parity.mjs",
     "i18n:code-coverage": "tsx scripts/audit-i18n-code-coverage.ts --allow-hardcoded",
     "i18n:quality": "tsx scripts/audit-translations-quality.ts",

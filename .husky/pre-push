@@ -2,9 +2,10 @@
 # Pre-push: fast feedback before CI runs.
 # Phase 70 D-01 — three new guards added: lint:schema, lint:logs, i18n:parity.
 # R1 NEW-AUTHZ-02 — lint:raw-sql guards $queryRaw tenant scoping.
+# production-hardening B.2.c — lint:audit-log enforces the writeAuditLog helper.
 # Lint + format check are quick. Typecheck and full build are too slow for
 # every push, so they are left to CI.
 
 pnpm run format:check && pnpm run lint && pnpm run check:no-process-env \
   && pnpm run lint:schema && pnpm run lint:logs && pnpm run lint:raw-sql \
-  && pnpm run i18n:parity
+  && pnpm run lint:audit-log && pnpm run i18n:parity
