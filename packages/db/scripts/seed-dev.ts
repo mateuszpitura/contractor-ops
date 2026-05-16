@@ -419,6 +419,10 @@ const PHASE_EMOJI: Record<string, string> = {
   esign: '✍️ ',
   ocr: '🔎',
   'exchange-rates': '💱',
+  consent: '📜',
+  'api-keys': '🔑',
+  'pinned-views': '📌',
+  'cron-state': '⏱️ ',
 };
 
 /**
@@ -482,6 +486,10 @@ const PHASE_WEIGHTS: Record<string, number> = {
   esign: 3,
   ocr: 2,
   'exchange-rates': 4,
+  consent: 3,
+  'api-keys': 1,
+  'pinned-views': 1,
+  'cron-state': 2,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5777,6 +5785,289 @@ async function seedExchangeRates(
 }
 
 // ---------------------------------------------------------------------------
+// Consent + privacy — PrivacyNotice (per jurisdiction), ConsentRecord +
+// ConsentEvent (per user), ContractorNotificationPreference + ChangeRequest.
+// ---------------------------------------------------------------------------
+
+async function seedConsentAndPrivacy(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  // PrivacyNotice — composite-unique (organizationId, jurisdiction, version).
+  // Seed one per language we ship (en + the org's local language).
+  const jurisdictions = new Set([ctx.profile.countryCode]);
+  if (ctx.org.showcase) {
+    // Showcase shows the multi-language privacy-notices admin tab.
+    for (const extra of ['EN', 'DE', 'PL']) jurisdictions.add(extra);
+  }
+  for (const j of jurisdictions) {
+    await prisma.privacyNotice.upsert({
+      where: {
+        organizationId_jurisdiction_version: {
+          organizationId: ctx.organizationId,
+          jurisdiction: j,
+          version: 1,
+        },
+      },
+      create: {
+        organizationId: ctx.organizationId,
+        jurisdiction: j,
+        version: 1,
+        contentJson: {
+          seeded: true,
+          jurisdiction: j,
+          headline: 'Privacy notice (seed)',
+        },
+        effectiveFrom: ctx.foundedAt,
+      },
+      update: {},
+    });
+  }
+
+  // ConsentRecord + ConsentEvent — per user.
+  const consentPurposes = [
+    'CONTRACTOR_DATA_PROCESSING',
+    'INVOICE_PAYMENT_PROCESSING',
+    'COMMUNICATION_NOTIFICATIONS',
+  ] as const;
+  for (const u of ctx.users) {
+    const grantedAt = pastDateAfter(ctx.fakers.org, 365, ctx.foundedAt);
+    const purpose = ctx.fakers.org.helpers.arrayElement(consentPurposes);
+    await prisma.consentRecord.create({
+      data: {
+        organizationId: ctx.organizationId,
+        userId: u.id,
+        purpose,
+        granted: true,
+        version: 1,
+        grantedAt,
+        ipAddress: '127.0.0.1',
+        userAgent: 'seed-dev',
+        createdAt: grantedAt,
+      },
+    });
+    // 1 in 4 users revokes a separate purpose to show withdrawn variety.
+    if (ctx.org.showcase || ctx.fakers.org.datatype.boolean({ probability: 0.25 })) {
+      const altPurpose = ctx.fakers.org.helpers.arrayElement(consentPurposes);
+      await prisma.consentRecord.create({
+        data: {
+          organizationId: ctx.organizationId,
+          userId: u.id,
+          purpose: altPurpose,
+          granted: false,
+          version: 1,
+          grantedAt: null,
+          revokedAt: pastDate(ctx.fakers.org, 30),
+          ipAddress: '127.0.0.1',
+          userAgent: 'seed-dev',
+          createdAt: pastDate(ctx.fakers.org, 30),
+        },
+      });
+    }
+
+    // ConsentEvent — TOS acceptance.
+    await prisma.consentEvent.create({
+      data: {
+        organizationId: ctx.organizationId,
+        userId: u.id,
+        scope: 'TOS',
+        version: '2026.1.0',
+        acceptedAt: grantedAt,
+        ipAddress: '127.0.0.1',
+        userAgent: 'seed-dev',
+        createdAt: grantedAt,
+      },
+    });
+  }
+
+  // ContractorNotificationPreference — one per (contractor, category) pair.
+  const categories = ['INVOICE_UPDATES', 'PAYMENT_CONFIRMATIONS', 'CONTRACT_CHANGES'];
+  for (const c of contractors) {
+    for (const category of categories) {
+      const existing = await prisma.contractorNotificationPreference.findUnique({
+        where: { contractorId_category: { contractorId: c.id, category } },
+      });
+      if (existing) continue;
+      await prisma.contractorNotificationPreference.create({
+        data: {
+          organizationId: ctx.organizationId,
+          contractorId: c.id,
+          category,
+          emailEnabled: ctx.fakers.org.datatype.boolean({ probability: 0.85 }),
+          createdAt: ctx.foundedAt,
+        },
+      });
+    }
+  }
+
+  // ContractorChangeRequest — small subset spanning every status.
+  const changeStatuses = ['PENDING', 'APPROVED', 'REJECTED'] as const;
+  const changeSubset = ctx.org.showcase
+    ? contractors.slice(0, Math.min(contractors.length, changeStatuses.length))
+    : contractors.filter((_, i) => i % 8 === 0).slice(0, 2);
+  for (const [i, c] of changeSubset.entries()) {
+    const status = changeStatuses[i % changeStatuses.length] as (typeof changeStatuses)[number];
+    const reviewedAt =
+      status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt);
+    await prisma.contractorChangeRequest.create({
+      data: {
+        organizationId: ctx.organizationId,
+        contractorId: c.id,
+        status,
+        requestedChanges: { phone: ctx.fakers.org.phone.number() },
+        previousValues: { phone: ctx.fakers.org.phone.number() },
+        reviewedById: status === 'PENDING' ? null : ctx.ownerUserId,
+        reviewedAt,
+        reviewComment: status === 'REJECTED' ? 'Verification incomplete' : null,
+        createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// OrganizationApiKey — Settings → API keys page wants ACTIVE + REVOKED rows.
+// ---------------------------------------------------------------------------
+
+async function seedApiKeys(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
+  // Active key
+  await prisma.organizationApiKey.create({
+    data: {
+      organizationId: ctx.organizationId,
+      name: 'Default API key',
+      prefix: `seed_${tokenHex(3)}`.slice(0, 12),
+      hash: tokenHex(32),
+      scopes: ['contractors.read', 'invoices.read'],
+      createdByUserId: ctx.ownerUserId,
+      lastUsedAt: pastDate(ctx.fakers.org, 7),
+      createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
+    },
+  });
+
+  // Revoked key (different prefix to avoid any accidental dedup).
+  await prisma.organizationApiKey.create({
+    data: {
+      organizationId: ctx.organizationId,
+      name: 'Legacy CI key',
+      prefix: `seed_${tokenHex(3)}`.slice(0, 12),
+      hash: tokenHex(32),
+      scopes: ['invoices.read'],
+      createdByUserId: ctx.ownerUserId,
+      lastUsedAt: pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
+      revokedAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+      createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// UserPinnedView — pinned-tabs widget on the side nav.
+// ---------------------------------------------------------------------------
+
+async function seedPinnedViews(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
+  const candidates = [
+    { kind: 'invoices', key: 'overdue' },
+    { kind: 'contractors', key: 'high-risk' },
+    { kind: 'workflows', key: 'in-progress' },
+  ];
+  for (const u of ctx.users) {
+    const subset = ctx.org.showcase ? candidates : candidates.slice(0, 1);
+    for (const view of subset) {
+      const existing = await prisma.userPinnedView.findUnique({
+        where: { userId_kind_key: { userId: u.id, kind: view.kind, key: view.key } },
+      });
+      if (existing) continue;
+      await prisma.userPinnedView.create({
+        data: { userId: u.id, kind: view.kind, key: view.key },
+      });
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Cron / observability markers — StripeEvent (global), GovApiAuditLog,
+// IntegrationSyncLog, NotificationCronDedup (global), CronScanState (global).
+// ---------------------------------------------------------------------------
+
+async function seedCronAndObservability(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
+  // StripeEvent — global table. createMany with stripeEventId @unique
+  // skipDuplicates so multi-org reseeds are no-ops.
+  await prisma.stripeEvent.createMany({
+    data: [
+      {
+        stripeEventId: `evt_seed_${ctx.org.key}_invoice_paid`,
+        eventType: 'invoice.paid',
+        payloadJson: { seeded: true, org: ctx.org.key },
+        processedAt: pastDate(ctx.fakers.org, 7),
+      },
+      {
+        stripeEventId: `evt_seed_${ctx.org.key}_subscription_updated`,
+        eventType: 'customer.subscription.updated',
+        payloadJson: { seeded: true, org: ctx.org.key },
+        processedAt: pastDate(ctx.fakers.org, 14),
+      },
+    ],
+    skipDuplicates: true,
+  });
+
+  // GovApiAuditLog — a few request samples per gov-API integration.
+  const govApis = ['ZATCA', 'PEPPOL', 'HMRC_VAT', 'VIES'];
+  for (const api of govApis) {
+    await prisma.govApiAuditLog.create({
+      data: {
+        organizationId: ctx.organizationId,
+        apiName: api,
+        endpoint: `/v1/${api.toLowerCase()}/health`,
+        method: 'GET',
+        requestBodyHash: tokenHex(32),
+        responseStatus: 200,
+        responseTimeMs: ctx.fakers.org.number.int({ min: 50, max: 1500 }),
+        createdAt: pastDate(ctx.fakers.org, 30),
+      },
+    });
+  }
+
+  // IntegrationSyncLog — needs an IntegrationConnection row.
+  const conn = await prisma.integrationConnection.findFirst({
+    where: { organizationId: ctx.organizationId },
+    select: { id: true },
+  });
+  if (conn) {
+    const startedAt = pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt);
+    await prisma.integrationSyncLog.create({
+      data: {
+        organizationId: ctx.organizationId,
+        integrationConnectionId: conn.id,
+        direction: 'OUTBOUND',
+        syncType: 'FULL_SYNC',
+        status: 'SUCCESS',
+        startedAt,
+        completedAt: advanceCapped(startedAt, 0),
+      },
+    });
+  }
+
+  // NotificationCronDedup — global; key by org so reseeds don't conflict.
+  await prisma.notificationCronDedup.createMany({
+    data: [
+      { dedupeKey: `seed:${ctx.org.key}:reminder-T-30:invoice-1`.slice(0, 512) },
+      { dedupeKey: `seed:${ctx.org.key}:reminder-T-7:invoice-2`.slice(0, 512) },
+    ],
+    skipDuplicates: true,
+  });
+
+  // CronScanState — singleton-per-name. Seed two cursor rows.
+  for (const name of ['economic-dependency-scan', 'reassessment-trigger-scan']) {
+    await prisma.cronScanState.upsert({
+      where: { name },
+      create: { name, lastScanCompletedAt: pastDate(ctx.fakers.org, 1) },
+      update: {},
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // OCR extraction history + PendingUpload precursors — gives Settings → OCR
 // History a real list with realistic JSON payloads + status variety.
 // ---------------------------------------------------------------------------
@@ -6630,6 +6921,16 @@ async function seedOrg(
   await gateSection(omitted, 'ocr', org.key, undefined, () => seedOcr(prisma, ctx));
   await gateSection(omitted, 'exchange-rates', org.key, undefined, () =>
     seedExchangeRates(prisma, ctx, invoices, contractors),
+  );
+  await gateSection(omitted, 'consent', org.key, undefined, () =>
+    seedConsentAndPrivacy(prisma, ctx, contractors),
+  );
+  await gateSection(omitted, 'api-keys', org.key, undefined, () => seedApiKeys(prisma, ctx));
+  await gateSection(omitted, 'pinned-views', org.key, undefined, () =>
+    seedPinnedViews(prisma, ctx),
+  );
+  await gateSection(omitted, 'cron-state', org.key, undefined, () =>
+    seedCronAndObservability(prisma, ctx),
   );
   await gateSection(omitted, 'workflow-templates', org.key, undefined, () =>
     seedWorkflowTemplates(prisma, ctx),
