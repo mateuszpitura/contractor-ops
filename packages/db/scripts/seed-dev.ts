@@ -4991,6 +4991,83 @@ async function seedWorkflowRuns(
     }
 
     await prisma.workflowTaskRun.createMany({ data: tasks });
+
+    // -------------------------------------------------------------------
+    // WorkflowComment + WorkflowAttachment per facts.md step 4 — picks a
+    // deterministic subset of runs so the detail-page timeline isn't empty.
+    // showcase always seeds; otherwise ~40% of runs get a timeline.
+    // -------------------------------------------------------------------
+    const seedTimeline = ctx.org.showcase
+      ? true
+      : ctx.fakers.org.datatype.boolean({ probability: 0.4 });
+    if (!seedTimeline) continue;
+
+    const insertedTasks = await prisma.workflowTaskRun.findMany({
+      where: { workflowRunId: run.id },
+      select: { id: true },
+    });
+    if (insertedTasks.length === 0) continue;
+
+    const commentTaskCount = Math.min(
+      insertedTasks.length,
+      ctx.fakers.org.number.int({ min: 1, max: 2 }),
+    );
+    const commentTasks = ctx.fakers.org.helpers
+      .shuffle([...insertedTasks])
+      .slice(0, commentTaskCount);
+    for (const task of commentTasks) {
+      const numComments = ctx.fakers.org.number.int({ min: 1, max: 3 });
+      for (let i = 0; i < numComments; i += 1) {
+        const author = ctx.fakers.org.helpers.arrayElement(ctx.users);
+        await prisma.workflowComment.create({
+          data: {
+            organizationId: ctx.organizationId,
+            workflowRunId: run.id,
+            workflowTaskRunId: task.id,
+            authorUserId: author.id,
+            body: ctx.fakers.org.lorem.sentence(),
+            createdAt: advanceCapped(startedAt, i),
+          },
+        });
+      }
+    }
+
+    const attachmentTaskCount = ctx.fakers.org.number.int({ min: 0, max: 2 });
+    if (attachmentTaskCount === 0) continue;
+    const attachmentTasks = ctx.fakers.org.helpers
+      .shuffle([...insertedTasks])
+      .slice(0, attachmentTaskCount);
+    for (const task of attachmentTasks) {
+      const fileBytes = ctx.fakers.org.number.int({ min: 1024, max: 256 * 1024 });
+      const fileBaseName = ctx.fakers.org.system.fileName({ extensionCount: 0 });
+      const document = await prisma.document.create({
+        data: {
+          organizationId: ctx.organizationId,
+          storageKey: `seed/workflow/${run.id}/${tokenHex(6)}.pdf`,
+          originalFileName: `${fileBaseName}.pdf`,
+          mimeType: 'application/pdf',
+          fileSizeBytes: BigInt(fileBytes),
+          checksumSha256: tokenHex(32),
+          documentType: 'OTHER',
+          status: 'ACTIVE',
+          visibility: 'PRIVATE',
+          uploadedByUserId: ctx.ownerUserId,
+          source: 'USER_UPLOAD',
+          virusScanStatus: 'CLEAN',
+          createdAt: startedAt,
+        },
+        select: { id: true },
+      });
+      await prisma.workflowAttachment.create({
+        data: {
+          organizationId: ctx.organizationId,
+          workflowRunId: run.id,
+          workflowTaskRunId: task.id,
+          documentId: document.id,
+          createdAt: startedAt,
+        },
+      });
+    }
   }
 }
 
