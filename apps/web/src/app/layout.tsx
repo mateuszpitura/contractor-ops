@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 // Phase 64 D-10 — register classification disclaimer gate at app boot
 import '@/lib/feature-flags-init';
+import { WebVitalsReporter } from '@/components/perf/web-vitals-reporter';
 import { getThemeAttributes } from '@/lib/get-theme-attributes';
 
 const outfit = Outfit({
@@ -49,7 +50,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <html lang="en" className={classes} suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Phase C.6.b — Core Web Vitals beacon to /api/web-vitals -> Pino -> Axiom. */}
+        <WebVitalsReporter />
+      </body>
     </html>
   );
 }
