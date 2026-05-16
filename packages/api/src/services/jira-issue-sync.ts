@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata, JiraTaskConfig } from '@contractor-ops/validators';
 import { jiraTaskConfigSchema } from '@contractor-ops/validators';
@@ -183,7 +184,7 @@ export async function createJiraIssue(
       },
     };
 
-    const response = await fetch(`${baseUrl}/issue`, {
+    const response = await fetchWithTimeout(`${baseUrl}/issue`, {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify(issueBody),
@@ -431,7 +432,7 @@ export async function transitionJiraIssue(
 
   try {
     // 7. POST transition to Jira
-    const response = await fetch(`${baseUrl}/issue/${issueKey}/transitions`, {
+    const response = await fetchWithTimeout(`${baseUrl}/issue/${issueKey}/transitions`, {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify({

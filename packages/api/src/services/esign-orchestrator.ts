@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import {
   createSigningEnvelope as createProviderEnvelope,
   downloadSignedDocument,
@@ -84,7 +85,8 @@ async function fetchDocumentContent(
 
   // Generate presigned URL and fetch the PDF content
   const downloadUrl = await createPresignedDownloadUrl(document.storageKey);
-  const response = await fetch(downloadUrl);
+  // Signed PDFs can be large — give the body read plenty of headroom.
+  const response = await fetchWithTimeout(downloadUrl, undefined, { timeoutMs: 60_000 });
 
   if (!response.ok) {
     throw new TRPCError({
@@ -340,11 +342,15 @@ export async function handleSigningCompletion(
     storageKey,
     signedDoc.mimeType || 'application/pdf',
   );
-  const uploadResponse = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: docBuffer,
-    headers: { 'Content-Type': signedDoc.mimeType || 'application/pdf' },
-  });
+  const uploadResponse = await fetchWithTimeout(
+    uploadUrl,
+    {
+      method: 'PUT',
+      body: docBuffer,
+      headers: { 'Content-Type': signedDoc.mimeType || 'application/pdf' },
+    },
+    { timeoutMs: 60_000 },
+  );
 
   if (!uploadResponse.ok) {
     throw new Error(`Failed to upload signed PDF to R2: ${uploadResponse.status}`);

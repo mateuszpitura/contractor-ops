@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
@@ -367,7 +368,7 @@ export async function registerJiraWebhooks(
     ],
   };
 
-  const response = await fetch(`${baseUrl}/webhook`, {
+  const response = await fetchWithTimeout(`${baseUrl}/webhook`, {
     method: 'POST',
     headers: authHeaders,
     body: JSON.stringify(webhookBody),
@@ -446,7 +447,7 @@ export async function deregisterJiraWebhooks(
   // Delete each webhook (best effort — some may already be expired)
   for (const webhookId of webhookIds) {
     try {
-      await fetch(`${baseUrl}/webhook`, {
+      await fetchWithTimeout(`${baseUrl}/webhook`, {
         method: 'DELETE',
         headers: authHeaders,
         body: JSON.stringify({ webhookIds: [webhookId] }),
@@ -492,7 +493,7 @@ export async function refreshJiraWebhooks(
     connection.credentialsRef,
   );
 
-  const response = await fetch(`${baseUrl}/webhook/refresh`, {
+  const response = await fetchWithTimeout(`${baseUrl}/webhook/refresh`, {
     method: 'PUT',
     headers: authHeaders,
     body: JSON.stringify({ webhookIds }),

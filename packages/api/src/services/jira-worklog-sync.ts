@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
@@ -109,7 +110,9 @@ async function fetchIssueWorklogs(
     worklogUrl.searchParams.set('startAt', String(worklogStartAt));
     worklogUrl.searchParams.set('maxResults', String(worklogMaxResults));
 
-    const worklogResponse = await fetch(worklogUrl.toString(), { headers: authHeaders });
+    const worklogResponse = await fetchWithTimeout(worklogUrl.toString(), {
+      headers: authHeaders,
+    });
 
     if (!worklogResponse.ok) {
       log.error({ issueKey, status: worklogResponse.status }, 'failed to fetch worklogs for issue');
@@ -326,7 +329,7 @@ export async function syncJiraWorklogs(
       searchUrl.searchParams.set('maxResults', String(maxResults));
       searchUrl.searchParams.set('startAt', String(startAt));
 
-      const searchResponse = await fetch(searchUrl.toString(), {
+      const searchResponse = await fetchWithTimeout(searchUrl.toString(), {
         headers: authHeaders,
       });
 

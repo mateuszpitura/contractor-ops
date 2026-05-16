@@ -137,6 +137,7 @@ async function probeQStash(): Promise<ProbeResult> {
 
   const start = performance.now();
   try {
+    // resilience: raw-fetch-OK reason=QStash health probe; bounded by withTimeout (PROBE_TIMEOUT_MS) and intentionally bypasses the resilience breaker so a depended-on outage does not poison the health endpoint itself.
     const response = await withTimeout(
       fetch(url, { method: 'HEAD', cache: 'no-store' }),
       PROBE_TIMEOUT_MS,

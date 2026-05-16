@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { ConfluenceAdapter } from '@contractor-ops/integrations/adapters/confluence-adapter';
 import { NotionAdapter } from '@contractor-ops/integrations/adapters/notion-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -406,7 +407,7 @@ async function refreshNotionMetadata(
 ): Promise<Record<string, unknown> | null> {
   const credentials = decryptCredentials(credentialsRef, 'notion');
 
-  const response = await fetch(`https://api.notion.com/v1/pages/${externalId}`, {
+  const response = await fetchWithTimeout(`https://api.notion.com/v1/pages/${externalId}`, {
     headers: {
       Authorization: `Bearer ${credentials.accessToken}`,
       'Notion-Version': '2022-06-28',
@@ -445,7 +446,7 @@ async function refreshConfluenceMetadata(
 
   const credentials = decryptCredentials(connection.credentialsRef, 'confluence');
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `https://api.atlassian.com/ex/confluence/${cloudId}/wiki/rest/api/content/${externalId}?expand=space,version`,
     {
       headers: {

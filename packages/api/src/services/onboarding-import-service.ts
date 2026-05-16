@@ -1,4 +1,5 @@
 import { prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import type { MergedPerson } from '@contractor-ops/validators';
 import { linearGraphQL } from './linear-issue-sync';
 
@@ -69,7 +70,7 @@ async function fetchJiraUsers(accessToken: string, metadata: unknown): Promise<S
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${baseUrl}/users/search?maxResults=${maxResults}&startAt=${startAt}`,
       { headers },
     );
@@ -139,7 +140,7 @@ async function fetchLinearUsers(accessToken: string): Promise<SourcePerson[]> {
 
 async function fetchGoogleWorkspaceUsers(accessToken: string): Promise<SourcePerson[]> {
   // Use Google Admin SDK Directory API
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     'https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&maxResults=500',
     {
       headers: {
@@ -183,7 +184,7 @@ async function fetchSlackUsers(accessToken: string): Promise<SourcePerson[]> {
     url.searchParams.set('limit', '1000');
     if (cursor) url.searchParams.set('cursor', cursor);
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 

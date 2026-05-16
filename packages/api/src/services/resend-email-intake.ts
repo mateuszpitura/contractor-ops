@@ -8,6 +8,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
 import type { Resend } from 'resend';
 import { createR2Client, getR2BucketName } from './r2';
@@ -132,7 +133,9 @@ async function processNonPdfAttachmentsForInvoice(
       if (!nonPdfResponse.data) continue;
       const nonPdfData = nonPdfResponse.data;
 
-      const downloadResp = await fetch(nonPdfData.download_url);
+      const downloadResp = await fetchWithTimeout(nonPdfData.download_url, undefined, {
+        timeoutMs: 60_000,
+      });
       if (!downloadResp.ok) continue;
 
       const nonPdfBuffer = Buffer.from(await downloadResp.arrayBuffer());
@@ -225,7 +228,9 @@ async function processOnePdfAttachment(
 
     const attData = attResponse.data;
 
-    const pdfResponse = await fetch(attData.download_url);
+    const pdfResponse = await fetchWithTimeout(attData.download_url, undefined, {
+      timeoutMs: 60_000,
+    });
     if (!pdfResponse.ok) {
       log.error({ attachmentId, status: pdfResponse.status }, 'failed to download attachment');
       return null;

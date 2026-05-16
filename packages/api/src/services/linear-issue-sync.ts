@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
@@ -76,7 +77,7 @@ export async function linearGraphQL<T>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<T> {
-  const response = await fetch(LINEAR_API_URL, {
+  const response = await fetchWithTimeout(LINEAR_API_URL, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -1,5 +1,6 @@
 import { prisma } from '@contractor-ops/db';
 import type { Prisma } from '@contractor-ops/db/generated/prisma/client';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { extractInvoice } from '@contractor-ops/integrations/services/ocr-service';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
@@ -94,7 +95,8 @@ export async function processOcrExtraction(params: {
   try {
     // Fetch PDF from R2
     const downloadUrl = await createPresignedDownloadUrl(params.storageKey);
-    const pdfResponse = await fetch(downloadUrl);
+    // PDFs can be large — give the body read headroom.
+    const pdfResponse = await fetchWithTimeout(downloadUrl, undefined, { timeoutMs: 60_000 });
 
     if (!pdfResponse.ok) {
       throw new Error(

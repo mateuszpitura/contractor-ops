@@ -1,4 +1,5 @@
 import type { Prisma } from '@contractor-ops/db';
+import { fetchWithTimeout } from '@contractor-ops/integrations';
 import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
@@ -202,7 +203,7 @@ async function fetchAllClockifyEntries(
     url.searchParams.set('page', String(page));
     url.searchParams.set('page-size', String(pageSize));
 
-    const response = await fetch(url.toString(), {
+    const response = await fetchWithTimeout(url.toString(), {
       headers: { 'X-Api-Key': apiKey, Accept: 'application/json' },
     });
 

@@ -68,6 +68,7 @@ async function ping(monitorKey: string, state: PingState, message?: string): Pro
   }
 
   try {
+    // resilience: raw-fetch-OK reason=best-effort cron heartbeat to Cronitor; failures are swallowed below and the call already carries an AbortSignal.timeout(5000) wall-clock bound, so wrapping in fetchWithTimeout would add no value.
     await fetch(url.toString(), {
       method: 'GET',
       signal: AbortSignal.timeout(5000),

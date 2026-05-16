@@ -215,6 +215,7 @@ async function probeQStash(): Promise<DependencyProbe> {
   const url = process.env.QSTASH_HEALTH_URL ?? 'https://qstash.upstash.io';
   const start = Date.now();
   try {
+    // resilience: raw-fetch-OK reason=QStash health probe; bounded by withProbeTimeout (PROBE_TIMEOUT_MS) and intentionally bypasses the resilience breaker so a depended-on outage does not poison the health endpoint itself.
     const response = await withProbeTimeout(
       fetch(url, { method: 'HEAD', cache: 'no-store' }),
       PROBE_TIMEOUT_MS,
