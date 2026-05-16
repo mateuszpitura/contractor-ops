@@ -46,6 +46,7 @@ interface ContractorTimesheetReviewProps {
   onReject: (reason: string) => void;
   onBack: () => void;
   isApproving?: boolean;
+  isRejecting?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -98,10 +99,10 @@ export function ContractorTimesheetReview({
   onReject,
   onBack,
   isApproving = false,
+  isRejecting = false,
 }: ContractorTimesheetReviewProps) {
   const t = useTranslations('Time');
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [isRejecting, setIsRejecting] = useState(false);
 
   const weekStart =
     typeof timesheet.weekStartDate === 'string'
@@ -138,10 +139,8 @@ export function ContractorTimesheetReview({
   );
 
   function handleReject(reason: string) {
-    setIsRejecting(true);
     onReject(reason);
     setRejectDialogOpen(false);
-    setIsRejecting(false);
   }
 
   return (

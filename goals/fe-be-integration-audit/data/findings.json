@@ -105,16 +105,6 @@
     "id": "F-LOW-003",
     "severity": "LOW",
     "category": "missing-loading-state",
-    "procedure": "time.reject",
-    "file": "apps/web/src/app/[locale]/(dashboard)/time/[contractorId]/page.tsx",
-    "line": 71,
-    "problem": "Mutation time.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-004",
-    "severity": "LOW",
-    "category": "missing-loading-state",
     "procedure": "time.approve",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
     "line": 118,
@@ -137,7 +127,7 @@
     }
   },
   {
-    "id": "F-LOW-005",
+    "id": "F-LOW-004",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "time.reject",
@@ -147,7 +137,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-006",
+    "id": "F-LOW-005",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "time.bulkApprove",
@@ -157,7 +147,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-007",
+    "id": "F-LOW-006",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "time.bulkReject",
@@ -167,7 +157,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-008",
+    "id": "F-LOW-007",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portalTime.saveDraftEntries",
@@ -177,7 +167,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-009",
+    "id": "F-LOW-008",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "billing.createCheckoutSession",
@@ -187,7 +177,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-010",
+    "id": "F-LOW-009",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "billing.createCheckoutSession",
@@ -197,7 +187,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-011",
+    "id": "F-LOW-010",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "classificationDashboard.exportMarketCsv",
@@ -212,17 +202,22 @@
     }
   },
   {
-    "id": "F-LOW-012",
+    "id": "F-LOW-011",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "classification.saveAnswer",
     "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
     "line": 91,
     "problem": "Mutation classification.saveAnswer trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
+    "triage": {
+      "status": "false-positive",
+      "pattern": "autosave-status-machine",
+      "reason": "Autosave pattern — `onMutate` flips a separate `autosaveStatus` state to 'saving' so the UI can render saving/saved/error indicators around the wizard. No discrete Button to disable; commitAnswer fires on every input change."
+    }
   },
   {
-    "id": "F-LOW-013",
+    "id": "F-LOW-012",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ir35Chain.markDelivered",
@@ -232,7 +227,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-014",
+    "id": "F-LOW-013",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ir35Chain.markAcknowledged",
@@ -242,7 +237,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-015",
+    "id": "F-LOW-014",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ir35Chain.removeParticipant",
@@ -252,27 +247,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-016",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "notification.markRead",
-    "file": "apps/web/src/components/notifications/notification-center.tsx",
-    "line": 102,
-    "problem": "Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-017",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "notification.markRead",
-    "file": "apps/web/src/components/notifications/notification-popover.tsx",
-    "line": 66,
-    "problem": "Mutation notification.markRead trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-018",
+    "id": "F-LOW-015",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "settings.update",
@@ -282,7 +257,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-019",
+    "id": "F-LOW-016",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.importStatement",
@@ -297,7 +272,7 @@
     }
   },
   {
-    "id": "F-LOW-020",
+    "id": "F-LOW-017",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.updateItemStatus",
@@ -307,7 +282,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-021",
+    "id": "F-LOW-018",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.removeFromRun",
@@ -317,7 +292,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-022",
+    "id": "F-LOW-019",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateNotificationPreference",
@@ -362,26 +337,6 @@
     }
   },
   {
-    "id": "F-LOW-023",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "approval.updateChain",
-    "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 68,
-    "problem": "Mutation approval.updateChain trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-024",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "leitwegId.setDefault",
-    "file": "apps/web/src/components/settings/e-invoicing/leitweg-id-row.tsx",
-    "line": 69,
-    "problem": "Mutation leitwegId.setDefault trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
     "id": "F-MED-007",
     "severity": "MED",
     "category": "missing-invalidation",
@@ -397,47 +352,52 @@
     }
   },
   {
-    "id": "F-LOW-025",
+    "id": "F-LOW-020",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "integration.disconnectGeneric",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
     "line": 143,
     "problem": "Mutation integration.disconnectGeneric trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
+    "triage": {
+      "status": "false-positive",
+      "pattern": "routed-mutation",
+      "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound — the detector just doesn't follow the conditional-alias pattern."
+    }
   },
   {
-    "id": "F-LOW-026",
+    "id": "F-LOW-021",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "jira.disconnect",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
     "line": 153,
     "problem": "Mutation jira.disconnect trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
+    "triage": {
+      "status": "false-positive",
+      "pattern": "routed-mutation",
+      "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound — the detector just doesn't follow the conditional-alias pattern."
+    }
   },
   {
-    "id": "F-LOW-027",
+    "id": "F-LOW-022",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ksef.disconnect",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
     "line": 159,
     "problem": "Mutation ksef.disconnect trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
+    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
+    "triage": {
+      "status": "false-positive",
+      "pattern": "routed-mutation",
+      "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound — the detector just doesn't follow the conditional-alias pattern."
+    }
   },
   {
-    "id": "F-LOW-028",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "reminder.toggleActive",
-    "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 97,
-    "problem": "Mutation reminder.toggleActive trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-029",
+    "id": "F-LOW-023",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",

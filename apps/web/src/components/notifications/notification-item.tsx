@@ -32,6 +32,7 @@ interface NotificationItemProps {
   notification: NotificationData;
   onClick: () => void;
   compact?: boolean;
+  disabled?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -126,7 +127,12 @@ function relativeTime(date: string | Date): string {
 // NotificationItem component
 // ---------------------------------------------------------------------------
 
-export function NotificationItem({ notification, onClick, compact }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  onClick,
+  compact,
+  disabled,
+}: NotificationItemProps) {
   const isUnread = notification.readAt === null;
   const style = TYPE_STYLES[notification.type] ?? DEFAULT_STYLE;
   const Icon = style.icon;
@@ -135,8 +141,9 @@ export function NotificationItem({ notification, onClick, compact }: Notificatio
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        'flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-accent',
+        'flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60',
         isUnread ? 'bg-muted' : 'bg-transparent',
         compact && 'px-3 py-2',
       )}>

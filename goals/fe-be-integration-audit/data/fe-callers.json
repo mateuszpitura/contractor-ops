@@ -763,7 +763,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -3060,7 +3060,7 @@
     "path": "esign.listConnections",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-detail/documents-tab.tsx",
-    "line": 29,
+    "line": 27,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3076,7 +3076,7 @@
     "path": "document.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-detail/documents-tab.tsx",
-    "line": 34,
+    "line": 32,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3508,7 +3508,7 @@
     "path": "approval.listPending",
     "kind": "queryOptions",
     "file": "apps/web/src/components/dashboard/approval-queue-widget.tsx",
-    "line": 82,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6283,7 +6283,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -6347,7 +6347,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -7947,7 +7947,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -8427,7 +8427,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -9739,7 +9739,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -11028,7 +11028,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryOptions",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 82,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11044,7 +11044,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryKey",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 99,
+    "line": 100,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,

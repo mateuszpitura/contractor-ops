@@ -159,5 +159,12 @@
     "category": "missing-loading-state",
     "pattern": "routed-mutation",
     "reason": "Three useMutation hooks (genericDisconnect / jiraDisconnect / ksefDisconnect) feed a single `disconnectMutation` alias picked by provider. The single AlertDialogAction trigger uses `disabled={disconnectMutation.isPending}`, so the active route's `isPending` IS bound \u2014 the detector just doesn't follow the conditional-alias pattern."
+  },
+  {
+    "procedure": "classification.saveAnswer",
+    "file": "apps/web/src/components/contractors/classification/wizard/classification-wizard-shell.tsx",
+    "category": "missing-loading-state",
+    "pattern": "autosave-status-machine",
+    "reason": "Autosave pattern \u2014 `onMutate` flips a separate `autosaveStatus` state to 'saving' so the UI can render saving/saved/error indicators around the wizard. No discrete Button to disable; commitAnswer fires on every input change."
   }
 ]

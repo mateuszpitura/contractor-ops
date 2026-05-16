@@ -120,6 +120,7 @@ function ContractorReviewContent() {
       onReject={handleReject}
       onBack={handleBack}
       isApproving={approveMutation.isPending}
+      isRejecting={rejectMutation.isPending}
     />
   );
 }

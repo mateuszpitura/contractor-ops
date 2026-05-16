@@ -179,6 +179,7 @@ export function NotificationPopover() {
                     // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                     onClick={() => handleItemClick(n)}
                     compact
+                    disabled={markReadMutation.isPending}
                   />
                 ))}
               </div>

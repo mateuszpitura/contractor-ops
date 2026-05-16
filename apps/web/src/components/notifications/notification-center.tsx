@@ -19,10 +19,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
+import { tDyn } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 import type { NotificationData } from './notification-item';
 import { getEntityUrl, NotificationItem } from './notification-item';
-import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Type filter mapping: UI chip value -> notification type(s)
@@ -237,7 +237,11 @@ export function NotificationCenter() {
             {notifications.map(n => (
               <div key={n.id} className="border-b last:border-b-0">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <NotificationItem notification={n} onClick={() => handleItemClick(n)} />
+                <NotificationItem
+                  notification={n}
+                  onClick={() => handleItemClick(n)}
+                  disabled={markReadMutation.isPending}
+                />
               </div>
             ))}
           </div>
