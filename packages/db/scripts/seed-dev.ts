@@ -173,6 +173,210 @@ interface CliFlags {
   help: boolean;
   /** Show a bottom-anchored progress bar instead of per-phase log lines. */
   progress: boolean;
+  /**
+   * User-supplied list of section keys to skip. Validated against `SECTION_KEYS`
+   * before any DB connection opens. Transitive children (per
+   * `SECTION_DEPENDENCIES`) are skipped automatically.
+   */
+  omit: readonly SectionKey[];
+}
+
+// ---------------------------------------------------------------------------
+// Section registry — every named seed phase is a "section". The --omit flag
+// accepts these keys (plus any whose parent was omitted).
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical, ordered list of every section seed-dev knows about. Order
+ * mirrors `seedOrg()` execution so the printed omit summary reads top-down.
+ *
+ * ⚠️ Keep in sync with:
+ *   - `SECTION_DEPENDENCIES` below — every key here must have an entry there.
+ *   - `seedOrg()` callsites — every section here either fires or is skipped
+ *     under --omit.
+ *   - `--help` text in `defineCommand` below.
+ */
+const SECTION_KEYS = [
+  // Tenant data (existing)
+  'contractors',
+  'contracts',
+  'invoices',
+  'equipment',
+  'payment-runs',
+  'reminders',
+  'notifications',
+  'outbox',
+  'webhook-deliveries',
+  'audit-logs',
+  'e-invoice-lifecycle',
+  'portal-sessions',
+  'integration-connections',
+  'invoice-documents',
+  'workflow-templates',
+  'subscription',
+  'courier-configs',
+  'comments',
+  'workflow-runs',
+  'timesheets',
+  // Newly-added coverage (declared up-front so the registry is stable while
+  // later steps wire in the actual seeders).
+  'tax-compliance',
+  'classification',
+  'skonto',
+  'interest',
+  'peppol',
+  'zatca',
+  'esign',
+  'ocr',
+  'exchange-rates',
+  'consent',
+  'api-keys',
+  'pinned-views',
+  'cron-state',
+  'auth-surface',
+] as const;
+
+type SectionKey = (typeof SECTION_KEYS)[number];
+
+const SECTION_KEY_SET: ReadonlySet<string> = new Set(SECTION_KEYS);
+
+/**
+ * Direct parents per child section. If a parent is omitted, every transitive
+ * child is omitted too (resolved by `expandOmittedSections`). Sections with
+ * no parent list `[]`.
+ *
+ * Edges encode "section X cannot be seeded without rows produced by section Y".
+ */
+const SECTION_DEPENDENCIES: Readonly<Record<SectionKey, readonly SectionKey[]>> = {
+  contractors: [],
+  contracts: ['contractors'],
+  invoices: ['contractors'],
+  equipment: ['contractors'],
+  'payment-runs': ['invoices'],
+  reminders: ['invoices'],
+  notifications: [],
+  outbox: [],
+  'webhook-deliveries': [],
+  'audit-logs': [],
+  'e-invoice-lifecycle': ['invoices'],
+  'portal-sessions': ['contractors'],
+  'integration-connections': [],
+  'invoice-documents': ['invoices'],
+  'workflow-templates': [],
+  subscription: [],
+  'courier-configs': [],
+  comments: [],
+  'workflow-runs': ['workflow-templates', 'contractors'],
+  timesheets: ['contractors', 'contracts'],
+  'tax-compliance': ['contractors'],
+  classification: ['contractors'],
+  skonto: ['invoices'],
+  interest: ['invoices'],
+  peppol: ['invoices'],
+  zatca: ['invoices'],
+  esign: ['contracts'],
+  ocr: ['invoice-documents'],
+  'exchange-rates': [],
+  consent: [],
+  'api-keys': [],
+  'pinned-views': [],
+  'cron-state': [],
+  'auth-surface': [],
+};
+
+interface OmitResolution {
+  /** Every section that will be skipped (user-requested ∪ transitive). */
+  resolved: Set<SectionKey>;
+  /** For each transitively-omitted section: the parent(s) that triggered it. */
+  transitively: Map<SectionKey, SectionKey[]>;
+}
+
+/**
+ * Walk the reverse dependency graph until fixed point. Pure function so it can
+ * be unit-tested without spinning up a Prisma client.
+ */
+function expandOmittedSections(omitted: readonly SectionKey[]): OmitResolution {
+  const resolved = new Set<SectionKey>(omitted);
+  const transitively = new Map<SectionKey, SectionKey[]>();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const child of SECTION_KEYS) {
+      if (resolved.has(child)) continue;
+      const triggeringParents = SECTION_DEPENDENCIES[child].filter(p => resolved.has(p));
+      if (triggeringParents.length > 0) {
+        resolved.add(child);
+        transitively.set(child, [...triggeringParents]);
+        changed = true;
+      }
+    }
+  }
+  return { resolved, transitively };
+}
+
+/**
+ * Parse the raw `--omit=foo,bar` string. Empty value (or flag absent) = "omit
+ * nothing". Throws on unknown keys with a clear listing of valid keys so the
+ * error fires *before* any DB connection opens.
+ */
+function parseOmitFlag(raw: string | undefined): SectionKey[] {
+  if (!raw || raw.trim() === '') return [];
+  const parts = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  const unknown = parts.filter(p => !SECTION_KEY_SET.has(p));
+  if (unknown.length > 0) {
+    const valid = [...SECTION_KEYS].sort().join(', ');
+    throw new Error(
+      `flag --omit contains unknown section key(s): ${unknown.join(', ')}\n` +
+        `Valid keys: ${valid}`,
+    );
+  }
+  return parts as SectionKey[];
+}
+
+/**
+ * Render the resolved omit summary (user-supplied + transitively-skipped) plus
+ * the final list of running sections. Uses the existing CliTable3 style. The
+ * write callback is injected so callers can choose between stdout (non-progress
+ * mode, before the bar starts) and `MultiBar.log()` (progress mode, above the
+ * bottom-anchored bar).
+ */
+function printOmitSummary(
+  userOmitted: readonly SectionKey[],
+  resolution: OmitResolution,
+  write: (line: string) => void,
+): void {
+  if (resolution.resolved.size === 0) return;
+
+  const table = new CliTable3({
+    head: ['Section', 'Reason'],
+    style: { head: ['cyan'], border: ['gray'] },
+    wordWrap: true,
+  });
+  const userSet = new Set<SectionKey>(userOmitted);
+  // Walk SECTION_KEYS so the table preserves canonical ordering.
+  for (const key of SECTION_KEYS) {
+    if (!resolution.resolved.has(key)) continue;
+    if (userSet.has(key)) {
+      table.push([key, 'requested via --omit']);
+    } else {
+      const parents = resolution.transitively.get(key);
+      const reason =
+        parents && parents.length > 0
+          ? `transitively skipped (parent omitted: ${parents.join(', ')})`
+          : 'transitively skipped';
+      table.push([key, reason]);
+    }
+  }
+
+  const running = SECTION_KEYS.filter(k => !resolution.resolved.has(k));
+  write('\n');
+  write('Omit summary:\n');
+  write(`${table.toString()}\n`);
+  write(`\nSections that will run (${running.length}/${SECTION_KEYS.length}):\n`);
+  write(`  ${running.join(', ')}\n\n`);
 }
 
 // ---------------------------------------------------------------------------
@@ -440,6 +644,11 @@ class BarReporter implements Reporter {
         cb();
       },
     });
+  }
+
+  /** Forward a single text chunk above the bar. Used by `printOmitSummary`. */
+  logRaw(text: string): void {
+    this.multibar.log(text);
   }
 }
 
@@ -4461,6 +4670,9 @@ async function seedOrg(
   passwordHash: string,
   baseSeed: number,
   orgIndex: number,
+  // Plumbed in step 1 so seedOrg can gate per-section calls in step 2 without
+  // a follow-up signature change.
+  _omittedSections: ReadonlySet<SectionKey>,
 ): Promise<SeedSummary> {
   // Determine the org's country/locale/currency profile
   const profileFaker = new Faker({ locale: [en] });
@@ -4619,6 +4831,10 @@ function printSummaryTables(summaries: readonly SeedSummary[], password: string)
 async function runSeed(flags: CliFlags): Promise<void> {
   ensureSafeEnvironment(flags);
 
+  // Resolve --omit transitive closure up-front so the user sees exactly which
+  // sections will run (and why others were skipped) BEFORE the wipe begins.
+  const omitResolution = expandOmittedSections(flags.omit);
+
   const orgsPlanned = applyOverrides(buildOrgs(flags.profile, flags.regions), flags);
   if (orgsPlanned.length === 0) {
     log.warn('no orgs to seed (profile/regions/orgs overrides cancelled all)');
@@ -4628,12 +4844,24 @@ async function runSeed(flags: CliFlags): Promise<void> {
   // Activate the bottom-anchored progress bar and re-pipe pino through
   // MultiBar.log() so log lines scroll above the bar instead of fighting it
   // for the last terminal row.
+  let barReporter: BarReporter | null = null;
   if (flags.progress) {
-    const bar = new BarReporter();
-    reporter = bar;
-    log = createSeedPrettyLogger(bar.asLogSink());
+    barReporter = new BarReporter();
+    reporter = barReporter;
+    log = createSeedPrettyLogger(barReporter.asLogSink());
     reporter.start(orgsPlanned.length * PHASES_PER_ORG);
   }
+
+  // Print the resolved omit summary in both modes. In --progress mode it goes
+  // through MultiBar.log() so it lands above the bar; otherwise straight to
+  // stdout (the bar isn't active yet).
+  printOmitSummary(flags.omit, omitResolution, line => {
+    if (barReporter) {
+      barReporter.logRaw(line);
+    } else {
+      process.stdout.write(line);
+    }
+  });
 
   const password = process.env.SEED_PASSWORD ?? 'Test1234!';
   const passwordHash = await hashPassword(password);
@@ -4681,7 +4909,14 @@ async function runSeed(flags: CliFlags): Promise<void> {
       orgIndex += 1;
       continue;
     }
-    const summary = await seedOrg(client, org, passwordHash, flags.seed, orgIndex);
+    const summary = await seedOrg(
+      client,
+      org,
+      passwordHash,
+      flags.seed,
+      orgIndex,
+      omitResolution.resolved,
+    );
     summaries.push(summary);
     orgIndex += 1;
   }
@@ -4801,6 +5036,19 @@ const cli = defineCommand({
       type: 'string',
       description: 'Override invoices per contractor (sets both min and max)',
     },
+    omit: {
+      type: 'string',
+      description:
+        'Skip listed sections (comma-separated). Transitive children are skipped automatically. ' +
+        'Example: --omit=workflow-runs,esign. Valid keys: ' +
+        [...SECTION_KEYS].sort().join(', ') +
+        '. Dependency edges (parent → child): ' +
+        Object.entries(SECTION_DEPENDENCIES)
+          .filter(([, parents]) => parents.length > 0)
+          .map(([child, parents]) => `${parents.join('+')} → ${child}`)
+          .join('; '),
+      default: '',
+    },
   },
   async run({ args }) {
     const regions = args.regions
@@ -4813,6 +5061,10 @@ const cli = defineCommand({
         }
         return r;
       }) as ReadonlyArray<'EU' | 'ME'>;
+
+    // Parse + validate --omit BEFORE constructing flags so an unknown key
+    // aborts the run synchronously (no DB connection opened, no wipe started).
+    const omit = parseOmitFlag(args.omit);
 
     const flags: CliFlags = {
       profile: args.profile,
@@ -4829,6 +5081,7 @@ const cli = defineCommand({
         args['invoices-per-contractor'],
         'invoices-per-contractor',
       ),
+      omit,
     };
 
     try {
