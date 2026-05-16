@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 import { PaymentRunBadge } from '../payment-run-badge';
 
 // ---------------------------------------------------------------------------
@@ -62,7 +63,7 @@ function formatRelativeDate(dateStr: string, formatDateFn: DateFormatter): strin
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Payments'>;
 
 interface ColumnActions {
   onDownloadExport?: (run: PaymentRunRow) => void;

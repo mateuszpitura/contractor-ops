@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Sync status styling
@@ -128,7 +129,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                     }`}>
                     {isNoNew
                       ? t('syncStatusNoNew')
-                      : t(statusStyle.labelKey)}
+                      : tKey(t, statusStyle.labelKey)}
                   </Badge>
                 </div>
               );

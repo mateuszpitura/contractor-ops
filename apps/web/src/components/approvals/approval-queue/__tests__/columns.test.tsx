@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import type { ApprovalQueueRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('@/i18n/navigation', () => ({
   Link: ({
@@ -77,7 +78,7 @@ function TableWrapper({
   onApprove: (id: string) => void;
   onReject: (id: string, comment: string) => void;
 }) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Approvals'>();
   const columns = getColumns(t, { onApprove, onReject });
   const table = useReactTable({
     data,

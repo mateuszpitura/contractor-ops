@@ -29,7 +29,7 @@ import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -283,7 +283,7 @@ export function RunHeader({ run }: RunHeaderProps) {
                 'workflow-run',
                 run.status as Parameters<typeof statusToVariant<'workflow-run'>>[1],
               )}>
-              {tDyn(t, 'runStatus', enumKey(run.status))}
+              {tDynLoose(t, 'runStatus', enumKey(run.status))}
             </AtelierStatusPill>
           </div>
 

@@ -29,6 +29,7 @@ import { trpc } from '@/trpc/init';
 import type { ContractAction } from '../actions';
 import { getBulkContractActions } from '../actions';
 import type { ContractRow } from './columns';
+import { tKey } from '@/i18n/typed-keys';
 
 interface DataTableBulkActionsProps {
   table: Table<ContractRow>;
@@ -107,7 +108,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
               render={props => (
                 <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                   <ExportIcon className={iconSize.sm} />
-                  {t(exportAction.labelKey)}
+                  {tKey(t, exportAction.labelKey)}
                 </Button>
               )}
             />
@@ -139,7 +140,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowTerminateDialog(true)}>
             <TerminateIcon className={iconSize.sm} />
-            {t(terminateAction.labelKey)}
+            {tKey(t, terminateAction.labelKey)}
           </Button>
         )}
       </div>

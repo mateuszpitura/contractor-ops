@@ -13,6 +13,7 @@ import type {
   ScheinCategory,
 } from '@contractor-ops/classification';
 import { useTranslations } from 'next-intl';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 
 import {
   Table,
@@ -43,7 +44,7 @@ type AnswerResult = { label: string; score: string };
 
 function readNotApplicableAnswer(
   raw: { rawScore?: number; isNotApplicable?: boolean },
-  t: (key: string) => string,
+  t: TranslatorOf<'Classification'>,
 ): AnswerResult {
   if (raw.isNotApplicable) {
     return { label: t('outcome.drv.answerNotApplicable'), score: '—' };
@@ -61,7 +62,7 @@ function readValueAnswer(raw: { value: unknown }): AnswerResult | undefined {
   return;
 }
 
-function readAnswer(raw: unknown, t: (key: string) => string): AnswerResult {
+function readAnswer(raw: unknown, t: TranslatorOf<'Classification'>): AnswerResult {
   if (raw === undefined || raw === null) {
     return { label: t('outcome.drv.answerMissing'), score: '—' };
   }

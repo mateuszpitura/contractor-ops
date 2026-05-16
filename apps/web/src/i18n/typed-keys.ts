@@ -44,8 +44,43 @@ export type LeavesUnder<K extends string, Sub extends string> = K extends `${Sub
     : Leaf
   : never;
 
+import type { useTranslations } from 'next-intl';
+
 // biome-ignore lint/suspicious/noExplicitAny: structural constraint over the next-intl Translator overload set; tDyn only relies on the first call signature, so the value-level translator is invoked through the resolved key cast.
 type Translator = (key: any, ...rest: any[]) => string;
+
+/**
+ * Concrete shape of `useTranslations(ns)` for a given namespace. Use as a
+ * function parameter type when a helper / column factory needs to accept
+ * a translator scoped to one specific namespace:
+ *
+ *   function getColumns(t: TranslatorOf<'Contractors'>) { … }
+ *
+ * Callers pass the result of `useTranslations('Contractors')` directly,
+ * with no `(key: string) => t(key)` re-wrapping.
+ */
+export type TranslatorOf<
+  NS extends Parameters<typeof useTranslations>[0] = Parameters<typeof useTranslations>[0],
+> = ReturnType<typeof useTranslations<NS>>;
+
+/**
+ * Test-only helper — wraps a `(key) => string` mock into a structurally
+ * complete `TranslatorOf<NS>` so column factories and other helpers that
+ * accept a real next-intl translator can be unit-tested without spinning
+ * up the full `NextIntlClientProvider`.
+ */
+export function createMockTranslator<
+  NS extends Parameters<typeof useTranslations>[0] = Parameters<typeof useTranslations>[0],
+>(impl: (key: string, values?: Record<string, unknown>) => string = (k) => k): TranslatorOf<NS> {
+  const fn = ((key: string, values?: Record<string, unknown>) => impl(key, values)) as unknown as TranslatorOf<NS>;
+  type MutableTranslator = Record<string, unknown>;
+  const mut = fn as unknown as MutableTranslator;
+  mut.rich = impl;
+  mut.markup = impl;
+  mut.raw = (k: string) => k;
+  mut.has = () => true;
+  return fn;
+}
 
 /**
  * Combine a sub-namespace prefix and a leaf key into a fully-qualified
@@ -64,4 +99,40 @@ export function tDyn<
 >(t: T, subNs: Sub, key: Leaf, values?: Parameters<T>[1]): string {
   const resolved = `${subNs}.${key}` as Parameters<T>[0];
   return (t as (k: Parameters<T>[0], v?: Parameters<T>[1]) => string)(resolved, values);
+}
+
+/**
+ * Looser sibling of `tDyn` for sites whose leaf key comes from an enum or
+ * other runtime-string source that TypeScript cannot narrow to the exact
+ * leaf union (e.g. `enumKey(prisma.status)`). The sub-namespace prefix is
+ * still validated at the type level; missing leaves surface at runtime
+ * via `scripts/audit-i18n-code-coverage.ts`.
+ *
+ * Prefer `tDyn` whenever the leaf is a literal union — only reach for
+ * this when narrowing the source data type is out of scope.
+ */
+export function tDynLoose<
+  T extends Translator,
+  Sub extends SubNamespacesOf<Parameters<T>[0] & string>,
+>(t: T, subNs: Sub, key: string, values?: Parameters<T>[1]): string {
+  const resolved = `${subNs}.${key}` as Parameters<T>[0];
+  return (t as (k: Parameters<T>[0], v?: Parameters<T>[1]) => string)(resolved, values);
+}
+
+/**
+ * Escape hatch for sites that receive a fully-qualified key as plain
+ * `string` (e.g. an action registry indexed by a runtime label). Neither
+ * the prefix nor the leaf is type-checked — coverage falls back to
+ * `scripts/audit-i18n-code-coverage.ts`. Use sparingly; prefer `tDyn` /
+ * `tDynLoose` whenever the source data type can be narrowed.
+ */
+export function tKey<T extends Translator>(
+  t: T,
+  key: string,
+  values?: Parameters<T>[1],
+): string {
+  return (t as (k: Parameters<T>[0], v?: Parameters<T>[1]) => string)(
+    key as Parameters<T>[0],
+    values,
+  );
 }

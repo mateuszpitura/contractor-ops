@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -241,7 +241,7 @@ function RuleUserPicker({
 function useSelectorItems(t: ReturnType<typeof useTranslations<'Settings'>>) {
   const triggerItems = TRIGGER_TYPES.map(trigger => ({
     value: trigger,
-    label: tDyn(t, 'reminderRules.editor', TRIGGER_LABEL_KEYS[trigger]),
+    label: tDynLoose(t, 'reminderRules.editor', TRIGGER_LABEL_KEYS[trigger]),
   }));
 
   const entityItems = ENTITY_TYPES.map(e => ({

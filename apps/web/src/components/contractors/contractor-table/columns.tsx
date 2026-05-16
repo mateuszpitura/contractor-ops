@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { enumKey } from '@/lib/enum-key';
 import { ComplianceHealthBadge } from '../compliance-health-badge';
+import { tDyn, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape
@@ -43,7 +44,7 @@ export type ContractorRow = {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Contractors'>;
 
 /**
  * Returns all 13 column definitions (select + 12 data columns) for
@@ -99,7 +100,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {t(`type.${enumKey(row.original.type)}`)}
+          {tDyn(t, 'type', enumKey(row.original.type))}
         </Badge>
       ),
     },
@@ -112,7 +113,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
         const stage = row.original.lifecycleStage as ContractorLifecycleStageInput;
         return (
           <AtelierStatusPill variant={statusToVariant('contractor-lifecycle', stage)}>
-            {t(`lifecycle.${enumKey(stage)}`)}
+            {tDyn(t, 'lifecycle', enumKey(stage))}
           </AtelierStatusPill>
         );
       },
@@ -151,7 +152,7 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
             ? (custom as Record<string, unknown>).billingModel
             : null;
         return model ? (
-          <span className="text-sm">{t(`billingModel.${enumKey(String(model))}`)}</span>
+          <span className="text-sm">{tDyn(t, 'billingModel', enumKey(String(model)))}</span>
         ) : (
           <span className="text-muted-foreground">&mdash;</span>
         );

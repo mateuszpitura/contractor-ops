@@ -18,6 +18,7 @@ import {
 import { enumKey } from '@/lib/enum-key';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -139,7 +140,7 @@ export function ShipmentTimeline({
               <SelectContent>
                 {UPDATABLE_STATUSES.map(status => (
                   <SelectItem key={status} value={status}>
-                    {t(`shipment.status.${enumKey(status)}`)}
+                    {tDynLoose(t, 'shipment.status', enumKey(status))}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -223,7 +224,7 @@ export function ShipmentTimeline({
                         isCurrent && 'text-primary',
                         isPending && 'text-muted-foreground',
                       )}>
-                      {t(`shipment.status.${enumKey(status)}`)}
+                      {tDynLoose(t, 'shipment.status', enumKey(status))}
                     </span>
                     {!!event?.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{event.notes}</p>
@@ -261,7 +262,7 @@ export function ShipmentTimeline({
                 <div className="flex flex-1 items-start justify-between gap-2 rounded-md bg-primary/5 px-2 py-1 -mx-2">
                   <div>
                     <span className="text-sm font-medium text-primary">
-                      {t(`shipment.status.${enumKey(currentStatus)}`)}
+                      {tDynLoose(t, 'shipment.status', enumKey(currentStatus))}
                     </span>
                     {!!terminalEvent.notes && (
                       <p className="mt-0.5 text-xs text-muted-foreground">{terminalEvent.notes}</p>

@@ -31,6 +31,7 @@ import {
   TIME_FORMATS,
 } from '@/lib/format-date';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -494,7 +495,7 @@ export function OrgSettingsForm() {
               disabled={updateMutation.isPending}
               items={TIME_FORMATS.map(fmt => ({
                 value: fmt,
-                label: `${t(`fields.timeFormat.${fmt === '24h' ? '24h' : '12h'}`)} — ${previewTimeFormat(fmt)}`,
+                label: `${tDyn(t, 'fields.timeFormat', fmt === '24h' ? '24h' : '12h')} — ${previewTimeFormat(fmt)}`,
               }))}>
               <SelectTrigger id={`${id}-timeFormat`} className="w-full">
                 <SelectValue placeholder={t('fields.timeFormat.placeholder')} />
@@ -502,7 +503,7 @@ export function OrgSettingsForm() {
               <SelectContent>
                 {TIME_FORMATS.map(fmt => (
                   <SelectItem key={fmt} value={fmt}>
-                    {t(`fields.timeFormat.${fmt === '24h' ? '24h' : '12h'}`)}
+                    {tDyn(t, 'fields.timeFormat', fmt === '24h' ? '24h' : '12h')}
                     <span className="ms-2 text-muted-foreground">{previewTimeFormat(fmt)}</span>
                   </SelectItem>
                 ))}

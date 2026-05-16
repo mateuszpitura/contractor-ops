@@ -19,6 +19,7 @@ import { DataTableColumnToggle } from './data-table-column-toggle';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
 import { useContractFilters } from './use-contract-filters';
+import { tKey } from '@/i18n/typed-keys';
 
 const STORAGE_KEY = 'contract-table-columns';
 
@@ -151,7 +152,7 @@ export function ContractDataTable({
     () =>
       getColumns(
         (key: string, params?: Record<string, string | number>) =>
-          t(key, params),
+          tKey(t, key, params),
         formatDate,
       ),
     [t, formatDate],

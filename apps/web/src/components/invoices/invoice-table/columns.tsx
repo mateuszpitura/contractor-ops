@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
+import { tDyn, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape
@@ -147,7 +148,7 @@ function isOverdue(dueDate: string | null, status: string): boolean {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Invoices'>;
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
 /**
@@ -301,7 +302,7 @@ export function getColumns(
         return (
           <AtelierStatusPill variant={variant}>
             {Icon ? <Icon className="h-3 w-3" /> : null}
-            {t(`status.${enumKey(status)}`)}
+            {tDyn(t, 'status', enumKey(status))}
           </AtelierStatusPill>
         );
       },
@@ -320,7 +321,7 @@ export function getColumns(
         const variant = statusToVariant('invoice-match', matchStatus as InvoiceMatchStatusInput);
         return (
           <AtelierStatusPill variant={variant}>
-            {t(`matchStatus.${enumKey(labelKey)}`)}
+            {tDyn(t, 'matchStatus', enumKey(labelKey))}
           </AtelierStatusPill>
         );
       },

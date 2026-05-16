@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { enumKey } from '@/lib/enum-key';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contract.list response shape
@@ -129,7 +130,7 @@ export function getColumns(
       header: t('columns.type'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="whitespace-nowrap">
-          {t(`type.${enumKey(row.original.type)}`)}
+          {tDyn(t, 'type', enumKey(row.original.type))}
         </Badge>
       ),
     },
@@ -142,7 +143,7 @@ export function getColumns(
         const status = row.original.status as ContractStatusInput;
         return (
           <AtelierStatusPill variant={statusToVariant('contract', status)}>
-            {t(`status.${enumKey(status)}`)}
+            {tDyn(t, 'status', enumKey(status))}
           </AtelierStatusPill>
         );
       },
@@ -230,7 +231,7 @@ export function getColumns(
       header: t('columns.billingCycle'),
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="text-sm">{t(`billingModel.${enumKey(row.original.billingModel)}`)}</span>
+        <span className="text-sm">{tDyn(t, 'billingModel', enumKey(row.original.billingModel))}</span>
       ),
     },
 
@@ -255,7 +256,7 @@ export function getColumns(
         if (!risk) return <span className="text-muted-foreground">&mdash;</span>;
         return (
           <Badge variant="secondary" className={riskBadgeColors[risk] ?? ''}>
-            {t(`risk.${enumKey(risk)}`)}
+            {tDyn(t, 'risk', enumKey(risk))}
           </Badge>
         );
       },

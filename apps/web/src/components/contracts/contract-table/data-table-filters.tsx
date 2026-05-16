@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Helpers — timezone-safe date ↔ YYYY-MM-DD conversion
@@ -183,7 +183,7 @@ export function DataTableFilters({
               title={t('columns.status')}
               options={CONTRACT_STATUSES.map(s => ({
                 value: s,
-                label: t(`status.${enumKey(s)}`),
+                label: tDynLoose(t, 'status', enumKey(s)),
               }))}
               selected={filters.status}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -195,7 +195,7 @@ export function DataTableFilters({
               title={t('columns.type')}
               options={CONTRACT_TYPES.map(ct => ({
                 value: ct,
-                label: t(`type.${enumKey(ct)}`),
+                label: tDynLoose(t, 'type', enumKey(ct)),
               }))}
               selected={filters.type}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -207,7 +207,7 @@ export function DataTableFilters({
               title={t('columns.billingCycle')}
               options={BILLING_MODELS.map(bm => ({
                 value: bm,
-                label: t(`billingModel.${enumKey(bm)}`),
+                label: tDynLoose(t, 'billingModel', enumKey(bm)),
               }))}
               selected={filters.billingModel}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -239,7 +239,7 @@ export function DataTableFilters({
               title={t('columns.complianceRisk')}
               options={RISK_LEVELS.map(rl => ({
                 value: rl,
-                label: t(`risk.${enumKey(rl)}`),
+                label: tDynLoose(t, 'risk', enumKey(rl)),
               }))}
               selected={filters.complianceRiskLevel}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -365,7 +365,7 @@ export function DataTableFilters({
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={tDyn(t, 'status', enumKey(s))}
+              label={tDynLoose(t, 'status', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -373,7 +373,7 @@ export function DataTableFilters({
           {filters.type.map(ct => (
             <FilterBadge
               key={`type-${ct}`}
-              label={tDyn(t, 'type', enumKey(ct))}
+              label={tDynLoose(t, 'type', enumKey(ct))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', ct)}
             />
@@ -381,7 +381,7 @@ export function DataTableFilters({
           {filters.billingModel.map(bm => (
             <FilterBadge
               key={`billing-${bm}`}
-              label={tDyn(t, 'billingModel', enumKey(bm))}
+              label={tDynLoose(t, 'billingModel', enumKey(bm))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', bm)}
             />
@@ -407,7 +407,7 @@ export function DataTableFilters({
           {filters.complianceRiskLevel.map(rl => (
             <FilterBadge
               key={`risk-${rl}`}
-              label={tDyn(t, 'risk', enumKey(rl))}
+              label={tDynLoose(t, 'risk', enumKey(rl))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('complianceRiskLevel', rl)}
             />

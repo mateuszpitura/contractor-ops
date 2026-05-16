@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Waive interest dialog (destructive AlertDialog)
@@ -100,7 +101,7 @@ export function WaiveDialog({ invoiceId, open, onOpenChange }: WaiveDialogProps)
               <SelectContent>
                 {WAIVE_TYPES.map(type => (
                   <SelectItem key={type} value={type}>
-                    {t(`types.${type}`)}
+                    {tDyn(t, 'types', type)}
                   </SelectItem>
                 ))}
               </SelectContent>

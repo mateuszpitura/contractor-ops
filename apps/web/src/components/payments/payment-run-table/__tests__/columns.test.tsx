@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import type { PaymentRunRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('@/components/payments/payment-run-badge', () => ({
   PaymentRunBadge: ({ status }: { status: string }) => (
@@ -24,7 +25,7 @@ function makeRow(overrides: Partial<PaymentRunRow> = {}): PaymentRunRow {
 }
 
 function renderCell(columnId: string, row: PaymentRunRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
   const actions = { onDownloadExport: vi.fn(), onMarkAllPaid: vi.fn(), onCancelRun: vi.fn() };
   const columns = getColumns(t, actions);
   const col = columns.find(
@@ -42,7 +43,7 @@ function renderCell(columnId: string, row: PaymentRunRow) {
 }
 
 describe('getColumns', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
   const actions = {
     onDownloadExport: vi.fn(),
     onMarkAllPaid: vi.fn(),

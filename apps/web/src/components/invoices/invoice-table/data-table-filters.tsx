@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -142,7 +142,7 @@ export function DataTableFilters({
               title={t('columns.status')}
               options={INVOICE_STATUSES.map(s => ({
                 value: s,
-                label: t(`status.${enumKey(s)}`),
+                label: tDynLoose(t, 'status', enumKey(s)),
               }))}
               selected={filters.status}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -154,7 +154,7 @@ export function DataTableFilters({
               title={t('columns.matchStatus')}
               options={MATCH_STATUSES.map(s => ({
                 value: s,
-                label: t(`matchStatus.${enumKey(s)}`),
+                label: tDynLoose(t, 'matchStatus', enumKey(s)),
               }))}
               selected={filters.matchStatus}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -166,7 +166,7 @@ export function DataTableFilters({
               title={t('columns.source')}
               options={INVOICE_SOURCES.map(s => ({
                 value: s,
-                label: t(`source.${enumKey(s)}`),
+                label: tDynLoose(t, 'source', enumKey(s)),
               }))}
               selected={filters.source}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -183,7 +183,7 @@ export function DataTableFilters({
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={tDyn(t, 'status', enumKey(s))}
+              label={tDynLoose(t, 'status', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -191,7 +191,7 @@ export function DataTableFilters({
           {filters.matchStatus.map(s => (
             <FilterBadge
               key={`matchStatus-${s}`}
-              label={tDyn(t, 'matchStatus', enumKey(s))}
+              label={tDynLoose(t, 'matchStatus', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('matchStatus', s)}
             />
@@ -199,7 +199,7 @@ export function DataTableFilters({
           {filters.source.map(s => (
             <FilterBadge
               key={`source-${s}`}
-              label={tDyn(t, 'source', enumKey(s))}
+              label={tDynLoose(t, 'source', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('source', s)}
             />

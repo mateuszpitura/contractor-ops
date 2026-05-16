@@ -30,6 +30,7 @@ import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -168,7 +169,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-muted-foreground">{t('match.confidence')}</span>
           <span className={`inline-block h-2 w-2 rounded-full ${confidence.dotClass}`} />
-          <span className="text-sm font-medium">{t(`match.${enumKey(confidence.labelKey)}`)}</span>
+          <span className="text-sm font-medium">{tDynLoose(t, 'match', enumKey(confidence.labelKey))}</span>
           <span className="text-[13px] text-muted-foreground">{score}%</span>
         </div>
 
@@ -251,7 +252,7 @@ export function MatchCard({ invoice, onMatchConfirmed }: MatchCardProps) {
               return (
                 <Badge key={flag} variant="secondary" className={`gap-1 ${className}`}>
                   <Icon className="h-3 w-3" />
-                  {t(`match.${enumKey(labelKey)}`)}
+                  {tDynLoose(t, 'match', enumKey(labelKey))}
                 </Badge>
               );
             })}

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -217,7 +217,7 @@ export function DataTableToolbar({
                 title={t('columns.type')}
                 options={CONTRACTOR_TYPES.map(ct => ({
                   value: ct,
-                  label: t(`type.${enumKey(ct)}`),
+                  label: tDynLoose(t, 'type', enumKey(ct)),
                 }))}
                 selected={filters.type}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -249,7 +249,7 @@ export function DataTableToolbar({
                 title={t('columns.billingModel')}
                 options={BILLING_MODELS.map(model => ({
                   value: model,
-                  label: t(`billingModel.${enumKey(model)}`),
+                  label: tDynLoose(t, 'billingModel', enumKey(model)),
                 }))}
                 selected={filters.billingModel}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -261,7 +261,7 @@ export function DataTableToolbar({
                 title={t('columns.health')}
                 options={HEALTH_OPTIONS.map(health => ({
                   value: health,
-                  label: t(`health.${enumKey(health)}`),
+                  label: tDynLoose(t, 'health', enumKey(health)),
                 }))}
                 selected={filters.health}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -295,7 +295,7 @@ export function DataTableToolbar({
           {filters.type.map(ct => (
             <FilterBadge
               key={`type-${ct}`}
-              label={t(`type.${enumKey(ct)}`)}
+              label={tDynLoose(t, 'type', enumKey(ct))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', ct)}
             />
@@ -321,7 +321,7 @@ export function DataTableToolbar({
           {filters.billingModel.map(model => (
             <FilterBadge
               key={`billing-${model}`}
-              label={t(`billingModel.${enumKey(model)}`)}
+              label={tDynLoose(t, 'billingModel', enumKey(model))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', model)}
             />
@@ -329,7 +329,7 @@ export function DataTableToolbar({
           {filters.health.map(health => (
             <FilterBadge
               key={`health-${health}`}
-              label={tDyn(t, 'health', enumKey(health))}
+              label={tDynLoose(t, 'health', enumKey(health))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('health', health)}
             />

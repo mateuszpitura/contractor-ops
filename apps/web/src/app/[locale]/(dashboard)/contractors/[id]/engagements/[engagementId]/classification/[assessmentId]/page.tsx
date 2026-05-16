@@ -35,6 +35,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 interface RouteParams extends Record<string, string> {
   id: string;
@@ -221,7 +222,7 @@ function OutcomeBody(props: OutcomeBodyProps) {
   )}`;
 
   if (countryCode === 'GB' && assessment.outcome.kind === 'IR35') {
-    const label = t(`outcome.ir35.verdict.${assessment.outcome.verdict}`);
+    const label = tDyn(t, 'outcome.ir35.verdict', assessment.outcome.verdict);
     return (
       <>
         <VerdictBanner kind="ir35" outcome={assessment.outcome} label={label} subline={subline} />
@@ -243,7 +244,7 @@ function OutcomeBody(props: OutcomeBodyProps) {
   }
 
   if (countryCode === 'DE' && assessment.outcome.kind === 'SCHEINSELBSTANDIGKEIT') {
-    const label = t(`outcome.drv.verdict.${assessment.outcome.verdict}`);
+    const label = tDyn(t, 'outcome.drv.verdict', assessment.outcome.verdict);
     return (
       <>
         <VerdictBanner

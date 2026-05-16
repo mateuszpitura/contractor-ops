@@ -166,7 +166,7 @@ function ApprovalsContent() {
   const columns = useMemo(
     () =>
       getColumns(
-        (key: string) => t(key),
+        t,
         {
           onApprove: stepId => approveMutation.mutate({ stepId }),
           onReject: (stepId, comment) => rejectMutation.mutate({ stepId, comment }),

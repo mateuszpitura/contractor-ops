@@ -5,6 +5,7 @@ import { Clock, FileWarning, ShieldAlert, Users, UsersRound } from 'lucide-react
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
+import { tKey } from '@/i18n/typed-keys';
 
 const REPORT_TYPES: Array<{
   id: string;
@@ -48,7 +49,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                       : 'text-muted-foreground hover:bg-muted',
                   )}>
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{t(report.labelKey)}</span>
+                  <span className="truncate">{tKey(t, report.labelKey)}</span>
                 </button>
               </li>
             );
@@ -76,7 +77,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
                 )}>
                 <Icon className="h-3.5 w-3.5" />
-                <span>{t(report.labelKey)}</span>
+                <span>{tKey(t, report.labelKey)}</span>
               </button>
             );
           })}

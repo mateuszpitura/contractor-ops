@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Skonto eligibility pill — 5 states per UI-SPEC colour table
@@ -61,7 +62,7 @@ export function SkontoEligibilityPill({ state, className }: SkontoEligibilityPil
   const t = useTranslations('Payments.skonto.eligibility');
   const presentation = STATE_PRESENTATION[state];
   const Icon = presentation.icon;
-  const label = t(presentation.labelKey);
+  const label = tKey(t, presentation.labelKey);
 
   return (
     <Badge

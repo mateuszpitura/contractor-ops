@@ -11,6 +11,7 @@ import { AmendmentsTab } from './amendments-tab';
 import { DocumentsTab } from './documents-tab';
 import { LinearLinkedIssuesPanel } from './linear-linked-issues-panel';
 import { OverviewTab } from './overview-tab';
+import { tDyn } from '@/i18n/typed-keys';
 
 const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
@@ -45,7 +46,7 @@ export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {
       <TabsList variant="line" className="w-full justify-start">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>
-            {t(`tabs.${key}`)}
+            {tDyn(t, 'tabs', key)}
           </TabsTrigger>
         ))}
       </TabsList>

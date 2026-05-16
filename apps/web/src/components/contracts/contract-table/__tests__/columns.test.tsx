@@ -2,6 +2,7 @@ import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { ContractRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -29,7 +30,7 @@ function makeRow(overrides: Partial<ContractRow> = {}): ContractRow {
 }
 
 function renderCell(columnId: string, row: ContractRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Contracts'>();
   const columns = getColumns(t);
   const col = columns.find(
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
@@ -49,7 +50,7 @@ function renderCell(columnId: string, row: ContractRow) {
 }
 
 describe('getColumns (contracts)', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Contracts'>();
   const columns = getColumns(t);
 
   it('returns 12 columns', () => {
@@ -116,7 +117,7 @@ describe('getColumns cell renderers (contracts)', () => {
     for (const status of ['DRAFT', 'ACTIVE', 'EXPIRED', 'TERMINATED']) {
       const { unmount } = render(
         (() => {
-          const t = (key: string) => key;
+          const t = createMockTranslator<'Contracts'>();
           const cols = getColumns(t);
           const col = cols.find(c => (c as { accessorKey: string }).accessorKey === 'status');
           return (col?.cell as (info: unknown) => React.ReactElement)({
@@ -189,7 +190,7 @@ describe('getColumns cell renderers (contracts)', () => {
     for (const risk of ['LOW', 'MEDIUM', 'HIGH']) {
       const { unmount } = render(
         (() => {
-          const t = (key: string) => key;
+          const t = createMockTranslator<'Contracts'>();
           const cols = getColumns(t);
           const col = cols.find(
             c => (c as { accessorKey: string }).accessorKey === 'complianceRiskLevel',

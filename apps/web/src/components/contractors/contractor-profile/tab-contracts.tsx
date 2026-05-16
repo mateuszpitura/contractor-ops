@@ -16,7 +16,7 @@ import { useRouter } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -99,7 +99,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
         header: t('contractorTab.columns.status'),
         cell: ({ row }) => (
           <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ''}>
-            {tDyn(t, 'status', enumKey(row.original.status))}
+            {tDynLoose(t, 'status', enumKey(row.original.status))}
           </Badge>
         ),
       },

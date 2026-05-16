@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -123,7 +123,7 @@ export function DataTableFilters({
             title={t('columns.status')}
             options={RUN_STATUSES.map(s => ({
               value: s,
-              label: tDyn(t, 'runStatus', enumKey(s)),
+              label: tDynLoose(t, 'runStatus', enumKey(s)),
             }))}
             selected={filters.status}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -166,7 +166,7 @@ export function DataTableFilters({
       {filters.status.map(s => (
         <FilterBadge
           key={`status-${s}`}
-          label={tDyn(t, 'runStatus', enumKey(s))}
+          label={tDynLoose(t, 'runStatus', enumKey(s))}
           // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onRemove={() => removeFilter('status', s)}
         />

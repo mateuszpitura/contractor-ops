@@ -28,6 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 export interface ClassificationAssessmentListProps {
@@ -46,7 +47,7 @@ type AssessmentRow = {
 
 function readVerdictLabel(
   row: AssessmentRow,
-  t: (key: string) => string,
+  t: TranslatorOf<'Classification'>,
 ): { label: string; tone: 'success' | 'warning' | 'destructive' | 'neutral' } {
   if (row.status !== 'completed') {
     return { label: t('list.notCompleted'), tone: 'neutral' };

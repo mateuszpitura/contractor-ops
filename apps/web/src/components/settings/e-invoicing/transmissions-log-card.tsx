@@ -25,7 +25,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,7 +93,7 @@ function TransmissionRow({
       <TableCell>
         {validation ? (
           <Badge variant="secondary" className={validationPillClass[validation] ?? ''}>
-            {tDyn(t, 'validation', validation)}
+            {tDynLoose(t, 'validation', validation)}
           </Badge>
         ) : (
           <span className="text-muted-foreground text-sm">{t('validation.notGenerated')}</span>
@@ -102,7 +102,7 @@ function TransmissionRow({
       <TableCell>
         {transmission ? (
           <Badge variant="secondary" className={transmissionPillClass[transmission] ?? ''}>
-            {tDyn(t, 'transmission', transmission)}
+            {tDynLoose(t, 'transmission', transmission)}
           </Badge>
         ) : (
           <span className="text-muted-foreground text-sm">&mdash;</span>

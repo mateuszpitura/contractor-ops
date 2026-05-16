@@ -87,7 +87,7 @@ export function WorkflowRunsDataTable({
 
   // Column definitions
   const columns: ColumnDef<WorkflowRunRow>[] = useMemo(
-    () => getColumns((key: string) => t(key), formatDate),
+    () => getColumns(t, formatDate),
     [t, formatDate],
   );
 

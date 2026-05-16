@@ -33,6 +33,7 @@ import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
 import type { ContractWizardFormValues } from './wizard-dialog';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -238,7 +239,7 @@ export function StepDetails({ form, contractorId }: StepDetailsProps) {
 
   const contractTypeItems = CONTRACT_TYPES.map(type => ({
     value: type,
-    label: t(`typeOptions.${enumKey(type)}`),
+    label: tDynLoose(t, 'typeOptions', enumKey(type)),
   }));
 
   const handleContractorPick = (nextContractorId: string) => {

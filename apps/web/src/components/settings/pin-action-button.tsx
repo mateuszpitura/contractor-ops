@@ -8,6 +8,7 @@ import { useSettingsTabPins } from '@/hooks/use-settings-tab-pins';
 import type { SettingsTabKey } from '@/lib/settings-tabs';
 import { getSettingsTab } from '@/lib/settings-tabs';
 import { cn } from '@/lib/utils';
+import { tDyn } from '@/i18n/typed-keys';
 
 export interface PinActionButtonProps {
   tabKey: SettingsTabKey;
@@ -32,7 +33,7 @@ export function PinActionButton({ tabKey, className }: PinActionButtonProps) {
   const handleClick = useCallback(() => toggle(tabKey), [toggle, tabKey]);
 
   const tab = getSettingsTab(tabKey);
-  const tabLabel = t(`tabs.${tab.i18nKey}`);
+  const tabLabel = tDyn(t, 'tabs', tab.i18nKey);
   const pinned = isPinned(tabKey);
   const label = pinned ? tPin('unpin', { tab: tabLabel }) : tPin('pin', { tab: tabLabel });
 

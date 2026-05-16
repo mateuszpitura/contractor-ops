@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,7 +161,7 @@ export function EquipmentToolbar({
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                       onCheckedChange={() => toggleFilterValue('type', type)}
                     />
-                    <span>{t(`type.${enumKey(type)}`)}</span>
+                    <span>{tDynLoose(t, 'type', enumKey(type))}</span>
                   </label>
                 ))}
               </div>
@@ -201,7 +201,7 @@ export function EquipmentToolbar({
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                       onCheckedChange={() => toggleFilterValue('status', status)}
                     />
-                    <span>{t(`status.${enumKey(status)}`)}</span>
+                    <span>{tDynLoose(t, 'status', enumKey(status))}</span>
                   </label>
                 ))}
               </div>
@@ -225,9 +225,9 @@ export function EquipmentToolbar({
           {filters.type.map(type => (
             <FilterBadge
               key={`type-${type}`}
-              label={tDyn(t, 'type', enumKey(type))}
+              label={tDynLoose(t, 'type', enumKey(type))}
               removeLabel={t('list.filters.removeFilter', {
-                label: tDyn(t, 'type', enumKey(type)),
+                label: tDynLoose(t, 'type', enumKey(type)),
               })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', type)}
@@ -236,9 +236,9 @@ export function EquipmentToolbar({
           {filters.status.map(status => (
             <FilterBadge
               key={`status-${status}`}
-              label={tDyn(t, 'status', enumKey(status))}
+              label={tDynLoose(t, 'status', enumKey(status))}
               removeLabel={t('list.filters.removeFilter', {
-                label: tDyn(t, 'status', enumKey(status)),
+                label: tDynLoose(t, 'status', enumKey(status)),
               })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', status)}

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { enumKey } from '@/lib/enum-key';
 import type { ContractWizardFormValues } from './wizard-dialog';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -61,17 +62,17 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
   const billingModelItems = BILLING_MODELS.map(m => ({
     value: m,
-    label: t(`billingModelOptions.${enumKey(m)}`),
+    label: tDynLoose(t, 'billingModelOptions', enumKey(m)),
   }));
 
   const rateTypeItems = RATE_TYPES.map(rt => ({
     value: rt,
-    label: t(`rateTypeOptions.${enumKey(rt)}`),
+    label: tDynLoose(t, 'rateTypeOptions', enumKey(rt)),
   }));
 
   const invoiceCycleItems = INVOICE_CYCLES.map(c => ({
     value: c,
-    label: t(`invoiceCycleOptions.${enumKey(c)}`),
+    label: tDynLoose(t, 'invoiceCycleOptions', enumKey(c)),
   }));
 
   const {

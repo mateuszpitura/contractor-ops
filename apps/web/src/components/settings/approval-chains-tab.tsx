@@ -24,6 +24,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -231,7 +232,7 @@ export function ApprovalChainsTab() {
                   {formatConditionSummary(
                     chain.conditionsJson,
                     (key: string, params?: Record<string, string | number>) =>
-                      t(key, params),
+                      tKey(t, key, params),
                   )}
                 </span>
               </div>

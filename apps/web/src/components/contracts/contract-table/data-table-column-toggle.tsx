@@ -11,7 +11,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 interface DataTableColumnToggleProps<TData> {
   table: Table<TData>;
@@ -50,7 +50,7 @@ export function DataTableColumnToggle<TData>({ table }: DataTableColumnTogglePro
               // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
               onCheckedChange={value => column.toggleVisibility(!!value)}
               className="capitalize">
-              {tDyn(t, 'columns', column.id)}
+              {tDynLoose(t, 'columns', column.id)}
             </DropdownMenuCheckboxItem>
           ))}
       </DropdownMenuContent>

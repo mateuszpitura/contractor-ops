@@ -34,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { EquipmentTypeIcon } from './equipment-type-icon';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -204,7 +205,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
                   {(value: string) => (
                     <div className="flex items-center gap-2">
                       <EquipmentTypeIcon type={value} />
-                      <span>{t(`type.${enumKey(value)}`)}</span>
+                      <span>{tDynLoose(t, 'type', enumKey(value))}</span>
                     </div>
                   )}
                 </SelectValue>
@@ -214,7 +215,7 @@ export function EquipmentForm({ open, onOpenChange, equipment }: EquipmentFormPr
                   <SelectItem key={type} value={type}>
                     <div className="flex items-center gap-2">
                       <EquipmentTypeIcon type={type} />
-                      <span>{t(`type.${enumKey(type)}`)}</span>
+                      <span>{tDynLoose(t, 'type', enumKey(type))}</span>
                     </div>
                   </SelectItem>
                 ))}

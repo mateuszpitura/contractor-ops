@@ -3,6 +3,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC payment.readyForPayment response shape
@@ -49,7 +50,7 @@ function formatMinorUnits(minor: number): string {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Payments'>;
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
 export function getColumns(

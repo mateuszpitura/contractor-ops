@@ -26,6 +26,7 @@ import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 
 import { ClassificationEngagementCta } from './classification-engagement-cta';
+import { tDyn } from '@/i18n/typed-keys';
 
 export interface ClassificationTileEngagement {
   readonly id: string;
@@ -128,8 +129,8 @@ export function ClassificationTile(props: ClassificationTileProps) {
   const { tone, Icon } = toneForOutcome(outcome);
   const verdictLabel =
     outcome.kind === 'IR35'
-      ? t(`outcome.ir35.verdict.${outcome.verdict}`)
-      : t(`outcome.drv.verdict.${outcome.verdict}`);
+      ? tDyn(t, 'outcome.ir35.verdict', outcome.verdict)
+      : tDyn(t, 'outcome.drv.verdict', outcome.verdict);
 
   return (
     <Card data-testid="classification-tile" className="flex flex-col">

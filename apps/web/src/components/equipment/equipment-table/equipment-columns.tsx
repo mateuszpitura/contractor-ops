@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Link } from '@/i18n/navigation';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
@@ -44,7 +45,7 @@ export type EquipmentRow = {
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Equipment'>;
 
 interface ColumnActions {
   onEdit: (equipment: EquipmentRow) => void;
@@ -96,7 +97,7 @@ export function getEquipmentColumns(
       accessorKey: 'type',
       header: t('list.columns.type'),
       cell: ({ row }) => (
-        <Badge variant="secondary">{t(`type.${enumKey(row.original.type)}` as string)}</Badge>
+        <Badge variant="secondary">{tKey(t, `type.${enumKey(row.original.type)}` as string)}</Badge>
       ),
     },
 

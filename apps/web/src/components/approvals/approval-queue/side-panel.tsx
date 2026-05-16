@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -240,7 +241,7 @@ function ClarifyOverlay({
   onClose: () => void;
   onSubmit: () => void;
   isPending: boolean;
-  t: (key: string) => string;
+  t: TranslatorOf<'Approvals'>;
 }) {
   const reactId = useId();
   if (!isOpen) return null;
@@ -310,7 +311,7 @@ function DelegateOverlay({
   onClose: () => void;
   onSubmit: () => void;
   isPending: boolean;
-  t: (key: string) => string;
+  t: TranslatorOf<'Approvals'>;
 }) {
   const reactId = useId();
   if (!isOpen) return null;

@@ -146,7 +146,7 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
 
   // Column definitions
   const columns: ColumnDef<InvoiceRow>[] = useMemo(
-    () => getColumns((key: string) => t(key), formatDate),
+    () => getColumns(t, formatDate),
     [t, formatDate],
   );
 

@@ -38,6 +38,7 @@ import { enumKey } from '@/lib/enum-key';
 import type { PeppolTransmissionResult } from '@/lib/peppol-trpc';
 import { peppolTrpc } from '@/lib/peppol-trpc';
 import { trpc } from '@/trpc/init';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Lightweight shape covering the invoice fields accessed by helper functions.
@@ -360,7 +361,7 @@ export default function InvoiceDetailPage() {
           {invoice.invoiceNumber}
         </h1>
         <AtelierStatusPill variant={statusVariant}>
-          {t(`status.${enumKey(invoice.status)}`)}
+          {tDynLoose(t, 'status', enumKey(invoice.status))}
         </AtelierStatusPill>
         {flags.isKsefSource ? (
           <KsefSourceBadge fetchedAt={invoice.receivedAt} />

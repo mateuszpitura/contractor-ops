@@ -30,7 +30,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { authClient } from '@/lib/auth-client';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 type Member = {
   id?: string;
@@ -282,13 +282,13 @@ export function UsersTable() {
   }
 
   const roleLabel = (role: string) =>
-    tDyn(t, 'roles', enumKey(role)) ?? role;
+    tDynLoose(t, 'roles', enumKey(role)) ?? role;
 
   const roleDescription = (role: string) =>
-    tDyn(t, 'roleDescriptions', enumKey(role));
+    tDynLoose(t, 'roleDescriptions', enumKey(role));
 
   const statusLabel = (status: string) =>
-    tDyn(t, 'status', enumKey(status)) ?? status;
+    tDynLoose(t, 'status', enumKey(status)) ?? status;
 
   return (
     <>

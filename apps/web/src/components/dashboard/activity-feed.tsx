@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,7 +161,7 @@ export function ActivityFeed() {
               {grouped.map(group => (
                 <div key={group.label}>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/60">
-                    {tDyn(t, 'activity', group.label)}
+                    {tDynLoose(t, 'activity', group.label)}
                   </p>
                   <div className="flex flex-col gap-1">
                     {group.items.map(item => {

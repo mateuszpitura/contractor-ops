@@ -34,7 +34,7 @@ import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractorAction } from '../actions';
 import { getProfileContractorActions } from '../actions';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose, tKey } from '@/i18n/typed-keys';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
@@ -138,8 +138,8 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
   function getActionLabel(action: ContractorAction): string {
     // next-intl namespaces are flat strings; switch on the registry-declared
     // namespace so the right `t()` is used.
-    if (action.i18nNamespace === 'ContractorProfile') return t(action.labelKey);
-    if (action.i18nNamespace === 'Contractors.bulkActions') return tBulk(action.labelKey);
+    if (action.i18nNamespace === 'ContractorProfile') return tKey(t, action.labelKey);
+    if (action.i18nNamespace === 'Contractors.bulkActions') return tKey(tBulk, action.labelKey);
     return tc(action.labelKey);
   }
 
@@ -197,7 +197,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
                 'contractor-lifecycle',
                 stage satisfies ContractorLifecycleStageInput,
               )}>
-              {tDyn(t, 'lifecycle', enumKey(stage)) ?? stage}
+              {tDynLoose(t, 'lifecycle', enumKey(stage)) ?? stage}
             </AtelierStatusPill>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
               {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
@@ -245,7 +245,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               setPickerOpen(true);
             }}>
             <Play className={`me-1.5 ${iconSize.sm}`} />
-            {t(workflowLauncher.labelKey)}
+            {tKey(t, workflowLauncher.labelKey)}
           </Button>
         )}
 

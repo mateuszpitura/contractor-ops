@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -244,14 +244,14 @@ export function ApprovalQueueToolbar({
           <div className="flex flex-wrap items-center gap-1.5">
             {activeStatuses.map(s => (
               <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">{tDyn(t, 'chips', s)}</span>
+                <span className="text-xs">{tDynLoose(t, 'chips', s)}</span>
                 <button
                   type="button"
                   className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => removeFilter(s)}
                   aria-label={tAria('removeFilter', {
-                    label: tDyn(t, 'chips', s),
+                    label: tDynLoose(t, 'chips', s),
                   })}>
                   <X className="h-3 w-3" />
                 </button>

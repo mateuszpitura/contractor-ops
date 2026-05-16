@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -164,7 +164,7 @@ export function AuditLogTable({
         cell: ({ row }) => {
           const actionKey = row.original.action;
           const key = enumKey(actionKey);
-          const translated = tDyn(t, 'actions', key);
+          const translated = tDynLoose(t, 'actions', key);
           // next-intl returns the full key path when a translation is missing —
           // fall back to a humanised version of the camelCase key instead.
           const label = translated.includes('.') ? humanizeAction(key) : translated;
@@ -183,7 +183,7 @@ export function AuditLogTable({
               <Badge variant="outline" className="text-[11px]">
                 {(() => {
                   const rKey = enumKey(resourceType);
-                  const rt = tDyn(t, 'resources', rKey);
+                  const rt = tDynLoose(t, 'resources', rKey);
                   return rt.includes('.') ? humanizeAction(rKey) : rt;
                 })()}
               </Badge>

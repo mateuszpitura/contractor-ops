@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -246,7 +246,7 @@ export function NotificationPreferences() {
                           <Icon className={`size-4 ${config.iconClass}`} />
                         </div>
                         <span className="text-sm font-medium">
-                          {tDyn(t, 'notifications', config.labelKey)}
+                          {tDynLoose(t, 'notifications', config.labelKey)}
                         </span>
                       </div>
                     </TableCell>

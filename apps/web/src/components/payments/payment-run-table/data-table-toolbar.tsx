@@ -9,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status filter options
@@ -218,7 +218,7 @@ export function DataTableToolbar({
           {activeStatuses.map(s => (
             <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
               <span className="text-xs">
-                {tDyn(t, 'filters', s.toLowerCase())}
+                {tDynLoose(t, 'filters', s.toLowerCase())}
               </span>
               <button
                 type="button"
@@ -226,7 +226,7 @@ export function DataTableToolbar({
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => removeFilter(s)}
                 aria-label={tAria('removeFilter', {
-                  label: tDyn(t, 'filters', s.toLowerCase()),
+                  label: tDynLoose(t, 'filters', s.toLowerCase()),
                 })}>
                 <X className="h-3 w-3" />
               </button>

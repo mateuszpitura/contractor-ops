@@ -6,6 +6,7 @@ import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import type { Ir35ChainParticipantRow } from './ir35-chain-panel';
+import { tDyn } from '@/i18n/typed-keys';
 
 interface ChainParticipantRowProps {
   row: Ir35ChainParticipantRow;
@@ -36,7 +37,7 @@ export function ChainParticipantRow({
 
   return (
     <tr className="border-b last:border-0">
-      <td className="py-2 pr-2 font-medium">{t(`role.${row.role}`)}</td>
+      <td className="py-2 pr-2 font-medium">{tDyn(t, 'role', row.role)}</td>
       <td className="py-2 pr-2">{row.displayName}</td>
       <td className="py-2 pr-2">
         <span>{deliveredLabel}</span>

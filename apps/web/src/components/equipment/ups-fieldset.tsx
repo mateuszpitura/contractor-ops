@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 
 import type { DpdAddress, ParcelSize } from './dpd-fieldset';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -133,7 +134,7 @@ export function UpsFieldset({
           <SelectContent>
             {SERVICE_OPTIONS.map(opt => (
               <SelectItem key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
+                {tKey(t, opt.labelKey)}
               </SelectItem>
             ))}
           </SelectContent>

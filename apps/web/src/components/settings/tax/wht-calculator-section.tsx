@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 /**
  * Cross-border withholding tax calculator.
@@ -124,7 +125,7 @@ export function WhtCalculatorSection() {
               <SelectContent>
                 {CONTRACTOR_COUNTRIES.map(code => (
                   <SelectItem key={code} value={code}>
-                    {t(`country.${code}`)} ({code})
+                    {tDyn(t, 'country', code)} ({code})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -144,7 +145,7 @@ export function WhtCalculatorSection() {
               <SelectContent>
                 {SERVICE_TYPES.map(type => (
                   <SelectItem key={type} value={type}>
-                    {t(`serviceType.${type}`)}
+                    {tDyn(t, 'serviceType', type)}
                   </SelectItem>
                 ))}
               </SelectContent>

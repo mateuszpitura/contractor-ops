@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,7 +97,7 @@ export function DeadlinesWidget() {
                     key={`${item.type}-${item.entityId}`}
                     className={`flex items-center gap-3 rounded-lg border-s-2 ${badge.accent} ps-3 pe-2.5 py-2.5 transition-all duration-200 hover:bg-surface-2 hover:ps-3.5`}>
                     <Badge variant={badge.variant} className={isOverdue ? 'badge-glow' : ''}>
-                      {t(badge.labelKey)}
+                      {tKey(t, badge.labelKey)}
                     </Badge>
                     <Link
                       href={getEntityHref(item.type as DeadlineType, item.entityId)}

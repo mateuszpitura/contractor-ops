@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/select';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -356,7 +357,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
 
   const resolveLabel = (action: InvoiceAction) =>
     resolveActionLabel(action, {
-      t: (key: string) => t(key),
+      t: (key: string) => tKey(t, key),
       tDetail: (key: string) => tDetail(key as Parameters<typeof tDetail>[0]),
       tBulk: (key: string) => tBulk(key as Parameters<typeof tBulk>[0]),
     });

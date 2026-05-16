@@ -2,6 +2,7 @@ import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { WorkflowRunRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 function makeRow(overrides: Partial<WorkflowRunRow> = {}): WorkflowRunRow {
   return {
@@ -19,7 +20,7 @@ function makeRow(overrides: Partial<WorkflowRunRow> = {}): WorkflowRunRow {
 }
 
 function renderCell(columnId: string, row: WorkflowRunRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Workflows'>();
   const columns = getColumns(t);
   const col = columns.find(
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
@@ -35,7 +36,7 @@ function renderCell(columnId: string, row: WorkflowRunRow) {
 }
 
 describe('getColumns', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Workflows'>();
   const columns = getColumns(t);
 
   it('returns expected number of columns', () => {
@@ -116,7 +117,7 @@ describe('getColumns cell renderers (workflow runs)', () => {
     ]) {
       const { unmount } = render(
         (() => {
-          const t = (key: string) => key;
+          const t = createMockTranslator<'Workflows'>();
           const cols = getColumns(t);
           const col = cols.find(c => (c as { accessorKey: string }).accessorKey === 'status');
           return (col?.cell as (info: unknown) => React.ReactElement)({

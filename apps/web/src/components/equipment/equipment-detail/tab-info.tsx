@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { enumKey } from '@/lib/enum-key';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -51,7 +51,7 @@ export function TabInfo({ equipment, onEdit: _onEdit }: TabInfoProps) {
             value={
               <span className="flex items-center gap-1.5">
                 <EquipmentTypeIcon type={equipment.type} />
-                {tDyn(t, 'type', enumKey(equipment.type))}
+                {tDynLoose(t, 'type', enumKey(equipment.type))}
                 {!!equipment.customType && ` (${equipment.customType})`}
               </span>
             }

@@ -17,10 +17,12 @@ import type {
 } from '@contractor-ops/classification';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 
@@ -72,7 +74,7 @@ function readPrompt(question: RuleSetQuestion, locale: Locale): string {
   return question.prompt[locale] ?? question.prompt.en;
 }
 
-function readAnswerSummary(raw: unknown, _locale: Locale, t: (key: string) => string): string {
+function readAnswerSummary(raw: unknown, _locale: Locale, t: TranslatorOf<'Classification'>): string {
   if (raw === undefined || raw === null) return t('outcome.drv.answerMissing');
   if (raw === 'yes' || raw === 'no') {
     return raw === 'yes' ? t('yesNo.yes') : t('yesNo.no');
@@ -103,8 +105,8 @@ export function Ir35AreaCard(props: Ir35AreaCardProps) {
   const otherQuestions = areaQuestions.filter(q => !drivingIds.includes(q.id));
 
   const tone = VERDICT_TONE[area.verdict];
-  const areaTitle = t(`ir35.step.${AREA_STEP_KEY[area.area]}`);
-  const verdictLabel = t(`outcome.ir35.areaVerdict.${area.verdict}`);
+  const areaTitle = tDynLoose(t, 'ir35.step', AREA_STEP_KEY[area.area]);
+  const verdictLabel = tDyn(t, 'outcome.ir35.areaVerdict', area.verdict);
 
   return (
     <Card data-testid="ir35-area-card" data-area={area.area} className="flex flex-col">

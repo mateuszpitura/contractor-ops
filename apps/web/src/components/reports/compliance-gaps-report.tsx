@@ -14,6 +14,7 @@ import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
 import { ExportButtons } from './export-buttons';
 import { ReportChart } from './report-chart';
 import { ReportTable } from './report-table';
+import { tKey } from '@/i18n/typed-keys';
 
 interface ComplianceGapsReportProps {
   dateFrom: string;
@@ -144,7 +145,7 @@ export function ComplianceGapsReport({
           const health = getValue<string>();
           const config = HEALTH_BADGE[health] ?? HEALTH_BADGE.green;
           return (
-            <Badge variant={config.variant}>{t(config.labelKey)}</Badge>
+            <Badge variant={config.variant}>{tKey(t, config.labelKey)}</Badge>
           );
         },
       },

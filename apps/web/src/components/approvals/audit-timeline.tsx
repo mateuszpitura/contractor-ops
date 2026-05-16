@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -245,7 +246,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
 
   // Cast t for sub-components that accept a simpler signature
   const tFn = (key: string, params?: Record<string, string>) =>
-    t(key, params);
+    tKey(t, key, params);
 
   return (
     <Card>

@@ -26,6 +26,7 @@ import {
   SETTINGS_TABS,
 } from '@/lib/settings-tabs';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 const PIN_KIND = 'settings-tab' as const;
 
@@ -193,7 +194,7 @@ function NavItemsContent() {
           <SidebarGroup key={group.key} className={group.key === 'overview' ? 'pb-0' : undefined}>
             {group.key !== 'overview' && (
               <SidebarGroupLabel className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
-                {t(`groups.${group.key}`)}
+                {tDyn(t, 'groups', group.key)}
               </SidebarGroupLabel>
             )}
             <SidebarMenu>

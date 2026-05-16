@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import type { EquipmentRow } from '../equipment-columns';
 import { getEquipmentColumns } from '../equipment-columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('@/i18n/navigation', () => ({
   Link: ({
@@ -46,7 +47,7 @@ function makeRow(overrides: Partial<EquipmentRow> = {}): EquipmentRow {
 }
 
 function renderCell(columnId: string, row: EquipmentRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Equipment'>();
   const tCommon = (key: string) => key;
   const actions = {
     onEdit: vi.fn(),
@@ -70,7 +71,7 @@ function renderCell(columnId: string, row: EquipmentRow) {
 }
 
 describe('getEquipmentColumns', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Equipment'>();
   const tCommon = (key: string) => key;
   const actions = {
     onEdit: vi.fn(),

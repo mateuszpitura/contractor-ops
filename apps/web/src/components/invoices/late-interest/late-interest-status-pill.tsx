@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Late-interest status pill — 5 states per UI-SPEC colour table
@@ -56,7 +57,7 @@ export function LateInterestStatusPill({ status, className }: LateInterestStatus
   const t = useTranslations('Payments.lateInterest.status');
   const presentation = STATUS_PRESENTATION[status];
   const Icon = presentation.icon;
-  const label = t(presentation.labelKey);
+  const label = tKey(t, presentation.labelKey);
 
   return (
     <Badge

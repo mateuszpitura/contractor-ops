@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { OnboardingWizard } from './onboarding-wizard';
 import { zatcaTrpc } from './zatca-trpc';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge variant mapping (labels resolved via i18n)
@@ -143,7 +144,7 @@ export function ZatcaStatusCard() {
               <ZatcaBrandIcon className="h-8 w-auto" />
               <h4 className="text-base font-semibold">{t('title')}</h4>
               <Badge variant={statusConfig.variant}>
-                {t(statusConfig.labelKey)}
+                {tKey(t, statusConfig.labelKey)}
               </Badge>
             </div>
           </CardHeader>
@@ -183,7 +184,7 @@ export function ZatcaStatusCard() {
           <ZatcaBrandIcon className="h-8 w-auto" />
           <h4 className="text-base font-semibold">{t('title')}</h4>
           <Badge variant={statusConfig.variant}>
-            {t(statusConfig.labelKey)}
+            {tKey(t, statusConfig.labelKey)}
           </Badge>
         </div>
       </CardHeader>

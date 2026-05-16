@@ -20,6 +20,7 @@ import { useTranslations } from 'next-intl';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 import { DrvCriterionBreakdownList } from './drv-criterion-breakdown-list';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 
@@ -73,8 +74,8 @@ export function DrvCategoryBar(props: DrvCategoryBarProps) {
       ? 0
       : Math.min(100, Math.max(0, (category.weightedScore / maxWeightedScore) * 100));
 
-  const label = t(`schein.step.${CATEGORY_STEP_KEY[category.category]}`);
-  const levelLabel = t(`outcome.drv.verdict.${verdict}`);
+  const label = tDynLoose(t, 'schein.step', CATEGORY_STEP_KEY[category.category]);
+  const levelLabel = tDyn(t, 'outcome.drv.verdict', verdict);
   const ariaLabel = t('outcome.drv.categoryAriaLabel', {
     category: label,
     weighted: category.weightedScore.toFixed(1),

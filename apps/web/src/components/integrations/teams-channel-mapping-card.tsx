@@ -18,6 +18,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -112,7 +113,7 @@ function ChannelMappingContent({
           key={category}
           className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-sm font-semibold">
-            {t(CATEGORY_LABEL_KEYS[category])}
+            {tKey(t, CATEGORY_LABEL_KEYS[category])}
           </span>
           <Select
             value={localMapping[category] ?? undefined}
@@ -120,7 +121,7 @@ function ChannelMappingContent({
             onValueChange={v => v && onChannelSelect(category, v)}>
             <SelectTrigger
               className="w-full sm:w-64"
-              aria-label={`${t(CATEGORY_LABEL_KEYS[category])} notification channel`}>
+              aria-label={`${tKey(t, CATEGORY_LABEL_KEYS[category])} notification channel`}>
               <SelectValue placeholder={t('selectChannel')} />
             </SelectTrigger>
             <SelectContent>

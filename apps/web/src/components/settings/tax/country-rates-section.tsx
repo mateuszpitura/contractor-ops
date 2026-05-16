@@ -26,6 +26,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 /**
  * Country VAT/tax rates browser plus inline validation of a single rate code
@@ -99,7 +100,7 @@ export function CountryRatesSection() {
             <SelectContent>
               {SUPPORTED_COUNTRIES.map(code => (
                 <SelectItem key={code} value={code}>
-                  {t(`country.${code}`)} ({code})
+                  {tDyn(t, 'country', code)} ({code})
                 </SelectItem>
               ))}
             </SelectContent>

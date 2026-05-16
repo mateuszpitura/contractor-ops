@@ -2,6 +2,7 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { PaymentRunRow } from '../columns';
 import { getColumns } from '../columns';
 import { PaymentRunDataTable } from '../data-table';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('../payment-run-badge', () => ({
   PaymentRunBadge: ({ status }: { status: string }) => <span>{status}</span>,
@@ -23,7 +24,7 @@ function makeRow(overrides: Partial<PaymentRunRow> = {}): PaymentRunRow {
 }
 
 describe('PaymentRunDataTable', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
   const columns = getColumns(t, {});
 
   it('renders skeleton rows when loading', () => {

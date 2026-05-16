@@ -31,6 +31,7 @@ import { trpc } from '@/trpc/init';
 import type { ContractorAction } from '../actions';
 import { getBulkContractorActions } from '../actions';
 import type { ContractorRow } from './columns';
+import { tKey } from '@/i18n/typed-keys';
 
 interface DataTableBulkActionsProps {
   table: Table<ContractorRow>;
@@ -170,7 +171,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
               render={props => (
                 <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
                   <AssignOwnerIcon className={iconSize.sm} />
-                  {t(assignOwnerAction.labelKey)}
+                  {tKey(t, assignOwnerAction.labelKey)}
                 </Button>
               )}
             />
@@ -219,7 +220,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
                   ) : (
                     <ExportIcon className={iconSize.sm} />
                   )}
-                  {t(exportAction.labelKey)}
+                  {tKey(t, exportAction.labelKey)}
                 </Button>
               )}
             />
@@ -249,7 +250,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setShowArchiveDialog(true)}>
             <ArchiveIcon className={iconSize.sm} />
-            {t(archiveAction.labelKey)}
+            {tKey(t, archiveAction.labelKey)}
           </Button>
         )}
 
@@ -262,7 +263,7 @@ export function DataTableBulkActions({ table }: DataTableBulkActionsProps) {
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={() => setWorkflowPickerOpen(true)}>
             <LaunchWorkflowIcon className={iconSize.sm} />
-            {t(launchWorkflowAction.labelKey)}
+            {tKey(t, launchWorkflowAction.labelKey)}
           </Button>
         )}
       </div>

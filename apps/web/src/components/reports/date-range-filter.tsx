@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { tKey } from '@/i18n/typed-keys';
 
 type Preset = 'this-month' | 'last-3m' | 'last-6m' | 'ytd' | 'custom';
 
@@ -107,7 +108,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
                     <CalendarIcon className="h-3.5 w-3.5" />
                     {activePreset === 'custom' && formatDisplay()
                       ? formatDisplay()
-                      : t(preset.labelKey)}
+                      : tKey(t, preset.labelKey)}
                   </span>
                 )}
               />
@@ -122,7 +123,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
               </PopoverContent>
             </Popover>
           ) : (
-            t(preset.labelKey)
+            tKey(t, preset.labelKey)
           )}
         </Button>
       ))}

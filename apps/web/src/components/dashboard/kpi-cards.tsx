@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -175,7 +176,7 @@ export function KpiCards() {
         }
 
         const { change, direction } = getTrend(value, prevValue);
-        const cardLabel = t(card.labelKey);
+        const cardLabel = tKey(t, card.labelKey);
 
         return (
           <Link

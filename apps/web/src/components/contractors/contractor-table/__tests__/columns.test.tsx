@@ -2,6 +2,7 @@ import { enumKey } from '@/lib/enum-key';
 import { render, screen } from '@/test/test-utils';
 import type { ContractorRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 days ago',
@@ -39,7 +40,7 @@ function makeRow(overrides: Partial<ContractorRow> = {}): ContractorRow {
  * Helper: render a column cell by extracting the cell function from the column def
  */
 function renderCell(columnId: string, row: ContractorRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Contractors'>();
   const columns = getColumns(t);
   const col = columns.find(
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
@@ -59,7 +60,7 @@ function renderCell(columnId: string, row: ContractorRow) {
 }
 
 describe('getColumns', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Contractors'>();
   const columns = getColumns(t);
 
   it('returns 13 columns', () => {
@@ -110,7 +111,7 @@ describe('getColumns cell renderers', () => {
     for (const stage of ['DRAFT', 'ONBOARDING', 'ACTIVE', 'OFFBOARDING', 'ENDED']) {
       const { unmount } = render(
         (() => {
-          const t = (key: string) => key;
+          const t = createMockTranslator<'Contractors'>();
           const cols = getColumns(t);
           const col = cols.find(
             c => (c as { accessorKey: string }).accessorKey === 'lifecycleStage',

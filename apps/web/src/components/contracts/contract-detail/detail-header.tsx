@@ -33,6 +33,7 @@ import type { ContractAction } from '../actions';
 import { getDetailContractActions } from '../actions';
 import { EditContractDialog } from './edit-contract-dialog';
 import { SendForSignatureButton } from './send-for-signature-button';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -151,7 +152,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
   function getActionLabel(action: ContractAction): string {
     // ContractDetail-namespaced actions resolve via `t`; future Contracts
     // namespace fallthrough is wired the same way as the contractors variant.
-    return t(action.labelKey);
+    return tKey(t, action.labelKey);
   }
 
   // Action keys that are wired in the UI but their backend/UX is not yet

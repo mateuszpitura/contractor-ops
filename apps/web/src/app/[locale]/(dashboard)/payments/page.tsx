@@ -155,7 +155,7 @@ function PaymentsContent() {
   const columns = useMemo(
     () =>
       getColumns(
-        (key: string) => t(key),
+        t,
         {
           onDownloadExport: () => {
             // Download handled via side panel

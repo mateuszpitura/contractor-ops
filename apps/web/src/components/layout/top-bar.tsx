@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // BreadcrumbLinkRenderer — avoids inline arrow in render prop per iteration
@@ -89,7 +90,7 @@ export function TopBar() {
     if (isIdSegment(segment)) return null;
 
     // 3. Translated navigation label (contractors → Kontrahenci, etc.)
-    if (tNav.has(segment)) return tNav(segment);
+    if (tNav.has(segment)) return tKey(tNav, segment);
 
     // 4. Fallback: capitalize the URL segment
     return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');

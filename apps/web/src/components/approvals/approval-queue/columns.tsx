@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { Link } from '@/i18n/navigation';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 
 import { formatMinorUnits } from '@/lib/format-currency';
 import { SlaBadge } from '../sla-badge';
@@ -154,7 +155,7 @@ function RejectPopover({
 // Column factory
 // ---------------------------------------------------------------------------
 
-type TranslateFunction = (key: string) => string;
+type TranslateFunction = TranslatorOf<'Approvals'>;
 
 interface ColumnCallbacks {
   onApprove: (stepId: string) => void;

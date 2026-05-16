@@ -126,7 +126,7 @@ export function StepSelect({
 
   // Column definitions
   const columns = useMemo(
-    () => getColumns((key: string) => t(key), formatDate),
+    () => getColumns(t, formatDate),
     [t, formatDate],
   );
 

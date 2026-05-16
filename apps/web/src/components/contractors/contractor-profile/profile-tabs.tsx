@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { tDyn } from '@/i18n/typed-keys';
 
 const TAB_KEYS = [
   'overview',
@@ -66,7 +67,7 @@ export function ProfileTabs({
       <TabsList variant="line" className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>
-            {t(`tabs.${key}`)}
+            {tDyn(t, 'tabs', key)}
           </TabsTrigger>
         ))}
       </TabsList>

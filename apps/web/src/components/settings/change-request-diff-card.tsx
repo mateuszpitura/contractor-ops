@@ -21,7 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Field label key mapping
@@ -149,7 +149,7 @@ export function ChangeRequestDiffCard({
   function getFieldLabel(key: string): string {
     const labelKey = FIELD_LABEL_KEYS[key];
     if (labelKey) {
-      return tDyn(t, 'fieldLabels', labelKey);
+      return tDynLoose(t, 'fieldLabels', labelKey);
     }
     return key.replace(/([A-Z])/g, ' $1').trim();
   }
@@ -174,7 +174,7 @@ export function ChangeRequestDiffCard({
             </div>
             {request.status !== 'PENDING' && (
               <AtelierStatusPill variant={statusVariant}>
-                {t(`status.${enumKey(request.status)}`)}
+                {tDynLoose(t, 'status', enumKey(request.status))}
               </AtelierStatusPill>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import type { ReadyInvoiceRow } from '../columns';
 import { getColumns } from '../columns';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
   return {
@@ -19,7 +20,7 @@ function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
 }
 
 function renderCell(columnId: string, row: ReadyInvoiceRow) {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
   const columns = getColumns(t);
   const col = columns.find(
     c => ('accessorKey' in c && c.accessorKey === columnId) || c.id === columnId,
@@ -36,7 +37,7 @@ function renderCell(columnId: string, row: ReadyInvoiceRow) {
 }
 
 describe('getColumns', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
 
   it('returns expected column count', () => {
     const columns = getColumns(t);
@@ -144,7 +145,7 @@ describe('getColumns cell renderers (invoice selection)', () => {
   });
 
   it('select cell checkbox is disabled when invoice is in a run', () => {
-    const t = (key: string) => key;
+    const t = createMockTranslator<'Payments'>();
     const columns = getColumns(t);
     const selectCol = columns.find(c => c.id === 'select');
     const cellFn = selectCol?.cell as (info: unknown) => React.ReactElement;

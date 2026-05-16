@@ -2,6 +2,7 @@ import { render, screen } from '@/test/test-utils';
 import type { ReadyInvoiceRow } from '../columns';
 import { getColumns } from '../columns';
 import { InvoiceSelectionDataTable } from '../data-table';
+import { createMockTranslator } from '@/i18n/typed-keys';
 
 function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
   return {
@@ -20,7 +21,7 @@ function makeRow(overrides: Partial<ReadyInvoiceRow> = {}): ReadyInvoiceRow {
 }
 
 describe('InvoiceSelectionDataTable', () => {
-  const t = (key: string) => key;
+  const t = createMockTranslator<'Payments'>();
   const columns = getColumns(t);
 
   it('renders skeleton rows when loading', () => {

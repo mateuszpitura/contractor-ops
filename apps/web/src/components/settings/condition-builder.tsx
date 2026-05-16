@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,12 +53,12 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
   const fieldItems = FIELD_OPTIONS.map(opt => ({
     value: opt.value,
-    label: t(opt.labelKey),
+    label: tKey(t, opt.labelKey),
   }));
 
   const operatorItems = OPERATOR_OPTIONS.map(opt => ({
     value: opt.value,
-    label: t(opt.labelKey),
+    label: tKey(t, opt.labelKey),
   }));
   function handleAdd() {
     onChange([...value, { field: 'amount', operator: 'gt', value: '' }]);

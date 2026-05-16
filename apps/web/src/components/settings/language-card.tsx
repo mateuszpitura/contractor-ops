@@ -9,6 +9,7 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 const localeFlagSrc: Record<Locale, string> = {
   pl: '/flags/pl.svg',
@@ -83,7 +84,7 @@ export function LanguageCard() {
                 <span className="text-sm font-semibold leading-tight">{config.nativeName}</span>
 
                 <span className="text-xs text-muted-foreground leading-tight">
-                  {t(`fields.${localeToKey[loc]}`)}
+                  {tDynLoose(t, 'fields', localeToKey[loc])}
                 </span>
               </button>
             );

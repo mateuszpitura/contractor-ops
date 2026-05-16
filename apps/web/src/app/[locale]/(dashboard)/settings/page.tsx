@@ -35,6 +35,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import type { SettingsTabKey } from '@/lib/settings-tabs';
 import { isRoutedSettingsTab, SETTINGS_TABS } from '@/lib/settings-tabs';
 import { cn } from '@/lib/utils';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Inner content (uses nuqs, needs Suspense boundary)
@@ -97,7 +98,7 @@ function SettingsContent() {
       if (tab.key === 'tax') return canViewTaxAdmin;
       return true;
     }).map(tab => {
-      const label = t(`tabs.${tab.i18nKey}`);
+      const label = tDyn(t, 'tabs', tab.i18nKey);
       return {
         key: tab.key,
         label,

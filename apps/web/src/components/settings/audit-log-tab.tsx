@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { tDyn } from '@/i18n/typed-keys';
+import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 /** Format a local Date to `YYYY-MM-DD` without UTC shift. */
 function toLocalDateString(d: Date): string {
@@ -498,7 +498,7 @@ export function AuditLogTab() {
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                         onCheckedChange={() => toggleAction(action)}
                       />
-                      <span>{tDyn(t, 'actions', enumKey(action))}</span>
+                      <span>{tDynLoose(t, 'actions', enumKey(action))}</span>
                     </label>
                   ))}
                 </div>
@@ -543,7 +543,7 @@ export function AuditLogTab() {
                         // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                         onCheckedChange={() => toggleResourceType(rt)}
                       />
-                      <span>{tDyn(t, 'resources', enumKey(rt))}</span>
+                      <span>{tDynLoose(t, 'resources', enumKey(rt))}</span>
                     </label>
                   ))}
                 </div>
@@ -642,7 +642,7 @@ export function AuditLogTab() {
             {actions.map(a => (
               <Badge key={`a-${a}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
                 <span className="text-xs">
-                  {tDyn(t, 'actions', enumKey(a))}
+                  {tDynLoose(t, 'actions', enumKey(a))}
                 </span>
                 <button
                   type="button"
@@ -650,7 +650,7 @@ export function AuditLogTab() {
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => removeAction(a)}
                   aria-label={tAria('removeFilter', {
-                    label: tDyn(t, 'actions', enumKey(a)),
+                    label: tDynLoose(t, 'actions', enumKey(a)),
                   })}>
                   <X className="h-3 w-3" />
                 </button>
@@ -659,7 +659,7 @@ export function AuditLogTab() {
             {resourceTypes.map(rt => (
               <Badge key={`r-${rt}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
                 <span className="text-xs">
-                  {tDyn(t, 'resources', enumKey(rt))}
+                  {tDynLoose(t, 'resources', enumKey(rt))}
                 </span>
                 <button
                   type="button"
@@ -667,7 +667,7 @@ export function AuditLogTab() {
                   // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={() => removeResourceType(rt)}
                   aria-label={tAria('removeFilter', {
-                    label: tDyn(t, 'resources', enumKey(rt)),
+                    label: tDynLoose(t, 'resources', enumKey(rt)),
                   })}>
                   <X className="h-3 w-3" />
                 </button>
