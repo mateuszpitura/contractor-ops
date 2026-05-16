@@ -94,6 +94,7 @@ function SettingsContent() {
       if (tab.key === 'billing') return canManageBilling;
       if (tab.key === 'audit-log') return canViewAuditLog;
       if (tab.key === 'api-keys') return canManageIntegrations;
+      if (tab.key === 'tax') return canViewTaxAdmin;
       return true;
     }).map(tab => {
       const label = t(`tabs.${tab.i18nKey}`);
@@ -106,7 +107,15 @@ function SettingsContent() {
         unpinAriaLabel: tPin('unpin', { tab: label }),
       };
     });
-  }, [t, tPin, isPinned, canManageIntegrations, canManageBilling, canViewAuditLog]);
+  }, [
+    t,
+    tPin,
+    isPinned,
+    canManageIntegrations,
+    canManageBilling,
+    canViewAuditLog,
+    canViewTaxAdmin,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -154,7 +163,6 @@ function SettingsContent() {
                   </TabsTrigger>
                 );
               })}
-              {canViewTaxAdmin && <TabsTrigger value="tax">{t('tabs.tax')}</TabsTrigger>}
             </TabsList>
           </SettingsTabsScroller>
 

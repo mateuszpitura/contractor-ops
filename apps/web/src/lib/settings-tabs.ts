@@ -4,6 +4,7 @@ import {
   Building2,
   FileLock2,
   Key,
+  Percent,
   Plug,
   Receipt,
   ScrollText,
@@ -31,7 +32,8 @@ export type SettingsTabKey =
   | 'privacy'
   | 'api-keys'
   | 'members'
-  | 'workflow-roles';
+  | 'workflow-roles'
+  | 'tax';
 
 /** Translation leaf keys nested under `Settings.tabs` in `messages/*.json`. */
 export type SettingsTabI18nKey = Extract<keyof typeof messages.Settings.tabs, string>;
@@ -82,6 +84,12 @@ export const SETTINGS_TABS: readonly SettingsTabDef[] = [
   },
   { key: 'members', i18nKey: 'members', icon: Users, permission: null },
   { key: 'workflow-roles', i18nKey: 'workflowRoles', icon: Users2, permission: null },
+  {
+    key: 'tax',
+    i18nKey: 'tax',
+    icon: Percent,
+    permission: { resource: 'settings', actions: ['read'] },
+  },
 ] as const;
 
 /**
@@ -93,6 +101,7 @@ export const SETTINGS_TABS: readonly SettingsTabDef[] = [
 const ROUTED_TAB_KEYS: ReadonlySet<SettingsTabKey> = new Set<SettingsTabKey>([
   'members',
   'workflow-roles',
+  'tax',
 ]);
 
 export function isRoutedSettingsTab(key: SettingsTabKey): boolean {

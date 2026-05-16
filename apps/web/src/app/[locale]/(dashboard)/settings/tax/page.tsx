@@ -4,6 +4,7 @@ import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
 import { Calculator, FileBadge, Percent } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { PinActionButton } from '@/components/settings/pin-action-button';
 import { CountryRatesSection } from '@/components/settings/tax/country-rates-section';
 import { WhtCalculatorSection } from '@/components/settings/tax/wht-calculator-section';
 import { WhtCertificatesSection } from '@/components/settings/tax/wht-certificates-section';
@@ -37,7 +38,11 @@ export default function TaxSettingsPage() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('title')} description={t('subtitle')} />
+        <AtelierPageHeader
+          title={t('title')}
+          description={t('subtitle')}
+          actions={<PinActionButton tabKey="tax" />}
+        />
       </AnimateIn>
 
       <AnimateIn delay={1}>
