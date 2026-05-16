@@ -5400,6 +5400,31 @@
       "unpin": "Odepnij {tab} z paska bocznego",
       "error": "Nie udało się zaktualizować przypiętych zakładek. Spróbuj ponownie."
     },
+    "gdpr": {
+      "title": "Twoje prawa do danych",
+      "description": "Zgodnie z RODO art. 15, 17 i 20 możesz wyeksportować wszystkie dane dotyczące Twojej organizacji lub zażądać ich pełnego usunięcia.",
+      "export": {
+        "title": "Eksportuj dane organizacji",
+        "body": "Pobierz migawkę JSON Twojej organizacji, kontrahentów, umów, faktur, dokumentów, dziennika audytu i członków.",
+        "cta": "Pobierz eksport"
+      },
+      "erasure": {
+        "title": "Zażądaj usunięcia danych",
+        "body": "Wszystkie dane organizacji zostaną oznaczone do usunięcia. Trwałe usunięcie nastąpi po 90 dniach przez zadanie purge'ujące. Dane finansowe są zachowywane przez wymagany prawnie okres, chyba że zrezygnujesz z tej opcji.",
+        "cta": "Zażądaj usunięcia",
+        "confirmTitle": "Usunąć wszystkie dane organizacji?",
+        "confirmBody": "Operacja oznacza do usunięcia wszystkich kontrahentów, umowy, dokumenty, członków i logi audytu tej organizacji. Po upływie 90-dniowego okna retencji wiersze zostaną fizycznie usunięte, a obiekty storage'u skasowane. Tej operacji nie można cofnąć.",
+        "typePhrase": "Wpisz {phrase} aby potwierdzić",
+        "retainFinancialLabel": "Zachowaj dane finansowe (faktury i przebiegi płatnicze) przez wymagany prawnie okres podatkowy.",
+        "cancel": "Anuluj",
+        "confirm": "Usuń dane"
+      },
+      "toast": {
+        "exportReady": "Eksport pobrany",
+        "exportFailed": "Nie udało się wygenerować eksportu",
+        "erasureRequested": "Usunięcie zaplanowane"
+      }
+    },
     "outOfOffice": {
       "title": "Nieobecność",
       "description": "Oznacz się jako nieobecny. W tym okresie zadania zatwierdzania będą przekazywane Twojemu zastępcy.",

@@ -5400,6 +5400,31 @@
       "unpin": "{tab} aus Seitenleiste lösen",
       "error": "Angeheftete Tabs konnten nicht aktualisiert werden. Bitte erneut versuchen."
     },
+    "gdpr": {
+      "title": "Ihre Datenrechte",
+      "description": "Gemäß DSGVO Art. 15, 17 und 20 können Sie alle über Ihre Organisation gespeicherten Daten exportieren oder eine vollständige Löschung anfordern.",
+      "export": {
+        "title": "Organisationsdaten exportieren",
+        "body": "Laden Sie einen JSON-Snapshot Ihrer Organisation, Auftragnehmer, Verträge, Rechnungen, Dokumente, Audit-Logs und Mitglieder herunter.",
+        "cta": "Export herunterladen"
+      },
+      "erasure": {
+        "title": "Datenlöschung anfordern",
+        "body": "Alle Organisationsdaten werden weich gelöscht. Die endgültige Entfernung erfolgt 90 Tage später via Data-Purge-Cron. Finanzunterlagen werden für die gesetzlich vorgeschriebene Frist aufbewahrt, sofern Sie dem nicht widersprechen.",
+        "cta": "Löschung anfordern",
+        "confirmTitle": "Alle Organisationsdaten löschen?",
+        "confirmBody": "Dies löscht alle Auftragnehmer, Verträge, Dokumente, Mitglieder und Audit-Logs dieser Organisation weich. Nach Ablauf des 90-Tage-Aufbewahrungsfensters werden die Zeilen physisch entfernt und Speicherobjekte gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "typePhrase": "Geben Sie zur Bestätigung {phrase} ein",
+        "retainFinancialLabel": "Finanzunterlagen (Rechnungen und Zahlungsläufe) für die gesetzlich vorgeschriebene Aufbewahrungsfrist behalten.",
+        "cancel": "Abbrechen",
+        "confirm": "Daten löschen"
+      },
+      "toast": {
+        "exportReady": "Export heruntergeladen",
+        "exportFailed": "Export konnte nicht erstellt werden",
+        "erasureRequested": "Löschung eingeplant"
+      }
+    },
     "outOfOffice": {
       "title": "Abwesenheit",
       "description": "Markieren Sie sich als abwesend. Freigaben werden in diesem Zeitraum an Ihren Vertreter weitergeleitet.",

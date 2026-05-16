@@ -15,6 +15,7 @@ import { ApiKeysTab } from '@/components/settings/api-keys-tab';
 import { ApprovalChainsTab } from '@/components/settings/approval-chains-tab';
 import { AuditLogTab } from '@/components/settings/audit-log-tab';
 import { ExpiryReminderDefaults } from '@/components/settings/expiry-reminder-defaults';
+import { GdprDataRightsSection } from '@/components/settings/gdpr-data-rights-section';
 import { IntegrationsTab } from '@/components/settings/integrations-tab';
 import { InvoiceMatchingSettings } from '@/components/settings/invoice-matching-settings';
 import { LanguageCard } from '@/components/settings/language-card';
@@ -151,21 +152,29 @@ function SettingsContent() {
       <AnimateIn delay={1}>
         <Tabs value={activeTab} onValueChange={onSettingsTabChange} className="w-full">
           <TabsList>
-            {tabsToRender.map(tab => (
-              <TabsTrigger key={tab.key} value={tab.key} className={cn('group/tab gap-1.5 pe-1.5')}>
-                <span className="peer">{tab.label}</span>
-                <PinTabButton
-                  tabKey={tab.key}
-                  tabLabel={tab.label}
-                  pinned={tab.pinned}
-                  disabled={pinToggle.isPending}
-                  pinAriaLabel={tab.pinAriaLabel}
-                  unpinAriaLabel={tab.unpinAriaLabel}
-                  // biome-ignore lint/nursery/noJsxPropsBind: per-row callback
-                  onToggle={() => togglePin(tab.key)}
-                />
-              </TabsTrigger>
-            ))}
+            {tabsToRender.map(tab => {
+              const isActive = activeTab === tab.key;
+              const showsButton = tab.pinned || isActive;
+              return (
+                <TabsTrigger
+                  key={tab.key}
+                  value={tab.key}
+                  className={cn('gap-1.5', showsButton && 'pe-1.5')}>
+                  <span>{tab.label}</span>
+                  <PinTabButton
+                    tabKey={tab.key}
+                    tabLabel={tab.label}
+                    pinned={tab.pinned}
+                    active={isActive}
+                    disabled={pinToggle.isPending}
+                    pinAriaLabel={tab.pinAriaLabel}
+                    unpinAriaLabel={tab.unpinAriaLabel}
+                    // biome-ignore lint/nursery/noJsxPropsBind: per-row callback
+                    onToggle={() => togglePin(tab.key)}
+                  />
+                </TabsTrigger>
+              );
+            })}
             <TabsTrigger value="workflow-roles">{t('tabs.workflowRoles')}</TabsTrigger>
           </TabsList>
 
@@ -222,6 +231,7 @@ function SettingsContent() {
 
           <TabsContent value="privacy" className="mt-6 space-y-6">
             <ConsentManagementSection />
+            <GdprDataRightsSection />
           </TabsContent>
 
           {canManageIntegrations && (

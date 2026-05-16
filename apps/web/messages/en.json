@@ -5388,6 +5388,31 @@
       "description": "Re-import contractors, contracts, and invoices from external tools like CSV files, spreadsheets, or third-party platforms.",
       "cta": "Re-import from tools"
     },
+    "gdpr": {
+      "title": "Your data rights",
+      "description": "Per GDPR Articles 15, 17, and 20 you can export all data held about your organization or request full erasure.",
+      "export": {
+        "title": "Export organization data",
+        "body": "Download a JSON snapshot of your organization, contractors, contracts, invoices, documents, audit log, and members.",
+        "cta": "Download export"
+      },
+      "erasure": {
+        "title": "Request data erasure",
+        "body": "Soft-delete all organization data. Permanent removal happens 90 days later via the data-purge cron. Financial records are retained for the legally required period unless you opt out.",
+        "cta": "Request erasure",
+        "confirmTitle": "Erase all organization data?",
+        "confirmBody": "This soft-deletes every contractor, contract, document, member, and audit log row for this organization. After the 90-day retention window the rows are physically removed and storage objects deleted. This cannot be undone.",
+        "typePhrase": "Type {phrase} to confirm",
+        "retainFinancialLabel": "Retain financial records (invoices and payment runs) for the legally required tax-compliance period.",
+        "cancel": "Cancel",
+        "confirm": "Erase data"
+      },
+      "toast": {
+        "exportReady": "Export downloaded",
+        "exportFailed": "Could not generate export",
+        "erasureRequested": "Erasure scheduled"
+      }
+    },
     "outOfOffice": {
       "title": "Out of office",
       "description": "Mark yourself as out of office. Approval requests routed to you will fall back to your delegate during this window.",
