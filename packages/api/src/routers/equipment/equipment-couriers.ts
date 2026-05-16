@@ -18,6 +18,7 @@ import { router } from '../../init';
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
+import { writeAuditLog } from '../../services/audit-writer';
 import { getCourierClient, loadCourierClient } from '../../services/courier/carrier-factory';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
@@ -189,22 +190,20 @@ export const equipmentCouriersRouter = router({
       });
 
       // Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'shipment.createInPost',
-          resourceType: 'SHIPMENT',
-          resourceId: shipments[0]?.id ?? '',
-          newValuesJson: {
-            equipmentIds: input.equipmentIds,
-            direction: input.direction,
-            externalId: shipmentResult.externalId,
-            trackingNumber: shipmentResult.trackingNumber,
-            targetPoint: input.targetPointId,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'shipment.createInPost',
+        resourceType: 'SHIPMENT',
+        resourceId: shipments[0]?.id ?? '',
+        newValues: {
+          equipmentIds: input.equipmentIds,
+          direction: input.direction,
+          externalId: shipmentResult.externalId,
+          trackingNumber: shipmentResult.trackingNumber,
+          targetPoint: input.targetPointId,
         },
       });
 
@@ -358,21 +357,19 @@ export const equipmentCouriersRouter = router({
       });
 
       // 5. Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'shipment.createDpd',
-          resourceType: 'SHIPMENT',
-          resourceId: shipments[0]?.id ?? '',
-          newValuesJson: {
-            equipmentIds: input.equipmentIds,
-            carrier: 'DPD',
-            trackingNumber: shipmentResult.trackingNumber,
-            direction: input.direction,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'shipment.createDpd',
+        resourceType: 'SHIPMENT',
+        resourceId: shipments[0]?.id ?? '',
+        newValues: {
+          equipmentIds: input.equipmentIds,
+          carrier: 'DPD',
+          trackingNumber: shipmentResult.trackingNumber,
+          direction: input.direction,
         },
       });
 
@@ -533,22 +530,20 @@ export const equipmentCouriersRouter = router({
       });
 
       // 5. Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'shipment.createUps',
-          resourceType: 'SHIPMENT',
-          resourceId: shipments[0]?.id ?? '',
-          newValuesJson: {
-            equipmentIds: input.equipmentIds,
-            carrier: 'UPS',
-            trackingNumber: shipmentResult.trackingNumber,
-            direction: input.direction,
-            serviceCode: input.serviceCode,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'shipment.createUps',
+        resourceType: 'SHIPMENT',
+        resourceId: shipments[0]?.id ?? '',
+        newValues: {
+          equipmentIds: input.equipmentIds,
+          carrier: 'UPS',
+          trackingNumber: shipmentResult.trackingNumber,
+          direction: input.direction,
+          serviceCode: input.serviceCode,
         },
       });
 
@@ -601,17 +596,15 @@ export const equipmentCouriersRouter = router({
         },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'courierConfig.save',
-          resourceType: 'ORGANIZATION',
-          resourceId: carrier,
-          newValuesJson: { carrier, updated: true } as Prisma.InputJsonValue,
-        },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'courierConfig.save',
+        resourceType: 'ORGANIZATION',
+        resourceId: carrier,
+        newValues: { carrier, updated: true },
       });
 
       return { success: true };

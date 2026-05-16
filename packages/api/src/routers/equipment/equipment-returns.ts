@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { loadCourierClient } from '../../services/courier/carrier-factory';
 import { dispatch } from '../../services/notification-service';
 import { NOTIFICATION_KEYS } from './equipment-shared';
@@ -191,21 +192,19 @@ export const equipmentReturnsRouter = router({
       });
 
       // Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'returnRequest.approve',
-          resourceType: 'RETURN_REQUEST',
-          resourceId: returnRequest.id,
-          newValuesJson: {
-            status: 'SHIPMENT_CREATED',
-            externalId: shipmentResult.externalId,
-            trackingNumber: shipmentResult.trackingNumber,
-            equipmentCount: assignments.length,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'returnRequest.approve',
+        resourceType: 'RETURN_REQUEST',
+        resourceId: returnRequest.id,
+        newValues: {
+          status: 'SHIPMENT_CREATED',
+          externalId: shipmentResult.externalId,
+          trackingNumber: shipmentResult.trackingNumber,
+          equipmentCount: assignments.length,
         },
       });
 
@@ -294,19 +293,17 @@ export const equipmentReturnsRouter = router({
       });
 
       // Audit log
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'returnRequest.reject',
-          resourceType: 'RETURN_REQUEST',
-          resourceId: returnRequest.id,
-          newValuesJson: {
-            status: 'REJECTED',
-            reason: input.reason,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'returnRequest.reject',
+        resourceType: 'RETURN_REQUEST',
+        resourceId: returnRequest.id,
+        newValues: {
+          status: 'REJECTED',
+          reason: input.reason,
         },
       });
 

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { checkShipmentTaskCompletion } from '../../services/equipment-workflow';
 import {
   EQUIPMENT_NOT_FOUND,
@@ -93,22 +94,20 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'shipment.create',
-          resourceType: 'SHIPMENT',
-          resourceId: shipment.id,
-          newValuesJson: {
-            equipmentId: input.equipmentId,
-            equipmentName: equipment.name,
-            direction: input.direction,
-            carrier: input.carrier,
-            trackingNumber: input.trackingNumber,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'shipment.create',
+        resourceType: 'SHIPMENT',
+        resourceId: shipment.id,
+        newValues: {
+          equipmentId: input.equipmentId,
+          equipmentName: equipment.name,
+          direction: input.direction,
+          carrier: input.carrier,
+          trackingNumber: input.trackingNumber,
         },
       });
 
@@ -180,20 +179,18 @@ export const equipmentShipmentsRouter = router({
         },
       });
 
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          actorName: ctx.user?.name,
-          action: 'shipment.updateStatus',
-          resourceType: 'SHIPMENT',
-          resourceId: shipment.id,
-          newValuesJson: {
-            status: input.status,
-            equipmentId: shipment.equipmentId,
-            equipmentName: shipment.equipment.name,
-          },
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user.id,
+        actorName: ctx.user?.name,
+        action: 'shipment.updateStatus',
+        resourceType: 'SHIPMENT',
+        resourceId: shipment.id,
+        newValues: {
+          status: input.status,
+          equipmentId: shipment.equipmentId,
+          equipmentName: shipment.equipment.name,
         },
       });
 
