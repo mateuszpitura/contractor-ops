@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { deleteRegionalObject } from '../../services/regional-storage';
 
 // ---------------------------------------------------------------------------
@@ -241,19 +242,17 @@ export const gdprRouter = router({
       results.r2ObjectsCleaned = r2Cleaned;
 
       // 7. Log the erasure request in audit (new org-level record)
-      await ctx.db.auditLog.create({
-        data: {
-          organizationId: orgId,
-          action: 'organization.erasure_requested',
-          actorType: 'USER',
-          actorId: ctx.user?.id,
-          actorName: ctx.user?.name ?? ctx.user?.email,
-          resourceType: 'ORGANIZATION',
-          resourceId: orgId,
-          resourceName: 'Data Erasure Request',
-          ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
-          userAgent: ctx.headers.get('user-agent') ?? null,
-        },
+      await writeAuditLog({
+        organizationId: orgId,
+        action: 'organization.erasure_requested',
+        actorType: 'USER',
+        actorId: ctx.user?.id,
+        actorName: ctx.user?.name ?? ctx.user?.email,
+        resourceType: 'ORGANIZATION',
+        resourceId: orgId,
+        resourceName: 'Data Erasure Request',
+        ipAddress: ctx.headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+        userAgent: ctx.headers.get('user-agent') ?? null,
       });
 
       return {

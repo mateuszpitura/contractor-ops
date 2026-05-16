@@ -13,6 +13,7 @@ import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
 import { deleteCalendarEvent } from '../../services/calendar-event-service';
 import { computeDuplicateCheckHash, runAutoMatch } from '../../services/invoice-matching';
@@ -421,19 +422,18 @@ export const invoiceRouter = router({
           rcShouldApply &&
           invoiceData.reverseChargeOverrideReason
         ) {
-          await tx.auditLog.create({
-            data: {
-              organizationId: ctx.organizationId,
-              actorType: 'USER',
-              actorId: ctx.user?.id,
-              action: 'invoice.reverse-charge-override',
-              resourceType: 'INVOICE',
-              resourceId: inv.id,
-              metadataJson: {
-                reason: invoiceData.reverseChargeOverrideReason,
-                autoDetected: true,
-                userDisabled: true,
-              },
+          await writeAuditLog({
+            tx,
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user?.id,
+            action: 'invoice.reverse-charge-override',
+            resourceType: 'INVOICE',
+            resourceId: inv.id,
+            metadata: {
+              reason: invoiceData.reverseChargeOverrideReason,
+              autoDetected: true,
+              userDisabled: true,
             },
           });
         }
