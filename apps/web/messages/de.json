@@ -7647,5 +7647,15 @@
       "confirmEnableBody": "Alle neuen Rechnungspositionen werden mit 0 % USt und dem § 19 UStG Fußnotenhinweis ausgestellt. Bitte bestätigen Sie.",
       "confirmDisableBody": "Künftige Rechnungen verwenden wieder die regulären deutschen USt-Sätze (19 % / 7 % / RC). Bestehende Rechnungen bleiben unverändert."
     }
+  },
+  "boundaries": {
+    "error": {
+      "title": "Etwas ist schiefgelaufen",
+      "description": "Wir konnten diese Seite nicht laden. Der Fehler wurde gemeldet. Bitte erneut laden; falls das Problem weiterhin besteht, kontaktiere den Support.",
+      "reload": "Neu laden"
+    },
+    "loading": {
+      "ariaLabel": "Seite wird geladen"
+    }
   }
 }

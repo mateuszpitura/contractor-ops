@@ -7647,5 +7647,15 @@
       "confirmEnableBody": "Wszystkie nowe pozycje faktur będą rozliczane ze stawką 0% VAT z notą § 19 UStG w stopce. Potwierdź, aby kontynuować.",
       "confirmDisableBody": "Przyszłe faktury wrócą do standardowego niemieckiego VAT (19% / 7% / RC). Istniejące faktury pozostają bez zmian."
     }
+  },
+  "boundaries": {
+    "error": {
+      "title": "Coś poszło nie tak",
+      "description": "Nie udało się załadować tej strony. Błąd został zgłoszony. Spróbuj ponownie; jeśli problem nadal występuje, skontaktuj się z pomocą techniczną.",
+      "reload": "Załaduj ponownie"
+    },
+    "loading": {
+      "ariaLabel": "Ładowanie strony"
+    }
   }
 }

@@ -7647,5 +7647,15 @@
       "confirmEnableBody": "All new invoice lines will be billed at 0% VAT with the § 19 UStG footer notice. Confirm to continue.",
       "confirmDisableBody": "Future invoices will resume standard German VAT handling (19% / 7% / RC). Existing invoices are unaffected."
     }
+  },
+  "boundaries": {
+    "error": {
+      "title": "Something went wrong",
+      "description": "We couldn't load this page. The error has been reported. Try reloading; if it keeps happening, contact support.",
+      "reload": "Reload"
+    },
+    "loading": {
+      "ariaLabel": "Loading page"
+    }
   }
 }
