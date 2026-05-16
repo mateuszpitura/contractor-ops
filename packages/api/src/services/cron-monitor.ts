@@ -73,6 +73,7 @@ async function ping(monitorKey: string, state: PingState, message?: string): Pro
       method: 'GET',
       signal: AbortSignal.timeout(5000),
     });
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // Monitoring failure should never break the cron job itself
   }

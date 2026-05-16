@@ -155,6 +155,7 @@ export function DocumentCard({
       if (url) {
         window.open(url, '_blank');
       }
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Silently fail for download
     }

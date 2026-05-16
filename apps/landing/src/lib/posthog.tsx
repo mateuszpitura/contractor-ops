@@ -55,6 +55,7 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
           recordCrossOriginIframes: true,
         },
       });
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // PostHog init failed — analytics disabled, site still works
     }

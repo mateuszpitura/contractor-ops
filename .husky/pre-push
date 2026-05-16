@@ -7,10 +7,13 @@
 # in adapter/service paths.
 # production-hardening B.4.b — lint:idempotency forbids hand-rolled
 # createHash('sha256') idempotency keys outside deriveIdempotencyKey().
+# production-hardening B.7.b — lint:silent-catch forbids empty / silent
+# catch blocks without a `// safe-swallow: <reason>` annotation.
 # Lint + format check are quick. Typecheck and full build are too slow for
 # every push, so they are left to CI.
 
 pnpm run format:check && pnpm run lint && pnpm run check:no-process-env \
   && pnpm run lint:schema && pnpm run lint:logs && pnpm run lint:raw-sql \
   && pnpm run lint:audit-log && pnpm run lint:raw-fetch \
-  && pnpm run lint:idempotency && pnpm run i18n:parity
+  && pnpm run lint:idempotency && pnpm run lint:silent-catch \
+  && pnpm run i18n:parity

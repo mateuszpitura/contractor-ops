@@ -468,6 +468,7 @@ export async function deregisterLinearWebhook(
       }`,
       { id: webhookId },
     );
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // best-effort cleanup
   }

@@ -61,6 +61,7 @@ export function ContractorDataTable({
       if (stored) {
         setColumnVisibility(JSON.parse(stored) as VisibilityState);
       }
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Ignore localStorage errors
     }
@@ -75,6 +76,7 @@ export function ContractorDataTable({
     }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Ignore localStorage errors
     }
@@ -130,10 +132,7 @@ export function ContractorDataTable({
   }, [contractorsQuery.data]);
 
   // Column definitions
-  const columns: ColumnDef<ContractorRow>[] = useMemo(
-    () => getColumns(t),
-    [t],
-  );
+  const columns: ColumnDef<ContractorRow>[] = useMemo(() => getColumns(t), [t]);
 
   // TanStack Table instance
   const table = useReactTable({

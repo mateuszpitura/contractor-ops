@@ -345,6 +345,7 @@ async function dispatchToUser(
   if (prefs.channelEmail) {
     try {
       await sendNotificationEmail(userId, event, options.outboxEventId);
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch (_error) {
       /* fire-and-forget */
     }
@@ -388,6 +389,7 @@ async function dispatchToMessagingProviders(
       if (!recipientId) continue;
 
       await sendProviderMessage(provider, event, recipientId);
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch (_error) {
       /* fire-and-forget */
     }

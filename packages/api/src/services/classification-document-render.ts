@@ -168,6 +168,7 @@ export async function renderSdsPdfBuffer(params: RenderSdsParams): Promise<Rende
       // Best-effort cleanup of the (yet-to-be-uploaded) R2 key — the export
       // consumer hasn't uploaded yet but if a partial upload sneaks in we
       // don't want orphans.
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
       await deleteObject(key).catch(() => undefined);
       log.error(
         { err: err instanceof Error ? err.message : String(err), assessmentId: assessment.id },
@@ -330,6 +331,7 @@ export async function renderDrvDefenseBundlePdfBuffer(
       });
       documentId = row.id;
     } catch (err) {
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
       await deleteObject(key).catch(() => undefined);
       log.error(
         { err: err instanceof Error ? err.message : String(err), assessmentId: assessment.id },

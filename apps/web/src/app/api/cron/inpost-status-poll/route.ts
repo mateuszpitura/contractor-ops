@@ -51,6 +51,7 @@ async function handlerInner(request: NextRequest) {
     if (text) {
       body = JSON.parse(text);
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // Empty body is OK -- we'll poll all orgs
   }

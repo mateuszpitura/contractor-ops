@@ -48,6 +48,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 if (density === '"compact"' || density === 'compact') {
                   document.documentElement.classList.add('density-compact');
                 }
+              // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
               } catch(e) {}
             `,
           }}

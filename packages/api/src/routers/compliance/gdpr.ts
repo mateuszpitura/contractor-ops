@@ -234,6 +234,7 @@ export const gdprRouter = router({
           try {
             await deleteRegionalObject(doc.storageKey);
             r2Cleaned++;
+            // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
           } catch {
             // Non-critical: data-purge cron will retry
           }

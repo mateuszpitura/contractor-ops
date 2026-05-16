@@ -221,6 +221,7 @@ export async function cachedSingleflight<T>(
       if (isEnvelope<T>(hit)) {
         return unwrap(hit);
       }
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Ignore — keep polling.
     }

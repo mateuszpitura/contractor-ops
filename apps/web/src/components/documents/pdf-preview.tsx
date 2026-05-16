@@ -48,6 +48,7 @@ export function PdfPreview({ documentId, filename, open, onOpenChange }: PdfPrev
         if (!cancelled && url) {
           setPdfUrl(url);
         }
+        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
       } catch {
         // Silently fail
       } finally {

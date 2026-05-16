@@ -116,6 +116,7 @@ export function VersionHistory({ documentId }: VersionHistoryProps) {
                       const data = await result.json();
                       const url = data?.result?.data?.url;
                       if (url) window.open(url, '_blank');
+                      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
                     } catch {
                       // Silently fail
                     }

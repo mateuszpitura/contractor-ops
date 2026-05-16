@@ -19,6 +19,7 @@ export function CopyableField({ value, ariaLabel, className }: CopyableFieldProp
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Clipboard API not available — fail silently
     }

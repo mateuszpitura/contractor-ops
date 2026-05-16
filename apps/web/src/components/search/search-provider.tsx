@@ -54,6 +54,7 @@ function readRecent(): RecentItem[] {
 function writeRecent(items: RecentItem[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // Storage full or unavailable - silently ignore
   }

@@ -110,6 +110,7 @@ function readPinned(): PinnedItem[] {
 function writePinned(items: PinnedItem[]): void {
   try {
     localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(items));
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // Silently ignore storage errors
   }
@@ -403,11 +404,7 @@ export function CommandPalette() {
   const matchedActions = useMemo(() => {
     if (!debouncedQuery || debouncedQuery.length < 2) return QUICK_ACTIONS.slice();
     const q = debouncedQuery.toLowerCase();
-    return QUICK_ACTIONS.filter(a =>
-      t(a.labelKey)
-        .toLowerCase()
-        .includes(q),
-    );
+    return QUICK_ACTIONS.filter(a => t(a.labelKey).toLowerCase().includes(q));
   }, [debouncedQuery, t]);
 
   const isSearching = debouncedQuery.length >= 2;

@@ -35,6 +35,7 @@ function handleTierError(error: unknown): boolean {
       });
       return true;
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch {
     // Not a tier error JSON, fall through
   }

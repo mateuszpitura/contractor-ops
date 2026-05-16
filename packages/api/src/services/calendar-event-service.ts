@@ -163,6 +163,7 @@ export async function createCalendarEvent(
     );
 
     logRejected(results, 'create');
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -284,6 +285,7 @@ export async function updateCalendarEvent(
     );
 
     logRejected(results, 'update');
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -308,6 +310,7 @@ export async function deleteCalendarEvent(
     );
 
     logRejected(results, 'delete');
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_error) {
     /* fire-and-forget */
   }
@@ -448,6 +451,7 @@ async function deleteEventForLink(
         await outlookAdapter.deleteEvent(credentials.accessToken, link.externalId);
       }
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_deleteError) {
     // fire-and-forget
   }

@@ -386,6 +386,7 @@ export const classificationDocumentRouter = router({
           select: { id: true },
         });
       } catch (err) {
+        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
         await deleteObject(r2Key).catch(() => undefined);
         throw err;
       }

@@ -67,6 +67,7 @@ export function InvoiceMatchingSettings() {
     try {
       await navigator.clipboard.writeText(emailAddress);
       toast.success(t('emailCopied'));
+      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
     } catch {
       // Fallback: select text for manual copy
     }

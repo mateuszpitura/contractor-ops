@@ -138,6 +138,7 @@ function syncTaskToExternalSystems(
         if (connection) {
           await transitionJiraIssue(db, organizationId, connection.id, task.id, targetStatus);
         }
+        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
       } catch (_err) {
         /* fire-and-forget */
       }
@@ -149,6 +150,7 @@ function syncTaskToExternalSystems(
       try {
         const { syncTaskStatusToLinear } = await import('../../services/linear-issue-sync');
         await syncTaskStatusToLinear(db, task.id, targetStatus);
+        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
       } catch (_err) {
         /* fire-and-forget */
       }
@@ -357,6 +359,7 @@ async function syncJiraTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -398,6 +401,7 @@ async function syncLinearTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_err) {
     /* fire-and-forget */
   }
@@ -437,6 +441,7 @@ async function syncCalendarTasksAfterStart(
         /* fire-and-forget */
       });
     }
+    // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
   } catch (_err) {
     /* fire-and-forget */
   }
