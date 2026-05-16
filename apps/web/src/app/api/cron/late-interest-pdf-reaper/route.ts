@@ -7,8 +7,12 @@ import { getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createCronLogger('late-interest-pdf-reaper');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 // How old a PENDING_RENDER row must be before the reaper touches it.
 // Shorter than this and we race the in-flight QStash job on first delivery.
@@ -46,10 +50,10 @@ function verifyCronSecret(request: NextRequest): boolean {
  */
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'late-interest-pdf-reaper',
     () =>
       withCronMonitor('late-interest-pdf-reaper', async () => {
@@ -73,6 +77,7 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }
 
 interface ReaperResult {

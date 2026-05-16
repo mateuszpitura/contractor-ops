@@ -10,8 +10,14 @@ import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv, getServerEnvRecord } from '@contractor-ops/validators';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createLogger({ service: 'oauth-start' });
+
+// Cache-Control: `no-store, private` — mints per-request HMAC state +
+// __Host-oauth_state cookie. Every response is single-use; caching would
+// hand the same state to multiple clients.
+export const dynamic = 'force-dynamic';
 
 // Ensure all OAuth adapters are registered before any start request is processed
 registerAllAdapters();
@@ -47,21 +53,21 @@ export async function GET(
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     log.warn({ provider }, 'oauth start blocked: no session');
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`);
+    return withNoStore(NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL ?? ''}/login`));
   }
 
   const userId = session.user.id;
   const organizationId = session.session.activeOrganizationId ?? null;
   if (!organizationId) {
     log.warn({ provider, userId }, 'oauth start blocked: no active organization');
-    return NextResponse.redirect(settingsErrorUrl);
+    return withNoStore(NextResponse.redirect(settingsErrorUrl));
   }
 
   // 2. Resolve the adapter + its OAuth config.
   const adapter = getAdapter(provider);
   if (!(adapter?.supportsOAuth && adapter.getOAuthConfig)) {
     log.error({ provider }, 'oauth start blocked: no oauth adapter');
-    return NextResponse.redirect(settingsErrorUrl);
+    return withNoStore(NextResponse.redirect(settingsErrorUrl));
   }
 
   const oauthConfig = adapter.getOAuthConfig();
@@ -72,7 +78,7 @@ export async function GET(
 
   if (!(clientId && clientSecret && appUrl)) {
     log.error({ provider }, 'oauth start blocked: missing client credentials');
-    return NextResponse.redirect(settingsErrorUrl);
+    return withNoStore(NextResponse.redirect(settingsErrorUrl));
   }
 
   // 3. Generate state + persist challenge + set cookie.
@@ -90,7 +96,7 @@ export async function GET(
     });
   } catch (err) {
     log.error({ err, provider, userId }, 'oauth start failed: challenge persist');
-    return NextResponse.redirect(settingsErrorUrl);
+    return withNoStore(NextResponse.redirect(settingsErrorUrl));
   }
 
   // 4. Build the IdP URL.
@@ -123,5 +129,5 @@ export async function GET(
   });
 
   log.info({ provider, organizationId, userId }, 'oauth start: challenge minted');
-  return response;
+  return withNoStore(response);
 }

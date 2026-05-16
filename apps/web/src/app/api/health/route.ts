@@ -2,6 +2,12 @@ import { getQueueDepthSnapshot } from '@contractor-ops/api/services/cron-monitor
 import { prisma } from '@contractor-ops/db';
 import { Redis } from '@upstash/redis';
 import { NextResponse } from 'next/server';
+import { CACHE_CONTROL_HEALTH } from '@/lib/cache-control';
+
+// Cache-Control: `public, max-age=60, must-revalidate` — public liveness
+// endpoint. A brief CDN cache absorbs monitor bursts (Render, Cronitor,
+// uptime-kuma) without letting a stale `ok` body mask a real outage.
+export const dynamic = 'force-dynamic';
 
 /**
  * Real health check endpoint. Phase 2 P2-E F-OBS-07.
@@ -269,5 +275,8 @@ export async function GET() {
     probes: results,
   };
 
-  return NextResponse.json(body, { status: allOk ? 200 : 503 });
+  return NextResponse.json(body, {
+    status: allOk ? 200 : 503,
+    headers: { 'Cache-Control': CACHE_CONTROL_HEALTH },
+  });
 }

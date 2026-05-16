@@ -8,8 +8,12 @@ import { getServerEnv } from '@contractor-ops/validators';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createCronLogger('job-health');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 /**
  * Webhook deliveries stuck in RECEIVED or PROCESSING longer than this are
@@ -54,7 +58,7 @@ export async function GET(request: NextRequest) {
   const cronSecret = getServerEnv().CRON_SECRET;
   if (!cronSecret || cronSecret.length < 16) {
     log.error('CRON_SECRET misconfigured — refusing to run job-health');
-    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+    return withNoStore(NextResponse.json({ error: 'Server misconfigured' }, { status: 500 }));
   }
 
   const authHeader = request.headers.get('authorization') ?? '';
@@ -63,10 +67,10 @@ export async function GET(request: NextRequest) {
     authHeader.length === expected.length &&
     timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
   if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'job-health',
     () =>
       withCronMonitor('job-health', async () => {
@@ -311,4 +315,5 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }

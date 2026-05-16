@@ -22,8 +22,12 @@ import { createCronLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createCronLogger('boe-rate-poll');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 /**
  * Auth gate — same pattern as classification-economic-dependency. Tolerant
@@ -55,7 +59,7 @@ const SYSTEM_FLAG_CTX = {
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
   // Feature-flag short-circuit (D-19). PAY_LATE_INTEREST_ENABLED is the
@@ -67,13 +71,15 @@ export async function GET(request: NextRequest) {
       { reason: flag.reason },
       'BoE rate poll skipped — payments.late-interest-enabled is off',
     );
-    return NextResponse.json({
-      skipped: true,
-      reason: 'payments.late-interest-enabled is off',
-    });
+    return withNoStore(
+      NextResponse.json({
+        skipped: true,
+        reason: 'payments.late-interest-enabled is off',
+      }),
+    );
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'boe-rate-poll',
     () =>
       withCronMonitor(CronMonitors.BOE_RATE_POLL, async () => {
@@ -110,6 +116,7 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }
 
 // POST mirrors GET so cron schedulers (Render, Vercel, GitHub Actions,

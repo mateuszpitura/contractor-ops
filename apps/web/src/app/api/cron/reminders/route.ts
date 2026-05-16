@@ -7,9 +7,13 @@ import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 import { detectDrvClearanceExpiries } from './drv-clearance-expiries';
 
 const log = createCronLogger('reminders');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 // ---------------------------------------------------------------------------
 // Auth
@@ -400,10 +404,10 @@ const REMINDERS_LOCK_KEY = 'reminders';
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'reminders',
     () =>
       withCronMonitor('reminders', async () => {
@@ -468,4 +472,5 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }

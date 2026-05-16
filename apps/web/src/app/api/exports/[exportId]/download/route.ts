@@ -12,30 +12,33 @@
  * tenant scope).
  */
 
+import { signExistingDownload } from '@contractor-ops/api/services/r2';
 import { auth } from '@contractor-ops/auth';
 import { prisma } from '@contractor-ops/db';
-import { signExistingDownload } from '@contractor-ops/api/services/r2';
 import { createLogger } from '@contractor-ops/logger';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createLogger({ service: 'exports-download' });
 
 const SIGNED_URL_TTL_SECONDS = 5 * 60; // 5 min — user has time to click but the URL doesn't loiter.
 
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ exportId: string }> },
-) {
+// Cache-Control: `no-store, private` — every response is per-user (session-
+// scoped) and serves either a signed R2 URL or a JSON error envelope; neither
+// is safe to cache at the CDN.
+export const dynamic = 'force-dynamic';
+
+export async function GET(_request: Request, context: { params: Promise<{ exportId: string }> }) {
   const [{ exportId }, reqHeaders] = await Promise.all([context.params, headers()]);
 
   const session = await auth.api.getSession({ headers: reqHeaders });
   if (!session) {
-    return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'unauthenticated' }, { status: 401 }));
   }
   const activeOrgId = session.session.activeOrganizationId;
   if (!activeOrgId) {
-    return NextResponse.json({ error: 'no active organization' }, { status: 403 });
+    return withNoStore(NextResponse.json({ error: 'no active organization' }, { status: 403 }));
   }
 
   const row = await prisma.export.findUnique({
@@ -52,18 +55,17 @@ export async function GET(
   });
 
   if (!row || row.organizationId !== activeOrgId) {
-    return NextResponse.json({ error: 'not found' }, { status: 404 });
+    return withNoStore(NextResponse.json({ error: 'not found' }, { status: 404 }));
   }
 
   if (row.status !== 'READY' || !row.fileR2Key) {
-    return NextResponse.json(
-      { error: 'export not ready', status: row.status },
-      { status: 409 },
+    return withNoStore(
+      NextResponse.json({ error: 'export not ready', status: row.status }, { status: 409 }),
     );
   }
 
   if (row.expiresAt && row.expiresAt.getTime() < Date.now()) {
-    return NextResponse.json({ error: 'export expired' }, { status: 410 });
+    return withNoStore(NextResponse.json({ error: 'export expired' }, { status: 410 }));
   }
 
   try {
@@ -74,12 +76,12 @@ export async function GET(
     );
     // 302 so browser navigates straight to R2; the JSON envelope avoids
     // CORS surprises if a future SPA client wants the URL programmatically.
-    return NextResponse.redirect(signedUrl, 302);
+    return withNoStore(NextResponse.redirect(signedUrl, 302));
   } catch (err) {
     log.error(
       { err: err instanceof Error ? err.message : String(err), exportId },
       'export download URL signing failed',
     );
-    return NextResponse.json({ error: 'sign failed' }, { status: 500 });
+    return withNoStore(NextResponse.json({ error: 'sign failed' }, { status: 500 }));
   }
 }

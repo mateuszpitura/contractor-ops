@@ -13,8 +13,13 @@ import {
 import { createLogger } from '@contractor-ops/logger';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createLogger({ service: 'oauth-callback' });
+
+// Cache-Control: `no-store, private` — single-use IdP redirect target;
+// every response is user/state-scoped and must never be cached.
+export const dynamic = 'force-dynamic';
 
 // Ensure all OAuth adapters are registered before any callback is processed
 registerAllAdapters();
@@ -47,14 +52,14 @@ export async function GET(
     const stateParam = searchParams.get('state');
 
     if (!(code && stateParam)) {
-      return NextResponse.redirect(settingsUrl('error'));
+      return withNoStore(NextResponse.redirect(settingsUrl('error')));
     }
 
     // Look up the adapter for this provider
     const adapter = getAdapter(provider);
     if (!(adapter?.supportsOAuth && adapter.exchangeCodeForTokens && adapter.getOAuthConfig)) {
       log.error({ provider }, 'no oauth adapter registered');
-      return NextResponse.redirect(settingsUrl('error'));
+      return withNoStore(NextResponse.redirect(settingsUrl('error')));
     }
 
     // Use the adapter's configured client secret env var for state signing
@@ -62,14 +67,14 @@ export async function GET(
     const signingSecret = process.env[oauthConfig.clientSecretEnvVar];
     if (!signingSecret) {
       log.error({ provider, envVar: oauthConfig.clientSecretEnvVar }, 'missing env var');
-      return NextResponse.redirect(settingsUrl('error'));
+      return withNoStore(NextResponse.redirect(settingsUrl('error')));
     }
 
     // Step 1 — verify HMAC-signed state (cross-provider CSRF, freshness).
     const state = verifyOAuthState(stateParam, provider, signingSecret);
     if (!state) {
       log.error({ provider }, 'invalid or expired state parameter');
-      return NextResponse.redirect(settingsUrl('error'));
+      return withNoStore(NextResponse.redirect(settingsUrl('error')));
     }
 
     // Step 2 — F-SEC-05 + F-SEC-21: enforce browser binding + single use.
@@ -93,7 +98,7 @@ export async function GET(
       // Clear the cookie defensively so a second click doesn't try the same
       // path with stale state.
       response.cookies.delete({ name: OAUTH_STATE_COOKIE_NAME, path: '/api/oauth' });
-      return response;
+      return withNoStore(response);
     }
 
     // Defence-in-depth: HMAC-encoded user/org should match the row. If they
@@ -107,7 +112,7 @@ export async function GET(
       log.error({ provider }, 'oauth callback rejected: state/challenge identity mismatch');
       const response = NextResponse.redirect(settingsUrl('error'));
       response.cookies.delete({ name: OAUTH_STATE_COOKIE_NAME, path: '/api/oauth' });
-      return response;
+      return withNoStore(response);
     }
 
     // Exchange authorization code for tokens via adapter. Use the
@@ -164,9 +169,9 @@ export async function GET(
     // Clear the binding cookie now that we've successfully consumed the challenge.
     const response = NextResponse.redirect(settingsUrl('connected'));
     response.cookies.delete({ name: OAUTH_STATE_COOKIE_NAME, path: '/api/oauth' });
-    return response;
+    return withNoStore(response);
   } catch (error) {
     log.error({ err: error, provider }, 'unexpected error');
-    return NextResponse.redirect(settingsUrl('error'));
+    return withNoStore(NextResponse.redirect(settingsUrl('error')));
   }
 }

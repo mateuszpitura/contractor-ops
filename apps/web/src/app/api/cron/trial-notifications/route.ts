@@ -8,8 +8,12 @@ import { metrics } from '@contractor-ops/logger/metrics';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createCronLogger('trial-notifications');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 // F-ASYNC-07 — advisory lock prevents two overlapping ticks (timezone shift,
 // scheduler retry, manual re-trigger) from both fanning out to every
@@ -38,10 +42,10 @@ function buildBillingUrl(): string {
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'trial-notifications',
     () => withCronMonitor('trial-notifications', handleTrialNotifications),
     {
@@ -49,6 +53,7 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }
 
 // ---------------------------------------------------------------------------

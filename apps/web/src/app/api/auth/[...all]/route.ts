@@ -6,6 +6,12 @@ import {
 } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/nextjs';
 import { toNextJsHandler } from 'better-auth/next-js';
+import { withNoStore } from '@/lib/cache-control';
+
+// Cache-Control: `no-store, private` — every Better Auth response is
+// session-scoped (sign-in cookies, magic-link tokens, OAuth callbacks).
+// Caching at the CDN would leak credentials between users.
+export const dynamic = 'force-dynamic';
 
 /**
  * Better Auth catch-all route. Phase 2 P2-E F-OBS-09.
@@ -62,7 +68,7 @@ function wrap(method: 'GET' | 'POST', inner: AuthHandler): AuthHandler {
           log.info({ method, path, status, durationMs }, 'auth request completed');
         }
 
-        return response;
+        return withNoStore(response);
       } catch (err) {
         const durationMs = Math.round(performance.now() - start);
         log.error({ err, method, path, durationMs }, 'auth handler threw');

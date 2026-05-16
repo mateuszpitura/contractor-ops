@@ -19,8 +19,12 @@ import { createCronLogger } from '@contractor-ops/logger';
 import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { withNoStore } from '@/lib/cache-control';
 
 const log = createCronLogger('classification-economic-dependency');
+
+// Cache-Control: no-store, private — internal cron endpoint, never cached.
+export const dynamic = 'force-dynamic';
 
 function verifyCronSecret(request: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
@@ -33,7 +37,7 @@ function verifyCronSecret(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withNoStore(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
   // Phase 64 D-08 — flag-off early return
@@ -50,10 +54,10 @@ export async function GET(request: NextRequest) {
       },
       'classification-economic-dependency cron skipped: flag disabled',
     );
-    return NextResponse.json({ skipped: true, reason: 'FLAG_OFF' });
+    return withNoStore(NextResponse.json({ skipped: true, reason: 'FLAG_OFF' }));
   }
 
-  return Sentry.withMonitor(
+  const response = await Sentry.withMonitor(
     'classification-economic-dependency',
     () =>
       withCronMonitor(CronMonitors.CLASSIFICATION_ECONOMIC_DEPENDENCY, async () => {
@@ -74,6 +78,7 @@ export async function GET(request: NextRequest) {
       timezone: 'UTC',
     },
   );
+  return withNoStore(response);
 }
 
 // POST mirrors GET so cron schedulers can pick either verb.
