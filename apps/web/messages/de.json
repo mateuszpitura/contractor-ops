@@ -231,7 +231,11 @@
       "reject": "Rechnung ablehnen",
       "more": "Mehr",
       "requestClarification": "Klärung anfordern",
-      "delegateApproval": "Freigabe delegieren"
+      "delegateApproval": "Freigabe delegieren",
+      "resolvedChain": "Aufgelöste Genehmigungskette",
+      "resolvedChainEmpty": "Genehmigungskette nicht verfügbar.",
+      "specificUser": "Zugewiesener Benutzer",
+      "unassigned": "Nicht zugewiesen"
     },
     "clarifyPopover": {
       "heading": "Klärung anfordern",
@@ -2452,6 +2456,46 @@
     },
     "ComplianceWidget": {
       "title": "E-Rechnungs-Compliance"
+    },
+    "TransmissionsLog": {
+      "h1": "E-Rechnung Übertragungsprotokoll",
+      "subline": "Validierungsstatus sowie Peppol-, KSeF- und ZATCA-Übertragungsergebnisse für jede Rechnung in dieser Organisation.",
+      "breadcrumb": "Übertragungsprotokoll",
+      "viewLog": "Übertragungsprotokoll anzeigen",
+      "cardTitle": "Übertragungen",
+      "cardDescription": "Nach Validierungs- oder Zustellstatus filtern. Neueste Rechnungen zuerst.",
+      "unknownInvoice": "Ohne Nummer",
+      "emptyHeading": "Noch keine Übertragungen",
+      "emptyBody": "Neue für diese Organisation erzeugte E-Rechnungen erscheinen hier, sobald sie validiert und übertragen wurden.",
+      "loadMore": "Mehr laden",
+      "loadingMore": "Wird geladen …",
+      "col": {
+        "invoice": "Rechnung",
+        "validation": "Validierung",
+        "transmission": "Übertragung",
+        "updated": "Letzte Änderung"
+      },
+      "filter": {
+        "all": "Alle",
+        "notGenerated": "Nicht erzeugt",
+        "valid": "Gültig",
+        "warnings": "Warnungen",
+        "invalid": "Ungültig",
+        "transmitted": "Übertragen",
+        "failed": "Fehlgeschlagen"
+      },
+      "validation": {
+        "VALID": "Gültig",
+        "WARNINGS": "Warnungen",
+        "INVALID": "Ungültig",
+        "notGenerated": "Nicht erzeugt"
+      },
+      "transmission": {
+        "SENT": "Gesendet",
+        "DELIVERED": "Zugestellt",
+        "FAILED": "Fehlgeschlagen",
+        "PENDING": "Ausstehend"
+      }
     }
   },
   "EmptyStates": {
@@ -4531,7 +4575,9 @@
       "failureReasonPlaceholder": "Grund eingeben …",
       "removeFromRunConfirm": "Diese Rechnung aus dem Zahlungslauf entfernen?",
       "removeButton": "Entfernen",
-      "confirm": "Bestätigen"
+      "confirm": "Bestätigen",
+      "detectedFormatTitle": "Erkannte Exportformate",
+      "detectedFormatHint": "Empfohlen anhand der IBANs/Währungen der Empfänger in diesem Lauf. Nur mit gutem Grund überschreiben."
     },
     "cancelDialog": {
       "title": "Zahlungslauf abbrechen?",
@@ -6250,6 +6296,18 @@
       "title": "Daten aus Tools importieren",
       "description": "Auftragnehmer, Verträge und Rechnungen aus externen Tools wie CSV-Dateien, Tabellenkalkulationen oder Drittanbieter-Plattformen neu importieren.",
       "cta": "Erneut aus Tools importieren"
+    },
+    "userConsent": {
+      "title": "Einwilligung für {name}",
+      "description": "Aktueller Einwilligungsstand und vollständige Historie aller Erteilungen und Widerrufe für diesen Benutzer.",
+      "currentHeading": "Aktuelle Einwilligung",
+      "currentEmpty": "Für diesen Benutzer liegen noch keine Einwilligungseinträge vor.",
+      "granted": "Erteilt",
+      "notGranted": "Nicht erteilt",
+      "revoked": "Widerrufen",
+      "lastUpdated": "Aktualisiert {date}",
+      "historyHeading": "Historie",
+      "historyEmpty": "Keine Einwilligungsänderungen erfasst."
     }
   },
   "Teams": {
@@ -6439,7 +6497,8 @@
     },
     "actions": {
       "reactivate": "Reaktivieren",
-      "deactivate": "Deaktivieren"
+      "deactivate": "Deaktivieren",
+      "viewConsent": "Einwilligung"
     },
     "roleUpdated": "Rolle aktualisiert",
     "memberReactivated": "Mitglied reaktiviert",
@@ -6698,7 +6757,9 @@
       "close": "Schließen",
       "noTemplates": "Keine Vorlagen verfügbar",
       "noTemplatesBody": "Bitten Sie Ihren Administrator, eine Workflow-Vorlage zu erstellen.",
-      "startForCount": "Workflow für {count} Auftragnehmer starten"
+      "startForCount": "Workflow für {count} Auftragnehmer starten",
+      "suggestedHeading": "Vorgeschlagene Vorlage",
+      "suggestedBody": "Automatisch anhand der Rolle des Contractors gewählt: {name}"
     },
     "toast": {
       "workflowStarted": "Workflow gestartet",
@@ -6910,6 +6971,20 @@
         "status": "Vertragsstatus",
         "currency": "Währung"
       }
+    },
+    "overrideBlockingTask": {
+      "menuItem": "Sperrende Aufgabe überschreiben",
+      "title": "Sperrende Workflow-Aufgabe überschreiben",
+      "body": "Überspringt alle offenen IP-Verifizierungsaufgaben dieses Laufs und protokolliert die Überschreibung im Audit-Log.",
+      "warning": "Damit wird die Verifizierungssperre umgangen. Grund und Benutzeridentität werden zur Compliance-Prüfung dauerhaft erfasst.",
+      "reasonLabel": "Begründung für die Überschreibung",
+      "reasonPlaceholder": "Warum ist diese Überschreibung gerade jetzt notwendig?",
+      "reasonHelp": "Pflichtfeld, {min}–{max} Zeichen.",
+      "acknowledge": "Mir ist klar, dass diese Aktion protokolliert und überprüft wird.",
+      "cancel": "Abbrechen",
+      "confirmCta": "Überschreiben und überspringen",
+      "toastSuccess": "Workflow-Überschreibung gespeichert.",
+      "toastFailure": "Workflow-Aufgabe konnte nicht überschrieben werden."
     }
   },
   "Zatca": {

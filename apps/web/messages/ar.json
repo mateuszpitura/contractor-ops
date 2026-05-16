@@ -231,7 +231,11 @@
       "reject": "رفض الفاتورة",
       "more": "المزيد",
       "requestClarification": "طلب توضيح",
-      "delegateApproval": "تفويض الموافقة"
+      "delegateApproval": "تفويض الموافقة",
+      "resolvedChain": "سلسلة الموافقة",
+      "resolvedChainEmpty": "إعدادات سلسلة الموافقة غير متاحة.",
+      "specificUser": "مستخدم مُعيَّن",
+      "unassigned": "غير مُعيَّن"
     },
     "clarifyPopover": {
       "heading": "طلب توضيح",
@@ -2452,6 +2456,46 @@
     },
     "ComplianceWidget": {
       "title": "امتثال الفوترة الإلكترونية"
+    },
+    "TransmissionsLog": {
+      "h1": "سجل إرسال الفواتير الإلكترونية",
+      "subline": "حالة التحقق ونتائج إرسال Peppol / KSeF / ZATCA لكل فاتورة في هذه المنظمة.",
+      "breadcrumb": "سجل الإرسال",
+      "viewLog": "عرض سجل الإرسال",
+      "cardTitle": "الإرسالات",
+      "cardDescription": "تصفية حسب حالة التحقق أو التسليم. أحدث الفواتير تظهر أولاً.",
+      "unknownInvoice": "بدون رقم",
+      "emptyHeading": "لا توجد إرسالات بعد",
+      "emptyBody": "ستظهر الفواتير الإلكترونية الجديدة هنا بمجرد التحقق منها وإرسالها.",
+      "loadMore": "تحميل المزيد",
+      "loadingMore": "جارٍ التحميل…",
+      "col": {
+        "invoice": "الفاتورة",
+        "validation": "التحقق",
+        "transmission": "الإرسال",
+        "updated": "آخر تحديث"
+      },
+      "filter": {
+        "all": "الكل",
+        "notGenerated": "لم يتم الإنشاء",
+        "valid": "صالحة",
+        "warnings": "تحذيرات",
+        "invalid": "غير صالحة",
+        "transmitted": "تم الإرسال",
+        "failed": "فشل"
+      },
+      "validation": {
+        "VALID": "صالحة",
+        "WARNINGS": "تحذيرات",
+        "INVALID": "غير صالحة",
+        "notGenerated": "لم يتم الإنشاء"
+      },
+      "transmission": {
+        "SENT": "مُرسلة",
+        "DELIVERED": "تم التسليم",
+        "FAILED": "فشل",
+        "PENDING": "قيد الانتظار"
+      }
     }
   },
   "EmptyStates": {
@@ -4531,7 +4575,9 @@
       "failureReasonPlaceholder": "أدخل السبب…",
       "removeFromRunConfirm": "إزالة this invoice from the payment run?",
       "removeButton": "إزالة",
-      "confirm": "تأكيد"
+      "confirm": "تأكيد",
+      "detectedFormatTitle": "صيغ التصدير المكتشفة",
+      "detectedFormatHint": "مقترحة بناءً على IBAN والعملات للمستفيدين في هذه الدفعة. تجاوزها فقط لسبب موثَّق."
     },
     "cancelDialog": {
       "title": "إلغاء تشغيل الدفع؟",
@@ -6250,6 +6296,18 @@
       "title": "استيراد البيانات من الأدوات",
       "description": "إعادة استيراد المتعاقدين والعقود والفواتير من أدوات خارجية كملفات CSV أو جداول البيانات أو المنصات الخارجية.",
       "cta": "إعادة الاستيراد من الأدوات"
+    },
+    "userConsent": {
+      "title": "موافقات المستخدم {name}",
+      "description": "الحالة الحالية للموافقات وسجل كامل لكل منح أو سحب لهذا المستخدم.",
+      "currentHeading": "الموافقة الحالية",
+      "currentEmpty": "لا توجد سجلات موافقة بعد لهذا المستخدم.",
+      "granted": "مُمنوحة",
+      "notGranted": "غير مُمنوحة",
+      "revoked": "تم السحب",
+      "lastUpdated": "حُدِّثت {date}",
+      "historyHeading": "السجل",
+      "historyEmpty": "لا توجد تغييرات على الموافقات."
     }
   },
   "Teams": {
@@ -6439,7 +6497,8 @@
     },
     "actions": {
       "reactivate": "إعادة تفعيل",
-      "deactivate": "إلغاء التفعيل"
+      "deactivate": "إلغاء التفعيل",
+      "viewConsent": "الموافقات"
     },
     "roleUpdated": "تم تحديث الدور",
     "memberReactivated": "تم إعادة تفعيل العضو",
@@ -6698,7 +6757,9 @@
       "close": "إغلاق",
       "noTemplates": "لا توجد قوالب متاحة",
       "noTemplatesBody": "اطلب من المسؤول إنشاء قالب Workflow.",
-      "startForCount": "بدء Workflow لـ {count} مقاولين"
+      "startForCount": "بدء Workflow لـ {count} مقاولين",
+      "suggestedHeading": "القالب المقترح",
+      "suggestedBody": "تحديد تلقائي بناءً على دور المتعاقد: {name}"
     },
     "toast": {
       "workflowStarted": "تم بدء Workflow",
@@ -6910,6 +6971,20 @@
         "status": "حالة العقد",
         "currency": "العملة"
       }
+    },
+    "overrideBlockingTask": {
+      "menuItem": "تجاوز المهمة الحاجبة",
+      "title": "تجاوز مهمة سير العمل الحاجبة",
+      "body": "يتخطى جميع مهام التحقق من IP المفتوحة في هذا التشغيل ويسجل التجاوز في سجل التدقيق.",
+      "warning": "تتجاوز هذه الخطوة بوابة التحقق. يُسجَّل السبب وهوية المستخدم بشكل دائم لأغراض الامتثال.",
+      "reasonLabel": "سبب التجاوز",
+      "reasonPlaceholder": "لماذا يلزم هذا التجاوز الآن؟",
+      "reasonHelp": "مطلوب، {min}–{max} حرفاً.",
+      "acknowledge": "أُدرك أن هذا الإجراء يُسجَّل ويخضع للتدقيق.",
+      "cancel": "إلغاء",
+      "confirmCta": "تجاوز وتخطٍّ",
+      "toastSuccess": "تم تسجيل تجاوز سير العمل.",
+      "toastFailure": "تعذّر تجاوز مهمة سير العمل."
     }
   },
   "Zatca": {

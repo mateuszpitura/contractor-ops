@@ -231,7 +231,11 @@
       "reject": "Odrzuć fakturę",
       "more": "Więcej",
       "requestClarification": "Popros o wyjaśnienie",
-      "delegateApproval": "Deleguj akceptacje"
+      "delegateApproval": "Deleguj akceptacje",
+      "resolvedChain": "Pełna ścieżka akceptacji",
+      "resolvedChainEmpty": "Konfiguracja ścieżki niedostępna.",
+      "specificUser": "Przypisany użytkownik",
+      "unassigned": "Nieprzypisane"
     },
     "clarifyPopover": {
       "heading": "Popros o wyjaśnienie",
@@ -2452,6 +2456,46 @@
     },
     "ComplianceWidget": {
       "title": "Zgodność e-fakturowania"
+    },
+    "TransmissionsLog": {
+      "h1": "Dziennik transmisji e-faktur",
+      "subline": "Status walidacji oraz wyniki przesyłania (Peppol / KSeF / ZATCA) dla każdej faktury w tej organizacji.",
+      "breadcrumb": "Dziennik transmisji",
+      "viewLog": "Otwórz dziennik transmisji",
+      "cardTitle": "Transmisje",
+      "cardDescription": "Filtruj według statusu walidacji lub doręczenia. Najnowsze faktury są na górze.",
+      "unknownInvoice": "Bez numeru",
+      "emptyHeading": "Brak transmisji",
+      "emptyBody": "Nowe e-faktury wygenerowane dla tej organizacji pojawią się tutaj po walidacji i przesłaniu.",
+      "loadMore": "Załaduj więcej",
+      "loadingMore": "Ładowanie…",
+      "col": {
+        "invoice": "Faktura",
+        "validation": "Walidacja",
+        "transmission": "Transmisja",
+        "updated": "Ostatnia aktualizacja"
+      },
+      "filter": {
+        "all": "Wszystkie",
+        "notGenerated": "Niegenerowane",
+        "valid": "Poprawne",
+        "warnings": "Ostrzeżenia",
+        "invalid": "Niepoprawne",
+        "transmitted": "Przesłane",
+        "failed": "Nieudane"
+      },
+      "validation": {
+        "VALID": "Poprawne",
+        "WARNINGS": "Ostrzeżenia",
+        "INVALID": "Niepoprawne",
+        "notGenerated": "Niegenerowane"
+      },
+      "transmission": {
+        "SENT": "Wysłane",
+        "DELIVERED": "Doręczone",
+        "FAILED": "Nieudane",
+        "PENDING": "Oczekuje"
+      }
     }
   },
   "EmptyStates": {
@@ -4531,7 +4575,9 @@
       "failureReasonPlaceholder": "Wprowadź powód…",
       "removeFromRunConfirm": "Usuńąć tę fakturę z przebiegu płatności?",
       "removeButton": "Usuń",
-      "confirm": "Potwierdź"
+      "confirm": "Potwierdź",
+      "detectedFormatTitle": "Wykryte formaty eksportu",
+      "detectedFormatHint": "Rekomendacja na podstawie IBAN-ów i walut odbiorców w tym przebiegu. Nadpisuj tylko z uzasadnieniem."
     },
     "cancelDialog": {
       "title": "Anulować przebieg płatności?",
@@ -6237,6 +6283,18 @@
       "title": "Importuj dane z narzędzi",
       "description": "Ponownie importuj kontrahentów, umowy i faktury z zewnętrznych narzędzi, takich jak pliki CSV, arkusze kalkulacyjne lub platformy firm trzecich.",
       "cta": "Ponownie importuj z narzędzi"
+    },
+    "userConsent": {
+      "title": "Zgody użytkownika {name}",
+      "description": "Bieżący stan zgód i pełna historia każdego udzielenia oraz cofnięcia.",
+      "currentHeading": "Aktualne zgody",
+      "currentEmpty": "Brak zapisów zgód dla tego użytkownika.",
+      "granted": "Udzielona",
+      "notGranted": "Nieudzielona",
+      "revoked": "Wycofana",
+      "lastUpdated": "Aktualizacja {date}",
+      "historyHeading": "Historia",
+      "historyEmpty": "Brak zmian zgód."
     }
   },
   "Teams": {
@@ -6426,7 +6484,8 @@
     },
     "actions": {
       "reactivate": "Reaktywuj",
-      "deactivate": "Dezaktywuj"
+      "deactivate": "Dezaktywuj",
+      "viewConsent": "Zgody"
     },
     "roleUpdated": "Rola zaktualizowana",
     "memberReactivated": "Członek reaktywowany",
@@ -6685,7 +6744,9 @@
       "close": "Zamknij",
       "noTemplates": "Brak dostępnych szablonów",
       "noTemplatesBody": "Popros administratora o utwórzenie szablonu procesu.",
-      "startForCount": "Rozpocznij proces dla {count} kontrahentów"
+      "startForCount": "Rozpocznij proces dla {count} kontrahentów",
+      "suggestedHeading": "Sugerowany szablon",
+      "suggestedBody": "Automatyczny wybór na podstawie roli kontraktora: {name}"
     },
     "toast": {
       "workflowStarted": "Proces rozpoczęty",
@@ -6897,6 +6958,20 @@
         "status": "Status umowy",
         "currency": "Waluta"
       }
+    },
+    "overrideBlockingTask": {
+      "menuItem": "Wymuś pominięcie zadania",
+      "title": "Wymusić pominięcie blokującego zadania workflow?",
+      "body": "Pomija wszystkie otwarte zadania weryfikacji IP w tym przebiegu i odnotowuje wymuszenie w dzienniku audytu.",
+      "warning": "Ta akcja obchodzi bramkę weryfikacyjną. Powód i tożsamość użytkownika zostaną zapisane na stałe do celów compliance.",
+      "reasonLabel": "Powód wymuszenia",
+      "reasonPlaceholder": "Dlaczego to wymuszenie jest teraz konieczne?",
+      "reasonHelp": "Wymagane, {min}–{max} znaków.",
+      "acknowledge": "Rozumiem, że ta akcja jest rejestrowana i podlega audytowi.",
+      "cancel": "Anuluj",
+      "confirmCta": "Wymuś i pomiń",
+      "toastSuccess": "Wymuszenie workflow zapisane.",
+      "toastFailure": "Nie udało się wymusić pominięcia zadania workflow."
     }
   },
   "Zatca": {

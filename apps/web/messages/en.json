@@ -231,7 +231,11 @@
       "reject": "Reject invoice",
       "more": "More",
       "requestClarification": "Request clarification",
-      "delegateApproval": "Delegate approval"
+      "delegateApproval": "Delegate approval",
+      "resolvedChain": "Resolved chain",
+      "resolvedChainEmpty": "Chain configuration not available.",
+      "specificUser": "Assigned user",
+      "unassigned": "Unassigned"
     },
     "clarifyPopover": {
       "heading": "Request clarification",
@@ -2452,6 +2456,46 @@
     },
     "ComplianceWidget": {
       "title": "E-Invoicing Compliance"
+    },
+    "TransmissionsLog": {
+      "h1": "E-invoice transmissions log",
+      "subline": "Validation status and Peppol / KSeF / ZATCA transmission outcomes for every invoice in this organization.",
+      "breadcrumb": "Transmissions log",
+      "viewLog": "View transmissions log",
+      "cardTitle": "Transmissions",
+      "cardDescription": "Filter by validation or delivery status. Most recent invoices appear first.",
+      "unknownInvoice": "Unnumbered",
+      "emptyHeading": "No transmissions yet",
+      "emptyBody": "New e-invoices generated for this org will show up here as soon as they are validated and transmitted.",
+      "loadMore": "Load more",
+      "loadingMore": "Loading more…",
+      "col": {
+        "invoice": "Invoice",
+        "validation": "Validation",
+        "transmission": "Transmission",
+        "updated": "Last update"
+      },
+      "filter": {
+        "all": "All",
+        "notGenerated": "Not generated",
+        "valid": "Valid",
+        "warnings": "Warnings",
+        "invalid": "Invalid",
+        "transmitted": "Transmitted",
+        "failed": "Failed"
+      },
+      "validation": {
+        "VALID": "Valid",
+        "WARNINGS": "Warnings",
+        "INVALID": "Invalid",
+        "notGenerated": "Not generated"
+      },
+      "transmission": {
+        "SENT": "Sent",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed",
+        "PENDING": "Pending"
+      }
     }
   },
   "EmptyStates": {
@@ -4541,7 +4585,9 @@
       "failureReasonPlaceholder": "Enter reason…",
       "removeFromRunConfirm": "Remove this invoice from the payment run?",
       "removeButton": "Remove",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "detectedFormatTitle": "Detected export formats",
+      "detectedFormatHint": "Recommended for the contractor IBANs / currencies in this run. Override only if you have a good reason."
     },
     "cancelDialog": {
       "title": "Cancel payment run?",
@@ -6250,6 +6296,18 @@
       "noPermission": {
         "description": "You do not have permission to configure payment exports. Contact your organization admin."
       }
+    },
+    "userConsent": {
+      "title": "Consent for {name}",
+      "description": "Current consent state and a timeline of every grant / revoke recorded for this user.",
+      "currentHeading": "Current consent",
+      "currentEmpty": "No consent records yet for this user.",
+      "granted": "Granted",
+      "notGranted": "Not granted",
+      "revoked": "Revoked",
+      "lastUpdated": "Updated {date}",
+      "historyHeading": "History",
+      "historyEmpty": "No consent changes recorded."
     }
   },
   "Teams": {
@@ -6439,7 +6497,8 @@
     },
     "actions": {
       "reactivate": "Reactivate",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "viewConsent": "Consent"
     },
     "roleUpdated": "Role updated",
     "memberReactivated": "Member reactivated",
@@ -6698,7 +6757,9 @@
       "close": "Close",
       "noTemplates": "No templates available",
       "noTemplatesBody": "Ask your admin to create a workflow template.",
-      "startForCount": "Start workflow for {count} contractors"
+      "startForCount": "Start workflow for {count} contractors",
+      "suggestedHeading": "Suggested template",
+      "suggestedBody": "Auto-selected from contractor role: {name}"
     },
     "toast": {
       "workflowStarted": "Workflow started",
@@ -6910,6 +6971,20 @@
         "status": "Contract status",
         "currency": "Currency"
       }
+    },
+    "overrideBlockingTask": {
+      "menuItem": "Override blocking task",
+      "title": "Override blocking workflow task",
+      "body": "Skips every open IP verification task on this run and records the override on the workflow audit log.",
+      "warning": "This bypasses the verification gate. The reason and your user identity are permanently recorded for compliance review.",
+      "reasonLabel": "Reason for override",
+      "reasonPlaceholder": "Why is this override necessary right now?",
+      "reasonHelp": "Required, {min}–{max} characters.",
+      "acknowledge": "I understand this action is recorded and audited.",
+      "cancel": "Cancel",
+      "confirmCta": "Override and skip",
+      "toastSuccess": "Workflow override recorded.",
+      "toastFailure": "Could not override workflow task."
     }
   },
   "Zatca": {
