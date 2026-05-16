@@ -423,6 +423,7 @@ const PHASE_EMOJI: Record<string, string> = {
   'api-keys': '🔑',
   'pinned-views': '📌',
   'cron-state': '⏱️ ',
+  'auth-surface': '🔐',
 };
 
 /**
@@ -490,6 +491,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   'api-keys': 1,
   'pinned-views': 1,
   'cron-state': 2,
+  'auth-surface': 2,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -1520,11 +1522,14 @@ async function seedOrganizationCore(
   });
   const organizationId = created.id;
 
-  // NOTE: We do NOT pre-create a Session row here. Better Auth signs the
-  // session cookie with `BETTER_AUTH_SECRET`; a manually-inserted Session has
-  // no matching cookie on the browser side, so it can't be used to "skip
-  // login". Users authenticate via the seeded password (printed in the final
-  // summary log line).
+  // NOTE: We do NOT pre-create Session/Account/Verification rows here. The
+  // dedicated `seedAuthSurface()` step (gated by the `auth-surface` section
+  // key) writes those rows for *UI-display* only — the admin "active
+  // sessions" / "linked accounts" pages are otherwise empty.
+  // Better Auth signs the session cookie with `BETTER_AUTH_SECRET`; a
+  // manually-inserted Session has no matching browser-side cookie, so it
+  // CANNOT be used to skip login. Users still authenticate via the seeded
+  // password (printed in the final summary log line).
 
   // Teams (3 per org, none for empty) — created during the org's first 90 days
   const teamIds: string[] = [];
@@ -6068,6 +6073,108 @@ async function seedCronAndObservability(prisma: PrismaClient, ctx: OrgSeed): Pro
 }
 
 // ---------------------------------------------------------------------------
+// Auth-surface display rows — Session, Account, Verification, OAuthChallenge,
+// PortalMagicToken. UI-DISPLAY ONLY. These rows do NOT enable login bypass:
+// Better Auth signs cookies with BETTER_AUTH_SECRET, so seeded Session rows
+// have no corresponding browser cookie. Users still authenticate via the
+// seeded password printed in the final summary line.
+// ---------------------------------------------------------------------------
+
+async function seedAuthSurface(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  // Session + Account + Verification — per active user.
+  for (const u of ctx.users) {
+    await prisma.session.create({
+      data: {
+        token: `seed-only-${tokenHex(24)}`,
+        userId: u.id,
+        expiresAt: futureDate(ctx.fakers.org, 30),
+        ipAddress: '127.0.0.1',
+        userAgent: 'seed-dev (UI display only — not a real session)',
+        activeOrganizationId: ctx.organizationId,
+        createdAt: pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt),
+      },
+    });
+    // Linked OAuth-style account row alongside the existing credential
+    // account from `seedUsersForOrg` so the "Linked accounts" UI shows two.
+    await prisma.account.create({
+      data: {
+        accountId: `seed-google-${u.email}`,
+        providerId: 'google',
+        userId: u.id,
+        accessToken: `seed-only-${tokenHex(16)}`,
+        scope: 'email profile',
+        accessTokenExpiresAt: futureDate(ctx.fakers.org, 30),
+        createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
+      },
+    });
+    await prisma.verification.create({
+      data: {
+        identifier: u.email,
+        value: tokenHex(16),
+        expiresAt: futureDate(ctx.fakers.org, 1),
+        createdAt: pastDate(ctx.fakers.org, 1),
+      },
+    });
+  }
+
+  // OAuthChallenge — 1 active + 1 expired (consumed). Owned by the org owner
+  // since OAuthChallenge.userId is required.
+  await prisma.oAuthChallenge.create({
+    data: {
+      provider: 'google',
+      organizationId: ctx.organizationId,
+      userId: ctx.ownerUserId,
+      stateHash: tokenHex(32),
+      pkceVerifier: tokenHex(43),
+      redirectUri: 'https://app.example.com/api/oauth/google/callback',
+      expiresAt: futureDate(ctx.fakers.org, 1),
+    },
+  });
+  await prisma.oAuthChallenge.create({
+    data: {
+      provider: 'linear',
+      organizationId: ctx.organizationId,
+      userId: ctx.ownerUserId,
+      stateHash: tokenHex(32),
+      pkceVerifier: tokenHex(43),
+      redirectUri: 'https://app.example.com/api/oauth/linear/callback',
+      expiresAt: pastDate(ctx.fakers.org, 1),
+      consumedAt: pastDate(ctx.fakers.org, 1),
+    },
+  });
+
+  // PortalMagicToken — 1 unused, 1 redeemed, 1 expired. Use real contractor
+  // emails when available so the UI shows familiar identities.
+  const sample = contractors.slice(0, 3);
+  const tokenStates: Array<{ usedAt: Date | null; expiresAt: Date }> = [
+    { usedAt: null, expiresAt: futureDate(ctx.fakers.org, 1) },
+    {
+      usedAt: pastDate(ctx.fakers.org, 1),
+      expiresAt: futureDate(ctx.fakers.org, 7),
+    },
+    { usedAt: null, expiresAt: pastDate(ctx.fakers.org, 1) },
+  ];
+  for (let i = 0; i < tokenStates.length; i += 1) {
+    const state = tokenStates[i];
+    if (!state) continue;
+    const contractor = sample[i];
+    const email = contractor?.email ?? `magic-${i}-${ctx.org.key}@seed.local`;
+    await prisma.portalMagicToken.create({
+      data: {
+        email,
+        token: `seed-magic-${tokenHex(24)}`,
+        expiresAt: state.expiresAt,
+        usedAt: state.usedAt,
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // OCR extraction history + PendingUpload precursors — gives Settings → OCR
 // History a real list with realistic JSON payloads + status variety.
 // ---------------------------------------------------------------------------
@@ -6931,6 +7038,9 @@ async function seedOrg(
   );
   await gateSection(omitted, 'cron-state', org.key, undefined, () =>
     seedCronAndObservability(prisma, ctx),
+  );
+  await gateSection(omitted, 'auth-surface', org.key, undefined, () =>
+    seedAuthSurface(prisma, ctx, contractors),
   );
   await gateSection(omitted, 'workflow-templates', org.key, undefined, () =>
     seedWorkflowTemplates(prisma, ctx),
