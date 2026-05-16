@@ -1,0 +1,24 @@
+[
+  {
+    "procedure": "apiKey.update",
+    "file": "packages/api/src/routers/core/api-key.ts",
+    "category": "orphan",
+    "gapKind": "missing-ui",
+    "summary": "API-key admin UI exposes create / list / revoke but not update. The procedure validates input, scopes the lookup by organizationId, refuses to touch revoked keys, and writes an audit log on success — production-ready BE waiting for a settings tab affordance.",
+    "actions": [
+      "Add a rename / scope-edit action to the apiKey row in apps/web/src/components/settings/api-keys-tab.tsx.",
+      "Invalidate trpc.apiKey.list on success (and keep the existing audit-log side-effect)."
+    ]
+  },
+  {
+    "procedure": "featureFlags.list",
+    "file": "packages/api/src/routers/core/feature-flags.ts",
+    "category": "orphan",
+    "gapKind": "missing-ui",
+    "summary": "Self-hosted Unleash-backed flag introspection for the web dashboard. The appRouter procedure is wired (tenantFlaggedProcedure middleware) and the comment in root.ts marks it for the web dashboard, but no FE caller exists. The publicApiRouter sibling at packages/api/src/routers/public-api/feature-flags.ts is consumed by the REST route in apps/public-api/src/routes/feature-flags.ts; the two share the same dotted path but are wired into different routers.",
+    "actions": [
+      "Expose under Settings → Admin (or a Flags tab) as a read-only matrix of the resolved Unleash state for the org.",
+      "Optional: surface in the AdminPanel debug drawer for support."
+    ]
+  }
+]

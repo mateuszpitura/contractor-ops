@@ -1,16 +1,31 @@
 [
   {
     "id": "F-MED-001",
-    "severity": "LOW",
-    "category": "orphan-intentional-non-ui",
+    "severity": "MED",
+    "category": "orphan",
     "procedure": "apiKey.update",
     "file": "packages/api/src/routers/core/api-key.ts",
     "line": 133,
     "problem": "Procedure apiKey.update (mutation, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
     "intentionalCallers": [
-      "(middleware=apiKeyAdminProcedure on packages/api/src/routers/core/api-key.ts:133)"
-    ]
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:26:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/portal-magic-link.ts:47:  const hashedToken = createHash('sha256').update(rawToken).digest('hex');",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/outbox/index.ts:372: * Returns the outcome label so the caller can update its aggregate counts.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:37:  await db.integrationConnection.update({",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/packages/api/src/services/ksef-sync-orchestrator.ts:222:    await db.integrationSyncLog.update({"
+    ],
+    "featureGap": {
+      "procedure": "apiKey.update",
+      "file": "packages/api/src/routers/core/api-key.ts",
+      "category": "orphan",
+      "gapKind": "missing-ui",
+      "summary": "API-key admin UI exposes create / list / revoke but not update. The procedure validates input, scopes the lookup by organizationId, refuses to touch revoked keys, and writes an audit log on success — production-ready BE waiting for a settings tab affordance.",
+      "actions": [
+        "Add a rename / scope-edit action to the apiKey row in apps/web/src/components/settings/api-keys-tab.tsx.",
+        "Invalidate trpc.apiKey.list on success (and keep the existing audit-log side-effect)."
+      ]
+    }
   },
   {
     "id": "F-MED-002",
@@ -27,16 +42,31 @@
   },
   {
     "id": "F-MED-003",
-    "severity": "LOW",
-    "category": "orphan-intentional-non-ui",
+    "severity": "MED",
+    "category": "orphan",
     "procedure": "featureFlags.list",
     "file": "packages/api/src/routers/core/feature-flags.ts",
     "line": 19,
     "problem": "Procedure featureFlags.list (query, surface=appRouter) has no FE caller.",
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
     "intentionalCallers": [
-      "(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)"
-    ]
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/feature-flags.ts:15:  const flags = await caller.featureFlags.list();",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/__tests__/feature-flags.test.ts:4: * Covers: GET / calls caller.featureFlags.list() and wraps result as { data }.",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/routes/__tests__/feature-flags.test.ts:49:  it('calls caller.featureFlags.list()', async () => {",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:22:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),",
+      "/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/public-api/src/__tests__/app.test.ts:26:      list: vi.fn().mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 25 }),"
+    ],
+    "featureGap": {
+      "procedure": "featureFlags.list",
+      "file": "packages/api/src/routers/core/feature-flags.ts",
+      "category": "orphan",
+      "gapKind": "missing-ui",
+      "summary": "Self-hosted Unleash-backed flag introspection for the web dashboard. The appRouter procedure is wired (tenantFlaggedProcedure middleware) and the comment in root.ts marks it for the web dashboard, but no FE caller exists. The publicApiRouter sibling at packages/api/src/routers/public-api/feature-flags.ts is consumed by the REST route in apps/public-api/src/routes/feature-flags.ts; the two share the same dotted path but are wired into different routers.",
+      "actions": [
+        "Expose under Settings → Admin (or a Flags tab) as a read-only matrix of the resolved Unleash state for the org.",
+        "Optional: surface in the AdminPanel debug drawer for support."
+      ]
+    }
   },
   {
     "id": "F-MED-004",

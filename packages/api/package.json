@@ -121,6 +121,11 @@
       "import": "./src/services/cron-monitor.ts",
       "default": "./src/services/cron-monitor.ts"
     },
+    "./services/exchange-rate": {
+      "types": "./src/services/exchange-rate.ts",
+      "import": "./src/services/exchange-rate.ts",
+      "default": "./src/services/exchange-rate.ts"
+    },
     "./services/teams/teams-bot-handler": {
       "types": "./src/services/teams/teams-bot-handler.ts",
       "import": "./src/services/teams/teams-bot-handler.ts",

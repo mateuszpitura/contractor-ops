@@ -46,6 +46,8 @@ export const CronMonitors = {
   LATE_INTEREST_PDF_REAPER: 'late-interest-pdf-reaper',
   // GDPR-driven nightly purge of OAuth challenge records and expired pending uploads.
   DATA_PURGE: 'data-purge',
+  // Daily ECB FX-rate sync across regional databases.
+  EXCHANGE_RATES: 'exchange-rates',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

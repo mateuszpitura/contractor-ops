@@ -12,8 +12,9 @@
 #   - cloudflared         (Private Service, image — on-demand Zero Trust tunnel
 #                          for Unleash admin UIs; SUSPEND by default, resume
 #                          only when an operator needs access)
-#   - cron-token-refresh  (Cron Job, every 15 min — calls web via private net)
-#   - cron-data-purge     (Cron Job, daily 03:00 UTC — calls web via private net)
+#   - cron-token-refresh   (Cron Job, every 15 min — calls web via private net)
+#   - cron-data-purge      (Cron Job, daily 03:00 UTC — calls web via private net)
+#   - cron-exchange-rates  (Cron Job, daily 06:00 UTC — calls web via private net)
 #
 # External (NOT managed by this Blueprint):
 #   Neon Postgres (multi-region EU+ME), Upstash Redis + QStash, Cloudflare R2,
@@ -526,6 +527,34 @@ services:
       url: docker.io/curlimages/curl:8.19.0
     startCommand: |
       sh -c 'curl -fsS -m 600 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/data-purge"'
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: web
+          envVarKey: CRON_SECRET
+      - key: WEB_HOST
+        fromService:
+          type: web
+          name: web
+          property: host
+
+  # ── Cron Job: daily ECB FX-rate sync (06:00 UTC) ───────────────────────────
+  # ECB publishes the reference rates each business day around 16:00 CET, so
+  # 06:00 UTC the next morning is safely after the prior day's batch is final.
+  # Hits /api/cron/exchange-rates which calls fetchAndStoreRates per region.
+  - type: cron
+    name: cron-exchange-rates
+    runtime: image
+    region: frankfurt
+    plan: starter
+    schedule: '0 6 * * *'
+    previews:
+      generation: off
+    image:
+      url: docker.io/curlimages/curl:8.19.0
+    startCommand: |
+      sh -c 'curl -fsS -m 120 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/exchange-rates"'
     envVars:
       - key: CRON_SECRET
         fromService:

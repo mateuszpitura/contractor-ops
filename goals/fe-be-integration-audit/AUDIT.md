@@ -1,10 +1,10 @@
 # FE↔BE Integration Audit Report
 
-Generated: 2026-05-16T12:26:25.671Z
+Generated: 2026-05-16T15:56:18.496Z
 
 ## Summary
 
-- Active findings: **4** (HIGH 0 / MED 0 / LOW 4)
+- Active findings: **4** (HIGH 0 / MED 2 / LOW 2)
 - Triaged as false positive: **25** (see Appendix B)
 - Procedures audited: **416** (appRouter + portalAppRouter + publicApiRouter)
 - FE mutation call sites audited: **251**
@@ -13,7 +13,7 @@ Generated: 2026-05-16T12:26:25.671Z
 
 | Domain | HIGH | MED | LOW | Total |
 |--------|------|-----|-----|-------|
-| core | 0 | 0 | 3 | 3 |
+| core | 0 | 2 | 1 | 3 |
 | compliance | 0 | 0 | 0 | 0 |
 | equipment | 0 | 0 | 0 | 0 |
 | finance | 0 | 0 | 1 | 1 |
@@ -23,20 +23,21 @@ Generated: 2026-05-16T12:26:25.671Z
 
 ## HIGH (0)
 
-## MED (0)
+## MED (2)
+
+### orphan (2)
+
+- **F-MED-001** `packages/api/src/routers/core/api-key.ts:133` — Procedure apiKey.update (mutation, surface=appRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
+- **F-MED-003** `packages/api/src/routers/core/feature-flags.ts:19` — Procedure featureFlags.list (query, surface=appRouter) has no FE caller. _Fix:_ Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.
 
 ## LOW (0)
 
 ## Appendix A — Intentional non-UI consumers
 
-These procedures have no FE caller because they are invoked from non-UI consumers (public-api REST routes, background jobs, cron scripts, services). Count: **4**.
+These procedures have no FE caller because they are invoked from non-UI consumers (public-api REST routes, background jobs, cron scripts, services). Count: **2**.
 
-- **F-MED-001** `apiKey.update` — caller(s):
-  - `(middleware=apiKeyAdminProcedure on packages/api/src/routers/core/api-key.ts:133)`
 - **F-MED-002** `exchangeRate.fetchDaily` — caller(s):
   - `(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:16)`
-- **F-MED-003** `featureFlags.list` — caller(s):
-  - `(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)`
 - **F-MED-004** `featureFlags.list` — caller(s):
   - `(middleware=apiKeyTenantFlaggedProcedure on packages/api/src/routers/public-api/feature-flags.ts:13)`
 
@@ -110,3 +111,23 @@ Findings the detector raised that were manually reviewed and confirmed intention
 - **F-MED-010** `apps/web/src/components/zatca/csr-generation.tsx:37` — zatca.generateCsr (missing-invalidation). _Why benign:_ Same as zatca.runComplianceChecks — wizard step transitions drive the UI, not query invalidation.
 - **F-MED-011** `apps/web/src/components/zatca/production-certificate.tsx:38` — zatca.exchangeProductionCert (missing-invalidation). _Why benign:_ Same as zatca.runComplianceChecks — wizard step transitions drive the UI, not query invalidation.
 - **F-MED-012** `apps/web/src/components/zatca/tax-details-form.tsx:61` — zatca.saveTaxDetails (missing-invalidation). _Why benign:_ Same as zatca.runComplianceChecks — wizard step transitions drive the UI, not query invalidation.
+
+## Appendix C — Feature gaps
+
+Procedures whose backend is production-ready but the matching FE / scheduler entry is still missing. These remain counted in the active HIGH/MED totals above; this appendix collects the proposed actions so they can be triaged into a follow-up backlog. Annotations live in `data/feature-gaps.json`.
+
+### apiKey.update (missing-ui)
+
+- **F-MED-001** `packages/api/src/routers/core/api-key.ts:133`
+- _Summary:_ API-key admin UI exposes create / list / revoke but not update. The procedure validates input, scopes the lookup by organizationId, refuses to touch revoked keys, and writes an audit log on success — production-ready BE waiting for a settings tab affordance.
+- _Proposed actions:_
+  - Add a rename / scope-edit action to the apiKey row in apps/web/src/components/settings/api-keys-tab.tsx.
+  - Invalidate trpc.apiKey.list on success (and keep the existing audit-log side-effect).
+
+### featureFlags.list (missing-ui)
+
+- **F-MED-003** `packages/api/src/routers/core/feature-flags.ts:19`
+- _Summary:_ Self-hosted Unleash-backed flag introspection for the web dashboard. The appRouter procedure is wired (tenantFlaggedProcedure middleware) and the comment in root.ts marks it for the web dashboard, but no FE caller exists. The publicApiRouter sibling at packages/api/src/routers/public-api/feature-flags.ts is consumed by the REST route in apps/public-api/src/routes/feature-flags.ts; the two share the same dotted path but are wired into different routers.
+- _Proposed actions:_
+  - Expose under Settings → Admin (or a Flags tab) as a read-only matrix of the resolved Unleash state for the org.
+  - Optional: surface in the AdminPanel debug drawer for support.

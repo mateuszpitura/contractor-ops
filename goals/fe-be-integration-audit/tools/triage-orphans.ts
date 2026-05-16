@@ -9,7 +9,7 @@
  * and adds the "Intentional non-UI" appendix.
  */
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +23,15 @@ type Triage = {
   reason: string;
 };
 
+type FeatureGap = {
+  procedure: string;
+  file: string;
+  category: string;
+  gapKind: string;
+  summary: string;
+  actions: string[];
+};
+
 type Finding = {
   id: string;
   severity: 'HIGH' | 'MED' | 'LOW';
@@ -34,6 +43,7 @@ type Finding = {
   fix: string;
   intentionalCallers?: string[];
   triage?: Triage;
+  featureGap?: FeatureGap;
 };
 
 type ProcedureRecord = {
@@ -58,9 +68,13 @@ for (const p of allProcedures) {
   procByPath.set(p.path, arr);
 }
 
+// Procedures gated by one of these middlewares are externally-invoked by
+// definition: cron secret for scheduled jobs, API-key auth for public REST.
+// `apiKeyAdminProcedure` is intentionally NOT in this set — despite its name
+// it is a locally-declared tenantProcedure variant in routers/core/api-key.ts
+// (tenantProcedure + requirePermission + requireTier) and is UI-facing.
 const NON_UI_MIDDLEWARES = new Set([
   'cronProcedure',
-  'apiKeyAdminProcedure',
   'apiKeyTenantProcedure',
   'apiKeyTenantFlaggedProcedure',
 ]);
@@ -120,9 +134,15 @@ let intentionalCount = 0;
 for (const o of orphans) {
   if (!o.procedure) continue;
 
-  // Signal #1: middleware indicates non-UI consumer (cron / public-api / admin REST).
+  // Signal #1: middleware on THIS exact procedure (matched by file+line)
+  // indicates non-UI consumer (cron / public-api / admin REST). Path-only
+  // matching is incorrect when two surfaces (appRouter + publicApiRouter)
+  // both register a procedure under the same dotted path — the public-api
+  // version may have non-UI middleware while the appRouter version is
+  // genuinely UI-facing and missing a caller.
   const procs = procByPath.get(o.procedure) ?? [];
-  const nonUiMw = procs.find(p => NON_UI_MIDDLEWARES.has(p.middleware));
+  const exact = procs.find(p => p.file === o.file && p.line === o.line);
+  const nonUiMw = exact && NON_UI_MIDDLEWARES.has(exact.middleware) ? exact : null;
   if (nonUiMw) {
     o.category = 'orphan-intentional-non-ui';
     o.intentionalCallers = [
@@ -133,10 +153,15 @@ for (const o of orphans) {
     continue;
   }
 
-  // Signal #2: literal caller.<path> reference in non-FE source.
+  // Signal #2: literal caller.<path> reference in non-FE source. ONLY count
+  // this for procedures defined under `public-api/` — those are the ones
+  // wired into the publicApiRouter caller. An appRouter procedure that
+  // happens to share its path with a public-api one would otherwise be
+  // mistagged as having an external caller it doesn't actually serve.
+  const isPublicApiDef = (o.file ?? '').includes('routers/public-api/');
   const callers = searchProc(o.procedure);
   const strongCallerLine = callers.find(line => line.includes(`caller.${o.procedure}`));
-  if (strongCallerLine) {
+  if (isPublicApiDef && strongCallerLine) {
     o.category = 'orphan-intentional-non-ui';
     o.intentionalCallers = callers.slice(0, 5);
     o.severity = 'LOW';
@@ -150,8 +175,28 @@ for (const o of orphans) {
   }
 }
 
+// Attach feature-gap metadata for procedures explicitly flagged as backlog
+// items. These remain `category: 'orphan'` so they keep showing in the active
+// HIGH/MED counts (the gap is real work to do) but the AUDIT.md output groups
+// them in a dedicated Appendix C with the rationale and proposed actions.
+const featureGaps: FeatureGap[] = existsSync(resolve(DATA, 'feature-gaps.json'))
+  ? (JSON.parse(readFileSync(resolve(DATA, 'feature-gaps.json'), 'utf8')) as FeatureGap[])
+  : [];
+const fgKey = (e: { procedure?: string; file?: string }) => `${e.procedure ?? ''}::${e.file ?? ''}`;
+const fgIndex = new Map<string, FeatureGap>();
+for (const g of featureGaps) fgIndex.set(fgKey(g), g);
+let featureGapCount = 0;
+for (const f of findings) {
+  const g = fgIndex.get(fgKey(f));
+  if (g) {
+    f.featureGap = g;
+    featureGapCount++;
+  }
+}
+
 writeFileSync(resolve(DATA, 'findings.json'), JSON.stringify(findings, null, 2), 'utf8');
 console.log(`tagged ${intentionalCount} orphans as intentional non-UI`);
+console.log(`tagged ${featureGapCount} findings as feature gaps`);
 
 // ---------------------------------------------------------------------------
 // Regenerate AUDIT.md from updated findings
@@ -321,6 +366,36 @@ if (triagedFindings.length > 0) {
       lines.push(
         `- **${f.id}** \`${loc}\` — ${f.procedure} (${f.category}). _Why benign:_ ${f.triage?.reason}`,
       );
+    }
+    lines.push('');
+  }
+}
+
+// Appendix C: feature gaps. These are real orphans — BE is implemented but
+// the FE / scheduler is missing. Listed here with a proposed action so they
+// don't get lost in the active backlog noise, but they still count in the
+// HIGH/MED totals above. Annotations live in data/feature-gaps.json.
+const gapFindings = findings.filter(f => f.featureGap);
+if (gapFindings.length > 0) {
+  lines.push('## Appendix C — Feature gaps');
+  lines.push('');
+  lines.push(
+    'Procedures whose backend is production-ready but the matching FE / scheduler entry is still missing. These remain counted in the active HIGH/MED totals above; this appendix collects the proposed actions so they can be triaged into a follow-up backlog. Annotations live in `data/feature-gaps.json`.',
+  );
+  lines.push('');
+  for (const f of gapFindings) {
+    const g = f.featureGap;
+    if (!g) continue;
+    const loc = f.file ? `${f.file}:${f.line}` : '—';
+    lines.push(`### ${f.procedure} (${g.gapKind})`);
+    lines.push('');
+    lines.push(`- **${f.id}** \`${loc}\``);
+    lines.push(`- _Summary:_ ${g.summary}`);
+    if (g.actions.length > 0) {
+      lines.push('- _Proposed actions:_');
+      for (const a of g.actions) {
+        lines.push(`  - ${a}`);
+      }
     }
     lines.push('');
   }
