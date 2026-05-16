@@ -15,13 +15,31 @@
  *   - contractors with contacts, billing profiles, assignments, tags
  *   - contracts (subset) with rate periods and amendments
  *   - invoices in mixed lifecycle states (RECEIVED → PAID, plus REJECTED/VOID)
+ *   - InvoiceMatchResult + InvoiceIntakeRequest history per invoice
  *   - matching approval flows / steps / decisions for non-RECEIVED invoices
  *   - payment runs + items linked to APPROVED / PAID invoices
+ *   - Skonto (term/snapshot/application) and InvoiceInterestClaim chains
  *   - reminder rules + instances (PENDING / SENT / FAILED)
  *   - notifications + user notification preferences
  *   - outbox events, webhook deliveries, audit log trails
  *   - equipment, assignments, shipments + events, return requests
- *   - e-invoice lifecycle + events for DE/PL orgs
+ *   - e-invoice lifecycle + events; Peppol participants + transmissions
+ *   - LeitwegId (DE B2G); ZatcaInvoiceChain (SA)
+ *   - SigningEnvelope/Recipient/Event timelines for a subset of contracts
+ *   - OcrExtraction history with PendingUpload precursors
+ *   - 90-day ExchangeRate history per active currency pair
+ *   - ClassificationAssessment / Document / EscalationEvent / SdsApproval
+ *   - jurisdiction-aware tax compliance (Statusfeststellungsverfahren, IR35
+ *     chain, TaxIdValidation, EconomicDependencyAlertState,
+ *     ReassessmentTrigger, WhtCertificate)
+ *   - workflow templates, runs, task comments + attachments
+ *   - PrivacyNotice, ConsentRecord, ConsentEvent + per-contractor prefs
+ *   - OrganizationApiKey (ACTIVE + REVOKED), UserPinnedView
+ *   - cron/observability markers (StripeEvent, GovApiAuditLog,
+ *     IntegrationSyncLog, NotificationCronDedup, CronScanState)
+ *   - auth-surface display rows (Session / Account / Verification /
+ *     OAuthChallenge / PortalMagicToken — for UI display only, see comment
+ *     in `seedOrganizationCore` for why these don't bypass Better Auth)
  *   - portal sessions (live + expired)
  *
  * ---------------------------------------------------------------------------
@@ -74,6 +92,14 @@
  *                             Each run creates fresh orgs (slugs include a
  *                             random token), so conflicts are impossible.
  *                             Mutually replaces --confirm.
+ *   --omit=SECTION[,…]        Skip listed seed sections; transitive children
+ *                             are skipped automatically. Validated against
+ *                             the section registry BEFORE any DB connection
+ *                             opens. Empty value (or flag absent) = "omit
+ *                             nothing". Composes with --confirm (omitted
+ *                             sections' tables are left untouched) and with
+ *                             --append.
+ *                             Example: --omit=workflow-runs,esign
  *   --progress / --no-progress
  *                             Bottom-anchored progress bar is ON by default.
  *                             Pass --no-progress to stream phase log lines.
@@ -7172,6 +7198,91 @@ async function seedOrg(
  * Written directly to stdout (not via pino) so the box-drawing characters
  * survive JSON serialisation.
  */
+/**
+ * Each section's primary "headline" table. Used by the end-of-run section
+ * counts table — one count per section is enough to confirm the section
+ * fired without spamming the user with 30 tables.
+ */
+const SECTION_COUNT_TABLES: ReadonlyArray<{ section: SectionKey; table: string }> = [
+  { section: 'contractors', table: 'Contractor' },
+  { section: 'contracts', table: 'Contract' },
+  { section: 'invoices', table: 'Invoice' },
+  { section: 'equipment', table: 'Equipment' },
+  { section: 'payment-runs', table: 'PaymentRunItem' },
+  { section: 'reminders', table: 'ReminderInstance' },
+  { section: 'notifications', table: 'Notification' },
+  { section: 'outbox', table: 'OutboxEvent' },
+  { section: 'webhook-deliveries', table: 'WebhookDelivery' },
+  { section: 'audit-logs', table: 'AuditLog' },
+  { section: 'e-invoice-lifecycle', table: 'EInvoiceLifecycle' },
+  { section: 'portal-sessions', table: 'PortalSession' },
+  { section: 'integration-connections', table: 'IntegrationConnection' },
+  { section: 'invoice-documents', table: 'InvoiceFile' },
+  { section: 'workflow-templates', table: 'WorkflowTemplate' },
+  { section: 'subscription', table: 'Subscription' },
+  { section: 'courier-configs', table: 'CourierConfig' },
+  { section: 'comments', table: 'Comment' },
+  { section: 'workflow-runs', table: 'WorkflowRun' },
+  { section: 'timesheets', table: 'Timesheet' },
+  { section: 'tax-compliance', table: 'Statusfeststellungsverfahren' },
+  { section: 'classification', table: 'ClassificationAssessment' },
+  { section: 'skonto', table: 'SkontoTerm' },
+  { section: 'interest', table: 'InvoiceInterestClaim' },
+  { section: 'peppol', table: 'PeppolTransmission' },
+  { section: 'zatca', table: 'ZatcaInvoiceChain' },
+  { section: 'esign', table: 'SigningEnvelope' },
+  { section: 'ocr', table: 'OcrExtraction' },
+  { section: 'exchange-rates', table: 'ExchangeRate' },
+  { section: 'consent', table: 'ConsentRecord' },
+  { section: 'api-keys', table: 'OrganizationApiKey' },
+  { section: 'pinned-views', table: 'UserPinnedView' },
+  { section: 'cron-state', table: 'CronScanState' },
+  { section: 'auth-surface', table: 'Session' },
+];
+
+/**
+ * Fetch row counts for every section's headline table across every region's
+ * client and sum them. Missing tables (42P01 on a fresh schema) are reported
+ * as `0` rather than crashing the summary.
+ */
+async function fetchSectionCounts(
+  clients: ReadonlyMap<'EU' | 'ME', PrismaClient>,
+): Promise<Map<SectionKey, number>> {
+  const totals = new Map<SectionKey, number>();
+  for (const { section, table } of SECTION_COUNT_TABLES) {
+    let total = 0;
+    for (const client of clients.values()) {
+      try {
+        const rows = await client.$queryRawUnsafe<Array<{ count: bigint }>>(
+          `SELECT COUNT(*)::bigint AS count FROM "${table}"`,
+        );
+        total += Number(rows[0]?.count ?? 0);
+      } catch {
+        /* table missing on a freshly-pushed schema; treat as 0 */
+      }
+    }
+    totals.set(section, total);
+  }
+  return totals;
+}
+
+function printSectionCountsTable(
+  totals: ReadonlyMap<SectionKey, number>,
+  omitted: ReadonlySet<SectionKey>,
+): void {
+  const table = new CliTable3({
+    head: ['Section', 'Rows', 'Status'],
+    style: { head: ['cyan'], border: ['gray'] },
+  });
+  for (const { section } of SECTION_COUNT_TABLES) {
+    const count = totals.get(section) ?? 0;
+    const status = omitted.has(section) ? 'omitted' : count > 0 ? 'ok' : 'empty';
+    table.push([section, count.toLocaleString('en-US'), status]);
+  }
+  process.stdout.write('Section row counts (sum across regions):\n');
+  process.stdout.write(`${table.toString()}\n\n`);
+}
+
 function printSummaryTables(summaries: readonly SeedSummary[], password: string): void {
   if (summaries.length === 0) return;
 
@@ -7330,6 +7441,11 @@ async function runSeed(flags: CliFlags): Promise<void> {
   // Tabular dump of useful test data — printed directly to stdout (not via
   // pino) so the ASCII box drawing isn't escaped into JSON.
   printSummaryTables(summaries, password);
+
+  // Per-section row counts so a developer can spot a section that fired but
+  // produced 0 rows at a glance.
+  const sectionTotals = await fetchSectionCounts(clients);
+  printSectionCountsTable(sectionTotals, omitResolution.resolved);
 
   for (const client of clients.values()) {
     await client.$disconnect();
