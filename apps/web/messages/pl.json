@@ -4885,6 +4885,12 @@
       "emptyCell": "—",
       "cellFormat": "{percent}% {discountDays}/{netDays}",
       "billingProfile": {
+        "delete": {
+          "cancel": "Anuluj",
+          "confirm": "Usuń domyślne Skonto",
+          "description": "Spowoduje to usunięcie domyślnego Skonto dla tego profilu rozliczeniowego. Nowe faktury zostaną utworzone bez warunków Skonto, chyba że zostaną dodane osobno dla każdej faktury. Istniejące faktury zachowają zapisane Skonto.",
+          "title": "Usunąć domyślne Skonto?"
+        },
         "deletedToast": "Usunięto domyślne Skonto",
         "discountPercentLabel": "Rabat %",
         "discountPeriodLabel": "Okres rabatu (dni)",
@@ -4906,6 +4912,12 @@
       "form": {
         "addSkonto": "Dodaj Skonto",
         "customizeToggle": "Dostosuj dla tej faktury",
+        "delete": {
+          "cancel": "Anuluj",
+          "confirm": "Usuń Skonto",
+          "description": "Spowoduje to usunięcie Skonto przypisanego do faktury. Faktura powróci do domyślnego Skonto kontrahenta (jeśli istnieje) lub żadnego.",
+          "title": "Usunąć Skonto przypisane do faktury?"
+        },
         "deletedToast": "Usunięto Skonto przypisane do faktury",
         "discountPercentLabel": "Rabat %",
         "discountPeriodLabel": "Okres rabatu (dni)",

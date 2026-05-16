@@ -4885,6 +4885,12 @@
       "emptyCell": "—",
       "cellFormat": "{percent}% {discountDays}/{netDays}",
       "billingProfile": {
+        "delete": {
+          "cancel": "إلغاء",
+          "confirm": "إزالة Skonto الافتراضي",
+          "description": "سيؤدي ذلك إلى إزالة Skonto الافتراضي لملف الفوترة هذا. سيتم إنشاء الفواتير الجديدة بدون شروط Skonto ما لم تُضف لكل فاتورة على حدة. تحتفظ الفواتير الحالية بـ Skonto المحفوظ بها.",
+          "title": "هل تريد إزالة Skonto الافتراضي؟"
+        },
         "deletedToast": "تمت إزالة Skonto الافتراضي",
         "discountPercentLabel": "نسبة الخصم %",
         "discountPeriodLabel": "فترة الخصم (أيام)",
@@ -4906,6 +4912,12 @@
       "form": {
         "addSkonto": "إضافة Skonto",
         "customizeToggle": "تخصيص لهذه الفاتورة",
+        "delete": {
+          "cancel": "إلغاء",
+          "confirm": "إزالة Skonto",
+          "description": "سيؤدي ذلك إلى إزالة شرط Skonto الخاص بالفاتورة. ستعود الفاتورة إلى Skonto الافتراضي للمقاول (إن وُجد) أو إلى عدم تطبيق Skonto.",
+          "title": "هل تريد إزالة Skonto الخاص بالفاتورة؟"
+        },
         "deletedToast": "تمت إزالة Skonto الخاص بالفاتورة",
         "discountPercentLabel": "نسبة الخصم %",
         "discountPeriodLabel": "فترة الخصم (أيام)",

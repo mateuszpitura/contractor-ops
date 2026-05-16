@@ -1,10 +1,21 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
@@ -49,6 +60,7 @@ export function DefaultSkontoSection({
 
   const [isOpen, setIsOpen] = useState(!!existingDefault);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [form, setForm] = useState<FormState>({
     discountPercent: existingDefault?.discountPercent?.toString() ?? '',
@@ -73,6 +85,7 @@ export function DefaultSkontoSection({
       onSuccess: () => {
         toast.success(t('deletedToast'));
         setForm({ discountPercent: '', discountDays: '', netDays: '' });
+        setDeleteDialogOpen(false);
         void queryClient.invalidateQueries(trpc.skonto.pathFilter());
       },
       onError: (error: { message: string }) => {
@@ -134,8 +147,11 @@ export function DefaultSkontoSection({
     });
   };
 
-  const handleDelete = () => {
-    if (!window.confirm(t('confirm.deleteDefaultSkonto'))) return;
+  const handleDeleteRequest = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
     deleteMutation.mutate({ billingProfileId });
   };
 
@@ -212,13 +228,37 @@ export function DefaultSkontoSection({
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleDelete}
+              onClick={handleDeleteRequest}
               disabled={deleteMutation.isPending}
               className="text-destructive hover:text-destructive">
               {t('removeDefault')}
             </Button>
           )}
         </div>
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Trash2 className="size-4" />
+                {t('delete.title')}
+              </AlertDialogTitle>
+              <AlertDialogDescription>{t('delete.description')}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleteMutation.isPending}>
+                {t('delete.cancel')}
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                disabled={deleteMutation.isPending}
+                onClick={handleDeleteConfirm}>
+                {deleteMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+                {t('delete.confirm')}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CollapsibleContent>
     </Collapsible>
   );

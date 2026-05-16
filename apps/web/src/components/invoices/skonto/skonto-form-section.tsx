@@ -1,11 +1,21 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Save } from 'lucide-react';
+import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,6 +75,7 @@ export function SkontoFormSection({
   const [customizing, setCustomizing] = useState(!!invoiceTerm);
   const [showInputs, setShowInputs] = useState(!!invoiceTerm || !profileDefault);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const initialValues = invoiceTerm ?? profileDefault;
 
@@ -107,6 +118,7 @@ export function SkontoFormSection({
       onSuccess: () => {
         toast.success(t('deletedToast'));
         setCustomizing(false);
+        setDeleteDialogOpen(false);
         if (invoiceId) {
           void queryClient.invalidateQueries({
             queryKey: trpc.skonto.evaluateForInvoice.queryKey({ invoiceId }),
@@ -173,9 +185,13 @@ export function SkontoFormSection({
     });
   };
 
-  const handleDelete = () => {
+  const handleDeleteRequest = () => {
     if (!invoiceId) return;
-    if (!window.confirm(t('confirm.deleteInvoiceSkonto'))) return;
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!invoiceId) return;
     deleteMutation.mutate({ invoiceId });
   };
 
@@ -313,7 +329,7 @@ export function SkontoFormSection({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleDelete}
+                onClick={handleDeleteRequest}
                 disabled={deleteMutation.isPending}>
                 {t('resetToDefault')}
               </Button>
@@ -323,7 +339,7 @@ export function SkontoFormSection({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleDelete}
+                onClick={handleDeleteRequest}
                 disabled={deleteMutation.isPending}
                 className="text-destructive hover:text-destructive">
                 {t('removeSkonto')}
@@ -332,6 +348,30 @@ export function SkontoFormSection({
           </div>
         </div>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="size-4" />
+              {t('delete.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t('delete.description')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              {t('delete.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={handleDeleteConfirm}>
+              {deleteMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
+              {t('delete.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

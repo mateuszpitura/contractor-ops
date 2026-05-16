@@ -4885,6 +4885,12 @@
       "emptyCell": "—",
       "cellFormat": "{percent} % {discountDays}/{netDays}",
       "billingProfile": {
+        "delete": {
+          "cancel": "Abbrechen",
+          "confirm": "Standard-Skonto entfernen",
+          "description": "Damit wird das Standard-Skonto für dieses Abrechnungsprofil entfernt. Neue Rechnungen werden ohne Skonto-Konditionen erstellt, sofern nicht je Rechnung hinzugefügt. Bestehende Rechnungen behalten ihr gespeichertes Skonto.",
+          "title": "Standard-Skonto entfernen?"
+        },
         "deletedToast": "Standard-Skonto entfernt",
         "discountPercentLabel": "Skonto %",
         "discountPeriodLabel": "Skontofrist (Tage)",
@@ -4906,6 +4912,12 @@
       "form": {
         "addSkonto": "Skonto hinzufügen",
         "customizeToggle": "Für diese Rechnung anpassen",
+        "delete": {
+          "cancel": "Abbrechen",
+          "confirm": "Skonto entfernen",
+          "description": "Damit wird das rechnungsspezifische Skonto entfernt. Die Rechnung übernimmt wieder das Auftragnehmer-Standardskonto (falls vorhanden) oder keines.",
+          "title": "Rechnungsspezifisches Skonto entfernen?"
+        },
         "deletedToast": "Rechnungsspezifisches Skonto entfernt",
         "discountPercentLabel": "Skonto %",
         "discountPeriodLabel": "Skontofrist (Tage)",

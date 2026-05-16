@@ -4895,6 +4895,12 @@
       "emptyCell": "—",
       "cellFormat": "{percent}% {discountDays}/{netDays}",
       "billingProfile": {
+        "delete": {
+          "cancel": "Cancel",
+          "confirm": "Remove default Skonto",
+          "description": "This will remove the default Skonto for this billing profile. New invoices will be created without Skonto terms unless added per-invoice. Existing invoices keep their saved Skonto.",
+          "title": "Remove default Skonto?"
+        },
         "deletedToast": "Default Skonto removed",
         "discountPercentLabel": "Discount %",
         "discountPeriodLabel": "Discount period (days)",
@@ -4916,6 +4922,12 @@
       "form": {
         "addSkonto": "Add Skonto",
         "customizeToggle": "Customize for this invoice",
+        "delete": {
+          "cancel": "Cancel",
+          "confirm": "Remove Skonto",
+          "description": "This will remove the invoice-specific Skonto term. The invoice will revert to the contractor's default Skonto (if any) or no Skonto at all.",
+          "title": "Remove invoice-specific Skonto?"
+        },
         "deletedToast": "Invoice-specific Skonto removed",
         "discountPercentLabel": "Discount %",
         "discountPeriodLabel": "Discount period (days)",
