@@ -6075,7 +6075,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -6507,7 +6507,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -9867,7 +9867,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },
@@ -10475,7 +10475,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": true
   },

@@ -292,7 +292,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete}>
+                    <AlertDialogAction disabled={deleteMutation.isPending} onClick={handleDelete}>
                       {t('deleteConfirmCta')}
                     </AlertDialogAction>
                   </AlertDialogFooter>

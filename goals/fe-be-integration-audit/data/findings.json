@@ -250,16 +250,6 @@
     "id": "F-LOW-016",
     "severity": "LOW",
     "category": "missing-loading-state",
-    "procedure": "invoice.toggleReverseCharge",
-    "file": "apps/web/src/components/invoices/reverse-charge-banner.tsx",
-    "line": 31,
-    "problem": "Mutation invoice.toggleReverseCharge trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-017",
-    "severity": "LOW",
-    "category": "missing-loading-state",
     "procedure": "notification.markRead",
     "file": "apps/web/src/components/notifications/notification-center.tsx",
     "line": 101,
@@ -267,7 +257,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-018",
+    "id": "F-LOW-017",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "notification.markRead",
@@ -277,17 +267,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-019",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "settings.update",
-    "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 230,
-    "problem": "Mutation settings.update trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-020",
+    "id": "F-LOW-018",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.importStatement",
@@ -297,7 +277,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-021",
+    "id": "F-LOW-019",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.updateItemStatus",
@@ -307,7 +287,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-022",
+    "id": "F-LOW-020",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "payment.removeFromRun",
@@ -317,7 +297,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-023",
+    "id": "F-LOW-021",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "portal.updateNotificationPreference",
@@ -357,7 +337,7 @@
     }
   },
   {
-    "id": "F-LOW-024",
+    "id": "F-LOW-022",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "approval.updateChain",
@@ -367,7 +347,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-025",
+    "id": "F-LOW-023",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "leitwegId.setDefault",
@@ -392,7 +372,7 @@
     }
   },
   {
-    "id": "F-LOW-026",
+    "id": "F-LOW-024",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "integration.disconnectGeneric",
@@ -402,7 +382,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-027",
+    "id": "F-LOW-025",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "jira.disconnect",
@@ -412,7 +392,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-028",
+    "id": "F-LOW-026",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "ksef.disconnect",
@@ -422,7 +402,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-029",
+    "id": "F-LOW-027",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "reminder.toggleActive",
@@ -432,17 +412,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-030",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "integration.linkUser",
-    "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 82,
-    "problem": "Mutation integration.linkUser trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-031",
+    "id": "F-LOW-028",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "calendar.saveTaskConfig",
@@ -452,17 +422,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-LOW-032",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "workflow.deleteTemplate",
-    "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 138,
-    "problem": "Mutation workflow.deleteTemplate trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
-  },
-  {
-    "id": "F-LOW-033",
+    "id": "F-LOW-029",
     "severity": "LOW",
     "category": "missing-loading-state",
     "procedure": "workflow.seedStarterTemplates",

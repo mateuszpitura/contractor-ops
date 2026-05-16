@@ -118,6 +118,7 @@ function LinkUserPopover({ userId, onLinked }: { userId: string; onLinked: () =>
                 <CommandItem
                   value={search}
                   // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                  disabled={linkMutation.isPending}
                   onSelect={() => handleSelect(search)}
                   className="cursor-pointer">
                   <span className="text-sm">Link as &quot;{search}&quot;</span>

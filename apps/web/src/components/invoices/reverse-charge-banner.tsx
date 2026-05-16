@@ -57,6 +57,7 @@ export function ReverseChargeBanner({
           <DropdownMenuContent>
             <DropdownMenuItem
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              disabled={toggleMutation.isPending}
               onClick={() =>
                 toggleMutation.mutate({
                   invoiceId,
