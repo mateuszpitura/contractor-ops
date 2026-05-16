@@ -65,6 +65,10 @@ function SettingsContent() {
         router.push('/settings/workflow-roles');
         return;
       }
+      if (value === 'tax') {
+        router.push('/settings/tax');
+        return;
+      }
       void setActiveTab(value);
     },
     [setActiveTab, router],
@@ -72,6 +76,7 @@ function SettingsContent() {
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
   const canViewAuditLog = can('settings', ['read']);
+  const canViewTaxAdmin = can('settings', ['read']);
 
   // ---- Pinned tabs (single source of truth lives in `lib/settings-tabs.ts`) --
   const pinsQueryOpts = trpc.user.pins.list.queryOptions({ kind: PIN_KIND });
@@ -176,6 +181,7 @@ function SettingsContent() {
               );
             })}
             <TabsTrigger value="workflow-roles">{t('tabs.workflowRoles')}</TabsTrigger>
+            {canViewTaxAdmin && <TabsTrigger value="tax">{t('tabs.tax')}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="general" className="mt-6 space-y-6">

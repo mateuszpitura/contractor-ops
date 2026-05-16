@@ -5393,7 +5393,8 @@
       "billing": "Rozliczenia",
       "apiKeys": "Klucze API",
       "privacy": "Prywatność",
-      "workflowRoles": "Role workflow"
+      "workflowRoles": "Role workflow",
+      "tax": "Podatki"
     },
     "pin": {
       "pin": "Przypnij {tab} do paska bocznego",
@@ -6466,6 +6467,126 @@
       "dueDateRequired": "Termin płatności jest wymagany",
       "netAmountPositive": "Kwota netto musi być dodatnia",
       "grossAmountPositive": "Kwota brutto musi być dodatnia"
+    }
+  },
+  "TaxAdmin": {
+    "title": "Administracja podatkowa",
+    "subtitle": "Przeglądaj ustawowe stawki VAT, weryfikuj kody stawek, szacuj transgraniczny podatek u źródła (WHT) i przeglądaj wystawione certyfikaty WHT.",
+    "sections": {
+      "rates": "Stawki krajowe",
+      "calculator": "Kalkulator WHT",
+      "certificates": "Certyfikaty WHT"
+    },
+    "rates": {
+      "title": "Stawki ustawowe według kraju",
+      "description": "Aktualnie utrzymywane stawki VAT/podatku obrotowego dla każdej jurysdykcji. Stan na dzisiaj.",
+      "countryLabel": "Kraj",
+      "emptyState": "Brak skonfigurowanych stawek dla tego kraju.",
+      "table": {
+        "code": "Kod",
+        "description": "Opis",
+        "rate": "Stawka",
+        "flags": "Cechy"
+      },
+      "badge": {
+        "default": "Domyślna",
+        "reverseCharge": "Odwrotne obciążenie",
+        "exempt": "Zwolnione"
+      },
+      "country": {
+        "PL": "Polska",
+        "DE": "Niemcy",
+        "GB": "Wielka Brytania",
+        "SA": "Arabia Saudyjska",
+        "AE": "Zjednoczone Emiraty Arabskie",
+        "EG": "Egipt"
+      },
+      "validation": {
+        "title": "Weryfikacja kodu stawki",
+        "description": "Sprawdź, czy podany kod stawki jest rozpoznawany w kraju siedziby Twojej organizacji.",
+        "codeLabel": "Kod stawki",
+        "codePlaceholder": "np. STD, RC, EX",
+        "checkCta": "Sprawdź",
+        "valid": "Kod stawki jest poprawny dla Twojego kraju.",
+        "invalid": "Kod stawki nie jest rozpoznawany dla Twojego kraju.",
+        "unknownError": "Nie udało się zweryfikować kodu. Spróbuj ponownie."
+      }
+    },
+    "calculator": {
+      "title": "Estymator WHT transgranicznego",
+      "description": "Oszacuj podatek u źródła dla pojedynczej płatności. Stawki traktatowe są stosowane automatycznie, gdy są dostępne.",
+      "grossAmountLabel": "Kwota brutto",
+      "grossAmountHint": "W jednostkach głównych (np. 1000,00 dla tysiąca).",
+      "residencyLabel": "Rezydencja wykonawcy",
+      "serviceTypeLabel": "Rodzaj usługi",
+      "calculateCta": "Oblicz",
+      "country": {
+        "PL": "Polska",
+        "DE": "Niemcy",
+        "GB": "Wielka Brytania",
+        "FR": "Francja",
+        "AE": "Zjednoczone Emiraty Arabskie",
+        "EG": "Egipt",
+        "IN": "Indie",
+        "US": "Stany Zjednoczone"
+      },
+      "serviceType": {
+        "technical_services": "Usługi techniczne",
+        "management_fees": "Opłaty zarządcze",
+        "royalties": "Należności licencyjne",
+        "rent_equipment": "Najem sprzętu"
+      },
+      "result": {
+        "title": "Rozliczenie",
+        "treaty": "Stawka traktatowa",
+        "standard": "Stawka standardowa",
+        "gross": "Brutto",
+        "rate": "Stawka",
+        "withheld": "Pobrane",
+        "net": "Do wypłaty",
+        "treatyReference": "Odnośnik do umowy: {reference}",
+        "noWht": "Dla tej kombinacji podatek u źródła nie ma zastosowania."
+      },
+      "toast": {
+        "failed": "Nie udało się obliczyć WHT. Spróbuj ponownie."
+      }
+    },
+    "certificates": {
+      "title": "Wystawione certyfikaty",
+      "description": "Najnowsze certyfikaty podatku u źródła wygenerowane przez tę organizację.",
+      "emptyState": "Nie wystawiono jeszcze żadnych certyfikatów.",
+      "table": {
+        "certificateNumber": "Nr certyfikatu",
+        "contractor": "Wykonawca",
+        "country": "Kraj",
+        "whtAmount": "Pobrany WHT",
+        "paymentDate": "Data płatności",
+        "actions": "Akcje"
+      },
+      "action": {
+        "view": "Pokaż certyfikat"
+      },
+      "detail": {
+        "title": "Certyfikat WHT",
+        "description": "Szczegółowe rozliczenie wybranego certyfikatu podatku u źródła.",
+        "certificateNumber": "Numer certyfikatu",
+        "contractor": "Wykonawca",
+        "country": "Kraj",
+        "gross": "Kwota brutto",
+        "rate": "Stawka WHT",
+        "withheld": "Pobrane",
+        "net": "Wypłacone netto",
+        "paymentDate": "Data płatności",
+        "generatedAt": "Wygenerowano",
+        "treaty": "Umowa międzynarodowa",
+        "treatyApplied": "Zastosowano stawkę traktatową",
+        "downloadCta": "Pobierz PDF",
+        "closeCta": "Zamknij",
+        "notFound": "Ten certyfikat nie jest już dostępny."
+      },
+      "toast": {
+        "downloadFailed": "Nie udało się otworzyć certyfikatu. Spróbuj ponownie."
+      }
     }
   },
   "WorkflowRoles": {
