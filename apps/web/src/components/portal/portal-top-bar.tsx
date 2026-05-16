@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import {
   Banknote,
   Clock,
@@ -28,21 +29,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { cn } from '@/lib/utils';
+import { portalTrpc } from '@/trpc/init';
 import { PortalMobileMenu } from './portal-mobile-menu';
 
 // ---------------------------------------------------------------------------
-// Navigation items
+// Navigation items (labels resolved at render time via t())
 // ---------------------------------------------------------------------------
 
-const NAV_ITEMS = [
-  { label: 'Overview', href: '/portal', icon: LayoutDashboard },
-  { label: 'Contracts', href: '/portal/contracts', icon: FileText },
-  { label: 'Invoices', href: '/portal/invoices', icon: Receipt },
-  { label: 'Documents', href: '/portal/documents', icon: FolderOpen },
-  { label: 'Time', href: '/portal/time', icon: Clock },
-  { label: 'Equipment', href: '/portal/equipment', icon: Package },
-  { label: 'Payments', href: '/portal/payments', icon: Banknote },
-  { label: 'Settings', href: '/portal/settings', icon: Settings },
+const NAV_ITEM_DEFS = [
+  { key: 'overview', href: '/portal', icon: LayoutDashboard },
+  { key: 'contracts', href: '/portal/contracts', icon: FileText },
+  { key: 'invoices', href: '/portal/invoices', icon: Receipt },
+  { key: 'documents', href: '/portal/documents', icon: FolderOpen },
+  { key: 'time', href: '/portal/time', icon: Clock },
+  { key: 'equipment', href: '/portal/equipment', icon: Package },
+  { key: 'payments', href: '/portal/payments', icon: Banknote },
+  { key: 'settings', href: '/portal/settings', icon: Settings },
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -96,13 +98,31 @@ export function PortalTopBar({
   contractorName,
   contractorEmail,
 }: PortalTopBarProps) {
+  const tNav = useTranslations('Portal.nav');
   const tAria = useTranslations('Common.aria');
   const pathname = usePathname();
+
+  const NAV_ITEMS = NAV_ITEM_DEFS.map(item => ({
+    ...item,
+    label: tNav(item.key),
+  }));
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Server-side portal session teardown via the `portal.logout` mutation
+  // (also calls deletePortalSession internally). The cookie is httpOnly so
+  // we still need the /api/portal/clear-session route to actually delete it
+  // from the browser — the tRPC mutation is the canonical audit-logged
+  // sign-out path, and the route is the cookie eraser.
+  const logoutMutation = useMutation(portalTrpc.portal.logout.mutationOptions());
+
   const handleLogout = async () => {
     try {
+      // Best-effort tRPC logout — failures here should NOT block the user
+      // from signing out client-side; clear-session below is the hard guarantee.
+      await logoutMutation.mutateAsync().catch(() => {
+        /* swallowed: clear-session route is the cookie eraser, not this */
+      });
       await fetch('/api/portal/clear-session', { method: 'POST' });
     } finally {
       router.push('/portal/login');
@@ -178,7 +198,7 @@ export function PortalTopBar({
               {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="me-2 h-4 w-4" />
-                Sign out
+                {tNav('signOut')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
