@@ -1,6 +1,7 @@
 import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import pino from 'pino';
 import { PrismaClient } from '../../src/generated/prisma/client/client.js';
+import { seedBoeRates } from './boe-rates.js';
 import { seedTaxRates } from './tax-rates.js';
 import { seedWhtRates } from './wht-rates.js';
 
@@ -11,6 +12,7 @@ const prisma = new PrismaClient();
 async function main() {
   await seedTaxRates(prisma);
   await seedWhtRates(prisma);
+  await seedBoeRates(prisma);
 }
 
 main()
