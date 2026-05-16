@@ -5514,7 +5514,8 @@
       "billing": "Abrechnung",
       "apiKeys": "API-Schlüssel",
       "privacy": "Datenschutz",
-      "workflowRoles": "Workflow-Rollen"
+      "workflowRoles": "Workflow-Rollen",
+      "tax": "Steuern"
     },
     "pin": {
       "pin": "{tab} an Seitenleiste anheften",
@@ -6630,6 +6631,126 @@
       "dueDateRequired": "Fälligkeitsdatum ist erforderlich",
       "netAmountPositive": "Nettobetrag muss positiv sein",
       "grossAmountPositive": "Bruttobetrag muss positiv sein"
+    }
+  },
+  "TaxAdmin": {
+    "title": "Steuerverwaltung",
+    "subtitle": "Gesetzliche Umsatzsteuersätze einsehen, Steuerkennzeichen prüfen, grenzüberschreitende Quellensteuer berechnen und ausgestellte QSt-Bescheinigungen einsehen.",
+    "sections": {
+      "rates": "Ländersätze",
+      "calculator": "QSt-Rechner",
+      "certificates": "QSt-Bescheinigungen"
+    },
+    "rates": {
+      "title": "Gesetzliche Sätze nach Land",
+      "description": "Übersicht der aktuell hinterlegten Umsatzsteuersätze je Land. Stichtag heute.",
+      "countryLabel": "Land",
+      "emptyState": "Für dieses Land sind keine Sätze hinterlegt.",
+      "table": {
+        "code": "Kennzeichen",
+        "description": "Bezeichnung",
+        "rate": "Satz",
+        "flags": "Merkmale"
+      },
+      "badge": {
+        "default": "Standard",
+        "reverseCharge": "Reverse Charge",
+        "exempt": "Steuerfrei"
+      },
+      "country": {
+        "PL": "Polen",
+        "DE": "Deutschland",
+        "GB": "Vereinigtes Königreich",
+        "SA": "Saudi-Arabien",
+        "AE": "Vereinigte Arabische Emirate",
+        "EG": "Ägypten"
+      },
+      "validation": {
+        "title": "Steuerkennzeichen prüfen",
+        "description": "Prüfen Sie, ob ein Steuerkennzeichen für das Sitzland Ihrer Organisation gültig ist.",
+        "codeLabel": "Kennzeichen",
+        "codePlaceholder": "z. B. STD, RC, EX",
+        "checkCta": "Prüfen",
+        "valid": "Kennzeichen ist für Ihr Land gültig.",
+        "invalid": "Kennzeichen ist für Ihr Land nicht bekannt.",
+        "unknownError": "Prüfung fehlgeschlagen. Bitte erneut versuchen."
+      }
+    },
+    "calculator": {
+      "title": "Grenzüberschreitende QSt-Schätzung",
+      "description": "Schätzen Sie die Quellensteuer für eine einzelne Zahlung. Doppelbesteuerungsabkommen werden, sofern verfügbar, automatisch angewendet.",
+      "grossAmountLabel": "Bruttobetrag",
+      "grossAmountHint": "In Haupteinheiten (z. B. 1000,00 für eintausend).",
+      "residencyLabel": "Sitzland des Auftragnehmers",
+      "serviceTypeLabel": "Leistungsart",
+      "calculateCta": "Berechnen",
+      "country": {
+        "PL": "Polen",
+        "DE": "Deutschland",
+        "GB": "Vereinigtes Königreich",
+        "FR": "Frankreich",
+        "AE": "Vereinigte Arabische Emirate",
+        "EG": "Ägypten",
+        "IN": "Indien",
+        "US": "Vereinigte Staaten"
+      },
+      "serviceType": {
+        "technical_services": "Technische Dienstleistungen",
+        "management_fees": "Managementgebühren",
+        "royalties": "Lizenzgebühren",
+        "rent_equipment": "Gerätemiete"
+      },
+      "result": {
+        "title": "Aufschlüsselung",
+        "treaty": "DBA-Satz",
+        "standard": "Standardsatz",
+        "gross": "Brutto",
+        "rate": "Satz",
+        "withheld": "Einbehalten",
+        "net": "Auszahlung netto",
+        "treatyReference": "DBA-Referenz: {reference}",
+        "noWht": "Für diese Kombination fällt keine Quellensteuer an."
+      },
+      "toast": {
+        "failed": "Berechnung fehlgeschlagen. Bitte erneut versuchen."
+      }
+    },
+    "certificates": {
+      "title": "Ausgestellte Bescheinigungen",
+      "description": "Die zuletzt von dieser Organisation erstellten Quellensteuer-Bescheinigungen.",
+      "emptyState": "Es wurden noch keine Bescheinigungen ausgestellt.",
+      "table": {
+        "certificateNumber": "Bescheinigung Nr.",
+        "contractor": "Auftragnehmer",
+        "country": "Land",
+        "whtAmount": "QSt einbehalten",
+        "paymentDate": "Zahlungsdatum",
+        "actions": "Aktionen"
+      },
+      "action": {
+        "view": "Bescheinigung ansehen"
+      },
+      "detail": {
+        "title": "QSt-Bescheinigung",
+        "description": "Detailansicht der ausgewählten Quellensteuer-Bescheinigung.",
+        "certificateNumber": "Bescheinigungsnummer",
+        "contractor": "Auftragnehmer",
+        "country": "Land",
+        "gross": "Bruttobetrag",
+        "rate": "Quellensteuersatz",
+        "withheld": "Einbehalten",
+        "net": "Netto ausgezahlt",
+        "paymentDate": "Zahlungsdatum",
+        "generatedAt": "Erstellt am",
+        "treaty": "DBA",
+        "treatyApplied": "DBA-Satz angewendet",
+        "downloadCta": "PDF herunterladen",
+        "closeCta": "Schließen",
+        "notFound": "Diese Bescheinigung ist nicht mehr verfügbar."
+      },
+      "toast": {
+        "downloadFailed": "Bescheinigung konnte nicht geöffnet werden. Bitte erneut versuchen."
+      }
     }
   },
   "WorkflowRoles": {

@@ -60,6 +60,10 @@ function SettingsContent() {
         router.push('/settings/workflow-roles');
         return;
       }
+      if (value === 'tax') {
+        router.push('/settings/tax');
+        return;
+      }
       // Replace the URL with ONLY `?tab=<value>` so per-tab filter params
       // (audit-log search, pagination, etc.) don't leak across tabs.
       // nuqs picks up the new `tab` value from the URL on the next render.
@@ -70,6 +74,7 @@ function SettingsContent() {
   const canManageIntegrations = can('organization', ['update']);
   const canManageBilling = can('organization', ['update']);
   const canViewAuditLog = can('settings', ['read']);
+  const canViewTaxAdmin = can('settings', ['read']);
 
   type RenderableTab = {
     key: SettingsTabKey;
@@ -149,6 +154,7 @@ function SettingsContent() {
                   </TabsTrigger>
                 );
               })}
+              {canViewTaxAdmin && <TabsTrigger value="tax">{t('tabs.tax')}</TabsTrigger>}
             </TabsList>
           </SettingsTabsScroller>
 
