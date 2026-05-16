@@ -1,6 +1,7 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import {
   AlertDialog,
@@ -47,6 +48,14 @@ interface DocLinkChipProps {
   lastEditedTime?: string;
   readOnly?: boolean;
   onRemove?: (id: string) => void;
+  /**
+   * Optional callback to refresh cached metadata (title, lastEditedTime, icon)
+   * for this link from the external provider. When omitted, the refresh
+   * affordance is hidden.
+   */
+  onRefresh?: (id: string) => void;
+  /** True while the refresh request is in-flight; disables the button + spins icon. */
+  isRefreshing?: boolean;
   className?: string;
 }
 
@@ -62,17 +71,21 @@ export function DocLinkChip({
   lastEditedTime,
   readOnly,
   onRemove,
+  onRefresh,
+  isRefreshing,
   className,
 }: DocLinkChipProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const t = useTranslations('Integrations');
 
   const ProviderIcon = provider === 'notion' ? NotionIcon : ConfluenceIcon;
   const providerLabel = provider === 'notion' ? 'Notion' : 'Confluence';
   const showRemove = !readOnly && !!onRemove;
+  const showRefresh = !readOnly && !!onRefresh;
 
   const tooltipText = lastEditedTime
-    ? `Last edited ${formatRelativeTime(lastEditedTime)}`
-    : `Open in ${providerLabel}`;
+    ? t('docs.chip.lastEdited', { time: formatRelativeTime(lastEditedTime) })
+    : t('docs.chip.openIn', { provider: providerLabel });
 
   return (
     <>
@@ -83,21 +96,38 @@ export function DocLinkChip({
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Open ${title} in ${providerLabel} (new tab)`}
+              aria-label={t('docs.chip.openInProvider', { title, provider: providerLabel })}
               className={cn(
                 'group inline-flex items-center gap-1 rounded-md border border-border bg-muted/50 px-2 py-1 max-w-[220px] hover:bg-muted transition-colors duration-150',
                 className,
               )}>
-              <span className="sr-only">{`Open ${title} in ${providerLabel}`}</span>
+              <span className="sr-only">
+                {t('docs.chip.openSrOnly', { title, provider: providerLabel })}
+              </span>
             </a>
           }>
           <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
           <span className="text-xs font-medium text-foreground truncate">{title}</span>
+          {!!showRefresh && (
+            <button
+              type="button"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground ms-0.5 shrink-0 disabled:opacity-50"
+              aria-label={t('docs.chip.refreshAriaLabel', { title })}
+              disabled={isRefreshing}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={e => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRefresh(id);
+              }}>
+              <RefreshCw className={cn('h-3 w-3', isRefreshing && 'animate-spin')} />
+            </button>
+          )}
           {!!showRemove && (
             <button
               type="button"
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
-              aria-label={`Remove link to ${title}`}
+              aria-label={t('docs.chip.removeAriaLabel', { title })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={e => {
                 e.preventDefault();
@@ -115,14 +145,13 @@ export function DocLinkChip({
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove Document Link</AlertDialogTitle>
+              <AlertDialogTitle>{t('docs.chip.removeDialog.title')}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will remove the link to &ldquo;{title}&rdquo; from this step. The original page
-                will not be affected.
+                {t('docs.chip.removeDialog.description', { title })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Keep Link</AlertDialogCancel>
+              <AlertDialogCancel>{t('docs.chip.removeDialog.keepLink')}</AlertDialogCancel>
               <AlertDialogAction
                 variant="destructive"
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
@@ -130,7 +159,7 @@ export function DocLinkChip({
                   onRemove(id);
                   setConfirmOpen(false);
                 }}>
-                Remove Link
+                {t('docs.chip.removeDialog.removeLink')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

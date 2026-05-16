@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -52,6 +52,7 @@ interface DocLinksSectionProps {
 export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSectionProps) {
   const [attachOpen, setAttachOpen] = useState(false);
   const [pendingDetachId, setPendingDetachId] = useState<string | null>(null);
+  const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const t = useTranslations('Integrations');
 
@@ -74,6 +75,34 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
     },
   });
 
+  // Refresh-metadata mutation — re-fetches title/icon/lastEditedTime from
+  // the provider (Notion / Confluence) and invalidates the list cache so the
+  // chip re-renders with fresh data. Per-row spinner state is tracked via
+  // refreshingId so concurrent refreshes don't collide.
+  const refreshMutation = useMutation({
+    ...trpc.docs.refreshMetadata.mutationOptions(),
+    onSuccess: () => {
+      toast.success(t('docs.section.toast.refreshed'));
+      void queryClient.invalidateQueries({
+        queryKey: trpc.docs.list.queryKey({ workflowTaskRunId }),
+      });
+    },
+    onError: err => {
+      toast.error(err.message || t('docs.section.toast.refreshFailed'));
+    },
+    onSettled: () => {
+      setRefreshingId(null);
+    },
+  });
+
+  const handleRefresh = useCallback(
+    (externalLinkId: string) => {
+      setRefreshingId(externalLinkId);
+      refreshMutation.mutate({ externalLinkId });
+    },
+    [refreshMutation],
+  );
+
   const handleRemove = useCallback((externalLinkId: string) => {
     setPendingDetachId(externalLinkId);
   }, []);
@@ -89,7 +118,7 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
     setAttachOpen(true);
   }, []);
 
-  const docLinks = (listQuery.data ?? []) as DocLink[];
+  const docLinks = useMemo(() => (listQuery.data ?? []) as DocLink[], [listQuery.data]);
 
   return (
     <div className="space-y-2">
@@ -130,6 +159,8 @@ export function DocLinksSection({ workflowTaskRunId, readOnly }: DocLinksSection
                 lastEditedTime={metadata.lastEditedTime as string | undefined}
                 readOnly={readOnly}
                 onRemove={handleRemove}
+                onRefresh={handleRefresh}
+                isRefreshing={refreshingId === link.id && refreshMutation.isPending}
               />
             );
           })}
