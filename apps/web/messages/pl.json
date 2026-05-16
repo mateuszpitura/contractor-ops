@@ -5073,6 +5073,19 @@
     "qrDisplay": {
       "altText": "Kod QR UAE FTA dla faktury {invoiceNumber}",
       "caption": "Kod QR UAE FTA — Zeskanuj, aby zweryfikować"
+    },
+    "capabilities": {
+      "recheckCapabilities": "Sprawdź zdolności ponownie",
+      "recheckFailed": "Nie udało się odświeżyć zdolności",
+      "rechecking": "Sprawdzanie…",
+      "xrechnungCiiSupported": "Format XRechnung CII obsługiwany",
+      "xrechnungCiiUnsupported": "Format XRechnung CII nieobsługiwany"
+    },
+    "statusBadge": {
+      "label": "Peppol",
+      "ariaLabel": "Status Peppol",
+      "receiver": "Odbiorca",
+      "aspRef": "Identyfikator dostawcy"
     }
   },
   "Portal": {
@@ -6025,7 +6038,10 @@
       "syncFailedToast": "Synchronizacja nie powiodła się. Spróbuj ponownie.",
       "syncNow": "Synchronizuj teraz",
       "syncSuccessToast": "{count, plural, =0 {Synchronizacja ukończona} one {Synchronizacja ukończona — # zmiana} few {Synchronizacja ukończona — # zmiany} many {Synchronizacja ukończona — # zmian} other {Synchronizacja ukończona — # zmian}}",
-      "syncing": "Synchronizowanie…"
+      "syncing": "Synchronizowanie…",
+      "jira": {
+        "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
+      }
     },
     "provider": {
       "connectCta": "Połącz {provider}",
@@ -7236,7 +7252,15 @@
       "confirmCta": "Wymuś i pomiń",
       "toastSuccess": "Wymuszenie workflow zapisane.",
       "toastFailure": "Nie udało się wymusić pominięcia zadania workflow."
-    }
+    },
+    "acknowledge": "Rozumiem, że ta akcja jest rejestrowana i podlega audytowi.",
+    "body": "Pomija wszystkie otwarte zadania weryfikacji IP w tym przebiegu i odnotowuje wymuszenie w dzienniku audytu.",
+    "confirmCta": "Wymuś i pomiń",
+    "reasonHelp": "Wymagane, {min}–{max} znaków.",
+    "reasonLabel": "Powód wymuszenia",
+    "reasonPlaceholder": "Dlaczego to wymuszenie jest teraz konieczne?",
+    "title": "Wymusić pominięcie blokującego zadania workflow?",
+    "warning": "Ta akcja obchodzi bramkę weryfikacyjną. Powód i tożsamość użytkownika zostaną zapisane na stałe do celów compliance."
   },
   "Zatca": {
     "onboarding": {

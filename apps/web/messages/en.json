@@ -6043,7 +6043,10 @@
       "syncFailedToast": "Sync failed. Please try again.",
       "syncNow": "Sync now",
       "syncSuccessToast": "{count, plural, =0 {Sync completed} one {Sync completed — # change} other {Sync completed — # changes}}",
-      "syncing": "Syncing…"
+      "syncing": "Syncing…",
+      "jira": {
+        "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
+      }
     },
     "provider": {
       "connectCta": "Connect {provider}",
@@ -7249,7 +7252,15 @@
       "confirmCta": "Override and skip",
       "toastSuccess": "Workflow override recorded.",
       "toastFailure": "Could not override workflow task."
-    }
+    },
+    "acknowledge": "I understand this action is recorded and audited.",
+    "body": "Skips every open IP verification task on this run and records the override on the workflow audit log.",
+    "confirmCta": "Override and skip",
+    "reasonHelp": "Required, {min}–{max} characters.",
+    "reasonLabel": "Reason for override",
+    "reasonPlaceholder": "Why is this override necessary right now?",
+    "title": "Override blocking workflow task",
+    "warning": "This bypasses the verification gate. The reason and your user identity are permanently recorded for compliance review."
   },
   "Zatca": {
     "onboarding": {

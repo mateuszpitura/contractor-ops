@@ -6038,7 +6038,10 @@
       "syncFailedToast": "فشلت المزامنة. يرجى المحاولة مرة أخرى.",
       "syncNow": "المزامنة الآن",
       "syncSuccessToast": "{count, plural, =0 {اكتملت المزامنة} one {اكتملت المزامنة — # تغيير} other {اكتملت المزامنة — # تغييرات}}",
-      "syncing": "جارٍ المزامنة…"
+      "syncing": "جارٍ المزامنة…",
+      "jira": {
+        "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
+      }
     },
     "provider": {
       "connectCta": "توصيل {provider}",
@@ -7249,7 +7252,15 @@
       "confirmCta": "تجاوز وتخطٍّ",
       "toastSuccess": "تم تسجيل تجاوز سير العمل.",
       "toastFailure": "تعذّر تجاوز مهمة سير العمل."
-    }
+    },
+    "acknowledge": "أُدرك أن هذا الإجراء يُسجَّل ويخضع للتدقيق.",
+    "body": "يتخطى جميع مهام التحقق من IP المفتوحة في هذا التشغيل ويسجل التجاوز في سجل التدقيق.",
+    "confirmCta": "تجاوز وتخطٍّ",
+    "reasonHelp": "مطلوب، {min}–{max} حرفاً.",
+    "reasonLabel": "سبب التجاوز",
+    "reasonPlaceholder": "لماذا يلزم هذا التجاوز الآن؟",
+    "title": "تجاوز مهمة سير العمل الحاجبة",
+    "warning": "تتجاوز هذه الخطوة بوابة التحقق. يُسجَّل السبب وهوية المستخدم بشكل دائم لأغراض الامتثال."
   },
   "Zatca": {
     "onboarding": {

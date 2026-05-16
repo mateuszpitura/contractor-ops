@@ -6038,7 +6038,10 @@
       "syncFailedToast": "Synchronisierung fehlgeschlagen. Bitte erneut versuchen.",
       "syncNow": "Jetzt synchronisieren",
       "syncSuccessToast": "{count, plural, =0 {Synchronisierung abgeschlossen} one {Synchronisierung abgeschlossen — # Änderung} other {Synchronisierung abgeschlossen — # Änderungen}}",
-      "syncing": "Wird synchronisiert…"
+      "syncing": "Wird synchronisiert…",
+      "jira": {
+        "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
+      }
     },
     "provider": {
       "connectCta": "{provider} verbinden",
@@ -7249,7 +7252,15 @@
       "confirmCta": "Überschreiben und überspringen",
       "toastSuccess": "Workflow-Überschreibung gespeichert.",
       "toastFailure": "Workflow-Aufgabe konnte nicht überschrieben werden."
-    }
+    },
+    "acknowledge": "Mir ist klar, dass diese Aktion protokolliert und überprüft wird.",
+    "body": "Überspringt alle offenen IP-Verifizierungsaufgaben dieses Laufs und protokolliert die Überschreibung im Audit-Log.",
+    "confirmCta": "Überschreiben und überspringen",
+    "reasonHelp": "Pflichtfeld, {min}–{max} Zeichen.",
+    "reasonLabel": "Begründung für die Überschreibung",
+    "reasonPlaceholder": "Warum ist diese Überschreibung gerade jetzt notwendig?",
+    "title": "Sperrende Workflow-Aufgabe überschreiben",
+    "warning": "Damit wird die Verifizierungssperre umgangen. Grund und Benutzeridentität werden zur Compliance-Prüfung dauerhaft erfasst."
   },
   "Zatca": {
     "onboarding": {

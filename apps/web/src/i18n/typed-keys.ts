@@ -5,7 +5,7 @@
  * (see `src/types/next-intl.d.ts`), these helpers turn previously cast-y
  * patterns like:
  *
- *   t(`status.${expr}` as Parameters<typeof t>[0])
+ *   t(\`status.${expr}\` as <translator-key-cast>)
  *
  * into:
  *
