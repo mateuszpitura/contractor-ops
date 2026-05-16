@@ -417,6 +417,7 @@ const PHASE_EMOJI: Record<string, string> = {
   peppol: '🛰️ ',
   zatca: '🏛️ ',
   esign: '✍️ ',
+  ocr: '🔎',
 };
 
 /**
@@ -478,6 +479,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   peppol: 3,
   zatca: 2,
   esign: 3,
+  ocr: 2,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5700,6 +5702,93 @@ async function seedZatca(
 }
 
 // ---------------------------------------------------------------------------
+// OCR extraction history + PendingUpload precursors — gives Settings → OCR
+// History a real list with realistic JSON payloads + status variety.
+// ---------------------------------------------------------------------------
+
+async function seedOcr(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
+  // Pull a sample of InvoiceFile rows so OcrExtraction.documentId resolves.
+  const invoiceFiles = await prisma.invoiceFile.findMany({
+    where: { organizationId: ctx.organizationId },
+    select: { id: true, documentId: true, invoiceId: true },
+    take: ctx.org.showcase ? 8 : 4,
+  });
+  if (invoiceFiles.length === 0) return;
+
+  const ocrStatuses = ['PENDING', 'PROCESSING', 'EXTRACTED', 'PARTIAL', 'FAILED'] as const;
+  const ocrProviders = ['CLAUDE', 'GOOGLE_DOCUMENT_AI', 'AZURE_FORM_RECOGNIZER'] as const;
+
+  for (const [i, f] of invoiceFiles.entries()) {
+    const status = ocrStatuses[i % ocrStatuses.length] as (typeof ocrStatuses)[number];
+    const provider = ocrProviders[i % ocrProviders.length] as (typeof ocrProviders)[number];
+    const completedAt =
+      status === 'EXTRACTED' || status === 'PARTIAL'
+        ? pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt)
+        : null;
+
+    await prisma.ocrExtraction.create({
+      data: {
+        organizationId: ctx.organizationId,
+        invoiceId: f.invoiceId,
+        documentId: f.documentId,
+        provider,
+        status,
+        resultJson:
+          status === 'PENDING' || status === 'PROCESSING'
+            ? Prisma.JsonNull
+            : {
+                supplierName: ctx.fakers.org.company.name(),
+                invoiceNumber: `INV-${tokenHex(3).toUpperCase()}`,
+                totalMinor: ctx.fakers.org.number.int({ min: 10_000, max: 500_000 }),
+                currency: ctx.profile.defaultCurrency,
+                lineItems: Array.from(
+                  { length: ctx.fakers.org.number.int({ min: 1, max: 4 }) },
+                  () => ({
+                    description: ctx.fakers.org.commerce.productName(),
+                    quantity: ctx.fakers.org.number.int({ min: 1, max: 5 }),
+                    unitPriceMinor: ctx.fakers.org.number.int({ min: 1_000, max: 50_000 }),
+                  }),
+                ),
+              },
+        overallConfidence: status === 'EXTRACTED' ? '95.50' : status === 'PARTIAL' ? '67.25' : null,
+        pageCount: status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 1, max: 4 }),
+        processingTimeMs:
+          status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 800, max: 8_500 }),
+        errorMessage: status === 'FAILED' ? 'Provider returned 5xx (seeded)' : null,
+        retryCount: status === 'FAILED' ? ctx.fakers.org.number.int({ min: 1, max: 3 }) : 0,
+        createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+        completedAt,
+      },
+    });
+
+    // PendingUpload precursor — only for half the rows so the Pending Upload
+    // page shows both consumed and active rows. documentId @unique so ensure
+    // we don't collide with an existing one.
+    if (i % 2 !== 0) continue;
+    const existing = await prisma.pendingUpload.findUnique({
+      where: { documentId: f.documentId },
+      select: { id: true },
+    });
+    if (existing) continue;
+    const consumed = i % 4 === 0;
+    await prisma.pendingUpload.create({
+      data: {
+        organizationId: ctx.organizationId,
+        documentId: f.documentId,
+        storageKey: `seed/uploads/${f.documentId}.pdf`,
+        mimeType: 'application/pdf',
+        fileSizeBytesMax: 10 * 1024 * 1024,
+        purpose: 'PORTAL_INVOICE_SUBMIT',
+        createdByUserId: ctx.ownerUserId,
+        expiresAt: futureDate(ctx.fakers.org, 7),
+        consumedAt: consumed ? pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt) : null,
+        createdAt: pastDateAfter(ctx.fakers.org, 14, ctx.foundedAt),
+      },
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // eSign envelopes + recipients + events — DocuSign-flavoured demo data so
 // the contracts envelope timeline UI shows a real flow per status.
 // ---------------------------------------------------------------------------
@@ -6461,6 +6550,9 @@ async function seedOrg(
   await gateSection(omitted, 'invoice-documents', org.key, undefined, () =>
     seedInvoiceDocuments(prisma, ctx, invoices),
   );
+  // OCR runs after invoice-documents because OcrExtraction.documentId points
+  // at Document rows materialised by `seedInvoiceDocuments`.
+  await gateSection(omitted, 'ocr', org.key, undefined, () => seedOcr(prisma, ctx));
   await gateSection(omitted, 'workflow-templates', org.key, undefined, () =>
     seedWorkflowTemplates(prisma, ctx),
   );
