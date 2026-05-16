@@ -24,6 +24,37 @@ const nextConfig: NextConfig = {
   logging: {
     incomingRequests: false,
   },
+  // Phase C.6.c (production-hardening): explicit images.remotePatterns
+  // allowlist. Previously no remotePatterns block existed, which leaves
+  // next/image refusing remote sources entirely (so this is the canonical
+  // surface). The allowlist enumerates every external host the app's
+  // <Image src> consumes — narrowing the Next.js image optimizer's SSRF
+  // surface to known-good destinations. Anything not listed will be
+  // rejected by next/image with a build-time/dev-time error.
+  //
+  // Hosts:
+  //   - *.r2.cloudflarestorage.com — raw S3-compatible Cloudflare R2 URLs
+  //     (logos, shipping labels, branding assets uploaded via the settings
+  //     flow). Mirrored by the CSP img-src directive in headers() below.
+  //   - lh3.googleusercontent.com — Google OAuth profile avatars (Better
+  //     Auth socialProviders.google in packages/auth/src/config.ts).
+  //   - *.googleusercontent.com — broader catch-all for Google avatar
+  //     variants (lh4/lh5/lh6) returned by different Google OAuth scopes.
+  //   - graph.microsoft.com — Microsoft Graph /me/photo endpoint for
+  //     Microsoft OAuth avatars (packages/auth/src/config.ts microsoft
+  //     provider). Photos served via authenticated proxy when needed.
+  //
+  // If R2_PUBLIC_URL is configured as a custom CDN domain (e.g.
+  // cdn.contractor-ops.com), add it explicitly here in the deployment-
+  // specific config layer.
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.r2.cloudflarestorage.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: '*.googleusercontent.com' },
+      { protocol: 'https', hostname: 'graph.microsoft.com' },
+    ],
+  },
   transpilePackages: [
     '@contractor-ops/auth',
     '@contractor-ops/api',
