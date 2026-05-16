@@ -1,4 +1,5 @@
 import { Noto_Sans_Arabic } from 'next/font/google';
+import { headers } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ThemeProvider } from 'next-themes';
@@ -42,6 +43,14 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
 
+  // C.1.c prep — pick up the per-request CSP nonce minted by middleware.ts
+  // and hand it to <ThemeProvider nonce={...}> so next-themes' pre-hydration
+  // inline `<script>` carries the matching `nonce={NONCE}` attribute and
+  // passes under the nonce-based report-only CSP. Undefined on the rare
+  // request that bypasses middleware (e.g. static optimizations); next-themes
+  // safely omits the attribute in that case.
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   // Set lang and dir attributes on the html element for screen readers and RTL.
   // Sanitize locale to alphanumeric+hyphen only (defense in depth).
   const safeLang = locale.replace(/[^a-zA-Z0-9-]/g, '');
@@ -51,6 +60,7 @@ export default async function LocaleLayout({
   return (
     <>
       <script
+        nonce={nonce}
         // biome-ignore lint/security/noDangerouslySetInnerHtml: server-rendered lang/dir script with sanitized locale
         dangerouslySetInnerHTML={{
           __html: `document.documentElement.lang="${safeLang}";document.documentElement.dir="${dir}";`,
@@ -61,7 +71,8 @@ export default async function LocaleLayout({
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange>
+          disableTransitionOnChange
+          nonce={nonce}>
           {/* Mirror next-themes' active theme to a `theme` cookie so the
               Server Component reader in lib/get-theme-attributes.ts can emit
               the right `dark` class on first paint — eliminates FOUC for
