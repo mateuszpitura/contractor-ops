@@ -383,30 +383,38 @@ function printOmitSummary(
 // Phase reporter — toggles between per-phase log lines and a bottom progress bar
 // ---------------------------------------------------------------------------
 
-/** Number of distinct `reporter.tick()` calls a single seedOrg() makes. Keep in sync with seedOrg. */
-const PHASES_PER_ORG = 18;
-
-/** Emoji shown for each named phase in pretty log lines (--progress mode). */
+/** Emoji shown for each named phase in pretty log lines (--progress mode).
+ *  Keys are SECTION_KEYS values so a single label drives both gating and
+ *  display. */
 const PHASE_EMOJI: Record<string, string> = {
   contractors: '👥',
   contracts: '📜',
   invoices: '🧾',
   equipment: '💻',
-  'payment runs': '💰',
+  'payment-runs': '💰',
   reminders: '⏰',
   notifications: '🔔',
   outbox: '📤',
-  'webhook deliveries': '🪝',
-  'audit logs': '📋',
-  'e-invoice lifecycle': '📨',
-  'portal sessions': '🚪',
-  'integration connections': '🔌',
-  'invoice documents': '📑',
-  'workflow templates': '🌀',
+  'webhook-deliveries': '🪝',
+  'audit-logs': '📋',
+  'e-invoice-lifecycle': '📨',
+  'portal-sessions': '🚪',
+  'integration-connections': '🔌',
+  'invoice-documents': '📑',
+  'workflow-templates': '🌀',
   subscription: '💳',
-  'courier configs': '📦',
+  'courier-configs': '📦',
   comments: '💬',
+  'workflow-runs': '🔁',
+  timesheets: '🕒',
 };
+
+/**
+ * Number of distinct `reporter.tick()` calls a single `seedOrg()` makes.
+ * Derived from `PHASE_EMOJI` so adding a section to the emoji map and a tick
+ * call in `seedOrg()` stays in sync without a manual constant bump.
+ */
+const PHASES_PER_ORG = Object.keys(PHASE_EMOJI).length;
 
 /** Emoji shown by log level when no phase emoji matched. */
 const LEVEL_EMOJI: Record<number, string> = {
@@ -437,20 +445,22 @@ const PHASE_WEIGHTS: Record<string, number> = {
   contracts: 5,
   invoices: 30,
   equipment: 10,
-  'payment runs': 5,
+  'payment-runs': 5,
   reminders: 3,
   notifications: 2,
   outbox: 1,
-  'webhook deliveries': 1,
-  'audit logs': 3,
-  'e-invoice lifecycle': 5,
-  'portal sessions': 1,
-  'integration connections': 1,
-  'invoice documents': 5,
-  'workflow templates': 3,
+  'webhook-deliveries': 1,
+  'audit-logs': 3,
+  'e-invoice-lifecycle': 5,
+  'portal-sessions': 1,
+  'integration-connections': 1,
+  'invoice-documents': 5,
+  'workflow-templates': 3,
   subscription: 1,
-  'courier configs': 1,
+  'courier-configs': 1,
   comments: 3,
+  'workflow-runs': 4,
+  timesheets: 4,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -4664,15 +4674,31 @@ interface SeedSummary {
   invoices: number;
 }
 
+/**
+ * Conditionally execute a seed section based on the resolved omit set, then
+ * always tick the reporter so the progress bar advances regardless of skip
+ * (keeps the bar at 100% in `--omit` runs). Returns the seeder's value or the
+ * caller-supplied fallback when the section is omitted.
+ */
+async function gateSection<T>(
+  omitted: ReadonlySet<SectionKey>,
+  key: SectionKey,
+  orgKey: string,
+  fallback: T,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const result = omitted.has(key) ? fallback : await fn();
+  reporter.tick(orgKey, key);
+  return result;
+}
+
 async function seedOrg(
   prisma: PrismaClient,
   org: OrgVolume,
   passwordHash: string,
   baseSeed: number,
   orgIndex: number,
-  // Plumbed in step 1 so seedOrg can gate per-section calls in step 2 without
-  // a follow-up signature change.
-  _omittedSections: ReadonlySet<SectionKey>,
+  omitted: ReadonlySet<SectionKey>,
 ): Promise<SeedSummary> {
   // Determine the org's country/locale/currency profile
   const profileFaker = new Faker({ locale: [en] });
@@ -4709,67 +4735,90 @@ async function seedOrg(
   // columns point at entities that actually exist.
   const refs: EntityRef[] = [];
 
-  const contractors = await seedContractors(
-    prisma,
-    ctx,
-    orgCore.teamIds,
-    orgCore.projectIds,
-    orgCore.costCenterIds,
-    refs,
+  const contractors = await gateSection(
+    omitted,
+    'contractors',
+    org.key,
+    [] as readonly SeededContractor[],
+    () =>
+      seedContractors(
+        prisma,
+        ctx,
+        orgCore.teamIds,
+        orgCore.projectIds,
+        orgCore.costCenterIds,
+        refs,
+      ),
   );
-  reporter.tick(org.key, 'contractors');
 
-  const contractByContractor = await seedContracts(prisma, ctx, contractors, refs);
-  reporter.tick(org.key, 'contracts');
-
-  const approvalChainConfigId = await seedApprovalChainConfig(prisma, ctx);
-
-  const invoices = await seedInvoices(
-    prisma,
-    ctx,
-    contractors,
-    contractByContractor,
-    approvalChainConfigId,
-    refs,
+  const contractByContractor = await gateSection(
+    omitted,
+    'contracts',
+    org.key,
+    new Map<string, string>() as ReadonlyMap<string, string>,
+    () => seedContracts(prisma, ctx, contractors, refs),
   );
-  reporter.tick(org.key, 'invoices');
+
+  // ApprovalChainConfig has no public section key — it's an implicit
+  // dependency of `seedInvoices`. Always create when not all of {contractors,
+  // invoices} are omitted, so the invoice seeder can wire approvals.
+  const approvalChainConfigId = omitted.has('invoices')
+    ? null
+    : await seedApprovalChainConfig(prisma, ctx);
+
+  const invoices = await gateSection(omitted, 'invoices', org.key, [] as SeededInvoice[], () =>
+    seedInvoices(prisma, ctx, contractors, contractByContractor, approvalChainConfigId, refs),
+  );
 
   // Equipment is seeded BEFORE payment runs / reminders so its refs are
   // available for downstream seeders that sample real entities.
-  await seedEquipment(prisma, ctx, contractors, refs);
-  reporter.tick(org.key, 'equipment');
-  await seedPaymentRuns(prisma, ctx, invoices, refs);
-  reporter.tick(org.key, 'payment runs');
-  await seedReminders(prisma, ctx, invoices, refs);
-  reporter.tick(org.key, 'reminders');
-  await seedNotifications(prisma, ctx, refs);
-  reporter.tick(org.key, 'notifications');
-  await seedOutbox(prisma, ctx, refs);
-  reporter.tick(org.key, 'outbox');
-  await seedWebhookDeliveries(prisma, ctx);
-  reporter.tick(org.key, 'webhook deliveries');
-  await seedAuditLogs(prisma, ctx, refs);
-  reporter.tick(org.key, 'audit logs');
-  await seedEInvoiceLifecycle(prisma, ctx, invoices);
-  reporter.tick(org.key, 'e-invoice lifecycle');
-  await seedPortalSessions(prisma, ctx, contractors);
-  reporter.tick(org.key, 'portal sessions');
-  await seedIntegrationConnections(prisma, ctx);
-  reporter.tick(org.key, 'integration connections');
-  await seedInvoiceDocuments(prisma, ctx, invoices);
-  reporter.tick(org.key, 'invoice documents');
-  await seedWorkflowTemplates(prisma, ctx);
-  reporter.tick(org.key, 'workflow templates');
-  await seedSubscription(prisma, ctx);
-  reporter.tick(org.key, 'subscription');
-  await seedCourierConfigs(prisma, ctx);
-  reporter.tick(org.key, 'courier configs');
-  await seedComments(prisma, ctx, refs);
-  reporter.tick(org.key, 'comments');
-  await seedWorkflowRuns(prisma, ctx, contractors);
-  reporter.tick(org.key, 'workflow runs');
-  await seedTimesheets(prisma, ctx, contractors, contractByContractor);
-  reporter.tick(org.key, 'timesheets');
+  await gateSection(omitted, 'equipment', org.key, undefined, () =>
+    seedEquipment(prisma, ctx, contractors, refs),
+  );
+  await gateSection(omitted, 'payment-runs', org.key, undefined, () =>
+    seedPaymentRuns(prisma, ctx, invoices, refs),
+  );
+  await gateSection(omitted, 'reminders', org.key, undefined, () =>
+    seedReminders(prisma, ctx, invoices, refs),
+  );
+  await gateSection(omitted, 'notifications', org.key, undefined, () =>
+    seedNotifications(prisma, ctx, refs),
+  );
+  await gateSection(omitted, 'outbox', org.key, undefined, () => seedOutbox(prisma, ctx, refs));
+  await gateSection(omitted, 'webhook-deliveries', org.key, undefined, () =>
+    seedWebhookDeliveries(prisma, ctx),
+  );
+  await gateSection(omitted, 'audit-logs', org.key, undefined, () =>
+    seedAuditLogs(prisma, ctx, refs),
+  );
+  await gateSection(omitted, 'e-invoice-lifecycle', org.key, undefined, () =>
+    seedEInvoiceLifecycle(prisma, ctx, invoices),
+  );
+  await gateSection(omitted, 'portal-sessions', org.key, undefined, () =>
+    seedPortalSessions(prisma, ctx, contractors),
+  );
+  await gateSection(omitted, 'integration-connections', org.key, undefined, () =>
+    seedIntegrationConnections(prisma, ctx),
+  );
+  await gateSection(omitted, 'invoice-documents', org.key, undefined, () =>
+    seedInvoiceDocuments(prisma, ctx, invoices),
+  );
+  await gateSection(omitted, 'workflow-templates', org.key, undefined, () =>
+    seedWorkflowTemplates(prisma, ctx),
+  );
+  await gateSection(omitted, 'subscription', org.key, undefined, () =>
+    seedSubscription(prisma, ctx),
+  );
+  await gateSection(omitted, 'courier-configs', org.key, undefined, () =>
+    seedCourierConfigs(prisma, ctx),
+  );
+  await gateSection(omitted, 'comments', org.key, undefined, () => seedComments(prisma, ctx, refs));
+  await gateSection(omitted, 'workflow-runs', org.key, undefined, () =>
+    seedWorkflowRuns(prisma, ctx, contractors),
+  );
+  await gateSection(omitted, 'timesheets', org.key, undefined, () =>
+    seedTimesheets(prisma, ctx, contractors, contractByContractor),
+  );
 
   return {
     region: org.region,
