@@ -16,26 +16,6 @@
     "id": "F-MED-002",
     "severity": "MED",
     "category": "orphan",
-    "procedure": "time.listContractors",
-    "file": "packages/api/src/routers/core/time.ts",
-    "line": 163,
-    "problem": "Procedure time.listContractors (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
-  },
-  {
-    "id": "F-MED-003",
-    "severity": "MED",
-    "category": "orphan",
-    "procedure": "time.getReconciliation",
-    "file": "packages/api/src/routers/core/time.ts",
-    "line": 320,
-    "problem": "Procedure time.getReconciliation (query, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
-  },
-  {
-    "id": "F-MED-004",
-    "severity": "MED",
-    "category": "orphan",
     "procedure": "gdpr.exportData",
     "file": "packages/api/src/routers/compliance/gdpr.ts",
     "line": 283,
@@ -43,7 +23,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-005",
+    "id": "F-MED-003",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "exchangeRate.fetchDaily",
@@ -56,7 +36,7 @@
     ]
   },
   {
-    "id": "F-MED-006",
+    "id": "F-MED-004",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "featureFlags.list",
@@ -69,7 +49,7 @@
     ]
   },
   {
-    "id": "F-MED-007",
+    "id": "F-MED-005",
     "severity": "MED",
     "category": "orphan",
     "procedure": "peppol.getTransmissionByInvoiceId",
@@ -79,7 +59,7 @@
     "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller."
   },
   {
-    "id": "F-MED-008",
+    "id": "F-MED-006",
     "severity": "LOW",
     "category": "orphan-intentional-non-ui",
     "procedure": "featureFlags.list",
@@ -147,7 +127,7 @@
     "category": "missing-loading-state",
     "procedure": "time.approve",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 117,
+    "line": 118,
     "problem": "Mutation time.approve trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -157,7 +137,7 @@
     "category": "missing-confirmation",
     "procedure": "time.reject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 127,
+    "line": 128,
     "problem": "Destructive mutation time.reject fires without a confirmation dialog in this file.",
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
@@ -167,7 +147,7 @@
     "category": "missing-loading-state",
     "procedure": "time.reject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 127,
+    "line": 128,
     "problem": "Mutation time.reject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -177,7 +157,7 @@
     "category": "missing-loading-state",
     "procedure": "time.bulkApprove",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 137,
+    "line": 138,
     "problem": "Mutation time.bulkApprove trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -187,7 +167,7 @@
     "category": "missing-loading-state",
     "procedure": "time.bulkReject",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 148,
+    "line": 149,
     "problem": "Mutation time.bulkReject trigger has no isPending reference — button not disabled while pending, double-submit possible.",
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
@@ -352,7 +332,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-009",
+    "id": "F-MED-007",
     "severity": "MED",
     "category": "missing-error-toast",
     "procedure": "portal.logout",
@@ -362,7 +342,7 @@
     "fix": "Inside the existing onError handler, call toast.error(err.message) (or a translated message)."
   },
   {
-    "id": "F-MED-010",
+    "id": "F-MED-008",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "portal.logout",
@@ -392,7 +372,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-011",
+    "id": "F-MED-009",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "gdpr.requestErasure",
@@ -482,7 +462,7 @@
     "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator."
   },
   {
-    "id": "F-MED-012",
+    "id": "F-MED-010",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.runComplianceChecks",
@@ -492,7 +472,7 @@
     "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
-    "id": "F-MED-013",
+    "id": "F-MED-011",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.requestComplianceCsid",
@@ -502,7 +482,7 @@
     "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
-    "id": "F-MED-014",
+    "id": "F-MED-012",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.generateCsr",
@@ -512,7 +492,7 @@
     "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
-    "id": "F-MED-015",
+    "id": "F-MED-013",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.exchangeProductionCert",
@@ -522,7 +502,7 @@
     "fix": "Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess."
   },
   {
-    "id": "F-MED-016",
+    "id": "F-MED-014",
     "severity": "MED",
     "category": "missing-invalidation",
     "procedure": "zatca.saveTaxDetails",
@@ -542,7 +522,7 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-MED-017",
+    "id": "F-MED-015",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "user.pins.toggle",
@@ -562,7 +542,7 @@
     "fix": "Wrap the trigger in <AlertDialog> from @/components/ui/alert-dialog and only call mutate from AlertDialogAction onClick."
   },
   {
-    "id": "F-MED-018",
+    "id": "F-MED-016",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "document.uploadNewVersion",
@@ -572,7 +552,7 @@
     "fix": "Add onSuccess: () => { toast.success(...); queryClient.invalidateQueries({ queryKey: ... }); }"
   },
   {
-    "id": "F-MED-019",
+    "id": "F-MED-017",
     "severity": "MED",
     "category": "missing-on-success",
     "procedure": "document.confirmUpload",

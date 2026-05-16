@@ -756,7 +756,7 @@
     "path": "time.listPending",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 77,
+    "line": 78,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -772,7 +772,7 @@
     "path": "time.listAll",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 82,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -788,7 +788,7 @@
     "path": "time.approve",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 117,
+    "line": 118,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -804,7 +804,7 @@
     "path": "time.reject",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 127,
+    "line": 128,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -820,7 +820,7 @@
     "path": "time.bulkApprove",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 137,
+    "line": 138,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -836,7 +836,7 @@
     "path": "time.bulkReject",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/time/page.tsx",
-    "line": 148,
+    "line": 149,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3380,7 +3380,7 @@
     "path": "contractor.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-details.tsx",
-    "line": 119,
+    "line": 222,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5652,7 +5652,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 151,
+    "line": 337,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5668,7 +5668,7 @@
     "path": "invoice.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 243,
+    "line": 396,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5684,7 +5684,7 @@
     "path": "invoice.submitForMatching",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 259,
+    "line": 412,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5700,7 +5700,7 @@
     "path": "invoice.voidInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 277,
+    "line": 430,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9236,7 +9236,7 @@
     "path": "user.setOutOfOffice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/out-of-office-section.tsx",
-    "line": 56,
+    "line": 40,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9252,7 +9252,7 @@
     "path": "user.clearOutOfOffice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/out-of-office-section.tsx",
-    "line": 69,
+    "line": 51,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10206,6 +10206,54 @@
       "hasIsPending": true
     },
     "fileHasAlertDialog": true
+  },
+  {
+    "client": "trpc",
+    "path": "time.listContractors",
+    "kind": "queryOptions",
+    "file": "apps/web/src/components/time/reconciliation-spot-check.tsx",
+    "line": 84,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "contract.list",
+    "kind": "queryOptions",
+    "file": "apps/web/src/components/time/reconciliation-spot-check.tsx",
+    "line": 91,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
+  },
+  {
+    "client": "trpc",
+    "path": "time.getReconciliation",
+    "kind": "queryOptions",
+    "file": "apps/web/src/components/time/reconciliation-spot-check.tsx",
+    "line": 126,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false
   },
   {
     "client": "trpc",
