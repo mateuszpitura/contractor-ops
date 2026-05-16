@@ -16,13 +16,19 @@ interface ProrationPreviewProps {
   newPriceId: string;
   onConfirm: () => void;
   onCancel: () => void;
+  isConfirming?: boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationPreviewProps) {
+export function ProrationPreview({
+  newPriceId,
+  onConfirm,
+  onCancel,
+  isConfirming = false,
+}: ProrationPreviewProps) {
   const t = useTranslations('Billing.proration');
   const { data, isLoading, isError } = useQuery(
     trpc.billing.getProrationPreview.queryOptions({ newPriceId }),
@@ -90,7 +96,7 @@ export function ProrationPreview({ newPriceId, onConfirm, onCancel }: ProrationP
         </p>
 
         <div className="flex gap-2">
-          <Button size="sm" onClick={onConfirm}>
+          <Button size="sm" disabled={isConfirming} onClick={onConfirm}>
             {t('confirm')}
           </Button>
           <Button variant="outline" size="sm" onClick={onCancel}>

@@ -108,6 +108,7 @@ export function BillingTab() {
             onConfirm={handleConfirmChange}
             // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onCancel={handleCancelChange}
+            isConfirming={checkoutMutation.isPending}
           />
         </>
       )}

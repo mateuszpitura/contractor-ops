@@ -43,7 +43,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -59,7 +59,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -68,7 +68,7 @@
     "path": "settings.listChangeRequests",
     "kind": "queryKey",
     "file": "apps/web/src/app/[locale]/(dashboard)/approvals/page.tsx",
-    "line": 226,
+    "line": 235,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -811,7 +811,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -827,7 +827,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -843,7 +843,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -859,7 +859,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -1579,7 +1579,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -1611,7 +1611,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -1652,7 +1652,7 @@
     "path": "billing.getProrationPreview",
     "kind": "queryOptions",
     "file": "apps/web/src/components/billing/proration-preview.tsx",
-    "line": 28,
+    "line": 34,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3412,7 +3412,7 @@
     "path": "document.requestUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 127,
+    "line": 128,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3428,7 +3428,7 @@
     "path": "document.confirmUpload",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-documents.tsx",
-    "line": 138,
+    "line": 139,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -11028,7 +11028,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryOptions",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 82,
+    "line": 83,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11044,7 +11044,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryKey",
     "file": "apps/web/src/components/zatca/onboarding-wizard.tsx",
-    "line": 99,
+    "line": 100,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,

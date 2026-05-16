@@ -242,6 +242,10 @@ function TimeTrackingContent() {
                   onBulkApprove={handleBulkApprove}
                   onBulkReject={handleBulkReject}
                   onNavigateToReview={handleNavigateToReview}
+                  isApproving={approveMutation.isPending}
+                  isRejecting={rejectMutation.isPending}
+                  isBulkApproving={bulkApproveMutation.isPending}
+                  isBulkRejecting={bulkRejectMutation.isPending}
                 />
               )}
             </div>

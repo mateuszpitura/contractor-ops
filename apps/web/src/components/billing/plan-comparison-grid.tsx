@@ -89,6 +89,7 @@ interface PlanComparisonGridProps {
   currentTier?: TierId;
   onSelectPlan: (priceId: string) => void;
   compact?: boolean;
+  isSelecting?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +114,7 @@ export function PlanComparisonGrid({
   currentTier,
   onSelectPlan,
   compact,
+  isSelecting = false,
 }: PlanComparisonGridProps) {
   const t = useTranslations('Billing.planComparison');
   return (
@@ -128,7 +130,7 @@ export function PlanComparisonGrid({
             isRecommended={plan.id === 'PRO'}
             // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
             onSelect={() => onSelectPlan(plan.priceId)}
-            disabled={!plan.priceId}
+            disabled={!plan.priceId || isSelecting}
             compact={compact}
           />
         </div>

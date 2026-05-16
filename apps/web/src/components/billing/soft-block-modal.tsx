@@ -17,13 +17,14 @@ import { PlanComparisonGrid } from './plan-comparison-grid';
 interface SoftBlockModalProps {
   isOpen: boolean;
   onSelectPlan: (priceId: string) => void;
+  isSelecting?: boolean;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
+export function SoftBlockModal({ isOpen, onSelectPlan, isSelecting = false }: SoftBlockModalProps) {
   const t = useTranslations('Billing.softBlock');
   return (
     <Dialog open={isOpen}>
@@ -44,7 +45,11 @@ export function SoftBlockModal({ isOpen, onSelectPlan }: SoftBlockModalProps) {
         </DialogHeader>
 
         <div className="mt-4">
-          <PlanComparisonGrid compact={true} onSelectPlan={onSelectPlan} />
+          <PlanComparisonGrid
+            compact={true}
+            onSelectPlan={onSelectPlan}
+            isSelecting={isSelecting}
+          />
         </div>
       </DialogContent>
     </Dialog>

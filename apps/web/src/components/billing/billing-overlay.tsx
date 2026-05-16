@@ -84,7 +84,11 @@ export function BillingOverlay() {
       {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       {isPastDue && <PastDueBanner onResolve={handleUpgrade} />}
       {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
-      <SoftBlockModal isOpen={isTrialExpired || isBlocked} onSelectPlan={handleSelectPlan} />
+      <SoftBlockModal
+        isOpen={isTrialExpired || isBlocked}
+        onSelectPlan={handleSelectPlan}
+        isSelecting={checkoutMutation.isPending}
+      />
     </>
   );
 }
