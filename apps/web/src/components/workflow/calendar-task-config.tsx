@@ -108,7 +108,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
           checked={config?.calendarEnabled ?? false}
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={handleToggle}
-          disabled={!isConfigured}
+          disabled={!isConfigured || saveMutation.isPending}
           aria-label={t('createCalendarEvent')}
         />
         <span className="text-sm">{t('createCalendarEvent')}</span>

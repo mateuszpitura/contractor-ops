@@ -100,7 +100,7 @@
     "path": "classification.getById",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/contractors/[id]/engagements/[engagementId]/classification/[assessmentId]/page.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -436,7 +436,7 @@
     "path": "invoice.getById",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 240,
+    "line": 241,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -452,7 +452,7 @@
     "path": "document.getDownloadUrl",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 250,
+    "line": 251,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -468,7 +468,7 @@
     "path": "time.getInvoiceReconciliation",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 256,
+    "line": 257,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -484,7 +484,7 @@
     "path": "peppol.getTransmissionByInvoiceId",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 262,
+    "line": 263,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -500,7 +500,7 @@
     "path": "zatca.getStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 268,
+    "line": 269,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -516,7 +516,7 @@
     "path": "approval.submitForApproval",
     "kind": "mutationOptions",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 302,
+    "line": 303,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -532,7 +532,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 305,
+    "line": 306,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -548,7 +548,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/app/[locale]/(dashboard)/invoices/[id]/page.tsx",
-    "line": 320,
+    "line": 321,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1476,7 +1476,7 @@
     "path": "approval.bulkApprove",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx",
-    "line": 127,
+    "line": 128,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -1492,7 +1492,7 @@
     "path": "approval.bulkReject",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/approvals/approval-queue/data-table-toolbar.tsx",
-    "line": 147,
+    "line": 148,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -1508,7 +1508,7 @@
     "path": "approval.getChain",
     "kind": "queryOptions",
     "file": "apps/web/src/components/approvals/approval-queue/side-panel.tsx",
-    "line": 179,
+    "line": 180,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1524,7 +1524,7 @@
     "path": "approval.getAuditTrail",
     "kind": "queryOptions",
     "file": "apps/web/src/components/approvals/audit-timeline.tsx",
-    "line": 239,
+    "line": 240,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1924,7 +1924,7 @@
     "path": "classification.listByContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/classification/classification-assessment-list.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -1956,7 +1956,7 @@
     "path": "classification.getLatest",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/classification/classification-tile.tsx",
-    "line": 80,
+    "line": 81,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2260,7 +2260,7 @@
     "path": "contractor.updateLifecycleStage",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2276,7 +2276,7 @@
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 97,
+    "line": 98,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2292,7 +2292,7 @@
     "path": "contractor.archive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 106,
+    "line": 107,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2308,7 +2308,7 @@
     "path": "contractor.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contractors/contractor-profile/profile-header.tsx",
-    "line": 114,
+    "line": 115,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2356,7 +2356,7 @@
     "path": "contract.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/tab-contracts.tsx",
-    "line": 70,
+    "line": 71,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2452,7 +2452,7 @@
     "path": "linear.connectionStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2468,7 +2468,7 @@
     "path": "linear.linkedIssues",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx",
-    "line": 94,
+    "line": 95,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2484,7 +2484,7 @@
     "path": "jira.connectionStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx",
-    "line": 138,
+    "line": 139,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2500,7 +2500,7 @@
     "path": "jira.linkedIssues",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx",
-    "line": 143,
+    "line": 144,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2516,7 +2516,7 @@
     "path": "workflow.listRuns",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-profile/workflows-tab.tsx",
-    "line": 200,
+    "line": 201,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2532,7 +2532,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 62,
+    "line": 63,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2548,7 +2548,7 @@
     "path": "contractor.bulkArchive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 86,
+    "line": 87,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2564,7 +2564,7 @@
     "path": "contractor.bulkAssignOwner",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 105,
+    "line": 106,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2580,7 +2580,7 @@
     "path": "contractor.export",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-bulk-actions.tsx",
-    "line": 124,
+    "line": 125,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -2596,7 +2596,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-table/data-table-toolbar.tsx",
-    "line": 101,
+    "line": 102,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2644,7 +2644,7 @@
     "path": "contractor.companyLookup",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contractors/contractor-wizard/step-company.tsx",
-    "line": 55,
+    "line": 56,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -2996,7 +2996,7 @@
     "path": "contract.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 90,
+    "line": 91,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3012,7 +3012,7 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 92,
+    "line": 93,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3028,7 +3028,7 @@
     "path": "contract.transitionStatus",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 108,
+    "line": 109,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3044,7 +3044,7 @@
     "path": "contract.delete",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/detail-header.tsx",
-    "line": 123,
+    "line": 124,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3108,7 +3108,7 @@
     "path": "esign.getPortalSigningUrl",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx",
-    "line": 181,
+    "line": 182,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3124,7 +3124,7 @@
     "path": "esign.getSigningUrl",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-detail/embedded-signing-modal.tsx",
-    "line": 182,
+    "line": 183,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3172,7 +3172,7 @@
     "path": "contract.updateExpiryReminders",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-detail/overview-tab.tsx",
-    "line": 98,
+    "line": 99,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3188,7 +3188,7 @@
     "path": "contract.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/contracts/contract-detail/overview-tab.tsx",
-    "line": 102,
+    "line": 103,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3348,7 +3348,7 @@
     "path": "contract.bulkTransition",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/contracts/contract-table/data-table-bulk-actions.tsx",
-    "line": 77,
+    "line": 78,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3364,7 +3364,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-table/data-table-filters.tsx",
-    "line": 107,
+    "line": 108,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3396,7 +3396,7 @@
     "path": "contractor.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/contracts/contract-wizard/step-details.tsx",
-    "line": 222,
+    "line": 223,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3492,7 +3492,7 @@
     "path": "dashboard.activity",
     "kind": "queryOptions",
     "file": "apps/web/src/components/dashboard/activity-feed.tsx",
-    "line": 133,
+    "line": 134,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3524,7 +3524,7 @@
     "path": "dashboard.deadlines",
     "kind": "queryOptions",
     "file": "apps/web/src/components/dashboard/deadlines-widget.tsx",
-    "line": 64,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3556,7 +3556,7 @@
     "path": "dashboard.kpis",
     "kind": "queryOptions",
     "file": "apps/web/src/components/dashboard/kpi-cards.tsx",
-    "line": 139,
+    "line": 140,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3908,7 +3908,7 @@
     "path": "equipment.retire",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 79,
+    "line": 80,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3924,7 +3924,7 @@
     "path": "equipment.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 83,
+    "line": 84,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3940,7 +3940,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 86,
+    "line": 87,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3956,7 +3956,7 @@
     "path": "equipment.unassign",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 97,
+    "line": 98,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -3972,7 +3972,7 @@
     "path": "equipment.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 101,
+    "line": 102,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -3988,7 +3988,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-detail/equipment-detail-header.tsx",
-    "line": 104,
+    "line": 105,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4068,7 +4068,7 @@
     "path": "equipment.create",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/equipment-form.tsx",
-    "line": 113,
+    "line": 114,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4084,7 +4084,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-form.tsx",
-    "line": 117,
+    "line": 118,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4100,7 +4100,7 @@
     "path": "equipment.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/equipment-form.tsx",
-    "line": 128,
+    "line": 129,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4116,7 +4116,7 @@
     "path": "equipment.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-form.tsx",
-    "line": 132,
+    "line": 133,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4132,7 +4132,7 @@
     "path": "equipment.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/equipment-form.tsx",
-    "line": 135,
+    "line": 136,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -4308,7 +4308,7 @@
     "path": "equipment.addShipmentEvent",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/equipment/shipment-timeline.tsx",
-    "line": 84,
+    "line": 85,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -4324,7 +4324,7 @@
     "path": "equipment.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/equipment/shipment-timeline.tsx",
-    "line": 88,
+    "line": 89,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5124,7 +5124,7 @@
     "path": "teams.getTeams",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 158,
+    "line": 159,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5140,7 +5140,7 @@
     "path": "teams.getChannels",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 170,
+    "line": 171,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5156,7 +5156,7 @@
     "path": "teams.getChannelMapping",
     "kind": "queryOptions",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 176,
+    "line": 177,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5172,7 +5172,7 @@
     "path": "teams.saveChannelMapping",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 187,
+    "line": 188,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5188,7 +5188,7 @@
     "path": "teams.getChannelMapping",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 191,
+    "line": 192,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5204,7 +5204,7 @@
     "path": "teams.getChannels",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 213,
+    "line": 214,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5220,7 +5220,7 @@
     "path": "teams.getTeams",
     "kind": "queryKey",
     "file": "apps/web/src/components/integrations/teams-channel-mapping-card.tsx",
-    "line": 219,
+    "line": 220,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5668,7 +5668,7 @@
     "path": "invoice.getById",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 337,
+    "line": 338,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5684,7 +5684,7 @@
     "path": "invoice.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 396,
+    "line": 397,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5700,7 +5700,7 @@
     "path": "invoice.submitForMatching",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 412,
+    "line": 413,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5716,7 +5716,7 @@
     "path": "invoice.voidInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/invoice-metadata-form.tsx",
-    "line": 430,
+    "line": 431,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -5748,7 +5748,7 @@
     "path": "invoice.searchContractors",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
-    "line": 293,
+    "line": 294,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5764,7 +5764,7 @@
     "path": "invoice.contractsForContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
-    "line": 301,
+    "line": 302,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -5780,7 +5780,7 @@
     "path": "invoice.manualMatch",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/invoice-detail/match-card.tsx",
-    "line": 313,
+    "line": 314,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6036,7 +6036,7 @@
     "path": "latePaymentInterest.waive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/invoices/late-interest/waive-dialog.tsx",
-    "line": 53,
+    "line": 54,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6052,7 +6052,7 @@
     "path": "latePaymentInterest.getForInvoice",
     "kind": "queryKey",
     "file": "apps/web/src/components/invoices/late-interest/waive-dialog.tsx",
-    "line": 57,
+    "line": 58,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6196,7 +6196,7 @@
     "path": "user.pins.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/layout/nav-items.tsx",
-    "line": 135,
+    "line": 136,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6212,7 +6212,7 @@
     "path": "contractor.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/layout/top-bar.tsx",
-    "line": 52,
+    "line": 53,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6244,7 +6244,7 @@
     "path": "notification.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/notifications/notification-center.tsx",
-    "line": 80,
+    "line": 81,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6260,7 +6260,7 @@
     "path": "notification.unreadCount",
     "kind": "queryOptions",
     "file": "apps/web/src/components/notifications/notification-center.tsx",
-    "line": 95,
+    "line": 96,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6276,7 +6276,7 @@
     "path": "notification.markRead",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/notifications/notification-center.tsx",
-    "line": 101,
+    "line": 102,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6292,7 +6292,7 @@
     "path": "notification.markAllRead",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/notifications/notification-center.tsx",
-    "line": 115,
+    "line": 116,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -6468,7 +6468,7 @@
     "path": "settings.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 201,
+    "line": 202,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6484,7 +6484,7 @@
     "path": "consent.hasRequiredConsents",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 221,
+    "line": 222,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -6500,14 +6500,14 @@
     "path": "settings.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 230,
+    "line": 231,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": true
+      "hasIsPending": false
     },
     "fileHasAlertDialog": false
   },
@@ -6516,7 +6516,7 @@
     "path": "settings.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/onboarding/onboarding-checklist.tsx",
-    "line": 233,
+    "line": 234,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7092,7 +7092,7 @@
     "path": "portal.getUploadUrl",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 405,
+    "line": 406,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7108,7 +7108,7 @@
     "path": "ocr.portalTrigger",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 414,
+    "line": 415,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7124,7 +7124,7 @@
     "path": "ocr.portalGetResult",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 425,
+    "line": 426,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7140,7 +7140,7 @@
     "path": "ocr.portalGetByDocument",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 443,
+    "line": 444,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7156,7 +7156,7 @@
     "path": "portal.submitInvoice",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 640,
+    "line": 641,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7172,7 +7172,7 @@
     "path": "portal.getActiveContracts",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/invoice-submit-form.tsx",
-    "line": 992,
+    "line": 993,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7188,7 +7188,7 @@
     "path": "portal.getNotificationPreferences",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
-    "line": 112,
+    "line": 113,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7204,7 +7204,7 @@
     "path": "portal.getNotificationPreferences",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
-    "line": 116,
+    "line": 117,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7220,7 +7220,7 @@
     "path": "portal.updateNotificationPreference",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
-    "line": 118,
+    "line": 119,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7348,7 +7348,7 @@
     "path": "esign.listPendingForContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/portal/portal-pending-signatures.tsx",
-    "line": 73,
+    "line": 74,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7524,7 +7524,7 @@
     "path": "report.complianceGaps",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 54,
+    "line": 55,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7540,7 +7540,7 @@
     "path": "report.complianceGapsChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 62,
+    "line": 63,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7556,7 +7556,7 @@
     "path": "report.exportComplianceGaps",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/compliance-gaps-report.tsx",
-    "line": 66,
+    "line": 67,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7572,7 +7572,7 @@
     "path": "report.expiringContracts",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 48,
+    "line": 49,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7588,7 +7588,7 @@
     "path": "report.expiringContractsChart",
     "kind": "queryOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 57,
+    "line": 58,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7604,7 +7604,7 @@
     "path": "report.exportExpiringContracts",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/reports/expiring-contracts-report.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7748,7 +7748,7 @@
     "path": "search.global",
     "kind": "queryOptions",
     "file": "apps/web/src/components/search/command-palette.tsx",
-    "line": 372,
+    "line": 373,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7764,7 +7764,7 @@
     "path": "docs.search",
     "kind": "queryOptions",
     "file": "apps/web/src/components/search/command-palette.tsx",
-    "line": 383,
+    "line": 384,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7924,7 +7924,7 @@
     "path": "approval.listChains",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 62,
+    "line": 63,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7940,7 +7940,7 @@
     "path": "approval.updateChain",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 67,
+    "line": 68,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -7956,7 +7956,7 @@
     "path": "approval.listChains",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 70,
+    "line": 71,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7972,7 +7972,7 @@
     "path": "approval.listChains",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 77,
+    "line": 78,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -7988,7 +7988,7 @@
     "path": "approval.deleteChain",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 85,
+    "line": 86,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -8004,7 +8004,7 @@
     "path": "approval.listChains",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/approval-chains-tab.tsx",
-    "line": 89,
+    "line": 90,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8020,7 +8020,7 @@
     "path": "audit.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 164,
+    "line": 165,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8036,7 +8036,7 @@
     "path": "audit.actors",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 167,
+    "line": 168,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8052,7 +8052,7 @@
     "path": "audit.export",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/audit-log-tab.tsx",
-    "line": 170,
+    "line": 171,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -8212,7 +8212,7 @@
     "path": "settings.reviewChangeRequest",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 90,
+    "line": 91,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -8228,7 +8228,7 @@
     "path": "settings.reviewChangeRequest",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/change-request-diff-card.tsx",
-    "line": 103,
+    "line": 104,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -8596,7 +8596,7 @@
     "path": "einvoice.listByOrg",
     "kind": "infiniteQueryOptions",
     "file": "apps/web/src/components/settings/e-invoicing/transmissions-log-card.tsx",
-    "line": 126,
+    "line": 127,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -8964,7 +8964,7 @@
     "path": "ksef.syncHistory",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/ksef-sync-history.tsx",
-    "line": 64,
+    "line": 65,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9092,7 +9092,7 @@
     "path": "notification.getPreferences",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/notification-preferences.tsx",
-    "line": 130,
+    "line": 131,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9108,7 +9108,7 @@
     "path": "integration.getSlackStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/notification-preferences.tsx",
-    "line": 131,
+    "line": 132,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9124,7 +9124,7 @@
     "path": "integration.getHealth",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/notification-preferences.tsx",
-    "line": 133,
+    "line": 134,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9140,7 +9140,7 @@
     "path": "notification.updatePreferences",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/notification-preferences.tsx",
-    "line": 171,
+    "line": 172,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9156,7 +9156,7 @@
     "path": "notification.getPreferences",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/notification-preferences.tsx",
-    "line": 175,
+    "line": 176,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9236,7 +9236,7 @@
     "path": "settings.get",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/org-settings-form.tsx",
-    "line": 223,
+    "line": 224,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9252,7 +9252,7 @@
     "path": "settings.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/org-settings-form.tsx",
-    "line": 226,
+    "line": 227,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9268,7 +9268,7 @@
     "path": "settings.get",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/org-settings-form.tsx",
-    "line": 229,
+    "line": 230,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9364,7 +9364,7 @@
     "path": "integration.getHealth",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 99,
+    "line": 100,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9380,7 +9380,7 @@
     "path": "integration.getHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 109,
+    "line": 110,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9396,7 +9396,7 @@
     "path": "integration.getAllHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 112,
+    "line": 113,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9412,7 +9412,7 @@
     "path": "integration.getHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 130,
+    "line": 131,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9428,7 +9428,7 @@
     "path": "integration.getAllHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 133,
+    "line": 134,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9444,7 +9444,7 @@
     "path": "integration.disconnectGeneric",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 142,
+    "line": 143,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9460,7 +9460,7 @@
     "path": "jira.disconnect",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 152,
+    "line": 153,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9476,7 +9476,7 @@
     "path": "ksef.disconnect",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 158,
+    "line": 159,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9492,7 +9492,7 @@
     "path": "integration.getOAuthUrlGeneric",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-connection-card.tsx",
-    "line": 169,
+    "line": 170,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9508,7 +9508,7 @@
     "path": "integration.getHealth",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 140,
+    "line": 141,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9524,7 +9524,7 @@
     "path": "integration.getSyncLog",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 162,
+    "line": 163,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9540,7 +9540,7 @@
     "path": "integration.getWebhookLog",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 197,
+    "line": 198,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9556,7 +9556,7 @@
     "path": "integration.getOAuthUrlGeneric",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 219,
+    "line": 220,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9572,7 +9572,7 @@
     "path": "integration.disconnectGeneric",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 232,
+    "line": 233,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9588,7 +9588,7 @@
     "path": "integration.getHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 236,
+    "line": 237,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9604,7 +9604,7 @@
     "path": "integration.getAllHealth",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/provider-detail-sheet.tsx",
-    "line": 239,
+    "line": 240,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9620,7 +9620,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 163,
+    "line": 164,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9636,7 +9636,7 @@
     "path": "integration.getSlackStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 271,
+    "line": 272,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9652,7 +9652,7 @@
     "path": "reminder.create",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 327,
+    "line": 328,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9668,7 +9668,7 @@
     "path": "reminder.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 331,
+    "line": 332,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9684,7 +9684,7 @@
     "path": "reminder.update",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 342,
+    "line": 343,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9700,7 +9700,7 @@
     "path": "reminder.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/reminder-rule-editor.tsx",
-    "line": 346,
+    "line": 347,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9716,7 +9716,7 @@
     "path": "reminder.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 91,
+    "line": 92,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9732,7 +9732,7 @@
     "path": "reminder.toggleActive",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 96,
+    "line": 97,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9748,7 +9748,7 @@
     "path": "reminder.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 100,
+    "line": 101,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9764,7 +9764,7 @@
     "path": "reminder.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 106,
+    "line": 107,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9780,7 +9780,7 @@
     "path": "reminder.delete",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 114,
+    "line": 115,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9796,7 +9796,7 @@
     "path": "reminder.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/reminder-rules-section.tsx",
-    "line": 118,
+    "line": 119,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9892,7 +9892,7 @@
     "path": "integration.listUserMappings",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 146,
+    "line": 147,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9908,7 +9908,7 @@
     "path": "integration.unlinkUser",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 150,
+    "line": 151,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -9924,7 +9924,7 @@
     "path": "integration.listUserMappings",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/slack-user-mapping.tsx",
-    "line": 154,
+    "line": 155,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9940,7 +9940,7 @@
     "path": "tax.getRatesByCountry",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/tax/country-rates-section.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9956,7 +9956,7 @@
     "path": "tax.validateRate",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/tax/country-rates-section.tsx",
-    "line": 71,
+    "line": 72,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -9972,7 +9972,7 @@
     "path": "tax.calculateWht",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/tax/wht-calculator-section.tsx",
-    "line": 65,
+    "line": 66,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10116,7 +10116,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/settings/users-table.tsx",
-    "line": 178,
+    "line": 179,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10132,7 +10132,7 @@
     "path": "user.updateRole",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/users-table.tsx",
-    "line": 199,
+    "line": 200,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10148,7 +10148,7 @@
     "path": "user.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/users-table.tsx",
-    "line": 202,
+    "line": 203,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10164,7 +10164,7 @@
     "path": "user.reactivate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/settings/users-table.tsx",
-    "line": 215,
+    "line": 216,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10180,7 +10180,7 @@
     "path": "user.list",
     "kind": "queryKey",
     "file": "apps/web/src/components/settings/users-table.tsx",
-    "line": 218,
+    "line": 219,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10363,7 +10363,7 @@
       "hasToastSuccess": true,
       "hasToastError": true,
       "hasInvalidation": true,
-      "hasIsPending": false
+      "hasIsPending": true
     },
     "fileHasAlertDialog": false
   },
@@ -10404,7 +10404,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/template-builder/task-card.tsx",
-    "line": 118,
+    "line": 119,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10420,7 +10420,7 @@
     "path": "workflow.getTemplate",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 73,
+    "line": 74,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10436,7 +10436,7 @@
     "path": "workflow.createTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 112,
+    "line": 113,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10452,7 +10452,7 @@
     "path": "workflow.updateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 125,
+    "line": 126,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10468,7 +10468,7 @@
     "path": "workflow.deleteTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 138,
+    "line": 139,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10484,7 +10484,7 @@
     "path": "workflow.duplicateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-builder/template-form.tsx",
-    "line": 150,
+    "line": 151,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10500,7 +10500,7 @@
     "path": "workflowRoles.selectForContractor",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
-    "line": 78,
+    "line": 79,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10516,7 +10516,7 @@
     "path": "workflow.listTemplates",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
-    "line": 134,
+    "line": 135,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10532,7 +10532,7 @@
     "path": "workflow.startRun",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/template-picker-dialog.tsx",
-    "line": 159,
+    "line": 160,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10548,7 +10548,7 @@
     "path": "workflow.listTemplates",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 99,
+    "line": 100,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10564,7 +10564,7 @@
     "path": "workflow.seedStarterTemplates",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/templates-table.tsx",
-    "line": 125,
+    "line": 126,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10628,7 +10628,7 @@
     "path": "workflow.cancelRun",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/workflow-run/run-header.tsx",
-    "line": 239,
+    "line": 240,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10644,7 +10644,7 @@
     "path": "workflow.getRun",
     "kind": "queryKey",
     "file": "apps/web/src/components/workflows/workflow-run/run-header.tsx",
-    "line": 243,
+    "line": 244,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10660,7 +10660,7 @@
     "path": "workflow.overrideBlockingTask",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/workflow-run/run-header.tsx",
-    "line": 254,
+    "line": 255,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10676,7 +10676,7 @@
     "path": "workflow.getRun",
     "kind": "queryKey",
     "file": "apps/web/src/components/workflows/workflow-run/run-header.tsx",
-    "line": 258,
+    "line": 259,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10708,7 +10708,7 @@
     "path": "workflow.skipTask",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 119,
+    "line": 120,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10724,7 +10724,7 @@
     "path": "workflow.getRun",
     "kind": "queryKey",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 123,
+    "line": 124,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10740,7 +10740,7 @@
     "path": "user.list",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 179,
+    "line": 180,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10756,7 +10756,7 @@
     "path": "workflow.reassignTask",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 187,
+    "line": 188,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10772,7 +10772,7 @@
     "path": "workflow.getRun",
     "kind": "queryKey",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 196,
+    "line": 197,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10788,7 +10788,7 @@
     "path": "workflow.completeTask",
     "kind": "mutationOptions",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 413,
+    "line": 414,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -10804,7 +10804,7 @@
     "path": "workflow.getRun",
     "kind": "queryKey",
     "file": "apps/web/src/components/workflows/workflow-run/task-card-run.tsx",
-    "line": 417,
+    "line": 418,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10868,7 +10868,7 @@
     "path": "workflow.listTemplates",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-runs-table/data-table-filters.tsx",
-    "line": 63,
+    "line": 64,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10900,7 +10900,7 @@
     "path": "jira.connectionStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-side-panel.tsx",
-    "line": 56,
+    "line": 57,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10916,7 +10916,7 @@
     "path": "jira.linkedIssues",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-side-panel.tsx",
-    "line": 61,
+    "line": 62,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10932,7 +10932,7 @@
     "path": "linear.connectionStatus",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-side-panel.tsx",
-    "line": 138,
+    "line": 139,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10948,7 +10948,7 @@
     "path": "linear.linkedIssues",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-side-panel.tsx",
-    "line": 143,
+    "line": 144,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -10964,7 +10964,7 @@
     "path": "workflow.getRun",
     "kind": "queryOptions",
     "file": "apps/web/src/components/workflows/workflow-side-panel.tsx",
-    "line": 217,
+    "line": 218,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11108,7 +11108,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryOptions",
     "file": "apps/web/src/components/zatca/zatca-connection-pill.tsx",
-    "line": 48,
+    "line": 49,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11220,7 +11220,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryOptions",
     "file": "apps/web/src/components/zatca/zatca-status-card.tsx",
-    "line": 58,
+    "line": 59,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11236,7 +11236,7 @@
     "path": "zatca.getOnboardingState",
     "kind": "queryKey",
     "file": "apps/web/src/components/zatca/zatca-status-card.tsx",
-    "line": 72,
+    "line": 73,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11252,7 +11252,7 @@
     "path": "zatca.getComplianceStats",
     "kind": "queryKey",
     "file": "apps/web/src/components/zatca/zatca-status-card.tsx",
-    "line": 75,
+    "line": 76,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
@@ -11428,7 +11428,7 @@
     "path": "workflow.updateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 26,
+    "line": 27,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -11444,7 +11444,7 @@
     "path": "workflow.deleteTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 36,
+    "line": 37,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
@@ -11460,7 +11460,7 @@
     "path": "workflow.duplicateTemplate",
     "kind": "mutationOptions",
     "file": "apps/web/src/hooks/use-template-mutations.ts",
-    "line": 46,
+    "line": 47,
     "handlers": {
       "hasOnSuccess": true,
       "hasOnError": true,
