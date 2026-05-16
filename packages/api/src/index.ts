@@ -1,5 +1,5 @@
 export type { AuthMode, Context } from './context';
-export { createApiKeyContext, createContext } from './context';
+export { createApiKeyContext, createContext, createCronContext } from './context';
 export { createCallerFactory } from './init';
 export type { PortalAppRouter } from './portal-root';
 export { portalAppRouter } from './portal-root';

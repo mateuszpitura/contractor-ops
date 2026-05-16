@@ -46,4 +46,20 @@ export function createApiKeyContext(opts: { headers: Headers }): ApiContext {
   };
 }
 
+/**
+ * Creates a minimal context for cron-triggered tRPC calls.
+ * Session resolution is skipped — `cronProcedure` middleware authenticates
+ * via the `Authorization: Bearer <CRON_SECRET>` header on `ctx.headers`.
+ * The caller is responsible for constructing those headers with a valid
+ * secret from `getServerEnv().CRON_SECRET`.
+ */
+export function createCronContext(opts: { headers: Headers }): ApiContext {
+  return {
+    headers: opts.headers,
+    session: null,
+    user: null,
+    authMode: 'cron',
+  };
+}
+
 export type Context = Awaited<ReturnType<typeof createContext>>;

@@ -106,6 +106,16 @@ const callers: Caller[] = [];
 
 const TRPC_CLIENT_NAMES = new Set(['trpc', 'portalTrpc']);
 
+/**
+ * Server-side `createCallerFactory(appRouter)(...)` results are conventionally
+ * bound to `caller`. The chain looks like `caller.<path>.<procedureName>(...)`
+ * — i.e. the LAST segment is the procedure name itself, not a terminal
+ * method. Used by cron routes (e.g. /api/cron/exchange-rates) and any other
+ * server-only consumer that invokes a tRPC procedure without going through
+ * the HTTP transport.
+ */
+const SERVER_CALLER_NAMES = new Set(['caller']);
+
 type AliasTarget = { client: string; prefix: string[] };
 
 /**
@@ -238,6 +248,16 @@ function matchTrpcChain(
     node = node.expression;
   }
   if (!ts.isIdentifier(node)) return null;
+
+  // Server-side caller: `caller.<path>.<procName>(...)`. The LAST segment is
+  // the procedure name itself — no terminal method. Treat as a direct
+  // invocation and emit a kind='directCall' caller entry so the procedure
+  // is recognized as consumed.
+  if (SERVER_CALLER_NAMES.has(node.text)) {
+    if (segments.length < 1) return null;
+    return { client: node.text, path: segments.join('.'), terminal: 'directCall' };
+  }
+
   const resolved = resolveRoot(node.text, localAliases);
   if (!resolved) return null;
   // Need at least a procedure name + terminal (when prefix is empty); when an
@@ -686,7 +706,18 @@ console.log(`scanning ${files.length} files`);
 
 for (const file of files) {
   const text = readFileSync(file, 'utf8');
-  if (!(text.includes('trpc') || text.includes('portalTrpc'))) continue;
+  if (
+    !(
+      text.includes('trpc') ||
+      text.includes('portalTrpc') ||
+      // Server-side caller files build via createCallerFactory and may not
+      // mention the `trpc` identifier directly. Recognize the appRouter /
+      // createCallerFactory imports as the discriminator instead.
+      text.includes('createCallerFactory') ||
+      text.includes('appRouter')
+    )
+  )
+    continue;
   const sf = ts.createSourceFile(file, text, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TSX);
   const localAliases = collectLocalAliases(sf);
   const fileHasAlertDialog =

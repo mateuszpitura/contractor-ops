@@ -1,15 +1,1 @@
-[
-  {
-    "id": "F-MED-001",
-    "severity": "LOW",
-    "category": "orphan-intentional-non-ui",
-    "procedure": "exchangeRate.fetchDaily",
-    "file": "packages/api/src/routers/finance/exchange-rate.ts",
-    "line": 24,
-    "problem": "Procedure exchangeRate.fetchDaily (mutation, surface=appRouter) has no FE caller.",
-    "fix": "Wire to relevant UI action, or delete procedure if obsolete, or document non-UI caller.",
-    "intentionalCallers": [
-      "(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:24)"
-    ]
-  }
-]
+[]

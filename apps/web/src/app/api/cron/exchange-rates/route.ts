@@ -1,7 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
+import { appRouter, createCallerFactory, createCronContext } from '@contractor-ops/api';
 import { withCronMonitor } from '@contractor-ops/api/services/cron-monitor';
-import { fetchAndStoreRates } from '@contractor-ops/api/services/exchange-rate';
-import { getRegionalClient, SUPPORTED_REGIONS } from '@contractor-ops/db';
 import { createCronLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
@@ -10,6 +9,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 const log = createCronLogger('exchange-rates');
+const createCaller = createCallerFactory(appRouter);
 
 // ---------------------------------------------------------------------------
 // GET /api/cron/exchange-rates
@@ -48,37 +48,33 @@ export async function GET(request: NextRequest) {
     'exchange-rates',
     () =>
       withCronMonitor('exchange-rates', async () => {
-        const errors: string[] = [];
-        let stored = 0;
+        try {
+          // Build a cron-scoped tRPC caller and forward the verified
+          // Authorization header so cronProcedure middleware accepts it.
+          // The procedure itself fans out across SUPPORTED_REGIONS and
+          // aggregates per-region errors — this route just relays the result.
+          const cronHeaders = new Headers({ authorization: authHeader });
+          const caller = createCaller(createCronContext({ headers: cronHeaders }));
+          const result = await caller.exchangeRate.fetchDaily();
 
-        for (const region of SUPPORTED_REGIONS) {
-          try {
-            const r = await fetchAndStoreRates(getRegionalClient(region));
-            stored += r.stored;
-            for (const e of r.errors) {
-              errors.push(`[${region}] ${e}`);
-            }
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err);
-            errors.push(`[${region}] ${msg}`);
-            log.error({ err, region }, 'regional exchange-rate fetch failed');
-            Sentry.captureException(err, {
-              tags: { 'cron.job': 'exchange-rates', region },
-            });
+          log.info(
+            { stored: result.stored, errorCount: result.errors.length },
+            'exchange-rates sync completed',
+          );
+          metrics.gauge('cron.exchange_rates.stored', result.stored);
+          metrics.gauge('cron.exchange_rates.errors', result.errors.length);
+
+          if (result.stored === 0 && result.errors.length > 0) {
+            return NextResponse.json(result, { status: 500 });
           }
+          return NextResponse.json(result);
+        } catch (error) {
+          log.error({ err: error }, 'exchange-rates cron failed');
+          Sentry.captureException(error, {
+            tags: { 'cron.job': 'exchange-rates' },
+          });
+          return NextResponse.json({ error: 'Exchange rates sync failed' }, { status: 500 });
         }
-
-        log.info(
-          { stored, errorCount: errors.length, regions: SUPPORTED_REGIONS.length },
-          'exchange-rates sync completed',
-        );
-        metrics.gauge('cron.exchange_rates.stored', stored);
-        metrics.gauge('cron.exchange_rates.errors', errors.length);
-
-        if (stored === 0 && errors.length > 0) {
-          return NextResponse.json({ stored, errors }, { status: 500 });
-        }
-        return NextResponse.json({ stored, errors });
       }),
     {
       schedule: { type: 'crontab', value: '0 6 * * *' },

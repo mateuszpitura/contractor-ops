@@ -14,12 +14,12 @@ export const exchangeRateRouter = router({
    * server-side. No FE-facing exchange-rate procedures exist by design.
    *
    * Consumer: `cron-exchange-rates` (render.yaml, daily 06:00 UTC) hits
-   * `/api/cron/exchange-rates` in apps/web, which calls
-   * `fetchAndStoreRates` against every region directly. This tRPC
-   * procedure is kept as the canonical reference implementation in case
-   * a future internal scheduler (QStash, etc.) wants to wire in via
-   * `cronCaller` instead. Tagged `orphan-intentional-non-ui` by the
-   * FE↔BE audit's triage step (Signal #1: cronProcedure middleware).
+   * `/api/cron/exchange-rates` in apps/web. The route builds a cron-scoped
+   * tRPC caller via `createCallerFactory(appRouter)` + `createCronContext`,
+   * forwards the verified `Authorization: Bearer <CRON_SECRET>` header so
+   * `cronProcedure` middleware accepts the call, and invokes
+   * `caller.exchangeRate.fetchDaily()`. Tagged `orphan-intentional-non-ui`
+   * by the FE↔BE audit's triage step (Signal #1: cronProcedure middleware).
    */
   fetchDaily: cronProcedure.mutation(async () => {
     const errors: string[] = [];

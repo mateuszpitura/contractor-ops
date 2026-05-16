@@ -1888,6 +1888,28 @@
     "isPassedToChildAsCallback": false
   },
   {
+    "client": "caller",
+    "path": "exchangeRate.fetchDaily",
+    "kind": "directCall",
+    "file": "apps/web/src/app/api/cron/exchange-rates/route.ts",
+    "line": 62,
+    "handlers": {
+      "hasOnSuccess": false,
+      "hasOnError": false,
+      "hasToastSuccess": false,
+      "hasToastError": false,
+      "hasInvalidation": false,
+      "hasIsPending": false
+    },
+    "fileHasAlertDialog": false,
+    "isInHookFile": false,
+    "isCalledInUseEffect": false,
+    "isInRoutedAlias": false,
+    "fileHasFileInputTrigger": false,
+    "hasRedirectAfterMutate": false,
+    "isPassedToChildAsCallback": false
+  },
+  {
     "client": "trpc",
     "path": "adminBoeRate.insert",
     "kind": "mutationOptions",
