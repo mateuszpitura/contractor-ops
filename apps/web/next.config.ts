@@ -158,11 +158,29 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value:
+              'camera=(), microphone=(), geolocation=(), interest-cohort=(), payment=(), fullscreen=(self)',
           },
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-site',
+          },
+          // Cross-Origin-Embedder-Policy: 'credentialless' is the COEP mode
+          // compatible with cross-origin iframes that don't ship CORP headers
+          // (e.g. DocuSign signing iframe). If COEP-violation reports appear
+          // post-deploy from the DocuSign embed, fall back to relaxing or
+          // removing this header.
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'credentialless',
           },
         ],
       },
