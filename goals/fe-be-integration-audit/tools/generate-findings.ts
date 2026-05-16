@@ -91,6 +91,7 @@ type Caller = {
   isInRoutedAlias?: boolean;
   fileHasFileInputTrigger?: boolean;
   hasRedirectAfterMutate?: boolean;
+  isPassedToChildAsCallback?: boolean;
 };
 type Severity = 'HIGH' | 'MED' | 'LOW';
 type FalsePositiveEntry = {
@@ -195,6 +196,9 @@ function hasFileInputTrigger(c: Caller): boolean {
 }
 function hasRedirectAfterMutate(c: Caller): boolean {
   return c.hasRedirectAfterMutate === true;
+}
+function isPassedToChild(c: Caller): boolean {
+  return c.isPassedToChildAsCallback === true;
 }
 
 // Only inspect mutationOptions call sites (queries don't need toasts/confirm)
@@ -315,6 +319,8 @@ for (const c of callers) {
   //   - routed-mutation alias (the active branch is the wired trigger)
   //   - file-input trigger (the <input type="file"> can't be disabled mid-
   //     upload; a step-state machine gates progress)
+  //   - passed-to-child callback (the trigger lives inside an imported child
+  //     component; this file has no disable-capable JSX element to attach)
   if (
     !(
       c.handlers.hasIsPending ||
@@ -322,7 +328,8 @@ for (const c of callers) {
       isOptimisticUpdate(c) ||
       isEffectDriven(c) ||
       isRoutedAlias(c) ||
-      hasFileInputTrigger(c)
+      hasFileInputTrigger(c) ||
+      isPassedToChild(c)
     )
   ) {
     findings.push({

@@ -92,6 +92,14 @@ type Caller = {
    * resolves, so an onSuccess handler would have no UI to update.
    */
   hasRedirectAfterMutate: boolean;
+  /**
+   * A same-file handler that calls `<mutationVar>.mutate` is passed as a JSX
+   * prop (any `on*` attribute) to a child component, OR `<var>.mutate` is
+   * referenced inline inside a JSX `on*` attribute value that's bound on a
+   * non-trigger-capable child element. The trigger ultimately lives inside
+   * the child, so the wrapping file has nothing to disable.
+   */
+  isPassedToChildAsCallback: boolean;
 };
 
 const callers: Caller[] = [];
@@ -473,6 +481,158 @@ function mutationUsesMutateAsyncIn(sf: ts.SourceFile, mutationVar: string | null
   return found;
 }
 
+/** True when a same-file handler calls `<mutationVar>.mutate` AND that
+ *  handler's identifier (or the mutation var itself) appears as a JSX
+ *  attribute value somewhere in the file. Catches the "child component owns
+ *  the trigger" pattern where the parent wires the mutation through an
+ *  `onX={handler}` prop and there's no native disable-able element in this
+ *  file. The non-disable-capable tag list (handled via the codemod's
+ *  DISABLED_CAPABLE list) is the inverse case — here the child component
+ *  type isn't known, so we suppress regardless.
+ *
+ *  Also accepts inline mutation refs (`onSave={() => mut.mutate(...)}`) on
+ *  any JSX attribute whose name is NOT in the standard trigger set
+ *  (onClick / onSubmit / onSelect / onPress). Custom prop names like
+ *  `onSave`, `onConfirm`, `onApprove` get caught here. */
+function isPassedToChildCallback(sf: ts.SourceFile, mutationVar: string | null): boolean {
+  if (!mutationVar) return false;
+  // 1. Collect all top-level handler names whose body references
+  //    <mutationVar>.mutate / .mutateAsync.
+  const wrappingHandlerNames = new Set<string>();
+  const findHandlers = (n: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(n) &&
+      ts.isIdentifier(n.name) &&
+      n.initializer &&
+      (ts.isArrowFunction(n.initializer) ||
+        ts.isFunctionExpression(n.initializer) ||
+        (ts.isCallExpression(n.initializer) &&
+          ts.isIdentifier(n.initializer.expression) &&
+          n.initializer.expression.text === 'useCallback' &&
+          n.initializer.arguments[0]))
+    ) {
+      const body =
+        ts.isCallExpression(n.initializer) && n.initializer.arguments[0]
+          ? n.initializer.arguments[0]
+          : (n.initializer as ts.ArrowFunction | ts.FunctionExpression).body;
+      if (body && referencesMutationMutate(body, mutationVar)) {
+        wrappingHandlerNames.add(n.name.text);
+      }
+    }
+    if (ts.isFunctionDeclaration(n) && n.name && n.body) {
+      if (referencesMutationMutate(n.body, mutationVar)) {
+        wrappingHandlerNames.add(n.name.text);
+      }
+    }
+    ts.forEachChild(n, findHandlers);
+  };
+  ts.forEachChild(sf, findHandlers);
+
+  // 2. Walk JSX attributes. Match if:
+  //    a) attribute initializer is an Identifier referencing a wrapping handler, OR
+  //    b) attribute initializer references <mutationVar>.mutate inline AND the
+  //       attribute name is not a standard native trigger (onClick / onSubmit /
+  //       onSelect / onPress).
+  const NATIVE_TRIGGERS = new Set(['onClick', 'onSubmit', 'onSelect', 'onPress']);
+  let matched = false;
+  const visit = (n: ts.Node) => {
+    if (matched) return;
+    if (ts.isJsxAttribute(n) && ts.isIdentifier(n.name) && n.initializer) {
+      const attrName = n.name.text;
+      if (
+        ts.isJsxExpression(n.initializer) &&
+        n.initializer.expression &&
+        ts.isIdentifier(n.initializer.expression) &&
+        wrappingHandlerNames.has(n.initializer.expression.text)
+      ) {
+        matched = true;
+        return;
+      }
+      if (
+        attrName.startsWith('on') &&
+        !NATIVE_TRIGGERS.has(attrName) &&
+        ts.isJsxExpression(n.initializer) &&
+        n.initializer.expression &&
+        referencesMutationMutate(n.initializer.expression, mutationVar)
+      ) {
+        matched = true;
+        return;
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return matched;
+}
+
+/** Find a `useMutation({ mutationFn: <mutationVar>.mutationFn, ... })` call
+ *  in the file and return its options literal so its handlers can be
+ *  merged into the upstream mutationOptions caller. Returns null when
+ *  the pattern isn't present.
+ *
+ *  Pattern context: some files wrap a base mutationOptions to add
+ *  onMutate / onSettled / cache-write helpers around the underlying
+ *  mutationFn. The detector originally only saw the base call. This
+ *  follow-up scan attaches the wrapper's handler intent. */
+function findWrappedUseMutationOptions(
+  sf: ts.SourceFile,
+  baseVar: string | null,
+): ts.ObjectLiteralExpression | null {
+  if (!baseVar) return null;
+  let result: ts.ObjectLiteralExpression | null = null;
+  const visit = (n: ts.Node) => {
+    if (result) return;
+    if (
+      ts.isCallExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === 'useMutation' &&
+      n.arguments[0] &&
+      ts.isObjectLiteralExpression(n.arguments[0])
+    ) {
+      const obj = n.arguments[0];
+      for (const prop of obj.properties) {
+        if (
+          ts.isPropertyAssignment(prop) &&
+          prop.name &&
+          ts.isIdentifier(prop.name) &&
+          prop.name.text === 'mutationFn' &&
+          ts.isPropertyAccessExpression(prop.initializer) &&
+          ts.isIdentifier(prop.initializer.expression) &&
+          prop.initializer.expression.text === baseVar &&
+          ts.isIdentifier(prop.initializer.name) &&
+          prop.initializer.name.text === 'mutationFn'
+        ) {
+          result = obj;
+          return;
+        }
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return result;
+}
+
+function referencesMutationMutate(node: ts.Node, mutationVar: string): boolean {
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (
+      ts.isPropertyAccessExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === mutationVar &&
+      ts.isIdentifier(n.name) &&
+      (n.name.text === 'mutate' || n.name.text === 'mutateAsync')
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(node, visit);
+  return found;
+}
+
 /** True when the file declares a ternary alias of the form
  *  `const X = cond ? mutA : (cond2 ? mutB : mutC);` and `mutationVar` appears
  *  as one of the branch identifiers. Indicates the mutation participates in
@@ -591,6 +751,25 @@ for (const file of files) {
               hasEmptyOnError: handlers.hasEmptyOnError || siblingFlags.hasEmptyOnError,
             };
           }
+
+          // Wrapped useMutation pattern: `useMutation({ mutationFn: base.mutationFn, ... })`
+          // where `base` is the enclosing var of this mutationOptions call.
+          // Merge the wrapper's options-literal handlers into ours so onMutate
+          // (and any other ergonomics added at the wrapper level) get
+          // surfaced for suppression rules downstream.
+          const wrapped = findWrappedUseMutationOptions(sf, enclosingVar);
+          if (wrapped) {
+            const wrappedFlags = inspectMutationOptions(wrapped);
+            handlers = {
+              hasOnSuccess: handlers.hasOnSuccess || wrappedFlags.hasOnSuccess,
+              hasOnError: handlers.hasOnError || wrappedFlags.hasOnError,
+              hasToastSuccess: handlers.hasToastSuccess || wrappedFlags.hasToastSuccess,
+              hasToastError: handlers.hasToastError || wrappedFlags.hasToastError,
+              hasInvalidation: handlers.hasInvalidation || wrappedFlags.hasInvalidation,
+              hasOnMutate: handlers.hasOnMutate || wrappedFlags.hasOnMutate,
+              hasEmptyOnError: handlers.hasEmptyOnError || wrappedFlags.hasEmptyOnError,
+            };
+          }
         }
 
         const hasIsPending =
@@ -608,6 +787,8 @@ for (const file of files) {
           match.terminal === 'mutationOptions' &&
           fileHasRedirect &&
           mutationUsesMutateAsyncIn(sf, enclosingVar);
+        const isPassedToChildAsCallback =
+          match.terminal === 'mutationOptions' ? isPassedToChildCallback(sf, enclosingVar) : false;
         callers.push({
           client: match.client,
           path: match.path,
@@ -621,6 +802,7 @@ for (const file of files) {
           isInRoutedAlias,
           fileHasFileInputTrigger,
           hasRedirectAfterMutate,
+          isPassedToChildAsCallback,
         });
       }
     }

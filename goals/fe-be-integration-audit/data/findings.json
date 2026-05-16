@@ -11,35 +11,5 @@
     "intentionalCallers": [
       "(middleware=cronProcedure on packages/api/src/routers/finance/exchange-rate.ts:24)"
     ]
-  },
-  {
-    "id": "F-LOW-001",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "portalTime.saveDraftEntries",
-    "file": "apps/web/src/app/[locale]/(portal)/portal/time/page.tsx",
-    "line": 118,
-    "problem": "Mutation portalTime.saveDraftEntries trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
-    "triage": {
-      "status": "false-positive",
-      "pattern": "cell-blur-autosave",
-      "reason": "Mutation fires from TimesheetGrid's cell-blur handler, not a discrete Button. The grid's `disabled` prop is already wired (set by submitted/approved timesheet state), and saves are batched on blur — there is no static trigger to disable mid-flight."
-    }
-  },
-  {
-    "id": "F-LOW-002",
-    "severity": "LOW",
-    "category": "missing-loading-state",
-    "procedure": "portal.updateNotificationPreference",
-    "file": "apps/web/src/components/portal/notification-preferences-section.tsx",
-    "line": 119,
-    "problem": "Mutation portal.updateNotificationPreference trigger has no isPending reference — button not disabled while pending, double-submit possible.",
-    "fix": "Add disabled={mutation.isPending} to the trigger element and render a loading indicator.",
-    "triage": {
-      "status": "false-positive",
-      "pattern": "optimistic-update",
-      "reason": "Mutation uses optimistic-update (`onMutate` writes new value to query cache + `onSettled` refetches). Disabling the Switch while pending would defeat the optimistic UX — toggle feedback is instant by design."
-    }
   }
 ]
