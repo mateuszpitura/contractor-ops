@@ -15,7 +15,7 @@
  *   LOW:
  *     - Mutation present but no isPending reference (no loading/disabled wiring)
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +25,11 @@ const procedures = JSON.parse(
   readFileSync(resolve(DATA, 'procedures.json'), 'utf8'),
 ) as Procedure[];
 const callers = JSON.parse(readFileSync(resolve(DATA, 'fe-callers.json'), 'utf8')) as Caller[];
+const falsePositives: FalsePositiveEntry[] = existsSync(resolve(DATA, 'false-positives.json'))
+  ? (JSON.parse(
+      readFileSync(resolve(DATA, 'false-positives.json'), 'utf8'),
+    ) as FalsePositiveEntry[])
+  : [];
 
 type Procedure = {
   surface: string;
@@ -52,6 +57,18 @@ type Caller = {
   fileHasAlertDialog: boolean;
 };
 type Severity = 'HIGH' | 'MED' | 'LOW';
+type FalsePositiveEntry = {
+  procedure: string;
+  file: string;
+  category: string;
+  pattern: string;
+  reason: string;
+};
+type Triage = {
+  status: 'false-positive';
+  pattern: string;
+  reason: string;
+};
 type Finding = {
   id: string;
   severity: Severity;
@@ -61,6 +78,7 @@ type Finding = {
   line?: number;
   problem: string;
   fix: string;
+  triage?: Triage;
 };
 
 const findings: Finding[] = [];
@@ -218,6 +236,26 @@ for (const c of callers) {
 }
 
 // ---------------------------------------------------------------------------
+// Apply manual triage manifest (false-positives.json)
+// ---------------------------------------------------------------------------
+
+const fpKey = (e: { procedure?: string; file?: string; category: string }) =>
+  `${e.procedure ?? ''}::${e.file ?? ''}::${e.category}`;
+const fpIndex = new Map<string, FalsePositiveEntry>();
+for (const entry of falsePositives) fpIndex.set(fpKey(entry), entry);
+
+for (const f of findings) {
+  const match = fpIndex.get(fpKey(f));
+  if (match) {
+    f.triage = { status: 'false-positive', pattern: match.pattern, reason: match.reason };
+  }
+}
+
+// Separate active findings from triaged ones for the AUDIT.md split.
+const activeFindings = findings.filter(f => !f.triage);
+const triagedFindings = findings.filter(f => f.triage);
+
+// ---------------------------------------------------------------------------
 // Write findings + AUDIT.md
 // ---------------------------------------------------------------------------
 
@@ -274,7 +312,7 @@ const byDomain = (path: string): string => {
 };
 
 const bySeverity: Record<Severity, Finding[]> = { HIGH: [], MED: [], LOW: [] };
-for (const f of findings) bySeverity[f.severity].push(f);
+for (const f of activeFindings) bySeverity[f.severity].push(f);
 
 const domains = [
   'core',
@@ -286,13 +324,13 @@ const domains = [
   'workflow',
 ];
 const summary = domains.map(d => {
-  const high = findings.filter(
+  const high = activeFindings.filter(
     f => f.severity === 'HIGH' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
-  const med = findings.filter(
+  const med = activeFindings.filter(
     f => f.severity === 'MED' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
-  const low = findings.filter(
+  const low = activeFindings.filter(
     f => f.severity === 'LOW' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
   return { d, high, med, low, total: high + med + low };
@@ -306,8 +344,9 @@ lines.push('');
 lines.push('## Summary');
 lines.push('');
 lines.push(
-  `- Total findings: **${findings.length}** (HIGH ${bySeverity.HIGH.length} / MED ${bySeverity.MED.length} / LOW ${bySeverity.LOW.length})`,
+  `- Active findings: **${activeFindings.length}** (HIGH ${bySeverity.HIGH.length} / MED ${bySeverity.MED.length} / LOW ${bySeverity.LOW.length})`,
 );
+lines.push(`- Triaged as false positive: **${triagedFindings.length}** (see Appendix B)`);
 lines.push(
   `- Procedures audited: **${procedures.length}** (across appRouter + portalAppRouter + publicApiRouter)`,
 );
@@ -345,9 +384,44 @@ for (const sev of ['HIGH', 'MED', 'LOW'] as const) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Appendix B: triaged false positives (manual review notes from
+// data/false-positives.json). These are flagged by the detector but
+// reviewed and confirmed as intentional patterns — kept here so reviewers
+// don't re-trip on the same items.
+// ---------------------------------------------------------------------------
+
+if (triagedFindings.length > 0) {
+  lines.push('## Appendix B — Triaged false positives');
+  lines.push('');
+  lines.push(
+    'Findings the detector raised that were manually reviewed and confirmed intentional. Annotations live in `data/false-positives.json` and survive pipeline regeneration.',
+  );
+  lines.push('');
+  const byPattern = new Map<string, Finding[]>();
+  for (const f of triagedFindings) {
+    const key = f.triage?.pattern ?? 'unclassified';
+    const arr = byPattern.get(key) ?? [];
+    arr.push(f);
+    byPattern.set(key, arr);
+  }
+  for (const [pattern, items] of [...byPattern.entries()].sort()) {
+    lines.push(`### ${pattern} (${items.length})`);
+    lines.push('');
+    for (const f of items) {
+      const loc = f.file ? `${f.file}:${f.line}` : '—';
+      lines.push(
+        `- **${f.id}** \`${loc}\` — ${f.procedure} (${f.category}). _Why benign:_ ${f.triage?.reason}`,
+      );
+    }
+    lines.push('');
+  }
+}
+
 writeFileSync(resolve(DATA, '..', 'AUDIT.md'), lines.join('\n'), 'utf8');
 
 console.log(
-  `\n✓ findings: HIGH=${bySeverity.HIGH.length}  MED=${bySeverity.MED.length}  LOW=${bySeverity.LOW.length}  total=${findings.length}`,
+  `\n✓ active findings: HIGH=${bySeverity.HIGH.length}  MED=${bySeverity.MED.length}  LOW=${bySeverity.LOW.length}  total=${activeFindings.length}`,
 );
+console.log(`  triaged as false positive: ${triagedFindings.length}`);
 console.log('  wrote data/findings.json + AUDIT.md');

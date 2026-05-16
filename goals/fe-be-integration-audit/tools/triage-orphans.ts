@@ -17,6 +17,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../../..');
 const DATA = resolve(__dirname, '../data');
 
+type Triage = {
+  status: 'false-positive';
+  pattern: string;
+  reason: string;
+};
+
 type Finding = {
   id: string;
   severity: 'HIGH' | 'MED' | 'LOW';
@@ -27,6 +33,7 @@ type Finding = {
   problem: string;
   fix: string;
   intentionalCallers?: string[];
+  triage?: Triage;
 };
 
 type ProcedureRecord = {
@@ -151,8 +158,13 @@ console.log(`tagged ${intentionalCount} orphans as intentional non-UI`);
 // ---------------------------------------------------------------------------
 
 type Severity = 'HIGH' | 'MED' | 'LOW';
+// Triaged findings (false positives from data/false-positives.json) are
+// rendered in their own Appendix B and excluded from severity buckets so
+// counts reflect the active triage backlog.
+const activeFindings = findings.filter(f => !f.triage);
+const triagedFindings = findings.filter(f => f.triage);
 const bySeverity: Record<Severity, Finding[]> = { HIGH: [], MED: [], LOW: [] };
-for (const f of findings) bySeverity[f.severity].push(f);
+for (const f of activeFindings) bySeverity[f.severity].push(f);
 
 const procedures = JSON.parse(readFileSync(resolve(DATA, 'procedures.json'), 'utf8')) as Array<{
   surface: string;
@@ -211,13 +223,13 @@ const domains = [
   'workflow',
 ];
 const summary = domains.map(d => {
-  const high = findings.filter(
+  const high = activeFindings.filter(
     f => f.severity === 'HIGH' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
-  const med = findings.filter(
+  const med = activeFindings.filter(
     f => f.severity === 'MED' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
-  const low = findings.filter(
+  const low = activeFindings.filter(
     f => f.severity === 'LOW' && (f.procedure ? byDomain(f.procedure) === d : false),
   ).length;
   return { d, high, med, low, total: high + med + low };
@@ -231,8 +243,9 @@ lines.push('');
 lines.push('## Summary');
 lines.push('');
 lines.push(
-  `- Total findings: **${findings.length}** (HIGH ${bySeverity.HIGH.length} / MED ${bySeverity.MED.length} / LOW ${bySeverity.LOW.length})`,
+  `- Active findings: **${activeFindings.length}** (HIGH ${bySeverity.HIGH.length} / MED ${bySeverity.MED.length} / LOW ${bySeverity.LOW.length})`,
 );
+lines.push(`- Triaged as false positive: **${triagedFindings.length}** (see Appendix B)`);
 lines.push(
   `- Procedures audited: **${procedures.length}** (appRouter + portalAppRouter + publicApiRouter)`,
 );
@@ -268,9 +281,9 @@ for (const sev of ['HIGH', 'MED', 'LOW'] as const) {
   }
 }
 
-// Appendix: intentional non-UI
+// Appendix A: intentional non-UI orphans (auto-tagged above)
 const intentional = findings.filter(f => f.category === 'orphan-intentional-non-ui');
-lines.push('## Appendix — Intentional non-UI consumers');
+lines.push('## Appendix A — Intentional non-UI consumers');
 lines.push('');
 lines.push(
   `These procedures have no FE caller because they are invoked from non-UI consumers (public-api REST routes, background jobs, cron scripts, services). Count: **${intentional.length}**.`,
@@ -279,10 +292,39 @@ lines.push('');
 for (const f of intentional) {
   lines.push(`- **${f.id}** \`${f.procedure}\` — caller(s):`);
   for (const c of f.intentionalCallers ?? []) {
-    lines.push(`  - \`${c.replace(ROOT + '/', '')}\``);
+    lines.push(`  - \`${c.replace(`${ROOT}/`, '')}\``);
   }
 }
 lines.push('');
+
+// Appendix B: manually triaged false positives. Annotations live in
+// data/false-positives.json — see generate-findings.ts for how they attach.
+if (triagedFindings.length > 0) {
+  lines.push('## Appendix B — Triaged false positives');
+  lines.push('');
+  lines.push(
+    'Findings the detector raised that were manually reviewed and confirmed intentional. Annotations live in `data/false-positives.json` and survive pipeline regeneration.',
+  );
+  lines.push('');
+  const byPattern = new Map<string, Finding[]>();
+  for (const f of triagedFindings) {
+    const key = f.triage?.pattern ?? 'unclassified';
+    const arr = byPattern.get(key) ?? [];
+    arr.push(f);
+    byPattern.set(key, arr);
+  }
+  for (const [pattern, items] of [...byPattern.entries()].sort()) {
+    lines.push(`### ${pattern} (${items.length})`);
+    lines.push('');
+    for (const f of items) {
+      const loc = f.file ? `${f.file}:${f.line}` : '—';
+      lines.push(
+        `- **${f.id}** \`${loc}\` — ${f.procedure} (${f.category}). _Why benign:_ ${f.triage?.reason}`,
+      );
+    }
+    lines.push('');
+  }
+}
 
 writeFileSync(resolve(DATA, '..', 'AUDIT.md'), lines.join('\n'), 'utf8');
 console.log('✓ AUDIT.md updated');
