@@ -33,6 +33,10 @@ export function CsrGeneration({ onSuccess, onBack }: CsrGenerationProps) {
   const tAria = useTranslations('Common.aria');
   const [csrPem, setCsrPem] = useState<string | null>(null);
 
+  // NOTE: No queryClient.invalidateQueries — wizard-step mutation. The parent
+  // `OnboardingWizard.goNext` refreshes `zatcaTrpc.getOnboardingState` on step
+  // advance. UI here is driven by local `csrPem` state.
+  // See AUDIT.md Appendix B (wizard-step-progression).
   const generateMutation = useMutation({
     ...zatcaTrpc.generateCsr.mutationOptions(),
     onSuccess: (data: unknown) => {

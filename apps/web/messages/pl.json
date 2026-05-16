@@ -5601,7 +5601,8 @@
       "toast": {
         "exportReady": "Eksport pobrany",
         "exportFailed": "Nie udało się wygenerować eksportu",
-        "erasureRequested": "Usunięcie zaplanowane"
+        "erasureRequested": "Usunięcie zaplanowane",
+        "erasureFailed": "Nie udało się zaplanować usunięcia"
       }
     },
     "outOfOffice": {

@@ -5601,7 +5601,8 @@
       "toast": {
         "exportReady": "تم تنزيل التصدير",
         "exportFailed": "تعذر توليد التصدير",
-        "erasureRequested": "تم جدولة الحذف"
+        "erasureRequested": "تم جدولة الحذف",
+        "erasureFailed": "تعذّر جدولة الحذف"
       }
     },
     "outOfOffice": {

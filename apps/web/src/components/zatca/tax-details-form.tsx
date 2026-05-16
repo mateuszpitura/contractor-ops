@@ -57,6 +57,11 @@ export function TaxDetailsForm({ defaultValues, onSuccess, onCancel }: TaxDetail
     },
   });
 
+  // NOTE: No queryClient.invalidateQueries — wizard-step mutation. The parent
+  // `OnboardingWizard.goNext` (invoked via the `onSuccess` prop here)
+  // invalidates `zatcaTrpc.getOnboardingState` on advance. UI here unmounts
+  // immediately after success.
+  // See AUDIT.md Appendix B (wizard-step-progression).
   const saveMutation = useMutation({
     ...zatcaTrpc.saveTaxDetails.mutationOptions(),
     onSuccess: () => {

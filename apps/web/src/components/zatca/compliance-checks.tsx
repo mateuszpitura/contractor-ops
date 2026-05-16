@@ -50,6 +50,14 @@ export function ComplianceChecks({ onSuccess, onBack }: ComplianceChecksProps) {
   const t = useTranslations('Zatca.complianceChecks');
   const [results, setResults] = useState<ComplianceCheckResult[]>([]);
 
+  // NOTE: No queryClient.invalidateQueries — this mutation is a wizard step.
+  // The parent `OnboardingWizard.goNext` invalidates
+  // `zatcaTrpc.getOnboardingState` when the user advances past this step,
+  // refreshing all downstream consumers (ZatcaStatusCard, ZatcaConnectionPill,
+  // settings/integrations page). Invalidating here would be redundant and
+  // would trigger a refetch before the parent advances. UI is conditional on
+  // local `results` state, not on cache.
+  // See AUDIT.md Appendix B (wizard-step-progression).
   const checksMutation = useMutation({
     ...zatcaTrpc.runComplianceChecks.mutationOptions(),
     onSuccess: (data: unknown) => {

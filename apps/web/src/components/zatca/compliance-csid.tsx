@@ -66,6 +66,11 @@ export function ComplianceCsid({ onSuccess, onBack }: ComplianceCsidProps) {
   const t = useTranslations('Zatca.complianceCsid');
   const [phase, setPhase] = useState<'idle' | 'submitting' | 'storing' | 'done'>('idle');
 
+  // NOTE: No queryClient.invalidateQueries — wizard-step mutation. The parent
+  // `OnboardingWizard.goNext` refreshes `zatcaTrpc.getOnboardingState` on step
+  // advance, which is what downstream consumers (status card, connection pill,
+  // settings page) read from. UI here is driven by local `phase` state.
+  // See AUDIT.md Appendix B (wizard-step-progression).
   const requestMutation = useMutation({
     ...zatcaTrpc.requestComplianceCsid.mutationOptions(),
     onMutate: () => {

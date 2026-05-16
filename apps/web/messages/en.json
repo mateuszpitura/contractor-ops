@@ -5587,7 +5587,8 @@
       "toast": {
         "exportReady": "Export downloaded",
         "exportFailed": "Could not generate export",
-        "erasureRequested": "Erasure scheduled"
+        "erasureRequested": "Erasure scheduled",
+        "erasureFailed": "Could not schedule erasure"
       }
     },
     "outOfOffice": {

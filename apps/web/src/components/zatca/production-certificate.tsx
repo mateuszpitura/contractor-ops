@@ -34,6 +34,12 @@ export function ProductionCertificate({ onSuccess, onBack }: ProductionCertifica
   const t = useTranslations('Zatca.productionCertificate');
   const [completed, setCompleted] = useState(false);
 
+  // NOTE: No queryClient.invalidateQueries — wizard-step mutation. The parent
+  // `OnboardingWizard.goNext` (invoked via `onComplete` from this step's
+  // `onSuccess` prop) invalidates `zatcaTrpc.getOnboardingState`, so the
+  // status card + connection pill refresh once production activation
+  // completes. UI here is driven by local `completed` state.
+  // See AUDIT.md Appendix B (wizard-step-progression).
   const exchangeMutation = useMutation({
     ...zatcaTrpc.exchangeProductionCert.mutationOptions(),
     onSuccess: () => {

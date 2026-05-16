@@ -59,6 +59,13 @@ export function GdprDataRightsSection() {
     }
   }
 
+  // NOTE: No queryClient.invalidateQueries — this is a soft-delete-self
+  // operation. The erasure flow soft-deletes the entire org and ends the
+  // session shortly after (the user is redirected to /goodbye by middleware on
+  // the next request). There are no queries left to invalidate because the
+  // session is gone and the next request hits the deleted-org branch.
+  // See AUDIT.md Appendix B (soft-delete-self) and the 2026-05-16
+  // reclassification section.
   const erasureMutation = useMutation(
     trpc.gdpr.requestErasure.mutationOptions({
       onSuccess: () => {
@@ -66,7 +73,7 @@ export function GdprDataRightsSection() {
         setErasureOpen(false);
         setConfirmInput('');
       },
-      onError: err => toast.error(err.message),
+      onError: err => toast.error(err.message || t('toast.erasureFailed')),
     }),
   );
 

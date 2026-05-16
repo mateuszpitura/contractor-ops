@@ -5601,7 +5601,8 @@
       "toast": {
         "exportReady": "Export heruntergeladen",
         "exportFailed": "Export konnte nicht erstellt werden",
-        "erasureRequested": "Löschung eingeplant"
+        "erasureRequested": "Löschung eingeplant",
+        "erasureFailed": "Löschung konnte nicht eingeplant werden"
       }
     },
     "outOfOffice": {

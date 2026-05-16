@@ -116,6 +116,11 @@ export function PortalTopBar({
   // sign-out path, and the route is the cookie eraser. Errors are intentionally
   // swallowed: the clear-session HTTP route is the hard guarantee that the
   // cookie is gone, so a flaky tRPC call must not block sign-out.
+  //
+  // NOTE: No onSuccess + no queryClient.invalidateQueries — `handleLogout`
+  // unmounts the entire portal by navigating to /portal/login regardless of
+  // outcome (see redirect-on-mutate + intentional-silent-handler entries in
+  // AUDIT.md Appendix B).
   const logoutMutation = useMutation(
     portalTrpc.portal.logout.mutationOptions({
       onError: () => {
