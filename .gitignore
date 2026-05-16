@@ -32,6 +32,8 @@ coverage
 # Playwright (auth state, reports, test results)
 apps/web/e2e/perf/.auth/
 apps/web/e2e/perf/results/
+apps/web/e2e/functional/.auth/
+apps/web/playwright-report/
 test-results
 
 # TypeScript
