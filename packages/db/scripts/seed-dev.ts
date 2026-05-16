@@ -5077,36 +5077,37 @@ async function seedWorkflowRuns(
     });
 
     const taskCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
-    const tasks: Array<{
-      organizationId: string;
-      workflowRunId: string;
-      title: string;
-      taskType: string;
-      status: string;
-      required: boolean;
-      assigneeUserId: string;
-      dueAt: Date;
-      startedAt: Date | null;
-      completedAt: Date | null;
-      completedByUserId: string | null;
-      createdAt: Date;
-    }> = [];
+    const tasks: Prisma.WorkflowTaskRunCreateManyInput[] = [];
+
+    type WorkflowTaskStatusKey =
+      | 'TODO'
+      | 'IN_PROGRESS'
+      | 'DONE'
+      | 'BLOCKED'
+      | 'SKIPPED'
+      | 'CANCELLED'
+      | 'OVERDUE';
 
     for (let i = 0; i < taskCount; i += 1) {
       const taskType = ctx.fakers.org.helpers.arrayElement(taskTypes);
       const title = ctx.fakers.org.helpers.arrayElement(taskTitles);
       const assignee = ctx.fakers.org.helpers.arrayElement(ctx.users);
 
-      let taskStatus: string;
+      let taskStatus: WorkflowTaskStatusKey;
       if (runStatus === 'COMPLETED') {
-        taskStatus = ctx.fakers.org.helpers.arrayElement(['DONE', 'DONE', 'DONE', 'SKIPPED']);
+        taskStatus = ctx.fakers.org.helpers.arrayElement([
+          'DONE',
+          'DONE',
+          'DONE',
+          'SKIPPED',
+        ] as const);
       } else if (runStatus === 'CANCELLED') {
-        taskStatus = ctx.fakers.org.helpers.arrayElement(['DONE', 'CANCELLED', 'TODO']);
+        taskStatus = ctx.fakers.org.helpers.arrayElement(['DONE', 'CANCELLED', 'TODO'] as const);
       } else {
         taskStatus =
           i < taskCount / 2
-            ? ctx.fakers.org.helpers.arrayElement(['DONE', 'IN_PROGRESS'])
-            : ctx.fakers.org.helpers.arrayElement(['TODO', 'TODO', 'BLOCKED']);
+            ? ctx.fakers.org.helpers.arrayElement(['DONE', 'IN_PROGRESS'] as const)
+            : ctx.fakers.org.helpers.arrayElement(['TODO', 'TODO', 'BLOCKED'] as const);
       }
 
       const taskStartedAt =
@@ -6908,17 +6909,7 @@ async function seedTimesheets(
 
       const entryCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
       const usedDays = new Set<number>();
-      const entries: Array<{
-        organizationId: string;
-        timesheetId: string;
-        contractorId: string;
-        contractId: string;
-        entryDate: Date;
-        minutes: number;
-        description: string;
-        source: string;
-        createdAt: Date;
-      }> = [];
+      const entries: Prisma.TimeEntryCreateManyInput[] = [];
 
       let totalMinutes = 0;
       for (let e = 0; e < entryCount; e += 1) {
