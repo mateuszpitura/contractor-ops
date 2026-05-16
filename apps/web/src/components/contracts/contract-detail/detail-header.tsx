@@ -151,7 +151,7 @@ export function DetailHeader({ contract }: DetailHeaderProps) {
   function getActionLabel(action: ContractAction): string {
     // ContractDetail-namespaced actions resolve via `t`; future Contracts
     // namespace fallthrough is wired the same way as the contractors variant.
-    return t(action.labelKey as Parameters<typeof t>[0]);
+    return t(action.labelKey);
   }
 
   // Action keys that are wired in the UI but their backend/UX is not yet

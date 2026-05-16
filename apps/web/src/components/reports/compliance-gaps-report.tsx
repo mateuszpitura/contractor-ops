@@ -144,7 +144,7 @@ export function ComplianceGapsReport({
           const health = getValue<string>();
           const config = HEALTH_BADGE[health] ?? HEALTH_BADGE.green;
           return (
-            <Badge variant={config.variant}>{t(config.labelKey as Parameters<typeof t>[0])}</Badge>
+            <Badge variant={config.variant}>{t(config.labelKey)}</Badge>
           );
         },
       },

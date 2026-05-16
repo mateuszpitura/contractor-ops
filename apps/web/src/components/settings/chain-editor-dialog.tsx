@@ -187,7 +187,7 @@ function UserPicker({
           />
           <CommandList>
             <CommandEmpty>
-              {t('approvals.editor.noUsersFound' as Parameters<typeof t>[0])}
+              {t('approvals.editor.noUsersFound')}
             </CommandEmpty>
             <CommandGroup>
               {filteredUsers.map(user => (

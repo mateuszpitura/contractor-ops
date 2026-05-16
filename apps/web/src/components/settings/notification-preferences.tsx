@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -227,7 +228,7 @@ export function NotificationPreferences() {
                 <TableHead className="w-20 text-center">{t('notifications.columnEmail')}</TableHead>
                 <TableHead className="w-20 text-center">{t('notifications.columnSlack')}</TableHead>
                 <TableHead className="w-20 text-center">
-                  {t('notifications.columnTeams' as Parameters<typeof t>[0])}
+                  {t('notifications.columnTeams')}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -245,7 +246,7 @@ export function NotificationPreferences() {
                           <Icon className={`size-4 ${config.iconClass}`} />
                         </div>
                         <span className="text-sm font-medium">
-                          {t(`notifications.${config.labelKey}` as Parameters<typeof t>[0])}
+                          {tDyn(t, 'notifications', config.labelKey)}
                         </span>
                       </div>
                     </TableCell>
@@ -326,7 +327,7 @@ export function NotificationPreferences() {
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            {t('notifications.teamsDisabledTooltip' as Parameters<typeof t>[0])}
+                            {t('notifications.teamsDisabledTooltip')}
                           </TooltipContent>
                         </Tooltip>
                       )}

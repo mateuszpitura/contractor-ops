@@ -110,7 +110,7 @@ export function StatusChipBar({ activeStatuses, onStatusChange, disabled }: Stat
             // biome-ignore lint/nursery/noJsxPropsBind: per-toggle handler
             onClick={() => handleToggle(toggle.key)}
             className={cn(TRIGGER_BASE, isActive && TRIGGER_ACTIVE)}>
-            {t(toggle.labelKey as Parameters<typeof t>[0])}
+            {t(toggle.labelKey)}
             <span className="tabular-nums text-muted-foreground">({count})</span>
           </button>
         );

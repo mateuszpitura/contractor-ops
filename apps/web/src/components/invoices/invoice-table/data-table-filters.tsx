@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -182,7 +183,7 @@ export function DataTableFilters({
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'status', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -190,7 +191,7 @@ export function DataTableFilters({
           {filters.matchStatus.map(s => (
             <FilterBadge
               key={`matchStatus-${s}`}
-              label={t(`matchStatus.${enumKey(s)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'matchStatus', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('matchStatus', s)}
             />
@@ -198,7 +199,7 @@ export function DataTableFilters({
           {filters.source.map(s => (
             <FilterBadge
               key={`source-${s}`}
-              label={t(`source.${enumKey(s)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'source', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('source', s)}
             />

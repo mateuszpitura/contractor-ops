@@ -35,6 +35,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge styling (shared with ProviderConnectionCard)
@@ -261,7 +262,7 @@ export function ProviderDetailSheet({
               <span className="flex size-8 items-center justify-center">{icon}</span>
               <SheetTitle className="text-base font-semibold">{displayName}</SheetTitle>
               <Badge variant="secondary" className={statusBadgeClass}>
-                {t(`provider.${statusLabelKey}` as Parameters<typeof t>[0])}
+                {tDyn(t, 'provider', statusLabelKey)}
               </Badge>
             </div>
             <SheetDescription className="sr-only">
@@ -295,7 +296,7 @@ export function ProviderDetailSheet({
                 <dt className="text-muted-foreground">{t('provider.status')}</dt>
                 <dd>
                   <Badge variant="secondary" className={statusBadgeClass}>
-                    {t(`provider.${statusLabelKey}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'provider', statusLabelKey)}
                   </Badge>
                 </dd>
 

@@ -356,7 +356,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
 
   const resolveLabel = (action: InvoiceAction) =>
     resolveActionLabel(action, {
-      t: (key: string) => t(key as Parameters<typeof t>[0]),
+      t: (key: string) => t(key),
       tDetail: (key: string) => tDetail(key as Parameters<typeof tDetail>[0]),
       tBulk: (key: string) => tBulk(key as Parameters<typeof tBulk>[0]),
     });

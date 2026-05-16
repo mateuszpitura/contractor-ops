@@ -107,7 +107,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
                     <CalendarIcon className="h-3.5 w-3.5" />
                     {activePreset === 'custom' && formatDisplay()
                       ? formatDisplay()
-                      : t(preset.labelKey as Parameters<typeof t>[0])}
+                      : t(preset.labelKey)}
                   </span>
                 )}
               />
@@ -122,7 +122,7 @@ export function DateRangeFilter({ dateFrom, dateTo, onDateChange }: DateRangeFil
               </PopoverContent>
             </Popover>
           ) : (
-            t(preset.labelKey as Parameters<typeof t>[0])
+            t(preset.labelKey)
           )}
         </Button>
       ))}

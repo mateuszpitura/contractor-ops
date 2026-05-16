@@ -67,7 +67,7 @@ function RangeToggle({ value, onChange, t }: RangeToggleProps) {
               ? 'bg-surface-1 text-foreground shadow-sm ring-1 ring-foreground/[0.06]'
               : 'text-muted-foreground hover:text-foreground hover:bg-surface-2'
           }`}>
-          {t(range.labelKey as Parameters<typeof t>[0])}
+          {t(range.labelKey)}
         </button>
       ))}
     </div>

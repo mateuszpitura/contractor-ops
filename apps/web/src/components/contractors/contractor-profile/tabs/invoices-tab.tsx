@@ -78,7 +78,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
 
   // Column definitions - filter out contractor column since we're scoped
   const columns: ColumnDef<InvoiceRow>[] = useMemo(() => {
-    const allColumns = getColumns((key: string) => t(key as Parameters<typeof t>[0]), formatDate);
+    const allColumns = getColumns((key: string) => t(key), formatDate);
     return allColumns.filter(col => col.id !== 'contractor');
   }, [t, formatDate]);
 

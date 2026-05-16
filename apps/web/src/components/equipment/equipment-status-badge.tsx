@@ -39,7 +39,7 @@ interface EquipmentStatusBadgeProps {
 export function EquipmentStatusBadge({ status, className }: EquipmentStatusBadgeProps) {
   const t = useTranslations('Equipment.status');
   const variant = STATUS_VARIANT_MAP[status as EquipmentStatus] ?? 'secondary';
-  const label = t(enumKey(status) as Parameters<typeof t>[0]);
+  const label = t(enumKey(status));
 
   return (
     <Badge variant={variant} className={className} aria-label={label}>

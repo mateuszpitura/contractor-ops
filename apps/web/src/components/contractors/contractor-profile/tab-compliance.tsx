@@ -144,7 +144,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
       {/* Required documents section — upload zone */}
       <div id={`${id}-compliance-upload-zone`} className="space-y-4">
         <h3 className="text-base font-medium">
-          {t('uploadCompliance' as Parameters<typeof t>[0])}
+          {t('uploadCompliance')}
         </h3>
         <DropZone entityType="CONTRACTOR" entityId={contractor.id} />
       </div>

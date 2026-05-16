@@ -175,7 +175,7 @@ export function KpiCards() {
         }
 
         const { change, direction } = getTrend(value, prevValue);
-        const cardLabel = t(card.labelKey as Parameters<typeof t>[0]);
+        const cardLabel = t(card.labelKey);
 
         return (
           <Link

@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -185,7 +186,7 @@ export function DataTableToolbar({
                       // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                       onCheckedChange={() => toggleFilterValue('lifecycleStage', chip.key)}
                     />
-                    <span>{t(chip.labelKey as Parameters<typeof t>[0])}</span>
+                    <span>{t(chip.labelKey)}</span>
                   </label>
                 ))}
               </div>
@@ -328,7 +329,7 @@ export function DataTableToolbar({
           {filters.health.map(health => (
             <FilterBadge
               key={`health-${health}`}
-              label={t(`health.${enumKey(health)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'health', enumKey(health))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('health', health)}
             />

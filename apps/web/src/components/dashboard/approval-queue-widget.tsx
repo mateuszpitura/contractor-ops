@@ -132,7 +132,7 @@ export function ApprovalQueueWidget() {
                         <Badge
                           variant={getSlaVariant(slaStatus)}
                           className={isBreached ? 'badge-glow' : ''}>
-                          {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus) as Parameters<typeof t>[0])}
+                          {t((SLA_LABEL_KEYS[slaStatus] ?? slaStatus))}
                         </Badge>
                       )}
                     </div>

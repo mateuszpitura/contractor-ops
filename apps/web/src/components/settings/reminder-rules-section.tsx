@@ -23,6 +23,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -149,9 +150,9 @@ export function ReminderRulesSection() {
     const recipientKey = RECIPIENT_LABEL_KEYS[rule.recipientMode] ?? rule.recipientMode;
     const channelKey = CHANNEL_LABEL_KEYS[rule.channel] ?? rule.channel;
 
-    const triggerLabel = t(`reminderRules.editor.${triggerKey}` as Parameters<typeof t>[0]);
-    const recipientLabel = t(`reminderRules.editor.${recipientKey}` as Parameters<typeof t>[0]);
-    const channelLabel = t(`reminderRules.editor.${channelKey}` as Parameters<typeof t>[0]);
+    const triggerLabel = tDyn(t, 'reminderRules.editor', triggerKey);
+    const recipientLabel = tDyn(t, 'reminderRules.editor', recipientKey);
+    const channelLabel = tDyn(t, 'reminderRules.editor', channelKey);
 
     if (rule.offsetDays) {
       return `${rule.offsetDays} ${t('reminderRules.editor.offsetDaysPlaceholder')} ${triggerLabel.toLowerCase()}, ${recipientLabel} ${channelLabel}`;

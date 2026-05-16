@@ -245,7 +245,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
 
   // Cast t for sub-components that accept a simpler signature
   const tFn = (key: string, params?: Record<string, string>) =>
-    t(key as Parameters<typeof t>[0], params);
+    t(key, params);
 
   return (
     <Card>

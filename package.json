@@ -20,6 +20,7 @@
     "i18n:parity": "tsx scripts/i18n-parity.mjs",
     "i18n:code-coverage": "tsx scripts/audit-i18n-code-coverage.ts --allow-hardcoded",
     "i18n:quality": "tsx scripts/audit-translations-quality.ts",
+    "i18n:types": "tsx scripts/generate-i18n-types.ts",
     "setup:dev-services": "node scripts/seed-dev-services.mjs",
     "test": "turbo test",
     "test:coverage": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger && vitest run --coverage",

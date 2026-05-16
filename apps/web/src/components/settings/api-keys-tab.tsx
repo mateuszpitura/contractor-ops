@@ -249,7 +249,7 @@ function CreateKeyDialog({
                     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                     onCheckedChange={() => toggleScope(scope.value)}
                   />
-                  <span>{t(scope.labelKey as Parameters<typeof t>[0])}</span>
+                  <span>{t(scope.labelKey)}</span>
                 </label>
               ))}
             </div>

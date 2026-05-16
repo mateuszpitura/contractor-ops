@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { zatcaTrpc } from './zatca-trpc';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // ZATCA Connection Status Pill
@@ -75,7 +76,7 @@ export function ZatcaConnectionPill() {
       aria-live="polite">
       <Icon className={`size-3.5 ${isSpinner ? 'animate-spin' : ''}`} aria-hidden="true" />
       <span className="text-xs font-medium">
-        {t(`status.${status}` as Parameters<typeof t>[0])}
+        {tDyn(t, 'status', status)}
       </span>
     </Badge>
   );

@@ -403,7 +403,7 @@ export function CommandPalette() {
     if (!debouncedQuery || debouncedQuery.length < 2) return QUICK_ACTIONS.slice();
     const q = debouncedQuery.toLowerCase();
     return QUICK_ACTIONS.filter(a =>
-      t(a.labelKey as Parameters<typeof t>[0])
+      t(a.labelKey)
         .toLowerCase()
         .includes(q),
     );
@@ -531,7 +531,7 @@ export function CommandPalette() {
                   key={action.key}
                   action={action}
                   navigate={navigate}
-                  label={t(action.labelKey as Parameters<typeof t>[0])}
+                  label={t(action.labelKey)}
                 />
               ))}
             </CommandGroup>
@@ -624,7 +624,7 @@ export function CommandPalette() {
                       key={action.key}
                       action={action}
                       navigate={navigate}
-                      label={t(action.labelKey as Parameters<typeof t>[0])}
+                      label={t(action.labelKey)}
                     />
                   ))}
                 </CommandGroup>

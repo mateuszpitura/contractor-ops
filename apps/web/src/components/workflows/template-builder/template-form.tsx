@@ -34,6 +34,7 @@ import { trpc } from '@/trpc/init';
 import { SortableTaskList } from './sortable-task-list';
 import type { TemplateFormValues } from './use-template-form';
 import { useTemplateForm } from './use-template-form';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -215,7 +216,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
 
   const templateTypeItems = TEMPLATE_TYPES.map(type => ({
     value: type,
-    label: t(`type.${enumKey(type)}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'type', enumKey(type)),
   }));
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -337,7 +338,7 @@ export function TemplateForm({ templateId }: TemplateFormProps) {
             <p className="text-sm font-medium leading-none">{t('columns.status')}</p>
             <div className="flex min-h-8 items-center">
               <Badge className={STATUS_BADGE_STYLES[templateStatus] ?? ''} variant="secondary">
-                {t(`templateStatus.${enumKey(templateStatus)}` as Parameters<typeof t>[0])}
+                {tDyn(t, 'templateStatus', enumKey(templateStatus))}
               </Badge>
             </div>
           </div>

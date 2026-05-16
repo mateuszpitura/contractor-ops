@@ -15,6 +15,7 @@ import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)
@@ -304,7 +305,7 @@ export function WorkflowsTab({ contractorId }: WorkflowsTabProps) {
               </p>
             </div>
             <Badge variant="secondary" className={runStatusBadgeColors[run.status] ?? ''}>
-              {t(`runStatus.${enumKey(run.status)}` as Parameters<typeof t>[0])}
+              {tDyn(t, 'runStatus', enumKey(run.status))}
             </Badge>
             <RunJiraChips runId={run.id} />
             <RunLinearChips runId={run.id} />

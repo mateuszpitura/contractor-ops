@@ -151,7 +151,7 @@ export function ContractDataTable({
     () =>
       getColumns(
         (key: string, params?: Record<string, string | number>) =>
-          t(key as Parameters<typeof t>[0], params),
+          t(key, params),
         formatDate,
       ),
     [t, formatDate],

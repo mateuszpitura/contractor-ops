@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -240,22 +241,22 @@ function RuleUserPicker({
 function useSelectorItems(t: ReturnType<typeof useTranslations<'Settings'>>) {
   const triggerItems = TRIGGER_TYPES.map(trigger => ({
     value: trigger,
-    label: t(`reminderRules.editor.${TRIGGER_LABEL_KEYS[trigger]}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'reminderRules.editor', TRIGGER_LABEL_KEYS[trigger]),
   }));
 
   const entityItems = ENTITY_TYPES.map(e => ({
     value: e.value,
-    label: t(`reminderRules.editor.${e.labelKey}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'reminderRules.editor', e.labelKey),
   }));
 
   const channelItems = CHANNELS.map(ch => ({
     value: ch.value,
-    label: t(`reminderRules.editor.${ch.labelKey}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'reminderRules.editor', ch.labelKey),
   }));
 
   const recipientItems = RECIPIENT_MODES.map(m => ({
     value: m.value,
-    label: t(`reminderRules.editor.${m.labelKey}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'reminderRules.editor', m.labelKey),
   }));
 
   return { triggerItems, entityItems, channelItems, recipientItems };

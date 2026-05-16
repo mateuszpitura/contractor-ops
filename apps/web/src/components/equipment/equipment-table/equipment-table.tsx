@@ -112,7 +112,7 @@ export function EquipmentTable({
   const columns = useMemo(
     () =>
       getEquipmentColumns(
-        (key: string) => t(key as Parameters<typeof t>[0]),
+        (key: string) => t(key),
         (key: string) => tCommon(key as Parameters<typeof tCommon>[0]),
         { onEdit, onAssign, onUnassign, onCreateShipment, onRetire },
       ),

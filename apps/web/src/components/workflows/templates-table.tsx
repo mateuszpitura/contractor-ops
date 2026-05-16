@@ -38,6 +38,7 @@ import { useTemplateMutations } from '@/hooks/use-template-mutations';
 import { Link, useRouter } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Template status badge styling per UI-SPEC
@@ -272,14 +273,14 @@ export function TemplatesTable() {
                   <Badge
                     variant="secondary"
                     className={templateTypeBadgeColors[template.type] ?? ''}>
-                    {t(`templateType.${enumKey(template.type)}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'templateType', enumKey(template.type))}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="secondary"
                     className={templateStatusBadgeColors[template.status] ?? ''}>
-                    {t(`templateStatus.${enumKey(template.status)}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'templateStatus', enumKey(template.status))}
                   </Badge>
                 </TableCell>
                 <TableCell>

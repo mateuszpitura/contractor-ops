@@ -143,7 +143,7 @@ export function ZatcaStatusCard() {
               <ZatcaBrandIcon className="h-8 w-auto" />
               <h4 className="text-base font-semibold">{t('title')}</h4>
               <Badge variant={statusConfig.variant}>
-                {t(statusConfig.labelKey as Parameters<typeof t>[0])}
+                {t(statusConfig.labelKey)}
               </Badge>
             </div>
           </CardHeader>
@@ -183,7 +183,7 @@ export function ZatcaStatusCard() {
           <ZatcaBrandIcon className="h-8 w-auto" />
           <h4 className="text-base font-semibold">{t('title')}</h4>
           <Badge variant={statusConfig.variant}>
-            {t(statusConfig.labelKey as Parameters<typeof t>[0])}
+            {t(statusConfig.labelKey)}
           </Badge>
         </div>
       </CardHeader>

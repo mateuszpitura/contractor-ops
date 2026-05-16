@@ -52,12 +52,12 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
 
   const fieldItems = FIELD_OPTIONS.map(opt => ({
     value: opt.value,
-    label: t(opt.labelKey as Parameters<typeof t>[0]),
+    label: t(opt.labelKey),
   }));
 
   const operatorItems = OPERATOR_OPTIONS.map(opt => ({
     value: opt.value,
-    label: t(opt.labelKey as Parameters<typeof t>[0]),
+    label: t(opt.labelKey),
   }));
   function handleAdd() {
     onChange([...value, { field: 'amount', operator: 'gt', value: '' }]);

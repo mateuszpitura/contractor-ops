@@ -74,8 +74,8 @@ export function OnboardingWizard({ onComplete, onCancel }: OnboardingWizardProps
     const keys = STEP_TRANSLATION_KEYS[id];
     return {
       id,
-      label: t((keys?.label ?? id) as Parameters<typeof t>[0]),
-      shortLabel: t((keys?.shortLabel ?? id) as Parameters<typeof t>[0]),
+      label: t((keys?.label ?? id)),
+      shortLabel: t((keys?.shortLabel ?? id)),
     };
   });
 

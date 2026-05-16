@@ -43,6 +43,7 @@ import { trpc } from '@/trpc/init';
 import { LinearTaskIssueChip } from './linear-task-issue-chip';
 import { TaskAttachments } from './task-attachments';
 import { TaskComments } from './task-comments';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status icon mapping
@@ -443,7 +444,7 @@ export function TaskCardRun({ task, runId, currentUserId, dependencyTitle }: Tas
                   <span className="text-sm font-medium truncate">{task.title}</span>
                   <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
                     <TypeIcon className="size-3" />
-                    {t(`taskType.${enumKey(task.taskType)}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'taskType', enumKey(task.taskType))}
                   </Badge>
                 </div>
                 <div className="mt-1 flex items-center gap-3 text-[13px] text-muted-foreground">

@@ -131,7 +131,7 @@ export function ContractorDataTable({
 
   // Column definitions
   const columns: ColumnDef<ContractorRow>[] = useMemo(
-    () => getColumns((key: string) => t(key as Parameters<typeof t>[0])),
+    () => getColumns((key: string) => t(key)),
     [t],
   );
 

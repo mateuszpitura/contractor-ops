@@ -24,6 +24,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { ProviderDetailSheet } from './provider-detail-sheet';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge styling per UI-SPEC semantic colors
@@ -214,7 +215,7 @@ export function ProviderConnectionCard({
             <span className="flex size-8 items-center justify-center">{icon}</span>
             <h4 className="text-base font-semibold">{displayName}</h4>
             <Badge variant="secondary" className={statusBadgeClass}>
-              {t(`provider.${statusLabelKey}` as Parameters<typeof t>[0])}
+              {tDyn(t, 'provider', statusLabelKey)}
             </Badge>
           </div>
         </CardHeader>

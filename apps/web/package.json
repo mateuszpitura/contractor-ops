@@ -21,7 +21,8 @@
     "e2e:functional:install": "playwright install chromium",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "typecheck:fast": "tsgo --noEmit"
+    "typecheck:fast": "tsgo --noEmit",
+    "i18n:types": "tsx ../../scripts/generate-i18n-types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",

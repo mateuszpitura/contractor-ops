@@ -34,6 +34,7 @@ import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractorAction } from '../actions';
 import { getProfileContractorActions } from '../actions';
+import { tDyn } from '@/i18n/typed-keys';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 
@@ -196,7 +197,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
                 'contractor-lifecycle',
                 stage satisfies ContractorLifecycleStageInput,
               )}>
-              {t(`lifecycle.${enumKey(stage)}` as Parameters<typeof t>[0]) ?? stage}
+              {tDyn(t, 'lifecycle', enumKey(stage)) ?? stage}
             </AtelierStatusPill>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
               {tc(`type.${enumKey(contractor.type)}` as Parameters<typeof tc>[0])}
@@ -244,7 +245,7 @@ export function ProfileHeader({ contractor }: ProfileHeaderProps) {
               setPickerOpen(true);
             }}>
             <Play className={`me-1.5 ${iconSize.sm}`} />
-            {t(workflowLauncher.labelKey as Parameters<typeof t>[0])}
+            {t(workflowLauncher.labelKey)}
           </Button>
         )}
 

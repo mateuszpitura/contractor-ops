@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Helpers — timezone-safe date ↔ YYYY-MM-DD conversion
@@ -364,7 +365,7 @@ export function DataTableFilters({
           {filters.status.map(s => (
             <FilterBadge
               key={`status-${s}`}
-              label={t(`status.${enumKey(s)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'status', enumKey(s))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', s)}
             />
@@ -372,7 +373,7 @@ export function DataTableFilters({
           {filters.type.map(ct => (
             <FilterBadge
               key={`type-${ct}`}
-              label={t(`type.${enumKey(ct)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'type', enumKey(ct))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', ct)}
             />
@@ -380,7 +381,7 @@ export function DataTableFilters({
           {filters.billingModel.map(bm => (
             <FilterBadge
               key={`billing-${bm}`}
-              label={t(`billingModel.${enumKey(bm)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'billingModel', enumKey(bm))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('billingModel', bm)}
             />
@@ -406,7 +407,7 @@ export function DataTableFilters({
           {filters.complianceRiskLevel.map(rl => (
             <FilterBadge
               key={`risk-${rl}`}
-              label={t(`risk.${enumKey(rl)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'risk', enumKey(rl))}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('complianceRiskLevel', rl)}
             />

@@ -20,6 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Template type badge styling
@@ -270,7 +271,7 @@ export function TemplatePicker({
         {!!typeFilter && (
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
-              {t(`templateType.${enumKey(typeFilter)}` as Parameters<typeof t>[0])}
+              {tDyn(t, 'templateType', enumKey(typeFilter))}
             </Badge>
             <button
               type="button"
@@ -341,7 +342,7 @@ export function TemplatePicker({
                       <Badge
                         variant="secondary"
                         className={templateTypeBadgeColors[template.type] ?? ''}>
-                        {t(`templateType.${enumKey(template.type)}` as Parameters<typeof t>[0])}
+                        {tDyn(t, 'templateType', enumKey(template.type))}
                       </Badge>
                     </div>
                   </div>

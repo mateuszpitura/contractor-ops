@@ -25,6 +25,7 @@ import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -131,7 +132,7 @@ export function EquipmentDetailHeader({
               </span>
             )}
             <Badge variant="secondary">
-              {t(`type.${enumKey(equipment.type)}` as Parameters<typeof t>[0])}
+              {tDyn(t, 'type', enumKey(equipment.type))}
             </Badge>
             <EquipmentStatusBadge status={equipment.status} />
           </div>

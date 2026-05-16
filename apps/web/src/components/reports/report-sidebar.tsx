@@ -48,7 +48,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                       : 'text-muted-foreground hover:bg-muted',
                   )}>
                   <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{t(report.labelKey as Parameters<typeof t>[0])}</span>
+                  <span className="truncate">{t(report.labelKey)}</span>
                 </button>
               </li>
             );
@@ -76,7 +76,7 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
                 )}>
                 <Icon className="h-3.5 w-3.5" />
-                <span>{t(report.labelKey as Parameters<typeof t>[0])}</span>
+                <span>{t(report.labelKey)}</span>
               </button>
             );
           })}

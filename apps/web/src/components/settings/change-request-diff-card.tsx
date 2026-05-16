@@ -21,6 +21,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Field label key mapping
@@ -148,7 +149,7 @@ export function ChangeRequestDiffCard({
   function getFieldLabel(key: string): string {
     const labelKey = FIELD_LABEL_KEYS[key];
     if (labelKey) {
-      return t(`fieldLabels.${labelKey}` as Parameters<typeof t>[0]);
+      return tDyn(t, 'fieldLabels', labelKey);
     }
     return key.replace(/([A-Z])/g, ' $1').trim();
   }

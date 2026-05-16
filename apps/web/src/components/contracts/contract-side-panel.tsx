@@ -11,6 +11,7 @@ import { Link } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import type { ContractRow } from './contract-table/columns';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -73,7 +74,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
               </SheetTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className={statusBadgeColors[contract.status] ?? ''}>
-                  {t(`status.${enumKey(contract.status)}` as Parameters<typeof t>[0])}
+                  {tDyn(t, 'status', enumKey(contract.status))}
                 </Badge>
                 <Link
                   href={`/contractors/${contract.contractor.id}`}
@@ -95,7 +96,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label={t('columns.type')}
-                  value={t(`type.${enumKey(contract.type)}` as Parameters<typeof t>[0])}
+                  value={tDyn(t, 'type', enumKey(contract.type))}
                 />
                 <DetailItem
                   label={t('columns.startDate')}
@@ -113,8 +114,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <DetailItem label={t('columns.currency')} value={contract.currency} />
                 <DetailItem
                   label={t('columns.billingCycle')}
-                  value={t(
-                    `billingModel.${enumKey(contract.billingModel)}` as Parameters<typeof t>[0],
+                  value={tDyn(t, 'billingModel', enumKey(contract.billingModel),
                   )}
                 />
                 <DetailItem label={t('columns.owner')} value={contract.internalOwner?.name} />

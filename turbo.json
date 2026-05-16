@@ -4,30 +4,35 @@
   "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "i18n:types"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "dependsOn": ["i18n:types"]
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "i18n:types"]
     },
     "lint:fix": {
       "cache": false,
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "i18n:types"]
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "i18n:types"],
       "outputs": []
     },
     "typecheck:fast": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "i18n:types"],
       "outputs": []
     },
+    "i18n:types": {
+      "inputs": ["../../scripts/generate-i18n-types.ts", "messages/en.json"],
+      "outputs": ["src/generated/i18n/**"]
+    },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "i18n:types"]
     },
     "db:generate": {
       "inputs": ["prisma/schema/**/*.prisma", "package.json"],

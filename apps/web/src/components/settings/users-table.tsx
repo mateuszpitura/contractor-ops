@@ -30,6 +30,7 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { authClient } from '@/lib/auth-client';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 type Member = {
   id?: string;
@@ -281,13 +282,13 @@ export function UsersTable() {
   }
 
   const roleLabel = (role: string) =>
-    t(`roles.${enumKey(role)}` as Parameters<typeof t>[0]) ?? role;
+    tDyn(t, 'roles', enumKey(role)) ?? role;
 
   const roleDescription = (role: string) =>
-    t(`roleDescriptions.${enumKey(role)}` as Parameters<typeof t>[0]);
+    tDyn(t, 'roleDescriptions', enumKey(role));
 
   const statusLabel = (status: string) =>
-    t(`status.${enumKey(status)}` as Parameters<typeof t>[0]) ?? status;
+    tDyn(t, 'status', enumKey(status)) ?? status;
 
   return (
     <>

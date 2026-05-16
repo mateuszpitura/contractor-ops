@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -224,9 +225,9 @@ export function EquipmentToolbar({
           {filters.type.map(type => (
             <FilterBadge
               key={`type-${type}`}
-              label={t(`type.${enumKey(type)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'type', enumKey(type))}
               removeLabel={t('list.filters.removeFilter', {
-                label: t(`type.${enumKey(type)}` as Parameters<typeof t>[0]),
+                label: tDyn(t, 'type', enumKey(type)),
               })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('type', type)}
@@ -235,9 +236,9 @@ export function EquipmentToolbar({
           {filters.status.map(status => (
             <FilterBadge
               key={`status-${status}`}
-              label={t(`status.${enumKey(status)}` as Parameters<typeof t>[0])}
+              label={tDyn(t, 'status', enumKey(status))}
               removeLabel={t('list.filters.removeFilter', {
-                label: t(`status.${enumKey(status)}` as Parameters<typeof t>[0]),
+                label: tDyn(t, 'status', enumKey(status)),
               })}
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onRemove={() => removeFilter('status', status)}

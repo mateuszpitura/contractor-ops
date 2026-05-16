@@ -128,7 +128,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                     }`}>
                     {isNoNew
                       ? t('syncStatusNoNew')
-                      : t(statusStyle.labelKey as Parameters<typeof t>[0])}
+                      : t(statusStyle.labelKey)}
                   </Badge>
                 </div>
               );

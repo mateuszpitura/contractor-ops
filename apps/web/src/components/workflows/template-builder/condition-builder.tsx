@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { enumKey } from '@/lib/enum-key';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -170,7 +171,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               <SelectContent>
                 {CONDITION_FIELDS.map(field => (
                   <SelectItem key={field} value={field}>
-                    {t(`conditionField.${field}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'conditionField', field)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -191,7 +192,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
               <SelectContent>
                 {OPERATORS.map(op => (
                   <SelectItem key={op} value={op}>
-                    {t(`operator.${enumKey(op)}` as Parameters<typeof t>[0])}
+                    {tDyn(t, 'operator', enumKey(op))}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -209,7 +210,7 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
                 <SelectContent>
                   {ENUM_VALUE_FIELDS[rule.field]?.map(v => (
                     <SelectItem key={v} value={v}>
-                      {t(`conditionValue.${enumKey(v)}` as Parameters<typeof t>[0])}
+                      {tDyn(t, 'conditionValue', enumKey(v))}
                     </SelectItem>
                   ))}
                 </SelectContent>

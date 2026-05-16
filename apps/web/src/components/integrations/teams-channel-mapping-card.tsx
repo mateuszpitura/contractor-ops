@@ -112,7 +112,7 @@ function ChannelMappingContent({
           key={category}
           className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-sm font-semibold">
-            {t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])}
+            {t(CATEGORY_LABEL_KEYS[category])}
           </span>
           <Select
             value={localMapping[category] ?? undefined}
@@ -120,7 +120,7 @@ function ChannelMappingContent({
             onValueChange={v => v && onChannelSelect(category, v)}>
             <SelectTrigger
               className="w-full sm:w-64"
-              aria-label={`${t(CATEGORY_LABEL_KEYS[category] as Parameters<typeof t>[0])} notification channel`}>
+              aria-label={`${t(CATEGORY_LABEL_KEYS[category])} notification channel`}>
               <SelectValue placeholder={t('selectChannel')} />
             </SelectTrigger>
             <SelectContent>

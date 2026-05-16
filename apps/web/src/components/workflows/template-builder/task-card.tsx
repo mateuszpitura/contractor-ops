@@ -41,6 +41,7 @@ import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { ConditionBuilder, getConditionSummary } from './condition-builder';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -123,12 +124,12 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
   const taskTypeItems = TASK_TYPES.map(type => ({
     value: type,
-    label: t(`taskType.${enumKey(type)}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'taskType', enumKey(type)),
   }));
 
   const assigneeModeItems = ASSIGNEE_MODES.map(mode => ({
     value: mode,
-    label: t(`assigneeMode.${enumKey(mode)}` as Parameters<typeof t>[0]),
+    label: tDyn(t, 'assigneeMode', enumKey(mode)),
   }));
 
   const userRoleItems = USER_ROLES.map(role => ({
@@ -181,12 +182,12 @@ export function TaskCard({ index, onRemove, allTasks, form, dragHandleProps }: T
 
             <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
               <TypeIcon className="size-3" />
-              {t(`taskType.${enumKey(taskType)}` as Parameters<typeof t>[0])}
+              {tDyn(t, 'taskType', enumKey(taskType))}
             </Badge>
 
             {!!task?.assigneeMode && (
               <span className="hidden text-xs text-muted-foreground sm:inline">
-                {t(`assigneeMode.${enumKey(assigneeMode)}` as Parameters<typeof t>[0])}
+                {tDyn(t, 'assigneeMode', enumKey(assigneeMode))}
               </span>
             )}
 

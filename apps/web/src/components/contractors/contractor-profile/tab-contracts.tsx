@@ -16,6 +16,7 @@ import { useRouter } from '@/i18n/navigation';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -90,21 +91,21 @@ export function TabContracts({ contractorId }: TabContractsProps) {
     () => [
       {
         accessorKey: 'title',
-        header: t('contractorTab.columns.title' as Parameters<typeof t>[0]),
+        header: t('contractorTab.columns.title'),
         cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
       },
       {
         accessorKey: 'status',
-        header: t('contractorTab.columns.status' as Parameters<typeof t>[0]),
+        header: t('contractorTab.columns.status'),
         cell: ({ row }) => (
           <Badge variant="secondary" className={statusBadgeColors[row.original.status] ?? ''}>
-            {t(`status.${enumKey(row.original.status)}` as Parameters<typeof t>[0])}
+            {tDyn(t, 'status', enumKey(row.original.status))}
           </Badge>
         ),
       },
       {
         accessorKey: 'startDate',
-        header: t('contractorTab.columns.startDate' as Parameters<typeof t>[0]),
+        header: t('contractorTab.columns.startDate'),
         cell: ({ row }) => {
           if (!row.original.startDate)
             return <span className="text-muted-foreground">&mdash;</span>;
@@ -117,7 +118,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       },
       {
         accessorKey: 'endDate',
-        header: t('contractorTab.columns.endDate' as Parameters<typeof t>[0]),
+        header: t('contractorTab.columns.endDate'),
         cell: ({ row }) => {
           if (!row.original.endDate) return <span className="text-muted-foreground">&mdash;</span>;
           try {
@@ -129,7 +130,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       },
       {
         accessorKey: 'rateValueMinor',
-        header: t('contractorTab.columns.rate' as Parameters<typeof t>[0]),
+        header: t('contractorTab.columns.rate'),
         cell: ({ row }) => {
           const minor = row.original.rateValueMinor;
           if (typeof minor !== 'number')

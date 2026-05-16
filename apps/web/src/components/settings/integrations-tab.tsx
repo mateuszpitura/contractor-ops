@@ -206,7 +206,7 @@ export function IntegrationsTab() {
           provider="notion"
           displayName="Notion"
           icon={<NotionIcon className="size-8" />}
-          description={t('provider.connectCta' as Parameters<typeof t>[0], { provider: 'Notion' })}
+          description={t('provider.connectCta', { provider: 'Notion' })}
         />
 
         {/* Confluence provider card */}
@@ -214,7 +214,7 @@ export function IntegrationsTab() {
           provider="confluence"
           displayName="Confluence"
           icon={<ConfluenceIcon className="size-8" />}
-          description={t('provider.connectCta' as Parameters<typeof t>[0], {
+          description={t('provider.connectCta', {
             provider: 'Confluence',
           })}
         />

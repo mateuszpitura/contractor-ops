@@ -22,6 +22,7 @@ import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import type { NotificationData } from './notification-item';
 import { getEntityUrl, NotificationItem } from './notification-item';
+import { tDyn } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Type filter mapping: UI chip value -> notification type(s)
@@ -183,7 +184,7 @@ export function NotificationCenter() {
           <TabsList>
             {FILTER_KEYS.map(key => (
               <TabsTrigger key={key} value={key}>
-                {t(`filters.${key}` as Parameters<typeof t>[0])}
+                {tDyn(t, 'filters', key)}
               </TabsTrigger>
             ))}
           </TabsList>
