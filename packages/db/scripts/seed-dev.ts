@@ -418,6 +418,7 @@ const PHASE_EMOJI: Record<string, string> = {
   zatca: '🏛️ ',
   esign: '✍️ ',
   ocr: '🔎',
+  'exchange-rates': '💱',
 };
 
 /**
@@ -480,6 +481,7 @@ const PHASE_WEIGHTS: Record<string, number> = {
   zatca: 2,
   esign: 3,
   ocr: 2,
+  'exchange-rates': 4,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5702,6 +5704,79 @@ async function seedZatca(
 }
 
 // ---------------------------------------------------------------------------
+// ExchangeRate — 90-day daily history per (base, target) currency pair across
+// every currency we touch. Multi-tenant table is global (no organizationId)
+// so reseeds rely on `(date, base, target)` uniqueness via `skipDuplicates`.
+// ---------------------------------------------------------------------------
+
+// Stable midpoints (rate of EUR per 1 unit of EUR is 1.0; for non-EUR base
+// rows we'd flip these). Keep within plausible 2026 ranges so the FX UI
+// doesn't show absurd swings.
+const EUR_MIDPOINTS: Readonly<Record<string, number>> = {
+  EUR: 1,
+  USD: 1.08,
+  GBP: 0.85,
+  PLN: 4.32,
+  AED: 3.97,
+  SAR: 4.05,
+  CHF: 0.95,
+};
+
+async function seedExchangeRates(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  // Gather every currency in play this run, pinned with EUR + the org default.
+  const currencySet = new Set<string>(['EUR', ctx.profile.defaultCurrency]);
+  for (const inv of invoices) currencySet.add(inv.currency);
+  for (const c of contractors) currencySet.add(c.currency);
+  // Drop unknown codes (no midpoint defined → would produce garbage rates).
+  const targets = [...currencySet].filter(c => EUR_MIDPOINTS[c] !== undefined && c !== 'EUR');
+  if (targets.length === 0) return;
+
+  const todayUtcStartOfDay = (() => {
+    const d = new Date();
+    d.setUTCHours(0, 0, 0, 0);
+    return d;
+  })();
+
+  // 90-day window ending today, inclusive.
+  const rows: Array<{
+    date: Date;
+    base: string;
+    target: string;
+    rate: string;
+    source: string;
+  }> = [];
+  for (let dayOffset = 0; dayOffset < 90; dayOffset += 1) {
+    const date = new Date(todayUtcStartOfDay.getTime() - dayOffset * 86_400_000);
+    for (const target of targets) {
+      const midpoint = EUR_MIDPOINTS[target];
+      if (midpoint === undefined) continue;
+      // ±1.5% drift around midpoint, deterministic via per-org faker.
+      const drift = ctx.fakers.org.number.float({ min: -0.015, max: 0.015 });
+      const rate = midpoint * (1 + drift);
+      rows.push({
+        date,
+        base: 'EUR',
+        target,
+        rate: rate.toFixed(8),
+        source: 'ECB',
+      });
+    }
+  }
+
+  // Idempotent — composite-unique on (date, base, target). Multi-org reseeds
+  // are no-ops for already-present rows.
+  await prisma.exchangeRate.createMany({
+    data: rows,
+    skipDuplicates: true,
+  });
+}
+
+// ---------------------------------------------------------------------------
 // OCR extraction history + PendingUpload precursors — gives Settings → OCR
 // History a real list with realistic JSON payloads + status variety.
 // ---------------------------------------------------------------------------
@@ -6553,6 +6628,9 @@ async function seedOrg(
   // OCR runs after invoice-documents because OcrExtraction.documentId points
   // at Document rows materialised by `seedInvoiceDocuments`.
   await gateSection(omitted, 'ocr', org.key, undefined, () => seedOcr(prisma, ctx));
+  await gateSection(omitted, 'exchange-rates', org.key, undefined, () =>
+    seedExchangeRates(prisma, ctx, invoices, contractors),
+  );
   await gateSection(omitted, 'workflow-templates', org.key, undefined, () =>
     seedWorkflowTemplates(prisma, ctx),
   );
