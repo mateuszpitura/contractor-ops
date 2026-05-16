@@ -4111,6 +4111,410 @@ interface MiniRoleSeed {
   tasks: ReadonlyArray<{ titleEn: string; descriptionEn: string; dueDayOffset: number }>;
 }
 
+// Canonical hardcoded WorkflowTemplate set — covers every WorkflowTemplateType
+// enum value (ONBOARDING, OFFBOARDING, DOCUMENT_COLLECTION, COMPLIANCE_REVIEW)
+// plus two CUSTOM workflows so the templates list is materially populated and
+// `WorkflowRun` seeding has real templates to reference.
+type WorkflowTemplateTypeKey =
+  | 'ONBOARDING'
+  | 'OFFBOARDING'
+  | 'DOCUMENT_COLLECTION'
+  | 'COMPLIANCE_REVIEW'
+  | 'CUSTOM';
+type WorkflowTaskTypeKey =
+  | 'DOCUMENT_COLLECTION'
+  | 'APPROVAL'
+  | 'ACCESS_GRANT'
+  | 'ACCESS_REVOKE'
+  | 'FINANCE_SETUP'
+  | 'EQUIPMENT'
+  | 'KNOWLEDGE_TRANSFER'
+  | 'MEETING'
+  | 'MANUAL'
+  | 'NOTIFICATION'
+  | 'IP_VERIFICATION'
+  | 'CONTRACT_HEALTH_CHECK';
+type AssigneeModeKey =
+  | 'FIXED_USER'
+  | 'ROLE_BASED'
+  | 'CONTRACTOR_OWNER'
+  | 'CONTRACT_OWNER'
+  | 'PROJECT_MANAGER';
+type WorkflowUserRoleKey =
+  | 'admin'
+  | 'finance_admin'
+  | 'ops_manager'
+  | 'team_manager'
+  | 'legal_compliance_viewer'
+  | 'it_admin'
+  | 'external_accountant'
+  | 'readonly';
+type EntityTypeKey = 'CONTRACTOR' | 'CONTRACT';
+
+interface SeedTaskDef {
+  title: string;
+  description: string;
+  taskType: WorkflowTaskTypeKey;
+  assigneeMode: AssigneeModeKey;
+  assigneeRole?: WorkflowUserRoleKey;
+  required: boolean;
+  dueOffsetDays: number;
+  /** 0-based index into the same template's `tasks` array. */
+  dependsOnIndex?: number;
+}
+
+interface WorkflowTemplateSeed {
+  type: WorkflowTemplateTypeKey;
+  name: string;
+  description: string;
+  appliesToEntityType: EntityTypeKey;
+  tasks: readonly SeedTaskDef[];
+}
+
+const WORKFLOW_TEMPLATE_SEEDS: readonly WorkflowTemplateSeed[] = [
+  {
+    type: 'ONBOARDING',
+    name: 'Standard Onboarding',
+    description: 'Default onboarding workflow for new contractors.',
+    appliesToEntityType: 'CONTRACTOR',
+    tasks: [
+      {
+        title: 'Collect signed master agreement',
+        description: 'Upload the executed master service agreement.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: true,
+        dueOffsetDays: 1,
+      },
+      {
+        title: 'Verify tax identification',
+        description: 'Validate VAT / tax ID against authority registry.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'finance_admin',
+        required: true,
+        dueOffsetDays: 2,
+        dependsOnIndex: 0,
+      },
+      {
+        title: 'Provision SaaS access',
+        description: 'Grant access to Slack, Notion, GitHub.',
+        taskType: 'ACCESS_GRANT',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'it_admin',
+        required: true,
+        dueOffsetDays: 3,
+      },
+      {
+        title: 'Equipment shipment',
+        description: 'Ship laptop + peripherals to contractor.',
+        taskType: 'EQUIPMENT',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'ops_manager',
+        required: false,
+        dueOffsetDays: 5,
+      },
+      {
+        title: 'Welcome 1:1',
+        description: 'Schedule 30-min welcome with manager.',
+        taskType: 'MEETING',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: false,
+        dueOffsetDays: 5,
+      },
+      {
+        title: 'Send welcome notification',
+        description: 'Trigger welcome email + Slack DM.',
+        taskType: 'NOTIFICATION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'team_manager',
+        required: true,
+        dueOffsetDays: 5,
+      },
+      {
+        title: 'Initial finance setup',
+        description: 'Configure billing profile + payment terms.',
+        taskType: 'FINANCE_SETUP',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'finance_admin',
+        required: true,
+        dueOffsetDays: 7,
+      },
+    ],
+  },
+  {
+    type: 'OFFBOARDING',
+    name: 'Standard Offboarding',
+    description: 'Wind-down workflow at end of engagement.',
+    appliesToEntityType: 'CONTRACTOR',
+    tasks: [
+      {
+        title: 'Knowledge transfer brief',
+        description: 'Document ongoing initiatives + handover doc.',
+        taskType: 'KNOWLEDGE_TRANSFER',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: true,
+        dueOffsetDays: 1,
+      },
+      {
+        title: 'Submit final invoice',
+        description: 'Closing invoice including unbilled time.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: true,
+        dueOffsetDays: 3,
+        dependsOnIndex: 0,
+      },
+      {
+        title: 'IP verification',
+        description: 'Confirm no IP retained off-platform.',
+        taskType: 'IP_VERIFICATION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'legal_compliance_viewer',
+        required: true,
+        dueOffsetDays: 5,
+      },
+      {
+        title: 'Equipment return',
+        description: 'Initiate return shipment for company equipment.',
+        taskType: 'EQUIPMENT',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'ops_manager',
+        required: true,
+        dueOffsetDays: 7,
+      },
+      {
+        title: 'Revoke SaaS access',
+        description: 'Disable Slack, GitHub, Notion accounts.',
+        taskType: 'ACCESS_REVOKE',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'it_admin',
+        required: true,
+        dueOffsetDays: 10,
+      },
+      {
+        title: 'Final retro',
+        description: 'Manager 1:1 + lessons learned writeup.',
+        taskType: 'MEETING',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'team_manager',
+        required: false,
+        dueOffsetDays: 12,
+      },
+    ],
+  },
+  {
+    type: 'DOCUMENT_COLLECTION',
+    name: 'Document Collection',
+    description: 'Periodic compliance documents refresh.',
+    appliesToEntityType: 'CONTRACTOR',
+    tasks: [
+      {
+        title: 'Upload latest insurance',
+        description: 'Professional liability insurance certificate.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: true,
+        dueOffsetDays: 7,
+      },
+      {
+        title: 'Upload tax certificate',
+        description: 'Annual tax-residency certificate.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'CONTRACTOR_OWNER',
+        required: true,
+        dueOffsetDays: 14,
+      },
+      {
+        title: 'Compliance reviewer approval',
+        description: 'Confirm uploaded documents pass review.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'legal_compliance_viewer',
+        required: true,
+        dueOffsetDays: 21,
+        dependsOnIndex: 1,
+      },
+      {
+        title: 'Notify contractor of completion',
+        description: 'Send confirmation email.',
+        taskType: 'NOTIFICATION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'team_manager',
+        required: true,
+        dueOffsetDays: 22,
+        dependsOnIndex: 2,
+      },
+      {
+        title: 'Archive prior versions',
+        description: 'Move superseded files to archive.',
+        taskType: 'MANUAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'ops_manager',
+        required: false,
+        dueOffsetDays: 30,
+      },
+    ],
+  },
+  {
+    type: 'COMPLIANCE_REVIEW',
+    name: 'Compliance Review',
+    description: 'Quarterly compliance audit per contractor.',
+    appliesToEntityType: 'CONTRACTOR',
+    tasks: [
+      {
+        title: 'Pull contractor file',
+        description: 'Gather contracts, invoices, certifications.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'legal_compliance_viewer',
+        required: true,
+        dueOffsetDays: 1,
+      },
+      {
+        title: 'Risk classification check',
+        description: 'Re-run classification against current criteria.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'legal_compliance_viewer',
+        required: true,
+        dueOffsetDays: 5,
+        dependsOnIndex: 0,
+      },
+      {
+        title: 'Economic-dependency review',
+        description: 'Validate exposure thresholds.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'finance_admin',
+        required: true,
+        dueOffsetDays: 7,
+      },
+      {
+        title: 'Reviewer sign-off',
+        description: 'Compliance lead approval.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'admin',
+        required: true,
+        dueOffsetDays: 10,
+        dependsOnIndex: 2,
+      },
+      {
+        title: 'Archive review packet',
+        description: 'Store review packet for audit trail.',
+        taskType: 'MANUAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'ops_manager',
+        required: false,
+        dueOffsetDays: 14,
+      },
+    ],
+  },
+  {
+    type: 'CUSTOM',
+    name: 'Contract Renewal',
+    description: 'Workflow for renewing an expiring contract.',
+    appliesToEntityType: 'CONTRACT',
+    tasks: [
+      {
+        title: 'Notify contract owner of renewal window',
+        description: 'Send 60-day pre-expiry notification.',
+        taskType: 'NOTIFICATION',
+        assigneeMode: 'CONTRACT_OWNER',
+        required: true,
+        dueOffsetDays: 1,
+      },
+      {
+        title: 'Health check on current contract',
+        description: 'Surface SLA misses + economic-dependency risk.',
+        taskType: 'CONTRACT_HEALTH_CHECK',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'finance_admin',
+        required: true,
+        dueOffsetDays: 3,
+      },
+      {
+        title: 'Negotiate revised terms',
+        description: 'Iterate scope + rate with contractor.',
+        taskType: 'MEETING',
+        assigneeMode: 'CONTRACT_OWNER',
+        required: true,
+        dueOffsetDays: 14,
+        dependsOnIndex: 1,
+      },
+      {
+        title: 'Legal sign-off on amendment',
+        description: 'Compliance approves amendment language.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'ROLE_BASED',
+        assigneeRole: 'legal_compliance_viewer',
+        required: true,
+        dueOffsetDays: 21,
+        dependsOnIndex: 2,
+      },
+      {
+        title: 'Counter-signed amendment uploaded',
+        description: 'Final executed addendum on file.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'CONTRACT_OWNER',
+        required: true,
+        dueOffsetDays: 28,
+      },
+    ],
+  },
+  {
+    type: 'CUSTOM',
+    name: 'Project Engagement Kickoff',
+    description: 'Project-side kickoff for newly assigned contractor.',
+    appliesToEntityType: 'CONTRACTOR',
+    tasks: [
+      {
+        title: 'Project access provisioning',
+        description: 'Grant project repo + tracker access.',
+        taskType: 'ACCESS_GRANT',
+        assigneeMode: 'PROJECT_MANAGER',
+        required: true,
+        dueOffsetDays: 1,
+      },
+      {
+        title: 'Stakeholder intro session',
+        description: 'Introduce contractor to core stakeholders.',
+        taskType: 'MEETING',
+        assigneeMode: 'PROJECT_MANAGER',
+        required: true,
+        dueOffsetDays: 3,
+        dependsOnIndex: 0,
+      },
+      {
+        title: 'Project-context document pack',
+        description: 'Share architecture + product brief.',
+        taskType: 'DOCUMENT_COLLECTION',
+        assigneeMode: 'PROJECT_MANAGER',
+        required: false,
+        dueOffsetDays: 5,
+      },
+      {
+        title: 'First-week check-in',
+        description: 'Confirm onboarding momentum.',
+        taskType: 'MEETING',
+        assigneeMode: 'PROJECT_MANAGER',
+        required: true,
+        dueOffsetDays: 7,
+        dependsOnIndex: 1,
+      },
+      {
+        title: 'Delivery cadence agreement',
+        description: 'Confirm sprint / standup cadence.',
+        taskType: 'APPROVAL',
+        assigneeMode: 'PROJECT_MANAGER',
+        required: false,
+        dueOffsetDays: 10,
+      },
+    ],
+  },
+];
+
 const WORKFLOW_ROLE_SEEDS: readonly MiniRoleSeed[] = [
   {
     role: 'software_engineer',
@@ -4220,6 +4624,10 @@ const WORKFLOW_ROLE_SEEDS: readonly MiniRoleSeed[] = [
 
 async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
   if (ctx.org.contractorsPerOrg === 0) return;
+
+  // -------------------------------------------------------------------
+  // WorkflowRoleTemplate / WorkflowRoleTaskTemplate (Phase 74 D-04 path)
+  // -------------------------------------------------------------------
   for (const seed of WORKFLOW_ROLE_SEEDS) {
     const role = await prisma.workflowRoleTemplate.create({
       data: {
@@ -4247,6 +4655,64 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
         createdAt: ctx.foundedAt,
       })),
     });
+  }
+
+  // -------------------------------------------------------------------
+  // WorkflowTemplate / WorkflowTaskTemplate (modern workflow runner path —
+  // these rows are what `seedWorkflowRuns` references, and what the
+  // Workflow Templates UI list reads).
+  // -------------------------------------------------------------------
+  // First insert each template with its own metadata, then bulk-insert its
+  // tasks (so we know the task templates' IDs before resolving the
+  // dependsOnTaskTemplateId backfill).
+  for (const seed of WORKFLOW_TEMPLATE_SEEDS) {
+    const template = await prisma.workflowTemplate.create({
+      data: {
+        organizationId: ctx.organizationId,
+        name: seed.name,
+        type: seed.type,
+        description: seed.description,
+        version: 1,
+        status: 'ACTIVE',
+        appliesToEntityType: seed.appliesToEntityType,
+        createdByUserId: ctx.ownerUserId,
+        createdAt: ctx.foundedAt,
+      },
+      select: { id: true },
+    });
+
+    // Two-pass insert: pass 1 creates every task, pass 2 patches the
+    // dependsOnTaskTemplateId referencing prior tasks in the same template.
+    const taskIdsBySortOrder: string[] = [];
+    for (const [idx, taskDef] of seed.tasks.entries()) {
+      const created = await prisma.workflowTaskTemplate.create({
+        data: {
+          organizationId: ctx.organizationId,
+          workflowTemplateId: template.id,
+          title: taskDef.title,
+          description: taskDef.description,
+          taskType: taskDef.taskType,
+          sortOrder: idx,
+          required: taskDef.required,
+          assigneeMode: taskDef.assigneeMode,
+          assigneeRole: taskDef.assigneeRole ?? null,
+          dueOffsetDays: taskDef.dueOffsetDays,
+          createdAt: ctx.foundedAt,
+        },
+        select: { id: true },
+      });
+      taskIdsBySortOrder.push(created.id);
+    }
+    for (const [idx, taskDef] of seed.tasks.entries()) {
+      if (taskDef.dependsOnIndex === undefined) continue;
+      const parentId = taskIdsBySortOrder[taskDef.dependsOnIndex];
+      const childId = taskIdsBySortOrder[idx];
+      if (!(parentId && childId) || parentId === childId) continue;
+      await prisma.workflowTaskTemplate.update({
+        where: { id: childId },
+        data: { dependsOnTaskTemplateId: parentId },
+      });
+    }
   }
 }
 
@@ -4387,8 +4853,10 @@ async function seedWorkflowRuns(
 ): Promise<void> {
   if (contractors.length === 0) return;
 
+  // Restrict to contractor-scoped templates — a CONTRACT-scoped template
+  // can't legally back a CONTRACTOR-entity run.
   const templates = await prisma.workflowTemplate.findMany({
-    where: { organizationId: ctx.organizationId },
+    where: { organizationId: ctx.organizationId, appliesToEntityType: 'CONTRACTOR' },
     select: { id: true },
   });
   if (templates.length === 0) return;
