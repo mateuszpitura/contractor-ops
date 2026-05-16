@@ -17,10 +17,105 @@
  * router({}) and mergeRouters() calls by following imported
  * identifiers to their declarations within packages/api/src.
  */
-import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+
+// ---------------------------------------------------------------------------
+// Project-wide zod schema index — built once, queried during input-field
+// extraction so cross-file schema references (e.g. `import {
+// rejectStepSchema } from './schemas';`) resolve cleanly without spinning
+// up a full TypeScript Program.
+// ---------------------------------------------------------------------------
+
+const SCHEMA_FIELD_INDEX = new Map<string, string[]>();
+
+function buildSchemaIndex(rootDir: string): void {
+  const visit = (d: string) => {
+    let entries: import('node:fs').Dirent[];
+    try {
+      entries = readdirSync(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = join(d, entry.name);
+      if (entry.isDirectory()) {
+        if (
+          entry.name === 'node_modules' ||
+          entry.name === '__tests__' ||
+          entry.name === 'dist' ||
+          entry.name.startsWith('.')
+        ) {
+          continue;
+        }
+        visit(full);
+        continue;
+      }
+      if (!(entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) continue;
+      const text = readFileSync(full, 'utf8');
+      if (!text.includes('z.object')) continue;
+      const sf = ts.createSourceFile(full, text, ts.ScriptTarget.ESNext, true, ts.ScriptKind.TS);
+      const collect = (n: ts.Node) => {
+        if (ts.isVariableDeclaration(n) && ts.isIdentifier(n.name) && n.initializer) {
+          const fields = inspectSchemaExpression(n.initializer);
+          if (fields.length > 0) SCHEMA_FIELD_INDEX.set(n.name.text, fields);
+        }
+        ts.forEachChild(n, collect);
+      };
+      ts.forEachChild(sf, collect);
+    }
+  };
+  visit(rootDir);
+}
+
+/** Pull top-level field names from a node that should be `z.object({...})`
+ *  or a `.extend({...})` chain wrapping one. */
+function inspectSchemaExpression(expr: ts.Expression): string[] {
+  // z.object({...}) — direct
+  if (
+    ts.isCallExpression(expr) &&
+    ts.isPropertyAccessExpression(expr.expression) &&
+    ts.isIdentifier(expr.expression.name) &&
+    expr.expression.name.text === 'object' &&
+    expr.arguments.length > 0 &&
+    ts.isObjectLiteralExpression(expr.arguments[0])
+  ) {
+    return collectObjectLiteralKeys(expr.arguments[0]);
+  }
+  // base.extend({...}) — append base's fields plus the extension's
+  if (
+    ts.isCallExpression(expr) &&
+    ts.isPropertyAccessExpression(expr.expression) &&
+    ts.isIdentifier(expr.expression.name) &&
+    expr.expression.name.text === 'extend' &&
+    expr.arguments.length > 0 &&
+    ts.isObjectLiteralExpression(expr.arguments[0])
+  ) {
+    const base = inspectSchemaExpression(expr.expression.expression);
+    return [...base, ...collectObjectLiteralKeys(expr.arguments[0])];
+  }
+  // Identifier — look up in already-built index (best effort; may be empty
+  // if the referenced schema lives in a file we visit later, in which case
+  // a second pass would resolve it).
+  if (ts.isIdentifier(expr)) {
+    return SCHEMA_FIELD_INDEX.get(expr.text) ?? [];
+  }
+  return [];
+}
+
+function collectObjectLiteralKeys(obj: ts.ObjectLiteralExpression): string[] {
+  return obj.properties
+    .map(prop =>
+      prop.name && ts.isIdentifier(prop.name)
+        ? prop.name.text
+        : prop.name && ts.isStringLiteralLike(prop.name)
+          ? prop.name.text
+          : null,
+    )
+    .filter((s): s is string => Boolean(s));
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../../..');
@@ -53,9 +148,29 @@ type Procedure = {
   destructive: boolean;
   file: string;
   line: number;
+  /**
+   * Top-level field names from the `.input(z.object({...}))` zod schema.
+   * Used to detect rejection-with-reason patterns: when an input includes a
+   * required `reason` / `comment` / `note` string field, the UI must collect
+   * that input before mutate fires, which is functionally equivalent to
+   * an AlertDialog confirmation gate.
+   */
+  inputFields?: string[];
 };
 
 const procedures: Procedure[] = [];
+
+// Pre-pass: build the schema index so cross-file `.input(schemaName)`
+// references resolve. Scan both the API package (local schemas) and the
+// shared validators package (most procedure inputs live there). Run each
+// path twice — the first pass leaves identifier-typed schemas (composed
+// of other named schemas) blank, the second resolves them via the index
+// built in pass 1.
+const VALIDATORS_SRC = resolve(ROOT, 'packages/validators/src');
+buildSchemaIndex(API_SRC);
+buildSchemaIndex(VALIDATORS_SRC);
+buildSchemaIndex(API_SRC);
+buildSchemaIndex(VALIDATORS_SRC);
 
 // ---------------------------------------------------------------------------
 // Program setup: include every .ts/.tsx in packages/api/src
@@ -157,9 +272,12 @@ function extractMiddleware(expr: ts.Expression): string {
 }
 
 /** Walk a property assignment value to see if it is a procedure (ends in .query/.mutation/.subscription). */
-function detectProcedureCall(
-  value: ts.Expression,
-): { type: 'query' | 'mutation' | 'subscription'; middleware: string; node: ts.Node } | null {
+function detectProcedureCall(value: ts.Expression): {
+  type: 'query' | 'mutation' | 'subscription';
+  middleware: string;
+  node: ts.Node;
+  inputFields: string[];
+} | null {
   // Walk the top-level call: builder.method.method.<query|mutation|subscription>(input)
   let node: ts.Expression = value;
   while (ts.isCallExpression(node) || ts.isPropertyAccessExpression(node)) {
@@ -172,6 +290,7 @@ function detectProcedureCall(
             type: methodName as 'query' | 'mutation' | 'subscription',
             middleware: extractMiddleware(callee.expression),
             node,
+            inputFields: extractInputFields(callee.expression),
           };
         }
       }
@@ -181,6 +300,34 @@ function detectProcedureCall(
     }
   }
   return null;
+}
+
+/** Walk back up the procedure builder chain looking for `.input(z.object({...}))`
+ *  and pull the top-level property names from that schema. Returns an empty
+ *  array when no input call is found or the schema isn't a literal z.object. */
+function extractInputFields(expr: ts.Expression): string[] {
+  let node: ts.Expression = expr;
+  while (ts.isPropertyAccessExpression(node) || ts.isCallExpression(node)) {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      ts.isIdentifier(node.expression.name) &&
+      node.expression.name.text === 'input' &&
+      node.arguments.length > 0
+    ) {
+      return collectZodObjectFields(node.arguments[0]);
+    }
+    node = ts.isCallExpression(node) ? node.expression : node.expression;
+  }
+  return [];
+}
+
+/** Given an expression that should resolve to a `z.object({...})` schema, return
+ *  the top-level keys. Handles literal z.object, `.extend({...})` chains, and
+ *  identifier references (looked up via SCHEMA_FIELD_INDEX, populated by the
+ *  pre-pass in buildSchemaIndex). */
+function collectZodObjectFields(arg: ts.Expression): string[] {
+  return inspectSchemaExpression(arg);
 }
 
 /** Walk a router({...}) ObjectLiteral and emit procedures + recurse into sub-routers. */
@@ -209,6 +356,7 @@ function walkRouterObject(
         destructive: classifyVerb(key),
         file: relative(ROOT, sf.fileName),
         line: lineOf(proc.node),
+        inputFields: proc.inputFields.length > 0 ? proc.inputFields : undefined,
       });
       continue;
     }

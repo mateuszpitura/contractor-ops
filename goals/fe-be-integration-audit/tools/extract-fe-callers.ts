@@ -45,8 +45,53 @@ type Caller = {
     hasToastError: boolean;
     hasInvalidation: boolean;
     hasIsPending: boolean;
+    /**
+     * `onMutate` present in mutationOptions — signals an optimistic-update
+     * pattern. The cache is mutated before the round-trip, so the conventional
+     * `onSuccess` / invalidation / `isPending` checks do not apply.
+     */
+    hasOnMutate: boolean;
+    /**
+     * `onError` exists but its body is empty (no statements) — an intentional
+     * silent swallow, typically used by mutations whose failure path is
+     * non-actionable for the user (e.g. portal.logout).
+     */
+    hasEmptyOnError: boolean;
   };
   fileHasAlertDialog: boolean;
+  /**
+   * Caller lives under `apps/web/src/hooks/use-*` — confirmation gates and
+   * loading-state UI live in the consuming component, not the hook.
+   */
+  isInHookFile: boolean;
+  /**
+   * The mutation's `.mutate` is invoked from inside a `useEffect` callback.
+   * Effect-driven mutations have no discrete user trigger, so a loading
+   * disable would have nothing to attach to.
+   */
+  isCalledInUseEffect: boolean;
+  /**
+   * The mutation var participates in a ternary alias of the form
+   * `const X = cond ? mutA : mutB;` and an alias of that shape exists in
+   * the same file. Used to suppress per-mutation noise when only one of
+   * the routed mutations is active per render — the shared alias is the
+   * one wired into the trigger.
+   */
+  isInRoutedAlias: boolean;
+  /**
+   * The file contains a `<input type="file">` JSX element. Mutations
+   * triggered from a file picker's onChange are gated by a state
+   * machine (`step = 'parsing'` → `'results'` / `'error'`) rather than a
+   * disabled flag — the file input itself can't be disabled mid-upload.
+   */
+  fileHasFileInputTrigger: boolean;
+  /**
+   * The file contains a `router.replace(...)` or `window.location.href =`
+   * assignment AND uses `mutateAsync` on this mutation. Indicates a
+   * redirect-on-mutate pattern where the page unmounts after the mutation
+   * resolves, so an onSuccess handler would have no UI to update.
+   */
+  hasRedirectAfterMutate: boolean;
 };
 
 const callers: Caller[] = [];
@@ -208,6 +253,8 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
   hasToastSuccess: boolean;
   hasToastError: boolean;
   hasInvalidation: boolean;
+  hasOnMutate: boolean;
+  hasEmptyOnError: boolean;
 } {
   const flags = {
     hasOnSuccess: false,
@@ -215,6 +262,8 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
     hasToastSuccess: false,
     hasToastError: false,
     hasInvalidation: false,
+    hasOnMutate: false,
+    hasEmptyOnError: false,
   };
   if (!(arg && ts.isObjectLiteralExpression(arg))) return flags;
   for (const prop of arg.properties) {
@@ -231,6 +280,9 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
         flags.hasOnError = true;
         flags.hasToastError = true;
       }
+      if (handlerName === 'onMutate') {
+        flags.hasOnMutate = true;
+      }
       continue;
     }
     if (
@@ -241,6 +293,7 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
       const handlerName = prop.name.text;
       if (handlerName === 'onSuccess') flags.hasOnSuccess = true;
       if (handlerName === 'onError') flags.hasOnError = true;
+      if (handlerName === 'onMutate') flags.hasOnMutate = true;
       // If the handler value is an Identifier (extracted callback reference)
       // we cannot follow it without cross-file resolution. Assume the
       // referenced function does the right thing — mark all sub-flags
@@ -260,6 +313,20 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
       const body: ts.Node | undefined = ts.isPropertyAssignment(prop)
         ? prop.initializer
         : prop.body;
+      // Empty onError handler — block body with no statements OR an arrow
+      // function returning a no-op (e.g. `onError: () => {}`). Intentional
+      // silent swallow.
+      if (handlerName === 'onError' && body) {
+        if (
+          (ts.isArrowFunction(body) || ts.isFunctionExpression(body)) &&
+          ts.isBlock(body.body) &&
+          body.body.statements.length === 0
+        ) {
+          flags.hasEmptyOnError = true;
+        } else if (ts.isMethodDeclaration(prop) && prop.body && prop.body.statements.length === 0) {
+          flags.hasEmptyOnError = true;
+        }
+      }
       if (body) {
         ts.forEachChild(body, walkInner);
         function walkInner(n: ts.Node) {
@@ -291,17 +358,22 @@ function inspectMutationOptions(arg: ts.Expression | undefined): {
 
 /**
  * Detect any reference to `<varName>.isPending` OR `<varName>.mutateAsync`
- * in a SourceFile. Both count as "loading-state handled":
+ * OR `<varName>.status === 'pending'` (alias used by some files) in a
+ * SourceFile. All count as "loading-state handled":
  *   - `.isPending` → UI bound directly.
  *   - `.mutateAsync` → caller awaits inside an async pipeline; loading state
  *     is managed by the caller's own state machine (upload progress, wizard
  *     advance, etc.), not by a single trigger button.
+ *   - `.status === 'pending'` → typed-status alias, identical to `.isPending`
+ *     in TanStack v5 mutations. Some files prefer this for symmetry with
+ *     useQuery's `status` semantics.
  */
 function fileHasIsPendingFor(sf: ts.SourceFile, mutationVar: string | null): boolean {
   if (!mutationVar) return false;
   let found = false;
   const visit = (n: ts.Node) => {
     if (found) return;
+    // Direct property access: <var>.isPending / .isLoading / .mutateAsync
     if (
       ts.isPropertyAccessExpression(n) &&
       ts.isIdentifier(n.expression) &&
@@ -311,6 +383,123 @@ function fileHasIsPendingFor(sf: ts.SourceFile, mutationVar: string | null): boo
     ) {
       found = true;
       return;
+    }
+    // Status-based alias: <var>.status === 'pending' (either side of `===`)
+    if (
+      ts.isBinaryExpression(n) &&
+      n.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+    ) {
+      const sides = [n.left, n.right];
+      const hasStatusAccess = sides.some(
+        s =>
+          ts.isPropertyAccessExpression(s) &&
+          ts.isIdentifier(s.expression) &&
+          s.expression.text === mutationVar &&
+          ts.isIdentifier(s.name) &&
+          s.name.text === 'status',
+      );
+      const hasPendingLiteral = sides.some(
+        s => ts.isStringLiteralLike(s) && (s.text === 'pending' || s.text === 'loading'),
+      );
+      if (hasStatusAccess && hasPendingLiteral) {
+        found = true;
+        return;
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return found;
+}
+
+/** True when `<mutationVar>.mutate` (or .mutateAsync) is invoked from inside
+ *  a `useEffect` callback in the same SourceFile — effect-driven mutation
+ *  with no user-clickable trigger. */
+function mutationCalledInUseEffect(sf: ts.SourceFile, mutationVar: string | null): boolean {
+  if (!mutationVar) return false;
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    // Look for useEffect(<arrow>, [...])
+    if (
+      ts.isCallExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === 'useEffect' &&
+      n.arguments[0]
+    ) {
+      const inner = (node: ts.Node) => {
+        if (found) return;
+        if (
+          ts.isPropertyAccessExpression(node) &&
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === mutationVar &&
+          ts.isIdentifier(node.name) &&
+          (node.name.text === 'mutate' || node.name.text === 'mutateAsync')
+        ) {
+          found = true;
+          return;
+        }
+        ts.forEachChild(node, inner);
+      };
+      ts.forEachChild(n.arguments[0], inner);
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return found;
+}
+
+/** True when `<mutationVar>.mutateAsync` is invoked anywhere in the file.
+ *  Used to discriminate fire-and-forget mutate from awaited mutateAsync
+ *  pipelines for the redirect-on-mutate heuristic. */
+function mutationUsesMutateAsyncIn(sf: ts.SourceFile, mutationVar: string | null): boolean {
+  if (!mutationVar) return false;
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (
+      ts.isPropertyAccessExpression(n) &&
+      ts.isIdentifier(n.expression) &&
+      n.expression.text === mutationVar &&
+      ts.isIdentifier(n.name) &&
+      n.name.text === 'mutateAsync'
+    ) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return found;
+}
+
+/** True when the file declares a ternary alias of the form
+ *  `const X = cond ? mutA : (cond2 ? mutB : mutC);` and `mutationVar` appears
+ *  as one of the branch identifiers. Indicates the mutation participates in
+ *  a routed-by-context dispatch where only one branch is active per render. */
+function isInRoutedAliasFor(sf: ts.SourceFile, mutationVar: string | null): boolean {
+  if (!mutationVar) return false;
+  let found = false;
+  const visit = (n: ts.Node) => {
+    if (found) return;
+    if (ts.isVariableDeclaration(n) && n.initializer && ts.isConditionalExpression(n.initializer)) {
+      const branches: ts.Expression[] = [];
+      const collect = (expr: ts.Expression) => {
+        if (ts.isConditionalExpression(expr)) {
+          collect(expr.whenTrue);
+          collect(expr.whenFalse);
+        } else {
+          branches.push(expr);
+        }
+      };
+      collect(n.initializer);
+      const branchNames = branches
+        .filter(b => ts.isIdentifier(b))
+        .map(b => (b as ts.Identifier).text);
+      if (branchNames.length >= 2 && branchNames.includes(mutationVar)) {
+        found = true;
+        return;
+      }
     }
     ts.forEachChild(n, visit);
   };
@@ -346,6 +535,25 @@ for (const file of files) {
     text.includes("from '@/components/ui/dialog'") ||
     text.includes('confirm(');
 
+  // Hook files (apps/web/src/hooks/use-*.ts[x]) re-host mutations on behalf of
+  // their consumers. Confirmation gates, loading-state UI, and post-mutateAsync
+  // pipelines all live in the consuming component — not in the hook — so a
+  // hook-bound mutation that "looks unhandled" is almost always handled by the
+  // caller.
+  const relFile = relative(ROOT, file);
+  const isInHookFile =
+    relFile.startsWith('apps/web/src/hooks/use-') ||
+    relFile.includes('/hooks/use-template-mutations');
+  // File-picker mutation surface (state-machine-progress pattern).
+  const fileHasFileInputTrigger = /<input[^>]+type=['"]file['"]/i.test(text);
+  // Mutation-then-redirect pattern. router.push / router.replace plus
+  // direct assignment to window.location.href all qualify; each unmounts
+  // the calling page and makes onSuccess UI work moot.
+  const fileHasRedirect =
+    text.includes('router.push') ||
+    text.includes('router.replace') ||
+    text.includes('window.location.href');
+
   const visit = (node: ts.Node) => {
     if (ts.isCallExpression(node)) {
       const match = matchTrpcChain(node.expression, localAliases);
@@ -379,20 +587,40 @@ for (const file of files) {
               hasToastSuccess: handlers.hasToastSuccess || siblingFlags.hasToastSuccess,
               hasToastError: handlers.hasToastError || siblingFlags.hasToastError,
               hasInvalidation: handlers.hasInvalidation || siblingFlags.hasInvalidation,
+              hasOnMutate: handlers.hasOnMutate || siblingFlags.hasOnMutate,
+              hasEmptyOnError: handlers.hasEmptyOnError || siblingFlags.hasEmptyOnError,
             };
           }
         }
 
         const hasIsPending =
           match.terminal === 'mutationOptions' ? fileHasIsPendingFor(sf, enclosingVar) : false;
+        const isCalledInUseEffect =
+          match.terminal === 'mutationOptions'
+            ? mutationCalledInUseEffect(sf, enclosingVar)
+            : false;
+        const isInRoutedAlias =
+          match.terminal === 'mutationOptions' ? isInRoutedAliasFor(sf, enclosingVar) : false;
+        // Redirect-on-mutate only fires when the mutation is actually
+        // awaited (mutateAsync) — a synchronous mutate+redirect is fine on
+        // its own, the redirect is the success UX.
+        const hasRedirectAfterMutate =
+          match.terminal === 'mutationOptions' &&
+          fileHasRedirect &&
+          mutationUsesMutateAsyncIn(sf, enclosingVar);
         callers.push({
           client: match.client,
           path: match.path,
           kind: match.terminal,
-          file: relative(ROOT, file),
+          file: relFile,
           line: lineOf(node, sf),
           handlers: { ...handlers, hasIsPending },
           fileHasAlertDialog,
+          isInHookFile,
+          isCalledInUseEffect,
+          isInRoutedAlias,
+          fileHasFileInputTrigger,
+          hasRedirectAfterMutate,
         });
       }
     }

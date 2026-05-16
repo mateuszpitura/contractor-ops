@@ -39,7 +39,36 @@ type Procedure = {
   destructive: boolean;
   file: string;
   line: number;
+  inputFields?: string[];
 };
+
+const REASON_FIELD_NAMES = new Set([
+  'reason',
+  'comment',
+  'note',
+  'rejectReason',
+  'rejectionReason',
+]);
+const SOFT_DELETE_SELF_PROCS = new Set([
+  // Procedures that retire the actor's own scope (org/account/profile). After
+  // success there are no caches to invalidate because subsequent reads hit a
+  // deleted-org / no-session branch — invalidation is pointless.
+  'gdpr.requestErasure',
+  'organization.deleteSelf',
+  'user.deleteAccount',
+]);
+
+function procHasReasonField(proc: Procedure | undefined): boolean {
+  return Boolean(proc?.inputFields?.some(f => REASON_FIELD_NAMES.has(f)));
+}
+
+function isWizardStepProcedure(c: Caller): boolean {
+  // Heuristic: ZATCA onboarding wizard advances by re-querying
+  // getOnboardingState between steps. The mutation surfaces live under
+  // components/zatca/ and their parent form re-runs the query — no FE-side
+  // invalidate needed.
+  return c.file.startsWith('apps/web/src/components/zatca/');
+}
 type Caller = {
   client: string;
   path: string;
@@ -53,8 +82,15 @@ type Caller = {
     hasToastError: boolean;
     hasInvalidation: boolean;
     hasIsPending: boolean;
+    hasOnMutate?: boolean;
+    hasEmptyOnError?: boolean;
   };
   fileHasAlertDialog: boolean;
+  isInHookFile?: boolean;
+  isCalledInUseEffect?: boolean;
+  isInRoutedAlias?: boolean;
+  fileHasFileInputTrigger?: boolean;
+  hasRedirectAfterMutate?: boolean;
 };
 type Severity = 'HIGH' | 'MED' | 'LOW';
 type FalsePositiveEntry = {
@@ -135,14 +171,44 @@ for (const proc of procedures) {
 // Direction B: FE -> BE (handler gaps)
 // ---------------------------------------------------------------------------
 
+// Pattern-aware suppression flags. Each predicate folds an Appendix-B
+// pattern back into the detector so the corresponding finding is never
+// emitted in the first place — the manifest entries that previously
+// shouldered these become inert (still preserved as documentation).
+function isHookCaller(c: Caller): boolean {
+  return c.isInHookFile === true;
+}
+function isOptimisticUpdate(c: Caller): boolean {
+  return c.handlers.hasOnMutate === true;
+}
+function isEffectDriven(c: Caller): boolean {
+  return c.isCalledInUseEffect === true;
+}
+function isRoutedAlias(c: Caller): boolean {
+  return c.isInRoutedAlias === true;
+}
+function hasSilentErrorHandler(c: Caller): boolean {
+  return c.handlers.hasEmptyOnError === true;
+}
+function hasFileInputTrigger(c: Caller): boolean {
+  return c.fileHasFileInputTrigger === true;
+}
+function hasRedirectAfterMutate(c: Caller): boolean {
+  return c.hasRedirectAfterMutate === true;
+}
+
 // Only inspect mutationOptions call sites (queries don't need toasts/confirm)
 for (const c of callers) {
   if (c.kind !== 'mutationOptions') continue;
   const proc = procedures.find(p => p.path === c.path);
   const destructive = proc?.destructive ?? false;
 
-  // HIGH: destructive without AlertDialog in same file
-  if (destructive && !c.fileHasAlertDialog) {
+  // HIGH: destructive without AlertDialog in same file. Skip when:
+  //   - the mutation lives in a hook file (consumer-wraps-hook pattern), OR
+  //   - the procedure input itself requires a reason/comment/note string
+  //     (rejection-with-reason — required text input gates the mutation).
+  const reasonGated = procHasReasonField(proc);
+  if (destructive && !c.fileHasAlertDialog && !isHookCaller(c) && !reasonGated) {
     findings.push({
       id: fid('HIGH'),
       severity: 'HIGH',
@@ -167,8 +233,10 @@ for (const c of callers) {
       problem: `Mutation ${c.path} has no onError handler — failures are silent.`,
       fix: 'Add onError: (err) => toast.error(err.message) to the mutationOptions argument.',
     });
-  } else if (!c.handlers.hasToastError) {
-    // MED: onError present but no toast
+  } else if (!(c.handlers.hasToastError || hasSilentErrorHandler(c))) {
+    // MED: onError present but no toast. Skip when onError body is empty
+    // (intentional-silent-handler — typically logout flows where the failure
+    // path is non-actionable for an already-signed-out user).
     findings.push({
       id: fid('MED'),
       severity: 'MED',
@@ -195,7 +263,21 @@ for (const c of callers) {
         fix: 'Call toast.success("...") inside the existing onSuccess handler.',
       });
     }
-    if (!c.handlers.hasInvalidation) {
+    if (
+      !(
+        c.handlers.hasInvalidation ||
+        isOptimisticUpdate(c) ||
+        SOFT_DELETE_SELF_PROCS.has(c.path) ||
+        isWizardStepProcedure(c)
+      )
+    ) {
+      // Suppressions:
+      //   - optimistic-update: onMutate + onSettled refreshes the cache.
+      //   - soft-delete-self: nothing to invalidate after the org / session
+      //     is gone.
+      //   - wizard-step-progression: ZATCA wizard re-queries
+      //     getOnboardingState between steps; UI is conditional on local
+      //     step state, not cache freshness.
       findings.push({
         id: fid('MED'),
         severity: 'MED',
@@ -207,7 +289,13 @@ for (const c of callers) {
         fix: 'Call queryClient.invalidateQueries({ queryKey: trpc.<relatedQuery>.queryOptions(...).queryKey }) in onSuccess.',
       });
     }
-  } else {
+  } else if (!(isOptimisticUpdate(c) || isHookCaller(c) || hasRedirectAfterMutate(c))) {
+    // Skip when:
+    //   - onMutate present (optimistic-update flow refreshes cache).
+    //   - mutation lives in a hook (consumer chains via mutateAsync and
+    //     handles post-success work).
+    //   - redirect-on-mutate: file uses router.replace / window.location.href
+    //     AND awaits mutateAsync. After the redirect there's no UI to update.
     findings.push({
       id: fid('MED'),
       severity: 'MED',
@@ -220,8 +308,23 @@ for (const c of callers) {
     });
   }
 
-  // LOW: no isPending reference (no loading/disabled wiring)
-  if (!c.handlers.hasIsPending) {
+  // LOW: no isPending reference (no loading/disabled wiring). Suppressed by:
+  //   - hook-bound mutation (consumer drives loading state)
+  //   - optimistic-update (no need to disable; cache mutates first)
+  //   - effect-driven mutation (no user-clickable trigger)
+  //   - routed-mutation alias (the active branch is the wired trigger)
+  //   - file-input trigger (the <input type="file"> can't be disabled mid-
+  //     upload; a step-state machine gates progress)
+  if (
+    !(
+      c.handlers.hasIsPending ||
+      isHookCaller(c) ||
+      isOptimisticUpdate(c) ||
+      isEffectDriven(c) ||
+      isRoutedAlias(c) ||
+      hasFileInputTrigger(c)
+    )
+  ) {
     findings.push({
       id: fid('LOW'),
       severity: 'LOW',
