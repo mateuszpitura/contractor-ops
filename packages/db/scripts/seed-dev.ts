@@ -414,6 +414,8 @@ const PHASE_EMOJI: Record<string, string> = {
   'tax-compliance': '⚖️ ',
   skonto: '💸',
   interest: '📈',
+  peppol: '🛰️ ',
+  zatca: '🏛️ ',
 };
 
 /**
@@ -472,6 +474,8 @@ const PHASE_WEIGHTS: Record<string, number> = {
   'tax-compliance': 3,
   skonto: 4,
   interest: 3,
+  peppol: 3,
+  zatca: 2,
 };
 const PHASE_WEIGHT_DEFAULT = 3;
 const TOTAL_WEIGHT_PER_ORG = Object.values(PHASE_WEIGHTS).reduce((a, b) => a + b, 0);
@@ -5502,6 +5506,198 @@ async function seedInvoiceMatchAndIntake(
 }
 
 // ---------------------------------------------------------------------------
+// E-invoicing — Peppol (EU), LeitwegId (DE B2G), ZATCA (SA). Each runs only
+// for the matching region; showcase orgs in the wrong region produce zero
+// rows for these tables (mitigated by spreading multi-org showcase coverage
+// in `--profile=all`).
+// ---------------------------------------------------------------------------
+
+async function seedPeppol(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+  contractors: readonly SeededContractor[],
+): Promise<void> {
+  if (ctx.org.region !== 'EU' || invoices.length === 0) return;
+
+  const orgScheme = '0192'; // ISO 6523 — Norwegian org-number scheme used by Storecove demos
+  const orgValue = ctx.fakers.org.string.numeric({ length: 13 });
+  const orgParticipant = await prisma.peppolParticipant.create({
+    data: {
+      organizationId: ctx.organizationId,
+      participantId: `${orgScheme}:${orgValue}`,
+      schemeId: orgScheme,
+      identifierValue: orgValue,
+      aspProvider: 'storecove',
+      aspRegistrationId: `asp-${tokenHex(6)}`,
+      status: 'ACTIVE',
+      registeredAt: pastDateAfter(ctx.fakers.org, 365, ctx.foundedAt),
+      supportsXRechnungCii: true,
+      lastCapabilityCheckAt: pastDate(ctx.fakers.org, 7),
+      createdAt: ctx.foundedAt,
+    },
+    select: { id: true, schemeId: true, identifierValue: true },
+  });
+
+  // Subset of contractors get their own Peppol identifiers (e.g. corporate
+  // sellers within the network).
+  const contractorParticipants: Array<{ id: string; schemeId: string; identifierValue: string }> =
+    [];
+  const contractorSubset = ctx.org.showcase
+    ? contractors.slice(0, Math.min(contractors.length, 5))
+    : contractors.filter((_, i) => i % 6 === 0).slice(0, 3);
+  for (const c of contractorSubset) {
+    const value = ctx.fakers.org.string.numeric({ length: 13 });
+    const created = await prisma.peppolParticipant.create({
+      data: {
+        organizationId: ctx.organizationId,
+        participantId: `${orgScheme}:${value}`,
+        schemeId: orgScheme,
+        identifierValue: value,
+        aspProvider: 'storecove',
+        status: 'REGISTERED',
+        registeredAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+        supportsXRechnungCii: ctx.fakers.org.datatype.boolean({ probability: 0.6 }),
+        createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+      },
+      select: { id: true, schemeId: true, identifierValue: true },
+    });
+    contractorParticipants.push(created);
+    void c; // contractor reference is documentary only — the FK is on Organization
+  }
+
+  // Capability cache rows — one per receiving participant (skipDuplicates on
+  // the composite unique to keep reseeds idempotent).
+  const cacheTargets = [orgParticipant, ...contractorParticipants];
+  await prisma.peppolCapabilityCache.createMany({
+    data: cacheTargets.map(p => ({
+      organizationId: ctx.organizationId,
+      schemeId: p.schemeId,
+      value: p.identifierValue,
+      documentTypes: ['urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0'],
+      cachedAt: pastDate(ctx.fakers.org, 7),
+      expiresAt: futureDate(ctx.fakers.org, 30),
+    })),
+    skipDuplicates: true,
+  });
+
+  // PeppolTransmission per EU invoice subset, mixed status.
+  const transmissionStatuses = [
+    'PENDING',
+    'TRANSMITTED',
+    'DELIVERED',
+    'FAILED',
+    'REJECTED',
+  ] as const;
+  const txSubset = ctx.org.showcase
+    ? invoices.slice(0, Math.min(invoices.length, transmissionStatuses.length * 2))
+    : invoices.filter((_, i) => i % 4 === 0).slice(0, 4);
+  for (const [i, inv] of txSubset.entries()) {
+    const status = transmissionStatuses[
+      i % transmissionStatuses.length
+    ] as (typeof transmissionStatuses)[number];
+    const transmittedAt =
+      status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 7, inv.receivedAt);
+    const deliveredAt =
+      status === 'DELIVERED' && transmittedAt ? advanceCapped(transmittedAt, 1) : null;
+    const target = cacheTargets[i % cacheTargets.length];
+    if (!target) continue;
+    await prisma.peppolTransmission.create({
+      data: {
+        organizationId: ctx.organizationId,
+        peppolParticipantId: target.id,
+        invoiceId: inv.id,
+        direction: 'OUTBOUND',
+        aspTransmissionId: `tx-${tokenHex(6)}`,
+        documentTypeId:
+          'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+        status,
+        xmlPayload: null,
+        errorMessage: status === 'FAILED' ? 'simulated upstream 500 (seed)' : null,
+        transmittedAt,
+        deliveredAt,
+        createdAt: inv.receivedAt,
+      },
+    });
+  }
+
+  // LeitwegId — DE B2G. Attach to the first 1–3 contractors in DE orgs.
+  if (ctx.profile.countryCode === 'DE') {
+    const leitwegSubset = ctx.org.showcase
+      ? contractors.slice(0, Math.min(contractors.length, 3))
+      : contractors.slice(0, 1);
+    for (const [i, c] of leitwegSubset.entries()) {
+      // Leitweg-ID structure: GG-fff-XYZ (Gemeindeschlüssel + Feinadressierung)
+      const value = `04011000-${ctx.fakers.org.string.numeric({ length: 5 })}-${(40 + i)
+        .toString()
+        .padStart(2, '0')}`;
+      await prisma.leitwegId.create({
+        data: {
+          organizationId: ctx.organizationId,
+          value,
+          description: 'Federal procurement office (seed)',
+          contractorId: c.id,
+          isDefaultForContractor: true,
+          validFrom: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
+          validTo: null,
+          notes: 'Auto-seeded for DE B2G demo',
+          createdAt: ctx.foundedAt,
+        },
+      });
+    }
+  }
+}
+
+async function seedZatca(
+  prisma: PrismaClient,
+  ctx: OrgSeed,
+  invoices: readonly SeededInvoice[],
+): Promise<void> {
+  // ZATCA is SA-only in production. Showcase ME orgs are typically AE OR SA;
+  // gate on country to avoid muddying the AE dashboard.
+  if (ctx.profile.countryCode !== 'SA' || invoices.length === 0) return;
+
+  const subset = ctx.org.showcase
+    ? invoices.slice(0, Math.min(invoices.length, 6))
+    : invoices.slice(0, 4);
+  const zatcaStatuses = [
+    'PENDING',
+    'SUBMITTED',
+    'CLEARED',
+    'REPORTED',
+    'REJECTED',
+    'WARNING',
+  ] as const;
+  let previousHash = '0'.repeat(64);
+  for (const [i, inv] of subset.entries()) {
+    const status = zatcaStatuses[i % zatcaStatuses.length] as (typeof zatcaStatuses)[number];
+    const invoiceHash = tokenHex(32); // 64 hex chars
+    await prisma.zatcaInvoiceChain.create({
+      data: {
+        organizationId: ctx.organizationId,
+        icv: i + 1,
+        invoiceId: inv.id,
+        invoiceHash,
+        previousHash,
+        zatcaUuid: randomUUID(),
+        zatcaStatus: status,
+        zatcaResponse: { seeded: true, status },
+        submittedAt: status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 7, inv.receivedAt),
+        clearedAt:
+          status === 'CLEARED' || status === 'REPORTED'
+            ? pastDateAfter(ctx.fakers.org, 6, inv.receivedAt)
+            : null,
+        reportedAt: status === 'REPORTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
+        rejectedAt: status === 'REJECTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
+        rejectionReason: status === 'REJECTED' ? 'Schema validation failed (seed)' : null,
+        createdAt: inv.receivedAt,
+      },
+    });
+    previousHash = invoiceHash;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Tax / legal compliance — Statusfeststellungsverfahren (DE), IR35 chain (UK),
 // SDS approval, TaxIdValidation, EconomicDependencyAlertState,
 // ReassessmentTrigger, WhtCertificate. Showcase intentionally spreads rows
@@ -6043,6 +6239,10 @@ async function seedOrg(
   await gateSection(omitted, 'interest', org.key, undefined, () =>
     seedInvoiceInterest(prisma, ctx, invoices),
   );
+  await gateSection(omitted, 'peppol', org.key, undefined, () =>
+    seedPeppol(prisma, ctx, invoices, contractors),
+  );
+  await gateSection(omitted, 'zatca', org.key, undefined, () => seedZatca(prisma, ctx, invoices));
   await gateSection(omitted, 'reminders', org.key, undefined, () =>
     seedReminders(prisma, ctx, invoices, refs),
   );
