@@ -129,12 +129,6 @@ in the dashboard.
 - **Legal content fidelity.** `src/lib/legal-content.ts` ships English
   bodies only; PL/DE/AR fall back to EN on read. Editors complete the
   localised versions through the admin UI after first seed.
-- **Privacy [jurisdiction] route in apps/web.** The legacy
-  `apps/web/.../privacy/(content)/{eu,de,gb}/page.tsx` files still serve
-  the bundled content. Switching them to a dynamic
-  `privacy/[jurisdiction]/page.tsx` route that fetches from CMS is a
-  follow-up PR once the migration script has been run successfully
-  against the live Neon CMS database.
 - **Lexical converter.** The migration uses a hand-authored catalog rather
   than a TSX-AST converter. Full TSX→Lexical AST conversion lives in plan
   Risk #2 — bring it in if/when the legal content set grows beyond the
