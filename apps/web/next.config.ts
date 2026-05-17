@@ -189,10 +189,20 @@ const nextConfig: NextConfig = {
           // (e.g. DocuSign signing iframe). If COEP-violation reports appear
           // post-deploy from the DocuSign embed, fall back to relaxing or
           // removing this header.
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless',
-          },
+          //
+          // In development we drop COEP entirely. The codebase does not use
+          // SharedArrayBuffer or Atomics, so the only effect of crossOriginIsolation
+          // in dev is to force the browser into an isolated renderer process,
+          // which compounded with Turbopack HMR + dev-mode bundle size made the
+          // local browser an OOM target for macOS jetsam (see CLAUDE.md notes).
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: 'Cross-Origin-Embedder-Policy',
+                  value: 'credentialless',
+                },
+              ]),
         ],
       },
     ];
