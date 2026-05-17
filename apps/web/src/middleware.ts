@@ -16,6 +16,14 @@ const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
 const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 const hasRedis = Boolean(upstashUrl && upstashToken);
 
+// Sentry alert debounce for Upstash Redis miss. During a Redis outage, the
+// miss path is hit on every request → without throttling this floods Sentry
+// quota with thousands of identical alerts per minute. Breadcrumbs are still
+// added on every miss (cheap, no quota cost) so the full context is attached
+// to any exception that does fire.
+let lastUpstashRedisAlertAt = 0;
+const UPSTASH_ALERT_INTERVAL_MS = 60_000;
+
 function createLimiter(maxRequests: number, window: Parameters<typeof Ratelimit.slidingWindow>[1]) {
   if (!hasRedis) return null;
   return new Ratelimit({
@@ -149,10 +157,24 @@ async function checkLimit(
         });
         throw new RateLimiterUnavailableError();
       }
-      Sentry.captureMessage('upstash rate limiter unavailable — falling back to in-memory', {
+      // Always add a breadcrumb (free) so the next captured exception carries
+      // the full miss-context. Only fire the captureMessage alert at most once
+      // per UPSTASH_ALERT_INTERVAL_MS to avoid burning Sentry quota during an
+      // extended Redis outage.
+      Sentry.addBreadcrumb({
+        category: 'rate-limit',
         level: 'warning',
-        tags: { component: 'edge-middleware', limiter: fallbackPrefix, env },
+        message: 'upstash rate limiter unavailable — falling back to in-memory',
+        data: { limiter: fallbackPrefix, env, error: String(err) },
       });
+      const now = Date.now();
+      if (now - lastUpstashRedisAlertAt > UPSTASH_ALERT_INTERVAL_MS) {
+        lastUpstashRedisAlertAt = now;
+        Sentry.captureMessage('upstash rate limiter unavailable — falling back to in-memory', {
+          level: 'warning',
+          tags: { component: 'edge-middleware', limiter: fallbackPrefix, env },
+        });
+      }
       const fb = fallbackRateLimit(`${fallbackPrefix}:${identifier}`, fallbackMax);
       const entry = fallbackMap.get(`${fallbackPrefix}:${identifier}`);
       return { ...fb, limit: fallbackMax, reset: entry?.resetAt ?? 0 };
