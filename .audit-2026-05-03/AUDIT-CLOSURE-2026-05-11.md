@@ -157,3 +157,5 @@ Worth documenting so a future audit doesn't re-flag these:
 ---
 
 Reconciled into `docs/PRODUCTION-CHECKLIST.md` on 2026-05-16.
+
+Advisory-lock dual-hold shim removed on 2026-05-17 (app not yet deployed; env var was never set in any environment).

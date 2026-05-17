@@ -65,50 +65,6 @@ function classIdFor(namespace: LockNamespace): number {
 }
 
 // ---------------------------------------------------------------------------
-// Transition shim — single-arg → two-arg advisory lock migration
-// ---------------------------------------------------------------------------
-//
-// The single-arg `pg_advisory_xact_lock(hashtext(string))` and two-arg
-// `pg_advisory_xact_lock(classId, hashtext(key))` forms occupy DISTINCT lock
-// spaces in Postgres — pre-refactor holders cannot serialize against
-// post-refactor callers. During a rolling deploy this opens a brief window
-// where both believe they own "the" lock for the same logical resource.
-//
-// While the env var `ADVISORY_LOCK_TRANSITION_DUAL_HOLD=true` is set, every
-// helper acquires BOTH the legacy single-arg lock (using the pre-refactor
-// hashtext key) AND the new two-arg lock. This makes post-deploy callers
-// serialize against pre-deploy holders.
-//
-// REMOVAL: drop this shim + env var after one full deploy cycle (typically
-// 24-48h post-rollout) once every pre-refactor process has rotated out.
-// Tracked by the `TODO(advisory-lock-transition)` annotations below.
-// ---------------------------------------------------------------------------
-
-const TRANSITION_DUAL_HOLD = process.env.ADVISORY_LOCK_TRANSITION_DUAL_HOLD === 'true';
-
-/**
- * Reconstructs the pre-refactor single-arg `hashtext()` key for a callsite.
- * The mapping is derived from the keys used in commit ce8b26f4^ — never
- * change these without auditing every prior callsite. Only consulted when
- * `TRANSITION_DUAL_HOLD` is on.
- */
-function legacyKeyFor(namespace: LockNamespace, key: string): string {
-  switch (namespace) {
-    case 'cron':
-      // pre-refactor: const REMINDERS_LOCK_KEY = 'cron:reminders'
-      return `cron:${key}`;
-    case 'payment':
-      // pre-refactor: `payment-run:${ctx.organizationId}`
-      return `payment-run:${key}`;
-    case 'org':
-    case 'sync':
-      // pre-refactor passed the raw key (e.g. organizationId, 'ksef:<id>',
-      // 'google-workspace:<id>') without an extra prefix.
-      return key;
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Session-level locks (held until the connection ends or explicitly released)
 // ---------------------------------------------------------------------------
 
@@ -125,30 +81,6 @@ export async function tryAcquireAdvisoryLock(
   key: string,
 ): Promise<boolean> {
   const classId = classIdFor(namespace);
-
-  // TODO(advisory-lock-transition): remove this block after one deploy cycle.
-  if (TRANSITION_DUAL_HOLD) {
-    const legacyKey = legacyKeyFor(namespace, key);
-    // safe-raw-sql: pg_try_advisory_lock is a Postgres session primitive; transition shim mirrors legacy single-arg form to serialize with pre-refactor holders.
-    const legacyRows = (await db.$queryRawUnsafe(
-      'SELECT pg_try_advisory_lock(hashtext($1)) AS acquired',
-      legacyKey,
-    )) as Array<{ acquired?: boolean }>;
-    if (!legacyRows?.[0]?.acquired) return false;
-    // safe-raw-sql: same as above, this is the new two-arg form post-transition.
-    const newRows = (await db.$queryRawUnsafe(
-      'SELECT pg_try_advisory_lock($1, hashtext($2)) AS acquired',
-      classId,
-      key,
-    )) as Array<{ acquired?: boolean }>;
-    if (!newRows?.[0]?.acquired) {
-      // Release the legacy lock we just took so we don't leak it for the
-      // session lifetime.
-      await db.$executeRawUnsafe('SELECT pg_advisory_unlock(hashtext($1))', legacyKey);
-      return false;
-    }
-    return true;
-  }
 
   // safe-raw-sql: pg_try_advisory_lock is a Postgres session primitive with no tenant column; namespacing is encoded in classId/key.
   const rows = (await db.$queryRawUnsafe(
@@ -167,15 +99,6 @@ export async function releaseAdvisoryLock(
   key: string,
 ): Promise<void> {
   const classId = classIdFor(namespace);
-
-  // TODO(advisory-lock-transition): remove this block after one deploy cycle.
-  if (TRANSITION_DUAL_HOLD) {
-    const legacyKey = legacyKeyFor(namespace, key);
-    // Release in reverse order. Errors are best-effort per the helper contract.
-    await db.$executeRawUnsafe('SELECT pg_advisory_unlock($1, hashtext($2))', classId, key);
-    await db.$executeRawUnsafe('SELECT pg_advisory_unlock(hashtext($1))', legacyKey);
-    return;
-  }
 
   await db.$executeRawUnsafe('SELECT pg_advisory_unlock($1, hashtext($2))', classId, key);
 }
@@ -197,14 +120,6 @@ export async function acquireXactLock(
 ): Promise<void> {
   const classId = classIdFor(namespace);
 
-  // TODO(advisory-lock-transition): remove this block after one deploy cycle.
-  // Both locks auto-release on commit/rollback — order matters: legacy first
-  // so pre-refactor holders block us, then new so post-refactor peers do.
-  if (TRANSITION_DUAL_HOLD) {
-    const legacyKey = legacyKeyFor(namespace, key);
-    await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', legacyKey);
-  }
-
   await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock($1, hashtext($2))', classId, key);
 }
 
@@ -221,19 +136,6 @@ export async function tryAcquireXactLock(
   key: string,
 ): Promise<boolean> {
   const classId = classIdFor(namespace);
-
-  // TODO(advisory-lock-transition): remove this block after one deploy cycle.
-  // If we acquire only the legacy lock but fail on the new one, the legacy
-  // lock auto-releases on tx commit/rollback — no manual unlock needed.
-  if (TRANSITION_DUAL_HOLD) {
-    const legacyKey = legacyKeyFor(namespace, key);
-    // safe-raw-sql: pg_try_advisory_xact_lock is a Postgres tx-scoped primitive; transition shim mirrors legacy single-arg form to serialize with pre-refactor holders.
-    const legacyRows = (await tx.$queryRawUnsafe(
-      'SELECT pg_try_advisory_xact_lock(hashtext($1)) AS acquired',
-      legacyKey,
-    )) as Array<{ acquired?: boolean }>;
-    if (!legacyRows?.[0]?.acquired) return false;
-  }
 
   // safe-raw-sql: pg_try_advisory_xact_lock is a Postgres tx-scoped primitive with no tenant column; namespacing is encoded in classId/key.
   const rows = (await tx.$queryRawUnsafe(
