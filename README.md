@@ -7,8 +7,11 @@ blog and legal documents.
 - **Stack:** pnpm + Turborepo monorepo · Next.js 16 · React 19 · tRPC v11 ·
   Prisma 7 + Neon Postgres (multi-region) · Better Auth · Payload v3 CMS ·
   Render (Docker) · Cloudflare R2 · Upstash Redis + QStash · Resend · Stripe.
-- **Status:** active development. The CMS / blog (apps/cms) ships in this
-  commit; the platform itself (apps/web, apps/public-api) is in production.
+- **Status:** launch-ready, pre-deploy. Production hardening is complete
+  (deploy blockers cleared, multi-region migrations wired, observability +
+  rate limiting in place) and the platform has **not yet been deployed to
+  production**. First deploy is gated on the action items in
+  `docs/POST-DEPLOY-MONITORING.md` and `docs/INFRA-RECOMMENDATIONS.md`.
 
 > Looking for the goal-and-plan workflow used during planning? See
 > `.planning/` and individual entries under `goals/`.
