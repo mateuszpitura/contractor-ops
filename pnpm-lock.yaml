@@ -149,15 +149,9 @@ importers:
       '@contractor-ops/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@posthog/react':
-        specifier: ^1.9.0
-        version: 1.9.0(@types/react@19.2.14)(posthog-js@1.372.9)(react@19.2.6)
       '@tailwindcss/postcss':
         specifier: ^4.2.4
         version: 4.2.4
-      class-variance-authority:
-        specifier: ^0.7.1
-        version: 0.7.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -216,9 +210,6 @@ importers:
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../../packages/logger
-      '@contractor-ops/validators':
-        specifier: workspace:*
-        version: link:../../packages/validators
       '@hono/node-server':
         specifier: ^2.0.1
         version: 2.0.1(hono@4.12.18)
@@ -238,9 +229,6 @@ importers:
         specifier: ^4.12.18
         version: 4.12.18
     devDependencies:
-      '@contractor-ops/test-utils':
-        specifier: workspace:*
-        version: link:../../packages/test-utils
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -306,7 +294,7 @@ importers:
         version: 4.5.1(react@19.2.6)
       '@sentry/nextjs':
         specifier: ^10.51.0
-        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
+        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
       '@tailwindcss/postcss':
         specifier: ^4.2.4
         version: 4.2.4
@@ -336,7 +324,7 @@ importers:
         version: 1.38.0
       better-auth:
         specifier: ^1.6.9
-        version: 1.6.9(17da7f7e0eabd7824e653bb62e6f294c)
+        version: 1.6.9(0ba6ab3a5dfab0263c6e4b1c0b4db3ae)
       botbuilder:
         specifier: ^4.23.3
         version: 4.23.3(encoding@0.1.13)
@@ -506,9 +494,6 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.1044.0
         version: 3.1044.0
-      '@azure/identity':
-        specifier: ^4.13.1
-        version: 4.13.1
       '@contractor-ops/auth':
         specifier: workspace:*
         version: link:../auth
@@ -550,22 +535,19 @@ importers:
         version: link:../validators
       '@microsoft/microsoft-graph-client':
         specifier: ^3.0.7
-        version: 3.0.7(@azure/identity@4.13.1)
+        version: 3.0.7
       '@react-pdf/renderer':
         specifier: ^4.5.1
         version: 4.5.1(react@19.2.6)
       '@sentry/nextjs':
         specifier: ^10.51.0
-        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
+        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
       '@slack/web-api':
         specifier: ^7.15.2
         version: 7.15.2
       '@trpc/server':
         specifier: ^11.17.0
         version: 11.17.0(typescript@6.0.3)
-      '@upstash/qstash':
-        specifier: ^2.10.1
-        version: 2.10.1
       '@upstash/ratelimit':
         specifier: ^2.0.8
         version: 2.0.8(@upstash/redis@1.38.0)
@@ -644,7 +626,7 @@ importers:
         version: link:../logger
       better-auth:
         specifier: ^1.6.9
-        version: 1.6.9(17da7f7e0eabd7824e653bb62e6f294c)
+        version: 1.6.9(0ba6ab3a5dfab0263c6e4b1c0b4db3ae)
       resend:
         specifier: ^6.12.3
         version: 6.12.3(@react-email/render@2.0.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6))
@@ -753,7 +735,7 @@ importers:
         version: 8.20.0
       better-auth:
         specifier: ^1.6.9
-        version: 1.6.9(17da7f7e0eabd7824e653bb62e6f294c)
+        version: 1.6.9(0ba6ab3a5dfab0263c6e4b1c0b4db3ae)
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0
@@ -898,9 +880,6 @@ importers:
       '@contractor-ops/secrets':
         specifier: workspace:*
         version: link:../secrets
-      '@contractor-ops/validators':
-        specifier: workspace:^
-        version: link:../validators
       '@infisical/sdk':
         specifier: ^5.0.2
         version: 5.0.2
@@ -977,7 +956,7 @@ importers:
         version: 1.6.1
       '@sentry/nextjs':
         specifier: ^10.51.0
-        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
+        version: 10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))
       pino:
         specifier: ^10.3.1
         version: 10.3.1
@@ -997,9 +976,6 @@ importers:
       '@contractor-ops/db':
         specifier: workspace:*
         version: link:../db
-      '@date-fns/tz':
-        specifier: ^1.2.0
-        version: 1.4.1
     devDependencies:
       typescript:
         specifier: ^6.0.3
@@ -1073,9 +1049,6 @@ importers:
       ibantools:
         specifier: ^4.5.4
         version: 4.5.4
-      validate-polish:
-        specifier: ^2.1.40
-        version: 2.1.40
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -3655,16 +3628,6 @@ packages:
 
   '@posthog/core@1.28.3':
     resolution: {integrity: sha512-SOy0aphKawZzp8jxfeOpTcXPwi6ii0I2V6tX8YXnM+WbxKKR/R+BXLK0jS6LV8kZtW3H5YxmPAfuIbUP1UnGTw==}
-
-  '@posthog/react@1.9.0':
-    resolution: {integrity: sha512-lVdTsWT5+PtHBu44gSQ7QohbLjAYqHkFAIGAQ+HV8Eh9yj+OcnQ7mXCmyhaMlTBD3z7D0H1eWMp4vQaFnsIyWQ==}
-    peerDependencies:
-      '@types/react': '>=16.8.0'
-      posthog-js: '>=1.257.2'
-      react: '>=16.8.0'
-    peerDependenciesMeta:
-      '@types/react':
-        optional: true
 
   '@posthog/types@1.372.9':
     resolution: {integrity: sha512-B7k9S+H9WUKHXxe1HOkQWbpWtMcrBvsodm5stZaLQ3pYxf9TowtwssdzTtX4hHjzSYqgrS1IpNnJX4vs1KgBzA==}
@@ -9668,9 +9631,6 @@ packages:
   tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
 
-  tslib@2.4.1:
-    resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
-
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -9867,9 +9827,6 @@ packages:
   validate-npm-package-name@7.0.2:
     resolution: {integrity: sha512-hVDIBwsRruT73PbK7uP5ebUt+ezEtCmzZz3F59BSr2F6OVFnJ/6h8liuvdLrQ88Xmnk6/+xGGuq+pG9WwTuy3A==}
     engines: {node: ^20.17.0 || >=22.9.0}
-
-  validate-polish@2.1.40:
-    resolution: {integrity: sha512-mdkFvl7/DRFmjRrBliKIbuaw10BkXfnFRHd1gJSLgc/6h64QatmRrGpA08CRGCWBMdn9eyE6yhxY5A115Armgw==}
 
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
@@ -12519,12 +12476,10 @@ snapshots:
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)
 
-  '@microsoft/microsoft-graph-client@3.0.7(@azure/identity@4.13.1)':
+  '@microsoft/microsoft-graph-client@3.0.7':
     dependencies:
       '@babel/runtime': 7.29.2
       tslib: 2.8.1
-    optionalDependencies:
-      '@azure/identity': 4.13.1
 
   '@modelcontextprotocol/sdk@1.27.1(zod@3.25.76)':
     dependencies:
@@ -13380,13 +13335,6 @@ snapshots:
     dependencies:
       '@posthog/types': 1.372.9
 
-  '@posthog/react@1.9.0(@types/react@19.2.14)(posthog-js@1.372.9)(react@19.2.6)':
-    dependencies:
-      posthog-js: 1.372.9
-      react: 19.2.6
-    optionalDependencies:
-      '@types/react': 19.2.14
-
   '@posthog/types@1.372.9': {}
 
   '@preact/signals-core@1.14.1': {}
@@ -14041,7 +13989,7 @@ snapshots:
 
   '@sentry/core@10.51.0': {}
 
-  '@sentry/nextjs@10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))':
+  '@sentry/nextjs@10.51.0(@opentelemetry/core@2.7.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.7.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.2.5(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.59.1)(babel-plugin-macros@3.1.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(sass@1.77.4))(react@19.2.6)(webpack@5.105.4(esbuild@0.28.0))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/semantic-conventions': 1.40.0
@@ -15212,7 +15160,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@2.0.1))(msw@2.14.3(@types/node@24.12.2)(typescript@6.0.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.25.12)(jiti@2.6.1)(sass@1.77.4)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@2.0.1))(msw@2.14.3(@types/node@24.12.2)(typescript@6.0.3))(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)(jiti@2.6.1)(sass@1.77.4)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -15537,7 +15485,7 @@ snapshots:
 
   baseline-browser-mapping@2.10.15: {}
 
-  better-auth@1.6.9(17da7f7e0eabd7824e653bb62e6f294c):
+  better-auth@1.6.9(0ba6ab3a5dfab0263c6e4b1c0b4db3ae):
     dependencies:
       '@better-auth/core': 1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.4.3))(jose@6.2.1)(kysely@0.28.17)(nanostores@1.2.0)
       '@better-auth/drizzle-adapter': 1.6.9(@better-auth/core@1.6.9(@better-auth/utils@0.4.0)(@better-fetch/fetch@1.1.21)(@opentelemetry/api@1.9.1)(better-call@1.3.5(zod@4.4.3))(jose@6.2.1)(kysely@0.28.17)(nanostores@1.2.0))(@better-auth/utils@0.4.0)(drizzle-orm@0.45.2(@electric-sql/pglite@0.4.1)(@opentelemetry/api@1.9.1)(@prisma/client@7.8.0(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3))(typescript@6.0.3))(@types/pg@8.20.0)(@upstash/redis@1.38.0)(kysely@0.28.17)(mysql2@3.15.3)(pg@8.20.0)(postgres@3.4.7)(prisma@7.8.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(magicast@0.5.2)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)))
@@ -19926,8 +19874,6 @@ snapshots:
 
   tslib@1.14.1: {}
 
-  tslib@2.4.1: {}
-
   tslib@2.8.1: {}
 
   tsx@4.21.0:
@@ -20118,10 +20064,6 @@ snapshots:
       typescript: 6.0.3
 
   validate-npm-package-name@7.0.2: {}
-
-  validate-polish@2.1.40:
-    dependencies:
-      tslib: 2.4.1
 
   vary@1.1.2: {}
 

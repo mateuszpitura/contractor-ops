@@ -36,7 +36,6 @@
   "dependencies": {
     "@contractor-ops/einvoice": "workspace:*",
     "ibantools": "^4.5.4",
-    "validate-polish": "^2.1.40",
     "zod": "^4.4.3"
   },
   "devDependencies": {

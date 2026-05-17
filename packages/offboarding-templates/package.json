@@ -17,8 +17,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@contractor-ops/db": "workspace:*",
-    "@date-fns/tz": "^1.2.0"
+    "@contractor-ops/db": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^6.0.3",

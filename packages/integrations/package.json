@@ -139,7 +139,6 @@
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
-    "@contractor-ops/validators": "workspace:^",
     "@infisical/sdk": "^5.0.2",
     "@upstash/qstash": "^2.10.1",
     "@upstash/redis": "^1.38.0",
