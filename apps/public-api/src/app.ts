@@ -19,24 +19,59 @@ import invoices from './routes/invoices.js';
 const app = new Hono().basePath('/api/v1');
 
 /**
- * CORS allowlist — first-party origins only. Additional origins can be
- * added via PUBLIC_API_CORS_ORIGINS (comma-separated). Default `cors()`
- * with no arguments returns `Access-Control-Allow-Origin: *` which is
- * unsafe for a Bearer-authenticated API (any browser extension or
- * compromised page can burn a user's API key).
+ * CORS allowlist — first-party origins only.
+ *
+ * Default `cors()` with no arguments returns `Access-Control-Allow-Origin: *`
+ * which is unsafe for a Bearer-authenticated API: any browser extension or
+ * XSS'd page could read a user's responses (and, with credentials disabled
+ * but Authorization in custom headers, still burn the user's API key budget
+ * by replaying requests).
+ *
+ * Source of truth:
+ *   - PUBLIC_API_CORS_ORIGINS env var (comma-separated). Set via Render
+ *     dashboard (sync: false in render.yaml) so per-env origins (prod app,
+ *     staging app, preview deploys) can be rotated without a redeploy.
+ *   - Production: env var is REQUIRED. Boot fails fast if unset to avoid
+ *     accidentally shipping with the dev-only localhost default. The
+ *     hardcoded BUILTIN_FIRST_PARTY_ORIGINS list is always merged in so
+ *     the canonical first-party origins remain allowed even if an operator
+ *     forgets to include them in the env var.
+ *   - Development / test: env var is optional; defaults to localhost +
+ *     first-party hosts (used by integration tests that don't bootstrap a
+ *     full env).
+ *
+ * Wildcard subdomains (e.g. preview deploys) are not supported by Hono's
+ * cors() origin matcher — list each origin explicitly. For staging
+ * branches, add the specific origin to PUBLIC_API_CORS_ORIGINS per env.
  */
-const DEFAULT_CORS_ORIGINS = ['https://app.contractor-ops.com', 'https://contractor-ops.com'];
+const BUILTIN_FIRST_PARTY_ORIGINS = [
+  'https://app.contractor-ops.com',
+  'https://contractor-ops.com',
+] as const;
 
-const envCorsOrigins = (process.env.PUBLIC_API_CORS_ORIGINS ?? '')
-  .split(',')
-  .map(o => o.trim())
-  .filter(o => o.length > 0);
+function parseAllowedOrigins(): Set<string> {
+  const fromEnv = (process.env.PUBLIC_API_CORS_ORIGINS ?? '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(o => o.length > 0);
 
-const allowedOrigins = new Set<string>([
-  ...DEFAULT_CORS_ORIGINS,
-  ...envCorsOrigins,
-  ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000']),
-]);
+  if (process.env.NODE_ENV === 'production' && fromEnv.length === 0) {
+    throw new Error(
+      'PUBLIC_API_CORS_ORIGINS must be set in production. Configure ' +
+        'comma-separated origins via the Render dashboard (sync: false in ' +
+        'render.yaml). Refusing to boot with a permissive default to avoid ' +
+        'shipping the dev-only localhost allowlist to prod.',
+    );
+  }
+
+  return new Set<string>([
+    ...BUILTIN_FIRST_PARTY_ORIGINS,
+    ...fromEnv,
+    ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:3000']),
+  ]);
+}
+
+const allowedOrigins = parseAllowedOrigins();
 
 // --- Global middleware ---
 // requestId MUST run before observabilityMiddleware so the latter can read
