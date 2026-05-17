@@ -82,7 +82,7 @@ const handler = async (req: Request) => {
   const requestCtx = buildContextFromHeaders(req.headers);
 
   const res = await Sentry.withIsolationScope(scope => {
-    scope.setTag('requestId', requestCtx.requestId);
+    scope.setTag('requestId', requestCtx.requestId || 'unknown');
     return runWithRequestContext(requestCtx, () =>
       fetchRequestHandler({
         endpoint: '/api/trpc',
