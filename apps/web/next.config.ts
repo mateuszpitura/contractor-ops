@@ -13,6 +13,8 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const nextConfig: NextConfig = {
   // Produce a self-contained build in .next/standalone — used by the Docker
   // worker image. Vercel ignores this flag so it's safe to keep always-on.
