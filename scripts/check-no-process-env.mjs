@@ -30,6 +30,7 @@ const ratchetFile = resolve(repoRoot, 'scripts/.process-env-ratchet.json');
 const allowList = [
   /^packages\/validators\/src\/env\.ts$/,
   /^packages\/validators\/src\/minimal-server-env\.ts$/,
+  /^apps\/cms\/src\/lib\/env\.ts$/,
   /^scripts\//,
   /^load-tests\//,
   /^infra\//,
