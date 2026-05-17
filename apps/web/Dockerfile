@@ -28,11 +28,15 @@ COPY apps/landing/package.json apps/landing/
 COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
 COPY packages/classification/package.json packages/classification/
+COPY packages/compliance-policy/package.json packages/compliance-policy/
 COPY packages/db/package.json packages/db/
 COPY packages/einvoice/package.json packages/einvoice/
+COPY packages/feature-flags/package.json packages/feature-flags/
 COPY packages/gov-api/package.json packages/gov-api/
 COPY packages/integrations/package.json packages/integrations/
+COPY packages/lint-guards/package.json packages/lint-guards/
 COPY packages/logger/package.json packages/logger/
+COPY packages/offboarding-templates/package.json packages/offboarding-templates/
 COPY packages/secrets/package.json packages/secrets/
 COPY packages/shared/package.json packages/shared/
 COPY packages/test-utils/package.json packages/test-utils/
