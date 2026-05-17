@@ -1,4 +1,29 @@
-# Phase 64 · D-13 — Legal platform team must review all disclaimer signoff changes.
-# Any PR that modifies signoff-registry.json requires approval from the legal-platform team.
-# This prevents accidental or unauthorized changes to the legal sign-off status of disclaimers.
+# CODEOWNERS — required reviewers for critical-path changes.
+#
+# GitHub auto-requests review from the team(s) listed for any file matched
+# by a glob below. Last matching glob wins. Teams must exist in the
+# `contractor-ops` GitHub org. Replace placeholder team names below if the
+# org's team layout changes — adjust before first production deploy.
+#
+# Format: <path-glob> <github-team-or-user>
+
+# Database schema + migrations — touch production data, irreversible if wrong.
+packages/db/prisma/                                  @contractor-ops/platform
+packages/db/scripts/                                 @contractor-ops/platform
+
+# Infra-as-code — Render Blueprint changes reshape the production topology.
+render.yaml                                          @contractor-ops/platform
+infra/                                               @contractor-ops/platform
+
+# Auth, session, rate-limit, CSP — security-critical request path.
+apps/web/src/middleware.ts                           @contractor-ops/platform
+apps/web/next.config.ts                              @contractor-ops/platform
+packages/auth/                                       @contractor-ops/platform
+packages/secrets/                                    @contractor-ops/platform
+
+# CI + workflow changes — affect every PR and deploy.
+.github/                                             @contractor-ops/platform
+
+# Legal sign-off registry — Phase 64 · D-13. Must keep legal-platform review
+# (kept LAST so it overrides the broader .github/ rule above).
 packages/validators/src/legal/signoff-registry.json  @contractor-ops/legal-platform
