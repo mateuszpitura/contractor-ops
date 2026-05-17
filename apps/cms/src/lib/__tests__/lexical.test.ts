@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { a, b, doc, h1, h2, ol, p, ul } from '../lexical.js';
+import { a, b, doc, h1, h2, ol, p, ul } from '../lexical';
 
 describe('lexical builder', () => {
   it('wraps blocks in a Lexical root', () => {

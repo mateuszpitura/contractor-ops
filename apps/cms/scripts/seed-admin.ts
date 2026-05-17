@@ -1,8 +1,8 @@
 import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import { getPayload } from 'payload';
 import pino from 'pino';
-import { requireCmsEnv } from '../src/lib/env.js';
-import config from '../src/payload.config.js';
+import { requireCmsEnv } from '../src/lib/env';
+import config from '../src/payload.config';
 
 const log = pino(getBaseLoggerOptions()).child({ service: 'cms', script: 'seed-admin' });
 

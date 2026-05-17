@@ -2,6 +2,30 @@
 // shapes the headless CMS UI roundtrips losslessly. Suitable for migration
 // seeds; new content should be authored in the admin UI.
 
+import type { LegalDocument } from '../payload-types';
+
+// Pin the builder output to the exact body shape Payload generates for the
+// `legal-documents` collection. Posts.body uses the identical structure, so
+// the alias is shared.
+export type LexicalBody = LegalDocument['body'];
+
+// `BuilderBlock` is the narrowed shape every builder helper actually returns.
+// Each block is assignable to the looser generated `LexicalBlock` envelope
+// `{ type: any; version: number; [k: string]: unknown }` — the wider type
+// flows through `doc()` so the catalog still type-checks against
+// `LegalDocument['body']` without `as unknown`.
+export type BuilderBlock = {
+  type: 'heading' | 'paragraph' | 'list' | 'listitem';
+  version: number;
+  tag?: 'h1' | 'h2' | 'h3';
+  listType?: 'bullet' | 'number';
+  start?: number;
+  direction: 'ltr';
+  format: '';
+  indent: 0;
+  children: ReadonlyArray<LexicalInlineNode | BuilderBlock>;
+};
+
 export type LexicalText = {
   type: 'text';
   text: string;
@@ -22,18 +46,6 @@ export type LexicalLink = {
 };
 
 export type LexicalInlineNode = LexicalText | LexicalLink;
-
-type Block = {
-  type: string;
-  children: LexicalInlineNode[];
-  direction: 'ltr';
-  format: '';
-  indent: 0;
-  version: number;
-  tag?: string;
-  listType?: 'bullet' | 'number';
-  start?: number;
-};
 
 const FORMAT_BOLD = 1;
 const FORMAT_ITALIC = 1 << 1;
@@ -67,88 +79,72 @@ function baseText(value: string, format: number): LexicalText {
   return { type: 'text', text: value, format, detail: 0, mode: 'normal', style: '', version: 1 };
 }
 
-function block(type: string, tag: string | null, inlines: InlineSpec[], version = 1): Block {
-  const base: Block = {
+function blockOf(
+  type: BuilderBlock['type'],
+  tag: BuilderBlock['tag'] | undefined,
+  children: BuilderBlock['children'],
+  version = 1,
+): BuilderBlock {
+  return {
     type,
-    children: inlines.map(text),
+    version,
+    ...(tag ? { tag } : {}),
     direction: 'ltr',
     format: '',
     indent: 0,
-    version,
+    children,
   };
-  if (tag) {
-    base.tag = tag;
-  }
-  return base;
 }
 
-export function h1(...inlines: InlineSpec[]): Block {
-  return block('heading', 'h1', inlines, 1);
+export function h1(...inlines: InlineSpec[]): BuilderBlock {
+  return blockOf('heading', 'h1', inlines.map(text));
 }
 
-export function h2(...inlines: InlineSpec[]): Block {
-  return block('heading', 'h2', inlines, 1);
+export function h2(...inlines: InlineSpec[]): BuilderBlock {
+  return blockOf('heading', 'h2', inlines.map(text));
 }
 
-export function h3(...inlines: InlineSpec[]): Block {
-  return block('heading', 'h3', inlines, 1);
+export function h3(...inlines: InlineSpec[]): BuilderBlock {
+  return blockOf('heading', 'h3', inlines.map(text));
 }
 
-export function p(...inlines: InlineSpec[]): Block {
-  return block('paragraph', null, inlines, 1);
+export function p(...inlines: InlineSpec[]): BuilderBlock {
+  return blockOf('paragraph', undefined, inlines.map(text));
 }
 
 type ListItem = InlineSpec[];
 
-export function ul(...items: ListItem[]): Block {
+function listOf(listType: 'bullet' | 'number', items: ListItem[]): BuilderBlock {
+  const children: BuilderBlock[] = items.map((row, index) => ({
+    type: 'listitem',
+    version: 1,
+    start: index + 1,
+    direction: 'ltr',
+    format: '',
+    indent: 0,
+    children: row.map(text),
+  }));
   return {
     type: 'list',
-    listType: 'bullet',
+    version: 1,
+    listType,
     start: 1,
     direction: 'ltr',
     format: '',
     indent: 0,
-    version: 1,
-    children: items.map(
-      (children, index) =>
-        ({
-          type: 'listitem',
-          direction: 'ltr',
-          format: '',
-          indent: 0,
-          version: 1,
-          value: index + 1,
-          children: children.map(text),
-        }) as unknown as LexicalInlineNode,
-    ),
+    children,
   };
 }
 
-export function ol(...items: ListItem[]): Block {
-  return {
-    type: 'list',
-    listType: 'number',
-    start: 1,
-    direction: 'ltr',
-    format: '',
-    indent: 0,
-    version: 1,
-    children: items.map(
-      (children, index) =>
-        ({
-          type: 'listitem',
-          direction: 'ltr',
-          format: '',
-          indent: 0,
-          version: 1,
-          value: index + 1,
-          children: children.map(text),
-        }) as unknown as LexicalInlineNode,
-    ),
-  };
+export function ul(...items: ListItem[]): BuilderBlock {
+  return listOf('bullet', items);
 }
 
-export function doc(...blocks: Block[]) {
+export function ol(...items: ListItem[]): BuilderBlock {
+  return listOf('number', items);
+}
+
+export function doc(...blocks: BuilderBlock[]): LexicalBody {
   return {
     root: {
       type: 'root',

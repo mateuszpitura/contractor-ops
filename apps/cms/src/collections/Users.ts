@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload';
 
-import { getCmsEnv } from '../lib/env.js';
+import { getCmsEnv } from '../lib/env';
 
 export const Users: CollectionConfig = {
   slug: 'users',

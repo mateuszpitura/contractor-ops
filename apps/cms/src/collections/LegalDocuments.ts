@@ -6,7 +6,7 @@ import type {
   CollectionConfig,
 } from 'payload';
 
-import { getCmsEnv } from '../lib/env.js';
+import { getCmsEnv } from '../lib/env';
 
 const log = createLogger({ service: 'cms', module: 'legal-documents' });
 

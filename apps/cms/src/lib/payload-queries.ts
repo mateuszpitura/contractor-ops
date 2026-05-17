@@ -1,7 +1,9 @@
 import 'server-only';
 import { getPayload } from 'payload';
+
 import type { Locale } from '@/i18n/config';
 import config from '@/payload.config';
+import type { Media, Post } from '../payload-types';
 
 export type PublishedPostSummary = {
   id: string;
@@ -15,11 +17,8 @@ export type PublishedPostSummary = {
 };
 
 export type PublishedPost = PublishedPostSummary & {
-  body: unknown;
-  seo?: {
-    title?: string | null;
-    description?: string | null;
-  };
+  body: Post['body'];
+  seo?: Post['seo'];
 };
 
 export type PostMedia = {
@@ -45,20 +44,16 @@ async function payload() {
   return payloadPromise;
 }
 
-function mapMedia(value: unknown): PostMedia | null {
-  if (!value || typeof value !== 'object') {
+function mapMedia(value: Post['coverImage']): PostMedia | null {
+  if (value === null || value === undefined) {
     return null;
   }
-  const m = value as {
-    id?: string | number;
-    url?: string;
-    alt?: string;
-    width?: number;
-    height?: number;
-  };
-  if (!m.id) {
+  // `coverImage` is `number | Media | null` — when depth >= 1 Payload populates
+  // the relation, otherwise we only receive the id and bail.
+  if (typeof value === 'number') {
     return null;
   }
+  const m = value as Media;
   return {
     id: String(m.id),
     url: m.url ?? null,
@@ -68,28 +63,24 @@ function mapMedia(value: unknown): PostMedia | null {
   };
 }
 
-function toSummary(doc: Record<string, unknown>): PublishedPostSummary {
-  const tagsArray = Array.isArray(doc.tags)
-    ? (doc.tags as Array<{ tag: string }>).map(t => t.tag).filter(Boolean)
-    : [];
+function toSummary(post: Post): PublishedPostSummary {
   return {
-    id: String(doc.id),
-    slug: String(doc.slug ?? ''),
-    title: String(doc.title ?? ''),
-    excerpt: doc.excerpt ? String(doc.excerpt) : null,
-    author: String(doc.author ?? ''),
-    publishedAt: doc.publishedAt ? String(doc.publishedAt) : null,
-    coverImage: mapMedia(doc.coverImage),
-    tags: tagsArray,
+    id: String(post.id),
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.excerpt ?? null,
+    author: post.author,
+    publishedAt: post.publishedAt ?? null,
+    coverImage: mapMedia(post.coverImage ?? null),
+    tags: (post.tags ?? []).map(t => t.tag).filter(Boolean),
   };
 }
 
-function toFullPost(doc: Record<string, unknown>): PublishedPost {
-  const summary = toSummary(doc);
+function toFullPost(post: Post): PublishedPost {
   return {
-    ...summary,
-    body: doc.body,
-    seo: (doc.seo as PublishedPost['seo']) ?? undefined,
+    ...toSummary(post),
+    body: post.body,
+    seo: post.seo,
   };
 }
 
@@ -117,7 +108,7 @@ export async function fetchPublishedPosts(opts: FetchOptions): Promise<{
     page: opts.page ?? 1,
   });
   return {
-    docs: result.docs.map(d => toSummary(d as unknown as Record<string, unknown>)),
+    docs: result.docs.map(toSummary),
     totalDocs: result.totalDocs,
     totalPages: result.totalPages,
     page: result.page ?? 1,
@@ -141,7 +132,7 @@ export async function fetchPublishedPostBySlug(
     limit: 1,
   });
   const first = result.docs[0];
-  return first ? toFullPost(first as unknown as Record<string, unknown>) : null;
+  return first ? toFullPost(first) : null;
 }
 
 export async function listLocalesForSlug(slug: string): Promise<Locale[]> {
@@ -172,5 +163,5 @@ export async function listAllPublishedSlugs(locale: Locale): Promise<string[]> {
     depth: 0,
     limit: 500,
   });
-  return result.docs.map(d => String((d as { slug?: unknown }).slug ?? '')).filter(Boolean);
+  return result.docs.map(d => d.slug).filter(Boolean);
 }

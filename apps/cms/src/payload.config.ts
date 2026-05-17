@@ -6,12 +6,12 @@ import { s3Storage } from '@payloadcms/storage-s3';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
 
-import { LegalDocuments } from './collections/LegalDocuments.js';
-import { Media } from './collections/Media.js';
-import { Posts } from './collections/Posts.js';
-import { Users } from './collections/Users.js';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './i18n/config.js';
-import { getCmsEnv, hasR2Storage } from './lib/env.js';
+import { LegalDocuments } from './collections/LegalDocuments';
+import { Media } from './collections/Media';
+import { Posts } from './collections/Posts';
+import { Users } from './collections/Users';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './i18n/config';
+import { getCmsEnv, hasR2Storage } from './lib/env';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);

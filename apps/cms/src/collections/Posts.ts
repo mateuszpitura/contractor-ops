@@ -7,7 +7,7 @@ import type {
   Where,
 } from 'payload';
 
-import { slugify } from '../lib/slugify.js';
+import { slugify } from '../lib/slugify';
 
 const REVALIDATE_PROFILE = 'max';
 

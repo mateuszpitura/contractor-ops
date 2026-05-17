@@ -9,8 +9,8 @@
 import { getBaseLoggerOptions } from '@contractor-ops/logger';
 import { getPayload } from 'payload';
 import pino from 'pino';
-import { LEGAL_CATALOG } from '../src/lib/legal-content.js';
-import config from '../src/payload.config.js';
+import { LEGAL_CATALOG } from '../src/lib/legal-content';
+import config from '../src/payload.config';
 
 const log = pino(getBaseLoggerOptions()).child({ service: 'cms', script: 'migrate-legal' });
 
@@ -44,7 +44,7 @@ async function run(): Promise<Outcome> {
         locale: entry.locale,
         data: {
           title: entry.title,
-          body: entry.body as never,
+          body: entry.body,
           version: entry.version,
           effectiveDate: entry.effectiveDate,
         },
@@ -64,7 +64,7 @@ async function run(): Promise<Outcome> {
           title: entry.title,
           version: entry.version,
           effectiveDate: entry.effectiveDate,
-          body: entry.body as never,
+          body: entry.body,
         },
       });
       outcome.created++;

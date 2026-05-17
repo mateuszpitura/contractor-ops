@@ -10,16 +10,17 @@
 // extend / localise each entry via the Payload admin UI. Once a doc lives
 // in CMS, this catalog is no longer authoritative — only the initial seed.
 
-import { a, b, doc, h1, h2, p, ul } from './lexical.js';
+import type { LegalDocument } from '../payload-types';
+import { a, b, doc, h1, h2, p, ul } from './lexical';
 
 export type LegalEntry = {
-  type: 'privacy' | 'terms' | 'sub-processors' | 'breach-notification';
-  jurisdiction: 'eu' | 'gb' | 'de' | 'ae' | 'sa';
+  type: LegalDocument['type'];
+  jurisdiction: LegalDocument['jurisdiction'];
   locale: 'en' | 'pl' | 'de' | 'ar';
   title: string;
   version: string;
   effectiveDate: string; // ISO date
-  body: ReturnType<typeof doc>;
+  body: LegalDocument['body'];
 };
 
 const EFFECTIVE = '2026-01-01';
