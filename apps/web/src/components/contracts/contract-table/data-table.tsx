@@ -80,15 +80,16 @@ export function ContractDataTable({
     }
   });
 
-  // Persist column visibility
+  // Persist column visibility.
+  // safe-swallow: best-effort UI preference persistence; localStorage may throw
+  // under Safari private mode or quota exhaustion. Column visibility resets to
+  // defaults on next mount, which is acceptable UX. We capture the error and
+  // discard it explicitly so the intent is grep-able in code review.
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
-    } catch {
-      // safe-swallow: best-effort UI preference persistence; localStorage may
-      // throw under Safari private mode or quota exhaustion. Column visibility
-      // resets to defaults on next mount, which is acceptable UX.
-      // Ignore localStorage errors
+    } catch (err) {
+      void err;
     }
   }, [columnVisibility]);
 

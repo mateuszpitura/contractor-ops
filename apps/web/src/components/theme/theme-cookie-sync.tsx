@@ -70,6 +70,10 @@ export function ThemeCookieSync() {
     // localStorage value.
     const existingCookie = readCookie('theme');
     if (!existingCookie) {
+      // safe-swallow: localStorage may throw under Safari private mode or
+      // blocked storage. One-time migration is non-blocking; the cookie sync
+      // below still wins on the next user-driven theme change. We capture
+      // the error and discard it explicitly so the intent is grep-able.
       try {
         const stored = window.localStorage.getItem('theme');
         if (stored) {
@@ -79,12 +83,8 @@ export function ThemeCookieSync() {
           const normalized = stored.replace(/^"|"$/g, '');
           writeCookie('theme', normalized);
         }
-      } catch {
-        // safe-swallow: localStorage may throw under Safari private mode /
-        // blocked storage; one-time migration is non-blocking and the cookie
-        // sync below still wins on the next user-driven theme change.
-        // localStorage may throw in private-mode Safari / blocked storage.
-        // The cookie sync below still wins on the next user-driven change.
+      } catch (err) {
+        void err;
       }
     }
   }, []);
