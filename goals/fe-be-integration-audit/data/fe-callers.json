@@ -1892,7 +1892,7 @@
     "path": "exchangeRate.fetchDaily",
     "kind": "directCall",
     "file": "apps/web/src/app/api/cron/exchange-rates/route.ts",
-    "line": 62,
+    "line": 58,
     "handlers": {
       "hasOnSuccess": false,
       "hasOnError": false,
