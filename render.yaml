@@ -264,6 +264,13 @@ services:
     dockerContext: .
     dockerCommand: node apps/web/server.js
     healthCheckPath: /api/health
+    # Apply Prisma migrations to every regional DB (EU + ME) before the new
+    # revision starts taking traffic. preDeployCommand runs once per deploy;
+    # a non-zero exit aborts the rollout so the previous revision keeps
+    # serving — safe rollback path on a bad migration. The migrator script
+    # lives in packages/db/scripts/migrate-all-regions.ts and iterates over
+    # DATABASE_URL_EU / DATABASE_URL_ME (sync:false on this service).
+    preDeployCommand: pnpm --filter @contractor-ops/db run db:migrate:all
     scaling:
       minInstances: 2
       maxInstances: 8
@@ -308,6 +315,10 @@ services:
     dockerContext: .
     dockerCommand: node apps/cms/server.js
     healthCheckPath: /api/users/me
+    # Apply Payload v3 migrations against CMS_DATABASE_URL before the new
+    # revision starts taking traffic. Failure aborts the deploy and the
+    # previous revision keeps serving. Wraps `payload migrate` via dotenv.
+    preDeployCommand: pnpm --filter @contractor-ops/cms run migrate
     scaling:
       minInstances: 1
       maxInstances: 3
