@@ -127,6 +127,16 @@ envVarGroups:
         sync: false
       - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50
         sync: false
+      # Plan-tier Stripe Price IDs surfaced in the billing UI
+      # (plan-comparison-grid.tsx). NEXT_PUBLIC_* are inlined at build time —
+      # set them in the Render dashboard before the first build of each
+      # environment or the UI will render with empty checkout URLs.
+      - key: NEXT_PUBLIC_STRIPE_PRICE_STARTER
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PRICE_PRO
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE
+        sync: false
       # Encryption (AES-256-GCM)
       - key: BANK_ACCOUNT_ENCRYPTION_KEY
         sync: false
@@ -239,6 +249,27 @@ envVarGroups:
         value: contractor-ops
       - key: UNLEASH_ENVIRONMENT
         value: production
+      # Cross-tenant admin shell gate (apps/web/src/lib/admin-auth.ts).
+      # UUID of the dedicated operator org whose members hold the
+      # `platform_operator` role; /admin/* refuses access unless the active
+      # session's organizationId matches AND member.role === 'platform_operator'.
+      - key: PLATFORM_OPERATOR_ORG_ID
+        sync: false
+      # Cloudflare Turnstile signup bot protection
+      # (packages/auth/src/turnstile.ts). Fails closed in production when
+      # TURNSTILE_SECRET_KEY is missing. NEXT_PUBLIC_TURNSTILE_SITE_KEY is
+      # inlined at build time.
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_TURNSTILE_SITE_KEY
+        sync: false
+      # Comma-separated CIDR list (or proxy-addr keywords: loopback,
+      # linklocal, uniquelocal) the rate-limit middleware trusts when
+      # walking X-Forwarded-For (apps/web/src/middleware.ts). Render
+      # default: "loopback,linklocal,uniquelocal". When fronted by
+      # Cloudflare, switch to Cloudflare's published IP ranges.
+      - key: TRUSTED_PROXIES
+        sync: false
 
   # Build-time only — Sentry source map upload (used in Docker build args).
   - name: build-secrets
