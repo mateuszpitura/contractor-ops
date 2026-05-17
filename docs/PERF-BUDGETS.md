@@ -11,6 +11,30 @@ budget is bumped via a reviewed PR.
 
 ---
 
+## Budget interpretation
+
+Before reading the table, calibrate on what the numbers mean — misreading the
+scope is the most common source of budget-bump arguments.
+
+- **All limits are gzipped** (the `size-limit` default with `@size-limit/file`).
+  The CI output reports the same algorithm so PR comments are directly
+  comparable to the values below.
+- **Each per-route limit applies to the route-specific delta only** — the
+  chunks emitted under `apps/web/.next/static/chunks/app/<route>/`. It does
+  **not** include shared chunks such as `main-app-*.js`, `framework-*.js`, or
+  the synthetic vendor chunks. Those have their own line items at the top of
+  the table.
+- **Cumulative delivered size** for a cold load is roughly
+  `<route limit> + ~500 KB shared overhead` (main-app + framework + vendor).
+  Warm navigations reuse the shared chunks from the HTTP cache, so the
+  per-route delta is the dominant cost for subsequent route changes — which is
+  what these budgets gate against.
+- **Source maps are not counted.** `apps/web/.size-limit.json` excludes
+  `*.js.map`; the production bundle served from Next.js / Render does not ship
+  source maps to the client either.
+
+---
+
 ## Budgets
 
 All route bundles share an initial 250 KB ceiling — that is the practical lower

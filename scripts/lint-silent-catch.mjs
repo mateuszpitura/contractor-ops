@@ -37,10 +37,14 @@
 //   dropped.
 // - Catches whose body contains `logger.` or `console.` — the error is
 //   being logged, which is the primary safety net this lint protects.
-// - Sites preceded (within 2 non-blank lines above the `catch` / `.catch`)
+// - Sites preceded (within 5 non-blank lines above the `catch` / `.catch`)
 //   by a comment containing `safe-swallow:`. The annotation is required to
 //   carry a short rationale (e.g. `// safe-swallow: best-effort metric;
-//   adapter retry is sufficient`).
+//   adapter retry is sufficient`). Both `//` line comments and `/* ... */`
+//   block comments count — the window was widened from 3 to 5 lines so a
+//   multi-line block-comment rationale ending in `safe-swallow: <reason>`
+//   on its final line is still recognised when it sits a few lines above
+//   the catch.
 //
 // Exit codes:
 // - 0 on clean scan
@@ -102,12 +106,17 @@ function walk(dir, out = []) {
  * lines and other comment lines in between, but stops at the first
  * non-comment / non-blank line.
  *
- * Window size is 3 to allow for `// safe-swallow: <reason>` directly above
- * the catch keyword AND an optional `// <continuation>` line.
+ * Window size is 5 to accommodate `// safe-swallow: <reason>` directly
+ * above the catch keyword, an optional `// <continuation>` line, AND
+ * multi-line block comments (slash-star ... safe-swallow: <reason> ...
+ * star-slash) where the rationale token may not sit on the line
+ * immediately above the catch. Both line (`//`) and block-comment
+ * prefixes / terminators are recognised as comment lines for the purpose
+ * of "comment-only between annotation and catch keyword".
  */
 function hasSafeSwallowAnnotation(lines, lineIdx) {
   let scanned = 0;
-  for (let i = lineIdx - 1; i >= 0 && scanned < 3; i--) {
+  for (let i = lineIdx - 1; i >= 0 && scanned < 5; i--) {
     const trimmed = lines[i].trim();
     if (trimmed === '') {
       scanned++;
@@ -115,8 +124,16 @@ function hasSafeSwallowAnnotation(lines, lineIdx) {
     }
     if (/safe-swallow:/.test(trimmed)) return true;
     // Stop scanning the moment we hit a non-blank, non-comment line: the
-    // annotation must be visually adjacent to the catch.
-    if (!trimmed.startsWith('//') && !trimmed.startsWith('*') && !trimmed.startsWith('/*')) {
+    // annotation must be visually adjacent to the catch. A line ending in
+    // the block-comment terminator closes a block comment opened on a
+    // previous line, so it still counts as a comment line for the purpose
+    // of continuing the scan.
+    if (
+      !trimmed.startsWith('//') &&
+      !trimmed.startsWith('*') &&
+      !trimmed.startsWith('/*') &&
+      !trimmed.endsWith('*/')
+    ) {
       return false;
     }
     scanned++;
