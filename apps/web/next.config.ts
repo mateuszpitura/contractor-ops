@@ -10,13 +10,6 @@ const nextConfig: NextConfig = {
   // Produce a self-contained build in .next/standalone — used by the Docker
   // worker image. Vercel ignores this flag so it's safe to keep always-on.
   output: 'standalone',
-  // Allow .mdx files to be treated as page/route modules. Keep .ts/.tsx first so
-  // existing routes take precedence when a jurisdiction has both (defensive).
-  pageExtensions: ['ts', 'tsx', 'mdx'],
-  // Turbopack-native MDX support (replaces @next/mdx webpack loader).
-  experimental: {
-    mdxRs: true,
-  },
   // Disable Next.js built-in request logging — all observability goes through
   // pino (observability middleware) for consistent structured logging.
   logging: {

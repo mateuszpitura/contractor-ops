@@ -1,12 +1,8 @@
-// Wave 0 scaffold — implemented in Plan 07 (EU privacy notice fallback)
-// Tests fail by design until Plan 07 creates the EU MDX page and adds the
-// fallback routing rule (countryCode not in {GB, DE, AE, SA} -> /legal/privacy/eu).
 // Covers FOUND-05/06 fallback path.
 
 import { describe, expect, it } from 'vitest';
 import { render } from '@/test/test-utils';
-// @ts-expect-error Plan 07 creates this module
-import EuPrivacyPage from '../(content)/eu/page.mdx';
+import EuPrivacyPage from '../(content)/eu/page';
 
 describe('EU privacy notice fallback (FOUND-05/06)', () => {
   it('renders without throwing (fallback MDX page exists)', () => {

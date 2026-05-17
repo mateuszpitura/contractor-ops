@@ -14,17 +14,9 @@ export interface PrivacyNoticeLayoutProps {
 }
 
 /**
- * Phase 56 · Plan 07 — Privacy-notice chrome shared by MDX pages.
- *
- * Renders (per UI-SPEC §Interaction 9):
- *   1. A skip-link as the FIRST focusable element on the page.
- *   2. A header with the version/date line and a Download-as-PDF CTA.
- *   3. A two-column layout: TOC sidebar (client scrollspy) + main article.
- *
- * The MDX content is rendered inside the `<main id="main">` landmark so the
- * skip-link target works even when the MDX page is embedded in the broader
- * legal layout. Uses Typography tokens from `src/mdx-components.tsx` — no
- * Tailwind `prose`.
+ * Privacy-notice chrome shared by jurisdiction pages.
+ * Renders skip-link, version header, PDF download CTA, TOC sidebar, main article.
+ * Typography tokens come from `privacy-prose.tsx` — no Tailwind `prose`.
  */
 export async function PrivacyNoticeLayout({
   jurisdiction,

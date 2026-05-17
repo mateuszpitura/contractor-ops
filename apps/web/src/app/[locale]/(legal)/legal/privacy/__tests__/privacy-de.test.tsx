@@ -1,14 +1,8 @@
-// Wave 0 scaffold — implemented in Plan 07 (DE privacy notice MDX + routing + IDOR guard)
-// Tests fail by design until:
-//   - Plan 07 creates DE MDX page under `(content)/de.mdx`
-//   - Plan 07 enforces server-side jurisdiction coercion in the privacy PDF tRPC mutation
-//   - Plan 07 redirects `/legal/privacy` to `/legal/privacy/de` for DE orgs
 // Covers FOUND-06 (DE privacy notice locked phrases + IDOR guard).
 
 import { describe, expect, it, vi } from 'vitest';
 import { render } from '@/test/test-utils';
-// @ts-expect-error Plan 07 creates this module
-import DePrivacyPage from '../(content)/de/page.mdx';
+import DePrivacyPage from '../(content)/de/page';
 
 const EXPECTED_LOCKED_PHRASES = [
   'Verantwortlicher im Sinne der DSGVO',

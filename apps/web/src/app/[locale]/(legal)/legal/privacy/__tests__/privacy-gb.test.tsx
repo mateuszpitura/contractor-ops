@@ -1,12 +1,8 @@
-// Wave 0 scaffold — implemented in Plan 07 (UK privacy notice MDX page)
-// Tests fail by design until Plan 07 creates the GB MDX page under
-// `apps/web/src/app/[locale]/(legal)/privacy/(content)/gb.mdx` (or equivalent route).
 // Covers FOUND-05 (UK privacy notice Article 13 coverage + accessibility).
 
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@/test/test-utils';
-// @ts-expect-error Plan 07 creates this module
-import GbPrivacyPage from '../(content)/gb/page.mdx';
+import GbPrivacyPage from '../(content)/gb/page';
 
 describe('UK privacy notice page (FOUND-05)', () => {
   it.each([
