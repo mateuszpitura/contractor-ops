@@ -16,7 +16,7 @@ import { useReportWebVitals } from 'next/web-vitals';
  *   (older browsers, certain WebView contexts). `keepalive` lets the request
  *   complete even if the page is unloading.
  *
- * The fallback `.catch(() => {})` is a deliberate safe-swallow: there is no UX
+ * The fallback catch handler is a deliberate safe-swallow: there is no UX
  * to surface a metric-shipping failure to, and the metric pipeline is
  * best-effort observability rather than a correctness path.
  */

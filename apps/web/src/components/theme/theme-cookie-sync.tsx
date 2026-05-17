@@ -80,6 +80,9 @@ export function ThemeCookieSync() {
           writeCookie('theme', normalized);
         }
       } catch {
+        // safe-swallow: localStorage may throw under Safari private mode /
+        // blocked storage; one-time migration is non-blocking and the cookie
+        // sync below still wins on the next user-driven theme change.
         // localStorage may throw in private-mode Safari / blocked storage.
         // The cookie sync below still wins on the next user-driven change.
       }

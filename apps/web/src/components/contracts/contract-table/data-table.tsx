@@ -85,6 +85,9 @@ export function ContractDataTable({
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(columnVisibility));
     } catch {
+      // safe-swallow: best-effort UI preference persistence; localStorage may
+      // throw under Safari private mode or quota exhaustion. Column visibility
+      // resets to defaults on next mount, which is acceptable UX.
       // Ignore localStorage errors
     }
   }, [columnVisibility]);
@@ -148,8 +151,7 @@ export function ContractDataTable({
 
   // Column definitions
   const columns: ColumnDef<ContractRow>[] = useMemo(
-    () =>
-      getColumns(t, formatDate),
+    () => getColumns(t, formatDate),
     [t, formatDate],
   );
 
