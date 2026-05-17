@@ -1,5 +1,25 @@
 import { z } from 'zod';
 
+/**
+ * Normalize a Render-style URL env var.
+ *
+ * `render.yaml` binds WEB_APP_URL (and similar private-network URLs) via
+ * `fromService.property: hostport`, which Render resolves to a bare
+ * `host:port` string with NO scheme. The downstream fetch caller expects a
+ * full URL, and Zod's `.url()` validator rejects scheme-less inputs.
+ *
+ * Service-to-service traffic inside Render's private network is plain HTTP
+ * (TLS is terminated at the public load balancer, not between pods), so
+ * `http://` is the correct prefix to add when the scheme is missing.
+ *
+ * Values that already include a scheme (`http://`, `https://`) pass through
+ * unchanged so local-dev defaults and explicit overrides keep working.
+ */
+function normalizeRenderUrl(raw: string): string {
+  if (!raw) return raw;
+  return /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
+}
+
 const ENV_SCHEMA = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
@@ -7,7 +27,11 @@ const ENV_SCHEMA = z.object({
   PAYLOAD_SECRET: z.string().default(''),
 
   CMS_PUBLIC_URL: z.string().url().default('http://localhost:3002'),
-  WEB_APP_URL: z.string().url().default('http://localhost:3000'),
+  WEB_APP_URL: z
+    .string()
+    .default('http://localhost:3000')
+    .transform(normalizeRenderUrl)
+    .pipe(z.string().url()),
 
   CMS_WEBHOOK_SECRET: z.string().optional(),
   CMS_ADMIN_EMAIL: z.string().email().optional(),
