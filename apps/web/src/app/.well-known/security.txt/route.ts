@@ -8,6 +8,17 @@
 
 import { NextResponse } from 'next/server';
 
+// Fail-fast in production builds where the security contact env var is
+// missing — catches misconfigured deploys at first import time rather than
+// silently shipping the placeholder mailto. In dev / test the default
+// constants below apply transparently so local DX is unaffected. See
+// goals/production-hardening/ §10.7.
+if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SECURITY_CONTACT) {
+  throw new Error(
+    'NEXT_PUBLIC_SECURITY_CONTACT must be set in production. See goals/production-hardening/ §10.7.',
+  );
+}
+
 const DEFAULT_CONTACT = 'mailto:security@contractor-ops.io';
 const DEFAULT_CANONICAL = 'https://contractor-ops.io/.well-known/security.txt';
 const DEFAULT_ENCRYPTION = 'https://contractor-ops.io/.well-known/pgp-key.txt';
