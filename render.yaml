@@ -352,7 +352,7 @@ services:
     branch: main
     autoDeploy: true
     buildCommand: |
-      corepack enable && corepack prepare pnpm@10.33.0 --activate
+      corepack enable && corepack prepare pnpm@10.33.2 --activate
       pnpm install --frozen-lockfile --filter @contractor-ops/landing...
       pnpm --filter @contractor-ops/landing build
     staticPublishPath: ./apps/landing/out
