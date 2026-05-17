@@ -14,6 +14,11 @@ import config from '../src/payload.config.js';
 
 const log = pino(getBaseLoggerOptions()).child({ service: 'cms', script: 'migrate-legal' });
 
+// Suppress the afterChange revalidate webhook during the seed — apps/web is
+// typically offline when the operator runs the script the first time and
+// nothing depends on a tag flip until the first end-user edit anyway.
+process.env.CMS_SUPPRESS_WEBHOOKS = '1';
+
 type Outcome = { created: number; updated: number; skipped: number };
 
 async function run(): Promise<Outcome> {
@@ -39,7 +44,7 @@ async function run(): Promise<Outcome> {
         locale: entry.locale,
         data: {
           title: entry.title,
-          body: entry.body,
+          body: entry.body as never,
           version: entry.version,
           effectiveDate: entry.effectiveDate,
         },
@@ -59,7 +64,7 @@ async function run(): Promise<Outcome> {
           title: entry.title,
           version: entry.version,
           effectiveDate: entry.effectiveDate,
-          body: entry.body,
+          body: entry.body as never,
         },
       });
       outcome.created++;

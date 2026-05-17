@@ -117,7 +117,7 @@ export async function fetchPublishedPosts(opts: FetchOptions): Promise<{
     page: opts.page ?? 1,
   });
   return {
-    docs: result.docs.map(d => toSummary(d as Record<string, unknown>)),
+    docs: result.docs.map(d => toSummary(d as unknown as Record<string, unknown>)),
     totalDocs: result.totalDocs,
     totalPages: result.totalPages,
     page: result.page ?? 1,
@@ -141,7 +141,7 @@ export async function fetchPublishedPostBySlug(
     limit: 1,
   });
   const first = result.docs[0];
-  return first ? toFullPost(first as Record<string, unknown>) : null;
+  return first ? toFullPost(first as unknown as Record<string, unknown>) : null;
 }
 
 export async function listLocalesForSlug(slug: string): Promise<Locale[]> {

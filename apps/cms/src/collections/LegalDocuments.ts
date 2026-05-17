@@ -30,6 +30,12 @@ function buildSignature(body: string, secret: string): string {
 }
 
 async function dispatchWebhook(payload: LegalDocPayload): Promise<void> {
+  // Bypass during the one-shot seed (apps/web is typically offline at that
+  // point — the noisy ECONNREFUSED log is misleading). Set by
+  // scripts/migrate-legal-from-tsx.ts before any payload.create/update call.
+  if (process.env.CMS_SUPPRESS_WEBHOOKS === '1') {
+    return;
+  }
   const env = getCmsEnv();
   const target = env.WEB_APP_URL;
   const secret = env.CMS_WEBHOOK_SECRET;
@@ -39,7 +45,7 @@ async function dispatchWebhook(payload: LegalDocPayload): Promise<void> {
   const body = JSON.stringify(payload);
   const signature = buildSignature(body, secret);
   try {
-    await fetch(`${target.replace(/\/$/, '')}/api/revalidate-legal`, {
+    const response = await fetch(`${target.replace(/\/$/, '')}/api/revalidate-legal`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -47,8 +53,14 @@ async function dispatchWebhook(payload: LegalDocPayload): Promise<void> {
       },
       body,
     });
+    if (!response.ok) {
+      log.warn(
+        { status: response.status, target, payload },
+        'revalidate-legal webhook returned non-2xx',
+      );
+    }
   } catch (error) {
-    log.error({ err: error, target, payload }, 'revalidate-legal webhook failed');
+    log.warn({ err: error, target, payload }, 'revalidate-legal webhook unreachable');
   }
 }
 

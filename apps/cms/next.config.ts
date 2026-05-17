@@ -5,6 +5,11 @@ import type { NextConfig } from 'next';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+// Monorepo root (../../ from apps/cms): Turbopack resolves `next` from the inferred workspace
+// root — with only apps/cms/next.config pointing at apps/cms, Next 16.2 can still treat
+// `src/app` as the project dir and fail to find `next/package.json`. Anchoring Turbopack to
+// the repo root matches lockfile/workspace detection (see next.config turbopack.root docs).
+const monorepoRoot = path.resolve(dirname, '..', '..');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -32,7 +37,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   turbopack: {
-    root: path.resolve(dirname),
+    root: monorepoRoot,
   },
 };
 
