@@ -1,11 +1,34 @@
 import type { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
+import { getLocale } from 'next-intl/server';
+
+import { CmsLexicalRenderer } from '@/components/legal/cms-lexical-renderer';
+import { fetchLegalDocument } from '@/lib/legal/fetch-cms';
 
 export const metadata: Metadata = {
   title: 'Sub-processors — Contractor Ops',
 };
 
-export default function SubProcessorsPage() {
+export default async function SubProcessorsPage() {
+  const locale = await getLocale();
+  const cmsDoc = await fetchLegalDocument({
+    type: 'sub-processors',
+    jurisdiction: 'eu',
+    locale,
+  });
+
+  if (cmsDoc) {
+    return (
+      <article className="prose prose-neutral dark:prose-invert max-w-none">
+        <CmsLexicalRenderer data={cmsDoc.body} />
+      </article>
+    );
+  }
+
+  return <SubProcessorsLegacy />;
+}
+
+function SubProcessorsLegacy() {
   const t = useTranslations('Legal.subProcessors');
 
   return (

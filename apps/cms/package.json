@@ -17,7 +17,8 @@
     "generate:importmap": "dotenv -e ../../.env -- payload generate:importmap",
     "migrate": "dotenv -e ../../.env -- payload migrate",
     "migrate:create": "dotenv -e ../../.env -- payload migrate:create",
-    "seed:admin": "dotenv -e ../../.env -- tsx scripts/seed-admin.ts"
+    "seed:admin": "dotenv -e ../../.env -- tsx scripts/seed-admin.ts",
+    "migrate:legal": "dotenv -e ../../.env -- tsx scripts/migrate-legal-from-tsx.ts"
   },
   "dependencies": {
     "@contractor-ops/logger": "workspace:*",

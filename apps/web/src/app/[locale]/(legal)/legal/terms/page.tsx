@@ -5,12 +5,30 @@ import {
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 
+import { CmsLexicalRenderer } from '@/components/legal/cms-lexical-renderer';
+import { fetchLegalDocument } from '@/lib/legal/fetch-cms';
+
 export const metadata: Metadata = {
   title: 'Terms of Service — Contractor Ops',
 };
 
 export default async function TermsOfServicePage() {
   const locale = await getLocale();
+  const cmsDoc = await fetchLegalDocument({
+    type: 'terms',
+    jurisdiction: 'eu',
+    locale,
+  });
+
+  if (cmsDoc) {
+    return (
+      <article className="prose prose-neutral dark:prose-invert max-w-none">
+        <CmsLexicalRenderer data={cmsDoc.body} />
+      </article>
+    );
+  }
+
+  // Fallback: render the legacy next-intl content until migration runs.
   const softwareNotLegalAdvice =
     locale === 'de' ? SOFTWARE_NOT_LEGAL_ADVICE_DE : SOFTWARE_NOT_LEGAL_ADVICE_EN;
   const t = await getTranslations('Legal.terms');
@@ -47,7 +65,6 @@ export default async function TermsOfServicePage() {
       <h2>{t('sections.governingLaw.heading')}</h2>
       <p>{t('sections.governingLaw.body')}</p>
 
-      {/* Phase 64 D-29 — Software not legal advice (LEGAL-07) */}
       <h2>{t('sections.softwareNotLegalAdvice.heading')}</h2>
       <p className="text-muted-foreground">{t('sections.softwareNotLegalAdvice.subheading')}</p>
       <blockquote className="not-italic border-l-4 border-amber-400 bg-amber-50 py-3 pl-4 text-sm text-amber-900">
