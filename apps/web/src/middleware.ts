@@ -513,11 +513,11 @@ function ensureRequestIdHeader(request: NextRequest): {
 // ---------------------------------------------------------------------------
 
 /**
- * Per-request base64 nonce, used in the report-only CSP `script-src` so
+ * Per-request base64 nonce, used in the enforce CSP `script-src` so
  * `next-themes`' pre-hydration inline script can carry `nonce={NONCE}` and
- * pass under `'strict-dynamic'`. After 48h of report-only observation with
- * zero next-themes violations, C.1.c can flip the enforce policy onto the
- * same nonce-based directives and drop `'unsafe-inline'`.
+ * pass under `'strict-dynamic'`. Pre-flip (C.1.b) this fed the report-only
+ * header; post-flip (C.1.c) the same nonce drives the enforce policy and
+ * `'unsafe-inline'` is gone from script-src.
  *
  * Edge Runtime exposes `crypto.getRandomValues` (Web Crypto) but NOT Node's
  * `crypto.randomBytes`. The 16-byte source is base64-encoded via `btoa` for
@@ -533,20 +533,29 @@ function mintCspNonce(): string {
   return btoa(binary);
 }
 
+// C.1.c — enforce CSP body (was report-only during 2026-05 observation
+// window; flipped to enforce on 2026-05-17 since app has never been
+// deployed and no users could be broken by a strict policy).
+// 'unsafe-inline' removed from script-src; per-request nonce + 'strict-
+// dynamic' allow only next-themes' pre-hydration script and any other
+// script that explicitly receives the matching nonce attribute.
 /**
- * Build the report-only CSP body with the per-request nonce interpolated
- * into `script-src`. Kept identical to the previous static directive set in
- * next.config.ts headers() block aside from:
- *   - `'nonce-${nonce}' 'strict-dynamic'` added to script-src (replaces the
- *     prior implicit reliance on `'self'` for next-themes' inline tag).
+ * Build the enforce CSP body with the per-request nonce interpolated into
+ * `script-src`. Directive set:
+ *   - `'nonce-${nonce}' 'strict-dynamic'` on script-src — only scripts that
+ *     carry the matching nonce (and any they dynamically load) execute. No
+ *     `'unsafe-inline'`.
  *   - `https://unpkg.com` retained on script-src/connect-src for the OCR
- *     worker bundle parity with the enforce policy.
+ *     worker bundle (loaded lazily from unpkg in dev/staging mirrors).
+ *   - `report-uri` + `report-to` retained — violations now blocked AND
+ *     logged so the Pino+Sentry pipeline still surfaces unexpected blocks
+ *     for debugging.
  *
  * `'unsafe-inline'` stays on style-src — Next.js + Tailwind ship inline
  * `<style>` tags and adopting a hashed/nonce style pipeline is out of scope
  * for this commit. Tracked separately.
  */
-function buildReportOnlyCsp(nonce: string, isDevEnv: boolean): string {
+function buildCsp(nonce: string, isDevEnv: boolean): string {
   return [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDevEnv ? " 'unsafe-eval'" : ''} https://unpkg.com https://*.sentry-cdn.com`,
@@ -564,19 +573,19 @@ function buildReportOnlyCsp(nonce: string, isDevEnv: boolean): string {
 }
 
 /**
- * Attach the per-request `Content-Security-Policy-Report-Only` header (with
- * the interpolated nonce) to whatever response the middleware is about to
- * emit. Mutates `response.headers` in place and returns the same instance for
+ * Attach the per-request enforce `Content-Security-Policy` header (with the
+ * interpolated nonce) to whatever response the middleware is about to emit.
+ * Mutates `response.headers` in place and returns the same instance for
  * call-site chaining.
  *
  * Why here rather than next.config.ts headers()? — the nonce must change per
- * request and `headers()` is evaluated once at config time. Setting the
- * report-only CSP on the middleware response is the only way to thread a
- * fresh nonce into every navigation/RSC payload. The enforce CSP stays
- * static in next.config.ts until C.1.c flips it.
+ * request and `headers()` is evaluated once at config time. Setting CSP on
+ * the middleware response is the only way to thread a fresh nonce into every
+ * navigation/RSC payload. The static `Content-Security-Policy` entry in
+ * next.config.ts was removed in C.1.c; this function now owns the header.
  */
-function attachReportOnlyCsp(response: NextResponse, nonce: string): NextResponse {
-  response.headers.set('Content-Security-Policy-Report-Only', buildReportOnlyCsp(nonce, isDev));
+function attachCsp(response: NextResponse, nonce: string): NextResponse {
+  response.headers.set('Content-Security-Policy', buildCsp(nonce, isDev));
   return response;
 }
 
@@ -605,7 +614,7 @@ export default async function middleware(request: NextRequest) {
   // ── Rate limiting (API routes) ────────────────────────────────────────
 
   const rateLimitResult = await applyRateLimits(pathname, ip, request);
-  if (rateLimitResult) return attachReportOnlyCsp(rateLimitResult, nonce);
+  if (rateLimitResult) return attachCsp(rateLimitResult, nonce);
 
   // ── Portal subdomain routing ──────────────────────────────────────────
 
@@ -623,7 +632,7 @@ export default async function middleware(request: NextRequest) {
 
       if (subPathname === '/' || subPathname === '') {
         url.pathname = '/en/portal';
-        return attachReportOnlyCsp(
+        return attachCsp(
           NextResponse.rewrite(url, {
             request: { headers: requestHeaders },
           }),
@@ -631,7 +640,7 @@ export default async function middleware(request: NextRequest) {
         );
       }
 
-      return attachReportOnlyCsp(
+      return attachCsp(
         NextResponse.next({
           request: { headers: requestHeaders },
         }),
@@ -642,13 +651,13 @@ export default async function middleware(request: NextRequest) {
 
   // ── API routes: skip auth guards and intl (rate limiting already handled above)
   if (pathname.startsWith('/api/')) {
-    return attachReportOnlyCsp(NextResponse.next(forwardInit), nonce);
+    return attachCsp(NextResponse.next(forwardInit), nonce);
   }
 
   // ── Auth guards for non-portal routes ─────────────────────────────────
 
   const authRedirect = applyAuthGuards(request, pathname);
-  if (authRedirect) return attachReportOnlyCsp(authRedirect, nonce);
+  if (authRedirect) return attachCsp(authRedirect, nonce);
 
   // Default: next-intl middleware for non-portal requests. We always hand
   // next-intl the augmented headers (request id + nonce) so locale negotiation
@@ -656,7 +665,7 @@ export default async function middleware(request: NextRequest) {
   // boundaries that actually thread the id into ALS (auth, tRPC, webhooks)
   // are covered by the explicit `/api/*` branch above.
   const mintedRequest = new NextRequest(request, { headers: forwardHeaders });
-  return attachReportOnlyCsp(intlMiddleware(mintedRequest), nonce);
+  return attachCsp(intlMiddleware(mintedRequest), nonce);
 }
 
 export const config = {

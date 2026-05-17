@@ -13,8 +13,6 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
-const isDev = process.env.NODE_ENV === 'development';
-
 const nextConfig: NextConfig = {
   // Produce a self-contained build in .next/standalone — used by the Docker
   // worker image. Vercel ignores this flag so it's safe to keep always-on.
@@ -112,26 +110,13 @@ const nextConfig: NextConfig = {
     return config;
   },
   async headers() {
-    // Phase C.1.b (production-hardening): the enforce CSP is static and
-    // unchanged here. The companion `Content-Security-Policy-Report-Only`
-    // header MOVED to apps/web/src/middleware.ts so it can interpolate a
-    // fresh per-request nonce into `script-src` (preparing C.1.c — see
-    // goals/production-hardening/ §10.5). Violations still stream to
-    // `/api/csp-report` for the 48h observation window before C.1.c flips
-    // the enforce policy onto the nonce-based directives.
-    const enforceCsp = [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://unpkg.com https://*.sentry-cdn.com`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.docusign.com https://unpkg.com https://*.sentry.io https://*.ingest.sentry.io",
-      "frame-src 'self' https://*.docusign.com https://*.docusign.net https://apps-d.docusign.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; ');
-
+    // Phase C.1.c (production-hardening): the per-request enforce CSP now
+    // lives in apps/web/src/middleware.ts (`attachCsp`) so it can interpolate
+    // a fresh nonce into `script-src` and drop `'unsafe-inline'`. The static
+    // `Content-Security-Policy` entry that used to live here was removed in
+    // the C.1.c flip on 2026-05-17. Everything else (Report-To, COOP/COEP/
+    // CORP, HSTS, Permissions-Policy, X-Frame-Options, etc.) stays static —
+    // those headers don't carry per-request state.
     // Reporting API v1 endpoint group declaration. Modern browsers honour
     // `Report-To` -> POSTs `application/reports+json` payloads to the URL.
     // Legacy browsers fall back to `report-uri` -> `application/csp-report`.
@@ -147,10 +132,6 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: enforceCsp,
-          },
           {
             key: 'Report-To',
             value: reportToHeader,
