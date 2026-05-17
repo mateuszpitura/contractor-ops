@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import { resolvePrivacyRedirect } from './(content)/_resolve';
+import { resolvePrivacyRedirect } from './_resolve';
 
 export const metadata: Metadata = {
   title: 'Privacy Notice — Contractor Ops',
