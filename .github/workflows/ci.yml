@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, v2]
+    branches: [main]
   pull_request:
 
 concurrency:
@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [ci]
-    # Gate every PR + every push to main/v2. Doc-only PRs that don't touch
+    # Gate every PR + every push to main. Doc-only PRs that don't touch
     # apps/web still run this — the cost is one cached install + a single
     # Chromium binary, in exchange for catching a11y regressions from any
     # path (theme tweaks, new components, dep bumps).
