@@ -135,7 +135,7 @@ docker compose --profile infisical up -d      # Self-hosted secret manager on :8
 ### 1.5 Start the dev stack
 
 ```bash
-pnpm dev                               # turbo dev — starts apps/web, apps/landing, apps/public-api
+pnpm dev                               # turbo dev — apps/web :3000, landing :3001, cms :3002, public-api :4100
 ```
 
 Smoke checks before flows:
@@ -143,6 +143,7 @@ Smoke checks before flows:
 - [ ] `http://localhost:3000` loads the dashboard root (redirects to `/en` or your default locale).
 - [ ] `http://localhost:3000/api/health` returns `200` JSON with all probes `ok` or `skipped`. **If `r2: fail`, the canary key is missing — that's OK for local but flag it.**
 - [ ] `http://localhost:3001` loads the landing page (`apps/landing`).
+- [ ] `http://localhost:3002` loads the CMS/blog (`apps/cms`) — only after Payload migrations + CMS env (skip if you're not exercising CMS locally).
 - [ ] `http://localhost:4100/health` (`apps/public-api`) — only if `API_KEY_HMAC_SECRET` is set.
 - [ ] No "Environment validation failed" stack trace in `pnpm dev` output.
 - [ ] No `console.*` warnings from `lint:logs` baseline.

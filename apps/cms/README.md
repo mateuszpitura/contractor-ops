@@ -22,9 +22,10 @@ pnpm install
 # 4. Generate Payload TS types and the admin import map:
 pnpm --filter @contractor-ops/cms generate:types
 pnpm --filter @contractor-ops/cms generate:importmap
-# 5. Run initial migration against the Neon DB:
-pnpm --filter @contractor-ops/cms migrate:create initial
+# 5. Postgres schema — cloned repo ships `apps/cms/migrations/`:
 pnpm --filter @contractor-ops/cms migrate
+#    Greenfield CMS database only (no migrations yet): run `migrate:create` first, e.g.
+#    `pnpm --filter @contractor-ops/cms migrate:create initial`, then `migrate` again.
 # 6. Seed the first admin user:
 pnpm --filter @contractor-ops/cms seed:admin
 # 7. Seed the legal-documents catalog (one-shot):
