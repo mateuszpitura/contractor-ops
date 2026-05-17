@@ -2,6 +2,101 @@
 
 Production deployment guide for `contractor-ops` on [Render](https://render.com).
 
+## Database migrations (runbook)
+
+Migrations are executed automatically on every Render deploy via the
+`preDeployCommand` hook on each service. Operators rarely need to run them
+manually — but when a migration goes wrong, the rollback path is in-band and
+covered below.
+
+### What runs, where, when
+
+| Service | preDeployCommand | What it does |
+|---|---|---|
+| `web` | `pnpm --filter @contractor-ops/db run db:migrate:all` | Applies Prisma migrations against **both** regional Neon databases (EU + ME). Implemented by `packages/db/scripts/migrate-all-regions.ts`, which iterates over `DATABASE_URL_EU` and `DATABASE_URL_ME` and invokes `prisma migrate deploy` per region. |
+| `cms` | `pnpm --filter @contractor-ops/cms run migrate` | Applies Payload v3 migrations against `CMS_DATABASE_URL` (separate Neon project, isolated from app DBs). Wraps `payload migrate` via dotenv so env loading matches local dev. |
+| `public-api`, `worker`, cron jobs | _(none)_ | Read-only against the same regional databases — they inherit the schema applied by `web`'s preDeploy step. Roll order: `web` deploys first, downstream services pick up the new schema on their next revision. |
+
+### Failure mode
+
+- `preDeployCommand` runs **once per deploy** before the new revision starts
+  taking traffic.
+- A non-zero exit aborts the rollout. Render keeps the **previous revision
+  serving** — no partial migration, no broken release.
+- Sentry + Render deploy notifications fire on failure. Triage via
+  Dashboard → service → **Events** → click the failed deploy → **Logs**.
+- The migration script logs each region's outcome through
+  `@contractor-ops/logger` so failures show structured fields
+  (`region`, `step`, `error.code`) in Axiom.
+
+### Schema-change review checklist
+
+Before merging any PR that adds, modifies, or removes a Prisma migration
+(`packages/db/prisma/migrations/**`) or a Payload migration (`apps/cms/src/migrations/**`):
+
+- [ ] **Reversible?** Down-migration documented (or explicit decision recorded that rollback requires manual SQL).
+- [ ] **Data-loss risk?** Any `DROP COLUMN`, `DROP TABLE`, `ALTER TYPE`, or type narrowing must be flagged in the PR description with a backfill plan.
+- [ ] **Downtime?** Long-running `ALTER TABLE` on large tables must use `CONCURRENTLY` (indexes) or expand-then-contract pattern (rename columns).
+- [ ] **Tenant scope?** Cross-tenant queries inside the migration are pre-reviewed (RLS implications).
+- [ ] **Multi-region parity.** Both EU and ME schemas converge — there are no region-only branches in the migration.
+- [ ] **CODEOWNERS approval** on `packages/db/prisma/`.
+
+### Manual migrate procedure
+
+For staging dry-runs, ad-hoc data fixes, or recovery, you can run migrations
+locally against a remote URL. **Always against a single explicit URL — never
+unset `DATABASE_URL_*` in the shell where production credentials live.**
+
+```bash
+# Dry-run against staging EU (no apply)
+DATABASE_URL="$STAGING_EU_URL" \
+  pnpm --filter @contractor-ops/db exec prisma migrate diff \
+  --from-schema-datamodel prisma/schema.prisma \
+  --to-schema-datasource prisma/schema.prisma \
+  --script
+
+# Apply to a single region
+DATABASE_URL="$STAGING_EU_URL" \
+  pnpm --filter @contractor-ops/db exec prisma migrate deploy
+
+# Apply to both regions (mirrors the Render preDeploy behaviour)
+DATABASE_URL_EU="$PROD_EU_URL" DATABASE_URL_ME="$PROD_ME_URL" \
+  pnpm --filter @contractor-ops/db run db:migrate:all
+
+# Payload (CMS)
+CMS_DATABASE_URL="$STAGING_CMS_URL" \
+  pnpm --filter @contractor-ops/cms run migrate
+```
+
+Use Neon's **branch** feature to clone the prod DB and dry-run there before
+touching the live branch.
+
+### Rollback procedure
+
+If a migration ships and breaks production:
+
+1. **Roll back the revision in Render first** — Dashboard → `web` → **Events** → previous successful deploy → **Rollback to this deploy**. The previous app code keeps running against the new schema as long as the schema change was **additive** (new columns, new tables). For additive changes this is enough; ship the corrective code change next.
+2. **If the migration is destructive** (dropped column, renamed table, narrowed type), the previous revision will fail at runtime. Mitigation: have a hotfix branch ready that reverts the offending migration AND ships compensating SQL. Apply manually via the procedure above:
+   ```bash
+   # Restore dropped data from Neon point-in-time recovery
+   # Neon Dashboard → Branches → create branch from "5 minutes ago"
+   # → diff with current → copy missing rows back via psql
+   ```
+3. **Roll forward, not back, on Prisma.** Prisma has no `migrate down` in deploy mode. To "undo" a migration, write a new corrective migration and ship it through the normal preDeploy path. Never `prisma migrate resolve --rolled-back` against production unless you have already restored the schema state manually.
+4. **Payload migrations** support `payload migrate:down`, but treat it the same way — prefer a forward-fix migration over an in-place rollback against production.
+5. Post-incident: file an entry in `docs/POST-DEPLOY-MONITORING.md` (incident log) and an ADR if the root cause was a process gap.
+
+### Quick sanity checks
+
+```bash
+# What migrations are pending against a URL?
+DATABASE_URL="$URL" \
+  pnpm --filter @contractor-ops/db exec prisma migrate status
+
+# Compare schema drift between code and DB
+pnpm --filter @contractor-ops/db exec tsx scripts/check-generated-drift.ts
+```
+
 ## Topology
 
 | Service | Type | Plan | Notes |
