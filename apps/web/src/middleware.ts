@@ -361,8 +361,38 @@ function isAuthRoute(pathname: string): boolean {
   );
 }
 
-/** Public routes accessible without authentication */
-const PUBLIC_ROUTES = ['/legal'];
+/**
+ * Page routes accessible without an authenticated session.
+ *
+ * Scope: this list is only consulted by `isDashboardRoute()` to decide
+ * whether the unauthenticated-user redirect to /login should fire. It does
+ * NOT gate API routes — `/api/*` is short-circuited earlier in the
+ * middleware (see the `pathname.startsWith('/api/')` branch) and is filtered
+ * by the matcher config + per-endpoint auth checks in route handlers.
+ *
+ * Audit (walked `apps/web/src/app/[locale]/` route groups):
+ *   - (auth)      → handled by `isAuthRoute()` separately (login, register,
+ *                   forgot-password, invite/[token] — token-validated SSR).
+ *   - (portal)    → handled by `withoutLocale.startsWith('/portal')` check
+ *                   in `isDashboardRoute()`; portal layout enforces its own
+ *                   subdomain + session model.
+ *   - (legal)     → PUBLIC. Privacy, terms, sub-processors, breach
+ *                   notification — must be reachable by unauthenticated
+ *                   visitors (regulators, prospects, RoPA reviewers).
+ *   - (dashboard) → authenticated app; the inverse of this allowlist.
+ *   - (admin)     → authenticated admin; the inverse of this allowlist.
+ *
+ * Other unauthenticated entry points NOT in this list (intentionally):
+ *   - /invite/[token]                → excluded inside `isDashboardRoute()`
+ *                                      directly; token validated server-side.
+ *   - /api/health, /api/csp-report,  → /api/* skips this guard entirely
+ *     /api/web-vitals, /api/auth/*     (matcher + handler-level auth).
+ *   - /.well-known/security.txt      → static, served outside the matcher.
+ *
+ * To add a new public page route, add the locale-stripped prefix here AND
+ * confirm the page does not depend on session data in its render.
+ */
+const PUBLIC_ROUTES = ['/legal'] as const;
 
 function isPublicRoute(pathname: string): boolean {
   const withoutLocale = pathname.replace(/^\/[a-z]{2}(\/|$)/, '/');
