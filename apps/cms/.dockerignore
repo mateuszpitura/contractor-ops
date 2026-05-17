@@ -1,0 +1,6 @@
+.next
+node_modules
+media
+.env
+.env.local
+src/payload-types.ts

@@ -284,6 +284,65 @@ services:
           property: host
       - key: CLAMAV_PORT
         value: '3310'
+      # HMAC shared secret for CMS → web revalidate-legal webhook
+      # (must match the same env var on the `cms` service below)
+      - key: CMS_WEBHOOK_SECRET
+        sync: false
+      # Public origin of the CMS app — apps/web fetches legal docs from here
+      - key: CMS_PUBLIC_URL
+        sync: false
+
+  # ── Web Service: Headless CMS + public blog (apps/cms) ──────────────────
+  # Hosts the Payload CMS admin at /admin and the public blog frontend on
+  # blog.contractor-ops.io. Connects to a dedicated Neon Postgres database
+  # via CMS_DATABASE_URL (isolated from the multi-region app DBs).
+  - type: web
+    name: cms
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./apps/cms/Dockerfile
+    dockerContext: .
+    dockerCommand: node apps/cms/server.js
+    healthCheckPath: /api/users/me
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 75
+      targetCPUPercent: 70
+    envVars:
+      - fromGroup: app-shared
+      - key: PORT
+        value: '3000'
+      - key: HOSTNAME
+        value: 0.0.0.0
+      # CMS-specific Postgres (separate Neon project; NOT the app DBs)
+      - key: CMS_DATABASE_URL
+        sync: false
+      # Payload session/encryption secret (rotate by re-issuing logins)
+      - key: PAYLOAD_SECRET
+        sync: false
+      # First-run admin seed credentials — consumed by `pnpm seed:admin`
+      - key: CMS_ADMIN_EMAIL
+        sync: false
+      - key: CMS_ADMIN_PASSWORD
+        sync: false
+      # HMAC shared secret for the legal-documents revalidation webhook
+      # (must match CMS_WEBHOOK_SECRET on the `web` service)
+      - key: CMS_WEBHOOK_SECRET
+        sync: false
+      # Public origin (canonical URLs, OG image refs)
+      - key: CMS_PUBLIC_URL
+        sync: false
+      # apps/web origin (target of the afterChange revalidation webhook).
+      # Use Render's private-network hostport for inter-service calls.
+      - key: WEB_APP_URL
+        fromService:
+          type: web
+          name: web
+          property: hostport
 
   # ── Static Site: marketing landing page ─────────────────────────────────
   - type: web

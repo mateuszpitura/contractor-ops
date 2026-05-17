@@ -1,6 +1,8 @@
 import { Layers } from 'lucide-react';
 
-const footerLinks = {
+type FooterLink = { label: string; href: string; external?: boolean };
+
+const footerLinks: Record<string, FooterLink[]> = {
   Product: [
     { label: 'Features', href: '#features' },
     { label: 'Pricing', href: '#pricing' },
@@ -9,7 +11,7 @@ const footerLinks = {
   ],
   Company: [
     { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
+    { label: 'Blog', href: 'https://blog.contractor-ops.io', external: true },
     { label: 'Careers', href: '#' },
     { label: 'Contact', href: '#' },
   ],
@@ -51,6 +53,8 @@ export function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
+                      target={link.external ? '_blank' : undefined}
+                      rel={link.external ? 'noopener noreferrer' : undefined}
                       className="text-sm text-muted-foreground transition-colors hover:text-foreground">
                       {link.label}
                     </a>
