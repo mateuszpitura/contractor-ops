@@ -76,12 +76,11 @@ ENV SENTRY_PROJECT=""
 
 RUN pnpm turbo build --filter=@contractor-ops/web
 
-# Install runtime deps for the worker target into the standalone output:
-#   - node-cron: scheduler
-#   - pino: structured logger (matches @contractor-ops/logger baseOptions)
-#   - @sentry/node: F-OBS-04 process handlers + crash capture for the worker
-# The web target reuses this stage but never executes worker-cron.mjs.
-RUN cd apps/web/.next/standalone && pnpm init -y && pnpm add node-cron pino @sentry/node
+# Worker runtime deps (node-cron, pino, @sentry/node) are listed as
+# `dependencies` in apps/web/package.json. Next.js standalone output bundles
+# all `dependencies` into apps/web/.next/standalone/node_modules at build
+# time → no runtime `pnpm add` needed. Versions are pinned via pnpm-lock.yaml
+# (avoids unpinned registry pulls + ~200MB image bloat at deploy time).
 
 # ── Stage 4a: runner-base — minimal common runtime layer ───────────────────
 FROM node:24-alpine AS runner-base
