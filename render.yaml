@@ -260,6 +260,7 @@ services:
     branch: main
     autoDeploy: true
     dockerfilePath: ./apps/web/Dockerfile
+    dockerTarget: runner-web
     dockerContext: .
     dockerCommand: node apps/web/server.js
     healthCheckPath: /api/health
@@ -436,6 +437,7 @@ services:
     branch: main
     autoDeploy: true
     dockerfilePath: ./apps/web/Dockerfile
+    dockerTarget: runner-worker
     dockerContext: .
     dockerCommand: node apps/web/worker-cron.mjs
     envVars:
