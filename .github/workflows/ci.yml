@@ -210,23 +210,4 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Assert no PENDING disclaimers (LEGAL-02)
-        run: |
-          node --input-type=module << 'EOF'
-          import { getAllPending } from './packages/validators/src/legal/signoff-registry.js';
-          const pending = getAllPending();
-          if (pending.length > 0) {
-            console.error('');
-            console.error('╔══════════════════════════════════════════════════════════════╗');
-            console.error('║  LEGAL-02: Production deploy BLOCKED                         ║');
-            console.error('╚══════════════════════════════════════════════════════════════╝');
-            console.error('');
-            console.error('The following disclaimer keys have status PENDING:');
-            pending.forEach(k => console.error(`  - ${k}`));
-            console.error('');
-            console.error('To unblock: submit a PR updating signoff-registry.json to set');
-            console.error('each key to APPROVED with approvedBy + approvedAt + approverRole.');
-            console.error('The PR requires @contractor-ops/legal-platform review (CODEOWNERS).');
-            process.exit(1);
-          }
-          console.log(`Legal gate: all ${pending.length === 0 ? Object.keys(await import('./packages/validators/src/legal/signoff-registry.json', {with:{type:"json"}}).then(m=>m.default)).length : pending.length} disclaimers APPROVED ✓`);
-          EOF
+        run: node scripts/check-legal-gate.mjs
