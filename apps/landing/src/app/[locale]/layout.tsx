@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { CookieConsentBanner } from '@/components/cookie-consent-banner';
 import { LocaleHtmlAttributes } from '@/components/locale-html-attributes';
-import { defaultLocale, getTranslations, isValidLocale, localeConfigs, locales } from '@/i18n';
+import {
+  defaultLocale,
+  getTranslations,
+  isValidLocale,
+  localeConfigs,
+  locales,
+  TranslationProvider,
+} from '@/i18n';
 
 export function generateStaticParams() {
   return locales.map(locale => ({ locale }));
@@ -69,6 +77,7 @@ export default async function LocaleLayout({
   }
 
   const config = localeConfigs[localeParam];
+  const translations = await getTranslations(localeParam);
 
   // Phase C.1.a (production-hardening): lang/dir/font for the locale are
   // applied via a client-only effect (no inline <script>). The root layout
@@ -78,9 +87,10 @@ export default async function LocaleLayout({
   const isArabic = localeParam === 'ar' || localeParam === 'ar-SA';
 
   return (
-    <>
+    <TranslationProvider translations={translations} locale={localeParam}>
       <LocaleHtmlAttributes lang={localeParam} dir={config.dir} isArabic={isArabic} />
       {children}
-    </>
+      <CookieConsentBanner />
+    </TranslationProvider>
   );
 }
