@@ -10,7 +10,11 @@ import {
 } from '@contractor-ops/ui';
 import { ArrowRight, Play } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import { useTranslations } from '@/i18n';
+import { heroExperimentFor } from '@/lib/experiments';
+import type { Market } from '@/lib/market';
 import { AnimatedCounter } from './animated-counter';
+import { VariantSlot } from './variant-slot';
 
 const metrics = [
   { value: 4, suffix: 'h', label: 'saved per week' },
@@ -64,9 +68,17 @@ const dashboardRows: readonly MockDashboardRow[] = [
 // trending gently up. Real product data isn't fetched on the marketing page.
 const MOCK_SPEND_TREND = [3200, 3850, 3500, 4100, 4400, 4720];
 
-export function Hero() {
+interface HeroProps {
+  market: Market;
+}
+
+export function Hero({ market }: HeroProps) {
   const reduced = useReducedMotion();
   const t = reduced ? { duration: 0 } : undefined;
+  const messages = useTranslations();
+  const heroExperiment = heroExperimentFor(market);
+  const badgeText = messages.hero.badge;
+  const controlSubheadline = messages.hero.subheadline;
 
   return (
     <section className="hero-mesh noise-overlay relative min-h-[100dvh] flex items-center justify-center pt-20 pb-16 overflow-hidden">
@@ -88,7 +100,7 @@ export function Hero() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
           </span>
-          KSeF-ready since April 2026
+          {badgeText}
         </motion.div>
 
         {/* Headline */}
@@ -101,15 +113,24 @@ export function Hero() {
           in <span className="gradient-text">spreadsheets</span>
         </motion.h1>
 
-        {/* Subheadline */}
-        <motion.p
+        {/* Subheadline — variant slot per market */}
+        <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={t ?? { duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto mt-6 max-w-2xl text-subhead text-muted-foreground">
-          Contracts, invoices, approvals and payments for your B2B contractors &mdash; one system,
-          zero chaos. Built for EU companies.
-        </motion.p>
+          <VariantSlot
+            experimentKey={heroExperiment.key}
+            fallback={heroExperiment.fallback}
+            variants={{
+              control: <p>{controlSubheadline}</p>,
+              A: <p>{messages.hero.variantA ?? controlSubheadline}</p>,
+              B: <p>{messages.hero.variantB ?? controlSubheadline}</p>,
+              C: <p>{messages.hero.variantC ?? controlSubheadline}</p>,
+              D: <p>{messages.hero.variantD ?? controlSubheadline}</p>,
+            }}
+          />
+        </motion.div>
 
         {/* CTA buttons */}
         <motion.div

@@ -37,6 +37,11 @@ export interface TranslationMessages {
     metricSaved: string;
     metricAccuracy: string;
     metricOnboarding: string;
+    /** Optional A/B variant copy for the hero subheadline (PostHog Experiments). */
+    variantA?: string;
+    variantB?: string;
+    variantC?: string;
+    variantD?: string;
   };
   logoBar: {
     title: string;
