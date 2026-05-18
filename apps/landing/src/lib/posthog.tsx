@@ -70,6 +70,28 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
     const initialConsent = readConsent();
 
     try {
+      // Capture UTM parameters from the landing URL once on first hit so
+      // every subsequent event carries the campaign attribution. Stored as
+      // person properties (`$set`) so they survive navigation.
+      const utm: Record<string, string> = {};
+      try {
+        const url = new URL(window.location.href);
+        for (const key of [
+          'utm_source',
+          'utm_medium',
+          'utm_campaign',
+          'utm_term',
+          'utm_content',
+          'gclid',
+          'fbclid',
+        ]) {
+          const value = url.searchParams.get(key);
+          if (value) utm[key] = value;
+        }
+      } catch {
+        // URL parsing should not fail on a real visit; ignore.
+      }
+
       posthog.init(token, {
         api_host: host ?? 'https://eu.i.posthog.com',
         defaults: '2026-01-30',
@@ -77,6 +99,12 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
         capture_pageleave: initialConsent === 'accepted',
         autocapture: initialConsent === 'accepted',
         disable_session_recording: initialConsent !== 'accepted',
+        loaded(ph) {
+          if (Object.keys(utm).length > 0) {
+            ph.register(utm);
+            ph.setPersonPropertiesForFlags(utm);
+          }
+        },
         // Soft consent: anonymous pageviews fire until visitor decides.
         // Reject sets opt-out + stops recording; accept enables full
         // capture. PostHog `persistence: 'memory'` would drop the
