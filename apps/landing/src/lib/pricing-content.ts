@@ -1,23 +1,52 @@
 /**
- * Marketing content for pricing plans and credit packs.
+ * Per-tier marketing content (feature lists, exclusions) for landing pages.
  *
- * Prices come from Stripe at build/ISR time.
- * Features, descriptions, and display config live HERE — because they're
- * marketing decisions that should go through code review, not Stripe metadata.
- *
- * Keys must match the `slug` metadata on the corresponding Stripe product.
+ * Prices come from Stripe via `@contractor-ops/billing` — never from here.
+ * Per-market feature copy is delivered through i18n messages (Pricing.tiers.*).
+ * This file ships only the structural fallback (when a translation is absent)
+ * + credit-pack marketing copy.
  */
+import type { Tier } from '@contractor-ops/billing';
 
-interface PlanContent {
-  name: string;
-  description: string;
+interface TierContentFallback {
   features: string[];
-  popular: boolean;
-  order: number;
-  /** Shown when STRIPE_SECRET_KEY is not set (dev/preview) */
-  fallbackMonthlyPrice: number | null;
-  fallbackAnnualPrice: number | null;
+  excludedFeatures: string[];
 }
+
+export const TIER_CONTENT_FALLBACK: Record<Tier, TierContentFallback> = {
+  STARTER: {
+    features: [
+      'Contractor profiles & documents',
+      'Onboarding checklists',
+      'Invoice intake & matching',
+      'Single-step approvals',
+      'Audit trail',
+    ],
+    excludedFeatures: ['Integrations', 'OCR parsing', 'Advanced workflows', 'API access'],
+  },
+  PRO: {
+    features: [
+      'Everything in Starter',
+      'Integrations (Jira, Linear, Calendar)',
+      'OCR invoice parsing',
+      'Multi-step approval chains',
+      'E-signatures',
+      'Batch payment export',
+    ],
+    excludedFeatures: ['Audit log export', 'API access'],
+  },
+  ENTERPRISE: {
+    features: [
+      'Everything in Pro',
+      'SSO / SAML',
+      'Audit log export',
+      'API access & webhooks',
+      'Dedicated CSM',
+      'SLA guarantee',
+    ],
+    excludedFeatures: [],
+  },
+};
 
 interface CreditPackContent {
   name: string;
@@ -28,60 +57,6 @@ interface CreditPackContent {
   fallbackCredits: number;
   fallbackPrice: number;
 }
-
-export const PLAN_CONTENT: Record<string, PlanContent> = {
-  starter: {
-    name: 'Starter',
-    description: 'Everything you need to get started. No credit card required.',
-    features: [
-      'Contractor profiles & documents',
-      'Basic onboarding checklists',
-      'Invoice upload & tracking',
-      'Single-step approvals',
-      'Audit trail',
-    ],
-    popular: false,
-    order: 1,
-    fallbackMonthlyPrice: 0,
-    fallbackAnnualPrice: 0,
-  },
-  pro: {
-    name: 'Pro',
-    description: 'Full lifecycle management with KSeF integration and multi-step workflows.',
-    features: [
-      'Everything in Starter',
-      'KSeF invoice auto-pull',
-      'Multi-step approval chains',
-      'Batch payment export',
-      'Contract templates & e-sign',
-      'Offboarding workflows',
-      'Spend analytics',
-      'Priority support',
-    ],
-    popular: true,
-    order: 2,
-    fallbackMonthlyPrice: 49,
-    fallbackAnnualPrice: 468,
-  },
-  enterprise: {
-    name: 'Enterprise',
-    description:
-      'For organizations with complex approval chains, custom integrations, and compliance needs.',
-    features: [
-      'Everything in Pro',
-      'SSO / SAML',
-      'Custom approval workflows',
-      'API access & webhooks',
-      'Dedicated account manager',
-      'Custom integrations',
-      'SLA guarantee',
-    ],
-    popular: false,
-    order: 3,
-    fallbackMonthlyPrice: null,
-    fallbackAnnualPrice: null,
-  },
-};
 
 export const CREDIT_PACK_CONTENT: Record<string, CreditPackContent> = {
   'starter-pack': {

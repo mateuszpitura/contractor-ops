@@ -1,5 +1,6 @@
 import type { Locale } from '@/i18n';
 import { localeConfigs } from '@/i18n';
+import { marketCurrency } from '@/lib/market';
 import type { PricingPlan } from '@/lib/pricing-types';
 
 /**
@@ -37,17 +38,18 @@ export function StructuredData({
     operatingSystem: 'Web',
     offers: plans?.length
       ? plans
-          .filter(p => p.monthlyPrice !== null)
+          .filter(p => p.monthly !== null)
           .map(plan => ({
             '@type': 'Offer',
             name: plan.name,
-            price: plan.monthlyPrice === 0 ? '0' : String(plan.monthlyPrice),
-            priceCurrency: config.currency,
+            price: String(plan.monthly?.amount ?? 0),
+            priceCurrency: marketCurrency(plan.market).toUpperCase(),
             priceValidUntil: '2027-12-31',
             availability: 'https://schema.org/InStock',
           }))
       : undefined,
   };
+  void config;
 
   const faq = faqItems?.length
     ? {

@@ -8,8 +8,9 @@ import { PricingFAQ } from '@/components/pricing/pricing-faq';
 import { PricingHero } from '@/components/pricing/pricing-hero';
 import type { Locale } from '@/i18n';
 import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
+import { annualSavingsPercent, buildLandingPlanViews } from '@/lib/landing-plan-view';
+import { localeToMarket } from '@/lib/market';
 import type { CreditPack, PricingPlan } from '@/lib/pricing-types';
-import { formatCount, formatPrice } from '@/lib/pricing-types';
 import { fetchCreditPacks, fetchPricingPlans } from '@/lib/stripe';
 
 const log = createLogger({ service: 'landing-pricing-page' });
@@ -17,60 +18,30 @@ const log = createLogger({ service: 'landing-pricing-page' });
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeParam } = await params;
   const locale: Locale = isValidLocale(localeParam) ? localeParam : defaultLocale;
+  const market = localeToMarket(locale);
   const t = await getTranslations(locale);
 
-  let plans: PricingPlan[];
-  let creditPacks: CreditPack[];
+  let plans: PricingPlan[] = [];
+  let creditPacks: CreditPack[] = [];
   try {
-    [plans, creditPacks] = await Promise.all([fetchPricingPlans(), fetchCreditPacks()]);
+    [plans, creditPacks] = await Promise.all([fetchPricingPlans(market), fetchCreditPacks()]);
   } catch (error) {
-    log.error({ err: error }, 'failed to fetch from Stripe');
-    const { PLAN_CONTENT, CREDIT_PACK_CONTENT } = await import('@/lib/pricing-content');
-    plans = Object.entries(PLAN_CONTENT).map(([slug, c]) => ({
-      id: slug,
-      name: c.name,
-      description: c.description,
-      features: c.features,
-      monthlyPrice: c.fallbackMonthlyPrice,
-      annualPrice: c.fallbackAnnualPrice,
-      currency: 'pln',
-      ctaHref: `/signup?plan=${slug}`,
-      popular: c.popular,
-      order: c.order,
-      monthlyPriceFormatted: formatPrice(c.fallbackMonthlyPrice, 'pln'),
-      annualPriceFormatted: formatPrice(c.fallbackAnnualPrice, 'pln'),
-    }));
-    creditPacks = Object.entries(CREDIT_PACK_CONTENT).map(([slug, c]) => {
-      const perCredit =
-        c.fallbackCredits > 0 ? Math.round((c.fallbackPrice / c.fallbackCredits) * 100) / 100 : 0;
-      return {
-        id: slug,
-        name: c.name,
-        description: c.description,
-        credits: c.fallbackCredits,
-        price: c.fallbackPrice,
-        currency: 'pln',
-        perCredit,
-        ctaHref: `/signup?credits=${slug}`,
-        popular: c.popular,
-        order: c.order,
-        creditsFormatted: formatCount(c.fallbackCredits),
-        priceFormatted: formatPrice(c.fallbackPrice, 'pln'),
-        perCreditFormatted: formatPrice(perCredit, 'pln'),
-      };
-    });
+    log.error({ err: error, market }, 'failed to fetch pricing from Stripe');
   }
+
+  const views = buildLandingPlanViews(plans, t, locale);
+  const annualSavings = annualSavingsPercent(plans);
 
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
       <main>
         <SectionTracker name="pricing-hero">
-          <PricingHero plans={plans} />
+          <PricingHero views={views} annualSavings={annualSavings} />
         </SectionTracker>
         <div className="section-divider" />
         <SectionTracker name="feature-comparison">
-          <FeatureComparison />
+          <FeatureComparison views={views} />
         </SectionTracker>
         <div className="section-divider" />
         <SectionTracker name="credits">

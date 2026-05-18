@@ -4,6 +4,7 @@
     { "path": "./packages/validators" },
     { "path": "./packages/db" },
     { "path": "./packages/auth" },
+    { "path": "./packages/billing" },
     { "path": "./packages/api" },
     { "path": "./packages/ui" },
     { "path": "./apps/web" }

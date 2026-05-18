@@ -3,6 +3,10 @@
 import { Check, Minus } from 'lucide-react';
 import { Fragment } from 'react';
 import { FadeUp, ScaleIn } from '@/components/motion-wrapper';
+import { useLocale } from '@/i18n';
+import { intlLocaleFor } from '@/lib/market';
+import type { LandingPlanView } from '@/lib/pricing-types';
+import { formatPrice } from '@/lib/pricing-types';
 
 type FeatureValue = boolean | string;
 
@@ -97,7 +101,29 @@ function CellValue({ value }: { value: FeatureValue }) {
   return <span className="text-sm font-medium text-foreground">{value}</span>;
 }
 
-export function FeatureComparison() {
+interface FeatureComparisonProps {
+  views: LandingPlanView[];
+}
+
+function findByTier(views: LandingPlanView[], tier: 'STARTER' | 'PRO' | 'ENTERPRISE') {
+  return views.find(v => v.plan.tier === tier);
+}
+
+export function FeatureComparison({ views }: FeatureComparisonProps) {
+  const locale = useLocale();
+  const intlLocale = intlLocaleFor(locale);
+
+  const starter = findByTier(views, 'STARTER');
+  const pro = findByTier(views, 'PRO');
+  const enterprise = findByTier(views, 'ENTERPRISE');
+
+  const priceLabel = (view: LandingPlanView | undefined): string => {
+    if (!view) return '—';
+    const monthly = view.plan.monthly;
+    if (!monthly) return view.plan.tier === 'ENTERPRISE' ? 'Custom' : '—';
+    return `${formatPrice(monthly.amount, monthly.currency, { locale: intlLocale })}/mo`;
+  };
+
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface-2/30 to-transparent pointer-events-none" />
@@ -128,16 +154,24 @@ export function FeatureComparison() {
                     Feature
                   </th>
                   <th className="py-5 px-4 text-center w-[20%]">
-                    <div className="text-sm font-bold text-foreground">Starter</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Free</div>
+                    <div className="text-sm font-bold text-foreground">
+                      {starter?.plan.name ?? 'Starter'}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {priceLabel(starter)}
+                    </div>
                   </th>
                   <th className="py-5 px-4 text-center w-[20%] bg-primary/3">
-                    <div className="text-sm font-bold text-primary">Pro</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">PLN 49/mo</div>
+                    <div className="text-sm font-bold text-primary">{pro?.plan.name ?? 'Pro'}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{priceLabel(pro)}</div>
                   </th>
                   <th className="py-5 px-4 text-center w-[20%]">
-                    <div className="text-sm font-bold text-foreground">Enterprise</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Custom</div>
+                    <div className="text-sm font-bold text-foreground">
+                      {enterprise?.plan.name ?? 'Enterprise'}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {priceLabel(enterprise)}
+                    </div>
                   </th>
                 </tr>
               </thead>

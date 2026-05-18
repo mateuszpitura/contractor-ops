@@ -1,14 +1,20 @@
+import type { Market, PricingPlan } from '@contractor-ops/billing/types';
+import { fetchPricingPlans as billingFetchPricingPlans } from '@contractor-ops/billing';
 import { createLogger } from '@contractor-ops/logger';
 import Stripe from 'stripe';
-import { CREDIT_PACK_CONTENT, PLAN_CONTENT } from './pricing-content';
-import type { CreditPack, PricingPlan } from './pricing-types';
+import { CREDIT_PACK_CONTENT } from './pricing-content';
+import type { CreditPack } from './pricing-types';
 import { formatCount, formatPrice } from './pricing-types';
 
 const log = createLogger({ service: 'landing-stripe' });
 
 /**
- * Stripe client — runs server-side only (build / ISR revalidation).
- * Never shipped to the client.
+ * Stripe client — server-side only (build / ISR revalidation).
+ *
+ * The landing app uses `output: 'export'`, so every Stripe call runs at
+ * build time. Page revalidation re-runs the build for an individual
+ * route; the in-process cache in `@contractor-ops/billing` collapses
+ * duplicate calls across pages within a single build.
  */
 let cachedStripeClient: Stripe | null | undefined;
 
@@ -20,10 +26,10 @@ function getStripeClient() {
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
         'STRIPE_SECRET_KEY is required for production builds. ' +
-          'Set it in your environment or the build will use fallback prices.',
+          'Pricing comes from Stripe; without the key the build cannot resolve prices.',
       );
     }
-    log.warn({}, 'STRIPE_SECRET_KEY not set — using fallback prices from pricing-content.ts');
+    log.warn({}, 'STRIPE_SECRET_KEY not set — pricing fetches will return empty (dev only).');
     cachedStripeClient = null;
     return null;
   }
@@ -31,79 +37,25 @@ function getStripeClient() {
   return cachedStripeClient;
 }
 
-/** Safely extract a Stripe.Price from an expanded default_price field. */
-function resolvePrice(defaultPrice: string | Stripe.Price | null | undefined): Stripe.Price | null {
-  if (!defaultPrice || typeof defaultPrice === 'string') return null;
-  return defaultPrice;
-}
-
-// ─── Fetchers ───────────────────────────────────────────────────────
-
 /**
- * Fetch subscription plans.
+ * Fetch all subscription plans from Stripe and (optionally) filter by market.
  *
- * Prices come from Stripe. Features, descriptions, and marketing copy
- * come from the local pricing-content.ts config — because those are
- * marketing decisions, not billing data.
- *
- * Stripe product metadata used:
- *   - `slug`: maps to PLAN_CONTENT key (e.g. "starter", "pro", "enterprise")
- *   - `order`: numeric sort order
- *   - `plan_type`: omit or "subscription" (vs "credits")
+ * Throws if Stripe is configured but any active subscription product is
+ * missing the required metadata. That failure is intentional — it surfaces
+ * configuration drift in the build log before it reaches production.
  */
-export async function fetchPricingPlans(): Promise<PricingPlan[]> {
+export async function fetchPricingPlans(market?: Market): Promise<PricingPlan[]> {
   const stripe = getStripeClient();
-
-  if (!stripe) {
-    return getStaticFallbackPlans();
-  }
-
-  const [products, prices] = await Promise.all([
-    stripe.products.list({ active: true, limit: 50 }),
-    stripe.prices.list({ active: true, type: 'recurring', limit: 100 }),
-  ]);
-
-  const plans: PricingPlan[] = products.data
-    .filter(p => p.metadata.plan_type !== 'credits')
-    .map(product => {
-      const slug = product.metadata.slug ?? product.name.toLowerCase();
-      const content = PLAN_CONTENT[slug];
-
-      const productPrices = prices.data.filter(price => price.product === product.id);
-      const monthlyPrice = productPrices.find(p => p.recurring?.interval === 'month');
-      const annualPrice = productPrices.find(p => p.recurring?.interval === 'year');
-
-      const monthlyAmount = monthlyPrice?.unit_amount ? monthlyPrice.unit_amount / 100 : null;
-      const annualAmount = annualPrice?.unit_amount ? annualPrice.unit_amount / 100 : null;
-      const currency = monthlyPrice?.currency ?? annualPrice?.currency ?? 'pln';
-      return {
-        id: product.id,
-        name: product.name,
-        description: content?.description ?? product.description ?? '',
-        features: content?.features ?? [],
-        monthlyPrice: monthlyAmount,
-        annualPrice: annualAmount,
-        currency,
-        ctaHref: `/signup?plan=${slug}`,
-        popular: content?.popular ?? false,
-        order: Number(product.metadata.order) || content?.order || 99,
-        monthlyPriceFormatted: formatPrice(monthlyAmount, currency),
-        annualPriceFormatted: formatPrice(annualAmount, currency),
-      };
-    })
-    .sort((a, b) => a.order - b.order);
-
-  return plans;
+  if (!stripe) return [];
+  const all = await billingFetchPricingPlans(stripe);
+  return market ? all.filter(p => p.market === market) : all;
 }
 
 /**
  * Fetch credit / pay-as-you-go packs.
  *
- * Stripe product metadata:
- *   - `plan_type`: "credits"
- *   - `slug`: maps to CREDIT_PACK_CONTENT key
- *   - `credits`: number of credits
- *   - `order`: sort order
+ * Credit packs aren't market-scoped yet — leave them in landing for now.
+ * When they move to multi-market, fold into `@contractor-ops/billing`.
  */
 export async function fetchCreditPacks(): Promise<CreditPack[]> {
   const stripe = getStripeClient();
@@ -123,11 +75,14 @@ export async function fetchCreditPacks(): Promise<CreditPack[]> {
     .map(product => {
       const slug = product.metadata.slug ?? product.name.toLowerCase();
       const content = CREDIT_PACK_CONTENT[slug];
-      const price = resolvePrice(product.default_price);
+      const price =
+        product.default_price && typeof product.default_price !== 'string'
+          ? product.default_price
+          : null;
       const amount = price?.unit_amount ? price.unit_amount / 100 : 0;
       const credits = Number(product.metadata.credits) || 0;
 
-      const currency = price?.currency ?? 'pln';
+      const currency = price?.currency ?? 'eur';
       const perCredit = credits > 0 ? Math.round((amount / credits) * 100) / 100 : 0;
       return {
         id: product.id,
@@ -150,25 +105,6 @@ export async function fetchCreditPacks(): Promise<CreditPack[]> {
   return packs;
 }
 
-// ─── Static Fallbacks (dev without STRIPE_SECRET_KEY) ───────────────
-
-function getStaticFallbackPlans(): PricingPlan[] {
-  return Object.entries(PLAN_CONTENT).map(([slug, content]) => ({
-    id: slug,
-    name: content.name,
-    description: content.description,
-    features: content.features,
-    monthlyPrice: content.fallbackMonthlyPrice,
-    annualPrice: content.fallbackAnnualPrice,
-    currency: 'pln',
-    ctaHref: `/signup?plan=${slug}`,
-    popular: content.popular,
-    order: content.order,
-    monthlyPriceFormatted: formatPrice(content.fallbackMonthlyPrice, 'pln'),
-    annualPriceFormatted: formatPrice(content.fallbackAnnualPrice, 'pln'),
-  }));
-}
-
 function getStaticFallbackCredits(): CreditPack[] {
   return Object.entries(CREDIT_PACK_CONTENT).map(([slug, content]) => {
     const perCredit =
@@ -181,14 +117,14 @@ function getStaticFallbackCredits(): CreditPack[] {
       description: content.description,
       credits: content.fallbackCredits,
       price: content.fallbackPrice,
-      currency: 'pln',
+      currency: 'eur',
       perCredit,
       ctaHref: `/signup?credits=${slug}`,
       popular: content.popular,
       order: content.order,
       creditsFormatted: formatCount(content.fallbackCredits),
-      priceFormatted: formatPrice(content.fallbackPrice, 'pln'),
-      perCreditFormatted: formatPrice(perCredit, 'pln'),
+      priceFormatted: formatPrice(content.fallbackPrice, 'eur'),
+      perCreditFormatted: formatPrice(perCredit, 'eur'),
     };
   });
 }

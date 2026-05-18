@@ -19,4 +19,5 @@ export const vitestProject = {
   classification: { name: 'classification', groupOrder: 10 },
   secrets: { name: 'secrets', groupOrder: 11 },
   publicApi: { name: 'public-api', groupOrder: 12 },
+  billing: { name: 'billing', groupOrder: 13 },
 } as const;

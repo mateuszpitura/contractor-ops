@@ -114,6 +114,22 @@ export interface TranslationMessages {
     startTrial: string;
     talkToSales: string;
     detailedLink: string;
+    /** Optional monthly/annual toggle copy — added per market in wave 1. */
+    toggleMonthly?: string;
+    toggleAnnual?: string;
+    annualSaveBadge?: string;
+    /** Optional per-tier overrides delivered per market. */
+    tiers?: Partial<
+      Record<
+        'STARTER' | 'PRO' | 'ENTERPRISE',
+        {
+          name?: string;
+          description?: string;
+          features?: string[];
+          excludedFeatures?: string[];
+        }
+      >
+    >;
   };
   cta: {
     headline: string;

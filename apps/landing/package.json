@@ -13,6 +13,7 @@
     "typecheck:fast": "tsgo --noEmit"
   },
   "dependencies": {
+    "@contractor-ops/billing": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.2.4",

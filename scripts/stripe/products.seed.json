@@ -1,0 +1,296 @@
+{
+  "_doc": [
+    "Declarative spec for Stripe products + prices consumed by scripts/stripe/seed-products.ts.",
+    "This file is NOT loaded at runtime — Stripe is the only runtime source of truth.",
+    "Edit + commit + run `pnpm tsx scripts/stripe/seed-products.ts` to upsert in test mode.",
+    "Use `--live` to apply against the live key (requires explicit confirmation).",
+    "",
+    "Wave 1 launches all 5 markets + INTL fallback. PPP-adjusted; numbers indicative.",
+    "Stripe price unit_amount is in minor units (e.g. 9900 = 99.00)."
+  ],
+  "currencyByMarket": {
+    "PL": "pln",
+    "DE": "eur",
+    "INTL": "eur",
+    "UK": "gbp",
+    "UAE": "aed",
+    "SA": "sar"
+  },
+  "products": [
+    {
+      "lookupKey": "starter-pl",
+      "name": "Starter — Polska",
+      "description": "Wszystko, czego potrzebujesz, aby zarządzać kontraktorami w Polsce. KSeF, JPK, B2B.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "PL",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 9900,
+      "annual": 99000
+    },
+    {
+      "lookupKey": "pro-pl",
+      "name": "Pro — Polska",
+      "description": "Pełna automatyzacja KSeF + integracje + OCR. Dla rosnących zespołów.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "PL",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 29900,
+      "annual": 299000
+    },
+    {
+      "lookupKey": "enterprise-pl",
+      "name": "Enterprise — Polska",
+      "description": "Audyt, SLA, API, dedykowane wsparcie i custom workflows.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "PL",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 89900,
+      "annual": 899000
+    },
+
+    {
+      "lookupKey": "starter-de",
+      "name": "Starter — Deutschland",
+      "description": "ZUGFeRD-fähig, GoBD-konform. Schluss mit dem Scheinselbständigkeit-Risiko.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "DE",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 2900,
+      "annual": 29000
+    },
+    {
+      "lookupKey": "pro-de",
+      "name": "Pro — Deutschland",
+      "description": "Volle Workflow-Automatisierung mit XRechnung, OCR und Compliance-Checks.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "DE",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 7900,
+      "annual": 79000
+    },
+    {
+      "lookupKey": "enterprise-de",
+      "name": "Enterprise — Deutschland",
+      "description": "Audit Trail, SSO, API-Zugriff und dedizierter Account Manager.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "DE",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 19900,
+      "annual": 199000
+    },
+
+    {
+      "lookupKey": "starter-intl",
+      "name": "Starter",
+      "description": "Get your contractor admin under control. Onboarding, contracts, invoices.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "INTL",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 2900,
+      "annual": 29000
+    },
+    {
+      "lookupKey": "pro-intl",
+      "name": "Pro",
+      "description": "Full lifecycle automation: e-invoicing, OCR, integrations, multi-step approvals.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "INTL",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 7900,
+      "annual": 79000
+    },
+    {
+      "lookupKey": "enterprise-intl",
+      "name": "Enterprise",
+      "description": "SSO, audit, API, dedicated CSM and custom integrations.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "INTL",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 19900,
+      "annual": 199000
+    },
+
+    {
+      "lookupKey": "starter-uk",
+      "name": "Starter — UK",
+      "description": "IR35-ready contractor admin. CIS, payroll handoff, HMRC-aware.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "UK",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 2500,
+      "annual": 25000
+    },
+    {
+      "lookupKey": "pro-uk",
+      "name": "Pro — UK",
+      "description": "Full IR35 status determination workflow, off-payroll reporting, deemed-employer logic.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "UK",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 6900,
+      "annual": 69000
+    },
+    {
+      "lookupKey": "enterprise-uk",
+      "name": "Enterprise — UK",
+      "description": "Audit, API, SSO, dedicated CSM. SLA-backed.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "UK",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 16900,
+      "annual": 169000
+    },
+
+    {
+      "lookupKey": "starter-uae",
+      "name": "Starter — UAE",
+      "description": "Peppol PINT-AE ready. Corporate tax onboarding for free zone + mainland.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "UAE",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 12500,
+      "annual": 125000
+    },
+    {
+      "lookupKey": "pro-uae",
+      "name": "Pro — UAE",
+      "description": "Full e-invoicing automation with Peppol PINT-AE, WPS payroll integration.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "UAE",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 32500,
+      "annual": 325000
+    },
+    {
+      "lookupKey": "enterprise-uae",
+      "name": "Enterprise — UAE",
+      "description": "Multi-emirate, SSO, API, CSM, audit. SLA-backed.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "UAE",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 79500,
+      "annual": 795000
+    },
+
+    {
+      "lookupKey": "starter-sa",
+      "name": "Starter — KSA",
+      "description": "ZATCA Fatoorah Phase 2 ready. Withholding tax tracking.",
+      "metadata": {
+        "tier": "STARTER",
+        "market": "SA",
+        "included_seats": "3",
+        "credits_included": "20",
+        "sort_order": "1",
+        "popular": "false"
+      },
+      "monthly": 12500,
+      "annual": 125000
+    },
+    {
+      "lookupKey": "pro-sa",
+      "name": "Pro — KSA",
+      "description": "Full ZATCA integration, e-invoice clearance, withholding-tax automation.",
+      "metadata": {
+        "tier": "PRO",
+        "market": "SA",
+        "included_seats": "10",
+        "credits_included": "100",
+        "sort_order": "2",
+        "popular": "true"
+      },
+      "monthly": 32500,
+      "annual": 325000
+    },
+    {
+      "lookupKey": "enterprise-sa",
+      "name": "Enterprise — KSA",
+      "description": "Multi-region, SSO, API, CSM, audit. SLA-backed.",
+      "metadata": {
+        "tier": "ENTERPRISE",
+        "market": "SA",
+        "included_seats": "25",
+        "credits_included": "500",
+        "sort_order": "3",
+        "popular": "false"
+      },
+      "monthly": 79500,
+      "annual": 795000
+    }
+  ]
+}

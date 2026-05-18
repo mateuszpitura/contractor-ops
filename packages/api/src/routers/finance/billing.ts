@@ -1,3 +1,5 @@
+import type { Market } from '@contractor-ops/billing';
+import { fetchPricingPlans, MARKETS } from '@contractor-ops/billing';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -20,6 +22,7 @@ import {
   getSubscription,
 } from '../../services/billing-service';
 import { getCreditBalance } from '../../services/credit-service';
+import { stripe } from '../../services/stripe-client';
 
 // ---------------------------------------------------------------------------
 // Static plan configuration (D-01 through D-06)
@@ -91,6 +94,8 @@ const PLAN_CONFIG = {
 // Router
 // ---------------------------------------------------------------------------
 
+const marketSchema = z.enum([...MARKETS] as [Market, ...Market[]]);
+
 export const billingRouter = router({
   /**
    * Get the current subscription for the organization.
@@ -98,6 +103,20 @@ export const billingRouter = router({
   getSubscription: tenantProcedure.query(async ({ ctx }) => {
     return getSubscription(ctx.organizationId);
   }),
+
+  /**
+   * List Stripe-canonical pricing plans for a market. Consumed by the in-app
+   * billing UI so prices stay in lockstep with the landing page (both call
+   * the same `@contractor-ops/billing` fetcher; Stripe is the single source
+   * of truth).
+   */
+  listPricing: tenantProcedure
+    .input(z.object({ market: marketSchema }).optional())
+    .query(async ({ input }) => {
+      const all = await fetchPricingPlans(stripe);
+      if (!input?.market) return all;
+      return all.filter(p => p.market === input.market);
+    }),
 
   /**
    * Create a Stripe Checkout session for a new subscription.

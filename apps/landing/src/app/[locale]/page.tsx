@@ -21,8 +21,9 @@ import { SocialProof } from '@/components/social-proof';
 import { StructuredData } from '@/components/structured-data';
 import type { Locale } from '@/i18n';
 import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
+import { annualSavingsPercent, buildLandingPlanViews } from '@/lib/landing-plan-view';
+import { localeToMarket } from '@/lib/market';
 import type { PricingPlan } from '@/lib/pricing-types';
-import { formatPrice } from '@/lib/pricing-types';
 import { fetchPricingPlans } from '@/lib/stripe';
 
 const log = createLogger({ service: 'landing-home-page' });
@@ -30,29 +31,23 @@ const log = createLogger({ service: 'landing-home-page' });
 export default async function LandingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: localeParam } = await params;
   const locale: Locale = isValidLocale(localeParam) ? localeParam : defaultLocale;
+  const market = localeToMarket(locale);
   const t = await getTranslations(locale);
 
-  let plans: PricingPlan[];
+  let plans: PricingPlan[] = [];
   try {
-    plans = await fetchPricingPlans();
+    plans = await fetchPricingPlans(market);
   } catch (error) {
-    log.error({ err: error }, 'failed to fetch pricing from Stripe');
-    const { PLAN_CONTENT } = await import('@/lib/pricing-content');
-    plans = Object.entries(PLAN_CONTENT).map(([slug, c]) => ({
-      id: slug,
-      name: c.name,
-      description: c.description,
-      features: c.features,
-      monthlyPrice: c.fallbackMonthlyPrice,
-      annualPrice: c.fallbackAnnualPrice,
-      currency: 'pln',
-      ctaHref: `/signup?plan=${slug}`,
-      popular: c.popular,
-      order: c.order,
-      monthlyPriceFormatted: formatPrice(c.fallbackMonthlyPrice, 'pln'),
-      annualPriceFormatted: formatPrice(c.fallbackAnnualPrice, 'pln'),
-    }));
+    // Build-time misconfiguration (Stripe product missing metadata, currency
+    // mismatch, etc.) — log and render an empty pricing section rather than
+    // crashing the entire page. Production builds set NODE_ENV=production so
+    // the underlying STRIPE_SECRET_KEY check throws first and the build fails
+    // loudly, which is the desired behaviour.
+    log.error({ err: error, market }, 'failed to fetch pricing from Stripe');
   }
+
+  const views = buildLandingPlanViews(plans, t, locale);
+  const annualSavings = annualSavingsPercent(plans);
 
   return (
     <TranslationProvider translations={t} locale={locale}>
@@ -60,7 +55,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
       <Navbar />
       <main>
         <SectionTracker name="hero">
-          <Hero />
+          <Hero market={market} />
         </SectionTracker>
         <SectionTracker name="logo-marquee">
           <LogoMarquee title={t.logoBar.title} />
@@ -117,7 +112,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
         </SectionTracker>
         <div className="section-divider" />
         <SectionTracker name="pricing">
-          <Pricing plans={plans} />
+          <Pricing views={views} annualSavings={annualSavings} />
         </SectionTracker>
         <div className="section-divider" />
         <SectionTracker name="faq">

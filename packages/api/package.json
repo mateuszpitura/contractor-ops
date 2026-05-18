@@ -245,6 +245,7 @@
     "@aws-sdk/lib-storage": "^3.1044.0",
     "@aws-sdk/s3-request-presigner": "^3.1044.0",
     "@contractor-ops/auth": "workspace:*",
+    "@contractor-ops/billing": "workspace:*",
     "@contractor-ops/classification": "workspace:*",
     "@contractor-ops/compliance-policy": "workspace:*",
     "@contractor-ops/db": "workspace:*",
