@@ -10,7 +10,9 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "typecheck:fast": "tsgo --noEmit"
+    "typecheck:fast": "tsgo --noEmit",
+    "lhci": "lhci autorun --config=./lighthouserc.json",
+    "smoke": "bash ../../scripts/landing-smoke.sh"
   },
   "dependencies": {
     "@contractor-ops/billing": "workspace:*",

@@ -1,0 +1,77 @@
+name: Lighthouse CI — landing
+
+on:
+  pull_request:
+    paths:
+      - 'apps/landing/**'
+      - 'packages/billing/**'
+      - 'packages/ui/**'
+      - '.github/workflows/lighthouse-ci-landing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse audit (${{ matrix.market }} / ${{ matrix.formFactor }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        market:
+          - pl
+          - de
+          - en
+          - en-GB
+          - ar
+          - ar-SA
+        formFactor:
+          - mobile
+          - desktop
+    env:
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY_TEST }}
+      NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY_PREVIEW }}
+      NODE_ENV: production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build landing
+        run: pnpm --filter @contractor-ops/landing build
+
+      - name: Serve static export
+        run: |
+          npx --yes serve apps/landing/out -l 4173 &
+          sleep 3
+
+      - name: Run Lighthouse CI
+        env:
+          LHCI_FORM_FACTOR: ${{ matrix.formFactor }}
+          LHCI_TARGET: http://localhost:4173/${{ matrix.market }}
+        run: |
+          npx --yes @lhci/cli@0.14.x autorun \
+            --config=apps/landing/lighthouserc.json \
+            --collect.url="$LHCI_TARGET" \
+            --collect.url="$LHCI_TARGET/pricing" \
+            --collect.settings.preset="$LHCI_FORM_FACTOR"
+
+      - name: Upload Lighthouse artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ matrix.market }}-${{ matrix.formFactor }}
+          path: .lighthouseci
+          retention-days: 7
