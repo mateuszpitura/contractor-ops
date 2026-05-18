@@ -292,6 +292,19 @@ const oauthAliasSchema = z.object({
   OUTLOOK_CLIENT_SECRET: z.string().min(1).optional(),
 });
 
+// ── PostHog (server-side product analytics) ─────────────────────────────────
+//
+// The `posthog-node` client fires identified events (signup_completed,
+// first_contractor_added, paid_converted, …) from server-side hooks. Keys
+// are optional because dev / preview builds run without analytics; in
+// production the start-up validation in `apps/web/src/instrumentation.ts`
+// asserts the key is present.
+
+const posthogServerSchema = z.object({
+  POSTHOG_API_KEY: z.string().min(1).optional(),
+  POSTHOG_HOST: z.url().default('https://eu.i.posthog.com'),
+});
+
 // ── Full server env (all variables) ─────────────────────────────────────────
 
 export const serverEnvSchema = coreSchema
@@ -322,7 +335,8 @@ export const serverEnvSchema = coreSchema
   .merge(infrastructureSchema)
   .merge(featureFlagsSchema)
   .merge(turnstileSchema)
-  .merge(proxySchema);
+  .merge(proxySchema)
+  .merge(posthogServerSchema);
 
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
@@ -335,6 +349,8 @@ export const clientEnvSchema = z.object({
   NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
   // F-SEC-22 — Turnstile site key for the signup widget. Public, safe to expose.
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

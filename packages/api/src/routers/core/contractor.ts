@@ -19,6 +19,7 @@ import { writeAuditLog } from '../../services/audit-writer';
 import { encryptBankAccount } from '../../services/bank-account-crypto';
 import { syncSeatCountForOrg } from '../../services/billing-service';
 import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { captureEvent } from '../../services/posthog';
 import { sanitizeStrings } from '../../services/sanitize';
 import { validateTaxId } from '../../services/tax-id-validation.service';
 import type { DbClient } from '../../services/types';
@@ -717,6 +718,33 @@ export const contractorRouter = router({
       // Fire-and-forget: sync Stripe seat count after new contractor
       void syncSeatCountForOrg(ctx.organizationId);
       void invalidateByPrefix(CacheKeys.dashboardPrefix(ctx.organizationId));
+
+      // PostHog funnel: fire `first_contractor_added` only on the very first
+      // contractor for the org (`activated` step in the launch funnel).
+      // Performed AFTER the transaction so the count includes the row just
+      // created. Fire-and-forget; PostHog failures must not block creation.
+      void (async () => {
+        try {
+          const total = await ctx.db.contractor.count({
+            where: { organizationId: ctx.organizationId },
+          });
+          if (total === 1 && ctx.user?.id) {
+            await captureEvent({
+              distinctId: ctx.user.id,
+              event: 'first_contractor_added',
+              organizationId: ctx.organizationId,
+              properties: {
+                contractor_id: contractor.id,
+                country: contractor.countryCode,
+              },
+            });
+          }
+        } catch (err) {
+          // Logged inside captureEvent; this catch guards the count query.
+          // No re-throw — analytics is non-essential.
+          void err;
+        }
+      })();
 
       return contractor;
     }),

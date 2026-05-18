@@ -16,6 +16,7 @@ import {
 import { CacheKeys, invalidate } from './cache';
 import type { NotificationEvent } from './notification-service';
 import { dispatch } from './notification-service';
+import { captureEvent } from './posthog';
 import { stripe } from './stripe-client';
 import type { DbClient } from './types';
 
@@ -124,6 +125,7 @@ export async function routeStripeEvent(
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.mode === 'subscription' && session.subscription) {
         await handleCheckoutCompleted(session, tx, pendingNotifications);
+        await emitStripeFunnelEvent('checkout_completed', session);
       } else if (session.mode === 'payment' && session.metadata?.type === 'top_up') {
         await handleTopUpCompleted(session, tx);
       }
@@ -133,7 +135,9 @@ export async function routeStripeEvent(
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
       const subscription = event.data.object as unknown as SubscriptionWithPeriod;
+      const wasCreate = event.type === 'customer.subscription.created';
       await handleSubscriptionUpdated(subscription, tx, pendingNotifications);
+      await emitSubscriptionFunnelEvent(subscription, wasCreate);
       break;
     }
 
@@ -152,6 +156,7 @@ export async function routeStripeEvent(
     case 'invoice.paid': {
       const invoice = event.data.object as Stripe.Invoice;
       await handleInvoicePaid(invoice, tx);
+      await emitInvoicePaidFunnelEvent(invoice);
       break;
     }
 
@@ -830,4 +835,93 @@ async function handleChargeRefunded(charge: Stripe.Charge, tx: TxClient): Promis
     },
     'REFUND AUDIT: manual credit reversal may be needed - verify against ledger',
   );
+}
+
+// ---------------------------------------------------------------------------
+// PostHog funnel events (server-side)
+// ---------------------------------------------------------------------------
+//
+// Webhooks identify by `organizationId` (the only stable id Stripe carries
+// on its payloads). The launch funnel groups by organization_id, so this is
+// the correct distinct_id for these events. When the user-side `signup_*`
+// events are aliased to the org's primary user via `aliasAnonToUser` on
+// first authenticated app load, PostHog cohorts can still join the two
+// streams by `organization_id`.
+
+async function emitStripeFunnelEvent(
+  reason: 'checkout_completed',
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const organizationId = session.metadata?.organizationId;
+  if (!organizationId) return;
+  await captureEvent({
+    distinctId: organizationId,
+    organizationId,
+    event: 'stripe_checkout_completed',
+    properties: {
+      reason,
+      stripe_session_id: session.id,
+      mode: session.mode,
+      currency: session.currency,
+      amount_total_minor: session.amount_total,
+    },
+  });
+}
+
+async function emitSubscriptionFunnelEvent(
+  subscription: SubscriptionWithPeriod,
+  wasCreate: boolean,
+): Promise<void> {
+  const organizationId = subscription.metadata?.organizationId;
+  if (!organizationId) return;
+
+  const status = subscription.status;
+  // Map Stripe sub status → funnel events. trial_started fires once on the
+  // first trialing sub; paid_converted fires when status transitions to
+  // active (i.e. first non-trial paid period). PostHog dedups on event +
+  // distinct_id automatically when the consumer queries unique events.
+  if (status === 'trialing' && wasCreate) {
+    await captureEvent({
+      distinctId: organizationId,
+      organizationId,
+      event: 'trial_started',
+      properties: {
+        stripe_subscription_id: subscription.id,
+        trial_end: subscription.trial_end
+          ? new Date(subscription.trial_end * 1000).toISOString()
+          : null,
+      },
+    });
+  } else if (status === 'active') {
+    await captureEvent({
+      distinctId: organizationId,
+      organizationId,
+      event: 'paid_converted',
+      properties: {
+        stripe_subscription_id: subscription.id,
+        was_trial: !!subscription.trial_end,
+      },
+    });
+  }
+}
+
+async function emitInvoicePaidFunnelEvent(invoice: Stripe.Invoice): Promise<void> {
+  // Stripe API ≥ 2025: invoice.parent.subscription_details.metadata carries
+  // the organizationId we set during checkout. Fall back to top-level if
+  // older payloads arrive (defensive — should not happen in production).
+  const organizationId =
+    invoice.parent?.subscription_details?.metadata?.organizationId ??
+    (invoice as unknown as { metadata?: { organizationId?: string } }).metadata?.organizationId;
+  if (!organizationId) return;
+  await captureEvent({
+    distinctId: organizationId,
+    organizationId,
+    event: 'invoice_paid',
+    properties: {
+      stripe_invoice_id: invoice.id,
+      amount_paid_minor: invoice.amount_paid,
+      currency: invoice.currency,
+      billing_reason: invoice.billing_reason,
+    },
+  });
 }
