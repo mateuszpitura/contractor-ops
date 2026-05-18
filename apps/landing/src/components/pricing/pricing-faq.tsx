@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     q: 'What happens when my 14-day Pro trial ends?',
-    a: 'You\u2019ll be downgraded to the Starter plan automatically \u2014 no charges, no surprises. All your data stays intact. You can upgrade to Pro anytime to re-enable advanced features like KSeF integration and multi-step approvals.',
+    a: 'You\u2019ll be downgraded to the Starter plan automatically \u2014 no charges, no surprises. All your data stays intact. You can upgrade to Pro anytime to re-enable advanced features like e-invoicing integrations, OCR parsing, and multi-step approvals.',
   },
   {
     q: 'How does per-contractor pricing work?',
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: 'What are credits and when do I need them?',
-    a: 'Credits are consumed by actions that involve third-party integrations or compute: e-signature requests (5 credits), KSeF invoice pulls (1 credit), onboarding flows (3 credits), and batch payment exports (2 credits). The Pro plan includes a monthly credit allowance. Buy extra packs if you need more \u2014 unused credits never expire.',
+    a: 'Credits are consumed by actions that involve third-party integrations or compute: e-signature requests (5 credits), e-invoice clearance / pull (1 credit), OCR invoice parsing (1 credit), onboarding flows (3 credits), and batch payment exports (2 credits). The Pro plan includes a monthly credit allowance. Buy extra packs if you need more \u2014 unused credits never expire.',
   },
   {
     q: 'Can I switch between monthly and annual billing?',
@@ -29,11 +29,11 @@ const faqs = [
   },
   {
     q: 'Is my data safe? Where is it stored?',
-    a: 'All data is stored in EU data centers (AWS eu-central-1, Frankfurt). We\u2019re GDPR-compliant by design with full data processing agreements available. All communication is encrypted in transit (TLS 1.3) and at rest (AES-256). SOC 2 Type II certification is in progress.',
+    a: 'Customer data is stored in-region: the EU region for European customers, and a dedicated Middle East region for UAE / KSA customers, so data residency requirements (GDPR, NDMO, UAE PDPL) are met by default. All communication is encrypted in transit (TLS 1.3) and at rest (AES-256). SOC 2 Type II certification is in progress; data processing agreements are available on request.',
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept all major credit and debit cards (Visa, Mastercard, American Express) via Stripe. For Enterprise plans, we also support bank transfers and can issue proper VAT invoices through KSeF.',
+    a: 'We accept all major credit and debit cards (Visa, Mastercard, American Express) via Stripe. For Enterprise plans, we also support bank transfers and issue compliant VAT/tax invoices in your jurisdiction (KSeF in PL, ZUGFeRD/XRechnung in DE, Peppol PINT-AE in UAE, ZATCA Fatoorah in KSA).',
   },
   {
     q: 'Can I cancel anytime?',
