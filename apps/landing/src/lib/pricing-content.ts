@@ -6,7 +6,7 @@
  * This file ships only the structural fallback (when a translation is absent)
  * + credit-pack marketing copy.
  */
-import type { Tier } from '@contractor-ops/billing';
+import type { Tier } from '@contractor-ops/billing/types';
 
 interface TierContentFallback {
   features: string[];

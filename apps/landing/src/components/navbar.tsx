@@ -3,6 +3,7 @@
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { useCallback, useEffect, useState } from 'react';
+import { MarketSwitcher } from './market-switcher';
 
 const navLinks = [
   { label: 'Features', href: '#features' },
@@ -90,6 +91,7 @@ export function Navbar() {
 
           {/* Desktop CTA */}
           <div className="hidden items-center gap-3 md:flex">
+            <MarketSwitcher />
             <a
               href="/login"
               className="text-sm font-medium text-foreground/85 transition-colors hover:text-foreground">
@@ -133,6 +135,7 @@ export function Navbar() {
             ))}
           </nav>
           <div className="mt-8 flex flex-col gap-3">
+            <MarketSwitcher />
             <a
               href="/login"
               className="rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground">

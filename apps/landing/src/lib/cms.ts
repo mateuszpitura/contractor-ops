@@ -10,7 +10,26 @@ const CMS_BASE = process.env.NEXT_PUBLIC_CMS_URL ?? 'https://blog.contractor-ops
 
 const REVALIDATE_SECONDS = 300;
 
-export type Locale = 'en' | 'pl' | 'de' | 'ar';
+/**
+ * Landing-level locale set (6 entries: 4 CMS locales + en-GB + ar-SA).
+ * Payload only serves content for the 4 base locales; the helper
+ * `narrowToCmsLocale` folds en-GB → en and ar-SA → ar before each REST
+ * call so UK / KSA visitors see the parent-locale blog content.
+ */
+export type Locale = 'en' | 'en-GB' | 'pl' | 'de' | 'ar' | 'ar-SA';
+
+type CmsLocale = 'en' | 'pl' | 'de' | 'ar';
+
+function narrowToCmsLocale(locale: Locale): CmsLocale {
+  switch (locale) {
+    case 'en-GB':
+      return 'en';
+    case 'ar-SA':
+      return 'ar';
+    default:
+      return locale;
+  }
+}
 
 export interface CmsMedia {
   id: number;
@@ -216,7 +235,7 @@ export async function getPosts({
     where.or = [{ title: { like: search } }, { excerpt: { like: search } }];
   }
   const url = buildUrl('/api/posts', {
-    locale,
+    locale: narrowToCmsLocale(locale),
     depth: 2,
     sort: '-publishedAt',
     page,
@@ -247,7 +266,7 @@ export async function getPost({
     publishedAt: { less_than_equal: new Date().toISOString() },
   };
   const url = buildUrl('/api/posts', {
-    locale,
+    locale: narrowToCmsLocale(locale),
     depth: 2,
     limit: 1,
     where: JSON.stringify(where),
@@ -266,7 +285,7 @@ export async function getAuthor({
 }): Promise<CmsAuthor | null> {
   const where = { handle: { equals: handle } };
   const url = buildUrl('/api/authors', {
-    locale,
+    locale: narrowToCmsLocale(locale),
     depth: 1,
     limit: 1,
     where: JSON.stringify(where),
@@ -295,7 +314,7 @@ export async function getRelatedPosts({
     where['categories.slug'] = { equals: categorySlug };
   }
   const url = buildUrl('/api/posts', {
-    locale,
+    locale: narrowToCmsLocale(locale),
     depth: 2,
     sort: '-publishedAt',
     limit,
@@ -306,7 +325,11 @@ export async function getRelatedPosts({
 }
 
 export async function listCategories(locale: Locale): Promise<readonly CmsCategory[]> {
-  const url = buildUrl('/api/categories', { locale, depth: 0, limit: 100 });
+  const url = buildUrl('/api/categories', {
+    locale: narrowToCmsLocale(locale),
+    depth: 0,
+    limit: 100,
+  });
   const data = await fetchCms<RawPayloadEnvelope<Record<string, unknown>>>(url, 'categories:list');
   return data.docs.map(d => mapCategory(d)).filter((c): c is CmsCategory => c !== null);
 }

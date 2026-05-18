@@ -1,6 +1,18 @@
 export const defaultLocale = 'en' as const;
 
-export const locales = ['en', 'pl', 'de', 'ar'] as const;
+/**
+ * Supported landing locales — one entry per market on launch.
+ *
+ *   en     → INTL fallback (English, EUR-priced)
+ *   en-GB  → UK (English, GBP-priced)
+ *   pl     → PL (Polish)
+ *   de     → DE (German)
+ *   ar     → UAE (Arabic primary)
+ *   ar-SA  → SA (Arabic, KSA copy + SAR pricing)
+ *
+ * Locale ↔ Market mapping is centralised in `@/lib/market`.
+ */
+export const locales = ['en', 'en-GB', 'pl', 'de', 'ar', 'ar-SA'] as const;
 
 export type Locale = (typeof locales)[number];
 
@@ -11,7 +23,7 @@ export interface LocaleConfig {
   englishName: string;
   /** Text direction */
   dir: 'ltr' | 'rtl';
-  /** Currency for pricing display */
+  /** Currency for pricing display — derived from market; kept for legacy callers. */
   currency: string;
   /** Intl locale string for number/date formatting */
   intlLocale: string;
@@ -19,19 +31,28 @@ export interface LocaleConfig {
   font?: string;
   /** hreflang value */
   hreflang: string;
-  /** Target market region */
+  /** Target market region label (display only — market enum lives in market.ts). */
   region: string;
 }
 
 export const localeConfigs: Record<Locale, LocaleConfig> = {
   en: {
     name: 'English',
-    englishName: 'English',
+    englishName: 'English (international)',
     dir: 'ltr',
     currency: 'EUR',
     intlLocale: 'en-GB',
     hreflang: 'en',
-    region: 'EU',
+    region: 'INTL',
+  },
+  'en-GB': {
+    name: 'English (UK)',
+    englishName: 'English (UK)',
+    dir: 'ltr',
+    currency: 'GBP',
+    intlLocale: 'en-GB',
+    hreflang: 'en-GB',
+    region: 'UK',
   },
   pl: {
     name: 'Polski',
@@ -52,14 +73,24 @@ export const localeConfigs: Record<Locale, LocaleConfig> = {
     region: 'DACH',
   },
   ar: {
-    name: 'العربية',
-    englishName: 'Arabic',
+    name: 'العربية (الإمارات)',
+    englishName: 'Arabic (UAE)',
     dir: 'rtl',
     currency: 'AED',
     intlLocale: 'ar-AE',
     font: 'Noto Sans Arabic',
-    hreflang: 'ar',
-    region: 'Gulf',
+    hreflang: 'ar-AE',
+    region: 'UAE',
+  },
+  'ar-SA': {
+    name: 'العربية (السعودية)',
+    englishName: 'Arabic (KSA)',
+    dir: 'rtl',
+    currency: 'SAR',
+    intlLocale: 'ar-SA',
+    font: 'Noto Sans Arabic',
+    hreflang: 'ar-SA',
+    region: 'SA',
   },
 };
 

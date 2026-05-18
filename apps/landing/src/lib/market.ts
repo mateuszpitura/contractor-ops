@@ -7,8 +7,8 @@
  * a market (e.g. ar + en-UAE → UAE), and a market always has a single
  * default locale used for outbound links.
  */
-import type { Currency, Market } from '@contractor-ops/billing';
-import { EU_MARKETS, GDPR_CONSENT_MARKETS, MARKET_CURRENCY } from '@contractor-ops/billing';
+import type { Currency, Market } from '@contractor-ops/billing/types';
+import { EU_MARKETS, GDPR_CONSENT_MARKETS, MARKET_CURRENCY } from '@contractor-ops/billing/types';
 import type { Locale } from '@/i18n';
 import { localeConfigs } from '@/i18n/config';
 
@@ -17,18 +17,20 @@ export { EU_MARKETS, GDPR_CONSENT_MARKETS, MARKET_CURRENCY };
 
 export const LOCALE_TO_MARKET: Record<Locale, Market> = {
   en: 'INTL',
+  'en-GB': 'UK',
   pl: 'PL',
   de: 'DE',
   ar: 'UAE',
+  'ar-SA': 'SA',
 };
 
 export const MARKET_TO_DEFAULT_LOCALE: Record<Market, Locale> = {
   INTL: 'en',
   PL: 'pl',
   DE: 'de',
-  UK: 'en',
+  UK: 'en-GB',
   UAE: 'ar',
-  SA: 'ar',
+  SA: 'ar-SA',
 };
 
 export function localeToMarket(locale: Locale): Market {

@@ -75,9 +75,11 @@ export default async function LocaleLayout({
   // renders `<html lang="en" dir="ltr">` by default; this component swaps
   // those attributes once React hydrates. SEO crawlers still receive correct
   // per-locale metadata via `generateMetadata` above (hreflang, og:locale).
+  const isArabic = localeParam === 'ar' || localeParam === 'ar-SA';
+
   return (
     <>
-      <LocaleHtmlAttributes lang={localeParam} dir={config.dir} isArabic={localeParam === 'ar'} />
+      <LocaleHtmlAttributes lang={localeParam} dir={config.dir} isArabic={isArabic} />
       {children}
     </>
   );
