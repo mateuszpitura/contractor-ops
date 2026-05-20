@@ -5037,32 +5037,45 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
   // -------------------------------------------------------------------
   // WorkflowRoleTemplate / WorkflowRoleTaskTemplate (Phase 74 D-04 path)
   // -------------------------------------------------------------------
+  const roleRows: Prisma.WorkflowRoleTemplateCreateManyInput[] = [];
+  const roleTaskRows: Prisma.WorkflowRoleTaskTemplateCreateManyInput[] = [];
   for (const seed of WORKFLOW_ROLE_SEEDS) {
-    const role = await prisma.workflowRoleTemplate.create({
-      data: {
-        organizationId: ctx.organizationId,
-        role: seed.role,
-        displayNameEn: seed.displayNameEn,
-        displayNamePl: seed.displayNamePl,
-        displayNameDe: seed.displayNameDe,
-        isSeed: true,
-        // Templates are typically materialised at org boot — anchor to
-        // foundedAt so a 2-year-old org doesn't show templates "created
-        // today".
-        createdAt: ctx.foundedAt,
-      },
-      select: { id: true },
+    const roleId = randomUUID();
+    roleRows.push({
+      id: roleId,
+      organizationId: ctx.organizationId,
+      role: seed.role,
+      displayNameEn: seed.displayNameEn,
+      displayNamePl: seed.displayNamePl,
+      displayNameDe: seed.displayNameDe,
+      isSeed: true,
+      // Templates are typically materialised at org boot — anchor to
+      // foundedAt so a 2-year-old org doesn't show templates "created
+      // today".
+      createdAt: ctx.foundedAt,
     });
-    await prisma.workflowRoleTaskTemplate.createMany({
-      data: seed.tasks.map((t, idx) => ({
+    for (const [idx, t] of seed.tasks.entries()) {
+      roleTaskRows.push({
         organizationId: ctx.organizationId,
-        workflowRoleTemplateId: role.id,
+        workflowRoleTemplateId: roleId,
         sortOrder: idx,
         titleEn: t.titleEn,
         descriptionEn: t.descriptionEn,
         dueDayOffset: t.dueDayOffset,
         createdAt: ctx.foundedAt,
-      })),
+      });
+    }
+  }
+  for (let i = 0; i < roleRows.length; i += 1000) {
+    await prisma.workflowRoleTemplate.createMany({
+      data: roleRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < roleTaskRows.length; i += 1000) {
+    await prisma.workflowRoleTaskTemplate.createMany({
+      data: roleTaskRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -5071,57 +5084,60 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
   // these rows are what `seedWorkflowRuns` references, and what the
   // Workflow Templates UI list reads).
   // -------------------------------------------------------------------
-  // First insert each template with its own metadata, then bulk-insert its
-  // tasks (so we know the task templates' IDs before resolving the
-  // dependsOnTaskTemplateId backfill).
+  // Single-pass insert: pre-compute task ids so the dependsOnTaskTemplateId
+  // backfill happens inline (no follow-up update).
+  const templateRows: Prisma.WorkflowTemplateCreateManyInput[] = [];
+  const taskTemplateRows: Prisma.WorkflowTaskTemplateCreateManyInput[] = [];
   for (const seed of WORKFLOW_TEMPLATE_SEEDS) {
-    const template = await prisma.workflowTemplate.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name: seed.name,
-        type: seed.type,
-        description: seed.description,
-        version: 1,
-        status: 'ACTIVE',
-        appliesToEntityType: seed.appliesToEntityType,
-        createdByUserId: ctx.ownerUserId,
-        createdAt: ctx.foundedAt,
-      },
-      select: { id: true },
+    const templateId = randomUUID();
+    templateRows.push({
+      id: templateId,
+      organizationId: ctx.organizationId,
+      name: seed.name,
+      type: seed.type,
+      description: seed.description,
+      version: 1,
+      status: 'ACTIVE',
+      appliesToEntityType: seed.appliesToEntityType,
+      createdByUserId: ctx.ownerUserId,
+      createdAt: ctx.foundedAt,
     });
-
-    // Two-pass insert: pass 1 creates every task, pass 2 patches the
-    // dependsOnTaskTemplateId referencing prior tasks in the same template.
-    const taskIdsBySortOrder: string[] = [];
+    const taskIdsBySortOrder: string[] = seed.tasks.map(() => randomUUID());
     for (const [idx, taskDef] of seed.tasks.entries()) {
-      const created = await prisma.workflowTaskTemplate.create({
-        data: {
-          organizationId: ctx.organizationId,
-          workflowTemplateId: template.id,
-          title: taskDef.title,
-          description: taskDef.description,
-          taskType: taskDef.taskType,
-          sortOrder: idx,
-          required: taskDef.required,
-          assigneeMode: taskDef.assigneeMode,
-          assigneeRole: taskDef.assigneeRole ?? null,
-          dueOffsetDays: taskDef.dueOffsetDays,
-          createdAt: ctx.foundedAt,
-        },
-        select: { id: true },
-      });
-      taskIdsBySortOrder.push(created.id);
-    }
-    for (const [idx, taskDef] of seed.tasks.entries()) {
-      if (taskDef.dependsOnIndex === undefined) continue;
-      const parentId = taskIdsBySortOrder[taskDef.dependsOnIndex];
-      const childId = taskIdsBySortOrder[idx];
-      if (!(parentId && childId) || parentId === childId) continue;
-      await prisma.workflowTaskTemplate.update({
-        where: { id: childId },
-        data: { dependsOnTaskTemplateId: parentId },
+      const taskId = taskIdsBySortOrder[idx] as string;
+      const dependsOnIndex = taskDef.dependsOnIndex;
+      const dependsOnId =
+        dependsOnIndex !== undefined && dependsOnIndex !== idx
+          ? (taskIdsBySortOrder[dependsOnIndex] ?? null)
+          : null;
+      taskTemplateRows.push({
+        id: taskId,
+        organizationId: ctx.organizationId,
+        workflowTemplateId: templateId,
+        title: taskDef.title,
+        description: taskDef.description,
+        taskType: taskDef.taskType,
+        sortOrder: idx,
+        required: taskDef.required,
+        assigneeMode: taskDef.assigneeMode,
+        assigneeRole: taskDef.assigneeRole ?? null,
+        dueOffsetDays: taskDef.dueOffsetDays,
+        dependsOnTaskTemplateId: dependsOnId,
+        createdAt: ctx.foundedAt,
       });
     }
+  }
+  for (let i = 0; i < templateRows.length; i += 1000) {
+    await prisma.workflowTemplate.createMany({
+      data: templateRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < taskTemplateRows.length; i += 1000) {
+    await prisma.workflowTaskTemplate.createMany({
+      data: taskTemplateRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
@@ -5237,6 +5253,7 @@ async function seedComments(
   if (!ctx.org.showcase) return;
   const invoiceRefs = refs.filter(r => r.type === 'INVOICE').slice(0, 8);
   if (invoiceRefs.length === 0) return;
+  const commentRows: Prisma.CommentCreateManyInput[] = [];
   for (const ref of invoiceRefs) {
     const commentCount = ctx.fakers.org.number.int({ min: 1, max: 3 });
     for (let i = 0; i < commentCount; i += 1) {
@@ -5244,17 +5261,21 @@ async function seedComments(
       // Comments anchored to the invoice's lifetime so old invoices show
       // appropriately old comment threads (not "just now").
       const commentedAt = dateBetween(ctx.fakers.org, ref.createdAt, new Date());
-      await prisma.comment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          entityType: 'INVOICE',
-          entityId: ref.id,
-          authorUserId: author.id,
-          body: ctx.fakers.org.lorem.sentence(),
-          createdAt: commentedAt,
-        },
+      commentRows.push({
+        organizationId: ctx.organizationId,
+        entityType: 'INVOICE',
+        entityId: ref.id,
+        authorUserId: author.id,
+        body: ctx.fakers.org.lorem.sentence(),
+        createdAt: commentedAt,
       });
     }
+  }
+  for (let i = 0; i < commentRows.length; i += 1000) {
+    await prisma.comment.createMany({
+      data: commentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
@@ -5300,6 +5321,21 @@ async function seedWorkflowRuns(
     'Review compliance docs',
   ];
 
+  type WorkflowTaskStatusKey =
+    | 'TODO'
+    | 'IN_PROGRESS'
+    | 'DONE'
+    | 'BLOCKED'
+    | 'SKIPPED'
+    | 'CANCELLED'
+    | 'OVERDUE';
+
+  const runRows: Prisma.WorkflowRunCreateManyInput[] = [];
+  const taskRows: Prisma.WorkflowTaskRunCreateManyInput[] = [];
+  const commentRows: Prisma.WorkflowCommentCreateManyInput[] = [];
+  const documentRows: Prisma.DocumentCreateManyInput[] = [];
+  const attachmentRows: Prisma.WorkflowAttachmentCreateManyInput[] = [];
+
   for (const contractor of contractors) {
     if (!ctx.fakers.org.datatype.boolean({ probability: 0.3 })) continue;
 
@@ -5327,38 +5363,27 @@ async function seedWorkflowRuns(
           ? ctx.fakers.org.number.int({ min: 10, max: 60 })
           : ctx.fakers.org.number.int({ min: 20, max: 80 });
 
-    const run = await prisma.workflowRun.create({
-      data: {
-        organizationId: ctx.organizationId,
-        workflowTemplateId: template.id,
-        entityType: 'CONTRACTOR',
-        entityId: contractor.id,
-        contractorId: contractor.id,
-        status: runStatus,
-        startedByUserId: startedBy.id,
-        startedAt,
-        dueAt: advanceCapped(startedAt, ctx.fakers.org.number.int({ min: 7, max: 30 })),
-        completedAt,
-        cancelledAt,
-        cancelReason: cancelledAt ? ctx.fakers.org.lorem.sentence() : null,
-        progressPercent,
-        createdAt: startedAt,
-      },
-      select: { id: true },
+    const runId = randomUUID();
+    runRows.push({
+      id: runId,
+      organizationId: ctx.organizationId,
+      workflowTemplateId: template.id,
+      entityType: 'CONTRACTOR',
+      entityId: contractor.id,
+      contractorId: contractor.id,
+      status: runStatus,
+      startedByUserId: startedBy.id,
+      startedAt,
+      dueAt: advanceCapped(startedAt, ctx.fakers.org.number.int({ min: 7, max: 30 })),
+      completedAt,
+      cancelledAt,
+      cancelReason: cancelledAt ? ctx.fakers.org.lorem.sentence() : null,
+      progressPercent,
+      createdAt: startedAt,
     });
 
     const taskCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
-    const tasks: Prisma.WorkflowTaskRunCreateManyInput[] = [];
-
-    type WorkflowTaskStatusKey =
-      | 'TODO'
-      | 'IN_PROGRESS'
-      | 'DONE'
-      | 'BLOCKED'
-      | 'SKIPPED'
-      | 'CANCELLED'
-      | 'OVERDUE';
-
+    const localTaskIds: string[] = [];
     for (let i = 0; i < taskCount; i += 1) {
       const taskType = ctx.fakers.org.helpers.arrayElement(taskTypes);
       const title = ctx.fakers.org.helpers.arrayElement(taskTitles);
@@ -5391,9 +5416,12 @@ async function seedWorkflowRuns(
         ? ctx.fakers.org.helpers.arrayElement(ctx.users).id
         : null;
 
-      tasks.push({
+      const taskId = randomUUID();
+      localTaskIds.push(taskId);
+      taskRows.push({
+        id: taskId,
         organizationId: ctx.organizationId,
-        workflowRunId: run.id,
+        workflowRunId: runId,
         title,
         taskType,
         status: taskStatus,
@@ -5407,8 +5435,6 @@ async function seedWorkflowRuns(
       });
     }
 
-    await prisma.workflowTaskRun.createMany({ data: tasks });
-
     // -------------------------------------------------------------------
     // WorkflowComment + WorkflowAttachment per facts.md step 4 — picks a
     // deterministic subset of runs so the detail-page timeline isn't empty.
@@ -5417,74 +5443,96 @@ async function seedWorkflowRuns(
     const seedTimeline = ctx.org.showcase
       ? true
       : ctx.fakers.org.datatype.boolean({ probability: 0.4 });
-    if (!seedTimeline) continue;
-
-    const insertedTasks = await prisma.workflowTaskRun.findMany({
-      where: { workflowRunId: run.id },
-      select: { id: true },
-    });
-    if (insertedTasks.length === 0) continue;
+    if (!seedTimeline || localTaskIds.length === 0) continue;
 
     const commentTaskCount = Math.min(
-      insertedTasks.length,
+      localTaskIds.length,
       ctx.fakers.org.number.int({ min: 1, max: 2 }),
     );
-    const commentTasks = ctx.fakers.org.helpers
-      .shuffle([...insertedTasks])
+    const commentTaskIds = ctx.fakers.org.helpers
+      .shuffle([...localTaskIds])
       .slice(0, commentTaskCount);
-    for (const task of commentTasks) {
+    for (const taskId of commentTaskIds) {
       const numComments = ctx.fakers.org.number.int({ min: 1, max: 3 });
       for (let i = 0; i < numComments; i += 1) {
         const author = ctx.fakers.org.helpers.arrayElement(ctx.users);
-        await prisma.workflowComment.create({
-          data: {
-            organizationId: ctx.organizationId,
-            workflowRunId: run.id,
-            workflowTaskRunId: task.id,
-            authorUserId: author.id,
-            body: ctx.fakers.org.lorem.sentence(),
-            createdAt: advanceCapped(startedAt, i),
-          },
+        commentRows.push({
+          organizationId: ctx.organizationId,
+          workflowRunId: runId,
+          workflowTaskRunId: taskId,
+          authorUserId: author.id,
+          body: ctx.fakers.org.lorem.sentence(),
+          createdAt: advanceCapped(startedAt, i),
         });
       }
     }
 
     const attachmentTaskCount = ctx.fakers.org.number.int({ min: 0, max: 2 });
     if (attachmentTaskCount === 0) continue;
-    const attachmentTasks = ctx.fakers.org.helpers
-      .shuffle([...insertedTasks])
+    const attachmentTaskIds = ctx.fakers.org.helpers
+      .shuffle([...localTaskIds])
       .slice(0, attachmentTaskCount);
-    for (const task of attachmentTasks) {
+    for (const taskId of attachmentTaskIds) {
       const fileBytes = ctx.fakers.org.number.int({ min: 1024, max: 256 * 1024 });
       const fileBaseName = ctx.fakers.org.system.fileName({ extensionCount: 0 });
-      const document = await prisma.document.create({
-        data: {
-          organizationId: ctx.organizationId,
-          storageKey: `seed/workflow/${run.id}/${tokenHex(6)}.pdf`,
-          originalFileName: `${fileBaseName}.pdf`,
-          mimeType: 'application/pdf',
-          fileSizeBytes: BigInt(fileBytes),
-          checksumSha256: tokenHex(32),
-          documentType: 'OTHER',
-          status: 'ACTIVE',
-          visibility: 'PRIVATE',
-          uploadedByUserId: ctx.ownerUserId,
-          source: 'USER_UPLOAD',
-          virusScanStatus: 'CLEAN',
-          createdAt: startedAt,
-        },
-        select: { id: true },
+      const documentId = randomUUID();
+      documentRows.push({
+        id: documentId,
+        organizationId: ctx.organizationId,
+        storageKey: `seed/workflow/${runId}/${tokenHex(6)}.pdf`,
+        originalFileName: `${fileBaseName}.pdf`,
+        mimeType: 'application/pdf',
+        fileSizeBytes: BigInt(fileBytes),
+        checksumSha256: tokenHex(32),
+        documentType: 'OTHER',
+        status: 'ACTIVE',
+        visibility: 'PRIVATE',
+        uploadedByUserId: ctx.ownerUserId,
+        source: 'USER_UPLOAD',
+        virusScanStatus: 'CLEAN',
+        createdAt: startedAt,
       });
-      await prisma.workflowAttachment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          workflowRunId: run.id,
-          workflowTaskRunId: task.id,
-          documentId: document.id,
-          createdAt: startedAt,
-        },
+      attachmentRows.push({
+        organizationId: ctx.organizationId,
+        workflowRunId: runId,
+        workflowTaskRunId: taskId,
+        documentId,
+        createdAt: startedAt,
       });
     }
+  }
+
+  // Wave inserts: WorkflowRun → WorkflowTaskRun → WorkflowComment →
+  // Document → WorkflowAttachment (attachment depends on both task + doc).
+  for (let i = 0; i < runRows.length; i += 1000) {
+    await prisma.workflowRun.createMany({
+      data: runRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < taskRows.length; i += 1000) {
+    await prisma.workflowTaskRun.createMany({
+      data: taskRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < commentRows.length; i += 1000) {
+    await prisma.workflowComment.createMany({
+      data: commentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < documentRows.length; i += 1000) {
+    await prisma.document.createMany({
+      data: documentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < attachmentRows.length; i += 1000) {
+    await prisma.workflowAttachment.createMany({
+      data: attachmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
