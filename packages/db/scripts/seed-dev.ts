@@ -2697,157 +2697,176 @@ async function seedInvoices(
     });
   }
 
-  // Approval flow if status indicates approval has been touched. Still
-  // per-row creates here; commit 7 will batch ApprovalFlow / Step / Decision
-  // into wave inserts.
+  // Approval chain — pre-compute flow + step ids so ApprovalFlow,
+  // ApprovalStep, and ApprovalDecision can each batch in their own wave.
   const fallbackApprover = ctx.users[0];
   const secondaryApprover = ctx.users[1];
+  const flowRows: Prisma.ApprovalFlowCreateManyInput[] = [];
+  const stepRows: Prisma.ApprovalStepCreateManyInput[] = [];
+  const decisionRows: Prisma.ApprovalDecisionCreateManyInput[] = [];
   for (const params of approvalParams) {
     const { invoiceId: createdId, approvalStatus, timeline, total, invNumber } = params;
     if (
-      approvalStatus !== 'NOT_STARTED' &&
-      approvalChainConfigId !== null &&
-      fallbackApprover !== undefined &&
-      secondaryApprover !== undefined
+      approvalStatus === 'NOT_STARTED' ||
+      approvalChainConfigId === null ||
+      fallbackApprover === undefined ||
+      secondaryApprover === undefined
     ) {
-      // Anchor approval-flow timestamps to the invoice timeline so the
-      // approval row can never claim it completed before the invoice was
-      // received.
-      const flowStartedAt = timeline.reviewedAt ?? timeline.receivedAt;
-      const flowCompletedAt =
-        approvalStatus === 'APPROVED'
-          ? timeline.approvedAt
+      continue;
+    }
+    // Anchor approval-flow timestamps to the invoice timeline so the
+    // approval row can never claim it completed before the invoice was
+    // received.
+    const flowStartedAt = timeline.reviewedAt ?? timeline.receivedAt;
+    const flowCompletedAt =
+      approvalStatus === 'APPROVED'
+        ? timeline.approvedAt
+        : approvalStatus === 'REJECTED'
+          ? timeline.rejectedAt
+          : null;
+    const flowId = randomUUID();
+    flowRows.push({
+      id: flowId,
+      organizationId: ctx.organizationId,
+      resourceType: 'INVOICE',
+      resourceId: createdId,
+      chainConfigId: approvalChainConfigId,
+      status: approvalStatus,
+      // PENDING flows are on step 1 (manager review). Terminal states
+      // (APPROVED / REJECTED / CANCELLED) leave currentStepOrder null —
+      // the prior hard-coded `2` was wrong for both 1-step and 3-step
+      // chains.
+      currentStepOrder: approvalStatus === 'PENDING' ? 1 : null,
+      startedAt: flowStartedAt,
+      completedAt: flowCompletedAt,
+      cancelledAt: approvalStatus === 'CANCELLED' ? timeline.reviewedAt : null,
+      createdByUserId: ctx.ownerUserId,
+    });
+
+    const approver1 = ctx.users.find(u => u.role === 'team_manager') ?? secondaryApprover;
+    const approver2 =
+      ctx.users.find(u => u.role === 'finance_admin') ?? ctx.users[2] ?? fallbackApprover;
+    const approver3 =
+      ctx.users.find(u => u.role === 'admin') ??
+      ctx.users.find(u => u.role === 'owner') ??
+      fallbackApprover;
+    // Amount-tiered approval chains so high-value invoices visibly flow
+    // through more approvers. Threshold uses minor units against EUR
+    // equivalents (we don't FX-convert in the seed — the bands are
+    // approximate, not policy).
+    const allStepDefs: Array<{
+      order: number;
+      name: string;
+      approver: SeededUser;
+      role: 'team_manager' | 'finance_admin' | 'admin';
+    }> = [
+      { order: 1, name: 'Manager review', approver: approver1, role: 'team_manager' },
+      { order: 2, name: 'Finance sign-off', approver: approver2, role: 'finance_admin' },
+      { order: 3, name: 'Executive approval', approver: approver3, role: 'admin' },
+    ];
+    const stepCount = total < 50_000 ? 1 : total < 500_000 ? 2 : 3;
+    const stepDefs = allStepDefs.slice(0, stepCount);
+
+    for (const stepDef of stepDefs) {
+      const stepStatus =
+        approvalStatus === 'PENDING'
+          ? stepDef.order === 1
+            ? 'PENDING'
+            : 'NOT_STARTED'
           : approvalStatus === 'REJECTED'
-            ? timeline.rejectedAt
+            ? stepDef.order === 1
+              ? 'REJECTED'
+              : 'NOT_STARTED'
+            : approvalStatus === 'CANCELLED'
+              ? 'CANCELLED'
+              : 'APPROVED';
+      const stepDecision =
+        stepStatus === 'APPROVED' ? 'APPROVE' : stepStatus === 'REJECTED' ? 'REJECT' : null;
+
+      const stepActedAt = stepDecision === null ? null : (flowCompletedAt ?? timeline.reviewedAt);
+      // SLA deadline: for completed steps, deadline lands near actedAt
+      // (some steps just made the SLA, some breached it slightly). For
+      // pending steps it's a future date the approver still has time to
+      // hit. Previously every step had a 5-day-future deadline regardless
+      // of whether the decision was already 6 months old.
+      const slaDeadline =
+        stepActedAt === null
+          ? futureDate(ctx.fakers.org, 5)
+          : new Date(
+              stepActedAt.getTime() + ctx.fakers.org.number.int({ min: -1, max: 3 }) * 86_400_000,
+            );
+      // Step note (initial review) and decision rationale are different
+      // texts in real life — the step describes what the reviewer
+      // checked, the decision captures the call.
+      const stepNote =
+        stepDecision === null
+          ? null
+          : ctx.fakers.org.helpers.arrayElement([
+              'Cross-checked against PO',
+              'Verified against timesheet',
+              'Confirmed VAT treatment',
+              'Reviewed contract scope and rate',
+            ]);
+      const decisionComment =
+        stepDecision === 'APPROVE'
+          ? ctx.fakers.org.helpers.arrayElement([
+              `Approved ${invNumber} — matches PO`,
+              `Looks good, signing off ${invNumber}`,
+              `${invNumber} approved per contract`,
+              `Numbers reconcile, approving ${invNumber}`,
+            ])
+          : stepDecision === 'REJECT'
+            ? `Rejecting ${invNumber} — ${ctx.fakers.org.helpers.arrayElement(['amount above quote', 'missing timesheet', 'wrong VAT treatment'])}`
             : null;
-      const flow = await prisma.approvalFlow.create({
-        data: {
-          organizationId: ctx.organizationId,
-          resourceType: 'INVOICE',
-          resourceId: createdId,
-          chainConfigId: approvalChainConfigId,
-          status: approvalStatus,
-          // PENDING flows are on step 1 (manager review). Terminal states
-          // (APPROVED / REJECTED / CANCELLED) leave currentStepOrder null —
-          // the prior hard-coded `2` was wrong for both 1-step and 3-step
-          // chains.
-          currentStepOrder: approvalStatus === 'PENDING' ? 1 : null,
-          startedAt: flowStartedAt,
-          completedAt: flowCompletedAt,
-          cancelledAt: approvalStatus === 'CANCELLED' ? timeline.reviewedAt : null,
-          createdByUserId: ctx.ownerUserId,
-        },
-        select: { id: true },
+      const stepId = randomUUID();
+      stepRows.push({
+        id: stepId,
+        organizationId: ctx.organizationId,
+        approvalFlowId: flowId,
+        stepOrder: stepDef.order,
+        name: stepDef.name,
+        approverUserId: stepDef.approver.id,
+        approverRole: stepDef.role,
+        status: stepStatus,
+        required: true,
+        slaDeadline,
+        actedAt: stepActedAt,
+        decision: stepDecision,
+        comment: stepNote,
+        createdAt: flowStartedAt,
       });
 
-      const approver1 = ctx.users.find(u => u.role === 'team_manager') ?? secondaryApprover;
-      const approver2 =
-        ctx.users.find(u => u.role === 'finance_admin') ?? ctx.users[2] ?? fallbackApprover;
-      const approver3 =
-        ctx.users.find(u => u.role === 'admin') ??
-        ctx.users.find(u => u.role === 'owner') ??
-        fallbackApprover;
-      // Amount-tiered approval chains so high-value invoices visibly flow
-      // through more approvers. Threshold uses minor units against EUR
-      // equivalents (we don't FX-convert in the seed — the bands are
-      // approximate, not policy).
-      const allStepDefs: Array<{
-        order: number;
-        name: string;
-        approver: SeededUser;
-        role: 'team_manager' | 'finance_admin' | 'admin';
-      }> = [
-        { order: 1, name: 'Manager review', approver: approver1, role: 'team_manager' },
-        { order: 2, name: 'Finance sign-off', approver: approver2, role: 'finance_admin' },
-        { order: 3, name: 'Executive approval', approver: approver3, role: 'admin' },
-      ];
-      const stepCount = total < 50_000 ? 1 : total < 500_000 ? 2 : 3;
-      const stepDefs = allStepDefs.slice(0, stepCount);
-
-      for (const stepDef of stepDefs) {
-        const stepStatus =
-          approvalStatus === 'PENDING'
-            ? stepDef.order === 1
-              ? 'PENDING'
-              : 'NOT_STARTED'
-            : approvalStatus === 'REJECTED'
-              ? stepDef.order === 1
-                ? 'REJECTED'
-                : 'NOT_STARTED'
-              : approvalStatus === 'CANCELLED'
-                ? 'CANCELLED'
-                : 'APPROVED';
-        const stepDecision =
-          stepStatus === 'APPROVED' ? 'APPROVE' : stepStatus === 'REJECTED' ? 'REJECT' : null;
-
-        const stepActedAt = stepDecision === null ? null : (flowCompletedAt ?? timeline.reviewedAt);
-        // SLA deadline: for completed steps, deadline lands near actedAt
-        // (some steps just made the SLA, some breached it slightly). For
-        // pending steps it's a future date the approver still has time to
-        // hit. Previously every step had a 5-day-future deadline regardless
-        // of whether the decision was already 6 months old.
-        const slaDeadline =
-          stepActedAt === null
-            ? futureDate(ctx.fakers.org, 5)
-            : new Date(
-                stepActedAt.getTime() + ctx.fakers.org.number.int({ min: -1, max: 3 }) * 86_400_000,
-              );
-        // Step note (initial review) and decision rationale are different
-        // texts in real life — the step describes what the reviewer
-        // checked, the decision captures the call.
-        const stepNote =
-          stepDecision === null
-            ? null
-            : ctx.fakers.org.helpers.arrayElement([
-                'Cross-checked against PO',
-                'Verified against timesheet',
-                'Confirmed VAT treatment',
-                'Reviewed contract scope and rate',
-              ]);
-        const decisionComment =
-          stepDecision === 'APPROVE'
-            ? ctx.fakers.org.helpers.arrayElement([
-                `Approved ${invNumber} — matches PO`,
-                `Looks good, signing off ${invNumber}`,
-                `${invNumber} approved per contract`,
-                `Numbers reconcile, approving ${invNumber}`,
-              ])
-            : stepDecision === 'REJECT'
-              ? `Rejecting ${invNumber} — ${ctx.fakers.org.helpers.arrayElement(['amount above quote', 'missing timesheet', 'wrong VAT treatment'])}`
-              : null;
-        const step = await prisma.approvalStep.create({
-          data: {
-            organizationId: ctx.organizationId,
-            approvalFlowId: flow.id,
-            stepOrder: stepDef.order,
-            name: stepDef.name,
-            approverUserId: stepDef.approver.id,
-            approverRole: stepDef.role,
-            status: stepStatus,
-            required: true,
-            slaDeadline,
-            actedAt: stepActedAt,
-            decision: stepDecision,
-            comment: stepNote,
-            createdAt: flowStartedAt,
-          },
-          select: { id: true },
+      if (stepDecision !== null) {
+        decisionRows.push({
+          organizationId: ctx.organizationId,
+          approvalStepId: stepId,
+          actorUserId: stepDef.approver.id,
+          decision: stepDecision,
+          comment: decisionComment,
+          createdAt: stepActedAt ?? flowStartedAt,
         });
-
-        if (stepDecision !== null) {
-          await prisma.approvalDecision.create({
-            data: {
-              organizationId: ctx.organizationId,
-              approvalStepId: step.id,
-              actorUserId: stepDef.approver.id,
-              decision: stepDecision,
-              comment: decisionComment,
-              createdAt: stepActedAt ?? flowStartedAt,
-            },
-          });
-        }
       }
     }
+  }
+
+  // Wave inserts: parent ApprovalFlow → child ApprovalStep → grandchild ApprovalDecision.
+  for (let i = 0; i < flowRows.length; i += 1000) {
+    await prisma.approvalFlow.createMany({
+      data: flowRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < stepRows.length; i += 1000) {
+    await prisma.approvalStep.createMany({
+      data: stepRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < decisionRows.length; i += 1000) {
+    await prisma.approvalDecision.createMany({
+      data: decisionRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
   return invoices;
 }
