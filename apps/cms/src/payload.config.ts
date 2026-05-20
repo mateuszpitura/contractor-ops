@@ -6,6 +6,8 @@ import { s3Storage } from '@payloadcms/storage-s3';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
 
+import { Authors } from './collections/Authors';
+import { Categories } from './collections/Categories';
 import { LegalDocuments } from './collections/LegalDocuments';
 import { Media } from './collections/Media';
 import { Posts } from './collections/Posts';
@@ -28,7 +30,7 @@ export default buildConfig({
       titleSuffix: ' — Contractor-Ops CMS',
     },
   },
-  collections: [Posts, Media, LegalDocuments, Users],
+  collections: [Posts, Authors, Categories, Media, LegalDocuments, Users],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
   typescript: {

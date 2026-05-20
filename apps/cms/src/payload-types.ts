@@ -68,6 +68,8 @@ export interface Config {
   blocks: {};
   collections: {
     posts: Post;
+    authors: Author;
+    categories: Category;
     media: Media;
     'legal-documents': LegalDocument;
     users: User;
@@ -80,6 +82,8 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     posts: PostsSelect<false> | PostsSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'legal-documents': LegalDocumentsSelect<false> | LegalDocumentsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -161,18 +165,38 @@ export interface Post {
     [k: string]: unknown;
   };
   coverImage?: (number | null) | Media;
-  author: string;
+  /**
+   * Optional larger hero image rendered above the post body. Falls back to coverImage when empty.
+   */
+  heroImage?: (number | null) | Media;
+  /**
+   * Legacy plain-text author byline. Prefer the relation in “Authors” below.
+   */
+  author?: string | null;
+  /**
+   * Linked Authors collection. Drives /blog/author/[handle] archives.
+   */
+  authors?: (number | Author)[] | null;
+  categories?: (number | Category)[] | null;
   tags?:
     | {
         tag: string;
         id?: string | null;
       }[]
     | null;
+  /**
+   * Computed from body word count by the beforeChange hook (≈220 wpm).
+   */
+  readingTimeMinutes?: number | null;
   status: 'draft' | 'published';
   publishedAt?: string | null;
   seo?: {
     title?: string | null;
     description?: string | null;
+    /**
+     * Optional override; defaults to heroImage / coverImage when empty.
+     */
+    ogImage?: (number | null) | Media;
   };
   updatedAt: string;
   createdAt: string;
@@ -223,6 +247,54 @@ export interface Media {
       filename?: string | null;
     };
   };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  name: string;
+  handle: string;
+  avatar?: (number | null) | Media;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  email?: string | null;
+  socials?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  color?: ('neutral' | 'teal' | 'amber' | 'rose' | 'indigo' | 'emerald') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -401,6 +473,14 @@ export interface PayloadLockedDocument {
         value: number | Post;
       } | null)
     | ({
+        relationTo: 'authors';
+        value: number | Author;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -464,13 +544,17 @@ export interface PostsSelect<T extends boolean = true> {
   excerpt?: T;
   body?: T;
   coverImage?: T;
+  heroImage?: T;
   author?: T;
+  authors?: T;
+  categories?: T;
   tags?:
     | T
     | {
         tag?: T;
         id?: T;
       };
+  readingTimeMinutes?: T;
   status?: T;
   publishedAt?: T;
   seo?:
@@ -478,10 +562,43 @@ export interface PostsSelect<T extends boolean = true> {
     | {
         title?: T;
         description?: T;
+        ogImage?: T;
       };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  name?: T;
+  handle?: T;
+  avatar?: T;
+  bio?: T;
+  email?: T;
+  socials?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  color?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

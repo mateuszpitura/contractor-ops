@@ -69,7 +69,7 @@ function toSummary(post: Post): PublishedPostSummary {
     slug: post.slug,
     title: post.title,
     excerpt: post.excerpt ?? null,
-    author: post.author,
+    author: post.author ?? '',
     publishedAt: post.publishedAt ?? null,
     coverImage: mapMedia(post.coverImage ?? null),
     tags: (post.tags ?? []).map(t => t.tag).filter(Boolean),
