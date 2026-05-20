@@ -6815,6 +6815,9 @@ async function seedEsign(
     : eligible.filter((_, i) => i % 3 === 0).slice(0, 4);
   const envelopeStatuses = ['CREATED', 'SENT', 'COMPLETED', 'DECLINED', 'VOIDED'] as const;
 
+  const envelopeRows: Prisma.SigningEnvelopeCreateManyInput[] = [];
+  const recipientRows: Prisma.SigningRecipientCreateManyInput[] = [];
+  const eventRows: Prisma.SigningEventCreateManyInput[] = [];
   for (const [i, pair] of subset.entries()) {
     const contractor = pair.contractor;
     if (!contractor) continue;
@@ -6825,62 +6828,57 @@ async function seedEsign(
     const completedAt = status === 'COMPLETED' && sentAt ? advanceCapped(sentAt, 3) : null;
     const voidedAt = status === 'VOIDED' && sentAt ? advanceCapped(sentAt, 5) : null;
 
-    const envelope = await prisma.signingEnvelope.create({
-      data: {
-        organizationId: ctx.organizationId,
-        integrationConnectionId: docusignConnection.id,
-        provider: 'DOCUSIGN',
-        externalEnvelopeId: `env-${tokenHex(8)}`,
-        contractId: pair.contractId,
-        status,
-        message: 'Please sign the attached agreement (seed)',
-        expiresAt: futureDate(ctx.fakers.org, 30),
-        reminderIntervalDays: 3,
-        sentByUserId: ctx.ownerUserId,
-        sentAt,
-        completedAt,
-        voidedAt,
-        voidReason: voidedAt ? 'Engagement cancelled (seed)' : null,
-        createdAt: sentAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
-      },
-      select: { id: true },
+    const envelopeId = randomUUID();
+    envelopeRows.push({
+      id: envelopeId,
+      organizationId: ctx.organizationId,
+      integrationConnectionId: docusignConnection.id,
+      provider: 'DOCUSIGN',
+      externalEnvelopeId: `env-${tokenHex(8)}`,
+      contractId: pair.contractId,
+      status,
+      message: 'Please sign the attached agreement (seed)',
+      expiresAt: futureDate(ctx.fakers.org, 30),
+      reminderIntervalDays: 3,
+      sentByUserId: ctx.ownerUserId,
+      sentAt,
+      completedAt,
+      voidedAt,
+      voidReason: voidedAt ? 'Engagement cancelled (seed)' : null,
+      createdAt: sentAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
     });
 
     // 2 recipients: the contractor (signer) + a counter-signer (org owner).
-    await prisma.signingRecipient.create({
-      data: {
-        signingEnvelopeId: envelope.id,
-        externalRecipientId: `rcp-${tokenHex(6)}`,
-        name: contractor.legalName,
-        email: contractor.email,
-        role: 'SIGNER',
-        routingOrder: 1,
-        status:
-          status === 'COMPLETED'
-            ? 'SIGNED'
-            : status === 'DECLINED'
-              ? 'DECLINED'
-              : status === 'CREATED'
-                ? 'PENDING'
-                : 'DELIVERED',
-        signedAt: status === 'COMPLETED' ? completedAt : null,
-        declinedAt: status === 'DECLINED' && sentAt ? advanceCapped(sentAt, 1) : null,
-        declineReason: status === 'DECLINED' ? 'Terms unacceptable (seed)' : null,
-        viewedAt: sentAt ? advanceCapped(sentAt, 1) : null,
-      },
+    recipientRows.push({
+      signingEnvelopeId: envelopeId,
+      externalRecipientId: `rcp-${tokenHex(6)}`,
+      name: contractor.legalName,
+      email: contractor.email,
+      role: 'SIGNER',
+      routingOrder: 1,
+      status:
+        status === 'COMPLETED'
+          ? 'SIGNED'
+          : status === 'DECLINED'
+            ? 'DECLINED'
+            : status === 'CREATED'
+              ? 'PENDING'
+              : 'DELIVERED',
+      signedAt: status === 'COMPLETED' ? completedAt : null,
+      declinedAt: status === 'DECLINED' && sentAt ? advanceCapped(sentAt, 1) : null,
+      declineReason: status === 'DECLINED' ? 'Terms unacceptable (seed)' : null,
+      viewedAt: sentAt ? advanceCapped(sentAt, 1) : null,
     });
-    await prisma.signingRecipient.create({
-      data: {
-        signingEnvelopeId: envelope.id,
-        externalRecipientId: `rcp-${tokenHex(6)}`,
-        name: 'Engager Counter-Signer',
-        email: `${ctx.org.key}-countersigner@seed.local`,
-        role: 'COUNTERSIGNER',
-        routingOrder: 2,
-        status: status === 'COMPLETED' ? 'SIGNED' : 'PENDING',
-        signedAt: status === 'COMPLETED' ? completedAt : null,
-        viewedAt: sentAt ?? null,
-      },
+    recipientRows.push({
+      signingEnvelopeId: envelopeId,
+      externalRecipientId: `rcp-${tokenHex(6)}`,
+      name: 'Engager Counter-Signer',
+      email: `${ctx.org.key}-countersigner@seed.local`,
+      role: 'COUNTERSIGNER',
+      routingOrder: 2,
+      status: status === 'COMPLETED' ? 'SIGNED' : 'PENDING',
+      signedAt: status === 'COMPLETED' ? completedAt : null,
+      viewedAt: sentAt ?? null,
     });
 
     // 2–4 events spanning the lifecycle.
@@ -6936,17 +6934,37 @@ async function seedEsign(
     if (status === 'VOIDED' && voidedAt) {
       events.push({ type: 'ENVELOPE_VOIDED', at: voidedAt, description: 'Voided by sender' });
     }
-    await prisma.signingEvent.createMany({
-      data: events.map(e => ({
+    for (const e of events) {
+      eventRows.push({
         organizationId: ctx.organizationId,
-        signingEnvelopeId: envelope.id,
+        signingEnvelopeId: envelopeId,
         eventType: e.type,
         actorName: contractor.legalName,
         actorEmail: contractor.email,
         description: e.description,
         providerEventId: `evt-${tokenHex(8)}`,
         occurredAt: e.at,
-      })),
+      });
+    }
+  }
+
+  // Wave: parent SigningEnvelope → child SigningRecipient + SigningEvent.
+  for (let i = 0; i < envelopeRows.length; i += 1000) {
+    await prisma.signingEnvelope.createMany({
+      data: envelopeRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < recipientRows.length; i += 1000) {
+    await prisma.signingRecipient.createMany({
+      data: recipientRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < eventRows.length; i += 1000) {
+    await prisma.signingEvent.createMany({
+      data: eventRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
