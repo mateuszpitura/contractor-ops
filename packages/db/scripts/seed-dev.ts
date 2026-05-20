@@ -1566,6 +1566,8 @@ async function seedUsersForOrg(
   passwordHash: string,
 ): Promise<SeededUser[]> {
   const users: SeededUser[] = [];
+  const userRows: Prisma.UserCreateManyInput[] = [];
+  const accountRows: Prisma.AccountCreateManyInput[] = [];
   for (let i = 0; i < count; i += 1) {
     const first = faker.person.firstName();
     const last = faker.person.lastName();
@@ -1575,23 +1577,22 @@ async function seedUsersForOrg(
     const asciiFirst = slugify(first) || 'user';
     const asciiLast = slugify(last) || `${i}`;
     const email = `${asciiFirst}.${asciiLast}.${orgKey}@seed.local`;
-
-    const user = await prisma.user.create({
-      data: {
-        name: `${first} ${last}`,
-        email,
-        emailVerified: true,
-        accounts: {
-          create: {
-            accountId: email,
-            providerId: 'credential', // Better Auth's emailAndPassword provider
-            password: passwordHash,
-          },
-        },
-      },
-      select: { id: true, email: true, name: true },
+    const id = randomUUID();
+    const name = `${first} ${last}`;
+    userRows.push({ id, name, email, emailVerified: true });
+    accountRows.push({
+      userId: id,
+      accountId: email,
+      providerId: 'credential', // Better Auth's emailAndPassword provider
+      password: passwordHash,
     });
-    users.push({ id: user.id, email: user.email, name: user.name, role });
+    users.push({ id, email, name, role });
+  }
+  for (let i = 0; i < userRows.length; i += 1000) {
+    await prisma.user.createMany({ data: userRows.slice(i, i + 1000), skipDuplicates: true });
+  }
+  for (let i = 0; i < accountRows.length; i += 1000) {
+    await prisma.account.createMany({ data: accountRows.slice(i, i + 1000), skipDuplicates: true });
   }
   return users;
 }
@@ -4154,19 +4155,21 @@ async function seedPortalSessions(
   // are old expired sessions. Email matches the contractor's own email so
   // the audit panel and contractor profile reconcile.
   const sample = contractors.slice(0, Math.min(5, contractors.length));
+  const rows: Prisma.PortalSessionCreateManyInput[] = [];
   for (const [i, c] of sample.entries()) {
     const isLive = i % 2 === 0;
-    await prisma.portalSession.create({
-      data: {
-        token: tokenHex(32),
-        contractorId: c.id,
-        organizationId: ctx.organizationId,
-        email: c.email,
-        expiresAt: isLive ? futureDate(ctx.fakers.org, 30) : pastDate(ctx.fakers.org, 30),
-        ipAddress: '127.0.0.1',
-        userAgent: 'seed-dev portal',
-      },
+    rows.push({
+      token: tokenHex(32),
+      contractorId: c.id,
+      organizationId: ctx.organizationId,
+      email: c.email,
+      expiresAt: isLive ? futureDate(ctx.fakers.org, 30) : pastDate(ctx.fakers.org, 30),
+      ipAddress: '127.0.0.1',
+      userAgent: 'seed-dev portal',
     });
+  }
+  if (rows.length > 0) {
+    await prisma.portalSession.createMany({ data: rows, skipDuplicates: true });
   }
 }
 
@@ -6235,65 +6238,81 @@ async function seedAuthSurface(
   contractors: readonly SeededContractor[],
 ): Promise<void> {
   // Session + Account + Verification — per active user.
+  const sessionRows: Prisma.SessionCreateManyInput[] = [];
+  const accountRows: Prisma.AccountCreateManyInput[] = [];
+  const verificationRows: Prisma.VerificationCreateManyInput[] = [];
   for (const u of ctx.users) {
-    await prisma.session.create({
-      data: {
-        token: `seed-only-${tokenHex(24)}`,
-        userId: u.id,
-        expiresAt: futureDate(ctx.fakers.org, 30),
-        ipAddress: '127.0.0.1',
-        userAgent: 'seed-dev (UI display only — not a real session)',
-        activeOrganizationId: ctx.organizationId,
-        createdAt: pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt),
-      },
+    sessionRows.push({
+      token: `seed-only-${tokenHex(24)}`,
+      userId: u.id,
+      expiresAt: futureDate(ctx.fakers.org, 30),
+      ipAddress: '127.0.0.1',
+      userAgent: 'seed-dev (UI display only — not a real session)',
+      activeOrganizationId: ctx.organizationId,
+      createdAt: pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt),
     });
     // Linked OAuth-style account row alongside the existing credential
     // account from `seedUsersForOrg` so the "Linked accounts" UI shows two.
-    await prisma.account.create({
-      data: {
-        accountId: `seed-google-${u.email}`,
-        providerId: 'google',
-        userId: u.id,
-        accessToken: `seed-only-${tokenHex(16)}`,
-        scope: 'email profile',
-        accessTokenExpiresAt: futureDate(ctx.fakers.org, 30),
-        createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
-      },
+    accountRows.push({
+      accountId: `seed-google-${u.email}`,
+      providerId: 'google',
+      userId: u.id,
+      accessToken: `seed-only-${tokenHex(16)}`,
+      scope: 'email profile',
+      accessTokenExpiresAt: futureDate(ctx.fakers.org, 30),
+      createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
     });
-    await prisma.verification.create({
-      data: {
-        identifier: u.email,
-        value: tokenHex(16),
-        expiresAt: futureDate(ctx.fakers.org, 1),
-        createdAt: pastDate(ctx.fakers.org, 1),
-      },
+    verificationRows.push({
+      identifier: u.email,
+      value: tokenHex(16),
+      expiresAt: futureDate(ctx.fakers.org, 1),
+      createdAt: pastDate(ctx.fakers.org, 1),
+    });
+  }
+  for (let i = 0; i < sessionRows.length; i += 1000) {
+    await prisma.session.createMany({
+      data: sessionRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < accountRows.length; i += 1000) {
+    await prisma.account.createMany({
+      data: accountRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < verificationRows.length; i += 1000) {
+    await prisma.verification.createMany({
+      data: verificationRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
   // OAuthChallenge — 1 active + 1 expired (consumed). Owned by the org owner
   // since OAuthChallenge.userId is required.
-  await prisma.oAuthChallenge.create({
-    data: {
-      provider: 'google',
-      organizationId: ctx.organizationId,
-      userId: ctx.ownerUserId,
-      stateHash: tokenHex(32),
-      pkceVerifier: tokenHex(43),
-      redirectUri: 'https://app.example.com/api/oauth/google/callback',
-      expiresAt: futureDate(ctx.fakers.org, 1),
-    },
-  });
-  await prisma.oAuthChallenge.create({
-    data: {
-      provider: 'linear',
-      organizationId: ctx.organizationId,
-      userId: ctx.ownerUserId,
-      stateHash: tokenHex(32),
-      pkceVerifier: tokenHex(43),
-      redirectUri: 'https://app.example.com/api/oauth/linear/callback',
-      expiresAt: pastDate(ctx.fakers.org, 1),
-      consumedAt: pastDate(ctx.fakers.org, 1),
-    },
+  await prisma.oAuthChallenge.createMany({
+    data: [
+      {
+        provider: 'google',
+        organizationId: ctx.organizationId,
+        userId: ctx.ownerUserId,
+        stateHash: tokenHex(32),
+        pkceVerifier: tokenHex(43),
+        redirectUri: 'https://app.example.com/api/oauth/google/callback',
+        expiresAt: futureDate(ctx.fakers.org, 1),
+      },
+      {
+        provider: 'linear',
+        organizationId: ctx.organizationId,
+        userId: ctx.ownerUserId,
+        stateHash: tokenHex(32),
+        pkceVerifier: tokenHex(43),
+        redirectUri: 'https://app.example.com/api/oauth/linear/callback',
+        expiresAt: pastDate(ctx.fakers.org, 1),
+        consumedAt: pastDate(ctx.fakers.org, 1),
+      },
+    ],
+    skipDuplicates: true,
   });
 
   // PortalMagicToken — 1 unused, 1 redeemed, 1 expired. Use real contractor
@@ -6307,18 +6326,23 @@ async function seedAuthSurface(
     },
     { usedAt: null, expiresAt: pastDate(ctx.fakers.org, 1) },
   ];
+  const magicTokenRows: Prisma.PortalMagicTokenCreateManyInput[] = [];
   for (let i = 0; i < tokenStates.length; i += 1) {
     const state = tokenStates[i];
     if (!state) continue;
     const contractor = sample[i];
     const email = contractor?.email ?? `magic-${i}-${ctx.org.key}@seed.local`;
-    await prisma.portalMagicToken.create({
-      data: {
-        email,
-        token: `seed-magic-${tokenHex(24)}`,
-        expiresAt: state.expiresAt,
-        usedAt: state.usedAt,
-      },
+    magicTokenRows.push({
+      email,
+      token: `seed-magic-${tokenHex(24)}`,
+      expiresAt: state.expiresAt,
+      usedAt: state.usedAt,
+    });
+  }
+  if (magicTokenRows.length > 0) {
+    await prisma.portalMagicToken.createMany({
+      data: magicTokenRows,
+      skipDuplicates: true,
     });
   }
 }
