@@ -428,6 +428,17 @@ api, marketing) are bound manually in the Render dashboard.
 Runbook: **`docs/DEPLOYMENT-RENDER.md`**. Pre-deploy gates:
 **`docs/PRODUCTION-CHECKLIST.md`**.
 
+## Production monitoring dashboards
+
+External services we run against production (bookmark these):
+
+- **UptimeRobot** — synthetic uptime pings against public endpoints
+  → https://dashboard.uptimerobot.com/monitors
+- **Cronitor** — cron heartbeats + `/api/health` / `/health` liveness
+  → https://cronitor.io/app/?env=production&time=7d
+
+Wiring + alert thresholds: `docs/POST-DEPLOY-MONITORING.md`.
+
 ## Further reading
 
 - `PRD.md` — product requirements

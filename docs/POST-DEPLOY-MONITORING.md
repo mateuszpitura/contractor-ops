@@ -370,7 +370,19 @@ Replace `<dataset>` with `AXIOM_DATASET` env value (`render.yaml:162-165`).
 | where count_ > 5
 ```
 
+### UptimeRobot
+
+Dashboard: https://dashboard.uptimerobot.com/monitors
+
+External synthetic pings (independent of Cronitor / Render's own health checks). Use as the second signal for "is the site reachable from the public internet?" — pages when Cronitor is silent because the worker is also down.
+
+- HTTP(s) monitors on the public hostnames: app (`/api/health`), public-api (`/health`), landing, blog.
+- 1-minute interval; alert after 2 consecutive failures.
+- Status page (if enabled) is the canonical external-facing incident surface.
+
 ### Cronitor
+
+Dashboard: https://cronitor.io/app/?env=production&time=7d
 
 Monitors to confirm exist + are paging the right channel:
 
