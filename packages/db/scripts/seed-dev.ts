@@ -3210,21 +3210,27 @@ async function seedReminders(
 
   type RuleConfig = (typeof ruleConfigs)[number];
   const seededRules: Array<{ id: string; cfg: RuleConfig }> = [];
+  const ruleRows: Prisma.ReminderRuleCreateManyInput[] = [];
   for (const cfg of ruleConfigs) {
-    const r = await prisma.reminderRule.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name: cfg.name,
-        entityType: cfg.entityType,
-        triggerType: cfg.triggerType,
-        offsetDays: cfg.offsetDays,
-        channel: cfg.channel,
-        recipientMode: cfg.recipientMode,
-        active: true,
-      },
-      select: { id: true },
+    const id = randomUUID();
+    ruleRows.push({
+      id,
+      organizationId: ctx.organizationId,
+      name: cfg.name,
+      entityType: cfg.entityType,
+      triggerType: cfg.triggerType,
+      offsetDays: cfg.offsetDays,
+      channel: cfg.channel,
+      recipientMode: cfg.recipientMode,
+      active: true,
     });
-    seededRules.push({ id: r.id, cfg });
+    seededRules.push({ id, cfg });
+  }
+  for (let i = 0; i < ruleRows.length; i += 1000) {
+    await prisma.reminderRule.createMany({
+      data: ruleRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 
   // ---------- Generate instances ----------
