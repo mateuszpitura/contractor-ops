@@ -2083,7 +2083,13 @@
         "document": "مستند",
         "paymentRun": "دفعة",
         "approvalFlow": "موافقة",
-        "approvalStep": "خطوة الموافقة"
+        "approvalStep": "خطوة الموافقة",
+        "equipment": "معدات",
+        "organization": "منظمة",
+        "returnRequest": "طلب إرجاع",
+        "shipment": "شحنة",
+        "user": "مستخدم",
+        "unknown": "مورد"
       }
     },
     "errors": {
@@ -2580,6 +2586,25 @@
     "prerequisite": {
       "body": "ابدأ بإضافة مقاول.",
       "cta": "إضافة مقاول"
+    },
+    "myTasks": {
+      "heading": "لا توجد مهام مسندة إليك",
+      "body": "ستظهر هنا المهام المسندة إليك عبر مختلف سير العمل.",
+      "cta": "بدء سير العمل"
+    },
+    "templates": {
+      "heading": "لا توجد قوالب بعد",
+      "body": "أنشئ قالب سير عمل قابلاً لإعادة الاستخدام لتوحيد العمليات المتكررة.",
+      "cta": "قالب جديد"
+    },
+    "noResults": {
+      "heading": "لا توجد نتائج",
+      "body": "حاول استخدام كلمة بحث مختلفة أو امسح المرشحات.",
+      "cta": "مسح المرشحات"
+    },
+    "auditLog": {
+      "heading": "لا يوجد نشاط بعد",
+      "body": "ستظهر إجراءات النظام الأخيرة هنا فور حدوثها."
     }
   },
   "Equipment": {
@@ -2753,6 +2778,7 @@
       "actionFailed": "تعذر complete the action. يرجى المحاولة مجددًا."
     },
     "contractorTab": {
+      "tabLabel": "المعدات",
       "emptyTitle": "لا توجد معدّات مُسنَدة",
       "emptyDescription": "لا توجد لهذا المقاول معدّات مُسنَدة. أسند معدّات من سجل المعدّات."
     },
@@ -5258,7 +5284,12 @@
       "ocrPrefillBanner": "قمنا بتعبئة بعض الحقول مسبقًا من فاتورتك. يرجى المراجعة قبل الإرسال.",
       "viewPdf": "عرض ملف PDF",
       "sellerNip": "NIP البائع",
-      "buyerNip": "NIP المشتري"
+      "buyerNip": "NIP المشتري",
+      "toast": {
+        "uploadReady": "تم تجهيز الملف.",
+        "scanComplete": "اكتمل الفحص.",
+        "invoiceSubmitted": "تم إرسال الفاتورة."
+      }
     },
     "submitSuccess": {
       "title": "تم إرسال الفاتورة",
@@ -5407,6 +5438,9 @@
       "securityLocked": "لا يمكن تعطيل تنبيهات الأمان",
       "errors": {
         "updateFailed": "فشل update preference. يرجى المحاولة مجددًا."
+      },
+      "toast": {
+        "updated": "تم تحديث التفضيل."
       }
     },
     "statusTimeline": {
@@ -5437,7 +5471,9 @@
         "entryAdded": "تمت إضافة إدخال الوقت",
         "entryAddFailed": "فشل إضافة إدخال الوقت",
         "timesheetSubmitted": "تم إرسال كشف الحضور للمراجعة",
-        "timesheetSubmitFailed": "فشل إرسال كشف الحضور"
+        "timesheetSubmitFailed": "فشل إرسال كشف الحضور",
+        "weekSaved": "تم حفظ الأسبوع.",
+        "synced": "تمت المزامنة."
       }
     },
     "pendingChange": {
@@ -5453,6 +5489,23 @@
       "noActivity": "لا يوجد نشاط حتى الآن.",
       "weeksAgo": "منذ {count} أسبوع",
       "monthsAgo": "منذ {count} شهر"
+    },
+    "orgSwitch": {
+      "label": "تبديل المؤسسة",
+      "current": "المؤسسة الحالية",
+      "switching": "جارٍ التبديل...",
+      "error": "تعذّر تبديل المؤسسة. حاول مرة أخرى."
+    },
+    "toast": {
+      "saved": "تم الحفظ.",
+      "verified": "تم تسجيل دخولك.",
+      "weekSaved": "تم حفظ الأسبوع.",
+      "synced": "تمت المزامنة.",
+      "magicLinkSent": "تحقق من بريدك الإلكتروني.",
+      "uploadReady": "تم تجهيز الملف.",
+      "scanComplete": "اكتمل الفحص.",
+      "invoiceSubmitted": "تم إرسال الفاتورة.",
+      "preferenceUpdated": "تم تحديث التفضيل."
     }
   },
   "Reports": {
@@ -7657,6 +7710,24 @@
     },
     "loading": {
       "ariaLabel": "جارٍ تحميل الصفحة"
+    }
+  },
+  "commandPalette": {
+    "open": "بحث…",
+    "placeholder": "اكتب أمرًا أو ابحث…",
+    "empty": "لا توجد نتائج.",
+    "groups": {
+      "navigate": "تنقل",
+      "team": "الفريق",
+      "finance": "المالية",
+      "preferences": "التفضيلات"
+    },
+    "theme": {
+      "light": "الوضع الفاتح",
+      "dark": "الوضع الداكن"
+    },
+    "locale": {
+      "switchTo": "تغيير اللغة إلى {locale}"
     }
   }
 }

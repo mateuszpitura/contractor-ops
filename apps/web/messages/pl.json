@@ -2083,7 +2083,13 @@
         "document": "Dokument",
         "paymentRun": "Płatność",
         "approvalFlow": "Akceptacja",
-        "approvalStep": "Krok akceptacji"
+        "approvalStep": "Krok akceptacji",
+        "equipment": "Sprzęt",
+        "organization": "Organizacja",
+        "returnRequest": "Zgłoszenie zwrotu",
+        "shipment": "Wysyłka",
+        "user": "Użytkownik",
+        "unknown": "Zasób"
       }
     },
     "errors": {
@@ -2580,6 +2586,25 @@
     "prerequisite": {
       "body": "Zacznij od dodania kontrahenta.",
       "cta": "Dodaj kontrahenta"
+    },
+    "myTasks": {
+      "heading": "Brak przypisanych zadań",
+      "body": "Zadania przypisane do Ciebie z różnych przepływów pojawią się tutaj.",
+      "cta": "Uruchom przepływ"
+    },
+    "templates": {
+      "heading": "Brak szablonów",
+      "body": "Utwórz szablon przepływu, aby ustandaryzować powtarzalne procesy.",
+      "cta": "Nowy szablon"
+    },
+    "noResults": {
+      "heading": "Brak wyników",
+      "body": "Wypróbuj inne hasło lub wyczyść filtry.",
+      "cta": "Wyczyść filtry"
+    },
+    "auditLog": {
+      "heading": "Brak aktywności",
+      "body": "Ostatnie akcje systemowe pojawią się tutaj, gdy tylko nastąpią."
     }
   },
   "Equipment": {
@@ -2753,6 +2778,7 @@
       "actionFailed": "Nie udalo sie wykonac akcji. Sprobuj ponownie."
     },
     "contractorTab": {
+      "tabLabel": "Sprzęt",
       "emptyTitle": "Brak przypisanego sprzetu",
       "emptyDescription": "Ten wykonawca nie ma przypisanego sprzetu. Przypisz sprzet z rejestru sprzetu."
     },
@@ -5258,7 +5284,12 @@
       "ocrPrefillBanner": "Część pól została wstępnie wypełniona z Twojej faktury. Sprawdź dane przed wysłaniem.",
       "viewPdf": "Zobacz PDF",
       "sellerNip": "NIP sprzedawcy",
-      "buyerNip": "NIP nabywcy"
+      "buyerNip": "NIP nabywcy",
+      "toast": {
+        "uploadReady": "Plik gotowy.",
+        "scanComplete": "Skanowanie zakończone.",
+        "invoiceSubmitted": "Faktura wysłana."
+      }
     },
     "submitSuccess": {
       "title": "Faktura złożona",
@@ -5407,6 +5438,9 @@
       "securityLocked": "Alertów bezpieczeństwa nie można wyłączyć",
       "errors": {
         "updateFailed": "Nie udało się zaktualizować preferencji. Spróbuj ponownie."
+      },
+      "toast": {
+        "updated": "Zaktualizowano."
       }
     },
     "statusTimeline": {
@@ -5437,7 +5471,9 @@
         "entryAdded": "Wpis czasu pracy dodany",
         "entryAddFailed": "Nie udało się dodać wpisu czasu pracy",
         "timesheetSubmitted": "Karta pracy przesłana do przeglądu",
-        "timesheetSubmitFailed": "Nie udało się przesłać karty pracy"
+        "timesheetSubmitFailed": "Nie udało się przesłać karty pracy",
+        "weekSaved": "Tydzień zapisany.",
+        "synced": "Zsynchronizowano."
       }
     },
     "pendingChange": {
@@ -5453,6 +5489,23 @@
       "noActivity": "Brak aktywności.",
       "weeksAgo": "{count} tydz. temu",
       "monthsAgo": "{count} mies. temu"
+    },
+    "orgSwitch": {
+      "label": "Przełącz organizację",
+      "current": "Bieżąca organizacja",
+      "switching": "Przełączanie...",
+      "error": "Nie udało się przełączyć organizacji. Spróbuj ponownie."
+    },
+    "toast": {
+      "saved": "Zapisano.",
+      "verified": "Zalogowano.",
+      "weekSaved": "Tydzień zapisany.",
+      "synced": "Zsynchronizowano.",
+      "magicLinkSent": "Sprawdź skrzynkę odbiorczą.",
+      "uploadReady": "Plik gotowy.",
+      "scanComplete": "Skanowanie zakończone.",
+      "invoiceSubmitted": "Faktura wysłana.",
+      "preferenceUpdated": "Zaktualizowano."
     }
   },
   "Reports": {
@@ -7657,6 +7710,24 @@
     },
     "loading": {
       "ariaLabel": "Ładowanie strony"
+    }
+  },
+  "commandPalette": {
+    "open": "Szukaj…",
+    "placeholder": "Wpisz komendę lub szukaj…",
+    "empty": "Brak wyników.",
+    "groups": {
+      "navigate": "Nawigacja",
+      "team": "Zespół",
+      "finance": "Finanse",
+      "preferences": "Preferencje"
+    },
+    "theme": {
+      "light": "Przełącz na jasny",
+      "dark": "Przełącz na ciemny"
+    },
+    "locale": {
+      "switchTo": "Zmień język na {locale}"
     }
   }
 }

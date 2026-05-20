@@ -2083,7 +2083,13 @@
         "document": "Dokument",
         "paymentRun": "Zahlung",
         "approvalFlow": "Freigabe",
-        "approvalStep": "Freigabestufe"
+        "approvalStep": "Freigabestufe",
+        "equipment": "Ausrüstung",
+        "organization": "Organisation",
+        "returnRequest": "Rücksendeantrag",
+        "shipment": "Versand",
+        "user": "Benutzer",
+        "unknown": "Ressource"
       }
     },
     "errors": {
@@ -2580,6 +2586,25 @@
     "prerequisite": {
       "body": "Beginnen Sie, indem Sie einen Auftragnehmer hinzufügen.",
       "cta": "Auftragnehmer hinzufügen"
+    },
+    "myTasks": {
+      "heading": "Keine Aufgaben zugewiesen",
+      "body": "Ihnen zugewiesene Aufgaben aus Workflows erscheinen hier.",
+      "cta": "Workflow starten"
+    },
+    "templates": {
+      "heading": "Noch keine Vorlagen",
+      "body": "Erstellen Sie eine wiederverwendbare Workflow-Vorlage, um Prozesse zu standardisieren.",
+      "cta": "Neue Vorlage"
+    },
+    "noResults": {
+      "heading": "Keine Treffer",
+      "body": "Versuchen Sie einen anderen Suchbegriff oder entfernen Sie Filter.",
+      "cta": "Filter zurücksetzen"
+    },
+    "auditLog": {
+      "heading": "Noch keine Aktivität",
+      "body": "Aktuelle Systemaktionen erscheinen hier, sobald sie auftreten."
     }
   },
   "Equipment": {
@@ -2753,6 +2778,7 @@
       "actionFailed": "Aktion fehlgeschlagen: complete the action. Versuchen Sie es erneut."
     },
     "contractorTab": {
+      "tabLabel": "Ausrüstung",
       "emptyTitle": "Keine Ausrüstung zugewiesen",
       "emptyDescription": "Diesem Auftragnehmer ist keine Ausrüstung zugewiesen. Weisen Sie Ausrüstung über die Ausrüstungsverwaltung zu."
     },
@@ -5181,7 +5207,9 @@
         "entryAdded": "Zeiteintrag hinzugefügt",
         "entryAddFailed": "Aktion fehlgeschlagen: add time entry.",
         "timesheetSubmitted": "Zeiterfassung zur Prüfung eingereicht",
-        "timesheetSubmitFailed": "Aktion fehlgeschlagen: submit timesheet."
+        "timesheetSubmitFailed": "Aktion fehlgeschlagen: submit timesheet.",
+        "weekSaved": "Woche gespeichert.",
+        "synced": "Synchronisiert."
       }
     },
     "payments": {
@@ -5277,7 +5305,12 @@
       "ocrPrefillBanner": "Wir haben einige Felder aus Ihrer Rechnung vorausgefüllt. Bitte prüfen Sie diese vor dem Einreichen.",
       "viewPdf": "PDF anzeigen",
       "sellerNip": "NIP des Verkäufers",
-      "buyerNip": "Käufer-NIP"
+      "buyerNip": "Käufer-NIP",
+      "toast": {
+        "uploadReady": "Upload bereit.",
+        "scanComplete": "Scan abgeschlossen.",
+        "invoiceSubmitted": "Rechnung eingereicht."
+      }
     },
     "submitSuccess": {
       "title": "Rechnung eingereicht",
@@ -5426,6 +5459,9 @@
       "securityLocked": "Sicherheitswarnungen können nicht deaktiviert werden",
       "errors": {
         "updateFailed": "Aktion fehlgeschlagen: update preference. Please try again."
+      },
+      "toast": {
+        "updated": "Einstellung aktualisiert."
       }
     },
     "statusTimeline": {
@@ -5453,6 +5489,23 @@
       "noActivity": "Noch keine Aktivität.",
       "weeksAgo": "vor {count} Woche{count, plural, one {} other {n}}",
       "monthsAgo": "vor {count} Monat{count, plural, one {} other {en}}"
+    },
+    "orgSwitch": {
+      "label": "Organisation wechseln",
+      "current": "Aktuelle Organisation",
+      "switching": "Wechsle...",
+      "error": "Organisation konnte nicht gewechselt werden. Bitte erneut versuchen."
+    },
+    "toast": {
+      "saved": "Gespeichert.",
+      "verified": "Sie sind angemeldet.",
+      "weekSaved": "Woche gespeichert.",
+      "synced": "Synchronisiert.",
+      "magicLinkSent": "Bitte E-Mail-Posteingang prüfen.",
+      "uploadReady": "Upload bereit.",
+      "scanComplete": "Scan abgeschlossen.",
+      "invoiceSubmitted": "Rechnung eingereicht.",
+      "preferenceUpdated": "Einstellung aktualisiert."
     }
   },
   "Reports": {
@@ -7657,6 +7710,24 @@
     },
     "loading": {
       "ariaLabel": "Seite wird geladen"
+    }
+  },
+  "commandPalette": {
+    "open": "Suchen…",
+    "placeholder": "Befehl eingeben oder suchen…",
+    "empty": "Keine Ergebnisse.",
+    "groups": {
+      "navigate": "Navigation",
+      "team": "Team",
+      "finance": "Finanzen",
+      "preferences": "Einstellungen"
+    },
+    "theme": {
+      "light": "Heller Modus",
+      "dark": "Dunkler Modus"
+    },
+    "locale": {
+      "switchTo": "Sprache wechseln zu {locale}"
     }
   }
 }

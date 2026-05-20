@@ -2083,7 +2083,13 @@
         "document": "Document",
         "paymentRun": "Payment",
         "approvalFlow": "Approval",
-        "approvalStep": "Approval Step"
+        "approvalStep": "Approval Step",
+        "equipment": "Equipment",
+        "organization": "Organization",
+        "returnRequest": "Return Request",
+        "shipment": "Shipment",
+        "user": "User",
+        "unknown": "Resource"
       }
     },
     "errors": {
@@ -2580,6 +2586,25 @@
     "prerequisite": {
       "body": "Start by adding a contractor.",
       "cta": "Add contractor"
+    },
+    "myTasks": {
+      "heading": "No tasks assigned to you",
+      "body": "Tasks assigned to you across workflows will show up here.",
+      "cta": "Start workflow"
+    },
+    "templates": {
+      "heading": "No templates yet",
+      "body": "Create a reusable workflow template to standardize repeatable processes.",
+      "cta": "New template"
+    },
+    "noResults": {
+      "heading": "No results match",
+      "body": "Try a different search term or clear the filters.",
+      "cta": "Clear filters"
+    },
+    "auditLog": {
+      "heading": "No activity yet",
+      "body": "Recent system actions will appear here as they happen."
     }
   },
   "Equipment": {
@@ -2753,6 +2778,7 @@
       "actionFailed": "Could not complete the action. Please try again."
     },
     "contractorTab": {
+      "tabLabel": "Equipment",
       "emptyTitle": "No equipment assigned",
       "emptyDescription": "This contractor has no equipment assigned. Assign equipment from the equipment registry."
     },
@@ -5181,7 +5207,9 @@
         "entryAdded": "Time entry added",
         "entryAddFailed": "Failed to add time entry",
         "timesheetSubmitted": "Timesheet submitted for review",
-        "timesheetSubmitFailed": "Failed to submit timesheet"
+        "timesheetSubmitFailed": "Failed to submit timesheet",
+        "weekSaved": "Week saved.",
+        "synced": "Synced."
       }
     },
     "payments": {
@@ -5277,7 +5305,12 @@
       "ocrPrefillBanner": "We've pre-filled some fields from your invoice. Please review before submitting.",
       "viewPdf": "View PDF",
       "sellerNip": "Seller NIP",
-      "buyerNip": "Buyer NIP"
+      "buyerNip": "Buyer NIP",
+      "toast": {
+        "uploadReady": "Upload ready.",
+        "scanComplete": "Scan complete.",
+        "invoiceSubmitted": "Invoice submitted."
+      }
     },
     "submitSuccess": {
       "title": "Invoice Submitted",
@@ -5426,6 +5459,9 @@
       "securityLocked": "Security alerts cannot be disabled",
       "errors": {
         "updateFailed": "Failed to update preference. Please try again."
+      },
+      "toast": {
+        "updated": "Preference updated."
       }
     },
     "statusTimeline": {
@@ -5453,6 +5489,23 @@
       "noActivity": "No activity yet.",
       "weeksAgo": "{count} week{count, plural, one {} other {s}} ago",
       "monthsAgo": "{count} month{count, plural, one {} other {s}} ago"
+    },
+    "orgSwitch": {
+      "label": "Switch organization",
+      "current": "Current organization",
+      "switching": "Switching...",
+      "error": "Could not switch organization. Try again."
+    },
+    "toast": {
+      "saved": "Saved.",
+      "verified": "You are signed in.",
+      "weekSaved": "Week saved.",
+      "synced": "Synced.",
+      "magicLinkSent": "Check your inbox for the sign-in link.",
+      "uploadReady": "Upload ready.",
+      "scanComplete": "Scan complete.",
+      "invoiceSubmitted": "Invoice submitted.",
+      "preferenceUpdated": "Preference updated."
     }
   },
   "Reports": {
@@ -7691,5 +7744,23 @@
     "sourceManual": "Manual",
     "sourceJira": "Jira",
     "sourceLinear": "Linear"
+  },
+  "commandPalette": {
+    "open": "Search…",
+    "placeholder": "Type a command or search…",
+    "empty": "No results.",
+    "groups": {
+      "navigate": "Navigate",
+      "team": "Team",
+      "finance": "Finance",
+      "preferences": "Preferences"
+    },
+    "theme": {
+      "light": "Switch to light mode",
+      "dark": "Switch to dark mode"
+    },
+    "locale": {
+      "switchTo": "Switch language to {locale}"
+    }
   }
 }
