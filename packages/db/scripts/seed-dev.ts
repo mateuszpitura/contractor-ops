@@ -3923,6 +3923,12 @@ async function seedEquipment(
 ): Promise<void> {
   if (ctx.org.equipmentPerOrg === 0) return;
 
+  const equipmentRows: Prisma.EquipmentCreateManyInput[] = [];
+  const assignmentRows: Prisma.EquipmentAssignmentCreateManyInput[] = [];
+  const shipmentRows: Prisma.ShipmentCreateManyInput[] = [];
+  const shipmentEventRows: Prisma.ShipmentEventCreateManyInput[] = [];
+  const returnRequestRows: Prisma.ReturnRequestCreateManyInput[] = [];
+
   for (let i = 0; i < ctx.org.equipmentPerOrg; i += 1) {
     const type = ctx.fakers.org.helpers.arrayElement(EQUIPMENT_TYPES);
     const status = weightedPick<
@@ -3944,23 +3950,22 @@ async function seedEquipment(
       ['RETIRED', 1],
     ]);
     const purchaseDate = dateOnly(dateBetween(ctx.fakers.org, ctx.foundedAt, new Date()));
-    const eq = await prisma.equipment.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name: `${type.toLowerCase()}-${i}`,
-        serialNumber: makeEquipmentSerial(type, ctx.fakers.org),
-        type,
-        status,
-        notes: ctx.fakers.org.lorem.sentence(),
-        purchaseDate,
-        createdAt: purchaseDate,
-      },
-      select: { id: true },
+    const equipmentId = randomUUID();
+    equipmentRows.push({
+      id: equipmentId,
+      organizationId: ctx.organizationId,
+      name: `${type.toLowerCase()}-${i}`,
+      serialNumber: makeEquipmentSerial(type, ctx.fakers.org),
+      type,
+      status,
+      notes: ctx.fakers.org.lorem.sentence(),
+      purchaseDate,
+      createdAt: purchaseDate,
     });
 
     refs.push({
       type: 'EQUIPMENT',
-      id: eq.id,
+      id: equipmentId,
       name: `${type.toLowerCase()}-${i}`,
       createdAt: purchaseDate,
     });
@@ -3975,16 +3980,14 @@ async function seedEquipment(
         status === 'RETURNED'
           ? advanceCapped(assignedAt, ctx.fakers.org.number.int({ min: 14, max: 240 }))
           : null;
-      await prisma.equipmentAssignment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          equipmentId: eq.id,
-          contractorId: contractor.id,
-          assignedByUserId: ctx.ownerUserId,
-          assignedAt,
-          unassignedAt,
-          unassignedByUserId: unassignedAt ? ctx.ownerUserId : null,
-        },
+      assignmentRows.push({
+        organizationId: ctx.organizationId,
+        equipmentId,
+        contractorId: contractor.id,
+        assignedByUserId: ctx.ownerUserId,
+        assignedAt,
+        unassignedAt,
+        unassignedByUserId: unassignedAt ? ctx.ownerUserId : null,
       });
 
       // Optional outbound shipment for non-AVAILABLE — shipment created
@@ -3996,28 +3999,25 @@ async function seedEquipment(
           shipmentCreatedAt,
           ctx.fakers.org.number.int({ min: 1, max: 5 }),
         );
-        const ship = await prisma.shipment.create({
-          data: {
-            organizationId: ctx.organizationId,
-            equipmentId: eq.id,
-            direction: 'OUTBOUND',
-            carrier: ctx.fakers.org.helpers.arrayElement(['DHL', 'FedEx', 'InPost', 'UPS']),
-            trackingNumber: tokenHex(8).toUpperCase(),
-            currentStatus: shipStatus,
-            createdByUserId: ctx.ownerUserId,
-            createdAt: shipmentCreatedAt,
-          },
-          select: { id: true },
+        const shipmentId = randomUUID();
+        shipmentRows.push({
+          id: shipmentId,
+          organizationId: ctx.organizationId,
+          equipmentId,
+          direction: 'OUTBOUND',
+          carrier: ctx.fakers.org.helpers.arrayElement(['DHL', 'FedEx', 'InPost', 'UPS']),
+          trackingNumber: tokenHex(8).toUpperCase(),
+          currentStatus: shipStatus,
+          createdByUserId: ctx.ownerUserId,
+          createdAt: shipmentCreatedAt,
         });
-        await prisma.shipmentEvent.create({
-          data: {
-            organizationId: ctx.organizationId,
-            shipmentId: ship.id,
-            status: shipStatus,
-            occurredAt: eventOccurredAt,
-            createdByUserId: ctx.ownerUserId,
-            createdAt: eventOccurredAt,
-          },
+        shipmentEventRows.push({
+          organizationId: ctx.organizationId,
+          shipmentId,
+          status: shipStatus,
+          occurredAt: eventOccurredAt,
+          createdByUserId: ctx.ownerUserId,
+          createdAt: eventOccurredAt,
         });
       }
 
@@ -4034,20 +4034,51 @@ async function seedEquipment(
           returnStatus === 'PENDING_APPROVAL'
             ? null
             : advanceCapped(returnRequestedAt, ctx.fakers.org.number.int({ min: 1, max: 7 }));
-        await prisma.returnRequest.create({
-          data: {
-            organizationId: ctx.organizationId,
-            contractorId: contractor.id,
-            status: returnStatus,
-            targetPointName: 'Warehouse',
-            targetPointAddress: `${ctx.fakers.org.location.streetAddress()}, ${ctx.fakers.org.location.city()}`,
-            approvedByUserId: returnStatus === 'PENDING_APPROVAL' ? null : ctx.ownerUserId,
-            approvedAt: returnApprovedAt,
-            createdAt: returnRequestedAt,
-          },
+        returnRequestRows.push({
+          organizationId: ctx.organizationId,
+          contractorId: contractor.id,
+          status: returnStatus,
+          targetPointName: 'Warehouse',
+          targetPointAddress: `${ctx.fakers.org.location.streetAddress()}, ${ctx.fakers.org.location.city()}`,
+          approvedByUserId: returnStatus === 'PENDING_APPROVAL' ? null : ctx.ownerUserId,
+          approvedAt: returnApprovedAt,
+          createdAt: returnRequestedAt,
         });
       }
     }
+  }
+
+  // Wave inserts: parent Equipment → child EquipmentAssignment + Shipment +
+  // ReturnRequest, then ShipmentEvent referencing Shipment.
+  for (let i = 0; i < equipmentRows.length; i += 1000) {
+    await prisma.equipment.createMany({
+      data: equipmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < assignmentRows.length; i += 1000) {
+    await prisma.equipmentAssignment.createMany({
+      data: assignmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < shipmentRows.length; i += 1000) {
+    await prisma.shipment.createMany({
+      data: shipmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < shipmentEventRows.length; i += 1000) {
+    await prisma.shipmentEvent.createMany({
+      data: shipmentEventRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < returnRequestRows.length; i += 1000) {
+    await prisma.returnRequest.createMany({
+      data: returnRequestRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
