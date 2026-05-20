@@ -7352,6 +7352,9 @@ async function seedTimesheets(
     'Feature development',
   ];
 
+  const timesheetRows: Prisma.TimesheetCreateManyInput[] = [];
+  const entryRows: Prisma.TimeEntryCreateManyInput[] = [];
+
   for (const contractor of contractors) {
     const contractId = contractByContractor.get(contractor.id);
     if (!contractId) continue;
@@ -7384,25 +7387,9 @@ async function seedTimesheets(
           : null;
       const reviewer = reviewedAt ? ctx.fakers.org.helpers.arrayElement(ctx.users) : null;
 
-      const sheet = await prisma.timesheet.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          weekStartDate: dateOnly(weekStart),
-          status,
-          totalMinutes: 0,
-          submittedAt,
-          reviewedAt,
-          reviewedByUserId: reviewer?.id ?? null,
-          rejectionReason: status === 'REJECTED' ? ctx.fakers.org.lorem.sentence() : null,
-          createdAt: weekStart,
-        },
-        select: { id: true },
-      });
-
+      const timesheetId = randomUUID();
       const entryCount = ctx.fakers.org.number.int({ min: 3, max: 5 });
       const usedDays = new Set<number>();
-      const entries: Prisma.TimeEntryCreateManyInput[] = [];
 
       let totalMinutes = 0;
       for (let e = 0; e < entryCount; e += 1) {
@@ -7418,9 +7405,9 @@ async function seedTimesheets(
         const minutes = ctx.fakers.org.number.int({ min: 120, max: 480 });
         totalMinutes += minutes;
 
-        entries.push({
+        entryRows.push({
           organizationId: ctx.organizationId,
-          timesheetId: sheet.id,
+          timesheetId,
           contractorId: contractor.id,
           contractId,
           entryDate: dateOnly(entryDate),
@@ -7431,12 +7418,35 @@ async function seedTimesheets(
         });
       }
 
-      await prisma.timeEntry.createMany({ data: entries });
-      await prisma.timesheet.update({
-        where: { id: sheet.id },
-        data: { totalMinutes },
+      timesheetRows.push({
+        id: timesheetId,
+        organizationId: ctx.organizationId,
+        contractorId: contractor.id,
+        weekStartDate: dateOnly(weekStart),
+        status,
+        totalMinutes,
+        submittedAt,
+        reviewedAt,
+        reviewedByUserId: reviewer?.id ?? null,
+        rejectionReason: status === 'REJECTED' ? ctx.fakers.org.lorem.sentence() : null,
+        createdAt: weekStart,
       });
     }
+  }
+
+  // Wave: Timesheet → TimeEntry. totalMinutes is computed inline so no
+  // follow-up Timesheet.update is needed.
+  for (let i = 0; i < timesheetRows.length; i += 1000) {
+    await prisma.timesheet.createMany({
+      data: timesheetRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < entryRows.length; i += 1000) {
+    await prisma.timeEntry.createMany({
+      data: entryRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
