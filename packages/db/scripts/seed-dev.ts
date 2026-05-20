@@ -4399,6 +4399,7 @@ const INTEGRATION_PROVIDERS_FOR_SEED: ReadonlyArray<
 async function seedIntegrationConnections(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
   if (ctx.org.contractorsPerOrg === 0) return;
   const count = ctx.org.showcase ? INTEGRATION_PROVIDERS_FOR_SEED.length : 2;
+  const rows: Prisma.IntegrationConnectionCreateManyInput[] = [];
   for (let i = 0; i < count; i += 1) {
     const provider = INTEGRATION_PROVIDERS_FOR_SEED[i] ?? 'SLACK';
     // Showcase: cover every IntegrationStatus enum value at least once.
@@ -4419,24 +4420,28 @@ async function seedIntegrationConnections(prisma: PrismaClient, ctx: OrgSeed): P
     const lastSyncAt =
       status === 'CONNECTED' ? pastDateAfter(ctx.fakers.org, 7, connectedAt) : null;
     const lastErrorAt = status === 'ERROR' ? pastDateAfter(ctx.fakers.org, 30, connectedAt) : null;
-    await prisma.integrationConnection.create({
-      data: {
-        organizationId: ctx.organizationId,
-        provider,
-        status,
-        displayName: `${provider} (seed)`,
-        configJson: { seeded: true },
-        // credentialsRef points at a secret-store key. In-memory MemoryStore
-        // is the local-dev fallback (see packages/secrets) so a fake ref is
-        // OK — no actual secret is fetched.
-        credentialsRef: `seed:${ctx.org.key}:${provider}:${tokenHex(4)}`,
-        connectedByUserId: ctx.ownerUserId,
-        connectedAt,
-        lastSyncAt,
-        lastSuccessAt: lastSyncAt,
-        lastErrorAt,
-        lastErrorMessage: status === 'ERROR' ? 'simulated upstream 500 (seed)' : null,
-      },
+    rows.push({
+      organizationId: ctx.organizationId,
+      provider,
+      status,
+      displayName: `${provider} (seed)`,
+      configJson: { seeded: true },
+      // credentialsRef points at a secret-store key. In-memory MemoryStore
+      // is the local-dev fallback (see packages/secrets) so a fake ref is
+      // OK — no actual secret is fetched.
+      credentialsRef: `seed:${ctx.org.key}:${provider}:${tokenHex(4)}`,
+      connectedByUserId: ctx.ownerUserId,
+      connectedAt,
+      lastSyncAt,
+      lastSuccessAt: lastSyncAt,
+      lastErrorAt,
+      lastErrorMessage: status === 'ERROR' ? 'simulated upstream 500 (seed)' : null,
+    });
+  }
+  for (let i = 0; i < rows.length; i += 1000) {
+    await prisma.integrationConnection.createMany({
+      data: rows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
@@ -5228,15 +5233,14 @@ async function seedCourierConfigs(prisma: PrismaClient, ctx: OrgSeed): Promise<v
       : ctx.profile.countryCode === 'PL'
         ? (['InPost', 'DHL'] as const)
         : (['DHL', 'UPS'] as const);
-  for (const carrier of carriers) {
-    await prisma.courierConfig.create({
-      data: {
-        organizationId: ctx.organizationId,
-        carrier,
-        configJson: { seeded: true, accountId: tokenHex(4) },
-        createdAt: ctx.foundedAt,
-      },
-    });
+  const rows: Prisma.CourierConfigCreateManyInput[] = carriers.map(carrier => ({
+    organizationId: ctx.organizationId,
+    carrier,
+    configJson: { seeded: true, accountId: tokenHex(4) },
+    createdAt: ctx.foundedAt,
+  }));
+  if (rows.length > 0) {
+    await prisma.courierConfig.createMany({ data: rows, skipDuplicates: true });
   }
 }
 
@@ -6549,18 +6553,20 @@ async function seedCronAndObservability(prisma: PrismaClient, ctx: OrgSeed): Pro
 
   // GovApiAuditLog — a few request samples per gov-API integration.
   const govApis = ['ZATCA', 'PEPPOL', 'HMRC_VAT', 'VIES'];
-  for (const api of govApis) {
-    await prisma.govApiAuditLog.create({
-      data: {
-        organizationId: ctx.organizationId,
-        apiName: api,
-        endpoint: `/v1/${api.toLowerCase()}/health`,
-        method: 'GET',
-        requestBodyHash: tokenHex(32),
-        responseStatus: 200,
-        responseTimeMs: ctx.fakers.org.number.int({ min: 50, max: 1500 }),
-        createdAt: pastDate(ctx.fakers.org, 30),
-      },
+  const govRows: Prisma.GovApiAuditLogCreateManyInput[] = govApis.map(api => ({
+    organizationId: ctx.organizationId,
+    apiName: api,
+    endpoint: `/v1/${api.toLowerCase()}/health`,
+    method: 'GET',
+    requestBodyHash: tokenHex(32),
+    responseStatus: 200,
+    responseTimeMs: ctx.fakers.org.number.int({ min: 50, max: 1500 }),
+    createdAt: pastDate(ctx.fakers.org, 30),
+  }));
+  for (let i = 0; i < govRows.length; i += 1000) {
+    await prisma.govApiAuditLog.createMany({
+      data: govRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -6571,16 +6577,19 @@ async function seedCronAndObservability(prisma: PrismaClient, ctx: OrgSeed): Pro
   });
   if (conn) {
     const startedAt = pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt);
-    await prisma.integrationSyncLog.create({
-      data: {
-        organizationId: ctx.organizationId,
-        integrationConnectionId: conn.id,
-        direction: 'OUTBOUND',
-        syncType: 'FULL_SYNC',
-        status: 'SUCCESS',
-        startedAt,
-        completedAt: advanceCapped(startedAt, 0),
-      },
+    await prisma.integrationSyncLog.createMany({
+      data: [
+        {
+          organizationId: ctx.organizationId,
+          integrationConnectionId: conn.id,
+          direction: 'OUTBOUND',
+          syncType: 'FULL_SYNC',
+          status: 'SUCCESS',
+          startedAt,
+          completedAt: advanceCapped(startedAt, 0),
+        },
+      ],
+      skipDuplicates: true,
     });
   }
 
