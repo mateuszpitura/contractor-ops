@@ -2165,6 +2165,9 @@ async function seedContracts(
 
   // ~70% of contractors get a contract
   const subset = contractors.filter(() => ctx.fakers.org.datatype.boolean({ probability: 0.7 }));
+  const contractRows: Prisma.ContractCreateManyInput[] = [];
+  const ratePeriodRows: Prisma.ContractRatePeriodCreateManyInput[] = [];
+  const amendmentRows: Prisma.ContractAmendmentCreateManyInput[] = [];
   for (const c of subset) {
     // Contracts are negotiated, signed, then start 7–30 days later. Anchor
     // signedAt to org lifespan so a 365-day-old org doesn't have contracts
@@ -2181,51 +2184,50 @@ async function seedContracts(
     // The same rate value flows into the Contract row AND its single rate
     // period — they used to drift apart from independent draws.
     const rateValueMinor = moneyMinor(ctx.fakers.org, 50, 250);
-    const contract = await prisma.contract.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorId: c.id,
-        contractNumber: `C-${tokenHex(3).toUpperCase()}`,
-        title: `Service Agreement — ${c.legalName}`.slice(0, 200),
-        type: ctx.fakers.org.helpers.arrayElement([
-          'B2B_MASTER_SERVICE',
-          'STATEMENT_OF_WORK',
-          'NDA',
-          'IP_ASSIGNMENT',
-          'OTHER',
-        ]),
-        status: ctx.fakers.org.helpers.arrayElement([
-          'DRAFT',
-          'ACTIVE',
-          'ACTIVE',
-          'EXPIRED',
-          'TERMINATED',
-        ]),
-        startDate: dateOnly(start),
-        endDate: end ? dateOnly(end) : null,
-        currency: c.currency,
-        billingModel: ctx.fakers.org.helpers.arrayElement([
-          'HOURLY',
-          'DAILY',
-          'MONTHLY_RETAINER',
-          'MILESTONE',
-        ]),
-        rateType: 'PER_HOUR',
-        rateValueMinor,
-        paymentTermsDays: c.paymentTermsDays,
-        invoiceCycle: 'MONTHLY',
-        internalOwnerUserId: ctx.fakers.org.helpers.arrayElement(ctx.users).id,
-        complianceRiskLevel: ctx.fakers.org.helpers.arrayElement(['LOW', 'LOW', 'MEDIUM', 'HIGH']),
-        signedAt: isSigned ? signedAt : null,
-        notes: ctx.fakers.org.lorem.sentence(),
-        createdAt: signedAt,
-      },
-      select: { id: true },
+    const contractId = randomUUID();
+    contractRows.push({
+      id: contractId,
+      organizationId: ctx.organizationId,
+      contractorId: c.id,
+      contractNumber: `C-${tokenHex(3).toUpperCase()}`,
+      title: `Service Agreement — ${c.legalName}`.slice(0, 200),
+      type: ctx.fakers.org.helpers.arrayElement([
+        'B2B_MASTER_SERVICE',
+        'STATEMENT_OF_WORK',
+        'NDA',
+        'IP_ASSIGNMENT',
+        'OTHER',
+      ]),
+      status: ctx.fakers.org.helpers.arrayElement([
+        'DRAFT',
+        'ACTIVE',
+        'ACTIVE',
+        'EXPIRED',
+        'TERMINATED',
+      ]),
+      startDate: dateOnly(start),
+      endDate: end ? dateOnly(end) : null,
+      currency: c.currency,
+      billingModel: ctx.fakers.org.helpers.arrayElement([
+        'HOURLY',
+        'DAILY',
+        'MONTHLY_RETAINER',
+        'MILESTONE',
+      ]),
+      rateType: 'PER_HOUR',
+      rateValueMinor,
+      paymentTermsDays: c.paymentTermsDays,
+      invoiceCycle: 'MONTHLY',
+      internalOwnerUserId: ctx.fakers.org.helpers.arrayElement(ctx.users).id,
+      complianceRiskLevel: ctx.fakers.org.helpers.arrayElement(['LOW', 'LOW', 'MEDIUM', 'HIGH']),
+      signedAt: isSigned ? signedAt : null,
+      notes: ctx.fakers.org.lorem.sentence(),
+      createdAt: signedAt,
     });
-    contractByContractor.set(c.id, contract.id);
+    contractByContractor.set(c.id, contractId);
     refs.push({
       type: 'CONTRACT',
-      id: contract.id,
+      id: contractId,
       name: `Contract ${c.legalName}`,
       createdAt: signedAt,
     });
@@ -2246,50 +2248,64 @@ async function seedContracts(
       : end
         ? dateOnly(end)
         : null;
-    await prisma.contractRatePeriod.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractId: contract.id,
-        rateType: 'PER_HOUR',
-        rateValueMinor,
-        currency: c.currency,
-        validFrom: dateOnly(start),
-        validTo: originalValidTo,
-        createdAt: signedAt,
-      },
+    ratePeriodRows.push({
+      organizationId: ctx.organizationId,
+      contractId,
+      rateType: 'PER_HOUR',
+      rateValueMinor,
+      currency: c.currency,
+      validFrom: dateOnly(start),
+      validTo: originalValidTo,
+      createdAt: signedAt,
     });
 
     if (hasAmendment && amendmentEffective && newRateMinor !== null) {
       // New rate period kicks in on the amendment's effectiveDate.
-      await prisma.contractRatePeriod.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractId: contract.id,
-          rateType: 'PER_HOUR',
-          rateValueMinor: newRateMinor,
-          currency: c.currency,
-          validFrom: dateOnly(amendmentEffective),
-          validTo: end ? dateOnly(end) : null,
-          createdAt: amendmentEffective,
-        },
+      ratePeriodRows.push({
+        organizationId: ctx.organizationId,
+        contractId,
+        rateType: 'PER_HOUR',
+        rateValueMinor: newRateMinor,
+        currency: c.currency,
+        validFrom: dateOnly(amendmentEffective),
+        validTo: end ? dateOnly(end) : null,
+        createdAt: amendmentEffective,
       });
-      await prisma.contractAmendment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractId: contract.id,
-          amendmentNumber: 'A1',
-          title: 'Rate adjustment',
-          effectiveDate: dateOnly(amendmentEffective),
-          changesSummaryJson: {
-            reason: 'inflation_adjustment',
-            previousRateMinor: rateValueMinor,
-            newRateMinor,
-          },
-          description: ctx.fakers.org.lorem.sentence(),
-          createdAt: amendmentEffective,
+      amendmentRows.push({
+        organizationId: ctx.organizationId,
+        contractId,
+        amendmentNumber: 'A1',
+        title: 'Rate adjustment',
+        effectiveDate: dateOnly(amendmentEffective),
+        changesSummaryJson: {
+          reason: 'inflation_adjustment',
+          previousRateMinor: rateValueMinor,
+          newRateMinor,
         },
+        description: ctx.fakers.org.lorem.sentence(),
+        createdAt: amendmentEffective,
       });
     }
+  }
+
+  // Wave: parent Contract → child rate periods + amendments.
+  for (let i = 0; i < contractRows.length; i += 1000) {
+    await prisma.contract.createMany({
+      data: contractRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < ratePeriodRows.length; i += 1000) {
+    await prisma.contractRatePeriod.createMany({
+      data: ratePeriodRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < amendmentRows.length; i += 1000) {
+    await prisma.contractAmendment.createMany({
+      data: amendmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
   return contractByContractor;
 }
