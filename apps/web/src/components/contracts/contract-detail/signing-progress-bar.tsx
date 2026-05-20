@@ -1,18 +1,18 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Ban, Check, MoreVertical, RefreshCw, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card } from '@contractor-ops/ui/components/shadcn/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Ban, Check, MoreVertical, RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 import { SigningAuditTrail } from './signing-audit-trail';

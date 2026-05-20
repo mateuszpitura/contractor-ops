@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 interface PageTableSkeletonProps {
   /** Number of skeleton rows in the table card. Defaults to 8. */

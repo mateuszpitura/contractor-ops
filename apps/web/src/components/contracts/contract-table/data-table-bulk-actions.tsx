@@ -1,12 +1,6 @@
 'use client';
 
 import { iconSize } from '@contractor-ops/ui';
-import { useQueryClient } from '@tanstack/react-query';
-import type { Table } from '@tanstack/react-table';
-import { Loader2, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,20 +10,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
+import type { Table } from '@tanstack/react-table';
+import { Loader2, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 import type { ContractAction } from '../actions';
 import { getBulkContractActions } from '../actions';
 import type { ContractRow } from './columns';
-import { tKey } from '@/i18n/typed-keys';
 
 interface DataTableBulkActionsProps {
   table: Table<ContractRow>;

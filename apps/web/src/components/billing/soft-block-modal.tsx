@@ -1,13 +1,13 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { useTranslations } from 'next-intl';
 import { PlanComparisonGrid } from './plan-comparison-grid';
 
 // ---------------------------------------------------------------------------

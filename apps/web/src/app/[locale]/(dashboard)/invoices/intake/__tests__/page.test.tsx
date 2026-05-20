@@ -33,7 +33,7 @@ vi.mock('@/components/shared/page-header', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
 }));
 
-vi.mock('@/components/ui/skeleton', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/skeleton', () => ({
   Skeleton: () => <div data-testid="skeleton" />,
 }));
 

@@ -8,15 +8,20 @@
 
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE } from '@contractor-ops/validators';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { trpc } from '@/trpc/init';
 
 import type { DrvClearanceFormInitial } from './drv-clearance-form';

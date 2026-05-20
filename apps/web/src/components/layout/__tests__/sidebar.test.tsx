@@ -1,7 +1,7 @@
 import { render, screen } from '@/test/test-utils';
 import { AppSidebar } from '../sidebar';
 
-vi.mock('@/components/ui/sidebar', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
   Sidebar: ({ children }: { children: React.ReactNode }) => (
     <nav data-testid="sidebar">{children}</nav>
   ),

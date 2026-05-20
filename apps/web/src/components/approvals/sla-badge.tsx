@@ -1,8 +1,7 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { useEffect, useState } from 'react';
-
-import { Badge } from '@/components/ui/badge';
 
 // ---------------------------------------------------------------------------
 // Types

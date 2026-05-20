@@ -1,26 +1,32 @@
 'use client';
 
-import type { WhtServiceType } from '@contractor-ops/validators';
-import { useQuery } from '@tanstack/react-query';
-import { Calculator, Loader2 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import type { WhtServiceType } from '@contractor-ops/validators';
+import { useQuery } from '@tanstack/react-query';
+import { Calculator, Loader2 } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { tDyn } from '@/i18n/typed-keys';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
 
 /**
  * Cross-border withholding tax calculator.

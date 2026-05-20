@@ -5,6 +5,11 @@ import {
   AtelierPageHeader,
   NotificationsIllustration,
 } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { Tabs, TabsList, TabsTrigger } from '@contractor-ops/ui/components/shadcn/tabs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -13,11 +18,6 @@ import { useCallback, useId, useMemo } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
 import { tDyn } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';

@@ -1,12 +1,13 @@
 'use client';
 
+import { NoResultsIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { TableBody, TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { Row, Table } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
-import { FilterX, SearchX } from 'lucide-react';
+import { FilterX } from 'lucide-react';
 import type { ComponentType, ReactNode } from 'react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -181,9 +182,7 @@ function NoResultsState({
     <TableRow className="hover:bg-transparent">
       <TableCell colSpan={colSpan} className="py-20">
         <div className="mx-auto flex max-w-md flex-col items-center text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60">
-            <SearchX className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-          </div>
+          <NoResultsIllustration className="h-16 w-16 text-primary/60" aria-hidden="true" />
           <h3 className="mt-4 text-[15px] font-semibold tracking-tight text-foreground">{title}</h3>
           {!!description && (
             <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{description}</p>

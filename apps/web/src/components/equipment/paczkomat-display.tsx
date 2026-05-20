@@ -1,10 +1,9 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -1,11 +1,15 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import { Download, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // ---------------------------------------------------------------------------
 // Types

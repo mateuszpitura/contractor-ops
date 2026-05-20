@@ -8,8 +8,8 @@
 
 'use client';
 
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { useTranslations } from 'next-intl';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface BacsPreviewPreProps {
   fileText: string;

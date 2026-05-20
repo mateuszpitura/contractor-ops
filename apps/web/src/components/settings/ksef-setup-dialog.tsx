@@ -1,11 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, Loader2, ShieldCheck, Upload } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -13,10 +8,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, ShieldCheck, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

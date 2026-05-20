@@ -1,11 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,12 +9,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

@@ -1,11 +1,11 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import { Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------

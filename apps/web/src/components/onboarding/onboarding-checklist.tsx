@@ -1,5 +1,15 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { isPdplJurisdiction } from '@contractor-ops/validators';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
@@ -18,10 +28,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { OnboardingConsentStep } from '@/components/consent/onboarding-consent-step';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
 import { tKey } from '@/i18n/typed-keys';

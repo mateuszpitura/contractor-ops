@@ -1,12 +1,11 @@
 'use client';
 
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 

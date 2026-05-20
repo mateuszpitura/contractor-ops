@@ -1,9 +1,13 @@
 'use client';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { ShieldCheck } from 'lucide-react';
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // ---------------------------------------------------------------------------
 // Props

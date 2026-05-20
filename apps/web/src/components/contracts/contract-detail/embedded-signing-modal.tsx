@@ -1,13 +1,14 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { tKey, type LooseTranslator } from '@/i18n/typed-keys';
+import type { LooseTranslator } from '@/i18n/typed-keys';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

@@ -15,11 +15,6 @@
 
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -28,10 +23,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 interface KleinunternehmerToggleProps {

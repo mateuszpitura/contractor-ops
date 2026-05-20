@@ -6,6 +6,13 @@ import {
   SectionLabel,
   WorkflowsIllustration,
 } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { GitBranch, Play, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -14,8 +21,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MyTasksList } from '@/components/workflows/my-tasks-list';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { TemplatesTable } from '@/components/workflows/templates-table';

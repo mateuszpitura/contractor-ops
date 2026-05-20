@@ -1,5 +1,24 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { workflowAssignableRoleValues } from '@contractor-ops/validators/roles';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -21,27 +40,12 @@ import { useCallback, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { JiraTaskConfig } from '@/components/integrations/jira-task-config';
 import { LinearTaskConfig } from '@/components/integrations/linear-task-config';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import { CalendarTaskConfig } from '@/components/workflow/calendar-task-config';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { ConditionBuilder, getConditionSummary } from './condition-builder';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types

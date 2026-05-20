@@ -12,12 +12,11 @@
 
 'use client';
 
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { peppolParticipantPairSchema } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useMemo, useRef } from 'react';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------

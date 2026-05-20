@@ -7,14 +7,9 @@ import {
   DocumentsIllustration,
   SectionLabel,
 } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
-import { Download } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { AnimateIn } from '@/components/shared/animate-in';
-import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -22,7 +17,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
@@ -63,7 +63,7 @@ export default function PortalDocumentsPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <AnimateIn delay={0}>
         <AtelierPageHeader title={t('documents.title')} />
       </AnimateIn>
@@ -74,7 +74,7 @@ export default function PortalDocumentsPage() {
 
       <AnimateIn delay={2}>
         {isLoading ? (
-          <div className="mt-6">
+          <div>
             <AtelierTableShell isLoading>
               <Table>
                 <TableHeader>
@@ -108,7 +108,7 @@ export default function PortalDocumentsPage() {
             </AtelierTableShell>
           </div>
         ) : documents && documents.length > 0 ? (
-          <div className="mt-6">
+          <div>
             <AtelierTableShell>
               <Table>
                 <TableHeader>

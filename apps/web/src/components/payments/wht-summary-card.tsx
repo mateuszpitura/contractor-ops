@@ -1,12 +1,17 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { trpc } from '@/trpc/init';
 

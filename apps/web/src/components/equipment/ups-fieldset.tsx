@@ -1,20 +1,18 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-
-import type { DpdAddress, ParcelSize } from './dpd-fieldset';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { useTranslations } from 'next-intl';
 import { tKey } from '@/i18n/typed-keys';
+import type { DpdAddress, ParcelSize } from './dpd-fieldset';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,7 +127,12 @@ export function UpsFieldset({
           // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={val => val && onServiceCodeChange(val as UpsServiceCode)}>
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {(() => {
+                const opt = SERVICE_OPTIONS.find(o => o.value === serviceCode);
+                return opt ? tKey(t, opt.labelKey) : serviceCode;
+              })()}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {SERVICE_OPTIONS.map(opt => (

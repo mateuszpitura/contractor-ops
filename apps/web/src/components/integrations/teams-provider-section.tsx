@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQuery } from '@tanstack/react-query';
 import { UserCog } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 import { TeamsBrandIcon } from './brand-icons';
 import { TeamsChannelMappingCard } from './teams-channel-mapping-card';

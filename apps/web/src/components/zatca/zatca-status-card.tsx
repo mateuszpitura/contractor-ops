@@ -1,12 +1,6 @@
 'use client';
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, Settings, Unlink, Unplug } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ZatcaBrandIcon } from '@/components/integrations/brand-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,15 +11,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowRight, Settings, Unlink, Unplug } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ZatcaBrandIcon } from '@/components/integrations/brand-icons';
 import { Link } from '@/i18n/navigation';
+import { tKey } from '@/i18n/typed-keys';
 import { OnboardingWizard } from './onboarding-wizard';
 import { zatcaTrpc } from './zatca-trpc';
-import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge variant mapping (labels resolved via i18n)
@@ -143,9 +143,7 @@ export function ZatcaStatusCard() {
             <div className="flex items-center gap-2">
               <ZatcaBrandIcon className="h-8 w-auto" />
               <h4 className="text-base font-semibold">{t('title')}</h4>
-              <Badge variant={statusConfig.variant}>
-                {tKey(t, statusConfig.labelKey)}
-              </Badge>
+              <Badge variant={statusConfig.variant}>{tKey(t, statusConfig.labelKey)}</Badge>
             </div>
           </CardHeader>
           <CardContent className="flex flex-1 flex-col">
@@ -183,9 +181,7 @@ export function ZatcaStatusCard() {
         <div className="flex items-center gap-2">
           <ZatcaBrandIcon className="h-8 w-auto" />
           <h4 className="text-base font-semibold">{t('title')}</h4>
-          <Badge variant={statusConfig.variant}>
-            {tKey(t, statusConfig.labelKey)}
-          </Badge>
+          <Badge variant={statusConfig.variant}>{tKey(t, statusConfig.labelKey)}</Badge>
         </div>
       </CardHeader>
 

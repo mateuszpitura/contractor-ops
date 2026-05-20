@@ -11,11 +11,16 @@
 
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { formatDistanceToNow } from 'date-fns';
 import { AlertTriangle, CheckCircle2, Minus, WifiOff, XCircle } from 'lucide-react';
 import type { ReactElement, ReactNode } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type VatValidationStatus = 'valid' | 'invalid' | 'stale' | 'unavailable' | null;
 

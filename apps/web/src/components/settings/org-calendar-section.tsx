@@ -1,12 +1,5 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Unlink } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { FeatureGate } from '@/components/billing/feature-gate';
-import { GoogleCalendarIcon, OutlookCalendarIcon } from '@/components/integrations/provider-icons';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +9,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Unlink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
+import { GoogleCalendarIcon, OutlookCalendarIcon } from '@/components/integrations/provider-icons';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

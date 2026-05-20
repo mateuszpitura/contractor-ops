@@ -1,8 +1,8 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import type { TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------

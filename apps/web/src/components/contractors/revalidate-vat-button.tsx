@@ -10,12 +10,12 @@
 
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 
 interface RevalidateVatButtonProps {

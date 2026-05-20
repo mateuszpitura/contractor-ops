@@ -1,15 +1,9 @@
 'use client';
 
 import { AtelierTableShell, AuditLogIllustration } from '@contractor-ops/ui';
-import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { format, formatDistanceToNow } from 'date-fns';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Fragment, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -17,12 +11,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@contractor-ops/ui/components/shadcn/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { format, formatDistanceToNow } from 'date-fns';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Fragment, useMemo } from 'react';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -287,28 +291,26 @@ export function AuditLogTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <>
-              {Array.from({ length: 10 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-full max-w-[120px]" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-16 rounded-full" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="ms-auto h-4 w-4 rounded-sm" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </>
+            Array.from({ length: 10 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <TableRow key={`skeleton-${i}`}>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-full max-w-[120px]" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="ms-auto h-4 w-4 rounded-sm" />
+                </TableCell>
+              </TableRow>
+            ))
           ) : table.getRowModel().rows.length === 0 ? (
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={columns.length} className="py-16 text-center">

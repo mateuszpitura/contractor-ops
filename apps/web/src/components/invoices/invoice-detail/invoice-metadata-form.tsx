@@ -1,5 +1,38 @@
 'use client';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -12,38 +45,10 @@ import { z } from 'zod';
 import type { InvoiceAction } from '@/components/invoices/actions';
 import { getDetailInvoiceActions } from '@/components/invoices/actions';
 import { VatRateSelector } from '@/components/invoices/vat-rate-selector';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
+import type { LooseTranslator } from '@/i18n/typed-keys';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
-import { tKey, type LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Local Zod schema (mirrors invoiceUpdateSchema to avoid cross-package dep)
@@ -362,9 +367,7 @@ export function InvoiceMetadataForm({ invoice, onSubmittedForMatching }: Invoice
       tBulk: (key: string) => tKey(tBulk, key),
     });
 
-  const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) =>
-    tKey(tv, key),
-  );
+  const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) => tKey(tv, key));
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
   const {

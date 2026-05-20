@@ -23,7 +23,7 @@ vi.mock('@/components/layout/breadcrumb-context', () => ({
   useBreadcrumbContext: () => ({ overrides: new Map() }),
 }));
 
-vi.mock('@/components/ui/sidebar', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
   SidebarTrigger: () => (
     <button type="button" data-testid="sidebar-trigger">
       Menu

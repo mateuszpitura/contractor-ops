@@ -1,8 +1,5 @@
 'use client';
 
-import { AlertTriangle, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +9,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { AlertTriangle, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------

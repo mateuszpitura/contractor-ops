@@ -1,11 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useId, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -13,16 +8,21 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

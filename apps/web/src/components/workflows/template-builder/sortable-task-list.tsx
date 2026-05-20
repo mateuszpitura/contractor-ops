@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
   closestCenter,
@@ -20,8 +21,6 @@ import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-
-import { Button } from '@/components/ui/button';
 import { TaskCard } from './task-card';
 import type { TaskFormValues, TemplateFormValues } from './use-template-form';
 

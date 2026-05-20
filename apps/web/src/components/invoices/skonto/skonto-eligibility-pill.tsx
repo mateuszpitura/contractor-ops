@@ -1,12 +1,11 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { LucideIcon } from 'lucide-react';
 import { CheckCircle2, Clock, MinusCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { tKey } from '@/i18n/typed-keys';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Skonto eligibility pill — 5 states per UI-SPEC colour table

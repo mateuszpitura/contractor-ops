@@ -2,6 +2,10 @@
 
 import type { ZatcaTaxDetails } from '@contractor-ops/einvoice/zatca/schemas';
 import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice/zatca/schemas';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -9,10 +13,6 @@ import { useTranslations } from 'next-intl';
 import { useId } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------

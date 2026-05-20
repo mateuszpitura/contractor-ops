@@ -22,7 +22,7 @@ vi.mock('@/components/layout/dashboard-context', () => ({
   }),
 }));
 
-vi.mock('@/components/ui/sidebar', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
   SidebarMenuButton: ({
     children,
     ...props

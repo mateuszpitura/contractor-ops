@@ -20,6 +20,14 @@ import type {
   QuestionsSnapshot,
   ScheinselbstandigkeitOutcome,
 } from '@contractor-ops/classification';
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -30,12 +38,9 @@ import { DrvCategoryBar } from '@/components/contractors/classification/outcome/
 import { Ir35AreaCard } from '@/components/contractors/classification/outcome/ir35-area-card';
 import { OutcomePrintLayout } from '@/components/contractors/classification/outcome/outcome-print-layout';
 import { VerdictBanner } from '@/components/contractors/classification/outcome/verdict-banner';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, useRouter } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { tDyn } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 interface RouteParams extends Record<string, string> {
   id: string;

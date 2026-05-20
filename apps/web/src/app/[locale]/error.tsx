@@ -1,7 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
 
 /**
  * 500 Error page.

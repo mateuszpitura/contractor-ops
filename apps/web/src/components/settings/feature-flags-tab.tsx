@@ -1,9 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Flag, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Table,
   TableBody,
@@ -11,7 +8,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { Flag, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

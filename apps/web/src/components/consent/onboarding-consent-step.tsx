@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import {
   OPTIONAL_PURPOSES,
@@ -12,7 +13,6 @@ import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
 import { PrivacyNoticeAcknowledgement } from './privacy-notice-acknowledgement';

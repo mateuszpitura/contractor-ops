@@ -1,13 +1,5 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
-import { Loader2, Unlink } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +9,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
+import { Loader2, Unlink } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 import { ProviderDetailSheet } from './provider-detail-sheet';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge styling per UI-SPEC semantic colors

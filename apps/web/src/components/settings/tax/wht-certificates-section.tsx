@@ -1,13 +1,14 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Download, Eye, Loader2 } from 'lucide-react';
-import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import {
   Dialog,
   DialogContent,
@@ -15,8 +16,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -24,7 +25,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { Download, Eye, Loader2 } from 'lucide-react';
+import { useFormatter, useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { trpc } from '@/trpc/init';
 

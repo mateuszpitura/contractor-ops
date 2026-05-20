@@ -2,12 +2,6 @@
 
 import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
-import { useQueryClient } from '@tanstack/react-query';
-import { MoreHorizontal, Play } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,24 +11,30 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
+import { MoreHorizontal, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
+import { tDynLoose, tKey } from '@/i18n/typed-keys';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractorAction } from '../actions';
 import { getProfileContractorActions } from '../actions';
-import { tDyn, tDynLoose, tKey } from '@/i18n/typed-keys';
 
 type LifecycleStage = 'DRAFT' | 'ONBOARDING' | 'ACTIVE' | 'OFFBOARDING' | 'ENDED';
 

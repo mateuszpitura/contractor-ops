@@ -1,10 +1,10 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { CommandItem } from '@contractor-ops/ui/components/shadcn/command';
 import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
 import { useCallback } from 'react';
 import { ConfluenceIcon, NotionIcon } from '@/components/integrations/provider-icons';
-import { Badge } from '@/components/ui/badge';
-import { CommandItem } from '@/components/ui/command';
 import type { navigationItems } from '@/lib/navigation';
 import type { RecentItem } from './search-provider';
 
@@ -125,9 +125,7 @@ export function RecentCommandItem({
           {item.type}
         </Badge>
       )}
-      <span className="text-xs text-muted-foreground">
-        {tTime(key, params)}
-      </span>
+      <span className="text-xs text-muted-foreground">{tTime(key, params)}</span>
     </CommandItem>
   );
 }

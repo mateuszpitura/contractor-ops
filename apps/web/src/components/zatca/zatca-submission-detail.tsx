@@ -1,21 +1,24 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import type { ZatcaBadgeStatus } from './zatca-status-badge';
 import { ZatcaStatusBadge } from './zatca-status-badge';
 import { zatcaTrpc } from './zatca-trpc';

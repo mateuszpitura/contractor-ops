@@ -1,19 +1,19 @@
 'use client';
 
-import { Plus, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { enumKey } from '@/lib/enum-key';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { tDynLoose, tKey } from '@/i18n/typed-keys';
+import { enumKey } from '@/lib/enum-key';
 
 // ---------------------------------------------------------------------------
 // Types

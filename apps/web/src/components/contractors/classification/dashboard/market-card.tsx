@@ -11,10 +11,16 @@
 
 'use client';
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { ActiveAlertsTile } from './active-alerts-tile';
 import { CoverageTile } from './coverage-tile';

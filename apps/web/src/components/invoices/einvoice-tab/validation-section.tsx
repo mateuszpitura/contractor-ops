@@ -1,10 +1,10 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Loader2, ShieldQuestion } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { SvrlIssueList } from './svrl-issue-list';
 import type { EInvoiceLifecycleShape } from './types';
 import type { ValidationLayerStatus } from './validation-layer-row';

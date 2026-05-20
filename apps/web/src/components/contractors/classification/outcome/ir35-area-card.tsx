@@ -15,13 +15,21 @@ import type {
   QuestionsSnapshot,
   RuleSetQuestion,
 } from '@contractor-ops/classification';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TranslatorOf } from '@/i18n/typed-keys';
-
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
@@ -74,7 +82,11 @@ function readPrompt(question: RuleSetQuestion, locale: Locale): string {
   return question.prompt[locale] ?? question.prompt.en;
 }
 
-function readAnswerSummary(raw: unknown, _locale: Locale, t: TranslatorOf<'Classification'>): string {
+function readAnswerSummary(
+  raw: unknown,
+  _locale: Locale,
+  t: TranslatorOf<'Classification'>,
+): string {
   if (raw === undefined || raw === null) return t('outcome.drv.answerMissing');
   if (raw === 'yes' || raw === 'no') {
     return raw === 'yes' ? t('yesNo.yes') : t('yesNo.no');

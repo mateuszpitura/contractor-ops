@@ -1,9 +1,13 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
-
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ConfidenceBadgeProps {
   confidence: number;

@@ -1,9 +1,9 @@
 'use client';
 
+import { TableHead } from '@contractor-ops/ui/components/shadcn/table';
 import type { Column, Header } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
-import { TableHead } from '@/components/ui/table';
 
 // ---------------------------------------------------------------------------
 // Sort icon

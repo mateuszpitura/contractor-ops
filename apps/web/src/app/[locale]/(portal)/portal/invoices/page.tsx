@@ -9,14 +9,9 @@ import {
   InvoicesIllustration,
   SectionLabel,
 } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -24,7 +19,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { AnimateIn } from '@/components/shared/animate-in';
 import { Link } from '@/i18n/navigation';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';

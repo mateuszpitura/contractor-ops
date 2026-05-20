@@ -6,6 +6,16 @@ import {
   SectionLabel,
   TimeTrackingIllustration,
 } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { endOfISOWeek, endOfMonth, format, startOfISOWeek, startOfMonth } from 'date-fns';
 import { Plus } from 'lucide-react';
@@ -19,16 +29,6 @@ import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge'
 import { TimeSummaryStats } from '@/components/time/time-summary-stats';
 import { TimesheetGrid } from '@/components/time/timesheet-grid';
 import { TimesheetHeader } from '@/components/time/timesheet-header';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ export default function PortalTimePage() {
             weekStartDate: weekStartStr,
           }).queryKey,
         });
-        toast.success('Done.');
+        toast.success(t('toast.weekSaved'));
       },
 
       onError: err => toast.error(err.message),
@@ -179,7 +179,7 @@ export default function PortalTimePage() {
         void queryClient.invalidateQueries({
           queryKey: portalTrpc.portalTime.listTimesheets.queryOptions({ limit: 10 }).queryKey,
         });
-        toast.success('Done.');
+        toast.success(t('toast.synced'));
       },
 
       onError: err => toast.error(err.message),

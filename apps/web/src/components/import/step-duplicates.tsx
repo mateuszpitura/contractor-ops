@@ -1,11 +1,8 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import {
   Table,
   TableBody,
@@ -13,7 +10,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';

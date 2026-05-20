@@ -13,13 +13,13 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import { MarketCard } from '@/components/contractors/classification/dashboard/market-card';
 import { RefreshDashboardButton } from '@/components/contractors/classification/dashboard/refresh-dashboard-button';
 import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 function GlobalHeader() {

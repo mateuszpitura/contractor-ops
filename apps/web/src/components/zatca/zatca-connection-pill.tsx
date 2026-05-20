@@ -1,13 +1,13 @@
 'use client';
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, CheckCircle2, Loader2, Unplug } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { zatcaTrpc } from './zatca-trpc';
 import { tDyn } from '@/i18n/typed-keys';
+import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------
 // ZATCA Connection Status Pill
@@ -75,9 +75,7 @@ export function ZatcaConnectionPill() {
       className={`gap-1.5 ${STATUS_BADGE_CLASSES[status]}`}
       aria-live="polite">
       <Icon className={`size-3.5 ${isSpinner ? 'animate-spin' : ''}`} aria-hidden="true" />
-      <span className="text-xs font-medium">
-        {tDyn(t, 'status', status)}
-      </span>
+      <span className="text-xs font-medium">{tDyn(t, 'status', status)}</span>
     </Badge>
   );
 }

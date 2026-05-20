@@ -1,10 +1,10 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 type ExtractionStatus = 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED';
@@ -82,7 +82,9 @@ export function ExtractionStatusBar({
         )}
 
         {status === 'EXTRACTED' && (
-          <span className="text-sm text-muted-foreground">{t('complete', { fieldCount: fieldCount ?? 0 })}</span>
+          <span className="text-sm text-muted-foreground">
+            {t('complete', { fieldCount: fieldCount ?? 0 })}
+          </span>
         )}
 
         {status === 'PARTIAL' && (

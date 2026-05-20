@@ -6,6 +6,15 @@ import {
   EquipmentIllustration,
   SectionLabel,
 } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Package, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -19,15 +28,6 @@ import { ShipmentForm } from '@/components/equipment/shipment-form';
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -19,8 +21,6 @@ import { TabPayments } from '@/components/contractors/contractor-profile/tab-pay
 import { InvoicesTab } from '@/components/contractors/contractor-profile/tabs/invoices-tab';
 import { WorkflowsTab } from '@/components/contractors/contractor-profile/workflows-tab';
 import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 

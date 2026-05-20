@@ -1,6 +1,19 @@
 'use client';
 
 import { AtelierEmptyState, InvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import {
+  Table,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -11,22 +24,8 @@ import type { InvoiceRow } from '@/components/invoices/invoice-table/columns';
 import { getColumns } from '@/components/invoices/invoice-table/columns';
 import { InvoiceUploadArea } from '@/components/invoices/invoice-upload-area';
 import { DataTableBody } from '@/components/shared/data-table-body';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-
-// ---------------------------------------------------------------------------
-// Overdue row detection
-// ---------------------------------------------------------------------------
-
-const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
-
-function isRowOverdue(row: InvoiceRow): boolean {
-  if (!row.dueDate || NON_OVERDUE_STATUSES.has(row.status)) return false;
-  return new Date(row.dueDate) < new Date();
-}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -158,7 +157,7 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border bg-background">
+      <div className="overflow-hidden rounded-xl border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -181,8 +180,6 @@ export function InvoicesTab({ contractorId }: InvoicesTabProps) {
             emptyDescription={t('tab.noInvoicesBody')}
             noResultsTitle={t('tab.noInvoicesHeading')}
             skeletonRows={6}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            rowClassName={row => (isRowOverdue(row) ? 'bg-destructive/5' : '')}
           />
         </Table>
       </div>

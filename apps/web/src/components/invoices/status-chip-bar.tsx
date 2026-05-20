@@ -1,10 +1,10 @@
 'use client';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { tabsListVariants } from '@contractor-ops/ui/components/shadcn/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { tabsListVariants } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 

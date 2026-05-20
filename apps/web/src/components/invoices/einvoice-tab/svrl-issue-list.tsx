@@ -1,8 +1,11 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import {
   Table,
   TableBody,
@@ -10,7 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useTranslations } from 'next-intl';
 
 export type SvrlSeverity = 'fatal' | 'error' | 'warning' | 'info';
 

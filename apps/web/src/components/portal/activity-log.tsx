@@ -1,9 +1,9 @@
 'use client';
 
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Banknote, CheckCircle2, Circle, Eye, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 
 // ---------------------------------------------------------------------------
 // Types

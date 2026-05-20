@@ -1,13 +1,12 @@
 'use client';
 
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { getSteuernummerFormat, getSteuernummerRegex } from '@contractor-ops/validators';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface SteuernummerInputProps {

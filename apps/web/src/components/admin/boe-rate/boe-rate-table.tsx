@@ -6,16 +6,9 @@
 // Sorted by effectiveFrom DESC. Columns: date, rate, source, recorded by, notes, actions.
 
 import type { AppRouter } from '@contractor-ops/api';
-import { useQuery } from '@tanstack/react-query';
-import type { inferRouterOutputs } from '@trpc/server';
-import { PencilIcon, TrashIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { DeleteBoeRateDialog } from '@/components/admin/boe-rate/delete-boe-rate-dialog';
-import { EditBoeRateDialog } from '@/components/admin/boe-rate/edit-boe-rate-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -23,7 +16,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import type { inferRouterOutputs } from '@trpc/server';
+import { PencilIcon, TrashIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { DeleteBoeRateDialog } from '@/components/admin/boe-rate/delete-boe-rate-dialog';
+import { EditBoeRateDialog } from '@/components/admin/boe-rate/edit-boe-rate-dialog';
 import { trpc } from '@/trpc/init';
 
 // Source of truth: router output. Avoids drift when the Prisma generator

@@ -2,11 +2,6 @@
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, iconSize, statusToVariant } from '@contractor-ops/ui';
-import { useQueryClient } from '@tanstack/react-query';
-import { MoreHorizontal, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Fragment, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,24 +11,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Fragment, useState } from 'react';
+import { toast } from 'sonner';
 import { useResourceMutation } from '@/hooks/use-resource-mutation';
 import { Link, useRouter } from '@/i18n/navigation';
+import { tDynLoose, tKey } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { ContractAction } from '../actions';
 import { getDetailContractActions } from '../actions';
 import { EditContractDialog } from './edit-contract-dialog';
 import { SendForSignatureButton } from './send-for-signature-button';
-import { tDynLoose, tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types

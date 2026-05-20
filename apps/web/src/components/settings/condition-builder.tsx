@@ -1,17 +1,16 @@
 'use client';
 
-import { Plus, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Plus, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------

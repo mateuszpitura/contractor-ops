@@ -1,15 +1,19 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
 import { CalendarIcon, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status filter options
@@ -217,9 +221,7 @@ export function DataTableToolbar({
         <div className="flex flex-wrap items-center gap-1.5">
           {activeStatuses.map(s => (
             <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-              <span className="text-xs">
-                {tDynLoose(t, 'filters', s.toLowerCase())}
-              </span>
+              <span className="text-xs">{tDynLoose(t, 'filters', s.toLowerCase())}</span>
               <button
                 type="button"
                 className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"

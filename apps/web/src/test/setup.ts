@@ -22,10 +22,10 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
     matches: query.includes('prefers-reduced-motion'),
     media: query,
     onchange: null,
-    addListener: () => {}, // legacy
-    removeListener: () => {}, // legacy
-    addEventListener: () => {},
-    removeEventListener: () => {},
+    addListener: () => undefined, // legacy
+    removeListener: () => undefined, // legacy
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
     dispatchEvent: () => false,
   });
 }
@@ -87,7 +87,7 @@ vi.mock('@/trpc/init', () => {
   return { trpc: proxy, portalTrpc: proxy };
 });
 
-vi.mock('@/components/ui/scroll-area', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/scroll-area', () => ({
   ScrollArea: ({ children, className, ...props }: React.ComponentProps<'div'>) =>
     React.createElement(
       'div',

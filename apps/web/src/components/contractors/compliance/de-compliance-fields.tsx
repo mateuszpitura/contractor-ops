@@ -1,5 +1,7 @@
 'use client';
 
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode, DeCountryFields } from '@contractor-ops/validators';
 import {
   deEntityTypeEnum,
@@ -11,9 +13,6 @@ import {
 } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 import { BundeslandSelect } from './bundesland-select';
 import { EntityTypeSelect } from './entity-type-select';

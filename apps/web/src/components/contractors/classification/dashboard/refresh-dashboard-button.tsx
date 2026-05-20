@@ -10,11 +10,11 @@
 
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { RotateCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 
 const MIN_SPINNER_MS = 500;

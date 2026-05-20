@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Clock, RefreshCw, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { trpc } from '@/trpc/init';
 
 type RightRailProps = {

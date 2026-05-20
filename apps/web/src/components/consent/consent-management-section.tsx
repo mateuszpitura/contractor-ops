@@ -1,5 +1,15 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import { OPTIONAL_PURPOSES, REQUIRED_PURPOSES } from '@contractor-ops/validators';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,10 +17,6 @@ import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { trpc } from '@/trpc/init';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
 import { PrivacyNoticeDisplay } from './privacy-notice-display';

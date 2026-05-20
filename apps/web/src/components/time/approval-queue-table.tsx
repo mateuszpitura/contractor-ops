@@ -1,9 +1,5 @@
 'use client';
 
-import { addDays, format, startOfISOWeek } from 'date-fns';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Table,
   TableBody,
@@ -23,7 +19,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { addDays, format, startOfISOWeek } from 'date-fns';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { RejectionReasonDialog } from './rejection-reason-dialog';
 import { TimeEntryStatusBadge } from './time-entry-status-badge';
@@ -181,7 +181,7 @@ export function ApprovalQueueTable({
 
   return (
     <>
-      <div className="rounded-xl border bg-background">
+      <div className="overflow-hidden rounded-xl border bg-background">
         <Table>
           <TableHeader>
             <TableRow>

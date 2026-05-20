@@ -1,14 +1,8 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useId, useState } from 'react';
-import type { UseFormReturn } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Command,
   CommandEmpty,
@@ -16,24 +10,34 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+} from '@contractor-ops/ui/components/shadcn/command';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 import { usePermissions } from '@/hooks/use-permissions';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { trpc } from '@/trpc/init';
 import type { ContractWizardFormValues } from './wizard-dialog';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types

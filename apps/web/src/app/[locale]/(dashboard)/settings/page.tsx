@@ -1,6 +1,20 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { Pin, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsString, useQueryState } from 'nuqs';
@@ -27,9 +41,6 @@ import { ReminderRulesSection } from '@/components/settings/reminder-rules-secti
 import { SettingsTabsScroller } from '@/components/settings/settings-tabs-scroller';
 import { TransferTitleSettings } from '@/components/settings/transfer-title-settings';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useSettingsTabPins } from '@/hooks/use-settings-tab-pins';
 import { Link, useRouter } from '@/i18n/navigation';
@@ -46,7 +57,7 @@ function SettingsContent() {
   const t = useTranslations('Settings');
   const tPin = useTranslations('Settings.pin');
   const router = useRouter();
-  const { can } = usePermissions();
+  const { can, isPlatformAdmin } = usePermissions();
   const { isPinned, toggle: togglePin, isPending: pinPending } = useSettingsTabPins();
 
   // URL-synced tab state for deep linking (e.g. OAuth callback to ?tab=integrations)
@@ -96,7 +107,7 @@ function SettingsContent() {
       if (tab.key === 'billing') return canManageBilling;
       if (tab.key === 'audit-log') return canViewAuditLog;
       if (tab.key === 'api-keys') return canManageIntegrations;
-      if (tab.key === 'feature-flags') return canViewAuditLog;
+      if (tab.key === 'feature-flags') return isPlatformAdmin;
       if (tab.key === 'tax') return canViewTaxAdmin;
       return true;
     }).map(tab => {
@@ -118,6 +129,7 @@ function SettingsContent() {
     canManageBilling,
     canViewAuditLog,
     canViewTaxAdmin,
+    isPlatformAdmin,
   ]);
 
   return (
@@ -231,7 +243,7 @@ function SettingsContent() {
             </TabsContent>
           )}
 
-          {canViewAuditLog && (
+          {isPlatformAdmin && (
             <TabsContent value="feature-flags" className="mt-6">
               <FeatureFlagsTab />
             </TabsContent>

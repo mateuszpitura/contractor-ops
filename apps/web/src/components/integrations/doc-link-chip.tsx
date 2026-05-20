@@ -1,8 +1,5 @@
 'use client';
 
-import { RefreshCw, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +9,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import { RefreshCw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ConfluenceIcon, NotionIcon } from './provider-icons';
 

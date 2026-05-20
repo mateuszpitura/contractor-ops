@@ -1,17 +1,21 @@
 'use client';
 
+import { Card } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
 import { Banknote, ChevronDown, FileText, FolderOpen, Receipt, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { portalTrpc } from '@/trpc/init';
 import type { LooseTranslator } from '@/i18n/typed-keys';
+import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -119,7 +123,7 @@ export function NotificationPreferencesSection() {
   const updatePrefBase = portalTrpc.portal.updateNotificationPreference.mutationOptions({
     onError: err => toast.error(err.message),
     onSuccess: () => {
-      toast.success('Done.');
+      toast.success(t('toast.updated'));
       queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
     },
   });

@@ -1,11 +1,16 @@
 'use client';
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 // Forward-declared tab content components (imported lazily by parent)
 import type { ReactNode } from 'react';
 import { useCallback } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { tDyn } from '@/i18n/typed-keys';
 
 const TAB_KEYS = [
@@ -64,7 +69,7 @@ export function ProfileTabs({
   return (
     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
     <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
-      <TabsList variant="line" className="w-full justify-start overflow-x-auto">
+      <TabsList className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>
             {tDyn(t, 'tabs', key)}

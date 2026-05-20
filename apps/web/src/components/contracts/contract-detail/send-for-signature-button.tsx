@@ -1,11 +1,15 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { PenLine } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SendForSignatureDialog } from './send-for-signature-dialog';
 
 // ---------------------------------------------------------------------------

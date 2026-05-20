@@ -5,13 +5,13 @@
 // Client portion of /admin/boe-rate. The server page wrapper enforces
 // platform-operator authorization (F-SEC-04) before this renders.
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { PlusIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { AddBoeRateDialog } from '@/components/admin/boe-rate/add-boe-rate-dialog';
 import { BoeRateTable } from '@/components/admin/boe-rate/boe-rate-table';
 import { PollerStatusStrip } from '@/components/admin/boe-rate/poller-status-strip';
-import { Button } from '@/components/ui/button';
 
 export function BoeRatePageClient() {
   const t = useTranslations('Admin.BoeRate');

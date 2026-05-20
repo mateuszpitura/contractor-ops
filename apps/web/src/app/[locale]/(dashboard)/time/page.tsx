@@ -6,6 +6,28 @@ import {
   SectionLabel,
   TimeTrackingIllustration,
 } from '@contractor-ops/ui';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { Clock } from 'lucide-react';
@@ -21,23 +43,6 @@ import { ApprovalQueueTable } from '@/components/time/approval-queue-table';
 import { ReconciliationSpotCheck } from '@/components/time/reconciliation-spot-check';
 import { ReconciliationTable } from '@/components/time/reconciliation-table';
 import { TimeEntryStatusBadge } from '@/components/time/time-entry-status-badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 

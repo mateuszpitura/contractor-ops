@@ -6,10 +6,14 @@
 
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertOctagon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface OverrideMetadata {
   reason: string;

@@ -2,13 +2,18 @@
 
 import { complianceState } from '@contractor-ops/einvoice/compliance';
 import { IntegrationsIllustration } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, FileCheck, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

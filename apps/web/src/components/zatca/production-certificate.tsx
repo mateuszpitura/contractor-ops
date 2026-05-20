@@ -1,13 +1,12 @@
 'use client';
 
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useMutation } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, Check, Loader2, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import { zatcaTrpc } from './zatca-trpc';
 
 // ---------------------------------------------------------------------------

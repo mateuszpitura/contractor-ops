@@ -1,18 +1,18 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Label } from '@/components/ui/label';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 import { LinearLogo } from './linear-logo';
 

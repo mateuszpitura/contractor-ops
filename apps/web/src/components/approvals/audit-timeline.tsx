@@ -1,18 +1,23 @@
 'use client';
 
+import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { approvalAuditSystemLabel } from '@contractor-ops/validators';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRightLeft, CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { tKey } from '@/i18n/typed-keys';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
-import { tKey } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -245,8 +250,7 @@ export function AuditTimeline({ invoiceId }: AuditTimelineProps) {
     ((data as Record<string, unknown> | undefined)?.events as AuditEvent[]) ?? [];
 
   // Cast t for sub-components that accept a simpler signature
-  const tFn = (key: string, params?: Record<string, string>) =>
-    tKey(t, key, params);
+  const tFn = (key: string, params?: Record<string, string>) => tKey(t, key, params);
 
   return (
     <Card>

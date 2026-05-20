@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Plus, Users2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
@@ -8,7 +9,6 @@ import { PinActionButton } from '@/components/settings/pin-action-button';
 import { WorkflowRoleFormDialog } from '@/components/settings/workflow-roles/workflow-role-form-dialog';
 import { WorkflowRolesTable } from '@/components/settings/workflow-roles/workflow-roles-table';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/use-permissions';
 
 export default function WorkflowRolesPage() {

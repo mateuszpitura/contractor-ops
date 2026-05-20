@@ -1,12 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ConfluenceIcon, NotionIcon } from '@/components/integrations/provider-icons';
-import { useFlagBag } from '@/components/layout/feature-flag-context';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   CommandDialog,
   CommandEmpty,
@@ -15,14 +9,20 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@/components/ui/command';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/command';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ConfluenceIcon, NotionIcon } from '@/components/integrations/provider-icons';
+import { useFlagBag } from '@/components/layout/feature-flag-context';
 import { useRouter } from '@/i18n/navigation';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 import { navigationItems } from '@/lib/navigation';
 import { trpc } from '@/trpc/init';
 import type { RecentItem } from './search-provider';
 import { useSearch } from './search-provider';
-import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -165,9 +165,7 @@ function RecentCommandItem({
           {item.type}
         </Badge>
       )}
-      <span className="text-xs text-muted-foreground">
-        {tTime(key, params)}
-      </span>
+      <span className="text-xs text-muted-foreground">{tTime(key, params)}</span>
     </CommandItem>
   );
 }

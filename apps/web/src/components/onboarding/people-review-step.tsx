@@ -1,24 +1,17 @@
 'use client';
 
-import type { MergedPerson } from '@contractor-ops/validators';
-import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
-import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
-import { useQuery } from '@tanstack/react-query';
-import { Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -26,8 +19,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '@contractor-ops/ui/components/shadcn/table';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
+import type { MergedPerson } from '@contractor-ops/validators';
+import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
+import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
+import { useQuery } from '@tanstack/react-query';
+import { Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { trpc } from '@/trpc/init';
 import { ConflictResolutionPopover } from './conflict-resolution-popover';
 import type { PersonSelection } from './import-wizard';
@@ -306,7 +311,7 @@ export function PeopleReviewStep({
 
       {/* Filter tabs */}
       <Tabs value={activeFilter} onValueChange={setActiveFilter}>
-        <TabsList variant="line">
+        <TabsList>
           <TabsTrigger value="all">{t('filterAll')}</TabsTrigger>
           <TabsTrigger value="new">{t('filterNew')}</TabsTrigger>
           <TabsTrigger value="conflict">{t('filterConflicts')}</TabsTrigger>

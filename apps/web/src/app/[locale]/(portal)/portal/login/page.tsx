@@ -1,5 +1,9 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Mail } from 'lucide-react';
@@ -8,10 +12,6 @@ import { useCallback, useId, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ export default function PortalLoginPage() {
     portalTrpc.portal.requestMagicLink.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.magicLinkSent'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),

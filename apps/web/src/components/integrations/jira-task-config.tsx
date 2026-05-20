@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { trpc } from '@/trpc/init';
 import { JiraProjectMappingDialog } from './jira-project-mapping-dialog';
 

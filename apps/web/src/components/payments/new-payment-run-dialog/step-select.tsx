@@ -1,24 +1,28 @@
 'use client';
 
 import { PaymentsIllustration } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
-import type { RowSelectionState } from '@tanstack/react-table';
-import { CalendarIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useQuery } from '@tanstack/react-query';
+import type { RowSelectionState } from '@tanstack/react-table';
+import { CalendarIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { ReadyInvoiceRow } from '../invoice-selection-table/columns';
@@ -125,10 +129,7 @@ export function StepSelect({
   }, [filteredInvoices, onSelectionChange]);
 
   // Column definitions
-  const columns = useMemo(
-    () => getColumns(t, formatDate),
-    [t, formatDate],
-  );
+  const columns = useMemo(() => getColumns(t, formatDate), [t, formatDate]);
 
   // Selection summary
   const selectedInvoices = useMemo(

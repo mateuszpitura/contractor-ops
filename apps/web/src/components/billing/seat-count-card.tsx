@@ -1,9 +1,13 @@
 'use client';
 
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Progress,
+  ProgressIndicator,
+  ProgressTrack,
+} from '@contractor-ops/ui/components/shadcn/progress';
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------

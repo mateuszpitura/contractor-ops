@@ -1,10 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +9,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 import { StepConfirm } from './step-confirm';
 import { StepDuplicates } from './step-duplicates';

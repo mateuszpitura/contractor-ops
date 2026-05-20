@@ -1,9 +1,9 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { X, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 // ---------------------------------------------------------------------------
 // Types

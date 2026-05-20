@@ -1,18 +1,23 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Pencil, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@/i18n/navigation';
+import type { LooseTranslator } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import type { LooseTranslator } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -261,11 +266,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           <FieldRow label={t('fields.currency')} value={contract.currency} />
           <FieldRow
             label={t('fields.billingModel')}
-            value={translateEnum(
-              contract.billingModel,
-              'billingModel',
-              tEnum as LooseTranslator,
-            )}
+            value={translateEnum(contract.billingModel, 'billingModel', tEnum as LooseTranslator)}
           />
           <FieldRow
             label={t('fields.rateType')}
@@ -281,11 +282,7 @@ export function OverviewTab({ contract }: OverviewTabProps) {
           )}
           <FieldRow
             label={t('fields.invoiceCycle')}
-            value={translateEnum(
-              contract.invoiceCycle,
-              'invoiceCycle',
-              tEnum as LooseTranslator,
-            )}
+            value={translateEnum(contract.invoiceCycle, 'invoiceCycle', tEnum as LooseTranslator)}
           />
           {contract.retainerAmountMinor != null && (
             <FieldRow

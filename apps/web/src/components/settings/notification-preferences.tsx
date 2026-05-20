@@ -1,5 +1,29 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -17,28 +41,8 @@ import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -227,9 +231,7 @@ export function NotificationPreferences() {
                 <TableHead className="w-20 text-center">{t('notifications.columnInApp')}</TableHead>
                 <TableHead className="w-20 text-center">{t('notifications.columnEmail')}</TableHead>
                 <TableHead className="w-20 text-center">{t('notifications.columnSlack')}</TableHead>
-                <TableHead className="w-20 text-center">
-                  {t('notifications.columnTeams')}
-                </TableHead>
+                <TableHead className="w-20 text-center">{t('notifications.columnTeams')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -320,15 +322,9 @@ export function NotificationPreferences() {
                       ) : (
                         <Tooltip>
                           <TooltipTrigger render={<div className="inline-flex" />}>
-                            <Switch
-                              checked={false}
-                              disabled
-                              aria-label={tAria('teams')}
-                            />
+                            <Switch checked={false} disabled aria-label={tAria('teams')} />
                           </TooltipTrigger>
-                          <TooltipContent>
-                            {t('notifications.teamsDisabledTooltip')}
-                          </TooltipContent>
+                          <TooltipContent>{t('notifications.teamsDisabledTooltip')}</TooltipContent>
                         </Tooltip>
                       )}
                     </TableCell>

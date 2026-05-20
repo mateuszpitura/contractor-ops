@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import {
   FileSpreadsheet,
   FileText,
@@ -11,9 +13,6 @@ import {
   X,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------

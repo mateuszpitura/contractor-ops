@@ -1,5 +1,6 @@
 'use client';
 
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
 import type { LucideIcon } from 'lucide-react';
 import {
   CheckCircle2,
@@ -9,7 +10,6 @@ import {
   FileWarning,
   UserCheck,
 } from 'lucide-react';
-import { Bdi } from '@/components/ui/bdi';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------

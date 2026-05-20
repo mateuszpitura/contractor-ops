@@ -1,11 +1,16 @@
 'use client';
 
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ExternalLink, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { CopyableField } from '@/components/shared/copyable-field';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { KsefSourceBadge } from './ksef-badge';
 
 // ---------------------------------------------------------------------------

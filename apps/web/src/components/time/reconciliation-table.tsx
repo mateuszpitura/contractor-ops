@@ -1,13 +1,7 @@
 'use client';
 
 import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { ExternalLink } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { DeviationFlag } from '@/components/time/deviation-flag';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -15,7 +9,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { ExternalLink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { DeviationFlag } from '@/components/time/deviation-flag';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 
@@ -139,7 +139,7 @@ export function ReconciliationTable() {
   }
 
   return (
-    <div className="rounded-xl border bg-background">
+    <div className="overflow-hidden rounded-xl border bg-background">
       <Table>
         <TableHeader>
           <TableRow>

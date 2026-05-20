@@ -17,9 +17,6 @@
 
 'use client';
 
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useId, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,9 +26,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -39,9 +36,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useId, useState } from 'react';
 
 const REASON_MIN_LENGTH = 20;
 

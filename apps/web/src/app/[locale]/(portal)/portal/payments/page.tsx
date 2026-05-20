@@ -8,12 +8,7 @@ import {
   PaymentsIllustration,
   SectionLabel,
 } from '@contractor-ops/ui';
-import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { AnimateIn } from '@/components/shared/animate-in';
-import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -21,7 +16,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { AnimateIn } from '@/components/shared/animate-in';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
 
@@ -61,7 +61,7 @@ export default function PortalPaymentsPage() {
   const { formatDate } = usePortalDateFormatter();
 
   return (
-    <div>
+    <div className="space-y-6">
       <AnimateIn delay={0}>
         <AtelierPageHeader title={t('payments.title')} />
       </AnimateIn>
@@ -72,7 +72,7 @@ export default function PortalPaymentsPage() {
 
       <AnimateIn delay={2}>
         {isLoading ? (
-          <div className="mt-6">
+          <div>
             <AtelierTableShell isLoading>
               <Table>
                 <TableHeader>
@@ -106,7 +106,7 @@ export default function PortalPaymentsPage() {
             </AtelierTableShell>
           </div>
         ) : payments && payments.length > 0 ? (
-          <div className="mt-6">
+          <div>
             <AtelierTableShell>
               <Table>
                 <TableHeader>

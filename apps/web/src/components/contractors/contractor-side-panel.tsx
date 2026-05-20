@@ -1,19 +1,23 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
 import { useTranslations } from 'next-intl';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
 import { ComplianceHealthBadge } from './compliance-health-badge';
 import type { ContractorRow } from './contractor-table/columns';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Lifecycle badge colors (same as columns.tsx)
@@ -78,9 +82,7 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
                   className={lifecycleBadgeColors[contractor.lifecycleStage] ?? ''}>
                   {tDynLoose(t, 'lifecycle', enumKey(contractor.lifecycleStage))}
                 </Badge>
-                <Badge variant="secondary">
-                  {tDynLoose(t, 'type', enumKey(contractor.type))}
-                </Badge>
+                <Badge variant="secondary">{tDynLoose(t, 'type', enumKey(contractor.type))}</Badge>
                 <ComplianceHealthBadge health={contractor.complianceHealth} />
               </div>
             </SheetHeader>

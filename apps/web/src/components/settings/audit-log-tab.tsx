@@ -1,13 +1,14 @@
 'use client';
 
-import { SectionLabel } from '@contractor-ops/ui';
+import { AtelierEmptyState, AuditLogIllustration, SectionLabel } from '@contractor-ops/ui';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Calendar as CalendarIcon, Download, Loader2, Search, Shield, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
+import { tDynLoose } from '@/i18n/typed-keys';
 
 /** Format a local Date to `YYYY-MM-DD` without UTC shift. */
 function toLocalDateString(d: Date): string {
@@ -23,13 +24,17 @@ function parseLocalDate(s: string): Date {
   return new Date(y, m - 1, d);
 }
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import type { AuditLogEntry } from './audit-log-table';
@@ -82,6 +87,7 @@ const RESOURCE_TYPE_OPTIONS = [
 export function AuditLogTab() {
   const t = useTranslations('Settings.auditLog');
   const tAria = useTranslations('Common.aria');
+  const tEmpty = useTranslations('EmptyStates.auditLog');
   const reactId = useId();
 
   // ---------------------------------------------------------------------------
@@ -354,6 +360,9 @@ export function AuditLogTab() {
 
   const isLoading = listQuery.isPending && !listQuery.data;
   const isRefetching = listQuery.isFetching && !isLoading;
+
+  const hasAnyFilter = activeFilterCount > 0 || (typeof search === 'string' && search.length > 0);
+  const isTrulyEmpty = !isLoading && items.length === 0 && !hasAnyFilter;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -641,9 +650,7 @@ export function AuditLogTab() {
           <div className="flex flex-wrap items-center gap-1.5">
             {actions.map(a => (
               <Badge key={`a-${a}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">
-                  {tDynLoose(t, 'actions', enumKey(a))}
-                </span>
+                <span className="text-xs">{tDynLoose(t, 'actions', enumKey(a))}</span>
                 <button
                   type="button"
                   className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
@@ -658,9 +665,7 @@ export function AuditLogTab() {
             ))}
             {resourceTypes.map(rt => (
               <Badge key={`r-${rt}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">
-                  {tDynLoose(t, 'resources', enumKey(rt))}
-                </span>
+                <span className="text-xs">{tDynLoose(t, 'resources', enumKey(rt))}</span>
                 <button
                   type="button"
                   className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
@@ -726,20 +731,30 @@ export function AuditLogTab() {
         )}
       </div>
 
-      {/* Table */}
-      <AuditLogTable
-        data={items}
-        totalCount={totalCount}
-        page={currentPage}
-        pageSize={PAGE_SIZE}
-        onPageChange={handlePageChange}
-        sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
-        onSortOrderChange={handleSortOrderChange}
-        expandedRows={expandedRows}
-        onToggleRow={handleToggleRow}
-        isLoading={isLoading}
-        isFetching={isRefetching}
-      />
+      {/* Table or empty state */}
+      {isTrulyEmpty ? (
+        <AtelierEmptyState
+          variant="subview"
+          illustration={AuditLogIllustration}
+          heading={tEmpty('heading')}
+          body={tEmpty('body')}
+          renderAction={renderEmptyStateAction}
+        />
+      ) : (
+        <AuditLogTable
+          data={items}
+          totalCount={totalCount}
+          page={currentPage}
+          pageSize={PAGE_SIZE}
+          onPageChange={handlePageChange}
+          sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
+          onSortOrderChange={handleSortOrderChange}
+          expandedRows={expandedRows}
+          onToggleRow={handleToggleRow}
+          isLoading={isLoading}
+          isFetching={isRefetching}
+        />
+      )}
     </div>
   );
 }

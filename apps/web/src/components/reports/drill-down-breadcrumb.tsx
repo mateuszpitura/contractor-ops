@@ -1,7 +1,5 @@
 'use client';
 
-import { X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,8 +7,10 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/breadcrumb';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface DrillDownBreadcrumbProps {
   segments: Array<{ label: string; id?: string }>;

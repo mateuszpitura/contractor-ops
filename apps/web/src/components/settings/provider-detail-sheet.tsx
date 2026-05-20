@@ -1,12 +1,5 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
-import { Loader2, Unlink } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,16 +9,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from '@contractor-ops/ui/components/shadcn/sheet';
 import {
   Table,
   TableBody,
@@ -33,9 +26,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
+import { Loader2, Unlink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge styling (shared with ProviderConnectionCard)

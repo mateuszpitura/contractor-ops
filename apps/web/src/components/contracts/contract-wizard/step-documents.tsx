@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText,
@@ -14,10 +16,8 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { trpc } from '@/trpc/init';
 import { tDynLoose } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types

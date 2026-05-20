@@ -1,11 +1,10 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import type { DirectoryRole } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { ROLE_LABELS } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------

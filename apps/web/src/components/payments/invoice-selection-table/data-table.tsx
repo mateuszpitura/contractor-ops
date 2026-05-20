@@ -1,10 +1,6 @@
 'use client';
 
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
-
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -12,7 +8,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useMemo } from 'react';
 
 import type { ReadyInvoiceRow } from './columns';
 
@@ -55,7 +54,7 @@ export function InvoiceSelectionDataTable({
   const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
 
   return (
-    <div className="rounded-xl border bg-background min-h-[320px]">
+    <div className="overflow-hidden rounded-xl border bg-background min-h-[320px]">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (

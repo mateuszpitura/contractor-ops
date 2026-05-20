@@ -11,22 +11,21 @@
 
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, MoreHorizontal } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-
-import { Badge } from '@/components/ui/badge';
-import { Bdi } from '@/components/ui/bdi';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { TableCell, TableRow } from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 import type { LeitwegIdEditInitial } from './leitweg-id-create-dialog';
 import { LeitwegIdCreateDialog } from './leitweg-id-create-dialog';

@@ -1,14 +1,13 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import type { ComplianceCheckResult } from './zatca-trpc';
 import { zatcaTrpc } from './zatca-trpc';
 

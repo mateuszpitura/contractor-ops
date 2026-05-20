@@ -23,14 +23,7 @@
 
 'use client';
 
-import { leitwegIdSchema } from '@contractor-ops/validators';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Pencil, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useId, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -38,11 +31,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { leitwegIdSchema } from '@contractor-ops/validators';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Pencil, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 

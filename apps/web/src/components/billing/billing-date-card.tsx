@@ -1,8 +1,8 @@
 'use client';
 
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Calendar } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types

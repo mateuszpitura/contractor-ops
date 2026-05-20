@@ -1,18 +1,17 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import React, { useId } from 'react';
-import type { UseFormReturn } from 'react-hook-form';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { useTranslations } from 'next-intl';
+import React, { useId } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
 
 import { tKey } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';

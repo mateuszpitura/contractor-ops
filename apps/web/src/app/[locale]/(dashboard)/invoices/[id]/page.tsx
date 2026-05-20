@@ -2,6 +2,8 @@
 
 import type { InvoiceStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Inbox, Mail, Upload } from 'lucide-react';
 import { useParams } from 'next/navigation';
@@ -26,19 +28,16 @@ import { PeppolInboundBanner } from '@/components/peppol/peppol-inbound-banner';
 import { PeppolQRDisplay } from '@/components/peppol/peppol-qr-display';
 import { PeppolTransmissionStatus } from '@/components/peppol/peppol-transmission-status';
 import { ReconciliationCard } from '@/components/time/reconciliation-card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { ZatcaBadgeStatus } from '@/components/zatca/zatca-status-badge';
 import { ZatcaStatusBadge } from '@/components/zatca/zatca-status-badge';
 import { ZatcaSubmissionDetail } from '@/components/zatca/zatca-submission-detail';
 import type { ZatcaSubmissionResult } from '@/components/zatca/zatca-trpc';
 import { zatcaTrpc } from '@/components/zatca/zatca-trpc';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import type { PeppolTransmissionResult } from '@/lib/peppol-trpc';
 import { peppolTrpc } from '@/lib/peppol-trpc';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Lightweight shape covering the invoice fields accessed by helper functions.

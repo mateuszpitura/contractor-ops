@@ -2,6 +2,7 @@
 
 import type { InvoiceMatchStatusInput, InvoiceStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   AlertCircle,
@@ -18,11 +19,10 @@ import {
 import type { EInvoiceComplianceStatus } from '@/components/invoices/einvoice-status-cell';
 import { EInvoiceStatusCell } from '@/components/invoices/einvoice-status-cell';
 import { KsefSourceBadge } from '@/components/invoices/ksef-badge';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from '@/i18n/navigation';
+import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC invoice.list response shape

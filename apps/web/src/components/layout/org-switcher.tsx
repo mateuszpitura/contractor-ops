@@ -1,18 +1,13 @@
 'use client';
 
-import { Building2, ChevronsUpDown, Loader2, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
-import { useDashboardContext } from '@/components/layout/dashboard-context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +15,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { SidebarMenuButton, useSidebar } from '@contractor-ops/ui/components/shadcn/sidebar';
+import { Building2, ChevronsUpDown, Loader2, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
+import { useDashboardContext } from '@/components/layout/dashboard-context';
 import { authClient } from '@/lib/auth-client';
 
 /**

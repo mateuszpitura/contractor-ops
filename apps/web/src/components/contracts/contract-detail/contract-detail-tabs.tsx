@@ -1,17 +1,22 @@
 'use client';
 
 import type { AppRouter } from '@contractor-ops/api';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import type { inferRouterOutputs } from '@trpc/server';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { tDyn } from '@/i18n/typed-keys';
 import { ActivityTab } from './activity-tab';
 import { AmendmentsTab } from './amendments-tab';
 import { DocumentsTab } from './documents-tab';
 import { LinearLinkedIssuesPanel } from './linear-linked-issues-panel';
 import { OverviewTab } from './overview-tab';
-import { tDyn } from '@/i18n/typed-keys';
 
 const TAB_KEYS = ['overview', 'documents', 'amendments', 'activity'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
@@ -43,7 +48,7 @@ export function ContractDetailTabs({ contract }: ContractDetailTabsProps) {
   return (
     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
     <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
-      <TabsList variant="line" className="w-full justify-start">
+      <TabsList className="w-full justify-start">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>
             {tDyn(t, 'tabs', key)}

@@ -10,8 +10,8 @@
 
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
 
 export interface ModulusWarning {
   contractorName: string;

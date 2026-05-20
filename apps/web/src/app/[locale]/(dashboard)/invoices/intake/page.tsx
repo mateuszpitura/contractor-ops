@@ -1,10 +1,10 @@
 import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Inbox } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import { IntakeList } from '@/components/invoices/intake/intake-list';
-import { Skeleton } from '@/components/ui/skeleton';
 import { getServerFlag } from '@/lib/server-flag';
 
 /**

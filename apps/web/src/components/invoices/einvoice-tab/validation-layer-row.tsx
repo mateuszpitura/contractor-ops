@@ -1,9 +1,9 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Circle, CircleCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ComponentType } from 'react';
-import { Badge } from '@/components/ui/badge';
 
 export type ValidationLayerStatus = 'pass' | 'warnings' | 'fail' | 'skipped';
 

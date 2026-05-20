@@ -1,5 +1,14 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Loader2, Package, PackageOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,15 +18,6 @@ import { PaczkomatDisplay } from '@/components/equipment/paczkomat-display';
 import type { PaczkomatPoint } from '@/components/equipment/paczkomat-picker';
 import { PaczkomatPicker } from '@/components/equipment/paczkomat-picker';
 import { LabelDisplay } from '@/components/equipment/shipment-label-view';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { portalTrpc } from '@/trpc/init';
 

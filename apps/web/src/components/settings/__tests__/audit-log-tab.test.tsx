@@ -4,10 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, setup, waitFor } from '@/test/test-utils';
 import { AuditLogTab } from '../audit-log-tab';
 
-// Replace @/components/ui/select (Base UI portal-based primitive — flaky under
+// Replace @contractor-ops/ui/components/shadcn/select (Base UI portal-based primitive — flaky under
 // jsdom because the popup uses inert attributes on parents) with a native
 // <select>. Tests still drive the same `onValueChange` contract.
-vi.mock('@/components/ui/select', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
   Select: ({
     children,
     onValueChange,
@@ -17,7 +17,6 @@ vi.mock('@/components/ui/select', () => ({
     onValueChange?: (v: string) => void;
   }) => (
     <select
-      role="combobox"
       aria-expanded={false}
       aria-label="select"
       // biome-ignore lint/nursery/noJsxPropsBind: test stub

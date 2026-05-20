@@ -1,5 +1,6 @@
 'use client';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useLocale } from 'next-intl';
 import { useId, useMemo } from 'react';
 import {
@@ -14,8 +15,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-
-import { Skeleton } from '@/components/ui/skeleton';
 import { useRtlChartConfig } from '@/hooks/use-rtl-chart-config';
 
 type ChartType = 'bar-horizontal' | 'bar-grouped' | 'pie';
@@ -147,7 +146,7 @@ export function ReportChart({
               />
               <Tooltip
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={(value) => [formatCurrency(Number(value)), '']}
+                formatter={value => [formatCurrency(Number(value)), '']}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',
@@ -235,7 +234,7 @@ export function ReportChart({
               />
               <Tooltip
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={(value) => [Number(value), '']}
+                formatter={value => [Number(value), '']}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',

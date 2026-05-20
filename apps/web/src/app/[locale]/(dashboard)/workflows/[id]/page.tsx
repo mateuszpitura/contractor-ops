@@ -1,11 +1,11 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { RunHeader } from '@/components/workflows/workflow-run/run-header';
 import { TaskChecklist } from '@/components/workflows/workflow-run/task-checklist';
 import { Link } from '@/i18n/navigation';

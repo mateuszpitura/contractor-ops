@@ -1,10 +1,15 @@
 'use client';
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,7 +53,7 @@ export function EquipmentDetailTabs({
   return (
     // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
     <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
-      <TabsList variant="line" className="w-full justify-start overflow-x-auto">
+      <TabsList className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>
             {t(key)}

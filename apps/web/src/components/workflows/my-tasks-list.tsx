@@ -1,5 +1,10 @@
 'use client';
 
+import { AtelierEmptyState, MyTasksIllustration } from '@contractor-ops/ui';
+import { Card } from '@contractor-ops/ui/components/shadcn/card';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -12,10 +17,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 
@@ -69,6 +71,7 @@ type MyTaskRow = {
  */
 export function MyTasksList() {
   const t = useTranslations('Workflows');
+  const tEmpty = useTranslations('EmptyStates.myTasks');
   const reactId = useId();
 
   const [overdueOnly, setOverdueOnly] = useState(false);
@@ -110,11 +113,13 @@ export function MyTasksList() {
   // Empty state
   if (tasks.length === 0 && !overdueOnly) {
     return (
-      <div className="py-16 text-center">
-        <CheckCircle2 className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">{t('myTasks.empty.heading')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t('myTasks.empty.body')}</p>
-      </div>
+      <AtelierEmptyState
+        variant="subview"
+        illustration={MyTasksIllustration}
+        heading={tEmpty('heading')}
+        body={tEmpty('body')}
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 

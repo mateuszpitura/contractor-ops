@@ -1,8 +1,5 @@
 'use client';
 
-import { NavItems } from '@/components/layout/nav-items';
-import { OrgSwitcher } from '@/components/layout/org-switcher';
-import { UserMenu } from '@/components/layout/user-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +8,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarRail,
-} from '@/components/ui/sidebar';
+} from '@contractor-ops/ui/components/shadcn/sidebar';
+import { NavItems } from '@/components/layout/nav-items';
+import { OrgSwitcher } from '@/components/layout/org-switcher';
+import { UserMenu } from '@/components/layout/user-menu';
 
 /**
  * App sidebar with Linear-style collapsible behavior.

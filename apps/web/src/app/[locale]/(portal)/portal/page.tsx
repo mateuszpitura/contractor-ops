@@ -1,13 +1,13 @@
 'use client';
 
 import { SectionLabel } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { Banknote, CalendarDays, Clock, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PortalPendingSignatures } from '@/components/portal/portal-pending-signatures';
 import { SummaryCard, SummaryCardSkeleton } from '@/components/portal/summary-card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { portalTrpc } from '@/trpc/init';
@@ -77,12 +77,12 @@ export default function PortalOverviewPage() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Pending Signatures (above greeting per UI-SPEC D-04) */}
       <PortalPendingSignatures />
 
       {/* Greeting */}
-      <h1 className="mt-6 text-[28px] font-semibold leading-[1.2]">
+      <h1 className="text-[28px] font-semibold leading-[1.2]">
         {isLoading ? (
           <Skeleton className="h-9 w-64" />
         ) : (
@@ -91,7 +91,7 @@ export default function PortalOverviewPage() {
       </h1>
 
       {/* Summary Cards */}
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {isLoading ? (
           <>
             <SummaryCardSkeleton />
@@ -133,7 +133,7 @@ export default function PortalOverviewPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-6 flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button render={<Link href="/portal/invoices/submit" />}>
           {t('dashboard.submitInvoice')}
         </Button>
@@ -143,7 +143,7 @@ export default function PortalOverviewPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="mt-8">
+      <div>
         <SectionLabel variant="portal">{t('dashboard.recentActivity')}</SectionLabel>
         <div className="mt-4 space-y-3">
           {isLoading ? (

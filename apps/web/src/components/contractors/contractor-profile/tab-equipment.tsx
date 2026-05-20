@@ -1,6 +1,17 @@
 'use client';
 
-import { AtelierTableShell, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierTableShell,
+  EquipmentIllustration,
+  SectionLabel,
+} from '@contractor-ops/ui';
+import {
+  Table,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -10,8 +21,8 @@ import { useMemo } from 'react';
 import { EquipmentStatusBadge } from '@/components/equipment/equipment-status-badge';
 import { EquipmentTypeIcon } from '@/components/equipment/equipment-type-icon';
 import { ShipmentCondensed } from '@/components/equipment/shipment-condensed';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { DataTableBody } from '@/components/shared/data-table-body';
-import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 
@@ -98,9 +109,26 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
     getRowId: row => row.assignmentId,
   });
 
+  const isLoading = query.isLoading;
+
+  if (!isLoading && items.length === 0) {
+    return (
+      <div className="space-y-3">
+        <SectionLabel icon={Package}>{t('contractorTab.tabLabel')}</SectionLabel>
+        <AtelierEmptyState
+          variant="subview"
+          illustration={EquipmentIllustration}
+          heading={t('contractorTab.emptyTitle')}
+          body={t('contractorTab.emptyDescription')}
+          renderAction={renderEmptyStateAction}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      <SectionLabel icon={Package}>{t('contractorTab.emptyTitle')}</SectionLabel>
+      <SectionLabel icon={Package}>{t('contractorTab.tabLabel')}</SectionLabel>
       <AtelierTableShell isLoading={query.isFetching && !query.isLoading}>
         <Table>
           <TableHeader>
@@ -116,7 +144,7 @@ export function TabEquipment({ contractorId }: TabEquipmentProps) {
           </TableHeader>
           <DataTableBody
             table={table}
-            isLoading={query.isLoading}
+            isLoading={isLoading}
             hasFiltersOrSearch={false}
             emptyIcon={<Package className="h-5 w-5" />}
             emptyTitle={t('contractorTab.emptyTitle')}

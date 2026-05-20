@@ -1,13 +1,8 @@
 'use client';
 
 import { AtelierTableShell } from '@contractor-ops/ui';
-import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -15,7 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 import type { ApprovalQueueRow } from './columns';
 

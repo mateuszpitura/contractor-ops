@@ -1,7 +1,7 @@
 'use client';
 
 import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Link } from '@/i18n/navigation';
 
 /**

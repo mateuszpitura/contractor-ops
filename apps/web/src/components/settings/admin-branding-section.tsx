@@ -1,12 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Save, Upload } from 'lucide-react';
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-import { useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardContent,
@@ -14,9 +8,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Save, Upload } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 import { BrandColorPicker } from './brand-color-picker';
 import { BrandPreviewStrip } from './brand-preview-strip';

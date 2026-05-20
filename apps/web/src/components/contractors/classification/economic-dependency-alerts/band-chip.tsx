@@ -11,11 +11,10 @@
 //   - --warning     → warning band (70% §2 SGB VI)
 //   - --destructive → critical band (83.33% §2 SGB VI)
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { LucideIcon } from 'lucide-react';
 import { CircleCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export type EconomicDependencyBand = 'safe' | 'warning' | 'critical';

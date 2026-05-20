@@ -1,20 +1,20 @@
 'use client';
 
 import { ComplianceGapsIllustration, SectionLabel } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { useRouter } from '@/i18n/navigation';
+import { tKey } from '@/i18n/typed-keys';
 import { trpc } from '@/trpc/init';
 import { DrillDownBreadcrumb } from './drill-down-breadcrumb';
 import { ExportButtons } from './export-buttons';
 import { ReportChart } from './report-chart';
 import { ReportTable } from './report-table';
-import { tKey } from '@/i18n/typed-keys';
 
 interface ComplianceGapsReportProps {
   dateFrom: string;
@@ -144,9 +144,7 @@ export function ComplianceGapsReport({
         cell: ({ getValue }) => {
           const health = getValue<string>();
           const config = HEALTH_BADGE[health] ?? HEALTH_BADGE.green;
-          return (
-            <Badge variant={config.variant}>{tKey(t, config.labelKey)}</Badge>
-          );
+          return <Badge variant={config.variant}>{tKey(t, config.labelKey)}</Badge>;
         },
       },
     ],

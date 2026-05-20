@@ -10,10 +10,6 @@
 
 'use client';
 
-import { AlertCircle, AlertTriangle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -22,12 +18,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { AlertCircle, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 
 interface ReverseChargeLineToggleProps {
   isReverseCharge: boolean;

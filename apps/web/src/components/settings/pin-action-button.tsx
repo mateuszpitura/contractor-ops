@@ -1,14 +1,14 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Pin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
-import { Button } from '@/components/ui/button';
 import { useSettingsTabPins } from '@/hooks/use-settings-tab-pins';
+import { tDyn } from '@/i18n/typed-keys';
 import type { SettingsTabKey } from '@/lib/settings-tabs';
 import { getSettingsTab } from '@/lib/settings-tabs';
 import { cn } from '@/lib/utils';
-import { tDyn } from '@/i18n/typed-keys';
 
 export interface PinActionButtonProps {
   tabKey: SettingsTabKey;

@@ -1,8 +1,7 @@
 'use client';
 
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { useId } from 'react';
-
-import { Switch } from '@/components/ui/switch';
 
 export interface VatRegisteredToggleProps {
   checked: boolean;

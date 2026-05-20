@@ -19,14 +19,7 @@
 
 'use client';
 
-import { peppolParticipantPairSchema } from '@contractor-ops/validators';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -34,9 +27,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { peppolParticipantPairSchema } from '@contractor-ops/validators';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 

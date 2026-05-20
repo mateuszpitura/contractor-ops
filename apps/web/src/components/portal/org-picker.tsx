@@ -1,10 +1,10 @@
 'use client';
 
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------

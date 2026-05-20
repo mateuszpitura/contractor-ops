@@ -1,16 +1,16 @@
 'use client';
 
-import type { DirectoryRole } from '@contractor-ops/validators/roles';
-import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
-import { useTranslations } from 'next-intl';
-import { useId } from 'react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import type { DirectoryRole } from '@contractor-ops/validators/roles';
+import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
+import { useTranslations } from 'next-intl';
+import { useId } from 'react';
 
 // ---------------------------------------------------------------------------
 // Constants

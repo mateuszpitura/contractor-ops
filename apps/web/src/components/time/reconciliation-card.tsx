@@ -1,9 +1,9 @@
 'use client';
 
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DeviationFlag } from '@/components/time/deviation-flag';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types

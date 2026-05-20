@@ -1,10 +1,9 @@
 'use client';
 
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 
 interface OcrProcessingOverlayProps {
   progress?: number;

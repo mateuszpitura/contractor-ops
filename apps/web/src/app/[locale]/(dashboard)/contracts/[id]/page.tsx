@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -8,8 +10,6 @@ import { ContractDetailTabs } from '@/components/contracts/contract-detail/contr
 import { DetailHeader } from '@/components/contracts/contract-detail/detail-header';
 import { SigningProgressBar } from '@/components/contracts/contract-detail/signing-progress-bar';
 import { useBreadcrumbOverride } from '@/components/layout/breadcrumb-context';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 

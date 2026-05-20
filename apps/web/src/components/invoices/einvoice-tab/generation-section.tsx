@@ -1,10 +1,10 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { CheckCircle2, Download, FileCode2, Loader2, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import type { EInvoiceLifecycleShape } from './types';
 
 interface GenerationSectionProps {

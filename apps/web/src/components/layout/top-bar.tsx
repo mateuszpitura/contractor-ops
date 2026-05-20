@@ -1,5 +1,23 @@
 'use client';
 
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@contractor-ops/ui/components/shadcn/breadcrumb';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import { SidebarTrigger } from '@contractor-ops/ui/components/shadcn/sidebar';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { useQuery } from '@tanstack/react-query';
 import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,23 +27,9 @@ import { useBreadcrumbContext } from '@/components/layout/breadcrumb-context';
 import { NotificationPopover } from '@/components/notifications/notification-popover';
 import { CommandPalette } from '@/components/search/command-palette';
 import { useSearch } from '@/components/search/search-provider';
-import {
-  Breadcrumb,
-  BreadcrumbEllipsis,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { tHas, tKey } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // BreadcrumbLinkRenderer — avoids inline arrow in render prop per iteration

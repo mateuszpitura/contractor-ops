@@ -1,17 +1,16 @@
 'use client';
 
-import type { Table } from '@tanstack/react-table';
-import { SlidersHorizontal } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import type { Table } from '@tanstack/react-table';
+import { SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { tDynLoose } from '@/i18n/typed-keys';
 
 interface DataTableColumnToggleProps<TData> {
   table: Table<TData>;

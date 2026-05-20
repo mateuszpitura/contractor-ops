@@ -2,15 +2,16 @@
 
 import type { ContractorLifecycleStageInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import { formatDistanceToNow } from 'date-fns';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { enumKey } from '@/lib/enum-key';
 import { ComplianceHealthBadge } from '../compliance-health-badge';
-import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contractor.list response shape

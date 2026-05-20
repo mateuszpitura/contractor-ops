@@ -1,11 +1,16 @@
 'use client';
 
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { EInvoiceTab } from '@/components/invoices/einvoice-tab/einvoice-tab';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface InvoiceDetailTabsProps {
   invoiceId: string;

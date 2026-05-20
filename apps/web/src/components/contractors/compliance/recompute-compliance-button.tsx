@@ -5,10 +5,10 @@
 
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { RecomputeComplianceDialog } from './recompute-compliance-dialog';
 
 interface RecomputeComplianceButtonProps {

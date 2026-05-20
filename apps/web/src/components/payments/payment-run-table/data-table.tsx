@@ -1,13 +1,8 @@
 'use client';
 
-import { AtelierTableShell } from '@contractor-ops/ui';
-import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ChevronLeft, ChevronRight, SearchX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AtelierTableShell, NoResultsIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -15,7 +10,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 import type { PaymentRunRow } from './columns';
 
@@ -126,7 +126,10 @@ export function PaymentRunDataTable({
               <TableRow>
                 <TableCell colSpan={visibleColumns.length}>
                   <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                    <SearchX className="h-8 w-8 text-muted-foreground/50" />
+                    <NoResultsIllustration
+                      className="h-16 w-16 text-primary/60"
+                      aria-hidden="true"
+                    />
                     <p className="text-sm font-medium">{t('noResults.heading')}</p>
                     <p className="max-w-sm text-xs text-muted-foreground">{t('noResults.body')}</p>
                   </div>

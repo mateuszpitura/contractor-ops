@@ -1,5 +1,5 @@
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import type { ReactNode } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // Types

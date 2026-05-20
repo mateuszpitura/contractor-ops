@@ -1,13 +1,6 @@
 'use client';
 
 import { ApprovalsIllustration, AtelierEmptyState } from '@contractor-ops/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import type { ChainData } from '@/components/settings/chain-editor-dialog';
-import { ChainEditorDialog } from '@/components/settings/chain-editor-dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +10,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Switch } from '@/components/ui/switch';
-import { trpc } from '@/trpc/init';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import type { ChainData } from '@/components/settings/chain-editor-dialog';
+import { ChainEditorDialog } from '@/components/settings/chain-editor-dialog';
 import { tKey } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -232,8 +237,7 @@ export function ApprovalChainsTab() {
                 <span className="text-sm text-muted-foreground">
                   {formatConditionSummary(
                     chain.conditionsJson,
-                    (key: string, params?: Record<string, string | number>) =>
-                      tKey(t, key, params),
+                    (key: string, params?: Record<string, string | number>) => tKey(t, key, params),
                   )}
                 </span>
               </div>

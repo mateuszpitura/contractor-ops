@@ -1,11 +1,10 @@
 'use client';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
 import { LinearLinkedIssuesPanel } from '@/components/contracts/contract-detail/linear-linked-issues-panel';
-import { Skeleton } from '@/components/ui/skeleton';
 import { TaskCardRun } from './task-card-run';
 
 // ---------------------------------------------------------------------------

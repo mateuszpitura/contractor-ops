@@ -1,13 +1,13 @@
 'use client';
 
 import { OverdueInvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
 import { useRouter } from '@/i18n/navigation';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';

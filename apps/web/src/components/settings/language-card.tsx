@@ -1,15 +1,21 @@
 'use client';
 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { Check, Globe } from 'lucide-react';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { localeConfigs } from '@/i18n/config';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { cn } from '@/lib/utils';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 const localeFlagSrc: Record<Locale, string> = {
   pl: '/flags/pl.svg',

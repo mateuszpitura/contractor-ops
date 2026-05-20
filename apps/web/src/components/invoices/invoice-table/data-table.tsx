@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierTableShell, InvoicesIllustration } from '@contractor-ops/ui';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -11,7 +12,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { parseFilterParam } from '@/components/invoices/einvoice-compliance-filter-chips';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { InvoiceRow } from './columns';
@@ -19,17 +19,6 @@ import { deriveComplianceStatus, getColumns } from './columns';
 import { DataTablePagination } from './data-table-pagination';
 import { DataTableToolbar } from './data-table-toolbar';
 import { useInvoiceFilters } from './use-invoice-filters';
-
-// ---------------------------------------------------------------------------
-// Overdue row detection
-// ---------------------------------------------------------------------------
-
-const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
-
-function isRowOverdue(row: InvoiceRow): boolean {
-  if (!row.dueDate || NON_OVERDUE_STATUSES.has(row.status)) return false;
-  return new Date(row.dueDate) < new Date();
-}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -227,11 +216,6 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
     [setFilters],
   );
 
-  const rowClassName = useCallback(
-    (row: InvoiceRow) => (isRowOverdue(row) ? 'bg-destructive/5' : ''),
-    [],
-  );
-
   // Clear filters for "no results" CTA
   const clearFilters = useCallback(() => {
     void setFilters({
@@ -311,7 +295,6 @@ export function InvoiceDataTable({ onRowClick, onUpload, parentLoading }: Invoic
             forceLoading={parentLoading}
             hasFiltersOrSearch={hasFiltersOrSearch}
             onRowClick={onRowClick}
-            rowClassName={rowClassName}
             emptyIcon={<InvoicesIllustration className="mx-auto h-16 w-16 text-primary/60" />}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}

@@ -1,10 +1,10 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/auth-client';
 
 /**

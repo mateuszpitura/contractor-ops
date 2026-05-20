@@ -1,16 +1,22 @@
 'use client';
 
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 import { ComplianceHealthBadge } from '@/components/contractors/compliance-health-badge';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePermissions } from '@/hooks/use-permissions';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { canViewSensitivePii, maskTaxId } from '@/lib/mask-pii';
-import { tDynLoose } from '@/i18n/typed-keys';
 
 type HealthFactor = {
   key: 'documents' | 'contract' | 'tasks' | 'invoices';

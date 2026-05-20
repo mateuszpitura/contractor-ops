@@ -8,10 +8,9 @@
 // shadcn Badge (warning variant) + RefreshCcw lucide icon + i18n label.
 // WCAG 1.4.1 — colour is NEVER the sole channel (icon + text always accompany).
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { RefreshCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 export interface ReassessmentTriggerChipProps {

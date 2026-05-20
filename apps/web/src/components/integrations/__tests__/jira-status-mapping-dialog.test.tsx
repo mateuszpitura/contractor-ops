@@ -8,10 +8,10 @@ import { JiraStatusMappingDialog } from '../jira-status-mapping-dialog';
 // Mocks
 // ---------------------------------------------------------------------------
 
-// Replace @/components/ui/select (Base UI portal-based primitive — flaky under
+// Replace @contractor-ops/ui/components/shadcn/select (Base UI portal-based primitive — flaky under
 // jsdom because the popup uses inert attributes on the parent dialog) with a
 // native <select>. Tests still drive the same `onValueChange` contract.
-vi.mock('@/components/ui/select', () => {
+vi.mock('@contractor-ops/ui/components/shadcn/select', () => {
   const SelectCtx = React.createContext<{ onValueChange?: (v: string) => void } | null>(null);
   return {
     Select: ({
@@ -24,7 +24,6 @@ vi.mock('@/components/ui/select', () => {
     }) => (
       <SelectCtx.Provider value={{ onValueChange }}>
         <select
-          role="combobox"
           aria-expanded={false}
           aria-label="select"
           // biome-ignore lint/nursery/noJsxPropsBind: test stub

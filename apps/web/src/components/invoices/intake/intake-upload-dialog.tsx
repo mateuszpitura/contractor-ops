@@ -1,5 +1,13 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { TRPCClientError } from '@trpc/client';
 import { AlertCircle, Loader2, UploadCloud } from 'lucide-react';
@@ -7,14 +15,6 @@ import { useTranslations } from 'next-intl';
 import type { ChangeEvent, DragEvent } from 'react';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';

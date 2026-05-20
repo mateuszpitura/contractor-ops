@@ -2,8 +2,8 @@
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Link } from '@/i18n/navigation';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 import { cn } from '@/lib/utils';

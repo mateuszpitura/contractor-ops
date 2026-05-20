@@ -1,22 +1,27 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 import { JiraIssueChip } from '@/components/integrations/jira-issue-chip';
 import { LinearIssueChip } from '@/components/integrations/linear-issue-chip';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)

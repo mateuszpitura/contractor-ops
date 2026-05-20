@@ -1,10 +1,10 @@
 'use client';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Check, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import type { LooseTranslator } from '@/i18n/typed-keys';
+import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Constants

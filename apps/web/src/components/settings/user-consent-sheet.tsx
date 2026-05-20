@@ -7,19 +7,18 @@
 // settings admin inspect a single user's consent state + an audit-style
 // timeline of grants/revokes without leaving the members page.
 
-import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, History, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/sheet';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, History, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 

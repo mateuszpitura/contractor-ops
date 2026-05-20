@@ -1,19 +1,5 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  CheckCircle2,
-  Download,
-  FileUp,
-  Lightbulb,
-  MoreHorizontal,
-  Trash2,
-  XCircle,
-} from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
-import { toast } from 'sonner';
-import { WhtSummaryCard } from '@/components/payments/wht-summary-card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,17 +10,22 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
+import { WhtSummaryCard } from '@/components/payments/wht-summary-card';
 import { useDoubleConfirmation } from '@/hooks/use-double-confirmation';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { formatMinorUnits } from '@/lib/format-currency';

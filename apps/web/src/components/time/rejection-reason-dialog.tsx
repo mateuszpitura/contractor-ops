@@ -1,8 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -10,9 +8,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
 
 // ---------------------------------------------------------------------------
 // Props

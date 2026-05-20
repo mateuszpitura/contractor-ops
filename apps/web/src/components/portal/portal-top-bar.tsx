@@ -1,8 +1,22 @@
 'use client';
 
+import { Avatar, AvatarFallback } from '@contractor-ops/ui/components/shadcn/avatar';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { useMutation } from '@tanstack/react-query';
 import {
   Banknote,
+  Building2,
   Clock,
   FileText,
   FolderOpen,
@@ -17,20 +31,12 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { getAvatarInitials } from '@/lib/avatar-initials';
 import { cn } from '@/lib/utils';
 import { portalTrpc } from '@/trpc/init';
+import { OrgSwitcherList } from './org-switcher-list';
 import { PortalMobileMenu } from './portal-mobile-menu';
+import { useOrgSwitcher } from './use-org-switcher';
 
 // ---------------------------------------------------------------------------
 // Navigation items (labels resolved at render time via t())
@@ -100,7 +106,9 @@ export function PortalTopBar({
 }: PortalTopBarProps) {
   const tNav = useTranslations('Portal.nav');
   const tAria = useTranslations('Common.aria');
+  const tSwitch = useTranslations('Portal.orgSwitch');
   const pathname = usePathname();
+  const orgSwitcher = useOrgSwitcher();
 
   const NAV_ITEMS = NAV_ITEM_DEFS.map(item => ({
     ...item,
@@ -170,11 +178,12 @@ export function PortalTopBar({
               <a
                 key={item.href}
                 href={item.href}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] font-normal transition-colors',
+                  'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   active
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                    ? 'border-primary text-foreground font-semibold'
+                    : 'border-transparent text-muted-foreground font-normal hover:text-foreground',
                 )}>
                 <item.icon className="h-4 w-4" />
                 {item.label}
@@ -200,13 +209,35 @@ export function PortalTopBar({
                 </button>
               }
             />
-            <DropdownMenuContent align="end" sideOffset={8}>
+            <DropdownMenuContent align="end" sideOffset={8} className="min-w-[220px]">
               <DropdownMenuLabel>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{contractorName}</span>
                   <span className="text-xs text-muted-foreground">{contractorEmail}</span>
                 </div>
               </DropdownMenuLabel>
+              {orgSwitcher.isAvailable ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <Building2 className="me-2 h-4 w-4" aria-hidden="true" />
+                      {tSwitch('label')}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="min-w-[240px] p-1">
+                      <OrgSwitcherList
+                        orgs={orgSwitcher.orgs}
+                        switchingContractorId={orgSwitcher.switchingContractorId}
+                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                        onSelect={target => {
+                          void orgSwitcher.switchTo(target);
+                        }}
+                        variant="menu"
+                      />
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </>
+              ) : null}
               <DropdownMenuSeparator />
               {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <DropdownMenuItem onClick={handleLogout}>
@@ -233,6 +264,7 @@ export function PortalTopBar({
           open={mobileMenuOpen}
           onOpenChange={setMobileMenuOpen}
           orgName={orgName}
+          orgLogo={orgLogo ?? null}
           contractorName={contractorName}
           contractorEmail={contractorEmail}
         />

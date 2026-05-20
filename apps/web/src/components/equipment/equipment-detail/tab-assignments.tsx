@@ -1,10 +1,7 @@
 'use client';
 
 import { AtelierEmptyState, ContractorsIllustration } from '@contractor-ops/ui';
-import { format, formatDistanceStrict } from 'date-fns';
-import { useTranslations } from 'next-intl';
-import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Table,
   TableBody,
@@ -12,7 +9,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { format, formatDistanceStrict } from 'date-fns';
+import { useTranslations } from 'next-intl';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
   }
 
   return (
-    <div className="rounded-xl border bg-background">
+    <div className="overflow-hidden rounded-xl border bg-background">
       <Table>
         <TableHeader>
           <TableRow>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -15,7 +16,6 @@ import { TeamsProviderSection } from '@/components/integrations/teams-provider-s
 import { PeppolStatusCard } from '@/components/peppol/peppol-status-card';
 import { DpdProviderSection } from '@/components/settings/dpd-provider-section';
 import { UpsProviderSection } from '@/components/settings/ups-provider-section';
-import { Button } from '@/components/ui/button';
 import { ZatcaStatusCard } from '@/components/zatca/zatca-status-card';
 import { trpc } from '@/trpc/init';
 import { KsefSetupDialog } from './ksef-setup-dialog';
@@ -130,9 +130,7 @@ function KsefProviderSection() {
         provider="ksef"
         displayName="KSeF"
         icon={<KsefBrandIcon className="size-8" />}
-        description={tIntegrations(
-          'ksef.descriptionDisconnected',
-        )}
+        description={tIntegrations('ksef.descriptionDisconnected')}
       />
 
       {/* KSeF-specific controls (sync button + history) */}

@@ -6,11 +6,14 @@
 // See UI-SPEC §Interaction 5. Uses the shadcn Collapsible primitive (Radix-
 // derived) which owns aria-expanded — no manual sync needed.
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId, useState } from 'react';
-
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 
 export interface LegalReferenceCollapsibleProps {

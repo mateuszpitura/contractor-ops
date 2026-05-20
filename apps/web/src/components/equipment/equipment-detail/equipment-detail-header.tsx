@@ -1,12 +1,7 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -14,18 +9,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -131,9 +131,7 @@ export function EquipmentDetailHeader({
                 {equipment.serialNumber}
               </span>
             )}
-            <Badge variant="secondary">
-              {tDynLoose(t, 'type', enumKey(equipment.type))}
-            </Badge>
+            <Badge variant="secondary">{tDynLoose(t, 'type', enumKey(equipment.type))}</Badge>
             <EquipmentStatusBadge status={equipment.status} />
           </div>
         </div>
@@ -172,9 +170,7 @@ export function EquipmentDetailHeader({
               render={props => (
                 <Button {...props} variant="outline" size="icon-sm">
                   <MoreHorizontal className="size-4" />
-                  <span className="sr-only">
-                    {tCommon('srOnly.moreActions')}
-                  </span>
+                  <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
                 </Button>
               )}
             />

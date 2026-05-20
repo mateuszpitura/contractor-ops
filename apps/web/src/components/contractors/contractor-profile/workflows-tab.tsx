@@ -1,6 +1,9 @@
 'use client';
 
 import { AtelierEmptyState, SectionLabel, WorkflowsIllustration } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { GitBranch, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -8,14 +11,11 @@ import { useMemo, useState } from 'react';
 import { JiraActivitySummary } from '@/components/integrations/jira-activity-summary';
 import { JiraIssueChip } from '@/components/integrations/jira-issue-chip';
 import { LinearIssueChip } from '@/components/integrations/linear-issue-chip';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { TemplatePicker } from '@/components/workflows/template-picker-dialog';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Run status badge styling (matching UI-SPEC)

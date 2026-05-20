@@ -1,9 +1,9 @@
 'use client';
 
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 
 // ---------------------------------------------------------------------------
 // Props

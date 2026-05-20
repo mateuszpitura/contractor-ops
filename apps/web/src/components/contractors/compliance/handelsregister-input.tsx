@@ -1,12 +1,6 @@
 'use client';
 
-import type { HandelsregisterCourt } from '@contractor-ops/validators';
-import { HANDELSREGISTER_COURTS } from '@contractor-ops/validators';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useMemo, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Command,
   CommandEmpty,
@@ -14,11 +8,20 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+} from '@contractor-ops/ui/components/shadcn/command';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
+import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
+import type { HandelsregisterCourt } from '@contractor-ops/validators';
+import { HANDELSREGISTER_COURTS } from '@contractor-ops/validators';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface HandelsregisterValue {

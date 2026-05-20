@@ -7,9 +7,8 @@
 // for a given engagement. The wizard page itself handles createDraft
 // idempotently, so a plain Link-wrapped button is enough.
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useTranslations } from 'next-intl';
-
-import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 
 export interface ClassificationEngagementCtaProps {

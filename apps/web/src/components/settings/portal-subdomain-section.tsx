@@ -1,11 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardContent,
@@ -13,8 +8,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 export function PortalSubdomainSection() {

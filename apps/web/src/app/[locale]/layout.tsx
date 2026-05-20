@@ -1,3 +1,5 @@
+import { Toaster } from '@contractor-ops/ui/components/shadcn/sonner';
+import { TooltipProvider } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Noto_Sans_Arabic } from 'next/font/google';
 import { headers } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
@@ -6,8 +8,6 @@ import { ThemeProvider } from 'next-themes';
 import { Providers } from '@/app/providers';
 import { CookieConsentBanner } from '@/components/layout/cookie-consent-banner';
 import { ThemeCookieSync } from '@/components/theme/theme-cookie-sync';
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
 import { getDir, isRtl } from '@/i18n/config';
 import type { Locale } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
@@ -65,6 +65,8 @@ export default async function LocaleLayout({
         dangerouslySetInnerHTML={{
           __html: `document.documentElement.lang="${safeLang}";document.documentElement.dir="${dir}";`,
         }}
+        // Browsers strip the `nonce` HTML attribute post-parse (spec); React 19 reads it and mismatches.
+        suppressHydrationWarning
       />
       <NextIntlClientProvider messages={messages}>
         <ThemeProvider

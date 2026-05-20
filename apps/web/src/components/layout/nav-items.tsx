@@ -1,21 +1,22 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Pin } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
-import { Suspense, useMemo } from 'react';
-import { useFlagBag } from '@/components/layout/feature-flag-context';
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
+} from '@contractor-ops/ui/components/shadcn/sidebar';
+import { useQuery } from '@tanstack/react-query';
+import { Pin } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Suspense, useMemo } from 'react';
+import { useFlagBag } from '@/components/layout/feature-flag-context';
 import { WorkflowNavBadge } from '@/components/workflows/workflow-nav-badge';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link, usePathname } from '@/i18n/navigation';
+import { tDyn } from '@/i18n/typed-keys';
 import type { NavItem } from '@/lib/navigation';
 import { navigationGroups } from '@/lib/navigation';
 import type { SettingsTabDef, SettingsTabKey } from '@/lib/settings-tabs';
@@ -26,7 +27,6 @@ import {
   SETTINGS_TABS,
 } from '@/lib/settings-tabs';
 import { trpc } from '@/trpc/init';
-import { tDyn } from '@/i18n/typed-keys';
 
 const PIN_KIND = 'settings-tab' as const;
 

@@ -4,11 +4,10 @@
 
 'use client';
 
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
-
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 interface DocumentHistoryListProps {

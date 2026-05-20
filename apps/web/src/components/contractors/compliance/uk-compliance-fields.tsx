@@ -1,12 +1,11 @@
 'use client';
 
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { UkCountryFields } from '@contractor-ops/validators';
 import { ukEntityTypeEnum } from '@contractor-ops/validators';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
-
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 import { EntityTypeSelect } from './entity-type-select';
 import { VatRegisteredToggle } from './vat-registered-toggle';

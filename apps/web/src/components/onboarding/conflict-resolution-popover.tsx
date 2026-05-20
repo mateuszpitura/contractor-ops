@@ -1,18 +1,23 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Popover,
   PopoverContent,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@contractor-ops/ui/components/shadcn/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 // ---------------------------------------------------------------------------
 // Types

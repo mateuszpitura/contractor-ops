@@ -1,15 +1,15 @@
 'use client';
 
-import { EquipmentIllustration } from '@contractor-ops/ui';
+import { AtelierTableShell, EquipmentIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Loader2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { trpc } from '@/trpc/init';
 import type { EquipmentRow } from './equipment-columns';
 import { getEquipmentColumns } from './equipment-columns';
@@ -193,13 +193,38 @@ export function EquipmentTable({
         onAddEquipment={onAddEquipment}
       />
 
-      <div className="relative rounded-xl border bg-background">
-        {!!isRefetching && (
-          <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">
-            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          </div>
-        )}
-
+      <AtelierTableShell
+        isLoading={isLoading || isRefetching || parentLoading === true}
+        footer={
+          !isLoading && totalRows > 0 ? (
+            <div className="flex items-center justify-between px-4 py-3">
+              <p className="text-sm text-muted-foreground">
+                {t('list.pagination.itemCount', { count: totalRows })}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => setPage(p => Math.max(1, p - 1))}>
+                  {t('list.pagination.previous')}
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {t('list.pagination.pageOf', { page, total: totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => setPage(p => p + 1)}>
+                  {t('list.pagination.next')}
+                </Button>
+              </div>
+            </div>
+          ) : undefined
+        }>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
@@ -227,37 +252,7 @@ export function EquipmentTable({
             onClearFilters={clearFilters}
           />
         </Table>
-
-        {/* Pagination */}
-        {!isLoading && totalRows > 0 && (
-          <div className="flex items-center justify-between border-t px-4 py-3">
-            <p className="text-sm text-muted-foreground">
-              {t('list.pagination.itemCount', { count: totalRows })}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setPage(p => Math.max(1, p - 1))}>
-                {t('list.pagination.previous')}
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {t('list.pagination.pageOf', { page, total: totalPages })}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setPage(p => p + 1)}>
-                {t('list.pagination.next')}
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      </AtelierTableShell>
     </div>
   );
 }

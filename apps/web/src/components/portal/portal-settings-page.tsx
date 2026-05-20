@@ -1,10 +1,10 @@
 'use client';
 
+import { Card } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { portalTrpc } from '@/trpc/init';
 import { NotificationPreferencesSection } from './notification-preferences-section';
 import type { ProfileField } from './profile-section';
@@ -73,7 +73,7 @@ export function PortalSettingsPage() {
     portalTrpc.portal.updateContactInfo.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.saved'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
@@ -83,7 +83,7 @@ export function PortalSettingsPage() {
     portalTrpc.portal.submitFinancialChangeRequest.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.saved'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),

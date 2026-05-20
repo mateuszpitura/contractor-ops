@@ -1,19 +1,19 @@
 'use client';
 
-import { CheckCircle2, MoreHorizontal, Trash2, XCircle } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { Bdi } from '@/components/ui/bdi';
-import { Button } from '@/components/ui/button';
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { CheckCircle2, MoreHorizontal, Trash2, XCircle } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { formatMinorUnits } from '@/lib/format-currency';
 import { PaymentItemBadge } from './payment-run-badge';

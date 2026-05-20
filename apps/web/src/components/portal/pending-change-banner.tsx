@@ -1,9 +1,13 @@
 'use client';
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronDown, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePortalDateFormatter } from '@/lib/format/use-portal-date-formatter';
 
 // ---------------------------------------------------------------------------

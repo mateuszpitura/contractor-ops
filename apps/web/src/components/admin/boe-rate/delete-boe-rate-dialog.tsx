@@ -5,9 +5,6 @@
 // Phase 63 · Plan 05 · D-10 — Destructive confirmation dialog for deleting a BoE rate entry.
 // AlertDialog with destructive button last in tab order per UI-SPEC.
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +14,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 // Source of truth: router output. Avoids drift when the Prisma generator

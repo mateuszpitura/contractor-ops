@@ -1,11 +1,16 @@
 'use client';
 
 import type { OcrExtractionResult } from '@contractor-ops/integrations/types/ocr';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { ExtractionStatusBar } from '@/components/ocr/extraction-status-bar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 
 interface InvoiceOcrSectionProps {

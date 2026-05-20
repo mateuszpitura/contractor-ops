@@ -6,6 +6,7 @@ import {
   PaymentsIllustration,
   SectionLabel,
 } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQuery } from '@tanstack/react-query';
 import { CreditCard, FileText, Plus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -21,7 +22,6 @@ import { DataTableToolbar } from '@/components/payments/payment-run-table/data-t
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { PageTableSkeleton } from '@/components/shared/page-table-skeleton';
-import { Button } from '@/components/ui/button';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 
@@ -182,13 +182,8 @@ function PaymentsContent() {
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
 
   const isLoading = runsQuery.isLoading;
-  const isEmpty =
-    !isLoading &&
-    data.length === 0 &&
-    status === 'all' &&
-    !dateFrom &&
-    !dateTo &&
-    cursors.length === 0;
+  const hasActiveFilters = statuses.length > 0 || !!dateFrom || !!dateTo;
+  const isEmpty = !isLoading && data.length === 0 && !hasActiveFilters && cursors.length === 0;
 
   return (
     <div className="space-y-6">

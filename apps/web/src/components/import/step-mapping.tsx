@@ -1,16 +1,15 @@
 'use client';
 
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useMemo } from 'react';
-
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 import type { EntityType } from './import-wizard-dialog';
 

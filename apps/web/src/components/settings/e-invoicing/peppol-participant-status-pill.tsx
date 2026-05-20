@@ -16,10 +16,9 @@
 // A11y: the lucide icon is `aria-hidden`; the text label is always visible so
 // colour never carries information alone (WCAG 1.4.1).
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Circle, CircleCheck, ShieldAlert, ShieldX } from 'lucide-react';
 import type { ComponentType, SVGProps } from 'react';
-
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------

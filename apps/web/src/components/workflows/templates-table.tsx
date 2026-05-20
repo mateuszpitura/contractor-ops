@@ -1,11 +1,6 @@
 'use client';
 
-import { SectionLabel } from '@contractor-ops/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { AtelierEmptyState, SectionLabel, TemplatesIllustration } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,17 +10,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -33,12 +28,18 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { useTemplateMutations } from '@/hooks/use-template-mutations';
-import { Link, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Template status badge styling per UI-SPEC
@@ -89,6 +90,7 @@ type TemplateRow = {
  */
 export function TemplatesTable() {
   const t = useTranslations('Workflows');
+  const tEmpty = useTranslations('EmptyStates.templates');
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -187,7 +189,7 @@ export function TemplatesTable() {
     return (
       <>
         <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
-        <div className="rounded-xl border bg-background">
+        <div className="overflow-hidden rounded-xl border bg-background">
           <Table>
             <TableHeader>
               <TableRow>
@@ -233,21 +235,24 @@ export function TemplatesTable() {
   // Empty state
   if (templates.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <GitBranch className="mx-auto h-10 w-10 text-muted-foreground/50" />
-        <h3 className="mt-3 text-[16px] font-medium">{t('templates.empty.heading')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t('templates.empty.body')}</p>
-        <Button className="mt-4" render={<Link href="/workflows/templates/new" />}>
-          {t('templates.empty.cta')}
-        </Button>
-      </div>
+      <AtelierEmptyState
+        variant="subview"
+        illustration={TemplatesIllustration}
+        heading={tEmpty('heading')}
+        body={tEmpty('body')}
+        primaryAction={{
+          label: tEmpty('cta'),
+          href: '/workflows/templates/new',
+        }}
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 
   return (
     <>
       <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
-      <div className="rounded-xl border bg-background">
+      <div className="overflow-hidden rounded-xl border bg-background">
         <Table>
           <TableHeader>
             <TableRow>

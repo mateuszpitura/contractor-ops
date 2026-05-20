@@ -1,5 +1,14 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
 import {
   Banknote,
   Clock,
@@ -11,19 +20,13 @@ import {
   Receipt,
   Settings,
 } from 'lucide-react';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { cn } from '@/lib/utils';
 import type { LooseTranslator } from '@/i18n/typed-keys';
+import { cn } from '@/lib/utils';
+import { OrgSwitcherList } from './org-switcher-list';
+import { useOrgSwitcher } from './use-org-switcher';
 
 // ---------------------------------------------------------------------------
 // Navigation items (same as top bar)
@@ -62,6 +65,7 @@ interface PortalMobileMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orgName: string;
+  orgLogo: string | null;
   contractorName: string;
   contractorEmail: string;
 }
@@ -80,13 +84,16 @@ export function PortalMobileMenu({
   open,
   onOpenChange,
   orgName,
+  orgLogo,
   contractorName,
   contractorEmail,
 }: PortalMobileMenuProps) {
   const tAria = useTranslations('Common.aria');
   const t = useTranslations('Portal.nav');
+  const tSwitch = useTranslations('Portal.orgSwitch');
   const pathname = usePathname();
   const router = useRouter();
+  const orgSwitcher = useOrgSwitcher();
 
   const NAV_ITEMS = getNavItems(t);
 
@@ -108,7 +115,25 @@ export function PortalMobileMenu({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
-          <SheetTitle>{orgName}</SheetTitle>
+          <div className="flex items-center gap-3">
+            {orgLogo ? (
+              <Image
+                src={orgLogo}
+                alt=""
+                width={32}
+                height={32}
+                className="h-8 w-8 shrink-0 rounded-md object-cover"
+                unoptimized
+              />
+            ) : (
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-sm font-semibold text-primary">
+                {orgName.charAt(0).toUpperCase()}
+              </span>
+            )}
+            <SheetTitle className="min-w-0 truncate">{orgName}</SheetTitle>
+          </div>
           <SheetDescription className="sr-only">{t('menuDescription')}</SheetDescription>
         </SheetHeader>
 
@@ -120,10 +145,11 @@ export function PortalMobileMenu({
               <button
                 key={item.href}
                 type="button"
+                aria-current={active ? 'page' : undefined}
                 // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={() => handleNavClick(item.href)}
                 className={cn(
-                  'flex items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start',
+                  'flex min-h-12 items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                   active
                     ? 'bg-accent/50 text-foreground font-medium'
                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/30',
@@ -134,6 +160,24 @@ export function PortalMobileMenu({
             );
           })}
         </nav>
+
+        {orgSwitcher.isAvailable ? (
+          <div className="px-2 pb-2">
+            <Separator className="my-2" />
+            <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {tSwitch('label')}
+            </p>
+            <OrgSwitcherList
+              orgs={orgSwitcher.orgs}
+              switchingContractorId={orgSwitcher.switchingContractorId}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onSelect={target => {
+                void orgSwitcher.switchTo(target);
+              }}
+              variant="sheet"
+            />
+          </div>
+        ) : null}
 
         {/* Bottom: Contractor info + sign out */}
         <div className="mt-auto p-4">

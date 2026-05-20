@@ -1,12 +1,17 @@
 'use client';
 
 import { complianceState } from '@contractor-ops/einvoice/compliance';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { FileCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { PeppolComplianceWidget } from '@/components/peppol/peppol-compliance-widget';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 

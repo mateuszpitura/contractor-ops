@@ -1,12 +1,8 @@
 'use client';
 
-import { Plus, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback } from 'react';
-import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Table,
   TableBody,
@@ -14,7 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { Plus, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback } from 'react';
+import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
 import { cn } from '@/lib/utils';
 
 interface LineItem {

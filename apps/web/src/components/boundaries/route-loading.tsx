@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 
 /**
  * Shared route-level loading primitive.

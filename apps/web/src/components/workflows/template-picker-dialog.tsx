@@ -1,12 +1,7 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { LayoutTemplate, Search, Sparkles } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
@@ -14,13 +9,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { LayoutTemplate, Search, Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Template type badge styling
@@ -270,9 +270,7 @@ export function TemplatePicker({
         {/* Type filter clear */}
         {!!typeFilter && (
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              {tDynLoose(t, 'templateType', enumKey(typeFilter))}
-            </Badge>
+            <Badge variant="secondary">{tDynLoose(t, 'templateType', enumKey(typeFilter))}</Badge>
             <button
               type="button"
               className="text-xs text-muted-foreground hover:text-foreground underline"

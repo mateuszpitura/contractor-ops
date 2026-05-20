@@ -14,15 +14,20 @@
 'use client';
 
 import { IntegrationsIllustration } from '@contractor-ops/ui';
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { Bdi } from '@/components/ui/bdi';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { trpc } from '@/trpc/init';
 import { PeppolParticipantDeregisterDialog } from './peppol-participant-deregister-dialog';
 import { PeppolParticipantRegisterDialog } from './peppol-participant-register-dialog';

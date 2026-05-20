@@ -7,9 +7,13 @@
 
 'use client';
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface EnglishFallbackIndicatorProps {
   /** The locale the user is viewing the page in (e.g. 'pl' or 'de'). */

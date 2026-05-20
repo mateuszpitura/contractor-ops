@@ -1,15 +1,19 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { ChevronDown, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Skeleton } from '@/components/ui/skeleton';
-import { trpc } from '@/trpc/init';
 import { tKey } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Sync status styling
@@ -127,9 +131,7 @@ export function KsefSyncHistory({ connectionId }: KsefSyncHistoryProps) {
                     className={`ms-auto text-xs ${
                       isNoNew ? 'bg-muted text-muted-foreground' : statusStyle.className
                     }`}>
-                    {isNoNew
-                      ? t('syncStatusNoNew')
-                      : tKey(t, statusStyle.labelKey)}
+                    {isNoNew ? t('syncStatusNoNew') : tKey(t, statusStyle.labelKey)}
                   </Badge>
                 </div>
               );

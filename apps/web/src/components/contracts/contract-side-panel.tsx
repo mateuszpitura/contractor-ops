@@ -1,17 +1,22 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
 import { differenceInDays, isPast } from 'date-fns';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import type { ContractRow } from './contract-table/columns';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -114,8 +119,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <DetailItem label={t('columns.currency')} value={contract.currency} />
                 <DetailItem
                   label={t('columns.billingCycle')}
-                  value={tDynLoose(t, 'billingModel', enumKey(contract.billingModel),
-                  )}
+                  value={tDynLoose(t, 'billingModel', enumKey(contract.billingModel))}
                 />
                 <DetailItem label={t('columns.owner')} value={contract.internalOwner?.name} />
               </div>

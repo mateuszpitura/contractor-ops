@@ -1,9 +1,14 @@
 'use client';
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ProfileLevel } from './intake-profile-level-badge';
 import { IntakeProfileLevelBadge } from './intake-profile-level-badge';
 

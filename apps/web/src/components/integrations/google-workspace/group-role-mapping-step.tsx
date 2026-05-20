@@ -1,16 +1,16 @@
 'use client';
 
-import type { DirectoryRole } from '@contractor-ops/validators';
-import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import type { DirectoryRole } from '@contractor-ops/validators';
+import { useTranslations } from 'next-intl';
 import { ROLE_LABELS, ROLE_OPTIONS } from './role-assignment-controls';
 
 // ---------------------------------------------------------------------------

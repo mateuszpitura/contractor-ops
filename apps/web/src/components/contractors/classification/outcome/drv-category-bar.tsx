@@ -14,13 +14,15 @@ import type {
   ScheinCategoryResult,
   ScheinVerdict,
 } from '@contractor-ops/classification';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-import { DrvCriterionBreakdownList } from './drv-criterion-breakdown-list';
 import { tDyn, tDynLoose } from '@/i18n/typed-keys';
+import { DrvCriterionBreakdownList } from './drv-criterion-breakdown-list';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 

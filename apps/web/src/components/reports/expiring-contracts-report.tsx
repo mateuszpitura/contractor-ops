@@ -1,14 +1,14 @@
 'use client';
 
 import { ExpiringContractsIllustration, SectionLabel } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/navigation';
 import { tKey } from '@/i18n/typed-keys';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';

@@ -29,7 +29,7 @@ vi.mock('next-themes', () => ({
   useTheme: () => ({ theme: 'light', setTheme: vi.fn() }),
 }));
 
-vi.mock('@/components/ui/sidebar', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
   SidebarMenuButton: ({
     children,
     ...props

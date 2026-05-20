@@ -6,7 +6,7 @@ import { TeamsChannelMappingCard } from '../teams-channel-mapping-card';
 // Mocks — mock tooltip and select as simple divs to avoid jsdom hangs
 // ---------------------------------------------------------------------------
 
-vi.mock('@/components/ui/tooltip', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipTrigger: ({
     children,
@@ -19,7 +19,7 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/components/ui/select', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
   Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SelectTrigger: ({ children, ...props }: { children: React.ReactNode; 'aria-label'?: string }) => (
     <button type="button" data-testid="select-trigger" aria-label={props['aria-label']}>

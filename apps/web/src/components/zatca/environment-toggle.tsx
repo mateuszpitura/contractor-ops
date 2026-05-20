@@ -1,8 +1,5 @@
 'use client';
 
-import { Cloud, Settings, TestTube } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,8 +9,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
+import { Cloud, Settings, TestTube } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
@@ -10,8 +12,6 @@ import {
   SlackBrandIcon,
 } from '@/components/integrations/brand-icons';
 import { GoogleWorkspaceLogo } from '@/components/integrations/google-workspace-logo';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { SourceCard } from './source-card';

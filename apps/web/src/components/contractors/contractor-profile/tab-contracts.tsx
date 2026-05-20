@@ -1,6 +1,14 @@
 'use client';
 
 import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Table,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -9,14 +17,11 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { ContractWizardDialog } from '@/components/contracts/contract-wizard/wizard-dialog';
 import { DataTableBody } from '@/components/shared/data-table-body';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useRouter } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type (subset of full ContractRow for the mini table)
@@ -213,7 +218,7 @@ export function TabContracts({ contractorId }: TabContractsProps) {
       </div>
 
       {/* Mini table */}
-      <div className="rounded-xl border bg-background">
+      <div className="overflow-hidden rounded-xl border bg-background">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (

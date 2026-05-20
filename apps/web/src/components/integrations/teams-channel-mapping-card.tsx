@@ -1,24 +1,28 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { FeatureGate } from '@/components/billing/feature-gate';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { trpc } from '@/trpc/init';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { FeatureGate } from '@/components/billing/feature-gate';
 import { tKey } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -112,9 +116,7 @@ function ChannelMappingContent({
         <div
           key={category}
           className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm font-semibold">
-            {tKey(t, CATEGORY_LABEL_KEYS[category])}
-          </span>
+          <span className="text-sm font-semibold">{tKey(t, CATEGORY_LABEL_KEYS[category])}</span>
           <Select
             value={localMapping[category] ?? undefined}
             // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler

@@ -8,11 +8,14 @@
 // renders the UI-SPEC error copy without silently discarding the user's
 // value (error reads back to them, they can correct in place).
 
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@contractor-ops/ui/components/shadcn/input-group';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
-
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface EconomicDependencyInputProps {

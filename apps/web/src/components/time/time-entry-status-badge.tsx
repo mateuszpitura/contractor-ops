@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 
 // ---------------------------------------------------------------------------
 // Status -> badge variant mapping per UI-SPEC

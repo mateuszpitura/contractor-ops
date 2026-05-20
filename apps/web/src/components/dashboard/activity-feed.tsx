@@ -1,18 +1,24 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Bdi } from '@/components/ui/bdi';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose, tHas, tKey } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -176,20 +182,20 @@ export function ActivityFeed() {
                               <Bdi>{item.actorName ?? t('activity.systemActor')}</Bdi>
                             </span>{' '}
                             <span className="font-semibold">
-                              {t(
-                                `activity.actions.${enumKey(actionVerb(item.action))}` as Parameters<
-                                  typeof t
-                                >[0],
-                              )}
+                              {(() => {
+                                const key = `activity.actions.${enumKey(actionVerb(item.action))}`;
+                                return tHas(t, key) ? tKey(t, key) : actionVerb(item.action);
+                              })()}
                             </span>
                           </p>
                           <div className="mt-0.5 flex items-center gap-2">
                             <Badge variant="secondary" className="text-[10px]">
-                              {t(
-                                `activity.resources.${enumKey(item.resourceType)}` as Parameters<
-                                  typeof t
-                                >[0],
-                              )}
+                              {(() => {
+                                const key = `activity.resources.${enumKey(item.resourceType)}`;
+                                return tHas(t, key)
+                                  ? tKey(t, key)
+                                  : tKey(t, 'activity.resources.unknown');
+                              })()}
                             </Badge>
                             <Link
                               href={getEntityHref(item.resourceType, item.resourceId)}

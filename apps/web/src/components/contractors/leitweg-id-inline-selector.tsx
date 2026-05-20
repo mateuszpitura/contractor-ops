@@ -17,14 +17,14 @@
 
 'use client';
 
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { LeitwegIdCreateDialog } from '@/components/settings/e-invoicing/leitweg-id-create-dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { trpc } from '@/trpc/init';
 

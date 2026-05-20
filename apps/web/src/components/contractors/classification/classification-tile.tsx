@@ -11,22 +11,25 @@
 //     relative date + "View details" + "Re-run assessment" when present.
 
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Bdi } from '@contractor-ops/ui/components/shadcn/bdi';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import type { LucideIcon } from 'lucide-react';
 import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Bdi } from '@/components/ui/bdi';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
-
-import { ClassificationEngagementCta } from './classification-engagement-cta';
 import { tDyn } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
+import { ClassificationEngagementCta } from './classification-engagement-cta';
 
 export interface ClassificationTileEngagement {
   readonly id: string;

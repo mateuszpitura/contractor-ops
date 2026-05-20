@@ -6,7 +6,7 @@ import { DocLinkChip } from '../doc-link-chip';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@/components/ui/tooltip', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipTrigger: ({
     children,
@@ -28,7 +28,7 @@ vi.mock('@/components/ui/tooltip', () => ({
   TooltipProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/components/ui/alert-dialog', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/alert-dialog', () => ({
   AlertDialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
     open ? <div data-testid="alert-dialog">{children}</div> : null,
   AlertDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

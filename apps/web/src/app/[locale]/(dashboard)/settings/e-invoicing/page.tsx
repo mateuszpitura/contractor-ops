@@ -9,10 +9,6 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
-import { ScrollText } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
-import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,8 +16,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/breadcrumb';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ScrollText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { LeitwegIdListCard } from '@/components/settings/e-invoicing/leitweg-id-list-card';
+import { PeppolParticipantCard } from '@/components/settings/e-invoicing/peppol-participant-card';
 import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------

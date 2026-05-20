@@ -1,19 +1,19 @@
 'use client';
 
 import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
+import { toast } from 'sonner';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 

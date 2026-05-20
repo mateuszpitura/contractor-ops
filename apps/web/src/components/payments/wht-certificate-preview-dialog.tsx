@@ -1,15 +1,15 @@
 'use client';
 
-import { Download } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Download } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatMinorUnits } from '@/lib/format-currency';
 
 interface WhtCertificatePreviewProps {

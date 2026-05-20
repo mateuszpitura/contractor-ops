@@ -1,12 +1,16 @@
 'use client';
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { EquipmentTypeIcon } from '../equipment-type-icon';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types

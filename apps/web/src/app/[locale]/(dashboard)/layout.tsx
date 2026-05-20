@@ -4,6 +4,7 @@ import { prisma } from '@contractor-ops/db';
 import type { FlagValues } from '@contractor-ops/feature-flags';
 import { buildFlagBag, emptyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
+import { SidebarInset, SidebarProvider } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { unstable_cache } from 'next/cache';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -20,7 +21,6 @@ import { AppSidebar } from '@/components/layout/sidebar';
 import { TopBar } from '@/components/layout/top-bar';
 import { SearchProvider } from '@/components/search/search-provider';
 import { TosReacceptanceModal } from '@/components/tos-reacceptance-modal';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { TOS_CURRENT_VERSION } from '@/lib/tos';
 
 /**

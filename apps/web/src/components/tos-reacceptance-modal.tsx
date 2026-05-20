@@ -16,6 +16,15 @@
 
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { SOFTWARE_NOT_LEGAL_ADVICE_EN } from '@contractor-ops/validators';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ExternalLink, ScrollText } from 'lucide-react';
@@ -23,15 +32,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { TOS_CURRENT_VERSION } from '@/lib/tos';
 import { trpc } from '@/trpc/init';
 

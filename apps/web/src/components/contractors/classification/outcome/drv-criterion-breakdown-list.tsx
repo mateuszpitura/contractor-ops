@@ -12,9 +12,6 @@ import type {
   RuleSetQuestion,
   ScheinCategory,
 } from '@contractor-ops/classification';
-import { useTranslations } from 'next-intl';
-import type { TranslatorOf } from '@/i18n/typed-keys';
-
 import {
   Table,
   TableBody,
@@ -23,7 +20,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useTranslations } from 'next-intl';
+import type { TranslatorOf } from '@/i18n/typed-keys';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
 

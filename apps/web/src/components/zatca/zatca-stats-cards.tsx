@@ -1,10 +1,10 @@
 'use client';
 
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { ComplianceStats } from './zatca-trpc';
 import { zatcaTrpc } from './zatca-trpc';
 

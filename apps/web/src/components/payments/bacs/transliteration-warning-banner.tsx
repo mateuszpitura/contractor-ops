@@ -8,9 +8,9 @@
 
 'use client';
 
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { AlertOctagon, AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export interface TransliterationWarning {
   contractorName: string;

@@ -4,6 +4,24 @@ import type {
   OcrExtractionField,
   OcrExtractionResult,
 } from '@contractor-ops/integrations/types/ocr';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Sentry from '@sentry/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,21 +39,8 @@ import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
 import { ExtractionStatusBar } from '@/components/ocr/extraction-status-bar';
 import { NipValidationBadge } from '@/components/ocr/nip-validation-badge';
 import { OcrProcessingOverlay } from '@/components/ocr/ocr-processing-overlay';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { portalTrpc, trpc } from '@/trpc/init';
 import type { LooseTranslator } from '@/i18n/typed-keys';
+import { portalTrpc, trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -93,10 +98,7 @@ type UploadState =
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatFileSize(
-  bytes: number,
-  tc: LooseTranslator,
-): string {
+function formatFileSize(bytes: number, tc: LooseTranslator): string {
   if (bytes < 1024) return tc('bytes', { size: bytes });
   if (bytes < 1024 * 1024) return tc('kilobytes', { size: (bytes / 1024).toFixed(1) });
   return tc('megabytes', { size: (bytes / (1024 * 1024)).toFixed(1) });
@@ -406,7 +408,7 @@ function useFileUploadWithOcr(t: LooseTranslator) {
     portalTrpc.portal.getUploadUrl.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.uploadReady'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
@@ -416,7 +418,7 @@ function useFileUploadWithOcr(t: LooseTranslator) {
       onError: err => toast.error(err.message),
 
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.scanComplete'));
         queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),
@@ -641,7 +643,7 @@ function useInvoiceSubmission(t: LooseTranslator, upload: UploadState) {
     portalTrpc.portal.submitInvoice.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.invoiceSubmitted'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),

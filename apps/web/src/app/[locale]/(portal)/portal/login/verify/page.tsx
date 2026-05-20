@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -7,8 +9,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { OrgPicker } from '@/components/portal/org-picker';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { portalTrpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
@@ -91,7 +91,7 @@ export default function PortalVerifyPage() {
     portalTrpc.portal.verifyMagicLink.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.verified'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),
@@ -101,7 +101,7 @@ export default function PortalVerifyPage() {
     portalTrpc.portal.selectOrg.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(t('toast.verified'));
         queryClient.invalidateQueries(portalTrpc.portal.pathFilter());
       },
     }),

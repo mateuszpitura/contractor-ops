@@ -6,6 +6,13 @@ import {
   AtelierPageHeader,
   SectionLabel,
 } from '@contractor-ops/ui';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardCheck } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -21,8 +28,6 @@ import { ChangeRequestDiffCard } from '@/components/settings/change-request-diff
 import { AnimateIn } from '@/components/shared/animate-in';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { PageLoadingSpinner } from '@/components/shared/page-loading-spinner';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePermissions } from '@/hooks/use-permissions';
 import { trpc } from '@/trpc/init';
 

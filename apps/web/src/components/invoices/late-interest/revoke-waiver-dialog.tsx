@@ -1,11 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,9 +9,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------

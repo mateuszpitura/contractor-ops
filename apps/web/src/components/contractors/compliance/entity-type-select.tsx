@@ -1,8 +1,7 @@
 'use client';
 
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { useId } from 'react';
-
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface EntityTypeSelectProps<T extends string> {

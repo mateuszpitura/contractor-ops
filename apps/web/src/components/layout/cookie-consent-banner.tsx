@@ -1,9 +1,9 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Cookie } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 
 const COOKIE_CONSENT_KEY = 'cookie-consent-acknowledged';

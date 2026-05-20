@@ -1,6 +1,8 @@
 'use client';
 
 import { AtelierEmptyState, ComplianceGapsIllustration } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useId } from 'react';
@@ -9,8 +11,6 @@ import { CountryComplianceSection } from '@/components/contractors/country-compl
 import { DocumentList } from '@/components/documents/document-list';
 import { DropZone } from '@/components/documents/drop-zone';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
@@ -138,9 +138,7 @@ export function TabCompliance({ contractor }: TabComplianceProps) {
 
       {/* Required documents section — upload zone */}
       <div id={`${id}-compliance-upload-zone`} className="space-y-4">
-        <h3 className="text-base font-medium">
-          {t('uploadCompliance')}
-        </h3>
+        <h3 className="text-base font-medium">{t('uploadCompliance')}</h3>
         <DropZone entityType="CONTRACTOR" entityId={contractor.id} />
       </div>
 

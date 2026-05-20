@@ -1,13 +1,13 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { ConfirmImportStep } from './confirm-import-step';
 import { PeopleReviewStep } from './people-review-step';
 import { ProjectImportStep } from './project-import-step';

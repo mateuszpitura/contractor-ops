@@ -1,12 +1,6 @@
 'use client';
 
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
-import { workflowTaskSkipReason } from '@contractor-ops/validators';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, MoreHorizontal } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,22 +8,28 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Progress } from '@/components/ui/progress';
-import { Textarea } from '@/components/ui/textarea';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, MoreHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { usePermissionsServer } from '@/hooks/use-permissions-server';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Types

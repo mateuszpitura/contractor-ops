@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierTableShell, ContractsIllustration } from '@contractor-ops/ui';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -9,7 +10,6 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import { Table, TableHeader, TableRow } from '@/components/ui/table';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import { trpc } from '@/trpc/init';
 import type { ContractRow } from './columns';

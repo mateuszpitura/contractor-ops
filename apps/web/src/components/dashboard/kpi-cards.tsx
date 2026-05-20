@@ -1,13 +1,13 @@
 'use client';
 
 import { AnimatedNumber, TiltCard } from '@contractor-ops/ui';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, Minus, TrendingDown, TrendingUp } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
-import { trpc } from '@/trpc/init';
 import { tKey } from '@/i18n/typed-keys';
+import { trpc } from '@/trpc/init';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -1,9 +1,9 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { enumKey } from '@/lib/enum-key';
 import { tKey } from '@/i18n/typed-keys';
+import { enumKey } from '@/lib/enum-key';
 
 type ShipmentStatus =
   | 'CREATED'

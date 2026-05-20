@@ -10,11 +10,7 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
-import { AlertTriangle, ShieldOff } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useFlag } from '@/components/layout/feature-flag-context';
-import { BacsSubmitterForm } from '@/components/payments/bacs/bacs-submitter-form';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,8 +18,17 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+} from '@contractor-ops/ui/components/shadcn/breadcrumb';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { AlertTriangle, ShieldOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useFlag } from '@/components/layout/feature-flag-context';
+import { BacsSubmitterForm } from '@/components/payments/bacs/bacs-submitter-form';
 import { usePermissions } from '@/hooks/use-permissions';
 
 // ---------------------------------------------------------------------------

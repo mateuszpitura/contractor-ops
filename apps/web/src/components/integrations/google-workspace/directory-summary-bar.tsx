@@ -1,7 +1,7 @@
 'use client';
 
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
 
 // ---------------------------------------------------------------------------
 // DirectorySummaryBar

@@ -1,11 +1,15 @@
 'use client';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreditCard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StepConfirmation } from './step-confirmation';
 import { StepReview } from './step-review';
 import { StepSelect } from './step-select';

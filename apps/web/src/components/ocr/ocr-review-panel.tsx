@@ -1,11 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { RefreshCw, Trash2 } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,18 +10,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import { useQuery } from '@tanstack/react-query';
+import { RefreshCw, Trash2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 const PdfViewer = dynamic(() => import('@/components/ocr/pdf-viewer').then(mod => mod.PdfViewer), {

@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { FeatureGate } from '@/components/billing/feature-gate';
 import { ProviderConnectionCard } from '@/components/settings/provider-connection-card';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 import { JiraLogo } from './jira-logo';
 import { JiraStatusMappingDialog } from './jira-status-mapping-dialog';

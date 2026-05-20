@@ -7,11 +7,10 @@
 // The counter is aria-describedby'd to the textarea so assistive tech
 // announces remaining character budget.
 
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useMemo } from 'react';
-
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 const MAX_RATIONALE_LENGTH = 1000;

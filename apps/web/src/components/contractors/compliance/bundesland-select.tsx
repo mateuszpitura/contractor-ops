@@ -1,10 +1,9 @@
 'use client';
 
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { STEUERNUMMER_FORMATS } from '@contractor-ops/validators';
 import { useId, useMemo } from 'react';
-
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface BundeslandSelectProps {

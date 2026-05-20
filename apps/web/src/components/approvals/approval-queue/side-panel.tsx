@@ -1,32 +1,41 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useId, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { tKey, type TranslatorOf } from '@/i18n/typed-keys';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@contractor-ops/ui/components/shadcn/sheet';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useId, useState } from 'react';
 import { useApprovalActions } from '@/hooks/use-approval-actions';
 import { Link } from '@/i18n/navigation';
+import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tKey } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { formatAmount } from '@/lib/format-currency';
 import { trpc } from '@/trpc/init';

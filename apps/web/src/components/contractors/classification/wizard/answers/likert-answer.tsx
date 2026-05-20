@@ -6,10 +6,10 @@
 // See UI-SPEC §Interaction 3 and §Typography. Labels translated via
 // `Classification.likert.*`.
 
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId } from 'react';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 
 export type LikertValue = 1 | 2 | 3 | 4 | 5;

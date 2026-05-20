@@ -1,6 +1,6 @@
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { ReactNode } from 'react';
 import { ConfidenceBadge } from '@/components/ocr/confidence-badge';
-import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 interface ConfidenceFieldWrapperProps {

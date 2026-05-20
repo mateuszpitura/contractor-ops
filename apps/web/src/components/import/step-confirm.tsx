@@ -1,12 +1,11 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 
 import type { CommitResult, EntityType } from './import-wizard-dialog';
 

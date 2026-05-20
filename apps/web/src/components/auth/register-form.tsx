@@ -1,7 +1,11 @@
 'use client';
 
-import { Turnstile } from '@marsidev/react-turnstile';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Turnstile } from '@marsidev/react-turnstile';
 import * as Sentry from '@sentry/nextjs';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -10,10 +14,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { SocialButtons } from '@/components/auth/social-buttons';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Link, useRouter } from '@/i18n/navigation';
 import { authClient } from '@/lib/auth-client';
 
@@ -205,8 +205,7 @@ export function RegisterForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || (!!TURNSTILE_SITE_KEY && !turnstileToken)}
-          >
+            disabled={isLoading || (!!TURNSTILE_SITE_KEY && !turnstileToken)}>
             {isLoading ? (
               <>
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />

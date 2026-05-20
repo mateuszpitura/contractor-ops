@@ -2,13 +2,13 @@
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
 import { AtelierPageHeader, IntegrationsIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
 import { EnvironmentToggle } from '@/components/zatca/environment-toggle';
 import { OnboardingWizard } from '@/components/zatca/onboarding-wizard';
 import { ZatcaComplianceWidget } from '@/components/zatca/zatca-compliance-widget';

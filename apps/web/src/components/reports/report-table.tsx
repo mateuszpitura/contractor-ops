@@ -1,15 +1,20 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
-
 import { SortableTableHead } from '@/components/shared/sortable-table-head';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 
 interface ReportTableProps<TData> {
   columns: ColumnDef<TData>[];
@@ -74,7 +79,7 @@ export function ReportTable<TData>({
   });
 
   return (
-    <div className="relative rounded-xl border bg-background">
+    <div className="relative overflow-hidden rounded-xl border bg-background">
       {/* Refetch overlay */}
       {isFetching && !isLoading && (
         <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-background/60 pt-20">

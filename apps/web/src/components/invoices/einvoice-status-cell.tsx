@@ -1,9 +1,9 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Circle, CircleCheck, CircleDashed, ShieldAlert, ShieldX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ComponentType } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------

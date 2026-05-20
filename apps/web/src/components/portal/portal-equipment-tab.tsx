@@ -1,15 +1,6 @@
 'use client';
 
 import { AtelierEmptyState, EquipmentIllustration, SectionLabel } from '@contractor-ops/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { Loader2, RotateCcw, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { EquipmentStatusBadge } from '@/components/equipment/equipment-status-badge';
-import { EquipmentTypeIcon } from '@/components/equipment/equipment-type-icon';
-import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,10 +10,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import { Loader2, RotateCcw, XCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { EquipmentStatusBadge } from '@/components/equipment/equipment-status-badge';
+import { EquipmentTypeIcon } from '@/components/equipment/equipment-type-icon';
+import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { portalTrpc } from '@/trpc/init';
 import { PortalReturnFlow } from './portal-return-flow';
 

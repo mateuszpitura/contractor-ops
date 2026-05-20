@@ -1,19 +1,19 @@
 'use client';
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import type { ColumnDef } from '@tanstack/react-table';
+import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { tKey, type TranslatorOf } from '@/i18n/typed-keys';
+import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tKey } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { EquipmentStatusBadge } from '../equipment-status-badge';
 import { EquipmentTypeIcon } from '../equipment-type-icon';

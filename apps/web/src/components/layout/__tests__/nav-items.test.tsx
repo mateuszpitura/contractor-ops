@@ -83,7 +83,7 @@ vi.mock('@/components/layout/feature-flag-context', () => ({
   FeatureFlagProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-vi.mock('@/components/ui/sidebar', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
   SidebarGroup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,

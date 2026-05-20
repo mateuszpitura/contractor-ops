@@ -1,6 +1,13 @@
 'use client';
 
 import { AtelierTableShell } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Table,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { useQuery } from '@tanstack/react-query';
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -8,8 +15,6 @@ import { Inbox, Upload } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 import { DataTableBody } from '@/components/shared/data-table-body';
-import { Button } from '@/components/ui/button';
-import { Table, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 import { IntakeFilterChips, parseFilterParam } from './intake-filter-chips';

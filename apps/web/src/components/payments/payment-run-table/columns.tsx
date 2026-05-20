@@ -1,14 +1,14 @@
 'use client';
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle2, Download, MoreHorizontal, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import type { ColumnDef } from '@tanstack/react-table';
+import { CheckCircle2, Download, MoreHorizontal, XCircle } from 'lucide-react';
 import type { TranslatorOf } from '@/i18n/typed-keys';
 import { PaymentRunBadge } from '../payment-run-badge';
 

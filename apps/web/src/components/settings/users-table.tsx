@@ -2,22 +2,15 @@
 
 import type { MemberStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, AtelierTableShell, statusToVariant } from '@contractor-ops/ui';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShieldCheck, UserX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { DeactivateDialog } from '@/components/settings/deactivate-dialog';
-import { UserConsentSheet } from '@/components/settings/user-consent-sheet';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -25,12 +18,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ShieldCheck, UserX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { DeactivateDialog } from '@/components/settings/deactivate-dialog';
+import { UserConsentSheet } from '@/components/settings/user-consent-sheet';
 import { usePermissions } from '@/hooks/use-permissions';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { authClient } from '@/lib/auth-client';
 import { enumKey } from '@/lib/enum-key';
 import { trpc } from '@/trpc/init';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 type Member = {
   id?: string;
@@ -281,14 +281,11 @@ export function UsersTable() {
     );
   }
 
-  const roleLabel = (role: string) =>
-    tDynLoose(t, 'roles', enumKey(role)) ?? role;
+  const roleLabel = (role: string) => tDynLoose(t, 'roles', enumKey(role)) ?? role;
 
-  const roleDescription = (role: string) =>
-    tDynLoose(t, 'roleDescriptions', enumKey(role));
+  const roleDescription = (role: string) => tDynLoose(t, 'roleDescriptions', enumKey(role));
 
-  const statusLabel = (status: string) =>
-    tDynLoose(t, 'status', enumKey(status)) ?? status;
+  const statusLabel = (status: string) => tDynLoose(t, 'status', enumKey(status)) ?? status;
 
   return (
     <>

@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -9,7 +10,6 @@ import { Suspense, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { renderEmptyStateAction } from '@/components/shared/atelier-bridges';
 import { ContractorTimesheetReview } from '@/components/time/contractor-timesheet-review';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';
 

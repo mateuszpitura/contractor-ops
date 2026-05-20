@@ -6,11 +6,6 @@
 
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Unlink } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +15,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Loader2, Unlink } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { trpc } from '@/trpc/init';
 
 interface PeppolParticipantDeregisterDialogProps {

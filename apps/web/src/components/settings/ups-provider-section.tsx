@@ -1,19 +1,19 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { UpsBrandIcon } from '@/components/integrations/brand-icons';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle as DialogTitleComponent,
-} from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { UpsBrandIcon } from '@/components/integrations/brand-icons';
 import { trpc } from '@/trpc/init';
 import { CarrierCredentialForm } from './carrier-credential-form';
 

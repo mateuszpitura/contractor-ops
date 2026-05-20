@@ -12,11 +12,14 @@
 // `question.answerType`.
 
 import type { RuleSetQuestion } from '@contractor-ops/classification';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useId, useState } from 'react';
-
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { LikertValue } from './answers/likert-answer';
 import { LikertAnswer } from './answers/likert-answer';

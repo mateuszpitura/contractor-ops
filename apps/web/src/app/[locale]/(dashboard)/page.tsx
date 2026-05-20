@@ -1,6 +1,8 @@
 'use client';
 
 import { AtelierBackground, DashboardIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
@@ -17,8 +19,6 @@ import { EInvoiceComplianceWidget } from '@/components/einvoice/compliance-widge
 import { useFlag } from '@/components/layout/feature-flag-context';
 import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
 import { AnimateIn } from '@/components/shared/animate-in';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { usePermissions } from '@/hooks/use-permissions';
 import { Link } from '@/i18n/navigation';
 import { trpc } from '@/trpc/init';

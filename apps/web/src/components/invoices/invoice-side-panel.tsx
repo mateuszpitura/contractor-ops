@@ -1,17 +1,22 @@
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@contractor-ops/ui/components/shadcn/sheet';
 import { Mail, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Link } from '@/i18n/navigation';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
 import { useDateFormatter } from '@/lib/format/use-date-formatter';
 import type { InvoiceRow } from './invoice-table/columns';
-import { tDyn, tDynLoose } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Status badge colors (mirrors columns.tsx)
@@ -161,9 +166,7 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
                 {matchConfig ? (
                   <>
                     <span className={`inline-block h-2 w-2 rounded-full ${matchConfig.dotClass}`} />
-                    <span>
-                      {tDynLoose(t, 'matchStatus', enumKey(matchConfig.labelKey))}
-                    </span>
+                    <span>{tDynLoose(t, 'matchStatus', enumKey(matchConfig.labelKey))}</span>
                   </>
                 ) : (
                   <span className="text-muted-foreground">&mdash;</span>

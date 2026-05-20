@@ -2,13 +2,18 @@
 
 import type { ContractStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@contractor-ops/ui/components/shadcn/tooltip';
 import type { ColumnDef } from '@tanstack/react-table';
 import { differenceInDays, isPast } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { TranslatorOf } from '@/i18n/typed-keys';
+import { tDynLoose } from '@/i18n/typed-keys';
 import { enumKey } from '@/lib/enum-key';
-import { tDyn, tDynLoose, type TranslatorOf } from '@/i18n/typed-keys';
 
 // ---------------------------------------------------------------------------
 // Row type matching the tRPC contract.list response shape
@@ -231,7 +236,9 @@ export function getColumns(
       header: t('columns.billingCycle'),
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="text-sm">{tDynLoose(t, 'billingModel', enumKey(row.original.billingModel))}</span>
+        <span className="text-sm">
+          {tDynLoose(t, 'billingModel', enumKey(row.original.billingModel))}
+        </span>
       ),
     },
 

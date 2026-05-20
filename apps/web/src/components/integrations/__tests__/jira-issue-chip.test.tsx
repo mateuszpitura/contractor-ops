@@ -6,7 +6,7 @@ import { JiraIssueChip } from '../jira-issue-chip';
 // Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock('@/components/ui/tooltip', () => ({
+vi.mock('@contractor-ops/ui/components/shadcn/tooltip', () => ({
   Tooltip: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   TooltipTrigger: ({
     children,

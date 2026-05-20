@@ -1,9 +1,9 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { InvoiceSubmitForm } from '@/components/portal/invoice-submit-form';
-import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 
 // ---------------------------------------------------------------------------

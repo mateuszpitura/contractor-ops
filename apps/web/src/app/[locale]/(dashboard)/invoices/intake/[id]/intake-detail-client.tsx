@@ -1,6 +1,7 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
+import { Alert, AlertDescription } from '@contractor-ops/ui/components/shadcn/alert';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { IntakeDetailActionsBar } from '@/components/invoices/intake/intake-detail-actions-bar';
@@ -11,7 +12,6 @@ import { IntakeDetailValidationPane } from '@/components/invoices/intake/intake-
 import type { ProfileLevel } from '@/components/invoices/intake/intake-profile-level-badge';
 import type { IntakeStatus } from '@/components/invoices/intake/intake-status-pill';
 import type { ValidationStatus } from '@/components/invoices/intake/intake-validation-status-pill';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // ---------------------------------------------------------------------------
 // Permissive shape — we only read the fields we render. Fields are nullable

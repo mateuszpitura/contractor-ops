@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import { ScrollArea, ScrollBar } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { RejectionReasonDialog } from './rejection-reason-dialog';
 import { TimeEntryStatusBadge } from './time-entry-status-badge';
 import { TimeSourceBadge } from './time-source-badge';

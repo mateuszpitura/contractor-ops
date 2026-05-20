@@ -12,17 +12,16 @@
 // callbacks — this component does NOT couple to tRPC directly so it stays
 // testable without a full client context.
 
-import { MoreHorizontal, Play, RefreshCcw, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { MoreHorizontal, Play, RefreshCcw, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { ReassessmentTriggerDismissDialog } from './dismiss-dialog';
 

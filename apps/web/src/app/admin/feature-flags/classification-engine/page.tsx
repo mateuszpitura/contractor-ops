@@ -14,11 +14,7 @@
 
 import { prisma } from '@contractor-ops/db';
 import { evaluate } from '@contractor-ops/feature-flags';
-import { getAllPending, getRegistry, LOCKED_DISCLAIMERS } from '@contractor-ops/validators';
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Table,
   TableBody,
@@ -26,7 +22,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@contractor-ops/ui/components/shadcn/table';
+import { getAllPending, getRegistry, LOCKED_DISCLAIMERS } from '@contractor-ops/validators';
+import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { requirePlatformOperator } from '@/lib/admin-auth';
 
 export const metadata: Metadata = {

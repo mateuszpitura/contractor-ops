@@ -1,8 +1,6 @@
 'use client';
 
-import * as Sentry from '@sentry/nextjs';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
   CardContent,
@@ -10,7 +8,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@contractor-ops/ui/components/shadcn/card';
+import * as Sentry from '@sentry/nextjs';
+import { useEffect } from 'react';
 
 /**
  * Shared route-level error boundary primitive.

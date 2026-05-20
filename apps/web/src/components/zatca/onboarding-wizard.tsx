@@ -1,17 +1,22 @@
 'use client';
 
 import type { ZatcaOnboardingState } from '@contractor-ops/einvoice/zatca/types';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@contractor-ops/ui/components/shadcn/card';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { tKey } from '@/i18n/typed-keys';
 import { ComplianceChecks } from './compliance-checks';
 import { ComplianceCsid } from './compliance-csid';
 import { CsrGeneration } from './csr-generation';
 import { ProductionCertificate } from './production-certificate';
 import type { StepDefinition } from './stepper';
-import { tKey } from '@/i18n/typed-keys';
 import { Stepper } from './stepper';
 import { TaxDetailsForm } from './tax-details-form';
 import { zatcaTrpc } from './zatca-trpc';

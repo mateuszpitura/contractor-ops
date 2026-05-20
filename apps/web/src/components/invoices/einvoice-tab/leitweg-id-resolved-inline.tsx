@@ -1,8 +1,8 @@
 'use client';
 
+import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { ShieldAlert } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export type LeitwegIdSource = 'contract' | 'contractorDefault';
 

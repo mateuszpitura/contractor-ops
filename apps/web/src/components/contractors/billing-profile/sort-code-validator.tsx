@@ -12,13 +12,12 @@
 
 'use client';
 
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, ShieldAlert, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRef, useState } from 'react';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { trpc } from '@/trpc/init';
 
 interface SortCodeValidatorProps {

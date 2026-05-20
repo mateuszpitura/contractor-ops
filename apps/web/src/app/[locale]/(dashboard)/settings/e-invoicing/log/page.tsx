@@ -10,9 +10,6 @@
 'use client';
 
 import { AtelierPageHeader } from '@contractor-ops/ui';
-import { useTranslations } from 'next-intl';
-
-import { TransmissionsLogCard } from '@/components/settings/e-invoicing/transmissions-log-card';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,7 +17,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
+} from '@contractor-ops/ui/components/shadcn/breadcrumb';
+import { useTranslations } from 'next-intl';
+import { TransmissionsLogCard } from '@/components/settings/e-invoicing/transmissions-log-card';
 
 // ---------------------------------------------------------------------------
 // Page

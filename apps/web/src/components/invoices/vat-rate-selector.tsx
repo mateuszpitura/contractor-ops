@@ -1,8 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import {
   Select,
   SelectContent,
@@ -11,7 +8,10 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@contractor-ops/ui/components/shadcn/select';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { trpc } from '@/trpc/init';
 
 interface VatRateSelectorProps {
