@@ -2504,6 +2504,20 @@ async function seedInvoices(
   // dropping the last two states).
   let globalInvoiceIdx = 0;
 
+  // Pre-built invoice rows + their per-line rows; approval-flow params are
+  // captured here so the deferred (commit 7) approval pass can run after the
+  // batched invoice + line inserts complete.
+  type ApprovalParams = {
+    invoiceId: string;
+    approvalStatus: SeededInvoice['approvalStatus'];
+    timeline: ReturnType<typeof buildInvoiceTimeline>;
+    total: number;
+    invNumber: string;
+  };
+  const invoiceRows: Prisma.InvoiceCreateManyInput[] = [];
+  const lineRows: Prisma.InvoiceLineCreateManyInput[] = [];
+  const approvalParams: ApprovalParams[] = [];
+
   for (const contractor of contractors) {
     const count = ctx.fakers.org.number.int({
       min: ctx.org.invoicesPerContractor.min,
@@ -2538,7 +2552,7 @@ async function seedInvoices(
         return {
           id: newId(),
           organizationId: ctx.organizationId,
-          // invoiceId is patched in below once the invoice row exists.
+          // invoiceId is patched in below once the invoice id is allocated.
           lineNumber: idx + 1,
           description: ctx.fakers.org.commerce.productDescription().slice(0, 200),
           quantity: qty.toString(),
@@ -2587,214 +2601,63 @@ async function seedInvoices(
       const seqForYear = (counterByYear.get(issueYear) ?? 0) + 1;
       counterByYear.set(issueYear, seqForYear);
       const invNumber = `INV-${issueYear}-${seqForYear.toString().padStart(4, '0')}`;
-      const created = await prisma.invoice.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          contractId: contractByContractor.get(contractor.id) ?? null,
-          billingProfileId: contractor.defaultBillingProfileId,
-          invoiceNumber: invNumber,
-          source: ctx.fakers.org.helpers.arrayElement([
-            'MANUAL_UPLOAD',
-            'EMAIL_INTAKE',
-            'API',
-            'PORTAL',
-          ]),
-          issueDate: dateOnly(issue),
-          dueDate: dateOnly(due),
-          currency: contractor.currency,
-          subtotalMinor: subtotal,
-          vatRate: `${vatPercent}.00`,
-          vatAmountMinor: vat,
-          totalMinor: total,
-          amountToPayMinor,
-          status: lifecycle,
-          approvalStatus,
-          paymentStatus,
-          receivedAt: timeline.receivedAt,
-          reviewedAt: timeline.reviewedAt,
-          approvedAt: timeline.approvedAt,
-          readyForPaymentAt: timeline.readyForPaymentAt,
-          paidAt: timeline.paidAt,
-          rejectedAt: timeline.rejectedAt,
-          rejectionReason:
-            lifecycle === 'REJECTED'
-              ? ctx.fakers.org.helpers.arrayElement([
-                  'Amount mismatch with PO',
-                  'Missing supporting timesheet',
-                  'Contractor outside approved vendor list',
-                  'Wrong VAT treatment — should be reverse-charge',
-                  'Duplicate of an earlier submission',
-                ])
-              : null,
-          sellerName: contractor.legalName,
-          sellerTaxId: makeTaxId(ctx.profile.countryCode, ctx.fakers.org),
-          notes: ctx.fakers.org.lorem.sentence(),
-          duplicateCheckHash: tokenHex(32), // unique enough
-          createdAt: timeline.receivedAt,
-        },
-        select: { id: true },
+      const invoiceId = randomUUID();
+      invoiceRows.push({
+        id: invoiceId,
+        organizationId: ctx.organizationId,
+        contractorId: contractor.id,
+        contractId: contractByContractor.get(contractor.id) ?? null,
+        billingProfileId: contractor.defaultBillingProfileId,
+        invoiceNumber: invNumber,
+        source: ctx.fakers.org.helpers.arrayElement([
+          'MANUAL_UPLOAD',
+          'EMAIL_INTAKE',
+          'API',
+          'PORTAL',
+        ]),
+        issueDate: dateOnly(issue),
+        dueDate: dateOnly(due),
+        currency: contractor.currency,
+        subtotalMinor: subtotal,
+        vatRate: `${vatPercent}.00`,
+        vatAmountMinor: vat,
+        totalMinor: total,
+        amountToPayMinor,
+        status: lifecycle,
+        approvalStatus,
+        paymentStatus,
+        receivedAt: timeline.receivedAt,
+        reviewedAt: timeline.reviewedAt,
+        approvedAt: timeline.approvedAt,
+        readyForPaymentAt: timeline.readyForPaymentAt,
+        paidAt: timeline.paidAt,
+        rejectedAt: timeline.rejectedAt,
+        rejectionReason:
+          lifecycle === 'REJECTED'
+            ? ctx.fakers.org.helpers.arrayElement([
+                'Amount mismatch with PO',
+                'Missing supporting timesheet',
+                'Contractor outside approved vendor list',
+                'Wrong VAT treatment — should be reverse-charge',
+                'Duplicate of an earlier submission',
+              ])
+            : null,
+        sellerName: contractor.legalName,
+        sellerTaxId: makeTaxId(ctx.profile.countryCode, ctx.fakers.org),
+        notes: ctx.fakers.org.lorem.sentence(),
+        duplicateCheckHash: tokenHex(32), // unique enough
+        createdAt: timeline.receivedAt,
       });
 
-      // Patch invoiceId onto pre-built lines, then bulk-insert.
-      await prisma.invoiceLine.createMany({
-        data: lines.map(l => ({ ...l, invoiceId: created.id })),
-      });
-
-      // Approval flow if status indicates approval has been touched. The
-      // length-2 floor lets us pick distinct manager / finance approvers and
-      // also lets biome see that ctx.users[0] / ctx.users[1] are defined.
-      const fallbackApprover = ctx.users[0];
-      const secondaryApprover = ctx.users[1];
-      if (
-        approvalStatus !== 'NOT_STARTED' &&
-        approvalChainConfigId !== null &&
-        fallbackApprover !== undefined &&
-        secondaryApprover !== undefined
-      ) {
-        // Anchor approval-flow timestamps to the invoice timeline so the
-        // approval row can never claim it completed before the invoice was
-        // received.
-        const flowStartedAt = timeline.reviewedAt ?? timeline.receivedAt;
-        const flowCompletedAt =
-          approvalStatus === 'APPROVED'
-            ? timeline.approvedAt
-            : approvalStatus === 'REJECTED'
-              ? timeline.rejectedAt
-              : null;
-        const flow = await prisma.approvalFlow.create({
-          data: {
-            organizationId: ctx.organizationId,
-            resourceType: 'INVOICE',
-            resourceId: created.id,
-            chainConfigId: approvalChainConfigId,
-            status: approvalStatus,
-            // PENDING flows are on step 1 (manager review). Terminal states
-            // (APPROVED / REJECTED / CANCELLED) leave currentStepOrder null —
-            // the prior hard-coded `2` was wrong for both 1-step and 3-step
-            // chains.
-            currentStepOrder: approvalStatus === 'PENDING' ? 1 : null,
-            startedAt: flowStartedAt,
-            completedAt: flowCompletedAt,
-            cancelledAt: approvalStatus === 'CANCELLED' ? timeline.reviewedAt : null,
-            createdByUserId: ctx.ownerUserId,
-          },
-          select: { id: true },
-        });
-
-        const approver1 = ctx.users.find(u => u.role === 'team_manager') ?? secondaryApprover;
-        const approver2 =
-          ctx.users.find(u => u.role === 'finance_admin') ?? ctx.users[2] ?? fallbackApprover;
-        const approver3 =
-          ctx.users.find(u => u.role === 'admin') ??
-          ctx.users.find(u => u.role === 'owner') ??
-          fallbackApprover;
-        // Amount-tiered approval chains so high-value invoices visibly flow
-        // through more approvers. Threshold uses minor units against EUR
-        // equivalents (we don't FX-convert in the seed — the bands are
-        // approximate, not policy).
-        const allStepDefs: Array<{
-          order: number;
-          name: string;
-          approver: SeededUser;
-          role: 'team_manager' | 'finance_admin' | 'admin';
-        }> = [
-          { order: 1, name: 'Manager review', approver: approver1, role: 'team_manager' },
-          { order: 2, name: 'Finance sign-off', approver: approver2, role: 'finance_admin' },
-          { order: 3, name: 'Executive approval', approver: approver3, role: 'admin' },
-        ];
-        const stepCount = total < 50_000 ? 1 : total < 500_000 ? 2 : 3;
-        const stepDefs = allStepDefs.slice(0, stepCount);
-
-        for (const stepDef of stepDefs) {
-          const stepStatus =
-            approvalStatus === 'PENDING'
-              ? stepDef.order === 1
-                ? 'PENDING'
-                : 'NOT_STARTED'
-              : approvalStatus === 'REJECTED'
-                ? stepDef.order === 1
-                  ? 'REJECTED'
-                  : 'NOT_STARTED'
-                : approvalStatus === 'CANCELLED'
-                  ? 'CANCELLED'
-                  : 'APPROVED';
-          const stepDecision =
-            stepStatus === 'APPROVED' ? 'APPROVE' : stepStatus === 'REJECTED' ? 'REJECT' : null;
-
-          const stepActedAt =
-            stepDecision === null ? null : (flowCompletedAt ?? timeline.reviewedAt);
-          // SLA deadline: for completed steps, deadline lands near actedAt
-          // (some steps just made the SLA, some breached it slightly). For
-          // pending steps it's a future date the approver still has time to
-          // hit. Previously every step had a 5-day-future deadline regardless
-          // of whether the decision was already 6 months old.
-          const slaDeadline =
-            stepActedAt === null
-              ? futureDate(ctx.fakers.org, 5)
-              : new Date(
-                  stepActedAt.getTime() +
-                    ctx.fakers.org.number.int({ min: -1, max: 3 }) * 86_400_000,
-                );
-          // Step note (initial review) and decision rationale are different
-          // texts in real life — the step describes what the reviewer
-          // checked, the decision captures the call.
-          const stepNote =
-            stepDecision === null
-              ? null
-              : ctx.fakers.org.helpers.arrayElement([
-                  'Cross-checked against PO',
-                  'Verified against timesheet',
-                  'Confirmed VAT treatment',
-                  'Reviewed contract scope and rate',
-                ]);
-          const decisionComment =
-            stepDecision === 'APPROVE'
-              ? ctx.fakers.org.helpers.arrayElement([
-                  `Approved ${invNumber} — matches PO`,
-                  `Looks good, signing off ${invNumber}`,
-                  `${invNumber} approved per contract`,
-                  `Numbers reconcile, approving ${invNumber}`,
-                ])
-              : stepDecision === 'REJECT'
-                ? `Rejecting ${invNumber} — ${ctx.fakers.org.helpers.arrayElement(['amount above quote', 'missing timesheet', 'wrong VAT treatment'])}`
-                : null;
-          const step = await prisma.approvalStep.create({
-            data: {
-              organizationId: ctx.organizationId,
-              approvalFlowId: flow.id,
-              stepOrder: stepDef.order,
-              name: stepDef.name,
-              approverUserId: stepDef.approver.id,
-              approverRole: stepDef.role,
-              status: stepStatus,
-              required: true,
-              slaDeadline,
-              actedAt: stepActedAt,
-              decision: stepDecision,
-              comment: stepNote,
-              createdAt: flowStartedAt,
-            },
-            select: { id: true },
-          });
-
-          if (stepDecision !== null) {
-            await prisma.approvalDecision.create({
-              data: {
-                organizationId: ctx.organizationId,
-                approvalStepId: step.id,
-                actorUserId: stepDef.approver.id,
-                decision: stepDecision,
-                comment: decisionComment,
-                createdAt: stepActedAt ?? flowStartedAt,
-              },
-            });
-          }
-        }
+      // Patch invoiceId onto pre-built lines, push into the wave-level array.
+      for (const l of lines) {
+        lineRows.push({ ...l, invoiceId });
       }
 
+      approvalParams.push({ invoiceId, approvalStatus, timeline, total, invNumber });
+
       invoices.push({
-        id: created.id,
+        id: invoiceId,
         contractorId: contractor.id,
         invoiceNumber: invNumber,
         status: lifecycle,
@@ -2812,10 +2675,178 @@ async function seedInvoices(
       });
       refs.push({
         type: 'INVOICE',
-        id: created.id,
+        id: invoiceId,
         name: invNumber,
         createdAt: timeline.receivedAt,
       });
+    }
+  }
+
+  // Wave: parent invoices then their lines.
+  // Invoice is a wide table (~30 storage cols) so chunk at 500.
+  for (let i = 0; i < invoiceRows.length; i += 500) {
+    await prisma.invoice.createMany({
+      data: invoiceRows.slice(i, i + 500),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < lineRows.length; i += 1000) {
+    await prisma.invoiceLine.createMany({
+      data: lineRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+
+  // Approval flow if status indicates approval has been touched. Still
+  // per-row creates here; commit 7 will batch ApprovalFlow / Step / Decision
+  // into wave inserts.
+  const fallbackApprover = ctx.users[0];
+  const secondaryApprover = ctx.users[1];
+  for (const params of approvalParams) {
+    const { invoiceId: createdId, approvalStatus, timeline, total, invNumber } = params;
+    if (
+      approvalStatus !== 'NOT_STARTED' &&
+      approvalChainConfigId !== null &&
+      fallbackApprover !== undefined &&
+      secondaryApprover !== undefined
+    ) {
+      // Anchor approval-flow timestamps to the invoice timeline so the
+      // approval row can never claim it completed before the invoice was
+      // received.
+      const flowStartedAt = timeline.reviewedAt ?? timeline.receivedAt;
+      const flowCompletedAt =
+        approvalStatus === 'APPROVED'
+          ? timeline.approvedAt
+          : approvalStatus === 'REJECTED'
+            ? timeline.rejectedAt
+            : null;
+      const flow = await prisma.approvalFlow.create({
+        data: {
+          organizationId: ctx.organizationId,
+          resourceType: 'INVOICE',
+          resourceId: createdId,
+          chainConfigId: approvalChainConfigId,
+          status: approvalStatus,
+          // PENDING flows are on step 1 (manager review). Terminal states
+          // (APPROVED / REJECTED / CANCELLED) leave currentStepOrder null —
+          // the prior hard-coded `2` was wrong for both 1-step and 3-step
+          // chains.
+          currentStepOrder: approvalStatus === 'PENDING' ? 1 : null,
+          startedAt: flowStartedAt,
+          completedAt: flowCompletedAt,
+          cancelledAt: approvalStatus === 'CANCELLED' ? timeline.reviewedAt : null,
+          createdByUserId: ctx.ownerUserId,
+        },
+        select: { id: true },
+      });
+
+      const approver1 = ctx.users.find(u => u.role === 'team_manager') ?? secondaryApprover;
+      const approver2 =
+        ctx.users.find(u => u.role === 'finance_admin') ?? ctx.users[2] ?? fallbackApprover;
+      const approver3 =
+        ctx.users.find(u => u.role === 'admin') ??
+        ctx.users.find(u => u.role === 'owner') ??
+        fallbackApprover;
+      // Amount-tiered approval chains so high-value invoices visibly flow
+      // through more approvers. Threshold uses minor units against EUR
+      // equivalents (we don't FX-convert in the seed — the bands are
+      // approximate, not policy).
+      const allStepDefs: Array<{
+        order: number;
+        name: string;
+        approver: SeededUser;
+        role: 'team_manager' | 'finance_admin' | 'admin';
+      }> = [
+        { order: 1, name: 'Manager review', approver: approver1, role: 'team_manager' },
+        { order: 2, name: 'Finance sign-off', approver: approver2, role: 'finance_admin' },
+        { order: 3, name: 'Executive approval', approver: approver3, role: 'admin' },
+      ];
+      const stepCount = total < 50_000 ? 1 : total < 500_000 ? 2 : 3;
+      const stepDefs = allStepDefs.slice(0, stepCount);
+
+      for (const stepDef of stepDefs) {
+        const stepStatus =
+          approvalStatus === 'PENDING'
+            ? stepDef.order === 1
+              ? 'PENDING'
+              : 'NOT_STARTED'
+            : approvalStatus === 'REJECTED'
+              ? stepDef.order === 1
+                ? 'REJECTED'
+                : 'NOT_STARTED'
+              : approvalStatus === 'CANCELLED'
+                ? 'CANCELLED'
+                : 'APPROVED';
+        const stepDecision =
+          stepStatus === 'APPROVED' ? 'APPROVE' : stepStatus === 'REJECTED' ? 'REJECT' : null;
+
+        const stepActedAt = stepDecision === null ? null : (flowCompletedAt ?? timeline.reviewedAt);
+        // SLA deadline: for completed steps, deadline lands near actedAt
+        // (some steps just made the SLA, some breached it slightly). For
+        // pending steps it's a future date the approver still has time to
+        // hit. Previously every step had a 5-day-future deadline regardless
+        // of whether the decision was already 6 months old.
+        const slaDeadline =
+          stepActedAt === null
+            ? futureDate(ctx.fakers.org, 5)
+            : new Date(
+                stepActedAt.getTime() + ctx.fakers.org.number.int({ min: -1, max: 3 }) * 86_400_000,
+              );
+        // Step note (initial review) and decision rationale are different
+        // texts in real life — the step describes what the reviewer
+        // checked, the decision captures the call.
+        const stepNote =
+          stepDecision === null
+            ? null
+            : ctx.fakers.org.helpers.arrayElement([
+                'Cross-checked against PO',
+                'Verified against timesheet',
+                'Confirmed VAT treatment',
+                'Reviewed contract scope and rate',
+              ]);
+        const decisionComment =
+          stepDecision === 'APPROVE'
+            ? ctx.fakers.org.helpers.arrayElement([
+                `Approved ${invNumber} — matches PO`,
+                `Looks good, signing off ${invNumber}`,
+                `${invNumber} approved per contract`,
+                `Numbers reconcile, approving ${invNumber}`,
+              ])
+            : stepDecision === 'REJECT'
+              ? `Rejecting ${invNumber} — ${ctx.fakers.org.helpers.arrayElement(['amount above quote', 'missing timesheet', 'wrong VAT treatment'])}`
+              : null;
+        const step = await prisma.approvalStep.create({
+          data: {
+            organizationId: ctx.organizationId,
+            approvalFlowId: flow.id,
+            stepOrder: stepDef.order,
+            name: stepDef.name,
+            approverUserId: stepDef.approver.id,
+            approverRole: stepDef.role,
+            status: stepStatus,
+            required: true,
+            slaDeadline,
+            actedAt: stepActedAt,
+            decision: stepDecision,
+            comment: stepNote,
+            createdAt: flowStartedAt,
+          },
+          select: { id: true },
+        });
+
+        if (stepDecision !== null) {
+          await prisma.approvalDecision.create({
+            data: {
+              organizationId: ctx.organizationId,
+              approvalStepId: step.id,
+              actorUserId: stepDef.approver.id,
+              decision: stepDecision,
+              comment: decisionComment,
+              createdAt: stepActedAt ?? flowStartedAt,
+            },
+          });
+        }
+      }
     }
   }
   return invoices;
@@ -4325,6 +4356,8 @@ async function seedInvoiceDocuments(
   const cap = ctx.org.showcase ? 10 : Math.min(20, Math.ceil(invoices.length / 5));
   const subset = invoices.slice(0, cap);
 
+  const documentRows: Prisma.DocumentCreateManyInput[] = [];
+  const invoiceFileRows: Prisma.InvoiceFileCreateManyInput[] = [];
   for (const inv of subset) {
     const documentId = newId();
     // Document was uploaded around when the invoice was received. A few
@@ -4332,35 +4365,43 @@ async function seedInvoiceDocuments(
     const uploadedAt = new Date(
       inv.receivedAt.getTime() + ctx.fakers.org.number.int({ min: 0, max: 4 * 3_600_000 }),
     );
-    await prisma.document.create({
-      data: {
-        id: documentId,
-        organizationId: ctx.organizationId,
-        // No actual blob in object storage — storageKey points at a fake path.
-        // The UI's download route will 404 against R2, which is acceptable in
-        // dev (use the document metadata view instead).
-        storageKey: `seed/${ctx.org.key}/${documentId}.pdf`,
-        originalFileName: `invoice-${tokenHex(2)}.pdf`,
-        mimeType: 'application/pdf',
-        fileSizeBytes: BigInt(ctx.fakers.org.number.int({ min: 50_000, max: 5_000_000 })),
-        checksumSha256: tokenHex(32),
-        documentType: 'INVOICE',
-        status: 'ACTIVE',
-        visibility: 'PRIVATE',
-        uploadedByUserId: ctx.ownerUserId,
-        source: 'USER_UPLOAD',
-        virusScanStatus: 'CLEAN',
-        createdAt: uploadedAt,
-      },
+    documentRows.push({
+      id: documentId,
+      organizationId: ctx.organizationId,
+      // No actual blob in object storage — storageKey points at a fake path.
+      // The UI's download route will 404 against R2, which is acceptable in
+      // dev (use the document metadata view instead).
+      storageKey: `seed/${ctx.org.key}/${documentId}.pdf`,
+      originalFileName: `invoice-${tokenHex(2)}.pdf`,
+      mimeType: 'application/pdf',
+      fileSizeBytes: BigInt(ctx.fakers.org.number.int({ min: 50_000, max: 5_000_000 })),
+      checksumSha256: tokenHex(32),
+      documentType: 'INVOICE',
+      status: 'ACTIVE',
+      visibility: 'PRIVATE',
+      uploadedByUserId: ctx.ownerUserId,
+      source: 'USER_UPLOAD',
+      virusScanStatus: 'CLEAN',
+      createdAt: uploadedAt,
     });
-    await prisma.invoiceFile.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        documentId,
-        role: 'SOURCE_ORIGINAL',
-        createdAt: uploadedAt,
-      },
+    invoiceFileRows.push({
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      documentId,
+      role: 'SOURCE_ORIGINAL',
+      createdAt: uploadedAt,
+    });
+  }
+  for (let i = 0; i < documentRows.length; i += 1000) {
+    await prisma.document.createMany({
+      data: documentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < invoiceFileRows.length; i += 1000) {
+    await prisma.invoiceFile.createMany({
+      data: invoiceFileRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
@@ -4990,13 +5031,20 @@ async function seedWorkflowTemplates(prisma: PrismaClient, ctx: OrgSeed): Promis
 
 async function seedSubscription(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
   // Showcase cycles through tiers/statuses; everyone else gets a healthy
-  // ACTIVE PRO so the billing page renders.
+  // ACTIVE PRO so the billing page renders. The QA-walk default org is a
+  // showcase template but must NOT roll PAST_DUE / CANCELED — those states
+  // overlay the dashboard with a banner / soft-block modal and obscure
+  // every other widget for screenshot capture. PAST_DUE / CANCELED states
+  // belong to dedicated walk routes, not the default target.
+  const isQaDefault = ctx.org.key === 'qa-default-org';
   const tier = ctx.org.showcase
     ? ctx.fakers.org.helpers.arrayElement(['STARTER', 'PRO', 'ENTERPRISE'] as const)
     : 'PRO';
-  const status = ctx.org.showcase
-    ? ctx.fakers.org.helpers.arrayElement(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED'] as const)
-    : 'ACTIVE';
+  const status = isQaDefault
+    ? 'ACTIVE'
+    : ctx.org.showcase
+      ? ctx.fakers.org.helpers.arrayElement(['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED'] as const)
+      : 'ACTIVE';
   // For ACTIVE / TRIALING / PAST_DUE the period must end in the future. For
   // CANCELED we leave the period ended in the recent past. periodStart
   // clamps to foundedAt so a 5-day-old org doesn't claim a 25-day-old
