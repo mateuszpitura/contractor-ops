@@ -3876,7 +3876,8 @@
     "unauthorized": "Unauthorized",
     "equipment": "Equipment",
     "time": "Time",
-    "classification": "Classification"
+    "classification": "Classification",
+    "organization": "Organization"
   },
   "Notifications": {
     "popover": {
@@ -7657,5 +7658,38 @@
     "loading": {
       "ariaLabel": "Loading page"
     }
+  },
+  "Organization": {
+    "title": "Organization",
+    "subtitle": "Define the Teams, Projects, and Cost Centers your contractors are assigned to.",
+    "tabTeams": "Teams",
+    "tabProjects": "Projects",
+    "tabCostCenters": "Cost Centers",
+    "summaryTeams": "Teams",
+    "summaryProjects": "Projects",
+    "summaryCostCenters": "Cost Centers",
+    "search": "Search…",
+    "colName": "Name",
+    "colCode": "Code",
+    "colStatus": "Status",
+    "colUpdated": "Updated",
+    "colSource": "Source",
+    "colTeam": "Team",
+    "colBudget": "Budget",
+    "syncNow": "Sync now",
+    "addNew": "Add new…",
+    "active": "Active",
+    "inactive": "Inactive",
+    "archived": "Archived",
+    "newTeam": "New Team",
+    "teamsEmpty": "No teams yet. Create your first team to get started.",
+    "newProject": "New Project",
+    "projectsEmpty": "No projects yet.",
+    "newCostCenter": "New Cost Center",
+    "importCsv": "Import CSV",
+    "costCentersEmpty": "No cost centers yet.",
+    "sourceManual": "Manual",
+    "sourceJira": "Jira",
+    "sourceLinear": "Linear"
   }
 }

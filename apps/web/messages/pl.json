@@ -3876,7 +3876,8 @@
     "unauthorized": "Brak dostępu",
     "equipment": "Sprzęt",
     "time": "Czas",
-    "classification": "Klasyfikacja"
+    "classification": "Klasyfikacja",
+    "organization": "Organizacja"
   },
   "Notifications": {
     "popover": {

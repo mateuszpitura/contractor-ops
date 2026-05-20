@@ -44,6 +44,8 @@ model Organization {
   invitations                    Invitation[]
   teams                          Team[]
   projects                       Project[]
+  projectExternalLinks           ProjectExternalLink[]
+  pendingProjectMerges           PendingProjectMerge[]
   costCenters                    CostCenter[]
   contractors                    Contractor[]
   contractorContacts             ContractorContact[]
@@ -190,16 +192,19 @@ model Invitation {
 // --- Organizational Structure ---
 
 model Team {
-  id                 String       @id @default(cuid())
+  id                 String              @id @default(cuid())
   organizationId     String
   name               String
   code               String?
   managerUserId      String?
   // Phase 74 D-06 — fallback approver when manager is on PTO (NULL → owners-broadcast)
   fallbackApproverId String?
-  status             SimpleStatus @default(ACTIVE)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  status             SimpleStatus        @default(ACTIVE)
+  // Org-definitions sync: provenance of this row (manual entry vs integration)
+  source             OrgDefinitionSource @default(MANUAL)
+  externalId         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   organization     Organization @relation(fields: [organizationId], references: [id])
   manager          User?        @relation("TeamManager", fields: [managerUserId], references: [id])
@@ -213,21 +218,31 @@ model Team {
 
   @@index([organizationId])
   @@index([organizationId, status])
+  @@index([organizationId, source])
 }
 
 model Project {
-  id             String       @id @default(cuid())
+  id             String              @id @default(cuid())
   organizationId String
   name           String
   code           String?
   teamId         String?
-  status         SimpleStatus @default(ACTIVE)
-  startDate      DateTime?    @db.Date
-  endDate        DateTime?    @db.Date
+  status         SimpleStatus        @default(ACTIVE)
+  startDate      DateTime?           @db.Date
+  endDate        DateTime?           @db.Date
   budgetMinor    Int?
-  budgetCurrency String?      @db.Char(3)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  budgetCurrency String?             @db.Char(3)
+  // Org-definitions sync: provenance of the *primary* link. Set on first
+  // import (Jira OAuth on-connect, Linear team-mapping, or manual creation).
+  // INVARIANT: never overwritten on subsequent merges — a later "Merge into
+  // existing" resolution attaches a `ProjectExternalLink` row but leaves
+  // `Project.source` / `Project.externalId` pinned to the FIRST source. The
+  // join table is the authoritative multi-source view; these columns are a
+  // denormalised cache for the read-side and stay backwards-compatible.
+  source         OrgDefinitionSource @default(MANUAL)
+  externalId     String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   team         Team?        @relation(fields: [teamId], references: [id])
@@ -235,10 +250,56 @@ model Project {
   contractors           Contractor[]
   contractorAssignments ContractorAssignment[]
   contracts             Contract[]
+  externalLinks         ProjectExternalLink[]
 
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([organizationId, teamId])
+  @@index([organizationId, source])
+}
+
+// Org-definitions sync: queued name-collision between a sync candidate and an
+// existing Project row. Resolved by an admin via the Pending Merges inbox.
+model PendingProjectMerge {
+  id                  String              @id @default(cuid())
+  organizationId      String
+  source              OrgDefinitionSource
+  externalId          String
+  incomingName        String
+  // Candidate target Project ids found via case-insensitive name match. Kept as
+  // a denormalised array so the inbox can render the merge dialog without an
+  // extra round-trip; resolved either by "Merge" (link to one of them) or
+  // "Keep Separate" (creates a fresh Project on resolve).
+  candidateProjectIds String[]
+  createdAt           DateTime            @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Same (source, externalId) can only have one pending merge at a time —
+  // duplicate sync runs short-circuit instead of stacking inbox entries.
+  @@unique([organizationId, source, externalId])
+  @@index([organizationId])
+}
+
+// Org-definitions sync: secondary integration links per Project so a single Project
+// can carry both a Jira and a Linear externalId after a user-confirmed merge.
+// organizationId is denormalised so the existing RLS pattern (`app.org_match`) works
+// without a join — every other model in this schema follows the same convention.
+model ProjectExternalLink {
+  id             String              @id @default(cuid())
+  organizationId String
+  projectId      String
+  source         OrgDefinitionSource
+  externalId     String
+  syncedAt       DateTime            @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, source, externalId])
+  @@unique([projectId, source])
+  @@index([organizationId])
+  @@index([projectId])
 }
 
 model CostCenter {
@@ -277,4 +338,12 @@ enum SimpleStatus {
 enum DataRegion {
   EU
   ME
+}
+
+// Provenance of a Team / Project row: manual entry or pulled from an integration provider.
+// Used by the Organization > Teams / Projects pages and the nightly sync cron.
+enum OrgDefinitionSource {
+  MANUAL
+  JIRA
+  LINEAR
 }

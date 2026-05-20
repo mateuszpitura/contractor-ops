@@ -19,6 +19,9 @@ describe('accessControlStatement', () => {
       'integration',
       'time',
       'equipment',
+      'team',
+      'project',
+      'costCenter',
       'admin:boe-rate',
     ];
     const keys = Object.keys(accessControlStatement);

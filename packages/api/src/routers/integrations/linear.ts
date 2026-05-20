@@ -6,6 +6,7 @@ import {
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
 } from '@contractor-ops/validators';
+import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -221,6 +222,7 @@ export const linearRouter = router({
       stateCache[input.teamId] = teamStateCache;
 
       // Update connection config and transition to CONNECTED if PENDING_MAPPING
+      const wasPendingMapping = connection.status === 'PENDING_MAPPING';
       await ctx.db.integrationConnection.update({
         where: { id: connection.id },
         data: {
@@ -229,7 +231,7 @@ export const linearRouter = router({
             statusMappings,
             stateCache,
           } as Prisma.InputJsonValue,
-          ...(connection.status === 'PENDING_MAPPING' ? { status: 'CONNECTED' } : {}),
+          ...(wasPendingMapping ? { status: 'CONNECTED' } : {}),
         },
       });
 
@@ -239,6 +241,36 @@ export const linearRouter = router({
         void registerLinearWebhook(ctx.db, connection.id, input.teamId).catch(err =>
           log.error({ err, teamId: input.teamId }, 'webhook registration failed for team'),
         );
+      }
+
+      // First-time connection → seed Organization > Projects with this Linear
+      // workspace's teams so the user sees rows immediately. Errors never block
+      // the mapping save (the nightly cron will retry).
+      if (wasPendingMapping) {
+        void (async () => {
+          try {
+            const mod = await import('../../services/org-definition-sync');
+            await mod.syncLinearTeamsToOrgDefinitions(
+              { db: ctx.db, actorUserId: ctx.user?.id ?? null },
+              {
+                id: connection.id,
+                organizationId: connection.organizationId,
+                provider: 'LINEAR',
+                credentialsRef: connection.credentialsRef,
+                configJson: null,
+              },
+            );
+          } catch (err) {
+            log.error(
+              { err, connectionId: connection.id },
+              'org-definition-sync on-connect (linear) failed',
+            );
+            Sentry.captureException(err, {
+              tags: { 'sync.kind': 'org-definition-sync.on-connect', provider: 'linear' },
+              extra: { organizationId: connection.organizationId, connectionId: connection.id },
+            });
+          }
+        })();
       }
 
       return { success: true };

@@ -3876,7 +3876,8 @@
     "unauthorized": "غير مصرح",
     "equipment": "المعدات",
     "time": "تتبع الوقت",
-    "classification": "التصنيف"
+    "classification": "التصنيف",
+    "organization": "المؤسسة"
   },
   "Notifications": {
     "popover": {

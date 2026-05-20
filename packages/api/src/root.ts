@@ -22,6 +22,7 @@ import {
   calendarRouter,
   contractorRouter,
   contractRouter,
+  costCenterRouter,
   dashboardRouter,
   docsRouter,
   documentRouter,
@@ -36,11 +37,13 @@ import {
   ocrRouter,
   onboardingImportRouter,
   organizationRouter,
+  projectRouter,
   reminderRouter,
   reportRouter,
   searchRouter,
   settingsRouter,
   taxRouter,
+  teamRouter,
   timeRouter,
   userRouter,
 } from './routers/core/index';
@@ -116,6 +119,13 @@ export const appRouter = router({
   apiKey: apiKeyRouter, // apiKey: Enterprise API key management — create, list, update, revoke
   bacs: bacsRouter, // bacs: BACS Std 18 file generation — getSubmitterMasks, previewExport, generateExport, validateSortCode, saveSubmitterConfig (Phase 63 D-27)
   organization: organizationRouter,
+  // Organization Definitions Management — Teams / Projects / Cost Centers
+  // exposed under one group so the web client imports a single namespace.
+  organizationDefinitions: router({
+    team: teamRouter,
+    project: projectRouter,
+    costCenter: costCenterRouter,
+  }),
   user: userRouter,
   settings: settingsRouter,
   contractor: contractorRouter,

@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
-import { decryptCredentials } from '@contractor-ops/integrations';
+import {
+  decryptCredentials,
+  fetchJiraProjects,
+  fetchLinearTeams,
+} from '@contractor-ops/integrations';
 import type { InvitableMemberRole, StartImportInput } from '@contractor-ops/validators';
 import {
   fetchPeopleInputSchema,
@@ -15,7 +19,6 @@ import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
-import { linearGraphQL } from '../../services/linear-issue-sync';
 import {
   createWorkflowTemplatesFromProjects,
   fetchUsersFromSource,
@@ -95,11 +98,16 @@ async function updateImportJob(
 // ---------------------------------------------------------------------------
 // Project fetching helpers
 // ---------------------------------------------------------------------------
+//
+// The Jira / Linear HTTP fetchers used to live inline here. They were extracted
+// into `@contractor-ops/integrations` (`jira-projects-client`, `linear-teams-
+// client`) so the org-definitions sync job and this onboarding-import wizard
+// share the same OAuth + rate-limit surface. Local wrappers below adapt the
+// shared shape (`{ externalId, name, key, statuses }`) to the wizard's
+// existing `{ sourceProvider, externalId, name, statuses }` payload so callers
+// stay untouched.
 
-/**
- * Fetches Jira projects with their statuses for a given connection.
- */
-async function fetchJiraProjects(
+async function fetchJiraProjectsForWizard(
   accessToken: string,
   config: ConnectionConfig,
 ): Promise<
@@ -111,70 +119,22 @@ async function fetchJiraProjects(
   }>
 > {
   if (!config?.cloudId) return [];
-
-  const baseUrl = `https://api.atlassian.com/ex/jira/${config.cloudId}/rest/api/3`;
-  const headers = {
-    Authorization: `Bearer ${accessToken}`,
-    Accept: 'application/json',
-  };
-
-  const projResponse = await fetch(`${baseUrl}/project`, { headers });
-  if (!projResponse.ok) return [];
-
-  const jiraProjects = (await projResponse.json()) as Array<{
-    id: string;
-    key: string;
-    name: string;
-  }>;
-
-  const results: Array<{
-    sourceProvider: string;
-    externalId: string;
-    name: string;
-    statuses: Array<{ id: string; name: string; color?: string }>;
-  }> = [];
-
-  for (const proj of jiraProjects) {
-    const statusResponse = await fetch(`${baseUrl}/project/${proj.id}/statuses`, { headers });
-    if (!statusResponse.ok) continue;
-
-    const statusData = (await statusResponse.json()) as Array<{
-      id: string;
-      statuses: Array<{
-        id: string;
-        name: string;
-        statusCategory?: { colorName?: string };
-      }>;
-    }>;
-
-    const statusMap = new Map<string, { id: string; name: string; color?: string }>();
-    for (const issueType of statusData) {
-      for (const status of issueType.statuses) {
-        if (!statusMap.has(status.id)) {
-          statusMap.set(status.id, {
-            id: status.id,
-            name: status.name,
-            color: status.statusCategory?.colorName,
-          });
-        }
-      }
-    }
-
-    results.push({
-      sourceProvider: 'JIRA',
-      externalId: proj.id,
-      name: proj.name,
-      statuses: [...statusMap.values()],
-    });
-  }
-
-  return results;
+  const projects = await fetchJiraProjects(
+    accessToken,
+    { cloudId: config.cloudId },
+    {
+      includeStatuses: true,
+    },
+  );
+  return projects.map(p => ({
+    sourceProvider: 'JIRA',
+    externalId: p.externalId,
+    name: p.name,
+    statuses: p.statuses,
+  }));
 }
 
-/**
- * Fetches Linear teams with their workflow states for a given connection.
- */
-async function fetchLinearProjects(accessToken: string): Promise<
+async function fetchLinearProjectsForWizard(accessToken: string): Promise<
   Array<{
     sourceProvider: string;
     externalId: string;
@@ -182,44 +142,12 @@ async function fetchLinearProjects(accessToken: string): Promise<
     statuses: Array<{ id: string; name: string; color?: string }>;
   }>
 > {
-  const data = await linearGraphQL<{
-    teams: {
-      nodes: Array<{
-        id: string;
-        name: string;
-        key: string;
-        states: {
-          nodes: Array<{
-            id: string;
-            name: string;
-            type: string;
-            color: string;
-            position: number;
-          }>;
-        };
-      }>;
-    };
-  }>(
-    accessToken,
-    `{
-      teams {
-        nodes {
-          id name key
-          states { nodes { id name type color position } }
-        }
-      }
-    }`,
-  );
-
-  return data.teams.nodes.map(team => ({
+  const teams = await fetchLinearTeams(accessToken, { includeStates: true });
+  return teams.map(team => ({
     sourceProvider: 'LINEAR',
-    externalId: team.id,
+    externalId: team.externalId,
     name: team.name,
-    statuses: team.states.nodes.map(s => ({
-      id: s.id,
-      name: s.name,
-      color: s.color,
-    })),
+    statuses: team.states.map(s => ({ id: s.id, name: s.name, color: s.color })),
   }));
 }
 
@@ -418,13 +346,13 @@ export const onboardingImportRouter = router({
         );
 
         if (source === 'JIRA') {
-          const jiraResults = await fetchJiraProjects(
+          const jiraResults = await fetchJiraProjectsForWizard(
             credentials.accessToken,
             connection.configJson as ConnectionConfig,
           );
           projects.push(...jiraResults);
         } else if (source === 'LINEAR') {
-          const linearResults = await fetchLinearProjects(credentials.accessToken);
+          const linearResults = await fetchLinearProjectsForWizard(credentials.accessToken);
           projects.push(...linearResults);
         }
       }

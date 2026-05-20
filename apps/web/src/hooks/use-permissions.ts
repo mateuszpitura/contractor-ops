@@ -24,6 +24,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     integration: ['read', 'update'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    team: ['read', 'create', 'update', 'archive'],
+    project: ['read', 'create', 'update', 'archive'],
+    costCenter: ['read', 'create', 'update', 'archive'],
   },
   admin: {
     organization: ['update', 'delete'],
@@ -40,6 +43,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     integration: ['read', 'update'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    team: ['read', 'create', 'update', 'archive'],
+    project: ['read', 'create', 'update', 'archive'],
+    costCenter: ['read', 'create', 'update', 'archive'],
   },
   finance_admin: {
     contractor: ['read'],
@@ -49,6 +55,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     report: ['read', 'export'],
     settings: ['read'],
     time: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   ops_manager: {
     contractor: ['create', 'read', 'update', 'delete', 'bulk'],
@@ -59,6 +68,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     settings: ['read'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   team_manager: {
     contractor: ['read', 'update'],
@@ -68,12 +80,18 @@ const permissions: Record<string, Record<string, string[]>> = {
     report: ['read'],
     time: ['read', 'approve'],
     equipment: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   legal_compliance_viewer: {
     contractor: ['read'],
     contract: ['read'],
     invoice: ['read'],
     report: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   it_admin: {
     member: ['create', 'read', 'update'],
@@ -81,6 +99,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     settings: ['read', 'update'],
     integration: ['read', 'update'],
     equipment: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   external_accountant: {
     contractor: ['read'],
@@ -88,6 +109,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     invoice: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   readonly: {
     contractor: ['read'],
@@ -95,6 +119,9 @@ const permissions: Record<string, Record<string, string[]>> = {
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   },
   platform_operator: {
     'admin:boe-rate': ['read', 'write'],
@@ -116,6 +143,10 @@ export function usePermissions() {
   const { userRole } = useDashboardContext();
 
   const role = userRole ?? undefined;
+  // Better Auth `User.role` (admin plugin field) — distinct from the per-org
+  // role surfaced via `userRole`. Cross-tenant admin features gate on this.
+  const platformRole = (session.data?.user as { role?: string | null } | undefined)?.role ?? null;
+  const isPlatformAdmin = platformRole === 'admin';
 
   return {
     /**
@@ -134,6 +165,7 @@ export function usePermissions() {
       return actions.every(action => resourcePerms.includes(action));
     },
     role,
+    isPlatformAdmin,
     isLoading: session.isPending,
     session: session.data,
   };

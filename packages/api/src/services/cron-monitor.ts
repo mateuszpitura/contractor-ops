@@ -48,6 +48,8 @@ export const CronMonitors = {
   DATA_PURGE: 'data-purge',
   // Daily ECB FX-rate sync across regional databases.
   EXCHANGE_RATES: 'exchange-rates',
+  // Nightly Jira / Linear → Organization > Projects sync (one run / connection / 24h).
+  ORG_DEFINITION_SYNC: 'org-definition-sync',
 } as const;
 
 export type CronMonitorKey = (typeof CronMonitors)[keyof typeof CronMonitors];

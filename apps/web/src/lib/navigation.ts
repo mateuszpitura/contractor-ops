@@ -4,6 +4,7 @@ import {
   Banknote,
   BarChart3,
   Bell,
+  Building2,
   CheckCircle,
   Clock,
   FileText,
@@ -171,6 +172,15 @@ export const navigationGroups: NavGroup[] = [
   {
     key: 'system',
     items: [
+      {
+        key: 'organization',
+        label: 'Organization',
+        href: '/organization',
+        icon: Building2,
+        // `team:read` is granted to every built-in role (see packages/auth/roles.ts)
+        // so this entry shows for everyone — the page itself gates the mutating buttons.
+        permission: { resource: 'team', actions: ['read'] },
+      },
       {
         key: 'notifications',
         label: 'Notifications',

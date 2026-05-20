@@ -2,8 +2,9 @@ import {
   consumeOAuthChallenge,
   OAUTH_STATE_COOKIE_NAME,
 } from '@contractor-ops/api/services/oauth-challenge';
+import { syncJiraProjectsToOrgDefinitions } from '@contractor-ops/api/services/org-definition-sync';
 import type { Prisma } from '@contractor-ops/db';
-import { prisma } from '@contractor-ops/db';
+import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import {
   encryptCredentials,
   getAdapter,
@@ -11,6 +12,7 @@ import {
   verifyOAuthState,
 } from '@contractor-ops/integrations';
 import { createLogger } from '@contractor-ops/logger';
+import * as Sentry from '@sentry/nextjs';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withNoStore } from '@/lib/cache-control';
@@ -151,19 +153,57 @@ export async function GET(
       lastErrorMessage: null,
     };
 
+    let upsertedConnectionId: string;
+    const wasFirstConnect = !existingConnection;
     if (existingConnection) {
       await prisma.integrationConnection.update({
         where: { id: existingConnection.id },
         data: connectionData,
       });
+      upsertedConnectionId = existingConnection.id;
     } else {
-      await prisma.integrationConnection.create({
+      const created = await prisma.integrationConnection.create({
         data: {
           organizationId: targetOrgId,
           provider: adapter.slug.toUpperCase() as never,
           ...connectionData,
         },
       });
+      upsertedConnectionId = created.id;
+    }
+
+    // First-time Jira connect → seed Organization > Projects. Linear does the
+    // same after the team-mapping step (see linear router) because it starts
+    // in PENDING_MAPPING here. Errors never block the OAuth completion.
+    if (provider === 'jira' && wasFirstConnect) {
+      void (async () => {
+        try {
+          const org = await prisma.organization.findUniqueOrThrow({
+            where: { id: targetOrgId },
+            select: { dataRegion: true },
+          });
+          const region = (org.dataRegion ?? 'EU') as 'EU' | 'ME';
+          const tenantDb = createTenantClientFrom(getRegionalClient(region));
+          await tenantStore.run({ organizationId: targetOrgId, region }, () =>
+            syncJiraProjectsToOrgDefinitions(
+              { db: tenantDb, actorUserId: challenge.userId },
+              {
+                id: upsertedConnectionId,
+                organizationId: targetOrgId,
+                provider: 'JIRA',
+                credentialsRef: encrypted,
+                configJson: (credentials.extra ?? {}) as { cloudId?: string },
+              },
+            ),
+          );
+        } catch (err) {
+          log.error({ err, provider, organizationId: targetOrgId }, 'jira on-connect sync failed');
+          Sentry.captureException(err, {
+            tags: { 'sync.kind': 'org-definition-sync.on-connect', provider: 'jira' },
+            extra: { organizationId: targetOrgId, connectionId: upsertedConnectionId },
+          });
+        }
+      })();
     }
 
     // Clear the binding cookie now that we've successfully consumed the challenge.

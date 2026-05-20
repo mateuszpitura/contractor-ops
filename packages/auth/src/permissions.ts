@@ -24,6 +24,12 @@ export const accessControlStatement = {
   integration: ['read', 'update'],
   time: ['read', 'approve'],
   equipment: ['read', 'create', 'update', 'delete'],
+  // Organization Definitions (Teams / Projects / Cost Centers)
+  // Read is granted to every role so the contractor wizard dropdowns keep working;
+  // mutating actions (create / update / archive) require owner or admin.
+  team: ['read', 'create', 'update', 'archive'],
+  project: ['read', 'create', 'update', 'archive'],
+  costCenter: ['read', 'create', 'update', 'archive'],
   'admin:boe-rate': ['read', 'write'],
 } as const;
 

@@ -30,6 +30,9 @@ const allPermissions = {
   integration: ['read', 'update'],
   time: ['read', 'approve'],
   equipment: ['read', 'create', 'update', 'delete'],
+  team: ['read', 'create', 'update', 'archive'],
+  project: ['read', 'create', 'update', 'archive'],
+  costCenter: ['read', 'create', 'update', 'archive'],
 } as const;
 
 export const roles = {
@@ -55,6 +58,9 @@ export const roles = {
     integration: ['read', 'update'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    team: ['read', 'create', 'update', 'archive'],
+    project: ['read', 'create', 'update', 'archive'],
+    costCenter: ['read', 'create', 'update', 'archive'],
   }),
 
   finance_admin: ac.newRole({
@@ -65,6 +71,9 @@ export const roles = {
     report: ['read', 'export'],
     settings: ['read'],
     time: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   ops_manager: ac.newRole({
@@ -76,6 +85,9 @@ export const roles = {
     settings: ['read'],
     time: ['read', 'approve'],
     equipment: ['read', 'create', 'update', 'delete'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   team_manager: ac.newRole({
@@ -86,6 +98,9 @@ export const roles = {
     report: ['read'],
     time: ['read', 'approve'],
     equipment: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   legal_compliance_viewer: ac.newRole({
@@ -93,6 +108,9 @@ export const roles = {
     contract: ['read'],
     invoice: ['read'],
     report: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   it_admin: ac.newRole({
@@ -101,6 +119,9 @@ export const roles = {
     settings: ['read', 'update'],
     integration: ['read', 'update'],
     equipment: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   external_accountant: ac.newRole({
@@ -109,6 +130,9 @@ export const roles = {
     invoice: ['read'],
     payment: ['read'],
     report: ['read', 'export'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   readonly: ac.newRole({
@@ -117,6 +141,9 @@ export const roles = {
     invoice: ['read'],
     workflow: ['read'],
     report: ['read'],
+    team: ['read'],
+    project: ['read'],
+    costCenter: ['read'],
   }),
 
   /**

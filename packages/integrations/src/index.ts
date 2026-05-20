@@ -81,6 +81,11 @@ export {
   SecretStoreError,
   ZATCA_SECRET_NAMES,
 } from './services/infisical-client.js';
+// Org Definitions sync — Jira / Linear project clients
+export type { JiraProject } from './services/jira-projects-client.js';
+export { fetchJiraProjects } from './services/jira-projects-client.js';
+export type { LinearTeam } from './services/linear-teams-client.js';
+export { fetchLinearTeams, linearGraphQL } from './services/linear-teams-client.js';
 export type { OAuthStatePayload } from './services/oauth-state.js';
 // OAuth State (CSRF protection)
 export {

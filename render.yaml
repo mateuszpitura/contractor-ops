@@ -699,3 +699,32 @@ services:
           type: web
           name: web
           property: host
+
+  # ── Cron Job: nightly Organization Definitions sync (04:00 UTC) ───────────
+  # Iterates every CONNECTED Jira / Linear integration and upserts the
+  # corresponding Project rows + ProjectExternalLinks. The service-side rate
+  # limit skips connections that synced within the last 24h so a manual
+  # restart can't double-fire.
+  - type: cron
+    name: cron-org-definition-sync
+    runtime: image
+    region: frankfurt
+    plan: starter
+    schedule: '0 4 * * *'
+    previews:
+      generation: off
+    image:
+      url: docker.io/curlimages/curl:8.19.0
+    startCommand: |
+      sh -c 'curl -fsS -m 120 -H "Authorization: Bearer $CRON_SECRET" "http://${WEB_HOST}:3000/api/cron/org-definition-sync"'
+    envVars:
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: web
+          envVarKey: CRON_SECRET
+      - key: WEB_HOST
+        fromService:
+          type: web
+          name: web
+          property: host
