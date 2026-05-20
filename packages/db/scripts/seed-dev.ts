@@ -7011,6 +7011,7 @@ async function seedTaxCompliance(
       ? eligible.filter((_, i) => i % 4 === 0).slice(0, 5)
       : [];
   const statusOutcomes = ['PENDING', 'SELBSTANDIG', 'ABHANGIG', 'WITHDRAWN'] as const;
+  const statusRows: Prisma.StatusfeststellungsverfahrenCreateManyInput[] = [];
   for (const [i, c] of statusEligible.entries()) {
     const assignmentId = assignmentByContractor.get(c.id);
     if (!assignmentId) continue;
@@ -7018,18 +7019,22 @@ async function seedTaxCompliance(
     const filedAt = pastDateAfter(ctx.fakers.org, 540, ctx.foundedAt);
     const validFromDate = outcome === 'PENDING' ? null : advanceCapped(filedAt, 30);
     const validToDate = outcome === 'PENDING' ? null : futureDate(ctx.fakers.org, 365);
-    await prisma.statusfeststellungsverfahren.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: assignmentId,
-        filedAt: dateOnly(filedAt),
-        drvReference: `DRV-${tokenHex(4).toUpperCase()}`,
-        outcome,
-        validFrom: validFromDate ? dateOnly(validFromDate) : null,
-        validTo: validToDate ? dateOnly(validToDate) : null,
-        notes: ctx.fakers.org.lorem.sentence(),
-        createdAt: filedAt,
-      },
+    statusRows.push({
+      organizationId: ctx.organizationId,
+      contractorAssignmentId: assignmentId,
+      filedAt: dateOnly(filedAt),
+      drvReference: `DRV-${tokenHex(4).toUpperCase()}`,
+      outcome,
+      validFrom: validFromDate ? dateOnly(validFromDate) : null,
+      validTo: validToDate ? dateOnly(validToDate) : null,
+      notes: ctx.fakers.org.lorem.sentence(),
+      createdAt: filedAt,
+    });
+  }
+  for (let i = 0; i < statusRows.length; i += 1000) {
+    await prisma.statusfeststellungsverfahren.createMany({
+      data: statusRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -7045,46 +7050,51 @@ async function seedTaxCompliance(
       ? eligible.filter((_, i) => i % 4 === 0).slice(0, 5)
       : [];
   const ir35Roles = ['CLIENT', 'AGENCY', 'PSC', 'WORKER'] as const;
+  const chainRows: Prisma.Ir35ChainParticipantCreateManyInput[] = [];
+  const attestationRows: Prisma.Ir35OtherClientAttestationCreateManyInput[] = [];
   for (const c of ir35Eligible) {
     const assignmentId = assignmentByContractor.get(c.id);
     if (!assignmentId) continue;
     for (const [orderIndex, role] of ir35Roles.entries()) {
       const sdsDeliveredAt =
         role === 'CLIENT' ? null : pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt);
-      await prisma.ir35ChainParticipant.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorAssignmentId: assignmentId,
-          role,
-          orderIndex,
-          displayName: role === 'WORKER' ? c.legalName : ctx.fakers.org.company.name(),
-          contactEmail: role === 'WORKER' ? c.email : ctx.fakers.ascii.internet.email(),
-          sdsDeliveredAt,
-          sdsAcknowledgedAt: sdsDeliveredAt
-            ? advanceCapped(sdsDeliveredAt, ctx.fakers.org.number.int({ min: 1, max: 7 }))
-            : null,
-          createdAt: sdsDeliveredAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
-        },
+      chainRows.push({
+        organizationId: ctx.organizationId,
+        contractorAssignmentId: assignmentId,
+        role,
+        orderIndex,
+        displayName: role === 'WORKER' ? c.legalName : ctx.fakers.org.company.name(),
+        contactEmail: role === 'WORKER' ? c.email : ctx.fakers.ascii.internet.email(),
+        sdsDeliveredAt,
+        sdsAcknowledgedAt: sdsDeliveredAt
+          ? advanceCapped(sdsDeliveredAt, ctx.fakers.org.number.int({ min: 1, max: 7 }))
+          : null,
+        createdAt: sdsDeliveredAt ?? pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
       });
     }
-    // OtherClientAttestation has @unique on contractorAssignmentId — skip if
-    // a prior insert already exists.
-    const existingAttestation = await prisma.ir35OtherClientAttestation.findUnique({
-      where: { contractorAssignmentId: assignmentId },
+    // OtherClientAttestation has @unique on contractorAssignmentId;
+    // skipDuplicates: true on the createMany covers re-seed collisions.
+    const signedAt = pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt);
+    attestationRows.push({
+      organizationId: ctx.organizationId,
+      contractorAssignmentId: assignmentId,
+      statementText: ctx.fakers.org.lorem.paragraph(),
+      signedName: c.legalName,
+      signedAt,
+      createdAt: signedAt,
     });
-    if (!existingAttestation) {
-      const signedAt = pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt);
-      await prisma.ir35OtherClientAttestation.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorAssignmentId: assignmentId,
-          statementText: ctx.fakers.org.lorem.paragraph(),
-          signedName: c.legalName,
-          signedAt,
-          createdAt: signedAt,
-        },
-      });
-    }
+  }
+  for (let i = 0; i < chainRows.length; i += 1000) {
+    await prisma.ir35ChainParticipant.createMany({
+      data: chainRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < attestationRows.length; i += 1000) {
+    await prisma.ir35OtherClientAttestation.createMany({
+      data: attestationRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 
   // -------------------------------------------------------------------
@@ -7094,26 +7104,31 @@ async function seedTaxCompliance(
   const taxValEligible = eligible.filter((_, i) => i % 3 === 0).slice(0, 8);
   const taxValStatuses = ['valid', 'invalid', 'stale', 'unavailable'] as const;
   const taxIdType = orgCountry === 'GB' ? 'GB_VAT' : 'DE_USTIDNR';
+  const taxValRows: Prisma.TaxIdValidationCreateManyInput[] = [];
   for (const [i, c] of taxValEligible.entries()) {
     const status = taxValStatuses[i % taxValStatuses.length] as (typeof taxValStatuses)[number];
     const requestedAt = pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt);
     const taxIdValue = makeVatId(orgCountry, ctx.fakers.org).slice(0, 20);
-    await prisma.taxIdValidation.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorId: c.id,
-        taxIdType,
-        taxIdValue,
-        apiProvider: orgCountry === 'GB' ? 'HMRC' : 'VIES',
-        requestedAt,
-        validFrom:
-          status === 'valid' ? dateBetween(ctx.fakers.org, ctx.foundedAt, requestedAt) : null,
-        validTo: status === 'valid' ? futureDate(ctx.fakers.org, 365) : null,
-        confirmationRef: status === 'valid' ? `CONF-${tokenHex(6).toUpperCase()}` : null,
-        responseStatus: status,
-        responseBody: { seeded: true, status },
-        errorMessage: status === 'unavailable' ? 'upstream timeout (seeded)' : null,
-      },
+    taxValRows.push({
+      organizationId: ctx.organizationId,
+      contractorId: c.id,
+      taxIdType,
+      taxIdValue,
+      apiProvider: orgCountry === 'GB' ? 'HMRC' : 'VIES',
+      requestedAt,
+      validFrom:
+        status === 'valid' ? dateBetween(ctx.fakers.org, ctx.foundedAt, requestedAt) : null,
+      validTo: status === 'valid' ? futureDate(ctx.fakers.org, 365) : null,
+      confirmationRef: status === 'valid' ? `CONF-${tokenHex(6).toUpperCase()}` : null,
+      responseStatus: status,
+      responseBody: { seeded: true, status },
+      errorMessage: status === 'unavailable' ? 'upstream timeout (seeded)' : null,
+    });
+  }
+  for (let i = 0; i < taxValRows.length; i += 1000) {
+    await prisma.taxIdValidation.createMany({
+      data: taxValRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -7129,23 +7144,28 @@ async function seedTaxCompliance(
     warning: '0.7200',
     critical: '0.8500',
   };
+  // Track assignmentIds locally to avoid colliding the @unique constraint
+  // within the loop; skipDuplicates: true covers cross-run reseed.
+  const ecoSeen = new Set<string>();
+  const ecoRows: Prisma.EconomicDependencyAlertStateCreateManyInput[] = [];
   for (const [i, c] of ecoEligible.entries()) {
     const assignmentId = assignmentByContractor.get(c.id);
-    if (!assignmentId) continue;
+    if (!assignmentId || ecoSeen.has(assignmentId)) continue;
+    ecoSeen.add(assignmentId);
     const band = ecoBands[i % ecoBands.length] as (typeof ecoBands)[number];
-    const existing = await prisma.economicDependencyAlertState.findUnique({
-      where: { contractorAssignmentId: assignmentId },
+    ecoRows.push({
+      organizationId: ctx.organizationId,
+      contractorAssignmentId: assignmentId,
+      currentBand: band,
+      lastBillingShare: lastBillingShareByBand[band],
+      lastScannedAt: pastDate(ctx.fakers.org, 1),
+      lastCrossedAt: band === 'safe' ? null : pastDate(ctx.fakers.org, 30),
     });
-    if (existing) continue;
-    await prisma.economicDependencyAlertState.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: assignmentId,
-        currentBand: band,
-        lastBillingShare: lastBillingShareByBand[band],
-        lastScannedAt: pastDate(ctx.fakers.org, 1),
-        lastCrossedAt: band === 'safe' ? null : pastDate(ctx.fakers.org, 30),
-      },
+  }
+  for (let i = 0; i < ecoRows.length; i += 1000) {
+    await prisma.economicDependencyAlertState.createMany({
+      data: ecoRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -7153,43 +7173,48 @@ async function seedTaxCompliance(
   // ReassessmentTrigger — needs ClassificationAssessment rows; harmless
   // no-op when classification produced none.
   // -------------------------------------------------------------------
-  const assessmentRows = await prisma.classificationAssessment.findMany({
+  const completedAssessments = await prisma.classificationAssessment.findMany({
     where: { organizationId: ctx.organizationId, status: 'completed' },
     select: { id: true, contractorAssignmentId: true },
     take: showcase ? 6 : 3,
   });
   const triggerStatuses = ['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'DISMISSED'] as const;
-  for (const [i, a] of assessmentRows.entries()) {
+  const triggerRows: Prisma.ReassessmentTriggerCreateManyInput[] = [];
+  for (const [i, a] of completedAssessments.entries()) {
     const status = triggerStatuses[i % triggerStatuses.length] as (typeof triggerStatuses)[number];
     const triggeredAt = pastDate(ctx.fakers.org, 60);
-    await prisma.reassessmentTrigger.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: a.contractorAssignmentId,
-        priorAssessmentId: a.id,
-        triggeredAt,
-        triggerReasons: {
-          reasons: ['MATERIAL_CHANGE_RATE', 'MATERIAL_CHANGE_SCOPE'],
-          source: 'seed',
-        },
-        status,
-        acknowledgedByUserId: status === 'OPEN' ? null : ctx.ownerUserId,
-        acknowledgedAt:
-          status === 'OPEN'
-            ? null
-            : advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 1, max: 5 })),
-        resolvedAt:
-          status === 'RESOLVED'
-            ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
-            : null,
-        dismissedByUserId: status === 'DISMISSED' ? ctx.ownerUserId : null,
-        dismissedAt:
-          status === 'DISMISSED'
-            ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
-            : null,
-        dismissedReason: status === 'DISMISSED' ? 'False positive (seeded)' : null,
-        createdAt: triggeredAt,
+    triggerRows.push({
+      organizationId: ctx.organizationId,
+      contractorAssignmentId: a.contractorAssignmentId,
+      priorAssessmentId: a.id,
+      triggeredAt,
+      triggerReasons: {
+        reasons: ['MATERIAL_CHANGE_RATE', 'MATERIAL_CHANGE_SCOPE'],
+        source: 'seed',
       },
+      status,
+      acknowledgedByUserId: status === 'OPEN' ? null : ctx.ownerUserId,
+      acknowledgedAt:
+        status === 'OPEN'
+          ? null
+          : advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 1, max: 5 })),
+      resolvedAt:
+        status === 'RESOLVED'
+          ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
+          : null,
+      dismissedByUserId: status === 'DISMISSED' ? ctx.ownerUserId : null,
+      dismissedAt:
+        status === 'DISMISSED'
+          ? advanceCapped(triggeredAt, ctx.fakers.org.number.int({ min: 6, max: 14 }))
+          : null,
+      dismissedReason: status === 'DISMISSED' ? 'False positive (seeded)' : null,
+      createdAt: triggeredAt,
+    });
+  }
+  for (let i = 0; i < triggerRows.length; i += 1000) {
+    await prisma.reassessmentTrigger.createMany({
+      data: triggerRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -7206,6 +7231,7 @@ async function seedTaxCompliance(
     },
     take: showcase ? 5 : 3,
   });
+  const whtRows: Prisma.WhtCertificateCreateManyInput[] = [];
   for (const item of paymentItems) {
     const c = contractors.find(co => co.id === item.contractorId);
     if (!c) continue;
@@ -7213,24 +7239,28 @@ async function seedTaxCompliance(
     const rateNum = Number.parseFloat(ratePct);
     const whtAmt = Math.round((item.amountMinor * rateNum) / 100);
     const certNumber = `WHT-${ctx.org.key}-${tokenHex(4).toUpperCase()}`;
-    await prisma.whtCertificate.create({
-      data: {
-        organizationId: ctx.organizationId,
-        paymentRunItemId: item.id,
-        certificateNumber: certNumber,
-        grossAmountMinor: item.amountMinor,
-        whtRate: ratePct,
-        whtAmountMinor: whtAmt,
-        netAmountMinor: item.amountMinor - whtAmt,
-        currency: item.currency,
-        contractorName: c.legalName,
-        contractorTaxId: makeTaxId(orgCountry, ctx.fakers.org),
-        contractorCountry: orgCountry,
-        treatyApplied: ctx.fakers.org.datatype.boolean({ probability: 0.3 }),
-        treatyReference: null,
-        paymentDate: dateOnly(pastDate(ctx.fakers.org, 30)),
-        generatedByUserId: ctx.ownerUserId,
-      },
+    whtRows.push({
+      organizationId: ctx.organizationId,
+      paymentRunItemId: item.id,
+      certificateNumber: certNumber,
+      grossAmountMinor: item.amountMinor,
+      whtRate: ratePct,
+      whtAmountMinor: whtAmt,
+      netAmountMinor: item.amountMinor - whtAmt,
+      currency: item.currency,
+      contractorName: c.legalName,
+      contractorTaxId: makeTaxId(orgCountry, ctx.fakers.org),
+      contractorCountry: orgCountry,
+      treatyApplied: ctx.fakers.org.datatype.boolean({ probability: 0.3 }),
+      treatyReference: null,
+      paymentDate: dateOnly(pastDate(ctx.fakers.org, 30)),
+      generatedByUserId: ctx.ownerUserId,
+    });
+  }
+  for (let i = 0; i < whtRows.length; i += 1000) {
+    await prisma.whtCertificate.createMany({
+      data: whtRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
