@@ -52,6 +52,10 @@
  *   huge      mix: 3 huge + 1 medium + 1 empty + 1 solo (~10k invoices)
  *   showcase  1 fully-populated demo org with every state present
  *   all       union of every profile above
+ *   qa        3 deterministic orgs for the QA walk-and-fix loop:
+ *               - qa-default-org (showcase template, every state)
+ *               - qa-empty-org (empty template, blank slate)
+ *               - qa-stress-org (huge template + 200 payment runs)
  *
  *   Per-profile defaults (overridable via --orgs / --users-per-org /
  *   --contractors-per-org / --invoices-per-contractor):
@@ -64,6 +68,7 @@
  *     huge         6      30         1000                5–12     (mixed)
  *     showcase     1       8           40                 4–7
  *     all          8     (mix)        (mix)              (mix)
+ *     qa           3     (mix)        (mix)              (mix)    (default+empty+stress)
  *
  * ---------------------------------------------------------------------------
  * Sample invocations
@@ -134,6 +139,7 @@ import pinoPretty from 'pino-pretty';
 import { createPrismaClientForUrl } from '../src/client.js';
 import type { PrismaClient } from '../src/generated/prisma/client/client.js';
 import { Prisma } from '../src/generated/prisma/client/client.js';
+import { seedQaFixtureUsers } from './seed-qa-fixtures.js';
 
 // Load .env from the repo root so DATABASE_URL_* / SEED_PASSWORD work without
 // the user having to source it manually.
@@ -177,7 +183,7 @@ let log: Logger = createSeedPrettyLogger(process.stdout);
 // CLI parsing — minimal built-in to avoid extra deps
 // ---------------------------------------------------------------------------
 
-type ProfileName = 'empty' | 'solo' | 'small' | 'medium' | 'huge' | 'showcase' | 'all';
+type ProfileName = 'empty' | 'solo' | 'small' | 'medium' | 'huge' | 'showcase' | 'all' | 'qa';
 
 interface CliFlags {
   profile: ProfileName;
@@ -926,6 +932,21 @@ function buildOrgs(profile: ProfileName, regions: readonly ('EU' | 'ME')[]): Org
       for (let i = 0; i < 2; i += 1) push(`all-medium-${i + 1}`, 'medium', pickRegion(i + 4));
       push('all-huge-1', 'huge', pickRegion(6));
       push('all-showcase-1', 'showcase', pickRegion(7), true);
+      break;
+    case 'qa':
+      // Deterministic three-org layout driving the QA walk-and-fix loop.
+      // Pinned to EU so currency/language defaults are stable across runs.
+      push('qa-default-org', 'showcase', 'EU', true);
+      push('qa-empty-org', 'empty', 'EU');
+      // Stress org overrides paymentRunsPerOrg up from the huge template's 20
+      // so the payments page renders pagination + virtualization properly.
+      orgs.push({
+        ...VOLUME_TEMPLATES.huge,
+        key: 'qa-stress-org',
+        region: 'EU',
+        paymentRunsPerOrg: 200,
+        showcase: false,
+      });
       break;
   }
   return orgs;
@@ -7438,6 +7459,24 @@ async function runSeed(flags: CliFlags): Promise<void> {
   const sectionTotals = await fetchSectionCounts(clients);
   printSectionCountsTable(sectionTotals, omitResolution.resolved);
 
+  // QA walk-and-fix fixtures — only when the `qa` profile is active. Looks
+  // up qa-default-org by metadata across all configured regions, then writes
+  // a deterministic admin / accountant / portal-contractor identity into
+  // that org plus a QA_* marker block in repo-root .env.
+  if (flags.profile === 'qa') {
+    let seeded = false;
+    for (const client of clients.values()) {
+      const result = await seedQaFixtureUsers(client, log);
+      if (result) {
+        seeded = true;
+        break;
+      }
+    }
+    if (!seeded) {
+      log.warn('qa fixtures: no qa-default-org found in any configured region — skipping');
+    }
+  }
+
   for (const client of clients.values()) {
     await client.$disconnect();
   }
@@ -7455,6 +7494,7 @@ const PROFILE_NAMES = [
   'huge',
   'showcase',
   'all',
+  'qa',
 ] as const satisfies readonly ProfileName[];
 
 function parseNonNegInt(raw: string | undefined, flag: string): number | undefined {
