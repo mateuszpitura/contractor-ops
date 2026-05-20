@@ -1684,20 +1684,26 @@ async function seedOrganizationCore(
   const teamIds: string[] = [];
   if (org.contractorsPerOrg > 0) {
     const teamCount = org.showcase ? 4 : Math.min(3, Math.max(1, Math.ceil(users.length / 3)));
+    const teamRows: Prisma.TeamCreateManyInput[] = [];
     for (let i = 0; i < teamCount; i += 1) {
       const manager = users[Math.min(i, users.length - 1)] as SeededUser;
-      const team = await prisma.team.create({
-        data: {
-          organizationId,
-          name: `${fakers.org.commerce.department()} ${i + 1}`,
-          code: `T${(i + 1).toString().padStart(2, '0')}`,
-          managerUserId: manager.id,
-          status: 'ACTIVE',
-          createdAt: dateBetween(fakers.org, foundedAt, advanceCapped(foundedAt, 90)),
-        },
-        select: { id: true },
+      const id = randomUUID();
+      teamRows.push({
+        id,
+        organizationId,
+        name: `${fakers.org.commerce.department()} ${i + 1}`,
+        code: `T${(i + 1).toString().padStart(2, '0')}`,
+        managerUserId: manager.id,
+        status: 'ACTIVE',
+        createdAt: dateBetween(fakers.org, foundedAt, advanceCapped(foundedAt, 90)),
       });
-      teamIds.push(team.id);
+      teamIds.push(id);
+    }
+    for (let i = 0; i < teamRows.length; i += 1000) {
+      await prisma.team.createMany({
+        data: teamRows.slice(i, i + 1000),
+        skipDuplicates: true,
+      });
     }
   }
 
@@ -1706,61 +1712,78 @@ async function seedOrganizationCore(
   // so the [organizationId, code] unique constraint can never collide on
   // re-seed and remains human-readable in lists.
   const projectIds: string[] = [];
+  const projectRows: Prisma.ProjectCreateManyInput[] = [];
   for (let tIdx = 0; tIdx < teamIds.length; tIdx += 1) {
     const teamId = teamIds[tIdx] as string;
     for (let i = 0; i < 2; i += 1) {
       const start = dateBetween(fakers.org, foundedAt, new Date());
       const end = fakers.org.datatype.boolean() ? futureDate(fakers.org, 365) : null;
-      const project = await prisma.project.create({
-        data: {
-          organizationId,
-          teamId,
-          name: fakers.org.commerce.productName(),
-          code: `P-T${(tIdx + 1).toString().padStart(2, '0')}-${i + 1}`,
-          status: 'ACTIVE',
-          startDate: dateOnly(start),
-          endDate: end ? dateOnly(end) : null,
-          budgetMinor: moneyMinor(fakers.org, 5_000, 200_000),
-          budgetCurrency: profile.defaultCurrency,
-          createdAt: start,
-        },
-        select: { id: true },
+      const id = randomUUID();
+      projectRows.push({
+        id,
+        organizationId,
+        teamId,
+        name: fakers.org.commerce.productName(),
+        code: `P-T${(tIdx + 1).toString().padStart(2, '0')}-${i + 1}`,
+        status: 'ACTIVE',
+        startDate: dateOnly(start),
+        endDate: end ? dateOnly(end) : null,
+        budgetMinor: moneyMinor(fakers.org, 5_000, 200_000),
+        budgetCurrency: profile.defaultCurrency,
+        createdAt: start,
       });
-      projectIds.push(project.id);
+      projectIds.push(id);
     }
+  }
+  for (let i = 0; i < projectRows.length; i += 1000) {
+    await prisma.project.createMany({
+      data: projectRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 
   // Cost centres
   const costCenterIds: string[] = [];
   if (org.contractorsPerOrg > 0) {
+    const ccRows: Prisma.CostCenterCreateManyInput[] = [];
     for (let i = 0; i < Math.min(3, Math.max(1, teamIds.length)); i += 1) {
-      const cc = await prisma.costCenter.create({
-        data: {
-          organizationId,
-          name: `Cost Centre ${i + 1}`,
-          code: `CC${(i + 1).toString().padStart(3, '0')}-${tokenHex(2)}`,
-          status: 'ACTIVE',
-          createdAt: dateBetween(fakers.org, foundedAt, advanceCapped(foundedAt, 120)),
-        },
-        select: { id: true },
+      const id = randomUUID();
+      ccRows.push({
+        id,
+        organizationId,
+        name: `Cost Centre ${i + 1}`,
+        code: `CC${(i + 1).toString().padStart(3, '0')}-${tokenHex(2)}`,
+        status: 'ACTIVE',
+        createdAt: dateBetween(fakers.org, foundedAt, advanceCapped(foundedAt, 120)),
       });
-      costCenterIds.push(cc.id);
+      costCenterIds.push(id);
+    }
+    for (let i = 0; i < ccRows.length; i += 1000) {
+      await prisma.costCenter.createMany({
+        data: ccRows.slice(i, i + 1000),
+        skipDuplicates: true,
+      });
     }
   }
 
   // Pending invitations — a small splash so the invite-list UI is non-empty
   if (org.contractorsPerOrg > 0) {
+    const invitationRows: Prisma.InvitationCreateManyInput[] = [];
     for (let i = 0; i < Math.min(2, users.length); i += 1) {
-      await prisma.invitation.create({
-        data: {
-          organizationId,
-          email: `invitee-${i}-${slug}@seed.local`,
-          role: 'team_manager',
-          status: 'pending',
-          expiresAt: futureDate(fakers.org, 14),
-          inviterId: owner.id,
-          createdAt: pastDate(fakers.org, 7),
-        },
+      invitationRows.push({
+        organizationId,
+        email: `invitee-${i}-${slug}@seed.local`,
+        role: 'team_manager',
+        status: 'pending',
+        expiresAt: futureDate(fakers.org, 14),
+        inviterId: owner.id,
+        createdAt: pastDate(fakers.org, 7),
+      });
+    }
+    if (invitationRows.length > 0) {
+      await prisma.invitation.createMany({
+        data: invitationRows,
+        skipDuplicates: true,
       });
     }
   }
