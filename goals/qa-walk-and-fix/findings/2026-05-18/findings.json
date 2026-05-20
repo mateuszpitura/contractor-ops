@@ -1,0 +1,52 @@
+{
+  "iso": "2026-05-18",
+  "flags": {
+    "dryRun": false,
+    "routes": ["landing-pricing"],
+    "app": null,
+    "locales": ["en", "pl", "de", "ar"],
+    "themes": ["light", "dark"],
+    "viewportNames": ["mobile", "tablet", "desktop"],
+    "chaos": false,
+    "publicApi": false,
+    "routeTimeoutMs": 20000
+  },
+  "matrixSize": 24,
+  "routes": [
+    {
+      "routeId": "landing-pricing",
+      "app": "landing",
+      "pathTemplate": "/pricing",
+      "combinations": 24,
+      "findings": [],
+      "screenshots": [
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/light/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/light/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/light/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/dark/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/dark/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/en/dark/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/light/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/light/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/light/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/dark/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/dark/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/pl/dark/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/light/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/light/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/light/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/dark/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/dark/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/de/dark/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/light/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/light/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/light/desktop.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/dark/mobile.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/dark/tablet.png",
+        "/Users/mateusz.pitura/Repos/projects/contractor-ops/goals/qa-walk-and-fix/findings/2026-05-18/screenshots/landing/landing-pricing/ar/dark/desktop.png"
+      ]
+    }
+  ],
+  "startedAt": "2026-05-18T23:40:25.198Z",
+  "finishedAt": "2026-05-18T23:40:58.718Z"
+}

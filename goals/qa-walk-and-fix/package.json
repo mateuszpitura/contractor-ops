@@ -1,0 +1,24 @@
+{
+  "name": "@contractor-ops/qa-walk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "walk": "dotenv -e ../../.env -- tsx walk.ts",
+    "routes": "tsx routes.ts --print",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@contractor-ops/db": "workspace:*",
+    "@contractor-ops/logger": "workspace:*",
+    "pino": "^10.3.1",
+    "playwright": "^1.59.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "dotenv-cli": "^11.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
