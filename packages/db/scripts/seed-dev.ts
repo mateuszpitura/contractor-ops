@@ -4230,8 +4230,10 @@ async function seedAuditLogs(
       createdAt: dateBetween(ctx.fakers.org, ref.createdAt, new Date()),
     };
   });
-  for (let i = 0; i < rows.length; i += 5_000) {
-    await prisma.auditLog.createMany({ data: rows.slice(i, i + 5_000) });
+  // AuditLog row sets ~15 columns. 5_000 × 15 ≈ 75k bind parameters, over
+  // Postgres' 65535 ceiling — drop the chunk to 4_000 (60k params).
+  for (let i = 0; i < rows.length; i += 4_000) {
+    await prisma.auditLog.createMany({ data: rows.slice(i, i + 4_000) });
   }
 }
 
