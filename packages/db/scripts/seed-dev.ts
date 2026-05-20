@@ -4251,6 +4251,8 @@ async function seedEInvoiceLifecycle(
 
   // Cap to 100 invoices to keep the e-invoice tables manageable on huge profile
   const subset = invoices.slice(0, Math.min(100, invoices.length));
+  const lifecycleRows: Prisma.EInvoiceLifecycleCreateManyInput[] = [];
+  const eventRows: Prisma.EInvoiceLifecycleEventCreateManyInput[] = [];
   for (const inv of subset) {
     if (inv.status === 'RECEIVED' || inv.status === 'REJECTED' || inv.status === 'VOID') continue;
     const validationStatus = weightedPick<'NOT_VALIDATED' | 'VALID' | 'INVALID' | 'WARNINGS'>(
@@ -4289,64 +4291,67 @@ async function seedEInvoiceLifecycle(
         ? advanceCapped(transmittedAt, ctx.fakers.org.number.int({ min: 0, max: 2 }))
         : null;
 
-    const lc = await prisma.eInvoiceLifecycle.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        profileId: ctx.profile.countryCode === 'DE' ? 'xrechnung-de' : 'peppol-eu',
-        validationStatus,
-        validatedAt: validationStatus === 'NOT_VALIDATED' ? null : validatedAt,
-        validationReportSummary:
-          validationStatus === 'NOT_VALIDATED'
-            ? Prisma.JsonNull
-            : { errors: validationStatus === 'INVALID' ? 1 : 0, warnings: 0 },
-        transmissionStatus,
-        transmittedAt,
-        deliveredAt,
-        createdAt: generatedAt,
-      },
-      select: { id: true },
+    const lifecycleId = randomUUID();
+    lifecycleRows.push({
+      id: lifecycleId,
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      profileId: ctx.profile.countryCode === 'DE' ? 'xrechnung-de' : 'peppol-eu',
+      validationStatus,
+      validatedAt: validationStatus === 'NOT_VALIDATED' ? null : validatedAt,
+      validationReportSummary:
+        validationStatus === 'NOT_VALIDATED'
+          ? Prisma.JsonNull
+          : { errors: validationStatus === 'INVALID' ? 1 : 0, warnings: 0 },
+      transmissionStatus,
+      transmittedAt,
+      deliveredAt,
+      createdAt: generatedAt,
     });
 
     // Lifecycle events emit in lockstep with the lifecycle row.
-    await prisma.eInvoiceLifecycleEvent.create({
-      data: {
-        organizationId: ctx.organizationId,
-        lifecycleId: lc.id,
-        eventType: 'GENERATED',
-        occurredAt: generatedAt,
-      },
+    eventRows.push({
+      organizationId: ctx.organizationId,
+      lifecycleId,
+      eventType: 'GENERATED',
+      occurredAt: generatedAt,
     });
     if (validationStatus !== 'NOT_VALIDATED') {
-      await prisma.eInvoiceLifecycleEvent.create({
-        data: {
-          organizationId: ctx.organizationId,
-          lifecycleId: lc.id,
-          eventType: 'VALIDATED',
-          occurredAt: validatedAt,
-        },
+      eventRows.push({
+        organizationId: ctx.organizationId,
+        lifecycleId,
+        eventType: 'VALIDATED',
+        occurredAt: validatedAt,
       });
     }
     if (transmittedAt) {
-      await prisma.eInvoiceLifecycleEvent.create({
-        data: {
-          organizationId: ctx.organizationId,
-          lifecycleId: lc.id,
-          eventType: 'TRANSMITTED',
-          occurredAt: transmittedAt,
-        },
+      eventRows.push({
+        organizationId: ctx.organizationId,
+        lifecycleId,
+        eventType: 'TRANSMITTED',
+        occurredAt: transmittedAt,
       });
     }
     if (deliveredAt) {
-      await prisma.eInvoiceLifecycleEvent.create({
-        data: {
-          organizationId: ctx.organizationId,
-          lifecycleId: lc.id,
-          eventType: 'DELIVERY_ACK',
-          occurredAt: deliveredAt,
-        },
+      eventRows.push({
+        organizationId: ctx.organizationId,
+        lifecycleId,
+        eventType: 'DELIVERY_ACK',
+        occurredAt: deliveredAt,
       });
     }
+  }
+  for (let i = 0; i < lifecycleRows.length; i += 1000) {
+    await prisma.eInvoiceLifecycle.createMany({
+      data: lifecycleRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < eventRows.length; i += 1000) {
+    await prisma.eInvoiceLifecycleEvent.createMany({
+      data: eventRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
@@ -5919,8 +5924,23 @@ async function seedPeppol(
 
   const orgScheme = '0192'; // ISO 6523 — Norwegian org-number scheme used by Storecove demos
   const orgValue = ctx.fakers.org.string.numeric({ length: 13 });
-  const orgParticipant = await prisma.peppolParticipant.create({
-    data: {
+  const orgParticipantId = randomUUID();
+  const orgParticipant = {
+    id: orgParticipantId,
+    schemeId: orgScheme,
+    identifierValue: orgValue,
+  };
+
+  // Subset of contractors get their own Peppol identifiers (e.g. corporate
+  // sellers within the network).
+  const contractorParticipants: Array<{ id: string; schemeId: string; identifierValue: string }> =
+    [];
+  const contractorSubset = ctx.org.showcase
+    ? contractors.slice(0, Math.min(contractors.length, 5))
+    : contractors.filter((_, i) => i % 6 === 0).slice(0, 3);
+  const participantRows: Prisma.PeppolParticipantCreateManyInput[] = [
+    {
+      id: orgParticipantId,
       organizationId: ctx.organizationId,
       participantId: `${orgScheme}:${orgValue}`,
       schemeId: orgScheme,
@@ -5933,34 +5953,30 @@ async function seedPeppol(
       lastCapabilityCheckAt: pastDate(ctx.fakers.org, 7),
       createdAt: ctx.foundedAt,
     },
-    select: { id: true, schemeId: true, identifierValue: true },
-  });
-
-  // Subset of contractors get their own Peppol identifiers (e.g. corporate
-  // sellers within the network).
-  const contractorParticipants: Array<{ id: string; schemeId: string; identifierValue: string }> =
-    [];
-  const contractorSubset = ctx.org.showcase
-    ? contractors.slice(0, Math.min(contractors.length, 5))
-    : contractors.filter((_, i) => i % 6 === 0).slice(0, 3);
+  ];
   for (const c of contractorSubset) {
     const value = ctx.fakers.org.string.numeric({ length: 13 });
-    const created = await prisma.peppolParticipant.create({
-      data: {
-        organizationId: ctx.organizationId,
-        participantId: `${orgScheme}:${value}`,
-        schemeId: orgScheme,
-        identifierValue: value,
-        aspProvider: 'storecove',
-        status: 'REGISTERED',
-        registeredAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
-        supportsXRechnungCii: ctx.fakers.org.datatype.boolean({ probability: 0.6 }),
-        createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
-      },
-      select: { id: true, schemeId: true, identifierValue: true },
+    const id = randomUUID();
+    participantRows.push({
+      id,
+      organizationId: ctx.organizationId,
+      participantId: `${orgScheme}:${value}`,
+      schemeId: orgScheme,
+      identifierValue: value,
+      aspProvider: 'storecove',
+      status: 'REGISTERED',
+      registeredAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+      supportsXRechnungCii: ctx.fakers.org.datatype.boolean({ probability: 0.6 }),
+      createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
     });
-    contractorParticipants.push(created);
+    contractorParticipants.push({ id, schemeId: orgScheme, identifierValue: value });
     void c; // contractor reference is documentary only — the FK is on Organization
+  }
+  for (let i = 0; i < participantRows.length; i += 1000) {
+    await prisma.peppolParticipant.createMany({
+      data: participantRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 
   // Capability cache rows — one per receiving participant (skipDuplicates on
@@ -5989,6 +6005,7 @@ async function seedPeppol(
   const txSubset = ctx.org.showcase
     ? invoices.slice(0, Math.min(invoices.length, transmissionStatuses.length * 2))
     : invoices.filter((_, i) => i % 4 === 0).slice(0, 4);
+  const transmissionRows: Prisma.PeppolTransmissionCreateManyInput[] = [];
   for (const [i, inv] of txSubset.entries()) {
     const status = transmissionStatuses[
       i % transmissionStatuses.length
@@ -5999,22 +6016,25 @@ async function seedPeppol(
       status === 'DELIVERED' && transmittedAt ? advanceCapped(transmittedAt, 1) : null;
     const target = cacheTargets[i % cacheTargets.length];
     if (!target) continue;
-    await prisma.peppolTransmission.create({
-      data: {
-        organizationId: ctx.organizationId,
-        peppolParticipantId: target.id,
-        invoiceId: inv.id,
-        direction: 'OUTBOUND',
-        aspTransmissionId: `tx-${tokenHex(6)}`,
-        documentTypeId:
-          'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
-        status,
-        xmlPayload: null,
-        errorMessage: status === 'FAILED' ? 'simulated upstream 500 (seed)' : null,
-        transmittedAt,
-        deliveredAt,
-        createdAt: inv.receivedAt,
-      },
+    transmissionRows.push({
+      organizationId: ctx.organizationId,
+      peppolParticipantId: target.id,
+      invoiceId: inv.id,
+      direction: 'OUTBOUND',
+      aspTransmissionId: `tx-${tokenHex(6)}`,
+      documentTypeId: 'urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0',
+      status,
+      xmlPayload: null,
+      errorMessage: status === 'FAILED' ? 'simulated upstream 500 (seed)' : null,
+      transmittedAt,
+      deliveredAt,
+      createdAt: inv.receivedAt,
+    });
+  }
+  for (let i = 0; i < transmissionRows.length; i += 1000) {
+    await prisma.peppolTransmission.createMany({
+      data: transmissionRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -6023,23 +6043,28 @@ async function seedPeppol(
     const leitwegSubset = ctx.org.showcase
       ? contractors.slice(0, Math.min(contractors.length, 3))
       : contractors.slice(0, 1);
+    const leitwegRows: Prisma.LeitwegIdCreateManyInput[] = [];
     for (const [i, c] of leitwegSubset.entries()) {
       // Leitweg-ID structure: GG-fff-XYZ (Gemeindeschlüssel + Feinadressierung)
       const value = `04011000-${ctx.fakers.org.string.numeric({ length: 5 })}-${(40 + i)
         .toString()
         .padStart(2, '0')}`;
-      await prisma.leitwegId.create({
-        data: {
-          organizationId: ctx.organizationId,
-          value,
-          description: 'Federal procurement office (seed)',
-          contractorId: c.id,
-          isDefaultForContractor: true,
-          validFrom: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
-          validTo: null,
-          notes: 'Auto-seeded for DE B2G demo',
-          createdAt: ctx.foundedAt,
-        },
+      leitwegRows.push({
+        organizationId: ctx.organizationId,
+        value,
+        description: 'Federal procurement office (seed)',
+        contractorId: c.id,
+        isDefaultForContractor: true,
+        validFrom: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
+        validTo: null,
+        notes: 'Auto-seeded for DE B2G demo',
+        createdAt: ctx.foundedAt,
+      });
+    }
+    for (let i = 0; i < leitwegRows.length; i += 1000) {
+      await prisma.leitwegId.createMany({
+        data: leitwegRows.slice(i, i + 1000),
+        skipDuplicates: true,
       });
     }
   }
@@ -6066,31 +6091,36 @@ async function seedZatca(
     'WARNING',
   ] as const;
   let previousHash = '0'.repeat(64);
+  const chainRows: Prisma.ZatcaInvoiceChainCreateManyInput[] = [];
   for (const [i, inv] of subset.entries()) {
     const status = zatcaStatuses[i % zatcaStatuses.length] as (typeof zatcaStatuses)[number];
     const invoiceHash = tokenHex(32); // 64 hex chars
-    await prisma.zatcaInvoiceChain.create({
-      data: {
-        organizationId: ctx.organizationId,
-        icv: i + 1,
-        invoiceId: inv.id,
-        invoiceHash,
-        previousHash,
-        zatcaUuid: randomUUID(),
-        zatcaStatus: status,
-        zatcaResponse: { seeded: true, status },
-        submittedAt: status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 7, inv.receivedAt),
-        clearedAt:
-          status === 'CLEARED' || status === 'REPORTED'
-            ? pastDateAfter(ctx.fakers.org, 6, inv.receivedAt)
-            : null,
-        reportedAt: status === 'REPORTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
-        rejectedAt: status === 'REJECTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
-        rejectionReason: status === 'REJECTED' ? 'Schema validation failed (seed)' : null,
-        createdAt: inv.receivedAt,
-      },
+    chainRows.push({
+      organizationId: ctx.organizationId,
+      icv: i + 1,
+      invoiceId: inv.id,
+      invoiceHash,
+      previousHash,
+      zatcaUuid: randomUUID(),
+      zatcaStatus: status,
+      zatcaResponse: { seeded: true, status },
+      submittedAt: status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 7, inv.receivedAt),
+      clearedAt:
+        status === 'CLEARED' || status === 'REPORTED'
+          ? pastDateAfter(ctx.fakers.org, 6, inv.receivedAt)
+          : null,
+      reportedAt: status === 'REPORTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
+      rejectedAt: status === 'REJECTED' ? pastDateAfter(ctx.fakers.org, 5, inv.receivedAt) : null,
+      rejectionReason: status === 'REJECTED' ? 'Schema validation failed (seed)' : null,
+      createdAt: inv.receivedAt,
     });
     previousHash = invoiceHash;
+  }
+  for (let i = 0; i < chainRows.length; i += 1000) {
+    await prisma.zatcaInvoiceChain.createMany({
+      data: chainRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
