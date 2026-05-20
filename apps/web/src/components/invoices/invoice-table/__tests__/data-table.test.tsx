@@ -136,7 +136,7 @@ describe('InvoiceDataTable', () => {
     expect(onUpload).toHaveBeenCalledTimes(1);
   });
 
-  it('applies overdue styling when due date is in the past and status is not terminal', () => {
+  it('applies overdue styling only to the due-date cell, not the row', () => {
     const pastDue = '2020-01-01T00:00:00.000Z';
     mockedUseQuery.mockReturnValue({
       data: {
@@ -150,6 +150,12 @@ describe('InvoiceDataTable', () => {
     renderTable(<InvoiceDataTable onRowClick={vi.fn()} onUpload={vi.fn()} />);
 
     const row = screen.getByText('FV/DATA/01').closest('tr');
-    expect(row?.className).toMatch(/destructive/);
+    // No row-level destructive background tint — rows must be visually uniform.
+    expect(row?.className ?? '').not.toMatch(/destructive/);
+    // The destructive treatment lives on the due-date cell text only.
+    const overdueText = screen
+      .getAllByText(/2020/)
+      .find(el => el.className.includes('text-destructive'));
+    expect(overdueText).toBeDefined();
   });
 });
