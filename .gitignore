@@ -48,3 +48,6 @@ test-results
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude Code agent scratch worktrees — never commit
+.claude/worktrees/
