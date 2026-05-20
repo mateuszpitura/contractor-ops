@@ -2885,24 +2885,35 @@ async function seedPaymentRuns(
   // instalment settled by a manual / bank-statement entry BEFORE this run
   // (a separate event). Seeded unconditionally — paymentRunsPerOrg=0 would
   // otherwise leave "partial" invoices with no payment trail at all.
+  const invoicePaymentRows: Prisma.InvoicePaymentCreateManyInput[] = [];
   for (const inv of invoices) {
     if (inv.paymentStatus === 'PARTIALLY_PAID') {
       const partialPaidAt = pastDateAfter(ctx.fakers.org, 120, ctx.foundedAt);
-      await prisma.invoicePayment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          invoiceId: inv.id,
-          amountMinor: inv.partialPaidMinor,
-          paidAt: partialPaidAt,
-          sourceKind: 'BANK_STATEMENT',
-          notes: `Standalone partial payment ref REF-${tokenHex(4).toUpperCase()}`,
-          createdAt: partialPaidAt,
-        },
+      invoicePaymentRows.push({
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        amountMinor: inv.partialPaidMinor,
+        paidAt: partialPaidAt,
+        sourceKind: 'BANK_STATEMENT',
+        notes: `Standalone partial payment ref REF-${tokenHex(4).toUpperCase()}`,
+        createdAt: partialPaidAt,
       });
     }
   }
 
-  if (ctx.org.paymentRunsPerOrg === 0) return;
+  const flushInvoicePayments = async (): Promise<void> => {
+    for (let i = 0; i < invoicePaymentRows.length; i += 1000) {
+      await prisma.invoicePayment.createMany({
+        data: invoicePaymentRows.slice(i, i + 1000),
+        skipDuplicates: true,
+      });
+    }
+  };
+
+  if (ctx.org.paymentRunsPerOrg === 0) {
+    await flushInvoicePayments();
+    return;
+  }
   // Payment runs only batch READY (outstanding) and PAID (settled). Partial
   // is settled out-of-band above.
   const payable = invoices.filter(i => i.paymentStatus === 'READY' || i.paymentStatus === 'PAID');
@@ -2949,6 +2960,15 @@ async function seedPaymentRuns(
     allocated += 1;
     r += 1;
   }
+
+  // Build run + item + export rows in memory, then wave-insert per model so
+  // the Neon round-trip count drops from O(items) to O(items / 1000).
+  const runRows: Prisma.PaymentRunCreateManyInput[] = [];
+  const runItemRows: Prisma.PaymentRunItemCreateManyInput[] = [];
+  const exportRows: Prisma.PaymentExportCreateManyInput[] = [];
+  // updateMany targets accumulated per-status so the IN_RUN flip happens in a
+  // single round-trip at the end of the function instead of per-run.
+  const inRunInvoiceIds: string[] = [];
 
   let runOrdinal = 0;
   for (let cIdx = 0; cIdx < currencies.length; cIdx += 1) {
@@ -3000,40 +3020,39 @@ async function seedPaymentRuns(
         ? new Date(Math.max(foundedMs, exportedAt.getTime() - 86_400_000))
         : pastDateAfter(ctx.fakers.org, 14, ctx.foundedAt);
 
-      const run = await prisma.paymentRun.create({
-        data: {
-          organizationId: ctx.organizationId,
-          // runOrdinal is monotonic across all currencies within this org-seed
-          // call, so {orgKey, currency, ordinal} is already unique under the
-          // [organizationId, runNumber] constraint.
-          runNumber: `PR-${ctx.org.key.slice(0, 4).toUpperCase()}-${currency}-${runOrdinal.toString().padStart(3, '0')}`,
-          name: `${ctx.fakers.org.date.month()} ${currency} run ${runOrdinal}`,
-          status,
-          currency,
-          createdByUserId: finance.id,
-          approvedByUserId: status === 'COMPLETED' || status === 'EXPORTED' ? finance.id : null,
-          totalMinor,
-          invoiceCount: slice.length,
-          exportFormat:
-            status === 'DRAFT'
-              ? null
-              : currency === 'EUR'
-                ? 'SEPA_XML'
-                : currency === 'GBP'
-                  ? 'BACS_STD18'
-                  : 'SWIFT_XML',
-          exportedAt,
-          completedAt,
-          createdAt: runCreatedAt,
-        },
-        select: { id: true, createdAt: true },
+      const runId = randomUUID();
+      runRows.push({
+        id: runId,
+        organizationId: ctx.organizationId,
+        // runOrdinal is monotonic across all currencies within this org-seed
+        // call, so {orgKey, currency, ordinal} is already unique under the
+        // [organizationId, runNumber] constraint.
+        runNumber: `PR-${ctx.org.key.slice(0, 4).toUpperCase()}-${currency}-${runOrdinal.toString().padStart(3, '0')}`,
+        name: `${ctx.fakers.org.date.month()} ${currency} run ${runOrdinal}`,
+        status,
+        currency,
+        createdByUserId: finance.id,
+        approvedByUserId: status === 'COMPLETED' || status === 'EXPORTED' ? finance.id : null,
+        totalMinor,
+        invoiceCount: slice.length,
+        exportFormat:
+          status === 'DRAFT'
+            ? null
+            : currency === 'EUR'
+              ? 'SEPA_XML'
+              : currency === 'GBP'
+                ? 'BACS_STD18'
+                : 'SWIFT_XML',
+        exportedAt,
+        completedAt,
+        createdAt: runCreatedAt,
       });
 
       refs.push({
         type: 'PAYMENT_RUN',
-        id: run.id,
+        id: runId,
         name: `Run ${runOrdinal} (${currency})`,
-        createdAt: run.createdAt,
+        createdAt: runCreatedAt,
       });
 
       for (const inv of slice) {
@@ -3049,36 +3068,33 @@ async function seedPaymentRuns(
         // no need for a `?? completedAt ?? exportedAt` fallback.
         const paymentMoment = inv.paymentStatus === 'PAID' ? inv.paidAt : null;
 
-        const runItem = await prisma.paymentRunItem.create({
-          data: {
-            organizationId: ctx.organizationId,
-            paymentRunId: run.id,
-            invoiceId: inv.id,
-            contractorId: inv.contractorId,
-            amountMinor: inv.paymentStatus === 'PAID' ? inv.totalMinor : inv.amountToPayMinor,
-            currency: inv.currency,
-            status: itemStatus,
-            paymentReference: itemStatus === 'PAID' ? paymentReference : null,
-            markedPaidAt: itemStatus === 'PAID' ? paymentMoment : null,
-            createdAt: run.createdAt,
-          },
-          select: { id: true },
+        const runItemId = randomUUID();
+        runItemRows.push({
+          id: runItemId,
+          organizationId: ctx.organizationId,
+          paymentRunId: runId,
+          invoiceId: inv.id,
+          contractorId: inv.contractorId,
+          amountMinor: inv.paymentStatus === 'PAID' ? inv.totalMinor : inv.amountToPayMinor,
+          currency: inv.currency,
+          status: itemStatus,
+          paymentReference: itemStatus === 'PAID' ? paymentReference : null,
+          markedPaidAt: itemStatus === 'PAID' ? paymentMoment : null,
+          createdAt: runCreatedAt,
         });
 
         // InvoicePayment row links back via FK so the "Payments" tab on the
-        // invoice can trace the source. PARTIALLY_PAID handled at top of fn.
+        // invoice can trace the source. PARTIALLY_PAID was queued at top of fn.
         if (inv.paymentStatus === 'PAID' && paymentMoment) {
-          await prisma.invoicePayment.create({
-            data: {
-              organizationId: ctx.organizationId,
-              invoiceId: inv.id,
-              amountMinor: inv.totalMinor,
-              paidAt: paymentMoment,
-              sourceKind: 'PAYMENT_RUN',
-              sourcePaymentRunItemId: runItem.id,
-              notes: `Settled via ${paymentReference}`,
-              createdAt: paymentMoment,
-            },
+          invoicePaymentRows.push({
+            organizationId: ctx.organizationId,
+            invoiceId: inv.id,
+            amountMinor: inv.totalMinor,
+            paidAt: paymentMoment,
+            sourceKind: 'PAYMENT_RUN',
+            sourcePaymentRunItemId: runItemId,
+            notes: `Settled via ${paymentReference}`,
+            createdAt: paymentMoment,
           });
         }
       }
@@ -3089,14 +3105,10 @@ async function seedPaymentRuns(
       // invoice could appear in an EXPORTED run while still labelled "ready
       // for payment" everywhere else.)
       if (status === 'LOCKED' || status === 'EXPORTED') {
-        const inRunIds = slice.filter(i => i.paymentStatus === 'READY').map(i => i.id);
-        if (inRunIds.length > 0) {
-          await prisma.invoice.updateMany({
-            where: { id: { in: inRunIds } },
-            data: { paymentStatus: 'IN_RUN' },
-          });
-          for (const inv of slice) {
-            if (inv.paymentStatus === 'READY') inv.paymentStatus = 'IN_RUN';
+        for (const inv of slice) {
+          if (inv.paymentStatus === 'READY') {
+            inRunInvoiceIds.push(inv.id);
+            inv.paymentStatus = 'IN_RUN';
           }
         }
       }
@@ -3104,20 +3116,45 @@ async function seedPaymentRuns(
       // L3: a PaymentExport row for COMPLETED / EXPORTED runs so the
       // Settings → Exports page isn't always empty.
       if ((status === 'COMPLETED' || status === 'EXPORTED') && exportedAt) {
-        await prisma.paymentExport.create({
-          data: {
-            organizationId: ctx.organizationId,
-            paymentRunId: run.id,
-            format:
-              currency === 'EUR' ? 'SEPA_XML' : currency === 'GBP' ? 'BACS_STD18' : 'SWIFT_XML',
-            status: ctx.fakers.org.helpers.arrayElement(['GENERATED', 'DOWNLOADED']),
-            generatedByUserId: finance.id,
-            generatedAt: exportedAt,
-            downloadedAt: status === 'COMPLETED' ? completedAt : null,
-          },
+        exportRows.push({
+          organizationId: ctx.organizationId,
+          paymentRunId: runId,
+          format: currency === 'EUR' ? 'SEPA_XML' : currency === 'GBP' ? 'BACS_STD18' : 'SWIFT_XML',
+          status: ctx.fakers.org.helpers.arrayElement(['GENERATED', 'DOWNLOADED']),
+          generatedByUserId: finance.id,
+          generatedAt: exportedAt,
+          downloadedAt: status === 'COMPLETED' ? completedAt : null,
         });
       }
     }
+  }
+
+  // Wave inserts: PaymentRun → PaymentRunItem → InvoicePayment → PaymentExport.
+  // Invoice.paymentStatus IN_RUN flip runs as a single updateMany at the end.
+  for (let i = 0; i < runRows.length; i += 1000) {
+    await prisma.paymentRun.createMany({
+      data: runRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < runItemRows.length; i += 1000) {
+    await prisma.paymentRunItem.createMany({
+      data: runItemRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  await flushInvoicePayments();
+  for (let i = 0; i < exportRows.length; i += 1000) {
+    await prisma.paymentExport.createMany({
+      data: exportRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  if (inRunInvoiceIds.length > 0) {
+    await prisma.invoice.updateMany({
+      where: { id: { in: inRunInvoiceIds } },
+      data: { paymentStatus: 'IN_RUN' },
+    });
   }
 }
 
