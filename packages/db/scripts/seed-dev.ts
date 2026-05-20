@@ -6363,53 +6363,61 @@ async function seedConsentAndPrivacy(
     'INVOICE_PAYMENT_PROCESSING',
     'COMMUNICATION_NOTIFICATIONS',
   ] as const;
+  const consentRecordRows: Prisma.ConsentRecordCreateManyInput[] = [];
+  const consentEventRows: Prisma.ConsentEventCreateManyInput[] = [];
   for (const u of ctx.users) {
     const grantedAt = pastDateAfter(ctx.fakers.org, 365, ctx.foundedAt);
     const purpose = ctx.fakers.org.helpers.arrayElement(consentPurposes);
-    await prisma.consentRecord.create({
-      data: {
-        organizationId: ctx.organizationId,
-        userId: u.id,
-        purpose,
-        granted: true,
-        version: 1,
-        grantedAt,
-        ipAddress: '127.0.0.1',
-        userAgent: 'seed-dev',
-        createdAt: grantedAt,
-      },
+    consentRecordRows.push({
+      organizationId: ctx.organizationId,
+      userId: u.id,
+      purpose,
+      granted: true,
+      version: 1,
+      grantedAt,
+      ipAddress: '127.0.0.1',
+      userAgent: 'seed-dev',
+      createdAt: grantedAt,
     });
     // 1 in 4 users revokes a separate purpose to show withdrawn variety.
     if (ctx.org.showcase || ctx.fakers.org.datatype.boolean({ probability: 0.25 })) {
       const altPurpose = ctx.fakers.org.helpers.arrayElement(consentPurposes);
-      await prisma.consentRecord.create({
-        data: {
-          organizationId: ctx.organizationId,
-          userId: u.id,
-          purpose: altPurpose,
-          granted: false,
-          version: 1,
-          grantedAt: null,
-          revokedAt: pastDate(ctx.fakers.org, 30),
-          ipAddress: '127.0.0.1',
-          userAgent: 'seed-dev',
-          createdAt: pastDate(ctx.fakers.org, 30),
-        },
+      consentRecordRows.push({
+        organizationId: ctx.organizationId,
+        userId: u.id,
+        purpose: altPurpose,
+        granted: false,
+        version: 1,
+        grantedAt: null,
+        revokedAt: pastDate(ctx.fakers.org, 30),
+        ipAddress: '127.0.0.1',
+        userAgent: 'seed-dev',
+        createdAt: pastDate(ctx.fakers.org, 30),
       });
     }
 
     // ConsentEvent — TOS acceptance.
-    await prisma.consentEvent.create({
-      data: {
-        organizationId: ctx.organizationId,
-        userId: u.id,
-        scope: 'TOS',
-        version: '2026.1.0',
-        acceptedAt: grantedAt,
-        ipAddress: '127.0.0.1',
-        userAgent: 'seed-dev',
-        createdAt: grantedAt,
-      },
+    consentEventRows.push({
+      organizationId: ctx.organizationId,
+      userId: u.id,
+      scope: 'TOS',
+      version: '2026.1.0',
+      acceptedAt: grantedAt,
+      ipAddress: '127.0.0.1',
+      userAgent: 'seed-dev',
+      createdAt: grantedAt,
+    });
+  }
+  for (let i = 0; i < consentRecordRows.length; i += 1000) {
+    await prisma.consentRecord.createMany({
+      data: consentRecordRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < consentEventRows.length; i += 1000) {
+    await prisma.consentEvent.createMany({
+      data: consentEventRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -6471,33 +6479,33 @@ async function seedConsentAndPrivacy(
 // ---------------------------------------------------------------------------
 
 async function seedApiKeys(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
-  // Active key
-  await prisma.organizationApiKey.create({
-    data: {
-      organizationId: ctx.organizationId,
-      name: 'Default API key',
-      prefix: `seed_${tokenHex(3)}`.slice(0, 12),
-      hash: tokenHex(32),
-      scopes: ['contractors.read', 'invoices.read'],
-      createdByUserId: ctx.ownerUserId,
-      lastUsedAt: pastDate(ctx.fakers.org, 7),
-      createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
-    },
-  });
-
-  // Revoked key (different prefix to avoid any accidental dedup).
-  await prisma.organizationApiKey.create({
-    data: {
-      organizationId: ctx.organizationId,
-      name: 'Legacy CI key',
-      prefix: `seed_${tokenHex(3)}`.slice(0, 12),
-      hash: tokenHex(32),
-      scopes: ['invoices.read'],
-      createdByUserId: ctx.ownerUserId,
-      lastUsedAt: pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
-      revokedAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
-      createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
-    },
+  await prisma.organizationApiKey.createMany({
+    data: [
+      // Active key
+      {
+        organizationId: ctx.organizationId,
+        name: 'Default API key',
+        prefix: `seed_${tokenHex(3)}`.slice(0, 12),
+        hash: tokenHex(32),
+        scopes: ['contractors.read', 'invoices.read'],
+        createdByUserId: ctx.ownerUserId,
+        lastUsedAt: pastDate(ctx.fakers.org, 7),
+        createdAt: pastDateAfter(ctx.fakers.org, 90, ctx.foundedAt),
+      },
+      // Revoked key (different prefix to avoid any accidental dedup).
+      {
+        organizationId: ctx.organizationId,
+        name: 'Legacy CI key',
+        prefix: `seed_${tokenHex(3)}`.slice(0, 12),
+        hash: tokenHex(32),
+        scopes: ['invoices.read'],
+        createdByUserId: ctx.ownerUserId,
+        lastUsedAt: pastDateAfter(ctx.fakers.org, 60, ctx.foundedAt),
+        revokedAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+        createdAt: pastDateAfter(ctx.fakers.org, 180, ctx.foundedAt),
+      },
+    ],
+    skipDuplicates: true,
   });
 }
 
@@ -6511,17 +6519,19 @@ async function seedPinnedViews(prisma: PrismaClient, ctx: OrgSeed): Promise<void
     { kind: 'contractors', key: 'high-risk' },
     { kind: 'workflows', key: 'in-progress' },
   ];
+  const rows: Prisma.UserPinnedViewCreateManyInput[] = [];
   for (const u of ctx.users) {
     const subset = ctx.org.showcase ? candidates : candidates.slice(0, 1);
     for (const view of subset) {
-      const existing = await prisma.userPinnedView.findUnique({
-        where: { userId_kind_key: { userId: u.id, kind: view.kind, key: view.key } },
-      });
-      if (existing) continue;
-      await prisma.userPinnedView.create({
-        data: { userId: u.id, kind: view.kind, key: view.key },
-      });
+      rows.push({ userId: u.id, kind: view.kind, key: view.key });
     }
+  }
+  // (userId, kind, key) is @@unique; skipDuplicates: true covers reseed.
+  for (let i = 0; i < rows.length; i += 1000) {
+    await prisma.userPinnedView.createMany({
+      data: rows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
