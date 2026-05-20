@@ -470,6 +470,8 @@ export const ModelName = {
   Invitation: 'Invitation',
   Team: 'Team',
   Project: 'Project',
+  PendingProjectMerge: 'PendingProjectMerge',
+  ProjectExternalLink: 'ProjectExternalLink',
   CostCenter: 'CostCenter',
   OutboxEvent: 'OutboxEvent',
   PaymentRun: 'PaymentRun',
@@ -512,7 +514,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -6880,6 +6882,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PendingProjectMerge: {
+      payload: Prisma.$PendingProjectMergePayload<ExtArgs>
+      fields: Prisma.PendingProjectMergeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PendingProjectMergeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PendingProjectMergeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        findFirst: {
+          args: Prisma.PendingProjectMergeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PendingProjectMergeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        findMany: {
+          args: Prisma.PendingProjectMergeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>[]
+        }
+        create: {
+          args: Prisma.PendingProjectMergeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        createMany: {
+          args: Prisma.PendingProjectMergeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PendingProjectMergeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>[]
+        }
+        delete: {
+          args: Prisma.PendingProjectMergeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        update: {
+          args: Prisma.PendingProjectMergeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        deleteMany: {
+          args: Prisma.PendingProjectMergeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PendingProjectMergeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PendingProjectMergeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>[]
+        }
+        upsert: {
+          args: Prisma.PendingProjectMergeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingProjectMergePayload>
+        }
+        aggregate: {
+          args: Prisma.PendingProjectMergeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePendingProjectMerge>
+        }
+        groupBy: {
+          args: Prisma.PendingProjectMergeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingProjectMergeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PendingProjectMergeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingProjectMergeCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProjectExternalLink: {
+      payload: Prisma.$ProjectExternalLinkPayload<ExtArgs>
+      fields: Prisma.ProjectExternalLinkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProjectExternalLinkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProjectExternalLinkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        findFirst: {
+          args: Prisma.ProjectExternalLinkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProjectExternalLinkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        findMany: {
+          args: Prisma.ProjectExternalLinkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>[]
+        }
+        create: {
+          args: Prisma.ProjectExternalLinkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        createMany: {
+          args: Prisma.ProjectExternalLinkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProjectExternalLinkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>[]
+        }
+        delete: {
+          args: Prisma.ProjectExternalLinkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        update: {
+          args: Prisma.ProjectExternalLinkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProjectExternalLinkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProjectExternalLinkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProjectExternalLinkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProjectExternalLinkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectExternalLinkPayload>
+        }
+        aggregate: {
+          args: Prisma.ProjectExternalLinkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProjectExternalLink>
+        }
+        groupBy: {
+          args: Prisma.ProjectExternalLinkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectExternalLinkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProjectExternalLinkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectExternalLinkCountAggregateOutputType> | number
+        }
+      }
+    }
     CostCenter: {
       payload: Prisma.$CostCenterPayload<ExtArgs>
       fields: Prisma.CostCenterFieldRefs
@@ -10478,6 +10628,8 @@ export const TeamScalarFieldEnum = {
   managerUserId: 'managerUserId',
   fallbackApproverId: 'fallbackApproverId',
   status: 'status',
+  source: 'source',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -10496,11 +10648,38 @@ export const ProjectScalarFieldEnum = {
   endDate: 'endDate',
   budgetMinor: 'budgetMinor',
   budgetCurrency: 'budgetCurrency',
+  source: 'source',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const PendingProjectMergeScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  source: 'source',
+  externalId: 'externalId',
+  incomingName: 'incomingName',
+  candidateProjectIds: 'candidateProjectIds',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingProjectMergeScalarFieldEnum = (typeof PendingProjectMergeScalarFieldEnum)[keyof typeof PendingProjectMergeScalarFieldEnum]
+
+
+export const ProjectExternalLinkScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  projectId: 'projectId',
+  source: 'source',
+  externalId: 'externalId',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ProjectExternalLinkScalarFieldEnum = (typeof ProjectExternalLinkScalarFieldEnum)[keyof typeof ProjectExternalLinkScalarFieldEnum]
 
 
 export const CostCenterScalarFieldEnum = {
@@ -12289,6 +12468,20 @@ export type ListEnumSimpleStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'OrgDefinitionSource'
+ */
+export type EnumOrgDefinitionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrgDefinitionSource'>
+    
+
+
+/**
+ * Reference to a field of type 'OrgDefinitionSource[]'
+ */
+export type ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrgDefinitionSource[]'>
+    
+
+
+/**
  * Reference to a field of type 'OutboxStatus'
  */
 export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus'>
@@ -12763,6 +12956,8 @@ export type GlobalOmitConfig = {
   invitation?: Prisma.InvitationOmit
   team?: Prisma.TeamOmit
   project?: Prisma.ProjectOmit
+  pendingProjectMerge?: Prisma.PendingProjectMergeOmit
+  projectExternalLink?: Prisma.ProjectExternalLinkOmit
   costCenter?: Prisma.CostCenterOmit
   outboxEvent?: Prisma.OutboxEventOmit
   paymentRun?: Prisma.PaymentRunOmit

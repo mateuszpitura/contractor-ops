@@ -449,6 +449,16 @@ export type Team = Prisma.TeamModel
  */
 export type Project = Prisma.ProjectModel
 /**
+ * Model PendingProjectMerge
+ * 
+ */
+export type PendingProjectMerge = Prisma.PendingProjectMergeModel
+/**
+ * Model ProjectExternalLink
+ * 
+ */
+export type ProjectExternalLink = Prisma.ProjectExternalLinkModel
+/**
  * Model CostCenter
  * 
  */

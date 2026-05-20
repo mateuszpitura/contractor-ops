@@ -137,6 +137,8 @@ export const ModelName = {
   Invitation: 'Invitation',
   Team: 'Team',
   Project: 'Project',
+  PendingProjectMerge: 'PendingProjectMerge',
+  ProjectExternalLink: 'ProjectExternalLink',
   CostCenter: 'CostCenter',
   OutboxEvent: 'OutboxEvent',
   PaymentRun: 'PaymentRun',
@@ -1743,6 +1745,8 @@ export const TeamScalarFieldEnum = {
   managerUserId: 'managerUserId',
   fallbackApproverId: 'fallbackApproverId',
   status: 'status',
+  source: 'source',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1761,11 +1765,38 @@ export const ProjectScalarFieldEnum = {
   endDate: 'endDate',
   budgetMinor: 'budgetMinor',
   budgetCurrency: 'budgetCurrency',
+  source: 'source',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const PendingProjectMergeScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  source: 'source',
+  externalId: 'externalId',
+  incomingName: 'incomingName',
+  candidateProjectIds: 'candidateProjectIds',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingProjectMergeScalarFieldEnum = (typeof PendingProjectMergeScalarFieldEnum)[keyof typeof PendingProjectMergeScalarFieldEnum]
+
+
+export const ProjectExternalLinkScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  projectId: 'projectId',
+  source: 'source',
+  externalId: 'externalId',
+  syncedAt: 'syncedAt'
+} as const
+
+export type ProjectExternalLinkScalarFieldEnum = (typeof ProjectExternalLinkScalarFieldEnum)[keyof typeof ProjectExternalLinkScalarFieldEnum]
 
 
 export const CostCenterScalarFieldEnum = {

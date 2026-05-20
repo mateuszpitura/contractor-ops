@@ -1843,6 +1843,13 @@ export type EnumSimpleStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel> | $Enums.SimpleStatus
 }
 
+export type EnumOrgDefinitionSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrgDefinitionSource | Prisma.EnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel> | $Enums.OrgDefinitionSource
+}
+
 export type EnumSimpleStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.SimpleStatus | Prisma.EnumSimpleStatusFieldRefInput<$PrismaModel>
   in?: $Enums.SimpleStatus[] | Prisma.ListEnumSimpleStatusFieldRefInput<$PrismaModel>
@@ -1851,6 +1858,16 @@ export type EnumSimpleStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel>
+}
+
+export type EnumOrgDefinitionSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrgDefinitionSource | Prisma.EnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrgDefinitionSourceWithAggregatesFilter<$PrismaModel> | $Enums.OrgDefinitionSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel>
 }
 
 export type EnumOutboxStatusFilter<$PrismaModel = never> = {
@@ -3998,6 +4015,13 @@ export type NestedEnumSimpleStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel> | $Enums.SimpleStatus
 }
 
+export type NestedEnumOrgDefinitionSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrgDefinitionSource | Prisma.EnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel> | $Enums.OrgDefinitionSource
+}
+
 export type NestedEnumSimpleStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.SimpleStatus | Prisma.EnumSimpleStatusFieldRefInput<$PrismaModel>
   in?: $Enums.SimpleStatus[] | Prisma.ListEnumSimpleStatusFieldRefInput<$PrismaModel>
@@ -4006,6 +4030,16 @@ export type NestedEnumSimpleStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSimpleStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumOrgDefinitionSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.OrgDefinitionSource | Prisma.EnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.OrgDefinitionSource[] | Prisma.ListEnumOrgDefinitionSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumOrgDefinitionSourceWithAggregatesFilter<$PrismaModel> | $Enums.OrgDefinitionSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumOrgDefinitionSourceFilter<$PrismaModel>
 }
 
 export type NestedEnumOutboxStatusFilter<$PrismaModel = never> = {

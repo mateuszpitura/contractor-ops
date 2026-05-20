@@ -859,6 +859,15 @@ export const DataRegion = {
 export type DataRegion = (typeof DataRegion)[keyof typeof DataRegion]
 
 
+export const OrgDefinitionSource = {
+  MANUAL: 'MANUAL',
+  JIRA: 'JIRA',
+  LINEAR: 'LINEAR'
+} as const
+
+export type OrgDefinitionSource = (typeof OrgDefinitionSource)[keyof typeof OrgDefinitionSource]
+
+
 export const OutboxStatus = {
   PENDING: 'PENDING',
   DISPATCHED: 'DISPATCHED',

@@ -45,6 +45,8 @@ export type ProjectMinAggregateOutputType = {
   endDate: Date | null
   budgetMinor: number | null
   budgetCurrency: string | null
+  source: $Enums.OrgDefinitionSource | null
+  externalId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +62,8 @@ export type ProjectMaxAggregateOutputType = {
   endDate: Date | null
   budgetMinor: number | null
   budgetCurrency: string | null
+  source: $Enums.OrgDefinitionSource | null
+  externalId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +79,8 @@ export type ProjectCountAggregateOutputType = {
   endDate: number
   budgetMinor: number
   budgetCurrency: number
+  source: number
+  externalId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -100,6 +106,8 @@ export type ProjectMinAggregateInputType = {
   endDate?: true
   budgetMinor?: true
   budgetCurrency?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -115,6 +123,8 @@ export type ProjectMaxAggregateInputType = {
   endDate?: true
   budgetMinor?: true
   budgetCurrency?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +140,8 @@ export type ProjectCountAggregateInputType = {
   endDate?: true
   budgetMinor?: true
   budgetCurrency?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -232,6 +244,8 @@ export type ProjectGroupByOutputType = {
   endDate: Date | null
   budgetMinor: number | null
   budgetCurrency: string | null
+  source: $Enums.OrgDefinitionSource
+  externalId: string | null
   createdAt: Date
   updatedAt: Date
   _count: ProjectCountAggregateOutputType | null
@@ -270,6 +284,8 @@ export type ProjectWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"Project"> | Date | string | null
   budgetMinor?: Prisma.IntNullableFilter<"Project"> | number | null
   budgetCurrency?: Prisma.StringNullableFilter<"Project"> | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Project"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -277,6 +293,7 @@ export type ProjectWhereInput = {
   contractors?: Prisma.ContractorListRelationFilter
   contractorAssignments?: Prisma.ContractorAssignmentListRelationFilter
   contracts?: Prisma.ContractListRelationFilter
+  externalLinks?: Prisma.ProjectExternalLinkListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -290,6 +307,8 @@ export type ProjectOrderByWithRelationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetMinor?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -297,6 +316,7 @@ export type ProjectOrderByWithRelationInput = {
   contractors?: Prisma.ContractorOrderByRelationAggregateInput
   contractorAssignments?: Prisma.ContractorAssignmentOrderByRelationAggregateInput
   contracts?: Prisma.ContractOrderByRelationAggregateInput
+  externalLinks?: Prisma.ProjectExternalLinkOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -313,6 +333,8 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeNullableFilter<"Project"> | Date | string | null
   budgetMinor?: Prisma.IntNullableFilter<"Project"> | number | null
   budgetCurrency?: Prisma.StringNullableFilter<"Project"> | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Project"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -320,6 +342,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   contractors?: Prisma.ContractorListRelationFilter
   contractorAssignments?: Prisma.ContractorAssignmentListRelationFilter
   contracts?: Prisma.ContractListRelationFilter
+  externalLinks?: Prisma.ProjectExternalLinkListRelationFilter
 }, "id">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -333,6 +356,8 @@ export type ProjectOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetMinor?: Prisma.SortOrderInput | Prisma.SortOrder
   budgetCurrency?: Prisma.SortOrderInput | Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
@@ -356,6 +381,8 @@ export type ProjectScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Project"> | Date | string | null
   budgetMinor?: Prisma.IntNullableWithAggregatesFilter<"Project"> | number | null
   budgetCurrency?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
+  source?: Prisma.EnumOrgDefinitionSourceWithAggregatesFilter<"Project"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
 }
@@ -369,6 +396,8 @@ export type ProjectCreateInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
@@ -376,6 +405,7 @@ export type ProjectCreateInput = {
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -389,11 +419,14 @@ export type ProjectUncheckedCreateInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -405,6 +438,8 @@ export type ProjectUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -412,6 +447,7 @@ export type ProjectUpdateInput = {
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -425,11 +461,14 @@ export type ProjectUncheckedUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -443,6 +482,8 @@ export type ProjectCreateManyInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -456,6 +497,8 @@ export type ProjectUpdateManyMutationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -471,6 +514,8 @@ export type ProjectUncheckedUpdateManyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -501,6 +546,8 @@ export type ProjectCountOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   budgetMinor?: Prisma.SortOrder
   budgetCurrency?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -520,6 +567,8 @@ export type ProjectMaxOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   budgetMinor?: Prisma.SortOrder
   budgetCurrency?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -535,12 +584,19 @@ export type ProjectMinOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   budgetMinor?: Prisma.SortOrder
   budgetCurrency?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
 
 export type ProjectSumOrderByAggregateInput = {
   budgetMinor?: Prisma.SortOrder
+}
+
+export type ProjectScalarRelationFilter = {
+  is?: Prisma.ProjectWhereInput
+  isNot?: Prisma.ProjectWhereInput
 }
 
 export type ProjectCreateNestedOneWithoutContractsInput = {
@@ -675,6 +731,20 @@ export type ProjectUncheckedUpdateManyWithoutTeamNestedInput = {
   deleteMany?: Prisma.ProjectScalarWhereInput | Prisma.ProjectScalarWhereInput[]
 }
 
+export type ProjectCreateNestedOneWithoutExternalLinksInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutExternalLinksInput, Prisma.ProjectUncheckedCreateWithoutExternalLinksInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExternalLinksInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutExternalLinksNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutExternalLinksInput, Prisma.ProjectUncheckedCreateWithoutExternalLinksInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutExternalLinksInput
+  upsert?: Prisma.ProjectUpsertWithoutExternalLinksInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutExternalLinksInput, Prisma.ProjectUpdateWithoutExternalLinksInput>, Prisma.ProjectUncheckedUpdateWithoutExternalLinksInput>
+}
+
 export type ProjectCreateWithoutContractsInput = {
   id?: string
   name: string
@@ -684,12 +754,15 @@ export type ProjectCreateWithoutContractsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
   team?: Prisma.TeamCreateNestedOneWithoutProjectsInput
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutContractsInput = {
@@ -703,10 +776,13 @@ export type ProjectUncheckedCreateWithoutContractsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutContractsInput = {
@@ -734,12 +810,15 @@ export type ProjectUpdateWithoutContractsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
   team?: Prisma.TeamUpdateOneWithoutProjectsNestedInput
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutContractsInput = {
@@ -753,10 +832,13 @@ export type ProjectUncheckedUpdateWithoutContractsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutContractorsInput = {
@@ -768,12 +850,15 @@ export type ProjectCreateWithoutContractorsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
   team?: Prisma.TeamCreateNestedOneWithoutProjectsInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutContractorsInput = {
@@ -787,10 +872,13 @@ export type ProjectUncheckedCreateWithoutContractorsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutContractorsInput = {
@@ -818,12 +906,15 @@ export type ProjectUpdateWithoutContractorsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
   team?: Prisma.TeamUpdateOneWithoutProjectsNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutContractorsInput = {
@@ -837,10 +928,13 @@ export type ProjectUncheckedUpdateWithoutContractorsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutContractorAssignmentsInput = {
@@ -852,12 +946,15 @@ export type ProjectCreateWithoutContractorAssignmentsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
   team?: Prisma.TeamCreateNestedOneWithoutProjectsInput
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
   contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutContractorAssignmentsInput = {
@@ -871,10 +968,13 @@ export type ProjectUncheckedCreateWithoutContractorAssignmentsInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutContractorAssignmentsInput = {
@@ -902,12 +1002,15 @@ export type ProjectUpdateWithoutContractorAssignmentsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
   team?: Prisma.TeamUpdateOneWithoutProjectsNestedInput
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutContractorAssignmentsInput = {
@@ -921,10 +1024,13 @@ export type ProjectUncheckedUpdateWithoutContractorAssignmentsInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutOrganizationInput = {
@@ -936,12 +1042,15 @@ export type ProjectCreateWithoutOrganizationInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   team?: Prisma.TeamCreateNestedOneWithoutProjectsInput
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -954,11 +1063,14 @@ export type ProjectUncheckedCreateWithoutOrganizationInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -1001,6 +1113,8 @@ export type ProjectScalarWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"Project"> | Date | string | null
   budgetMinor?: Prisma.IntNullableFilter<"Project"> | number | null
   budgetCurrency?: Prisma.StringNullableFilter<"Project"> | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Project"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Project"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
 }
@@ -1014,12 +1128,15 @@ export type ProjectCreateWithoutTeamInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
   contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutTeamInput = {
@@ -1032,11 +1149,14 @@ export type ProjectUncheckedCreateWithoutTeamInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
   contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutTeamInput = {
@@ -1065,6 +1185,102 @@ export type ProjectUpdateManyWithWhereWithoutTeamInput = {
   data: Prisma.XOR<Prisma.ProjectUpdateManyMutationInput, Prisma.ProjectUncheckedUpdateManyWithoutTeamInput>
 }
 
+export type ProjectCreateWithoutExternalLinksInput = {
+  id?: string
+  name: string
+  code?: string | null
+  status?: $Enums.SimpleStatus
+  startDate?: Date | string | null
+  endDate?: Date | string | null
+  budgetMinor?: number | null
+  budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
+  team?: Prisma.TeamCreateNestedOneWithoutProjectsInput
+  contractors?: Prisma.ContractorCreateNestedManyWithoutPrimaryProjectInput
+  contractorAssignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutProjectInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutExternalLinksInput = {
+  id?: string
+  organizationId: string
+  name: string
+  code?: string | null
+  teamId?: string | null
+  status?: $Enums.SimpleStatus
+  startDate?: Date | string | null
+  endDate?: Date | string | null
+  budgetMinor?: number | null
+  budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryProjectInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutProjectInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutExternalLinksInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutExternalLinksInput, Prisma.ProjectUncheckedCreateWithoutExternalLinksInput>
+}
+
+export type ProjectUpsertWithoutExternalLinksInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutExternalLinksInput, Prisma.ProjectUncheckedUpdateWithoutExternalLinksInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutExternalLinksInput, Prisma.ProjectUncheckedCreateWithoutExternalLinksInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutExternalLinksInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutExternalLinksInput, Prisma.ProjectUncheckedUpdateWithoutExternalLinksInput>
+}
+
+export type ProjectUpdateWithoutExternalLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+  team?: Prisma.TeamUpdateOneWithoutProjectsNestedInput
+  contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutExternalLinksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  startDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
+  contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+}
+
 export type ProjectCreateManyOrganizationInput = {
   id?: string
   name: string
@@ -1075,6 +1291,8 @@ export type ProjectCreateManyOrganizationInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1088,12 +1306,15 @@ export type ProjectUpdateWithoutOrganizationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   team?: Prisma.TeamUpdateOneWithoutProjectsNestedInput
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -1106,11 +1327,14 @@ export type ProjectUncheckedUpdateWithoutOrganizationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1123,6 +1347,8 @@ export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1137,6 +1363,8 @@ export type ProjectCreateManyTeamInput = {
   endDate?: Date | string | null
   budgetMinor?: number | null
   budgetCurrency?: string | null
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1150,12 +1378,15 @@ export type ProjectUpdateWithoutTeamInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
   contractors?: Prisma.ContractorUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutTeamInput = {
@@ -1168,11 +1399,14 @@ export type ProjectUncheckedUpdateWithoutTeamInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryProjectNestedInput
   contractorAssignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutProjectNestedInput
   contracts?: Prisma.ContractUncheckedUpdateManyWithoutProjectNestedInput
+  externalLinks?: Prisma.ProjectExternalLinkUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutTeamInput = {
@@ -1185,6 +1419,8 @@ export type ProjectUncheckedUpdateManyWithoutTeamInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   budgetMinor?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   budgetCurrency?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1198,12 +1434,14 @@ export type ProjectCountOutputType = {
   contractors: number
   contractorAssignments: number
   contracts: number
+  externalLinks: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   contractors?: boolean | ProjectCountOutputTypeCountContractorsArgs
   contractorAssignments?: boolean | ProjectCountOutputTypeCountContractorAssignmentsArgs
   contracts?: boolean | ProjectCountOutputTypeCountContractsArgs
+  externalLinks?: boolean | ProjectCountOutputTypeCountExternalLinksArgs
 }
 
 /**
@@ -1237,6 +1475,13 @@ export type ProjectCountOutputTypeCountContractsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.ContractWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountExternalLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProjectExternalLinkWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1249,6 +1494,8 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   endDate?: boolean
   budgetMinor?: boolean
   budgetCurrency?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1256,6 +1503,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   contractors?: boolean | Prisma.Project$contractorsArgs<ExtArgs>
   contractorAssignments?: boolean | Prisma.Project$contractorAssignmentsArgs<ExtArgs>
   contracts?: boolean | Prisma.Project$contractsArgs<ExtArgs>
+  externalLinks?: boolean | Prisma.Project$externalLinksArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -1270,6 +1518,8 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   endDate?: boolean
   budgetMinor?: boolean
   budgetCurrency?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1287,6 +1537,8 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   endDate?: boolean
   budgetMinor?: boolean
   budgetCurrency?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1304,17 +1556,20 @@ export type ProjectSelectScalar = {
   endDate?: boolean
   budgetMinor?: boolean
   budgetCurrency?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "code" | "teamId" | "status" | "startDate" | "endDate" | "budgetMinor" | "budgetCurrency" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "code" | "teamId" | "status" | "startDate" | "endDate" | "budgetMinor" | "budgetCurrency" | "source" | "externalId" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   team?: boolean | Prisma.Project$teamArgs<ExtArgs>
   contractors?: boolean | Prisma.Project$contractorsArgs<ExtArgs>
   contractorAssignments?: boolean | Prisma.Project$contractorAssignmentsArgs<ExtArgs>
   contracts?: boolean | Prisma.Project$contractsArgs<ExtArgs>
+  externalLinks?: boolean | Prisma.Project$externalLinksArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1334,6 +1589,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     contractors: Prisma.$ContractorPayload<ExtArgs>[]
     contractorAssignments: Prisma.$ContractorAssignmentPayload<ExtArgs>[]
     contracts: Prisma.$ContractPayload<ExtArgs>[]
+    externalLinks: Prisma.$ProjectExternalLinkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1346,6 +1602,8 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     endDate: Date | null
     budgetMinor: number | null
     budgetCurrency: string | null
+    source: $Enums.OrgDefinitionSource
+    externalId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["project"]>
@@ -1747,6 +2005,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   contractors<T extends Prisma.Project$contractorsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$contractorsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contractorAssignments<T extends Prisma.Project$contractorAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$contractorAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContractorAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contracts<T extends Prisma.Project$contractsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$contractsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContractPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  externalLinks<T extends Prisma.Project$externalLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$externalLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectExternalLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1786,6 +2045,8 @@ export interface ProjectFieldRefs {
   readonly endDate: Prisma.FieldRef<"Project", 'DateTime'>
   readonly budgetMinor: Prisma.FieldRef<"Project", 'Int'>
   readonly budgetCurrency: Prisma.FieldRef<"Project", 'String'>
+  readonly source: Prisma.FieldRef<"Project", 'OrgDefinitionSource'>
+  readonly externalId: Prisma.FieldRef<"Project", 'String'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
 }
@@ -2277,6 +2538,30 @@ export type Project$contractsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.ContractScalarFieldEnum | Prisma.ContractScalarFieldEnum[]
+}
+
+/**
+ * Project.externalLinks
+ */
+export type Project$externalLinksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProjectExternalLink
+   */
+  select?: Prisma.ProjectExternalLinkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProjectExternalLink
+   */
+  omit?: Prisma.ProjectExternalLinkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectExternalLinkInclude<ExtArgs> | null
+  where?: Prisma.ProjectExternalLinkWhereInput
+  orderBy?: Prisma.ProjectExternalLinkOrderByWithRelationInput | Prisma.ProjectExternalLinkOrderByWithRelationInput[]
+  cursor?: Prisma.ProjectExternalLinkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProjectExternalLinkScalarFieldEnum | Prisma.ProjectExternalLinkScalarFieldEnum[]
 }
 
 /**

@@ -32,6 +32,8 @@ export type TeamMinAggregateOutputType = {
   managerUserId: string | null
   fallbackApproverId: string | null
   status: $Enums.SimpleStatus | null
+  source: $Enums.OrgDefinitionSource | null
+  externalId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,8 @@ export type TeamMaxAggregateOutputType = {
   managerUserId: string | null
   fallbackApproverId: string | null
   status: $Enums.SimpleStatus | null
+  source: $Enums.OrgDefinitionSource | null
+  externalId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type TeamCountAggregateOutputType = {
   managerUserId: number
   fallbackApproverId: number
   status: number
+  source: number
+  externalId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +76,8 @@ export type TeamMinAggregateInputType = {
   managerUserId?: true
   fallbackApproverId?: true
   status?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +90,8 @@ export type TeamMaxAggregateInputType = {
   managerUserId?: true
   fallbackApproverId?: true
   status?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +104,8 @@ export type TeamCountAggregateInputType = {
   managerUserId?: true
   fallbackApproverId?: true
   status?: true
+  source?: true
+  externalId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +191,8 @@ export type TeamGroupByOutputType = {
   managerUserId: string | null
   fallbackApproverId: string | null
   status: $Enums.SimpleStatus
+  source: $Enums.OrgDefinitionSource
+  externalId: string | null
   createdAt: Date
   updatedAt: Date
   _count: TeamCountAggregateOutputType | null
@@ -212,6 +226,8 @@ export type TeamWhereInput = {
   managerUserId?: Prisma.StringNullableFilter<"Team"> | string | null
   fallbackApproverId?: Prisma.StringNullableFilter<"Team"> | string | null
   status?: Prisma.EnumSimpleStatusFilter<"Team"> | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Team"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -232,6 +248,8 @@ export type TeamOrderByWithRelationInput = {
   managerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   fallbackApproverId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
@@ -255,6 +273,8 @@ export type TeamWhereUniqueInput = Prisma.AtLeast<{
   managerUserId?: Prisma.StringNullableFilter<"Team"> | string | null
   fallbackApproverId?: Prisma.StringNullableFilter<"Team"> | string | null
   status?: Prisma.EnumSimpleStatusFilter<"Team"> | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Team"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
@@ -275,6 +295,8 @@ export type TeamOrderByWithAggregationInput = {
   managerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   fallbackApproverId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TeamCountOrderByAggregateInput
@@ -293,6 +315,8 @@ export type TeamScalarWhereWithAggregatesInput = {
   managerUserId?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   fallbackApproverId?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   status?: Prisma.EnumSimpleStatusWithAggregatesFilter<"Team"> | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceWithAggregatesFilter<"Team"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableWithAggregatesFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Team"> | Date | string
 }
@@ -302,6 +326,8 @@ export type TeamCreateInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -322,6 +348,8 @@ export type TeamUncheckedCreateInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -336,6 +364,8 @@ export type TeamUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -356,6 +386,8 @@ export type TeamUncheckedUpdateInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -373,6 +405,8 @@ export type TeamCreateManyInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -382,6 +416,8 @@ export type TeamUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -394,6 +430,8 @@ export type TeamUncheckedUpdateManyInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -421,6 +459,8 @@ export type TeamCountOrderByAggregateInput = {
   managerUserId?: Prisma.SortOrder
   fallbackApproverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -433,6 +473,8 @@ export type TeamMaxOrderByAggregateInput = {
   managerUserId?: Prisma.SortOrder
   fallbackApproverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -445,6 +487,8 @@ export type TeamMinOrderByAggregateInput = {
   managerUserId?: Prisma.SortOrder
   fallbackApproverId?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  source?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -643,6 +687,10 @@ export type EnumSimpleStatusFieldUpdateOperationsInput = {
   set?: $Enums.SimpleStatus
 }
 
+export type EnumOrgDefinitionSourceFieldUpdateOperationsInput = {
+  set?: $Enums.OrgDefinitionSource
+}
+
 export type TeamCreateNestedOneWithoutProjectsInput = {
   create?: Prisma.XOR<Prisma.TeamCreateWithoutProjectsInput, Prisma.TeamUncheckedCreateWithoutProjectsInput>
   connectOrCreate?: Prisma.TeamCreateOrConnectWithoutProjectsInput
@@ -664,6 +712,8 @@ export type TeamCreateWithoutManagerInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -682,6 +732,8 @@ export type TeamUncheckedCreateWithoutManagerInput = {
   code?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -706,6 +758,8 @@ export type TeamCreateWithoutFallbackApproverInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -724,6 +778,8 @@ export type TeamUncheckedCreateWithoutFallbackApproverInput = {
   code?: string | null
   managerUserId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -770,6 +826,8 @@ export type TeamScalarWhereInput = {
   managerUserId?: Prisma.StringNullableFilter<"Team"> | string | null
   fallbackApproverId?: Prisma.StringNullableFilter<"Team"> | string | null
   status?: Prisma.EnumSimpleStatusFilter<"Team"> | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFilter<"Team"> | $Enums.OrgDefinitionSource
+  externalId?: Prisma.StringNullableFilter<"Team"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Team"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Team"> | Date | string
 }
@@ -795,6 +853,8 @@ export type TeamCreateWithoutContractsInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -814,6 +874,8 @@ export type TeamUncheckedCreateWithoutContractsInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -843,6 +905,8 @@ export type TeamUpdateWithoutContractsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -862,6 +926,8 @@ export type TeamUncheckedUpdateWithoutContractsInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -875,6 +941,8 @@ export type TeamCreateWithoutContractorsInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -894,6 +962,8 @@ export type TeamUncheckedCreateWithoutContractorsInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -923,6 +993,8 @@ export type TeamUpdateWithoutContractorsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -942,6 +1014,8 @@ export type TeamUncheckedUpdateWithoutContractorsInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -955,6 +1029,8 @@ export type TeamCreateWithoutContractorAssignmentsInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -974,6 +1050,8 @@ export type TeamUncheckedCreateWithoutContractorAssignmentsInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -1003,6 +1081,8 @@ export type TeamUpdateWithoutContractorAssignmentsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -1022,6 +1102,8 @@ export type TeamUncheckedUpdateWithoutContractorAssignmentsInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -1035,6 +1117,8 @@ export type TeamCreateWithoutOrganizationInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   manager?: Prisma.UserCreateNestedOneWithoutManagedTeamsInput
@@ -1053,6 +1137,8 @@ export type TeamUncheckedCreateWithoutOrganizationInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -1093,6 +1179,8 @@ export type TeamCreateWithoutMembersInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -1112,6 +1200,8 @@ export type TeamUncheckedCreateWithoutMembersInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   contractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutPrimaryTeamInput
@@ -1141,6 +1231,8 @@ export type TeamUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -1160,6 +1252,8 @@ export type TeamUncheckedUpdateWithoutMembersInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractors?: Prisma.ContractorUncheckedUpdateManyWithoutPrimaryTeamNestedInput
@@ -1173,6 +1267,8 @@ export type TeamCreateWithoutProjectsInput = {
   name: string
   code?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutTeamsInput
@@ -1192,6 +1288,8 @@ export type TeamUncheckedCreateWithoutProjectsInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.MemberUncheckedCreateNestedManyWithoutTeamInput
@@ -1221,6 +1319,8 @@ export type TeamUpdateWithoutProjectsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -1240,6 +1340,8 @@ export type TeamUncheckedUpdateWithoutProjectsInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -1255,6 +1357,8 @@ export type TeamCreateManyManagerInput = {
   code?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1266,6 +1370,8 @@ export type TeamCreateManyFallbackApproverInput = {
   code?: string | null
   managerUserId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1275,6 +1381,8 @@ export type TeamUpdateWithoutManagerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -1293,6 +1401,8 @@ export type TeamUncheckedUpdateWithoutManagerInput = {
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -1309,6 +1419,8 @@ export type TeamUncheckedUpdateManyWithoutManagerInput = {
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1318,6 +1430,8 @@ export type TeamUpdateWithoutFallbackApproverInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutTeamsNestedInput
@@ -1336,6 +1450,8 @@ export type TeamUncheckedUpdateWithoutFallbackApproverInput = {
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -1352,6 +1468,8 @@ export type TeamUncheckedUpdateManyWithoutFallbackApproverInput = {
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1363,6 +1481,8 @@ export type TeamCreateManyOrganizationInput = {
   managerUserId?: string | null
   fallbackApproverId?: string | null
   status?: $Enums.SimpleStatus
+  source?: $Enums.OrgDefinitionSource
+  externalId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1372,6 +1492,8 @@ export type TeamUpdateWithoutOrganizationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   manager?: Prisma.UserUpdateOneWithoutManagedTeamsNestedInput
@@ -1390,6 +1512,8 @@ export type TeamUncheckedUpdateWithoutOrganizationInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.MemberUncheckedUpdateManyWithoutTeamNestedInput
@@ -1406,6 +1530,8 @@ export type TeamUncheckedUpdateManyWithoutOrganizationInput = {
   managerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fallbackApproverId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumSimpleStatusFieldUpdateOperationsInput | $Enums.SimpleStatus
+  source?: Prisma.EnumOrgDefinitionSourceFieldUpdateOperationsInput | $Enums.OrgDefinitionSource
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1485,6 +1611,8 @@ export type TeamSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   managerUserId?: boolean
   fallbackApproverId?: boolean
   status?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1506,6 +1634,8 @@ export type TeamSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   managerUserId?: boolean
   fallbackApproverId?: boolean
   status?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1521,6 +1651,8 @@ export type TeamSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   managerUserId?: boolean
   fallbackApproverId?: boolean
   status?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1536,11 +1668,13 @@ export type TeamSelectScalar = {
   managerUserId?: boolean
   fallbackApproverId?: boolean
   status?: boolean
+  source?: boolean
+  externalId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TeamOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "code" | "managerUserId" | "fallbackApproverId" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
+export type TeamOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "name" | "code" | "managerUserId" | "fallbackApproverId" | "status" | "source" | "externalId" | "createdAt" | "updatedAt", ExtArgs["result"]["team"]>
 export type TeamInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   manager?: boolean | Prisma.Team$managerArgs<ExtArgs>
@@ -1583,6 +1717,8 @@ export type $TeamPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     managerUserId: string | null
     fallbackApproverId: string | null
     status: $Enums.SimpleStatus
+    source: $Enums.OrgDefinitionSource
+    externalId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["team"]>
@@ -2023,6 +2159,8 @@ export interface TeamFieldRefs {
   readonly managerUserId: Prisma.FieldRef<"Team", 'String'>
   readonly fallbackApproverId: Prisma.FieldRef<"Team", 'String'>
   readonly status: Prisma.FieldRef<"Team", 'SimpleStatus'>
+  readonly source: Prisma.FieldRef<"Team", 'OrgDefinitionSource'>
+  readonly externalId: Prisma.FieldRef<"Team", 'String'>
   readonly createdAt: Prisma.FieldRef<"Team", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Team", 'DateTime'>
 }
