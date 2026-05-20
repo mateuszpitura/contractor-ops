@@ -1843,34 +1843,43 @@ async function seedContractors(
   ];
   const tagPalette = ctx.fakers.org.helpers.shuffle(TAG_NAMES.slice()).slice(0, 5);
   const tagIds: string[] = [];
+  const tagRows: Prisma.ContractorTagCreateManyInput[] = [];
   for (const name of tagPalette) {
-    const tag = await prisma.contractorTag.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name,
-        color: ctx.fakers.org.color.rgb({ format: 'hex' }),
-      },
-      select: { id: true },
+    const id = randomUUID();
+    tagRows.push({
+      id,
+      organizationId: ctx.organizationId,
+      name,
+      color: ctx.fakers.org.color.rgb({ format: 'hex' }),
     });
-    tagIds.push(tag.id);
+    tagIds.push(id);
+  }
+  if (tagRows.length > 0) {
+    await prisma.contractorTag.createMany({ data: tagRows, skipDuplicates: true });
   }
 
   // Compliance requirement templates — light-touch, drives compliance items
   const complianceTemplateIds: string[] = [];
   const docTypes = ['MASTER_CONTRACT', 'INSURANCE', 'TAX_CERTIFICATE'] as const;
+  const tplRows: Prisma.ComplianceRequirementTemplateCreateManyInput[] = [];
   for (const dt of docTypes) {
-    const tpl = await prisma.complianceRequirementTemplate.create({
-      data: {
-        organizationId: ctx.organizationId,
-        name: `${dt} requirement`,
-        documentType: dt,
-        isRequired: true,
-        expires: dt !== 'MASTER_CONTRACT',
-        defaultValidityDays: dt === 'MASTER_CONTRACT' ? null : 365,
-      },
-      select: { id: true },
+    const id = randomUUID();
+    tplRows.push({
+      id,
+      organizationId: ctx.organizationId,
+      name: `${dt} requirement`,
+      documentType: dt,
+      isRequired: true,
+      expires: dt !== 'MASTER_CONTRACT',
+      defaultValidityDays: dt === 'MASTER_CONTRACT' ? null : 365,
     });
-    complianceTemplateIds.push(tpl.id);
+    complianceTemplateIds.push(id);
+  }
+  if (tplRows.length > 0) {
+    await prisma.complianceRequirementTemplate.createMany({
+      data: tplRows,
+      skipDuplicates: true,
+    });
   }
 
   // FX coverage: ~20% of contractors bill in a non-default currency. EU orgs
@@ -1883,6 +1892,12 @@ async function seedContractors(
       : (['USD', 'EUR', 'AED', 'SAR'] as const);
 
   const contractors: SeededContractor[] = [];
+  const contractorRows: Prisma.ContractorCreateManyInput[] = [];
+  const contactRows: Prisma.ContractorContactCreateManyInput[] = [];
+  const billingRows: Prisma.ContractorBillingProfileCreateManyInput[] = [];
+  const assignmentRows: Prisma.ContractorAssignmentCreateManyInput[] = [];
+  const tagLinkRows: Prisma.ContractorTagLinkCreateManyInput[] = [];
+  const complianceItemRows: Prisma.ContractorComplianceItemCreateManyInput[] = [];
   for (let i = 0; i < ctx.org.contractorsPerOrg; i += 1) {
     const isCompany = ctx.fakers.org.datatype.boolean({ probability: 0.6 });
     const legalName = isCompany
@@ -1928,101 +1943,95 @@ async function seedContractors(
             ]);
 
     const contractorEmail = `${slugify(legalName)}-${i}@seed.local`;
-    const contractor = await prisma.contractor.create({
-      data: {
-        organizationId: ctx.organizationId,
-        type: isCompany ? 'COMPANY' : 'SOLE_TRADER',
-        legalName,
-        displayName: legalName,
-        taxId: makeTaxId(ctx.profile.countryCode, ctx.fakers.org),
-        vatId: isCompany ? makeVatId(ctx.profile.countryCode, ctx.fakers.org) : null,
-        countryCode: ctx.profile.countryCode,
-        currency,
-        email: contractorEmail,
-        phone: ctx.fakers.org.phone.number(),
-        website: isCompany ? `https://${slugify(legalName)}.example.com` : null,
-        addressLine1: ctx.fakers.org.location.streetAddress(),
-        city: ctx.fakers.org.location.city(),
-        postalCode: ctx.fakers.org.location.zipCode(),
-        status,
-        lifecycleStage: lifecycle,
-        ownerUserId: ownerUser.id,
-        primaryTeamId: team,
-        primaryProjectId: project,
-        defaultCostCenterId: costCenter,
-        customFieldsJson: {
-          billingModel: ctx.fakers.org.helpers.arrayElement([
-            'FIXED',
-            'HOURLY',
-            'PROJECT',
-            'MILESTONE',
-          ]),
-          rateValueMinor: moneyMinor(ctx.fakers.org, 50, 250),
-        },
-        notes: ctx.fakers.org.lorem.sentence(),
-        createdAt: hiredAt,
+    const contractorId = randomUUID();
+    contractorRows.push({
+      id: contractorId,
+      organizationId: ctx.organizationId,
+      type: isCompany ? 'COMPANY' : 'SOLE_TRADER',
+      legalName,
+      displayName: legalName,
+      taxId: makeTaxId(ctx.profile.countryCode, ctx.fakers.org),
+      vatId: isCompany ? makeVatId(ctx.profile.countryCode, ctx.fakers.org) : null,
+      countryCode: ctx.profile.countryCode,
+      currency,
+      email: contractorEmail,
+      phone: ctx.fakers.org.phone.number(),
+      website: isCompany ? `https://${slugify(legalName)}.example.com` : null,
+      addressLine1: ctx.fakers.org.location.streetAddress(),
+      city: ctx.fakers.org.location.city(),
+      postalCode: ctx.fakers.org.location.zipCode(),
+      status,
+      lifecycleStage: lifecycle,
+      ownerUserId: ownerUser.id,
+      primaryTeamId: team,
+      primaryProjectId: project,
+      defaultCostCenterId: costCenter,
+      customFieldsJson: {
+        billingModel: ctx.fakers.org.helpers.arrayElement([
+          'FIXED',
+          'HOURLY',
+          'PROJECT',
+          'MILESTONE',
+        ]),
+        rateValueMinor: moneyMinor(ctx.fakers.org, 50, 250),
       },
-      select: { id: true },
+      notes: ctx.fakers.org.lorem.sentence(),
+      createdAt: hiredAt,
     });
 
     // Primary contact
-    await prisma.contractorContact.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorId: contractor.id,
-        fullName: `${ctx.fakers.org.person.firstName()} ${ctx.fakers.org.person.lastName()}`,
-        email: `contact.${i}-${slugify(legalName)}@seed.local`,
-        phone: ctx.fakers.org.phone.number(),
-        roleTitle: ctx.fakers.org.person.jobTitle(),
-        isPrimary: true,
-        createdAt: hiredAt,
-      },
+    contactRows.push({
+      organizationId: ctx.organizationId,
+      contractorId,
+      fullName: `${ctx.fakers.org.person.firstName()} ${ctx.fakers.org.person.lastName()}`,
+      email: `contact.${i}-${slugify(legalName)}@seed.local`,
+      phone: ctx.fakers.org.phone.number(),
+      roleTitle: ctx.fakers.org.person.jobTitle(),
+      isPrimary: true,
+      createdAt: hiredAt,
     });
 
     // Default billing profile — country-formatted bank fields so list views
     // look like real customer data.
-    const billing = await prisma.contractorBillingProfile.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorId: contractor.id,
-        legalEntityName: legalName,
-        billingEmail: `billing.${i}-${slugify(legalName)}@seed.local`,
-        countryCode: ctx.profile.countryCode,
-        addressLine1: ctx.fakers.org.location.streetAddress(),
-        city: ctx.fakers.org.location.city(),
-        postalCode: ctx.fakers.org.location.zipCode(),
-        bankAccountMasked: makeMaskedIban(ctx.profile.countryCode, ctx.fakers.org),
-        bankName: ctx.fakers.org.company.name(),
-        swiftBic: makeBic(ctx.profile.countryCode, ctx.fakers.org),
-        preferredCurrency: currency,
-        paymentTermsDays,
-        isDefault: true,
-        validFrom: dateOnly(hiredAt),
-        createdAt: hiredAt,
-      },
-      select: { id: true },
+    const billingId = randomUUID();
+    billingRows.push({
+      id: billingId,
+      organizationId: ctx.organizationId,
+      contractorId,
+      legalEntityName: legalName,
+      billingEmail: `billing.${i}-${slugify(legalName)}@seed.local`,
+      countryCode: ctx.profile.countryCode,
+      addressLine1: ctx.fakers.org.location.streetAddress(),
+      city: ctx.fakers.org.location.city(),
+      postalCode: ctx.fakers.org.location.zipCode(),
+      bankAccountMasked: makeMaskedIban(ctx.profile.countryCode, ctx.fakers.org),
+      bankName: ctx.fakers.org.company.name(),
+      swiftBic: makeBic(ctx.profile.countryCode, ctx.fakers.org),
+      preferredCurrency: currency,
+      paymentTermsDays,
+      isDefault: true,
+      validFrom: dateOnly(hiredAt),
+      createdAt: hiredAt,
     });
 
     // Assignment
     if (team || project || costCenter) {
-      await prisma.contractorAssignment.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          teamId: team,
-          projectId: project,
-          costCenterId: costCenter,
-          ownerUserId: ownerUser.id,
-          allocationPercent: ctx.fakers.org.helpers.arrayElement([
-            '25.00',
-            '50.00',
-            '75.00',
-            '100.00',
-          ]),
-          activeFrom: dateOnly(hiredAt),
-          status: 'ACTIVE',
-          createdAt: hiredAt,
-        },
+      assignmentRows.push({
+        organizationId: ctx.organizationId,
+        contractorId,
+        teamId: team,
+        projectId: project,
+        costCenterId: costCenter,
+        ownerUserId: ownerUser.id,
+        allocationPercent: ctx.fakers.org.helpers.arrayElement([
+          '25.00',
+          '50.00',
+          '75.00',
+          '100.00',
+        ]),
+        activeFrom: dateOnly(hiredAt),
+        status: 'ACTIVE',
+        createdAt: hiredAt,
       });
     }
 
@@ -2032,9 +2041,7 @@ async function seedContractors(
       max: 2,
     });
     for (const tagId of tagsForThis) {
-      await prisma.contractorTagLink.create({
-        data: { contractorId: contractor.id, tagId },
-      });
+      tagLinkRows.push({ contractorId, tagId });
     }
 
     // Compliance items — dueDate / expiresAt now match the status:
@@ -2072,36 +2079,73 @@ async function seedContractors(
           : itemStatus === 'EXPIRED'
             ? dateOnly(pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt))
             : null;
-      await prisma.contractorComplianceItem.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: contractor.id,
-          requirementTemplateId: tplId,
-          name: `Auto-seeded ${tplId.slice(0, 6)}`,
-          documentType: ctx.fakers.org.helpers.arrayElement([
-            'MASTER_CONTRACT',
-            'INSURANCE',
-            'TAX_CERTIFICATE',
-          ]),
-          status: itemStatus,
-          dueDate,
-          expiresAt,
-          createdAt: hiredAt,
-        },
+      complianceItemRows.push({
+        organizationId: ctx.organizationId,
+        contractorId,
+        requirementTemplateId: tplId,
+        name: `Auto-seeded ${tplId.slice(0, 6)}`,
+        documentType: ctx.fakers.org.helpers.arrayElement([
+          'MASTER_CONTRACT',
+          'INSURANCE',
+          'TAX_CERTIFICATE',
+        ]),
+        status: itemStatus,
+        dueDate,
+        expiresAt,
+        createdAt: hiredAt,
       });
     }
 
     contractors.push({
-      id: contractor.id,
+      id: contractorId,
       legalName,
       email: contractorEmail,
       currency,
       paymentTermsDays,
       ownerUserId: ownerUser.id,
       primaryTeamId: team,
-      defaultBillingProfileId: billing.id,
+      defaultBillingProfileId: billingId,
     });
-    refs.push({ type: 'CONTRACTOR', id: contractor.id, name: legalName, createdAt: hiredAt });
+    refs.push({ type: 'CONTRACTOR', id: contractorId, name: legalName, createdAt: hiredAt });
+  }
+
+  // Wave 1: parent contractor rows (wide table → chunk 500)
+  for (let i = 0; i < contractorRows.length; i += 500) {
+    await prisma.contractor.createMany({
+      data: contractorRows.slice(i, i + 500),
+      skipDuplicates: true,
+    });
+  }
+  // Wave 2: direct children referencing contractorId.
+  for (let i = 0; i < contactRows.length; i += 1000) {
+    await prisma.contractorContact.createMany({
+      data: contactRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < billingRows.length; i += 1000) {
+    await prisma.contractorBillingProfile.createMany({
+      data: billingRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < assignmentRows.length; i += 1000) {
+    await prisma.contractorAssignment.createMany({
+      data: assignmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < tagLinkRows.length; i += 1000) {
+    await prisma.contractorTagLink.createMany({
+      data: tagLinkRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < complianceItemRows.length; i += 1000) {
+    await prisma.contractorComplianceItem.createMany({
+      data: complianceItemRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
   return contractors;
 }
@@ -6062,23 +6106,26 @@ async function seedConsentAndPrivacy(
   }
 
   // ContractorNotificationPreference — one per (contractor, category) pair.
+  // skipDuplicates: true on the unique (contractorId, category) constraint
+  // replaces the prior per-row findUnique guard.
   const categories = ['INVOICE_UPDATES', 'PAYMENT_CONFIRMATIONS', 'CONTRACT_CHANGES'];
+  const prefRows: Prisma.ContractorNotificationPreferenceCreateManyInput[] = [];
   for (const c of contractors) {
     for (const category of categories) {
-      const existing = await prisma.contractorNotificationPreference.findUnique({
-        where: { contractorId_category: { contractorId: c.id, category } },
-      });
-      if (existing) continue;
-      await prisma.contractorNotificationPreference.create({
-        data: {
-          organizationId: ctx.organizationId,
-          contractorId: c.id,
-          category,
-          emailEnabled: ctx.fakers.org.datatype.boolean({ probability: 0.85 }),
-          createdAt: ctx.foundedAt,
-        },
+      prefRows.push({
+        organizationId: ctx.organizationId,
+        contractorId: c.id,
+        category,
+        emailEnabled: ctx.fakers.org.datatype.boolean({ probability: 0.85 }),
+        createdAt: ctx.foundedAt,
       });
     }
+  }
+  for (let i = 0; i < prefRows.length; i += 1000) {
+    await prisma.contractorNotificationPreference.createMany({
+      data: prefRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 
   // ContractorChangeRequest — small subset spanning every status.
@@ -6086,22 +6133,27 @@ async function seedConsentAndPrivacy(
   const changeSubset = ctx.org.showcase
     ? contractors.slice(0, Math.min(contractors.length, changeStatuses.length))
     : contractors.filter((_, i) => i % 8 === 0).slice(0, 2);
+  const changeRows: Prisma.ContractorChangeRequestCreateManyInput[] = [];
   for (const [i, c] of changeSubset.entries()) {
     const status = changeStatuses[i % changeStatuses.length] as (typeof changeStatuses)[number];
     const reviewedAt =
       status === 'PENDING' ? null : pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt);
-    await prisma.contractorChangeRequest.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorId: c.id,
-        status,
-        requestedChanges: { phone: ctx.fakers.org.phone.number() },
-        previousValues: { phone: ctx.fakers.org.phone.number() },
-        reviewedById: status === 'PENDING' ? null : ctx.ownerUserId,
-        reviewedAt,
-        reviewComment: status === 'REJECTED' ? 'Verification incomplete' : null,
-        createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
-      },
+    changeRows.push({
+      organizationId: ctx.organizationId,
+      contractorId: c.id,
+      status,
+      requestedChanges: { phone: ctx.fakers.org.phone.number() },
+      previousValues: { phone: ctx.fakers.org.phone.number() },
+      reviewedById: status === 'PENDING' ? null : ctx.ownerUserId,
+      reviewedAt,
+      reviewComment: status === 'REJECTED' ? 'Verification incomplete' : null,
+      createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+    });
+  }
+  if (changeRows.length > 0) {
+    await prisma.contractorChangeRequest.createMany({
+      data: changeRows,
+      skipDuplicates: true,
     });
   }
 }
