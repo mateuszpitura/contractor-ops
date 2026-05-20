@@ -307,6 +307,8 @@ Alert rules to create:
 
 ### Axiom
 
+Live stream: https://app.axiom.co/contractor-ops-jfw2/stream/contractor-ops?caseSensitive=0
+
 Replace `<dataset>` with `AXIOM_DATASET` env value (`render.yaml:162-165`).
 
 **Logs by level + service (last 1h)**

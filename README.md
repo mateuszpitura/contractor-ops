@@ -436,6 +436,8 @@ External services we run against production (bookmark these):
   → https://dashboard.uptimerobot.com/monitors
 - **Cronitor** — cron heartbeats + `/api/health` / `/health` liveness
   → https://cronitor.io/app/?env=production&time=7d
+- **Axiom** — log stream + saved queries (HTTP, tRPC, auth, web vitals)
+  → https://app.axiom.co/contractor-ops-jfw2/stream/contractor-ops?caseSensitive=0
 
 Wiring + alert thresholds: `docs/POST-DEPLOY-MONITORING.md`.
 
