@@ -1,11 +1,29 @@
-import { getOrgMeta } from '@contractor-ops/api/services/org-cache';
+import { getOrgBranding } from '@contractor-ops/api/services/org-cache';
 import { validatePortalSession } from '@contractor-ops/api/services/portal-session';
 import { prisma } from '@contractor-ops/db';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { PortalTopBar } from '@/components/portal/portal-top-bar';
+
+/**
+ * Portal shell brand-color style — when an org-supplied brand color is
+ * present, expose it as `--portal-brand` AND override `--primary` for the
+ * shell subtree only so existing Tailwind `text-primary`/`bg-primary`
+ * utilities tint with the brand. Scoped via inline style → never leaks to
+ * dashboard/admin routes (those don't render this layout).
+ *
+ * Brand color is pre-validated by `parseBrandColor` in `org-cache.ts` so
+ * passing it into a CSS variable is safe (no `expression()`, no `url(...)`).
+ */
+function getPortalShellStyle(brandColor: string | null): CSSProperties | undefined {
+  if (!brandColor) return;
+  return {
+    '--portal-brand': brandColor,
+    '--primary': brandColor,
+  } as CSSProperties;
+}
 
 /**
  * Portal route group layout.
@@ -53,16 +71,14 @@ export default async function PortalLayout({ children }: { children: ReactNode }
     redirect('/portal/login');
   }
 
-  // F-DB-03 / Phase C.7.b — top-bar branding (name + logo) flows through
-  // the cross-pod Upstash org-cache (5 min TTL). settingsJson.brandColor is
-  // currently unused (`_brandColor` discarded below); when D-12 wires it up
-  // it should land via a dedicated org-branding cache row, not the meta
-  // envelope — keeping settingsJson out of the broad meta cache prevents
-  // accidentally widening what other callers consume.
-  const organization = await getOrgMeta(session.organizationId);
+  // D-12 — read portal branding (name, logo, validated brandColor) from the
+  // dedicated org-branding cache row. Kept separate from getOrgMeta so the
+  // hot meta envelope stays free of settingsJson.
+  const organization = await getOrgBranding(session.organizationId);
+  const shellStyle = getPortalShellStyle(organization?.brandColor ?? null);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={shellStyle}>
       <a
         href="#portal-content"
         className="fixed start-4 top-4 z-[100] -translate-y-16 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg transition-transform focus:translate-y-0">

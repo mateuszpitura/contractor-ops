@@ -121,3 +121,124 @@ export async function invalidateOrgMeta(orgId: string): Promise<void> {
     log.warn({ err, orgId }, 'invalidateOrgMeta failed');
   }
 }
+
+// ---------------------------------------------------------------------------
+// Branding — Phase D-12 — separate cache row for portal-shell branding so the
+// hot getOrgMeta envelope stays small and free of settingsJson leakage. Read
+// on every portal navigation; invalidated by the same Prisma extension that
+// drops getOrgMeta and by the updateBranding mutation handler.
+// ---------------------------------------------------------------------------
+
+export interface OrgBranding {
+  id: string;
+  name: string;
+  logo: string | null;
+  /** Validated brand color (hex `#RRGGBB`/`#RGB` or `hsl(...)`), or null. */
+  brandColor: string | null;
+}
+
+/** TTL for the cached org-branding envelope (5 minutes). */
+export const ORG_BRANDING_TTL_SECONDS = 5 * 60;
+
+export function orgBrandingKey(orgId: string): string {
+  return cacheKey('org', orgId, 'branding');
+}
+
+/**
+ * Strict parser for org-supplied brand color. Accepts:
+ *   - `#RRGGBB` / `#RGB` hex
+ *   - `hsl(H, S%, L%)` / `hsl(H S% L%)` (also `hsla(...)`)
+ * Any other shape (including raw `rgb()`, named colors, unparseable HSL)
+ * → `null`. Defense in depth — DB validation only enforces `#RRGGBB`, but
+ * legacy settings rows may contain looser values and consumers should never
+ * inject unvalidated strings into a CSS variable.
+ */
+export function parseBrandColor(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  // Hex: #RGB or #RRGGBB
+  if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed)) {
+    return trimmed.toLowerCase();
+  }
+
+  // hsl()/hsla() with comma- or space-separated args
+  const hslMatch = trimmed
+    .toLowerCase()
+    .match(
+      /^hsla?\(\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(\d+(?:\.\d+)?)%\s*[, ]\s*(\d+(?:\.\d+)?)%\s*(?:[,/]\s*(\d+(?:\.\d+)?%?)\s*)?\)$/,
+    );
+  if (hslMatch) {
+    const h = Number(hslMatch[1]);
+    const s = Number(hslMatch[2]);
+    const l = Number(hslMatch[3]);
+    const alphaRaw = hslMatch[4];
+    if (
+      !(
+        Number.isFinite(h) &&
+        Number.isFinite(s) &&
+        Number.isFinite(l) &&
+        s >= 0 &&
+        s <= 100 &&
+        l >= 0 &&
+        l <= 100
+      )
+    ) {
+      return null;
+    }
+    if (alphaRaw !== undefined) {
+      // Alpha may be a unit-less number in [0, 1] or a percentage in [0, 100].
+      // Browsers tolerate out-of-range alpha by clamping, but the parser is
+      // the boundary of trust for the inline --primary CSS variable, so
+      // reject anything we wouldn't write ourselves.
+      const isPercent = alphaRaw.endsWith('%');
+      const alpha = Number(isPercent ? alphaRaw.slice(0, -1) : alphaRaw);
+      if (!Number.isFinite(alpha)) return null;
+      if (isPercent) {
+        if (alpha < 0 || alpha > 100) return null;
+      } else if (alpha < 0 || alpha > 1) {
+        return null;
+      }
+    }
+    return trimmed;
+  }
+
+  return null;
+}
+
+/**
+ * Returns the cached portal branding for `orgId`. Hot path on every portal
+ * navigation; uses its own cache key so the broad `getOrgMeta` envelope stays
+ * free of settingsJson. Returns `null` only when the org doesn't exist.
+ */
+export async function getOrgBranding(orgId: string): Promise<OrgBranding | null> {
+  if (!orgId) return null;
+
+  return await cached(orgBrandingKey(orgId), ORG_BRANDING_TTL_SECONDS, async () => {
+    const row = await prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true, logo: true, settingsJson: true },
+    });
+
+    if (!row) return null;
+
+    const settings = (row.settingsJson as Record<string, unknown> | null) ?? {};
+    return {
+      id: row.id,
+      name: row.name,
+      logo: row.logo,
+      brandColor: parseBrandColor(settings.brandColor),
+    } satisfies OrgBranding;
+  });
+}
+
+/** Invalidate the cached branding envelope for one org. */
+export async function invalidateOrgBranding(orgId: string): Promise<void> {
+  if (!orgId) return;
+  try {
+    await invalidate(orgBrandingKey(orgId));
+  } catch (err) {
+    log.warn({ err, orgId }, 'invalidateOrgBranding failed');
+  }
+}

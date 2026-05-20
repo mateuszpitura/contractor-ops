@@ -344,6 +344,104 @@ export const portalRouter = router({
     return { success: true as const };
   }),
 
+  /**
+   * List every organization the authenticated contractor belongs to (same
+   * email, status ACTIVE, not soft-deleted). Drives the in-session org
+   * switcher in the profile dropdown.
+   *
+   * Reuses `findContractorsByEmail` so the membership semantics stay
+   * byte-identical to magic-link login (single source of truth for "which
+   * orgs is this person in?").
+   */
+  listMyOrgs: portalProcedure.query(async ({ ctx }) => {
+    const contractors = await findContractorsByEmail(ctx.portalSession.email);
+    return contractors.map(c => ({
+      contractorId: c.id,
+      organizationId: c.organizationId,
+      orgName: c.organization.name,
+      orgLogo: c.organization.logo,
+      isCurrent: c.id === ctx.contractorId && c.organizationId === ctx.organizationId,
+    }));
+  }),
+
+  /**
+   * Issue a new portal session for a different (contractorId, organizationId)
+   * pair belonging to the same authenticated email. Returns the same
+   * `{rawToken, expiresAt, signature}` envelope as `selectOrg` so the client
+   * can hand it to `/api/portal/set-session`.
+   *
+   * Security:
+   * - Validates ownership against the target org's regional DB (cross-region
+   *   contractors are routed via `withOrgRegionalDb`).
+   * - Email comes from the trusted server-side portal session, NEVER from
+   *   client input — prevents cross-account session minting.
+   * - Old session is deleted before the new one is signed so two valid
+   *   `portal_session` cookies never coexist for the same user.
+   */
+  switchOrg: portalProcedure
+    .input(
+      z.object({
+        contractorId: z.string().min(1),
+        organizationId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const email = ctx.portalSession.email.toLowerCase().trim();
+
+      // No-op when the target matches the active session.
+      if (input.contractorId === ctx.contractorId && input.organizationId === ctx.organizationId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'PORTAL_ALREADY_ACTIVE_ORG',
+        });
+      }
+
+      // Verify the (contractorId, organizationId, email) triple is real in
+      // the target org's regional DB. The active session's region may differ
+      // from the target org's region — never trust the active ctx.db here.
+      const contractor = await withOrgRegionalDb(input.organizationId, db =>
+        db.contractor.findFirst({
+          where: {
+            id: input.contractorId,
+            organizationId: input.organizationId,
+            email,
+            status: 'ACTIVE',
+            deletedAt: null,
+          },
+          select: { id: true },
+        }),
+      );
+
+      if (!contractor) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: E.CONTRACTOR_NOT_FOUND,
+        });
+      }
+
+      // Tear down the active session first — don't let two valid portal
+      // cookies exist for the same user across the switch.
+      const oldToken = extractPortalToken(ctx.headers);
+      if (oldToken) {
+        await deletePortalSession(oldToken);
+      }
+
+      const ipAddress = ctx.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? undefined;
+      const userAgent = ctx.headers.get('user-agent') ?? undefined;
+
+      const session = await createPortalSession({
+        contractorId: input.contractorId,
+        organizationId: input.organizationId,
+        email,
+        ipAddress,
+        userAgent,
+      });
+
+      const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
+
+      return { rawToken: session.rawToken, expiresAt: session.expiresAt, signature };
+    }),
+
   // =========================================================================
   // READ ENDPOINTS (authenticated -- double-scoped: org via tenantStore + contractorId)
   // =========================================================================

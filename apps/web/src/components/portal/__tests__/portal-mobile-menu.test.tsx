@@ -11,6 +11,7 @@ function makeProps(overrides: Partial<Parameters<typeof PortalMobileMenu>[0]> = 
     open: true,
     onOpenChange: vi.fn(),
     orgName: 'Acme Corp',
+    orgLogo: null,
     contractorName: 'Jan Kowalski',
     contractorEmail: 'jan@acme.com',
     ...overrides,
