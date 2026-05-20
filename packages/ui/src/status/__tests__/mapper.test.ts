@@ -48,7 +48,7 @@ const ALL_VARIANTS = new Set([
 
 function expectVariant<D extends Parameters<typeof statusToVariant>[0]>(
   domain: D,
-  inputs: ReadonlyArray<Parameters<typeof statusToVariant<D>>[1]>,
+  inputs: readonly Parameters<typeof statusToVariant<D>>[1][],
 ) {
   for (const input of inputs) {
     const variant = statusToVariant(domain, input);
@@ -58,7 +58,7 @@ function expectVariant<D extends Parameters<typeof statusToVariant>[0]>(
 
 describe('statusToVariant — domain exhaustiveness', () => {
   it('invoice covers every InvoiceStatus enum value', () => {
-    const inputs: ReadonlyArray<InvoiceStatusInput> = [
+    const inputs: readonly InvoiceStatusInput[] = [
       'RECEIVED',
       'UNDER_REVIEW',
       'APPROVAL_PENDING',
@@ -73,7 +73,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('invoice-match covers every InvoiceMatchStatus enum value', () => {
-    const inputs: ReadonlyArray<InvoiceMatchStatusInput> = [
+    const inputs: readonly InvoiceMatchStatusInput[] = [
       'UNMATCHED',
       'PARTIAL',
       'MATCHED',
@@ -84,8 +84,8 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('contractor + contractor-lifecycle cover every relevant enum value', () => {
-    const contractor: ReadonlyArray<ContractorStatusInput> = ['ACTIVE', 'INACTIVE', 'ARCHIVED'];
-    const lifecycle: ReadonlyArray<ContractorLifecycleStageInput> = [
+    const contractor: readonly ContractorStatusInput[] = ['ACTIVE', 'INACTIVE', 'ARCHIVED'];
+    const lifecycle: readonly ContractorLifecycleStageInput[] = [
       'DRAFT',
       'ONBOARDING',
       'ACTIVE',
@@ -97,7 +97,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('contract covers every ContractStatus enum value', () => {
-    const inputs: ReadonlyArray<ContractStatusInput> = [
+    const inputs: readonly ContractStatusInput[] = [
       'DRAFT',
       'PENDING_SIGNATURE',
       'SIGNATURE_DECLINED',
@@ -113,7 +113,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('payment + payment-run + payment-run-item cover every relevant enum value', () => {
-    const payment: ReadonlyArray<PaymentStatusInput> = [
+    const payment: readonly PaymentStatusInput[] = [
       'NOT_READY',
       'READY',
       'IN_RUN',
@@ -121,7 +121,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
       'PAID',
       'FAILED',
     ];
-    const run: ReadonlyArray<PaymentRunStatusInput> = [
+    const run: readonly PaymentRunStatusInput[] = [
       'DRAFT',
       'LOCKED',
       'EXPORTED',
@@ -129,7 +129,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
       'FAILED',
       'CANCELLED',
     ];
-    const item: ReadonlyArray<PaymentRunItemStatusInput> = [
+    const item: readonly PaymentRunItemStatusInput[] = [
       'PENDING',
       'EXPORTED',
       'PAID',
@@ -142,7 +142,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('approval covers every ApprovalStatus enum value', () => {
-    const inputs: ReadonlyArray<ApprovalStatusInput> = [
+    const inputs: readonly ApprovalStatusInput[] = [
       'NOT_STARTED',
       'PENDING',
       'APPROVED',
@@ -153,7 +153,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('workflow-run + workflow-task cover every relevant enum value', () => {
-    const run: ReadonlyArray<WorkflowRunStatusInput> = [
+    const run: readonly WorkflowRunStatusInput[] = [
       'NOT_STARTED',
       'IN_PROGRESS',
       'COMPLETED',
@@ -161,7 +161,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
       'BLOCKED',
       'OVERDUE',
     ];
-    const task: ReadonlyArray<WorkflowTaskStatusInput> = [
+    const task: readonly WorkflowTaskStatusInput[] = [
       'TODO',
       'IN_PROGRESS',
       'DONE',
@@ -175,13 +175,13 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('einvoice-validation + einvoice-transmission cover every relevant enum value', () => {
-    const validation: ReadonlyArray<EInvoiceValidationStatusInput> = [
+    const validation: readonly EInvoiceValidationStatusInput[] = [
       'NOT_VALIDATED',
       'VALID',
       'INVALID',
       'WARNINGS',
     ];
-    const transmission: ReadonlyArray<EInvoiceTransmissionStatusInput> = [
+    const transmission: readonly EInvoiceTransmissionStatusInput[] = [
       'NOT_SENT',
       'QUEUED',
       'SENT',
@@ -193,14 +193,14 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('peppol-participant + peppol-transmission cover every relevant enum value', () => {
-    const participant: ReadonlyArray<PeppolParticipantStatusInput> = [
+    const participant: readonly PeppolParticipantStatusInput[] = [
       'PENDING',
       'REGISTERED',
       'ACTIVE',
       'SUSPENDED',
       'DEREGISTERED',
     ];
-    const transmission: ReadonlyArray<PeppolTransmissionStatusInput> = [
+    const transmission: readonly PeppolTransmissionStatusInput[] = [
       'PENDING',
       'TRANSMITTED',
       'DELIVERED',
@@ -212,7 +212,7 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('zatca covers every ZatcaSubmissionStatus enum value', () => {
-    const inputs: ReadonlyArray<ZatcaSubmissionStatusInput> = [
+    const inputs: readonly ZatcaSubmissionStatusInput[] = [
       'PENDING',
       'SUBMITTED',
       'CLEARED',
@@ -224,12 +224,12 @@ describe('statusToVariant — domain exhaustiveness', () => {
   });
 
   it('change-request covers every ContractorChangeRequestStatus enum value', () => {
-    const inputs: ReadonlyArray<ChangeRequestStatusInput> = ['PENDING', 'APPROVED', 'REJECTED'];
+    const inputs: readonly ChangeRequestStatusInput[] = ['PENDING', 'APPROVED', 'REJECTED'];
     expectVariant('change-request', inputs);
   });
 
   it('member covers every Better Auth member status', () => {
-    const inputs: ReadonlyArray<MemberStatusInput> = ['active', 'invited', 'disabled', 'banned'];
+    const inputs: readonly MemberStatusInput[] = ['active', 'invited', 'disabled', 'banned'];
     expectVariant('member', inputs);
   });
 });

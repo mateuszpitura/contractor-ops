@@ -1,0 +1,99 @@
+/* Auto-generated companion stylesheet for community-vendored UI blocks.
+ *
+ * Generated once at adoption time from the source registry JSON. Edit
+ * by hand when adding new blocks — the source script is naive about
+ * nested CSS so the keyframes are hand-shaped.
+ *
+ * Source registries: Magic UI (https://magicui.design), Aceternity UI
+ * (https://ui.aceternity.com). All blocks are free / MIT.
+ */
+
+/* magic/marquee */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+/* magic/shimmer-button */
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+  }
+  15%,
+  35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%,
+  85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+/* magic/border-beam */
+@keyframes border-beam {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* magic/retro-grid */
+@keyframes grid {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* ace/text-generate-effect */
+@keyframes text-fade-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* ace/glare-card */
+@keyframes glare {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+@theme {
+  --animate-marquee: marquee var(--duration, 40s) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration, 40s) linear infinite;
+  --animate-shimmer-slide: shimmer-slide var(--speed, 2s) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed, 2s) * 2) infinite linear;
+  --animate-border-beam: border-beam calc(var(--duration, 6s) * 1s) infinite linear;
+  --animate-grid: grid 15s linear infinite;
+}

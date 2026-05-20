@@ -2081,3 +2081,421 @@ export function DashboardIllustration({ className, ...rest }: IllustrationProps)
     </svg>
   );
 }
+
+/* ── My Tasks ─────────────────────────────────────────────────────── */
+/**
+ * Two masked-face avatar coins stacked over a checklist card. Conveys
+ * "tasks assigned to people" with a playful identity-anonymised motif
+ * (matches the user-requested "masked faces" sketch).
+ */
+export function MyTasksIllustration({ className, ...rest }: IllustrationProps) {
+  const uid = useId();
+  const s = `${uid}-s`;
+  const g1 = `${uid}-a`;
+  const g2 = `${uid}-b`;
+  const g3 = `${uid}-c`;
+  const mCard = `${uid}-mc`;
+  const mFront = `${uid}-mf`;
+
+  return (
+    <svg {...DEFAULTS} viewBox="0 0 96 96" className={className} {...rest}>
+      <defs>
+        <filter id={s} x="-30%" y="-20%" width="160%" height="160%">
+          <feDropShadow
+            dx="1"
+            dy="3"
+            stdDeviation="4"
+            floodColor="currentColor"
+            floodOpacity="0.18"
+          />
+        </filter>
+        <linearGradient id={g1} x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id={g2} x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.34" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.16" />
+        </linearGradient>
+        <linearGradient id={g3} x1="0.5" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.2" />
+        </linearGradient>
+        <mask id={mCard}>
+          <rect width="96" height="96" fill="white" />
+          <circle cx="60" cy="56" r="18" fill="black" />
+          <circle cx="32" cy="62" r="14" fill="black" />
+        </mask>
+        <mask id={mFront}>
+          <rect width="96" height="96" fill="white" />
+          <circle cx="32" cy="62" r="14" fill="black" />
+        </mask>
+      </defs>
+
+      <ellipse cx="48" cy="84" rx="30" ry="4" fill="currentColor" fillOpacity={0.06} />
+
+      {/* Checklist card behind the avatars */}
+      <g mask={`url(#${mCard})`}>
+        <rect
+          x="12"
+          y="14"
+          width="72"
+          height="52"
+          rx="6"
+          fill={`url(#${g1})`}
+          stroke="currentColor"
+          strokeOpacity={0.18}
+          strokeWidth={1}
+          filter={`url(#${s})`}
+        />
+        {/* Checkbox + line rows */}
+        <rect x="20" y="22" width="6" height="6" rx="1.5" fill="currentColor" fillOpacity={0.22} />
+        <path
+          d="M21.5 25 L23 26.5 L25 24"
+          stroke="currentColor"
+          strokeOpacity={0.55}
+          strokeWidth={1.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <rect x="30" y="23" width="34" height="3" rx="1.5" fill="currentColor" fillOpacity={0.18} />
+        <rect
+          x="20"
+          y="34"
+          width="6"
+          height="6"
+          rx="1.5"
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity={0.32}
+          strokeWidth={1}
+        />
+        <rect x="30" y="35" width="42" height="3" rx="1.5" fill="currentColor" fillOpacity={0.16} />
+        <rect
+          x="20"
+          y="46"
+          width="6"
+          height="6"
+          rx="1.5"
+          fill="none"
+          stroke="currentColor"
+          strokeOpacity={0.32}
+          strokeWidth={1}
+        />
+        <rect x="30" y="47" width="28" height="3" rx="1.5" fill="currentColor" fillOpacity={0.16} />
+      </g>
+
+      {/* Back avatar */}
+      <g mask={`url(#${mFront})`} filter={`url(#${s})`}>
+        <circle
+          cx="60"
+          cy="56"
+          r="16"
+          fill={`url(#${g2})`}
+          stroke="currentColor"
+          strokeOpacity={0.3}
+          strokeWidth={1.2}
+        />
+        {/* Domino-style mask across the eyes */}
+        <path
+          d="M50 53 Q60 49 70 53 Q67 60 60 60 Q53 60 50 53 Z"
+          fill="currentColor"
+          fillOpacity={0.55}
+        />
+        <circle cx="56" cy="55" r="1.2" fill="currentColor" fillOpacity={0.85} />
+        <circle cx="64" cy="55" r="1.2" fill="currentColor" fillOpacity={0.85} />
+        {/* Smile */}
+        <path
+          d="M55 64 Q60 67 65 64"
+          stroke="currentColor"
+          strokeOpacity={0.45}
+          strokeWidth={1.2}
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+
+      {/* Front avatar */}
+      <g filter={`url(#${s})`}>
+        <circle
+          cx="32"
+          cy="62"
+          r="13"
+          fill={`url(#${g3})`}
+          stroke="currentColor"
+          strokeOpacity={0.36}
+          strokeWidth={1.2}
+        />
+        <path
+          d="M24 60 Q32 56 40 60 Q38 66 32 66 Q26 66 24 60 Z"
+          fill="currentColor"
+          fillOpacity={0.6}
+        />
+        <circle cx="29" cy="61" r="1.2" fill="currentColor" fillOpacity={0.9} />
+        <circle cx="35" cy="61" r="1.2" fill="currentColor" fillOpacity={0.9} />
+        <path
+          d="M28 68 Q32 70 36 68"
+          stroke="currentColor"
+          strokeOpacity={0.5}
+          strokeWidth={1.2}
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+    </svg>
+  );
+}
+
+/* ── Templates ────────────────────────────────────────────────────── */
+/**
+ * Stacked blueprint sheets — front sheet shows a faint grid + filled
+ * heading, conveying "reusable template document".
+ */
+export function TemplatesIllustration({ className, ...rest }: IllustrationProps) {
+  const uid = useId();
+  const s = `${uid}-s`;
+  const g1 = `${uid}-a`;
+  const g2 = `${uid}-b`;
+  const mBack2 = `${uid}-m2`;
+  const mBack1 = `${uid}-m1`;
+
+  return (
+    <svg {...DEFAULTS} viewBox="0 0 96 96" className={className} {...rest}>
+      <defs>
+        <filter id={s} x="-30%" y="-20%" width="160%" height="160%">
+          <feDropShadow
+            dx="1"
+            dy="3"
+            stdDeviation="4"
+            floodColor="currentColor"
+            floodOpacity="0.18"
+          />
+        </filter>
+        <linearGradient id={g1} x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id={g2} x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.36" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.18" />
+        </linearGradient>
+        <mask id={mBack2}>
+          <rect width="96" height="96" fill="white" />
+          <rect x="22" y="20" width="46" height="60" rx="4" fill="black" />
+        </mask>
+        <mask id={mBack1}>
+          <rect width="96" height="96" fill="white" />
+          <rect x="18" y="16" width="46" height="60" rx="4" fill="black" />
+        </mask>
+      </defs>
+
+      <ellipse cx="48" cy="84" rx="28" ry="3.5" fill="currentColor" fillOpacity={0.06} />
+
+      {/* Sheet 3 (bottom) */}
+      <g mask={`url(#${mBack2})`}>
+        <rect
+          x="26"
+          y="12"
+          width="46"
+          height="60"
+          rx="4"
+          fill={`url(#${g1})`}
+          stroke="currentColor"
+          strokeOpacity={0.18}
+          strokeWidth={1}
+        />
+      </g>
+
+      {/* Sheet 2 (middle) */}
+      <g mask={`url(#${mBack1})`}>
+        <rect
+          x="22"
+          y="16"
+          width="46"
+          height="60"
+          rx="4"
+          fill={`url(#${g1})`}
+          stroke="currentColor"
+          strokeOpacity={0.22}
+          strokeWidth={1}
+        />
+      </g>
+
+      {/* Sheet 1 (front) */}
+      <g filter={`url(#${s})`}>
+        <rect
+          x="18"
+          y="20"
+          width="46"
+          height="60"
+          rx="4"
+          fill={`url(#${g2})`}
+          stroke="currentColor"
+          strokeOpacity={0.32}
+          strokeWidth={1.2}
+        />
+        {/* Title block */}
+        <rect x="24" y="28" width="22" height="3" rx="1.5" fill="currentColor" fillOpacity={0.34} />
+        <rect x="24" y="34" width="34" height="2" rx="1" fill="currentColor" fillOpacity={0.16} />
+        {/* Grid lines */}
+        <line
+          x1="24"
+          y1="44"
+          x2="58"
+          y2="44"
+          stroke="currentColor"
+          strokeOpacity={0.14}
+          strokeWidth={0.8}
+          strokeDasharray="2 2"
+        />
+        <line
+          x1="24"
+          y1="52"
+          x2="58"
+          y2="52"
+          stroke="currentColor"
+          strokeOpacity={0.14}
+          strokeWidth={0.8}
+          strokeDasharray="2 2"
+        />
+        <line
+          x1="24"
+          y1="60"
+          x2="58"
+          y2="60"
+          stroke="currentColor"
+          strokeOpacity={0.14}
+          strokeWidth={0.8}
+          strokeDasharray="2 2"
+        />
+        <line
+          x1="32"
+          y1="40"
+          x2="32"
+          y2="68"
+          stroke="currentColor"
+          strokeOpacity={0.1}
+          strokeWidth={0.8}
+          strokeDasharray="2 2"
+        />
+        <line
+          x1="44"
+          y1="40"
+          x2="44"
+          y2="68"
+          stroke="currentColor"
+          strokeOpacity={0.1}
+          strokeWidth={0.8}
+          strokeDasharray="2 2"
+        />
+        {/* Filled cells */}
+        <rect x="25" y="45" width="6" height="6" rx="1" fill="currentColor" fillOpacity={0.18} />
+        <rect x="37" y="53" width="6" height="6" rx="1" fill="currentColor" fillOpacity={0.14} />
+      </g>
+    </svg>
+  );
+}
+
+/* ── No Results ───────────────────────────────────────────────────── */
+/**
+ * Magnifying glass over an empty page with a faint sparkle. Replaces
+ * the generic Search/SearchX lucide icon used for filter-empty states.
+ */
+export function NoResultsIllustration({ className, ...rest }: IllustrationProps) {
+  const uid = useId();
+  const s = `${uid}-s`;
+  const g1 = `${uid}-a`;
+  const g2 = `${uid}-b`;
+  const mPage = `${uid}-mp`;
+
+  return (
+    <svg {...DEFAULTS} viewBox="0 0 96 96" className={className} {...rest}>
+      <defs>
+        <filter id={s} x="-30%" y="-20%" width="160%" height="160%">
+          <feDropShadow
+            dx="1"
+            dy="3"
+            stdDeviation="4"
+            floodColor="currentColor"
+            floodOpacity="0.18"
+          />
+        </filter>
+        <linearGradient id={g1} x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id={g2} x1="0.5" y1="0" x2="0.5" y2="1">
+          <stop offset="0%" stopColor="currentColor" stopOpacity="0.36" />
+          <stop offset="100%" stopColor="currentColor" stopOpacity="0.18" />
+        </linearGradient>
+        <mask id={mPage}>
+          <rect width="96" height="96" fill="white" />
+          <circle cx="60" cy="56" r="22" fill="black" />
+        </mask>
+      </defs>
+
+      <ellipse cx="48" cy="84" rx="28" ry="3.5" fill="currentColor" fillOpacity={0.06} />
+
+      {/* Empty page behind */}
+      <g mask={`url(#${mPage})`}>
+        <rect
+          x="14"
+          y="14"
+          width="46"
+          height="60"
+          rx="4"
+          fill={`url(#${g1})`}
+          stroke="currentColor"
+          strokeOpacity={0.2}
+          strokeWidth={1}
+        />
+        <rect x="20" y="22" width="22" height="3" rx="1.5" fill="currentColor" fillOpacity={0.2} />
+        <rect x="20" y="30" width="34" height="2" rx="1" fill="currentColor" fillOpacity={0.12} />
+        <rect x="20" y="38" width="30" height="2" rx="1" fill="currentColor" fillOpacity={0.1} />
+      </g>
+
+      {/* Sparkle accent */}
+      <g fill="currentColor" fillOpacity={0.5}>
+        <path d="M22 56 L23 58 L25 59 L23 60 L22 62 L21 60 L19 59 L21 58 Z" />
+      </g>
+
+      {/* Magnifying glass */}
+      <g filter={`url(#${s})`}>
+        <circle
+          cx="60"
+          cy="56"
+          r="18"
+          fill={`url(#${g2})`}
+          stroke="currentColor"
+          strokeOpacity={0.36}
+          strokeWidth={1.5}
+        />
+        <circle
+          cx="60"
+          cy="56"
+          r="12"
+          fill="currentColor"
+          fillOpacity={0.05}
+          stroke="currentColor"
+          strokeOpacity={0.22}
+          strokeWidth={1}
+        />
+        {/* Handle */}
+        <rect
+          x="72"
+          y="68"
+          width="14"
+          height="5"
+          rx="2.5"
+          transform="rotate(45 72 68)"
+          fill="currentColor"
+          fillOpacity={0.42}
+          stroke="currentColor"
+          strokeOpacity={0.3}
+          strokeWidth={0.8}
+        />
+      </g>
+    </svg>
+  );
+}

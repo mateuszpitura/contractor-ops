@@ -78,7 +78,7 @@ export function TiltCard({
     .filter(Boolean)
     .join(' ');
 
-  const composedStyle: CSSProperties = {
+  const _composedStyle: CSSProperties = {
     ...style,
     animationDelay: delay > 0 ? `${delay}ms` : undefined,
     transitionTimingFunction: tiltActive ? 'var(--ease-atelier-out)' : undefined,
@@ -93,7 +93,6 @@ export function TiltCard({
       ref={ref}
       role="presentation"
       className={classes}
-      style={composedStyle}
       onMouseMove={tiltActive ? handleMouseMove : undefined}
       onMouseLeave={tiltActive ? handleMouseLeave : undefined}>
       {children}

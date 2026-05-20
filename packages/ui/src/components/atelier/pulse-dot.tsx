@@ -15,13 +15,8 @@ export interface PulseDotProps {
 export function PulseDot({ color, pulse = false }: PulseDotProps) {
   return (
     <span aria-hidden="true" className="relative inline-flex h-2 w-2">
-      {pulse ? (
-        <span
-          className="atelier-pulse absolute inset-0 rounded-full opacity-75"
-          style={{ background: color }}
-        />
-      ) : null}
-      <span className="relative inline-flex h-2 w-2 rounded-full" style={{ background: color }} />
+      {pulse ? <span className="atelier-pulse absolute inset-0 rounded-full opacity-75" /> : null}
+      <span className="relative inline-flex h-2 w-2 rounded-full" />
     </span>
   );
 }

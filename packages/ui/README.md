@@ -367,3 +367,84 @@ Every primitive must:
 The full design rationale, per-tier rules, and locked decisions live in
 `docs/UI-ATELIER-WORKPLAN.md` at the repo root. The package's source
 files cite specific workplan sections in their JSDoc.
+
+---
+
+## shadcn primitives (`components/shadcn/`)
+
+The base shadcn / Base UI primitives live under `src/components/shadcn/`
+and are exported via the `@contractor-ops/ui/components/shadcn/*`
+subpath. Both `apps/web` and `apps/landing` have a `components.json`
+pointing the shadcn CLI at `@contractor-ops/ui/components/shadcn` so
+`npx shadcn add <name>` installs new primitives into this package, not
+the consuming app.
+
+```ts
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Card, CardHeader, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+```
+
+For the rare case where every primitive is needed, the barrel
+`@contractor-ops/ui/components/shadcn` re-exports the lot — prefer the
+per-file path for tree-shaking.
+
+Utilities companion to shadcn:
+
+```ts
+import { cn } from '@contractor-ops/ui/lib/utils';
+import { useIsMobile } from '@contractor-ops/ui/hooks/use-mobile';
+```
+
+---
+
+## Adopted community libraries
+
+Every block we adopt is vendored — no runtime registry dependency. Free / MIT only.
+
+| Library | Folder | What we use |
+| --- | --- | --- |
+| shadcn/ui official | `components/shadcn` | base primitives + official blocks |
+| Magic UI | `components/magic` | marquee, number-ticker, animated-beam, retro-grid, shimmer-button |
+| Aceternity UI (free tier) | `components/ace` | bento-grid, glare-card, hero-parallax, text-generate-effect |
+| Cult UI | `components/cult` | family-button, direction-aware-hover, bento-reveal, feature-card |
+| Origin UI | `components/origin` | inputs, OTP, switch, slider, password, tags, time, phone, date-range |
+| Tailark | `components/tailark` | pricing-table, feature-section, testimonials, footer, header |
+| ReUI | `components/reui` | data-table block |
+| shadcn.io community | `components/shadcn-io` | stepper, etc. |
+| 21st.dev community | resolved via MCP | ad hoc |
+
+Conventions:
+
+- Place files under the matching library folder.
+- Re-export from the relevant barrel.
+- Keep `motion` (Framer Motion) as the single animation library. Do not introduce a competing one.
+- If a block needs major surgery, fork into a new file with a `-cu` suffix to signal divergence.
+
+---
+
+## MCP — installing community components by description
+
+Two MCP servers are wired in `.mcp.json` at repo root:
+
+- `shadcn` — official shadcn MCP. Resolves blocks from any shadcn-compatible registry (shadcn/ui, Magic UI, Aceternity, Cult UI, Origin UI, Tailark, ReUI, shadcn.io, 21st.dev community, …).
+- `21st-dev` — 21st.dev Magic MCP. Generates / installs components from the 21st.dev catalogue.
+
+### Setup
+
+```bash
+# .env (not committed) — only required for 21st.dev MCP
+TWENTY_FIRST_API_KEY=<your key from 21st.dev>
+```
+
+Then in Claude Code, ask in natural language. The MCP server resolves
+the request and copies the block into `packages/ui/src/components/<library>/`
+(or the app folder you specify).
+
+### Example prompts
+
+- `install the magic ui number-ticker into packages/ui`
+- `install the aceternity bento-grid into packages/ui`
+- `install the tailark pricing-table block into apps/landing/src/components/sections`
+- `install the origin ui password input into packages/ui/src/components/origin`
+- `install the shadcn.io stepper component into packages/ui`
+- `install a 21st.dev hero with parallax into apps/landing`

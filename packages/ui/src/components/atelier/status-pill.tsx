@@ -22,12 +22,7 @@ export interface AtelierStatusPillProps {
  */
 export function AtelierStatusPill({ variant, pulse = false, children }: AtelierStatusPillProps) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]"
-      style={{
-        background: `var(--status-${variant}-bg)`,
-        color: `var(--status-${variant}-fg)`,
-      }}>
+    <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]">
       <PulseDot color={`var(--status-${variant})`} pulse={pulse} />
       {children}
     </span>

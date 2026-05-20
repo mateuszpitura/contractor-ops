@@ -22,40 +22,12 @@ export function AtelierBackground() {
       {/* Drifting gradient orbs — dark mode toned down to stay sub-threshold
           (chromatic atmosphere, not visible blobs). Light mode values are
           calibrated for a bright base that drowns out gradient shapes. */}
-      <div
-        className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full opacity-60 dark:opacity-25"
-        style={{
-          background:
-            'radial-gradient(closest-side, color-mix(in oklch, var(--primary) 18%, transparent), transparent 70%)',
-          animation: 'atelier-drift-1 22s ease-in-out infinite',
-        }}
-      />
-      <div
-        className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full opacity-50 dark:opacity-15"
-        style={{
-          background:
-            'radial-gradient(closest-side, color-mix(in oklch, var(--accent-warm) 16%, transparent), transparent 70%)',
-          animation: 'atelier-drift-2 28s ease-in-out infinite',
-        }}
-      />
-      <div
-        className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full opacity-40 dark:opacity-20"
-        style={{
-          background:
-            'radial-gradient(closest-side, color-mix(in oklch, var(--info) 14%, transparent), transparent 70%)',
-          animation: 'atelier-drift-3 32s ease-in-out infinite',
-        }}
-      />
+      <div className="absolute -start-[10%] -top-[10%] h-[800px] w-[800px] rounded-full opacity-60 dark:opacity-25" />
+      <div className="absolute -end-[5%] top-[10%] h-[650px] w-[650px] rounded-full opacity-50 dark:opacity-15" />
+      <div className="absolute bottom-[-5%] start-[35%] h-[550px] w-[550px] rounded-full opacity-40 dark:opacity-20" />
 
       {/* Subtle dot grid */}
-      <div
-        className="absolute inset-0 opacity-[0.4]"
-        style={{
-          backgroundImage:
-            'radial-gradient(color-mix(in oklch, var(--foreground) 7%, transparent) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
+      <div className="absolute inset-0 opacity-[0.4]" />
     </div>
   );
 }

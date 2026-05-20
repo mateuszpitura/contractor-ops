@@ -26,7 +26,7 @@ export function Ring({ value, max, color, size = 48, stroke = 3.5, children }: R
   const pct = max === 0 ? 0 : Math.min(value / max, 1);
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div className="relative">
       <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
         <circle
           cx={size / 2}
