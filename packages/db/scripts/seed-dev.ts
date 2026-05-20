@@ -5646,20 +5646,31 @@ async function seedSkonto(
 ): Promise<void> {
   if (invoices.length === 0) return;
 
-  // SkontoTerm.invoiceId is @unique — one term per invoice.
+  // SkontoTerm.invoiceId is @unique — one term per invoice. Pre-compute the
+  // term id so snapshots and applications can reference it without a
+  // follow-up findUnique.
+  const termByInvoice = new Map<string, { id: string; discountPercent: string }>();
+  const termRows: Prisma.SkontoTermCreateManyInput[] = [];
   for (const inv of invoices) {
     const discountPct = ctx.fakers.org.helpers.arrayElement(['1.00', '2.00', '3.00']);
     const discountPeriodDays = ctx.fakers.org.helpers.arrayElement([7, 10, 14]);
     const netPeriodDays = ctx.fakers.org.helpers.arrayElement([30, 45, 60]);
-    await prisma.skontoTerm.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        discountPercent: discountPct,
-        discountPeriodDays,
-        netPeriodDays,
-        createdAt: inv.receivedAt,
-      },
+    const id = randomUUID();
+    termRows.push({
+      id,
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      discountPercent: discountPct,
+      discountPeriodDays,
+      netPeriodDays,
+      createdAt: inv.receivedAt,
+    });
+    termByInvoice.set(inv.id, { id, discountPercent: discountPct });
+  }
+  for (let i = 0; i < termRows.length; i += 1000) {
+    await prisma.skontoTerm.createMany({
+      data: termRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -5669,12 +5680,27 @@ async function seedSkonto(
   const snapshotSubset = ctx.org.showcase
     ? paidInvoices
     : paidInvoices.filter((_, i) => i % 2 === 0).slice(0, 5);
+  const snapshotRows: Prisma.SkontoSnapshotCreateManyInput[] = [];
+  // Bulk-load paymentRunItems for the snapshot subset so SkontoApplication
+  // can attach via paymentRunItemId without a per-row findFirst.
+  const subsetIds = snapshotSubset.map(i => i.id);
+  const paymentItems =
+    subsetIds.length === 0
+      ? []
+      : await prisma.paymentRunItem.findMany({
+          where: { organizationId: ctx.organizationId, invoiceId: { in: subsetIds } },
+          select: { id: true, invoiceId: true },
+        });
+  const paymentItemByInvoice = new Map<string, string>();
+  for (const item of paymentItems) {
+    if (!paymentItemByInvoice.has(item.invoiceId)) {
+      paymentItemByInvoice.set(item.invoiceId, item.id);
+    }
+  }
+  const applicationRows: Prisma.SkontoApplicationCreateManyInput[] = [];
   for (const inv of snapshotSubset) {
     if (!inv.paidAt) continue;
-    const term = await prisma.skontoTerm.findUnique({
-      where: { invoiceId: inv.id },
-      select: { id: true, discountPercent: true },
-    });
+    const term = termByInvoice.get(inv.id);
     if (!term) continue;
     const eligible = ctx.org.showcase
       ? ((snapshotSubset.indexOf(inv) % 2 === 0) as boolean)
@@ -5682,35 +5708,41 @@ async function seedSkonto(
     const eligibility = eligible ? 'ELIGIBLE' : 'NOT_ELIGIBLE';
     const discountPctNum = Number.parseFloat(term.discountPercent.toString());
     const discountAppliedMinor = eligible ? Math.round((inv.totalMinor * discountPctNum) / 100) : 0;
-    await prisma.skontoSnapshot.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        skontoTermId: term.id,
-        eligibilityAtPayment: eligibility,
-        discountAppliedMinor,
-        effectivePaymentDate: dateOnly(inv.paidAt),
-        createdAt: inv.paidAt,
-      },
+    snapshotRows.push({
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      skontoTermId: term.id,
+      eligibilityAtPayment: eligibility,
+      discountAppliedMinor,
+      effectivePaymentDate: dateOnly(inv.paidAt),
+      createdAt: inv.paidAt,
     });
 
-    // SkontoApplication — paymentRunItemId @unique. Find the matching
-    // PaymentRunItem (if any) and attach.
+    // SkontoApplication — paymentRunItemId @unique; skipDuplicates handles
+    // re-seed and prevents collisions when multiple snapshots target the
+    // same run item.
     if (!eligible) continue;
-    const paymentItem = await prisma.paymentRunItem.findFirst({
-      where: { organizationId: ctx.organizationId, invoiceId: inv.id },
-      select: { id: true, skontoApplication: { select: { id: true } } },
+    const paymentItemId = paymentItemByInvoice.get(inv.id);
+    if (!paymentItemId) continue;
+    applicationRows.push({
+      organizationId: ctx.organizationId,
+      paymentRunItemId: paymentItemId,
+      skontoTermId: term.id,
+      discountPercentApplied: term.discountPercent,
+      discountAmountMinor: discountAppliedMinor,
+      createdAt: inv.paidAt,
     });
-    if (!paymentItem || paymentItem.skontoApplication) continue;
-    await prisma.skontoApplication.create({
-      data: {
-        organizationId: ctx.organizationId,
-        paymentRunItemId: paymentItem.id,
-        skontoTermId: term.id,
-        discountPercentApplied: term.discountPercent,
-        discountAmountMinor: discountAppliedMinor,
-        createdAt: inv.paidAt,
-      },
+  }
+  for (let i = 0; i < snapshotRows.length; i += 1000) {
+    await prisma.skontoSnapshot.createMany({
+      data: snapshotRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < applicationRows.length; i += 1000) {
+    await prisma.skontoApplication.createMany({
+      data: applicationRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
@@ -5734,6 +5766,9 @@ async function seedInvoiceInterest(
   if (overdue.length === 0) return;
 
   const claimSubset = ctx.org.showcase ? overdue.slice(0, 6) : overdue.slice(0, 3);
+  const claimRows: Prisma.InvoiceInterestClaimCreateManyInput[] = [];
+  const compensationRows: Prisma.InvoiceInterestCompensationCreateManyInput[] = [];
+  const waiverRows: Prisma.InvoiceInterestWaiverCreateManyInput[] = [];
   for (const [i, inv] of claimSubset.entries()) {
     const daysOverdue = Math.max(1, Math.floor((now - inv.dueDate.getTime()) / 86_400_000));
     // Statutory interest rate (placeholder: BoE base 5.25 + 8 = 13.25). Decimal(5,2).
@@ -5743,62 +5778,64 @@ async function seedInvoiceInterest(
     const compMinor =
       inv.totalMinor < 100_000 ? 4_000 : inv.totalMinor < 1_000_000 ? 7_000 : 10_000;
 
-    const claim = await prisma.invoiceInterestClaim.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        claimedByUserId: ctx.ownerUserId,
-        claimedAt: pastDateAfter(ctx.fakers.org, 14, inv.dueDate),
-        snapshotInterestMinor: interestMinor,
-        snapshotCompensationMinor: compMinor,
-        snapshotRateUsed: ratePct,
-        snapshotDaysOverdue: daysOverdue,
-        pdfStatus: i % 3 === 0 ? 'READY' : 'PENDING_RENDER',
-        pdfKey: i % 3 === 0 ? `seed/interest-claim/${inv.id}.pdf` : null,
-        pdfReadyAt: i % 3 === 0 ? pastDateAfter(ctx.fakers.org, 1, inv.dueDate) : null,
-      },
-      select: { id: true },
+    claimRows.push({
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      claimedByUserId: ctx.ownerUserId,
+      claimedAt: pastDateAfter(ctx.fakers.org, 14, inv.dueDate),
+      snapshotInterestMinor: interestMinor,
+      snapshotCompensationMinor: compMinor,
+      snapshotRateUsed: ratePct,
+      snapshotDaysOverdue: daysOverdue,
+      pdfStatus: i % 3 === 0 ? 'READY' : 'PENDING_RENDER',
+      pdfKey: i % 3 === 0 ? `seed/interest-claim/${inv.id}.pdf` : null,
+      pdfReadyAt: i % 3 === 0 ? pastDateAfter(ctx.fakers.org, 1, inv.dueDate) : null,
     });
 
-    // Compensation row — invoiceId @unique, only for the first overdue tier
-    // we touch so we don't violate the unique.
+    // Compensation row — invoiceId @unique; skipDuplicates handles re-seed.
     if (i < 3) {
-      const existing = await prisma.invoiceInterestCompensation.findUnique({
-        where: { invoiceId: inv.id },
-        select: { id: true },
+      compensationRows.push({
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        tierMinor: compMinor,
+        invoiceTotalAtOverdueMinor: inv.totalMinor,
+        firstOverdueDate: dateOnly(inv.dueDate),
       });
-      if (!existing) {
-        await prisma.invoiceInterestCompensation.create({
-          data: {
-            organizationId: ctx.organizationId,
-            invoiceId: inv.id,
-            tierMinor: compMinor,
-            invoiceTotalAtOverdueMinor: inv.totalMinor,
-            firstOverdueDate: dateOnly(inv.dueDate),
-          },
-        });
-      }
     }
 
     // Waiver — every other claim gets one (mix of waived + active).
     if (i % 2 === 0) {
-      await prisma.invoiceInterestWaiver.create({
-        data: {
-          organizationId: ctx.organizationId,
-          invoiceId: inv.id,
-          waiveType: ctx.fakers.org.helpers.arrayElement([
-            'STATUTORY_INTEREST',
-            'COMPENSATION',
-            'BOTH',
-          ] as const),
-          reason: 'Goodwill gesture (seeded)',
-          waivedByUserId: ctx.ownerUserId,
-          waivedAt: pastDateAfter(ctx.fakers.org, 7, inv.dueDate),
-        },
+      waiverRows.push({
+        organizationId: ctx.organizationId,
+        invoiceId: inv.id,
+        waiveType: ctx.fakers.org.helpers.arrayElement([
+          'STATUTORY_INTEREST',
+          'COMPENSATION',
+          'BOTH',
+        ] as const),
+        reason: 'Goodwill gesture (seeded)',
+        waivedByUserId: ctx.ownerUserId,
+        waivedAt: pastDateAfter(ctx.fakers.org, 7, inv.dueDate),
       });
     }
-    // Reference the claim id so unused-let-binding lint stays happy
-    void claim.id;
+  }
+  for (let i = 0; i < claimRows.length; i += 1000) {
+    await prisma.invoiceInterestClaim.createMany({
+      data: claimRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < compensationRows.length; i += 1000) {
+    await prisma.invoiceInterestCompensation.createMany({
+      data: compensationRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < waiverRows.length; i += 1000) {
+    await prisma.invoiceInterestWaiver.createMany({
+      data: waiverRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
@@ -5823,6 +5860,7 @@ async function seedInvoiceMatchAndIntake(
   const matchSubset = ctx.org.showcase
     ? invoices.slice(0, Math.min(invoices.length, 10))
     : invoices.filter((_, i) => i % 4 === 0).slice(0, 6);
+  const matchRows: Prisma.InvoiceMatchResultCreateManyInput[] = [];
   for (const [i, inv] of matchSubset.entries()) {
     const status = matchStatuses[i % matchStatuses.length] as (typeof matchStatuses)[number];
     const matchedBy = matchedBys[i % matchedBys.length] as (typeof matchedBys)[number];
@@ -5832,25 +5870,29 @@ async function seedInvoiceMatchAndIntake(
         : ctx.fakers.org.helpers.arrayElement(['65.00', '80.00', '92.50', '99.00']);
     const expectedAmount = status === 'UNMATCHED' ? null : Math.round(inv.totalMinor * 0.95);
     const delta = expectedAmount === null ? null : inv.totalMinor - expectedAmount;
-    await prisma.invoiceMatchResult.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: inv.id,
-        matchedContractorId: status === 'UNMATCHED' ? null : inv.contractorId,
-        matchScore: score,
-        expectedAmountMinor: expectedAmount,
-        expectedCurrency: status === 'UNMATCHED' ? null : inv.currency,
-        amountDeltaMinor: delta,
-        amountDeltaPercent:
-          delta === null || expectedAmount === null || expectedAmount === 0
-            ? null
-            : ((delta / expectedAmount) * 100).toFixed(4),
-        matchedBy,
-        status,
-        explanationJson: { reason: status, source: 'seed' },
-        createdAt: inv.receivedAt,
-        createdByUserId: matchedBy === 'MANUAL' ? ctx.ownerUserId : null,
-      },
+    matchRows.push({
+      organizationId: ctx.organizationId,
+      invoiceId: inv.id,
+      matchedContractorId: status === 'UNMATCHED' ? null : inv.contractorId,
+      matchScore: score,
+      expectedAmountMinor: expectedAmount,
+      expectedCurrency: status === 'UNMATCHED' ? null : inv.currency,
+      amountDeltaMinor: delta,
+      amountDeltaPercent:
+        delta === null || expectedAmount === null || expectedAmount === 0
+          ? null
+          : ((delta / expectedAmount) * 100).toFixed(4),
+      matchedBy,
+      status,
+      explanationJson: { reason: status, source: 'seed' },
+      createdAt: inv.receivedAt,
+      createdByUserId: matchedBy === 'MANUAL' ? ctx.ownerUserId : null,
+    });
+  }
+  for (let i = 0; i < matchRows.length; i += 1000) {
+    await prisma.invoiceMatchResult.createMany({
+      data: matchRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 
@@ -5863,46 +5905,50 @@ async function seedInvoiceMatchAndIntake(
     : invoices.filter((_, i) => i % 5 === 0).slice(0, 4);
   const intakeStatuses = ['PARSED', 'NEEDS_REVIEW', 'MATCHED', 'CONVERTED', 'REJECTED'] as const;
   const intakeProfiles = ['XRECHNUNG', 'COMFORT', 'EXTENDED'] as const;
+  // Track convertedInvoiceIds locally so the @unique constraint isn't
+  // collided within the loop; skipDuplicates: true handles cross-run reseed.
+  const seenConvertedIds = new Set<string>();
+  const intakeRows: Prisma.InvoiceIntakeRequestCreateManyInput[] = [];
   for (const [i, inv] of intakeSubset.entries()) {
     const sourceKind = i % 2 === 0 ? 'UPLOAD_XML' : 'UPLOAD_PDF';
     const status = intakeStatuses[i % intakeStatuses.length] as (typeof intakeStatuses)[number];
     const profile = intakeProfiles[i % intakeProfiles.length] as (typeof intakeProfiles)[number];
     // convertedInvoiceId @unique — only set when status=CONVERTED.
     const convertedId = status === 'CONVERTED' ? inv.id : null;
-    // Ensure no other intake already converted this invoice (prior loop iter).
     if (convertedId) {
-      const existing = await prisma.invoiceIntakeRequest.findUnique({
-        where: { convertedInvoiceId: convertedId },
-        select: { id: true },
-      });
-      if (existing) continue;
+      if (seenConvertedIds.has(convertedId)) continue;
+      seenConvertedIds.add(convertedId);
     }
-    await prisma.invoiceIntakeRequest.create({
-      data: {
-        organizationId: ctx.organizationId,
-        uploadedByUserId: ctx.ownerUserId,
-        sourceKind,
-        rawFileKey: `seed/intake/${inv.id}/${tokenHex(4)}.${sourceKind === 'UPLOAD_XML' ? 'xml' : 'pdf'}`,
-        rawFileSha256: tokenHex(32),
-        rawFileMime: sourceKind === 'UPLOAD_XML' ? 'application/xml' : 'application/pdf',
-        rawFileSizeBytes: ctx.fakers.org.number.int({ min: 4 * 1024, max: 256 * 1024 }),
-        profileLevel: profile,
-        parsedInvoiceJson: {
-          seeded: true,
-          invoiceNumber: inv.invoiceNumber,
-          totalMinor: inv.totalMinor,
-        },
-        extractedSupplierName: ctx.fakers.org.company.name(),
-        extractedInvoiceNumber: inv.invoiceNumber,
-        extractedInvoiceDate: inv.issueDate,
-        extractedTotalMinor: BigInt(inv.totalMinor),
-        extractedCurrency: inv.currency,
-        matchedContractorId: status === 'PARSED' ? null : inv.contractorId,
-        convertedInvoiceId: convertedId,
-        status,
-        validationStatus: status === 'REJECTED' ? 'INVALID' : 'VALID',
-        createdAt: inv.receivedAt,
+    intakeRows.push({
+      organizationId: ctx.organizationId,
+      uploadedByUserId: ctx.ownerUserId,
+      sourceKind,
+      rawFileKey: `seed/intake/${inv.id}/${tokenHex(4)}.${sourceKind === 'UPLOAD_XML' ? 'xml' : 'pdf'}`,
+      rawFileSha256: tokenHex(32),
+      rawFileMime: sourceKind === 'UPLOAD_XML' ? 'application/xml' : 'application/pdf',
+      rawFileSizeBytes: ctx.fakers.org.number.int({ min: 4 * 1024, max: 256 * 1024 }),
+      profileLevel: profile,
+      parsedInvoiceJson: {
+        seeded: true,
+        invoiceNumber: inv.invoiceNumber,
+        totalMinor: inv.totalMinor,
       },
+      extractedSupplierName: ctx.fakers.org.company.name(),
+      extractedInvoiceNumber: inv.invoiceNumber,
+      extractedInvoiceDate: inv.issueDate,
+      extractedTotalMinor: BigInt(inv.totalMinor),
+      extractedCurrency: inv.currency,
+      matchedContractorId: status === 'PARSED' ? null : inv.contractorId,
+      convertedInvoiceId: convertedId,
+      status,
+      validationStatus: status === 'REJECTED' ? 'INVALID' : 'VALID',
+      createdAt: inv.receivedAt,
+    });
+  }
+  for (let i = 0; i < intakeRows.length; i += 1000) {
+    await prisma.invoiceIntakeRequest.createMany({
+      data: intakeRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
