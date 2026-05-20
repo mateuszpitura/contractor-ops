@@ -7,6 +7,22 @@
  * resolved DATABASE_URL host falls outside SEED_DEV_ALLOWED_HOST allowlist.
  *
  * ---------------------------------------------------------------------------
+ * Batching policy
+ * ---------------------------------------------------------------------------
+ * Every per-row `prisma.X.create()` inside a loop has been converted to a
+ * chunked `prisma.X.createMany({ data, skipDuplicates: true })` (default
+ * chunk = 1000 rows; wide tables drop to 500/250 to stay under Postgres'
+ * 65535 bind-parameter ceiling). This reduces Neon HTTP round-trip count
+ * from O(rows) to O(rows / chunk) and brings `pnpm seed:qa` down from
+ * ~60 min to single-digit minutes against Neon. Child primary keys that
+ * downstream seeders need are pre-computed in-process with
+ * `crypto.randomUUID()` (already imported below) before the parent
+ * `createMany` runs, so children can reference parent ids without a
+ * follow-up `findMany`. Intentionally one-shot calls
+ * (e.g. `prisma.organization.create({ ..., members: { create: [...] } })`)
+ * stay as nested `create` because they are already a single round-trip.
+ *
+ * ---------------------------------------------------------------------------
  * What it produces
  * ---------------------------------------------------------------------------
  * Creates a coherent slice of data across the whole tenant surface so the app
