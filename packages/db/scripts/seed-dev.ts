@@ -5529,36 +5529,39 @@ async function seedClassification(
   const verdicts = ['IR35_OUTSIDE', 'IR35_INSIDE', 'IR35_INDETERMINATE'] as const;
   const escalationKinds = ['AMBER_VERDICT_AUTO', 'GET_EXPERT_HELP_CLICK', 'MANUAL_FLAG'] as const;
 
+  const assessmentRows: Prisma.ClassificationAssessmentCreateManyInput[] = [];
+  const documentRows: Prisma.ClassificationDocumentCreateManyInput[] = [];
+  const escalationRows: Prisma.ClassificationEscalationEventCreateManyInput[] = [];
+  const approvalRows: Prisma.SdsApprovalCreateManyInput[] = [];
   for (const [i, a] of subset.entries()) {
     const completedAtBase = pastDateAfter(ctx.fakers.org, 270, ctx.foundedAt);
     const isCompleted = ctx.org.showcase || ctx.fakers.org.datatype.boolean({ probability: 0.7 });
     const verdict = verdicts[i % verdicts.length] as (typeof verdicts)[number];
     const completedAt = isCompleted ? completedAtBase : null;
 
-    const assessment = await prisma.classificationAssessment.create({
-      data: {
-        organizationId: ctx.organizationId,
-        contractorAssignmentId: a.id,
-        countryCode: ctx.profile.countryCode,
-        ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
-        policyRuleSetVersion: CLASSIFICATION_POLICY_VERSION,
-        status: isCompleted ? 'completed' : 'draft',
-        questionsSnapshot: isCompleted
-          ? { questions: ['SUBSTITUTION', 'CONTROL', 'MUTUALITY', 'EQUIPMENT', 'FINANCIAL_RISK'] }
-          : Prisma.JsonNull,
-        answers: { SUBSTITUTION: 'YES', CONTROL: 'NO', MUTUALITY: 'NO' },
-        outcome: isCompleted
-          ? {
-              verdict,
-              score: ctx.fakers.org.number.float({ min: 0.3, max: 0.95, fractionDigits: 2 }),
-            }
-          : Prisma.JsonNull,
-        completedAt,
-        disclaimerAcknowledgedAt: completedAt,
-        immutableAfter: completedAt ? new Date(completedAt.getTime() + 30 * 86_400_000) : null,
-        createdAt: completedAtBase,
-      },
-      select: { id: true },
+    const assessmentId = randomUUID();
+    assessmentRows.push({
+      id: assessmentId,
+      organizationId: ctx.organizationId,
+      contractorAssignmentId: a.id,
+      countryCode: ctx.profile.countryCode,
+      ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
+      policyRuleSetVersion: CLASSIFICATION_POLICY_VERSION,
+      status: isCompleted ? 'completed' : 'draft',
+      questionsSnapshot: isCompleted
+        ? { questions: ['SUBSTITUTION', 'CONTROL', 'MUTUALITY', 'EQUIPMENT', 'FINANCIAL_RISK'] }
+        : Prisma.JsonNull,
+      answers: { SUBSTITUTION: 'YES', CONTROL: 'NO', MUTUALITY: 'NO' },
+      outcome: isCompleted
+        ? {
+            verdict,
+            score: ctx.fakers.org.number.float({ min: 0.3, max: 0.95, fractionDigits: 2 }),
+          }
+        : Prisma.JsonNull,
+      completedAt,
+      disclaimerAcknowledgedAt: completedAt,
+      immutableAfter: completedAt ? new Date(completedAt.getTime() + 30 * 86_400_000) : null,
+      createdAt: completedAtBase,
     });
 
     if (!isCompleted) continue;
@@ -5571,20 +5574,18 @@ async function seedClassification(
     for (let d = 0; d < docCount; d += 1) {
       const kind = docKinds[d] as (typeof docKinds)[number];
       const byteSize = ctx.fakers.org.number.int({ min: 8 * 1024, max: 1024 * 1024 });
-      await prisma.classificationDocument.create({
-        data: {
-          organizationId: ctx.organizationId,
-          classificationAssessmentId: assessment.id,
-          kind,
-          pdfKey: `seed/classification/${assessment.id}/${kind.toLowerCase()}.pdf`,
-          sha256Hash: tokenHex(32),
-          byteSize,
-          rendererVersion: '1.0.0-seed',
-          ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
-          generatedAt: completedAtBase,
-          generatedByUserId: ctx.ownerUserId,
-          createdAt: completedAtBase,
-        },
+      documentRows.push({
+        organizationId: ctx.organizationId,
+        classificationAssessmentId: assessmentId,
+        kind,
+        pdfKey: `seed/classification/${assessmentId}/${kind.toLowerCase()}.pdf`,
+        sha256Hash: tokenHex(32),
+        byteSize,
+        rendererVersion: '1.0.0-seed',
+        ruleSetVersion: CLASSIFICATION_RULE_SET_VERSION,
+        generatedAt: completedAtBase,
+        generatedByUserId: ctx.ownerUserId,
+        createdAt: completedAtBase,
       });
     }
 
@@ -5594,22 +5595,18 @@ async function seedClassification(
       const triggerKind = escalationKinds[
         i % escalationKinds.length
       ] as (typeof escalationKinds)[number];
-      await prisma.classificationEscalationEvent.create({
-        data: {
-          organizationId: ctx.organizationId,
-          userId: ctx.ownerUserId,
-          contractorId: a.contractorId,
-          assessmentId: assessment.id,
-          verdict,
-          triggerKind,
-          referralTarget:
-            triggerKind === 'GET_EXPERT_HELP_CLICK'
-              ? 'https://example.com/expert'
-              : 'INTERNAL_PAGE',
-          ipAddress: '127.0.0.1',
-          userAgent: 'seed-dev',
-          createdAt: completedAtBase,
-        },
+      escalationRows.push({
+        organizationId: ctx.organizationId,
+        userId: ctx.ownerUserId,
+        contractorId: a.contractorId,
+        assessmentId,
+        verdict,
+        triggerKind,
+        referralTarget:
+          triggerKind === 'GET_EXPERT_HELP_CLICK' ? 'https://example.com/expert' : 'INTERNAL_PAGE',
+        ipAddress: '127.0.0.1',
+        userAgent: 'seed-dev',
+        createdAt: completedAtBase,
       });
     }
 
@@ -5619,18 +5616,42 @@ async function seedClassification(
       ? i % 2 === 0
       : ctx.fakers.org.datatype.boolean({ probability: 0.5 });
     if (seedApproval) {
-      await prisma.sdsApproval.create({
-        data: {
-          organizationId: ctx.organizationId,
-          assessmentId: assessment.id,
-          approvedByUserId: ctx.ownerUserId,
-          approvedAt: advanceCapped(completedAtBase, ctx.fakers.org.number.int({ min: 1, max: 7 })),
-          clientName: `${ctx.fakers.ascii.company.name()} Ltd.`,
-          approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_SNAPSHOT,
-          createdAt: completedAtBase,
-        },
+      approvalRows.push({
+        organizationId: ctx.organizationId,
+        assessmentId,
+        approvedByUserId: ctx.ownerUserId,
+        approvedAt: advanceCapped(completedAtBase, ctx.fakers.org.number.int({ min: 1, max: 7 })),
+        clientName: `${ctx.fakers.ascii.company.name()} Ltd.`,
+        approvalStatementSnapshot: SDS_APPROVAL_STATEMENT_SNAPSHOT,
+        createdAt: completedAtBase,
       });
     }
+  }
+
+  // Wave inserts: parent assessment → children referencing assessment id.
+  for (let i = 0; i < assessmentRows.length; i += 1000) {
+    await prisma.classificationAssessment.createMany({
+      data: assessmentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < documentRows.length; i += 1000) {
+    await prisma.classificationDocument.createMany({
+      data: documentRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < escalationRows.length; i += 1000) {
+    await prisma.classificationEscalationEvent.createMany({
+      data: escalationRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < approvalRows.length; i += 1000) {
+    await prisma.sdsApproval.createMany({
+      data: approvalRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
   }
 }
 
