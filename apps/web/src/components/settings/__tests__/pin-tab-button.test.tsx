@@ -98,4 +98,58 @@ describe('PinTabButton', () => {
     await user.click(screen.getByRole('switch'));
     expect(handleToggle).not.toHaveBeenCalled();
   });
+
+  it('does not nest a <button> when rendered inside a parent <button>', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    render(
+      <button type="button">
+        Tab
+        <PinTabButton
+          tabKey="general"
+          tabLabel="General"
+          pinned={true}
+          active={false}
+          pinAriaLabel="Pin General"
+          unpinAriaLabel="Unpin General"
+          onToggle={vi.fn()}
+        />
+      </button>,
+    );
+
+    const toggle = screen.getByRole('switch');
+    expect(toggle.tagName).toBe('SPAN');
+    const nestedButtonWarning = errorSpy.mock.calls.find(call =>
+      call.some(
+        arg =>
+          typeof arg === 'string' &&
+          (arg.includes('<button> cannot be a descendant of <button>') ||
+            arg.includes('cannot contain a nested <button>')),
+      ),
+    );
+    expect(nestedButtonWarning).toBeUndefined();
+    errorSpy.mockRestore();
+  });
+
+  it('activates on Enter and Space when focused', async () => {
+    const handleToggle = vi.fn();
+    const { user } = setup(
+      <PinTabButton
+        tabKey="general"
+        tabLabel="General"
+        pinned={false}
+        active={true}
+        pinAriaLabel="Pin General"
+        unpinAriaLabel="Unpin General"
+        onToggle={handleToggle}
+      />,
+    );
+
+    const toggle = screen.getByRole('switch');
+    toggle.focus();
+    await user.keyboard('{Enter}');
+    expect(handleToggle).toHaveBeenCalledTimes(1);
+
+    await user.keyboard(' ');
+    expect(handleToggle).toHaveBeenCalledTimes(2);
+  });
 });

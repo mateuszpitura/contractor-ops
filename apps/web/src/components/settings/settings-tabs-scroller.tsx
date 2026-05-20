@@ -72,15 +72,13 @@ export function SettingsTabsScroller({ children, className }: SettingsTabsScroll
       <div
         aria-hidden="true"
         data-visible={showStart}
-        className={cn(chevronBase, 'start-0', 'data-[visible=true]:opacity-100')}
-        style={chevronGradientStyle('start')}>
+        className={cn(chevronBase, 'start-0', 'data-[visible=true]:opacity-100')}>
         <ChevronLeft className="h-4 w-4" />
       </div>
       <div
         aria-hidden="true"
         data-visible={showEnd}
-        className={cn(chevronBase, 'end-0', 'data-[visible=true]:opacity-100')}
-        style={chevronGradientStyle('end')}>
+        className={cn(chevronBase, 'end-0', 'data-[visible=true]:opacity-100')}>
         <ChevronRight className="h-4 w-4" />
       </div>
     </div>
@@ -92,7 +90,7 @@ export function SettingsTabsScroller({ children, className }: SettingsTabsScroll
  * oklch-based `--background` token so the fade matches both light and dark
  * themes without recomputing alpha channels manually.
  */
-function chevronGradientStyle(side: 'start' | 'end'): CSSProperties {
+function _chevronGradientStyle(side: 'start' | 'end'): CSSProperties {
   const direction = side === 'start' ? 'to right' : 'to left';
   return {
     backgroundImage: `linear-gradient(${direction}, var(--background) 0%, color-mix(in oklch, var(--background) 70%, transparent) 60%, transparent 100%)`,

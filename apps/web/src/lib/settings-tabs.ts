@@ -53,6 +53,12 @@ export interface SettingsTabDef {
   icon: LucideIcon;
   /** RBAC requirement mirrored from the settings page; `null` = always visible. */
   permission: SettingsTabPermission | null;
+  /**
+   * When true, the tab requires the Better Auth platform admin role
+   * (`User.role === 'admin'`) — not just an org-level permission. Used
+   * for cross-tenant operations (e.g. Feature flags).
+   */
+  platformAdmin?: boolean;
 }
 
 export const SETTINGS_TABS: readonly SettingsTabDef[] = [
@@ -88,7 +94,8 @@ export const SETTINGS_TABS: readonly SettingsTabDef[] = [
     key: 'feature-flags',
     i18nKey: 'featureFlags',
     icon: Flag,
-    permission: { resource: 'settings', actions: ['read'] },
+    permission: null,
+    platformAdmin: true,
   },
   { key: 'members', i18nKey: 'members', icon: Users, permission: null },
   { key: 'workflow-roles', i18nKey: 'workflowRoles', icon: Users2, permission: null },
