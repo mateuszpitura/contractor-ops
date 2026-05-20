@@ -208,9 +208,11 @@ async function probeR2(): Promise<ProbeResult> {
     // on requests that don't need health probes.
     const { S3Client, HeadObjectCommand, S3ServiceException } = await import('@aws-sdk/client-s3');
 
+    const endpoint = process.env.R2_ENDPOINT ?? `https://${accountId}.r2.cloudflarestorage.com`;
     const client = new S3Client({
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint,
+      forcePathStyle: process.env.R2_FORCE_PATH_STYLE === 'true',
       credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
     });
 

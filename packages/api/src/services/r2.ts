@@ -21,9 +21,11 @@ let r2Client: S3Client | null = null;
 export function createR2Client(): S3Client {
   if (!r2Client) {
     const env = getServerEnv();
+    const endpoint = env.R2_ENDPOINT ?? `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
     r2Client = new S3Client({
       region: 'auto',
-      endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      endpoint,
+      forcePathStyle: env.R2_FORCE_PATH_STYLE,
       credentials: {
         accessKeyId: env.R2_ACCESS_KEY_ID,
         secretAccessKey: env.R2_SECRET_ACCESS_KEY,
@@ -180,7 +182,7 @@ export async function createPresignedUploadUrl(
     Bucket: getDefaultBucket(),
     Key: key,
     ContentType: contentType,
-    ...(maxBytes !== undefined ? { ContentLength: maxBytes } : {}),
+    ...(maxBytes === undefined ? {} : { ContentLength: maxBytes }),
   });
   return getSignedUrl(client, command, { expiresIn });
 }

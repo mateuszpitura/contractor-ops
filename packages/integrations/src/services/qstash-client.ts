@@ -25,7 +25,11 @@ export function getQStashClient(): Client {
     if (!token) {
       throw new Error('QSTASH_TOKEN environment variable is not set');
     }
-    client = new Client({ token });
+    // QSTASH_URL points at the local QStash dev server in development
+    // (e.g. http://localhost:8089). Unset in production → SDK defaults to
+    // https://qstash.upstash.io.
+    const baseUrl = process.env.QSTASH_URL;
+    client = new Client(baseUrl ? { token, baseUrl } : { token });
   }
   return client;
 }

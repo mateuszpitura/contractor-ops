@@ -253,9 +253,11 @@ async function probeR2(): Promise<DependencyProbe> {
   const start = Date.now();
   try {
     const { S3Client, HeadObjectCommand } = await import('@aws-sdk/client-s3');
+    const endpoint = process.env.R2_ENDPOINT ?? `https://${accountId}.r2.cloudflarestorage.com`;
     const client = new S3Client({
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint,
+      forcePathStyle: process.env.R2_FORCE_PATH_STYLE === 'true',
       credentials: { accessKeyId: accessKey, secretAccessKey: secretKey },
     });
     await withProbeTimeout(

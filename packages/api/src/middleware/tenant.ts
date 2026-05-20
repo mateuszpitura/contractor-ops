@@ -8,7 +8,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../errors';
 import { t } from '../init';
-import { getOrgMeta, invalidateOrgMeta } from '../services/org-cache';
+import { getOrgMeta, invalidateOrgBranding, invalidateOrgMeta } from '../services/org-cache';
 import { authedProcedure } from './auth';
 
 // ---------------------------------------------------------------------------
@@ -49,6 +49,7 @@ function withOrgCacheInvalidation<T extends ReturnType<typeof createTenantClient
           const orgId = (args as OrgMutationArgs).where?.id ?? (args as OrgMutationArgs).data?.id;
           if (typeof orgId === 'string') {
             void invalidateOrgMeta(orgId);
+            void invalidateOrgBranding(orgId);
           }
           return result;
         },
@@ -57,6 +58,7 @@ function withOrgCacheInvalidation<T extends ReturnType<typeof createTenantClient
           const orgId = (args as OrgMutationArgs).where?.id;
           if (typeof orgId === 'string') {
             void invalidateOrgMeta(orgId);
+            void invalidateOrgBranding(orgId);
           }
           return result;
         },

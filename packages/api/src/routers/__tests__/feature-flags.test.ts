@@ -195,7 +195,7 @@ import { appRouter } from '../../root';
 
 const createCaller = createCallerFactory(appRouter);
 
-function makeCaller(userId = USER_ID, orgId = ORG_ID) {
+function makeCaller(userId = USER_ID, orgId = ORG_ID, role: string = 'admin') {
   const session = {
     session: {
       id: `session-${userId}`,
@@ -217,7 +217,7 @@ function makeCaller(userId = USER_ID, orgId = ORG_ID) {
       banned: false,
       banReason: null,
       banExpires: null,
-      role: 'admin',
+      role,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -309,5 +309,14 @@ describe('featureFlags.list', () => {
     // Restore for other tests
     mockFlagKeys.push('module.legal-approval', 'module.ksef');
     expect(mockFlagKeys).toHaveLength(originalLength);
+  });
+
+  it('throws FORBIDDEN when caller is not a platform admin', async () => {
+    const orgAdminCaller = makeCaller(USER_ID, ORG_ID, 'user');
+
+    await expect(orgAdminCaller.featureFlags.list()).rejects.toMatchObject({
+      code: 'FORBIDDEN',
+      message: 'PLATFORM_ADMIN_REQUIRED',
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { FLAG_KEYS, FLAGS } from '@contractor-ops/feature-flags';
+import { TRPCError } from '@trpc/server';
 import { router } from '../../init';
 import { tenantFlaggedProcedure } from '../../middleware/feature-flag';
 
@@ -8,6 +9,10 @@ import { tenantFlaggedProcedure } from '../../middleware/feature-flag';
  * Used by the web app to hydrate the client-side flag bag and to power any
  * future in-app admin views. Write operations (flipping toggles) are NOT
  * exposed here — Unleash's own UI is the control plane for v1.
+ *
+ * Reading the full flag matrix is a cross-tenant operation, so it is gated
+ * to Better Auth platform admins (`User.role === 'admin'`). Org-level
+ * roles never expose this surface.
  */
 export const featureFlagsRouter = router({
   /**
@@ -17,6 +22,9 @@ export const featureFlagsRouter = router({
    * endpoint which mirrors the same shape.
    */
   list: tenantFlaggedProcedure.query(({ ctx }) => {
+    if (ctx.user.role !== 'admin') {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'PLATFORM_ADMIN_REQUIRED' });
+    }
     return FLAG_KEYS.map(key => ({
       key,
       description: FLAGS[key].description,

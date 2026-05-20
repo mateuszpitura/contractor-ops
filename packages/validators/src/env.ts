@@ -84,6 +84,17 @@ const r2Schema = z.object({
   R2_BUCKET_NAME_EU: z.string().default('contractor-ops-documents-eu'),
   R2_BUCKET_NAME_ME: z.string().default('contractor-ops-documents-me'),
   R2_PUBLIC_URL: optionalUrl,
+  // Optional S3-compatible endpoint override. Unset → Cloudflare R2
+  // (`https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`). Set this to point
+  // at a local MinIO instance (e.g. `http://localhost:9000`) for offline dev.
+  R2_ENDPOINT: optionalUrl,
+  // Force path-style addressing. R2 uses virtual-hosted-style by default;
+  // MinIO defaults to path-style. Set to `true` when R2_ENDPOINT points at
+  // MinIO.
+  R2_FORCE_PATH_STYLE: z
+    .string()
+    .optional()
+    .transform(v => v === 'true'),
 });
 
 // ── ClamAV ──────────────────────────────────────────────────────────────────
