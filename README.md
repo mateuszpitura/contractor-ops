@@ -105,8 +105,9 @@ pnpm db:seed:dev -- --confirm
 # 7. ClamAV (recommended — file upload / virus scan flows expect a healthy daemon)
 docker compose up -d clamav
 
-# 8. Extra dev tooling: Mailpit, MinIO, pgAdmin, Redis Insight,
-#    plus local Upstash substitutes (app-redis + SRH + QStash dev server).
+# 8. Extra dev tooling: Mailpit, MinIO, DBGate (Postgres + Redis GUI),
+#    Redis Insight, plus local Upstash substitutes
+#    (app-redis + SRH + QStash dev server).
 docker compose --profile dev-tooling up -d
 # Open http://localhost:8888 (dev-portal) for the full link directory.
 

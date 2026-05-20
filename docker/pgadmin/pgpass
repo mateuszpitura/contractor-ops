@@ -1,4 +1,0 @@
-app-db:5432:*:app:app
-infisical-db:5432:*:infisical:infisical
-unleash-db:5432:*:unleash:unleash
-glitchtip-db:5432:*:glitchtip:glitchtip
