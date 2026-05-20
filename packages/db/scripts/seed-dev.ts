@@ -6743,6 +6743,8 @@ async function seedOcr(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
   const ocrStatuses = ['PENDING', 'PROCESSING', 'EXTRACTED', 'PARTIAL', 'FAILED'] as const;
   const ocrProviders = ['CLAUDE', 'GOOGLE_DOCUMENT_AI', 'AZURE_FORM_RECOGNIZER'] as const;
 
+  const extractionRows: Prisma.OcrExtractionCreateManyInput[] = [];
+  const pendingUploadRows: Prisma.PendingUploadCreateManyInput[] = [];
   for (const [i, f] of invoiceFiles.entries()) {
     const status = ocrStatuses[i % ocrStatuses.length] as (typeof ocrStatuses)[number];
     const provider = ocrProviders[i % ocrProviders.length] as (typeof ocrProviders)[number];
@@ -6751,64 +6753,67 @@ async function seedOcr(prisma: PrismaClient, ctx: OrgSeed): Promise<void> {
         ? pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt)
         : null;
 
-    await prisma.ocrExtraction.create({
-      data: {
-        organizationId: ctx.organizationId,
-        invoiceId: f.invoiceId,
-        documentId: f.documentId,
-        provider,
-        status,
-        resultJson:
-          status === 'PENDING' || status === 'PROCESSING'
-            ? Prisma.JsonNull
-            : {
-                supplierName: ctx.fakers.org.company.name(),
-                invoiceNumber: `INV-${tokenHex(3).toUpperCase()}`,
-                totalMinor: ctx.fakers.org.number.int({ min: 10_000, max: 500_000 }),
-                currency: ctx.profile.defaultCurrency,
-                lineItems: Array.from(
-                  { length: ctx.fakers.org.number.int({ min: 1, max: 4 }) },
-                  () => ({
-                    description: ctx.fakers.org.commerce.productName(),
-                    quantity: ctx.fakers.org.number.int({ min: 1, max: 5 }),
-                    unitPriceMinor: ctx.fakers.org.number.int({ min: 1_000, max: 50_000 }),
-                  }),
-                ),
-              },
-        overallConfidence: status === 'EXTRACTED' ? '95.50' : status === 'PARTIAL' ? '67.25' : null,
-        pageCount: status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 1, max: 4 }),
-        processingTimeMs:
-          status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 800, max: 8_500 }),
-        errorMessage: status === 'FAILED' ? 'Provider returned 5xx (seeded)' : null,
-        retryCount: status === 'FAILED' ? ctx.fakers.org.number.int({ min: 1, max: 3 }) : 0,
-        createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
-        completedAt,
-      },
+    extractionRows.push({
+      organizationId: ctx.organizationId,
+      invoiceId: f.invoiceId,
+      documentId: f.documentId,
+      provider,
+      status,
+      resultJson:
+        status === 'PENDING' || status === 'PROCESSING'
+          ? Prisma.JsonNull
+          : {
+              supplierName: ctx.fakers.org.company.name(),
+              invoiceNumber: `INV-${tokenHex(3).toUpperCase()}`,
+              totalMinor: ctx.fakers.org.number.int({ min: 10_000, max: 500_000 }),
+              currency: ctx.profile.defaultCurrency,
+              lineItems: Array.from(
+                { length: ctx.fakers.org.number.int({ min: 1, max: 4 }) },
+                () => ({
+                  description: ctx.fakers.org.commerce.productName(),
+                  quantity: ctx.fakers.org.number.int({ min: 1, max: 5 }),
+                  unitPriceMinor: ctx.fakers.org.number.int({ min: 1_000, max: 50_000 }),
+                }),
+              ),
+            },
+      overallConfidence: status === 'EXTRACTED' ? '95.50' : status === 'PARTIAL' ? '67.25' : null,
+      pageCount: status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 1, max: 4 }),
+      processingTimeMs:
+        status === 'PENDING' ? null : ctx.fakers.org.number.int({ min: 800, max: 8_500 }),
+      errorMessage: status === 'FAILED' ? 'Provider returned 5xx (seeded)' : null,
+      retryCount: status === 'FAILED' ? ctx.fakers.org.number.int({ min: 1, max: 3 }) : 0,
+      createdAt: pastDateAfter(ctx.fakers.org, 30, ctx.foundedAt),
+      completedAt,
     });
 
     // PendingUpload precursor — only for half the rows so the Pending Upload
-    // page shows both consumed and active rows. documentId @unique so ensure
-    // we don't collide with an existing one.
+    // page shows both consumed and active rows. documentId @unique on
+    // PendingUpload; skipDuplicates: true covers reseed.
     if (i % 2 !== 0) continue;
-    const existing = await prisma.pendingUpload.findUnique({
-      where: { documentId: f.documentId },
-      select: { id: true },
-    });
-    if (existing) continue;
     const consumed = i % 4 === 0;
-    await prisma.pendingUpload.create({
-      data: {
-        organizationId: ctx.organizationId,
-        documentId: f.documentId,
-        storageKey: `seed/uploads/${f.documentId}.pdf`,
-        mimeType: 'application/pdf',
-        fileSizeBytesMax: 10 * 1024 * 1024,
-        purpose: 'PORTAL_INVOICE_SUBMIT',
-        createdByUserId: ctx.ownerUserId,
-        expiresAt: futureDate(ctx.fakers.org, 7),
-        consumedAt: consumed ? pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt) : null,
-        createdAt: pastDateAfter(ctx.fakers.org, 14, ctx.foundedAt),
-      },
+    pendingUploadRows.push({
+      organizationId: ctx.organizationId,
+      documentId: f.documentId,
+      storageKey: `seed/uploads/${f.documentId}.pdf`,
+      mimeType: 'application/pdf',
+      fileSizeBytesMax: 10 * 1024 * 1024,
+      purpose: 'PORTAL_INVOICE_SUBMIT',
+      createdByUserId: ctx.ownerUserId,
+      expiresAt: futureDate(ctx.fakers.org, 7),
+      consumedAt: consumed ? pastDateAfter(ctx.fakers.org, 7, ctx.foundedAt) : null,
+      createdAt: pastDateAfter(ctx.fakers.org, 14, ctx.foundedAt),
+    });
+  }
+  for (let i = 0; i < extractionRows.length; i += 1000) {
+    await prisma.ocrExtraction.createMany({
+      data: extractionRows.slice(i, i + 1000),
+      skipDuplicates: true,
+    });
+  }
+  for (let i = 0; i < pendingUploadRows.length; i += 1000) {
+    await prisma.pendingUpload.createMany({
+      data: pendingUploadRows.slice(i, i + 1000),
+      skipDuplicates: true,
     });
   }
 }
