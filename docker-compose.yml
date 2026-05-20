@@ -35,7 +35,7 @@ services:
 
   infisical-backend:
     profiles: [infisical]
-    image: infisical/infisical:v0.159.9
+    image: infisical/infisical:v0.160.1
     container_name: contractor-ops-infisical-backend
     restart: unless-stopped
     depends_on:
@@ -61,7 +61,7 @@ services:
 
   infisical-gateway:
     profiles: [infisical]
-    image: nginx:1.28-alpine
+    image: nginx:1.31-alpine
     container_name: contractor-ops-infisical-gateway
     restart: unless-stopped
     depends_on:
@@ -82,7 +82,7 @@ services:
 
   infisical-redis:
     profiles: [infisical]
-    image: redis:8-alpine
+    image: redis:8.6.3-alpine
     container_name: contractor-ops-infisical-redis
     restart: unless-stopped
     volumes:
@@ -108,11 +108,12 @@ services:
 
   mailpit:
     profiles: [dev-tooling]
-    image: axllent/mailpit:v1.29.6
+    image: axllent/mailpit:v1.30.0
     container_name: contractor-ops-mailpit
     restart: unless-stopped
     networks:
       - infisical
+      - glitchtip
     ports:
       - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
       - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
@@ -128,35 +129,265 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     volumes:
       - minio_data:/data
-    ports:
-      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
-      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
-
-  cloudbeaver:
-    profiles: [dev-tooling]
-    image: dbeaver/cloudbeaver:24.3.5
-    container_name: contractor-ops-cloudbeaver
-    restart: unless-stopped
-    volumes:
-      - cloudbeaver_workspace:/opt/cloudbeaver/workspace
     networks:
       - infisical
     ports:
-      - "127.0.0.1:${CLOUDBEAVER_PORT:-8978}:8978"
+      - "127.0.0.1:${MINIO_API_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  # ── MinIO bucket init — create R2-substitute buckets on first start ─────
+  # Idempotent: `mc mb --ignore-existing` skips when bucket already present.
+  # Mirrors the prod R2 bucket names so swapping R2_ENDPOINT just works.
+  minio-init:
+    profiles: [dev-tooling]
+    image: minio/mc:latest
+    container_name: contractor-ops-minio-init
+    restart: "no"
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin}
+        mc mb --ignore-existing local/contractor-ops-documents
+        mc mb --ignore-existing local/contractor-ops-documents-eu
+        mc mb --ignore-existing local/contractor-ops-documents-me
+        echo "[minio-init] buckets ready"
+    networks:
+      - infisical
+
+  # ── DBGate — unified browser GUI for Postgres + Redis ────────────────────
+  # Declarative connection bootstrap via env. Replaces pgAdmin + RedisInsight
+  # once the team is happy with the UX. Until then, runs alongside both.
+  # Default login (when DBGATE_LOGIN/DBGATE_PASSWORD set): root / Test1234!
+  dbgate:
+    profiles: [dev-tooling]
+    image: dbgate/dbgate:7.1.11-alpine
+    container_name: contractor-ops-dbgate
+    restart: unless-stopped
+    environment:
+      # Web auth — single shared login since this is local-dev. Leave blank to
+      # disable auth entirely.
+      WEB_ROOT_PATH: ""
+      LOGIN: ${DBGATE_LOGIN:-root}
+      PASSWORD: ${DBGATE_PASSWORD:-Test1234!}
+      # Declarative connections (comma-separated IDs, then per-id fields).
+      CONNECTIONS: "app,infisical,unleash,glitchtip,appRedis,infisicalRedis"
+
+      LABEL_app: "app-db"
+      SERVER_app: app-db
+      PORT_app: "5432"
+      USER_app: app
+      PASSWORD_app: app
+      ENGINE_app: "postgres@dbgate-plugin-postgres"
+
+      LABEL_infisical: "infisical-db"
+      SERVER_infisical: infisical-db
+      PORT_infisical: "5432"
+      USER_infisical: infisical
+      PASSWORD_infisical: infisical
+      DATABASE_infisical: infisical
+      ENGINE_infisical: "postgres@dbgate-plugin-postgres"
+
+      LABEL_unleash: "unleash-db"
+      SERVER_unleash: unleash-db
+      PORT_unleash: "5432"
+      USER_unleash: unleash
+      PASSWORD_unleash: unleash
+      DATABASE_unleash: unleash
+      ENGINE_unleash: "postgres@dbgate-plugin-postgres"
+
+      LABEL_glitchtip: "glitchtip-db"
+      SERVER_glitchtip: glitchtip-db
+      PORT_glitchtip: "5432"
+      USER_glitchtip: glitchtip
+      PASSWORD_glitchtip: glitchtip
+      DATABASE_glitchtip: glitchtip
+      ENGINE_glitchtip: "postgres@dbgate-plugin-postgres"
+
+      LABEL_appRedis: "app-redis"
+      SERVER_appRedis: app-redis
+      PORT_appRedis: "6379"
+      ENGINE_appRedis: "redis@dbgate-plugin-redis"
+
+      LABEL_infisicalRedis: "infisical-redis"
+      SERVER_infisicalRedis: infisical-redis
+      PORT_infisicalRedis: "6379"
+      ENGINE_infisicalRedis: "redis@dbgate-plugin-redis"
+    volumes:
+      - dbgate_data:/root/.dbgate
+    networks:
+      - infisical
+      - glitchtip
+      - unleash
+    ports:
+      - "127.0.0.1:${DBGATE_PORT:-8979}:3000"
+
+  # ── pgAdmin4 — Postgres GUI with declarative server bootstrap ─────────────
+  # All local Postgres instances (app-db EU/ME/CMS + infisical-db + unleash-db
+  # + glitchtip-db) are auto-registered via servers.json mounted at the
+  # well-known path. Passwords come from pgpass mounted as /pgpass and
+  # referenced per-server.
+  #
+  # Default login: admin@local.dev / Test1234! (override via env).
+  # Server mode disabled → single-user experience, no internal user setup.
+  pgadmin:
+    profiles: [dev-tooling]
+    image: dpage/pgadmin4:9.15.0
+    container_name: contractor-ops-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-Test1234!}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PGADMIN_DISABLE_POSTFIX: "True"
+    user: root
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        cp /seed/pgpass /pgpass
+        chmod 600 /pgpass
+        chown pgadmin:root /pgpass
+        exec /entrypoint.sh
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/seed/pgpass:ro
+    networks:
+      - infisical
+      - glitchtip
+      - unleash
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-8978}:80"
 
   redisinsight:
     profiles: [dev-tooling]
-    image: redis/redisinsight:3.2.0
+    image: redis/redisinsight:3.4.2
     container_name: contractor-ops-redisinsight
     restart: unless-stopped
+    depends_on:
+      app-redis:
+        condition: service_healthy
+    environment:
+      # Preconfigure database connections per Docker Hub docs — replace the
+      # asterisk with a unique suffix per connection. State is wiped on each
+      # `up -d` (no /data volume) so this re-applies cleanly every run.
+      RI_REDIS_HOST_1: app-redis
+      RI_REDIS_PORT_1: "6379"
+      RI_REDIS_ALIAS_1: app-redis
+      RI_REDIS_HOST_2: infisical-redis
+      RI_REDIS_PORT_2: "6379"
+      RI_REDIS_ALIAS_2: infisical-redis
     networks:
       - infisical
     ports:
       - "127.0.0.1:${REDISINSIGHT_PORT:-5540}:5540"
 
+  # ── App Postgres — Neon substitute for local dev ──────────────────────────
+  # Plain Postgres 17 (mirrors the major Neon runs). App code uses the
+  # standard pg driver via `@prisma/adapter-pg` — no Neon emulator needed.
+  # Keep Neon for pre-prod / staging to validate driver+latency behaviour
+  # against the production setup; this is the fast local-dev path.
+  #
+  # Hosts BOTH region databases in one instance — matches the multi-region
+  # Prisma split (DATABASE_URL_EU / DATABASE_URL_ME). On first boot
+  # `docker/postgres/10-create-me-db.sql` creates the ME twin alongside the
+  # EU default. Run `pnpm db:migrate:all` after `pnpm db:migrate:dev` to
+  # propagate the schema to both.
+  #   DATABASE_URL_EU=postgresql://app:app@localhost:5433/contractor_ops_eu
+  #   DATABASE_URL_ME=postgresql://app:app@localhost:5433/contractor_ops_me
+  app-db:
+    profiles: [dev-tooling]
+    image: postgres:17-alpine
+    container_name: contractor-ops-app-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${APP_DB_USER:-app}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-app}
+      POSTGRES_DB: ${APP_DB_NAME:-contractor_ops_eu}
+    volumes:
+      - app_db_data:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${APP_DB_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER:-app} -d ${APP_DB_NAME:-contractor_ops_eu}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── App Redis — Upstash Redis substitute for local dev ─────────────────────
+  # Plain Redis used by @upstash/redis (REST) via SRH proxy below.
+  # Connect from RedisInsight: redis://app-redis:6379
+  app-redis:
+    profiles: [dev-tooling]
+    image: redis:8.6.3-alpine
+    container_name: contractor-ops-app-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - app_redis_data:/data
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${APP_REDIS_PORT:-6380}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── SRH — Serverless Redis HTTP proxy (Upstash REST compatible) ────────────
+  # Exposes @upstash/redis-compatible REST API in front of app-redis.
+  # .env.local: UPSTASH_REDIS_REST_URL=http://localhost:8079
+  #             UPSTASH_REDIS_REST_TOKEN=example_token
+  srh:
+    profiles: [dev-tooling]
+    image: hiett/serverless-redis-http:0.0.10
+    container_name: contractor-ops-srh
+    restart: unless-stopped
+    depends_on:
+      app-redis:
+        condition: service_healthy
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: ${SRH_TOKEN:-example_token}
+      SRH_CONNECTION_STRING: "redis://app-redis:6379"
+    networks:
+      - infisical
+    ports:
+      - "127.0.0.1:${SRH_PORT:-8079}:80"
+
+  # ── QStash dev server — Upstash QStash substitute for local dev ────────────
+  # Prints stable dev creds on startup (token + signing keys).
+  # .env.local: QSTASH_URL=http://localhost:8089
+  # NEXT_PUBLIC_APP_URL must be reachable from this container — use
+  # http://host.docker.internal:3000 when Next.js runs on the host.
+  qstash-dev:
+    profiles: [dev-tooling]
+    image: public.ecr.aws/upstash/qstash:2.37.18
+    container_name: contractor-ops-qstash-dev
+    restart: unless-stopped
+    command: ["qstash", "dev"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${QSTASH_DEV_PORT:-8089}:8080"
+
   dev-portal:
     profiles: [dev-tooling]
-    image: nginx:1.28-alpine
+    image: nginx:1.31-alpine
     container_name: contractor-ops-dev-portal
     restart: unless-stopped
     volumes:
@@ -173,7 +404,7 @@ services:
   # and UNLEASH_API_TOKEN_ME (same instance for local dev).
   unleash:
     profiles: [unleash]
-    image: unleashorg/unleash-server:6
+    image: unleashorg/unleash-server:7.6.4
     container_name: contractor-ops-unleash
     restart: unless-stopped
     depends_on:
@@ -191,6 +422,136 @@ services:
       - "127.0.0.1:${UNLEASH_PORT:-4242}:4242"
     networks:
       - unleash
+
+  # ── GlitchTip — lightweight self-hosted Sentry alternative ────────────────
+  # Sentry-protocol compatible. @sentry/nextjs sends events without code
+  # changes when NEXT_PUBLIC_SENTRY_DSN points at the local DSN printed by
+  # GlitchTip on first project creation.
+  #
+  # Bootstrap (first run):
+  #   1. docker compose --profile glitchtip up -d
+  #   2. Open http://localhost:8000 — register the FIRST user (becomes admin).
+  #   3. Create an org + project → copy the DSN to NEXT_PUBLIC_SENTRY_DSN.
+  glitchtip-redis:
+    profiles: [glitchtip]
+    image: redis:8.6.3-alpine
+    container_name: contractor-ops-glitchtip-redis
+    restart: unless-stopped
+    volumes:
+      - glitchtip_redis_data:/data
+    networks:
+      - glitchtip
+
+  glitchtip-db:
+    profiles: [glitchtip]
+    image: postgres:17-alpine
+    container_name: contractor-ops-glitchtip-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: glitchtip
+      POSTGRES_PASSWORD: glitchtip
+      POSTGRES_DB: glitchtip
+    volumes:
+      - glitchtip_pg_data:/var/lib/postgresql/data
+    networks:
+      - glitchtip
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip -d glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  glitchtip-migrate:
+    profiles: [glitchtip]
+    image: glitchtip/glitchtip:latest
+    container_name: contractor-ops-glitchtip-migrate
+    restart: "no"
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://glitchtip:glitchtip@glitchtip-db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-secret-rotate-before-prod}
+    command: ./manage.py migrate
+    networks:
+      - glitchtip
+
+  glitchtip-web:
+    profiles: [glitchtip]
+    image: glitchtip/glitchtip:latest
+    container_name: contractor-ops-glitchtip-web
+    restart: unless-stopped
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://glitchtip:glitchtip@glitchtip-db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-secret-rotate-before-prod}
+      PORT: "8000"
+      EMAIL_URL: smtp://mailpit:1025
+      GLITCHTIP_DOMAIN: http://localhost:${GLITCHTIP_PORT:-8000}
+      DEFAULT_FROM_EMAIL: noreply@glitchtip.local
+      ENABLE_USER_REGISTRATION: "true"
+      REDIS_URL: redis://glitchtip-redis:6379/0
+    networks:
+      - glitchtip
+      - infisical
+    ports:
+      - "127.0.0.1:${GLITCHTIP_PORT:-8000}:8000"
+
+  # ── GlitchTip seed — bootstrap user + org + project + DSN ─────────────────
+  # One-shot sidecar: runs after migrations, idempotent on rerun.
+  # Reads docker/glitchtip/seed.py via the Django shell. Prints the project
+  # DSN — grep the logs to pick it up:
+  #   docker compose logs glitchtip-seed | grep NEXT_PUBLIC_SENTRY_DSN
+  glitchtip-seed:
+    profiles: [glitchtip]
+    image: glitchtip/glitchtip:latest
+    container_name: contractor-ops-glitchtip-seed
+    restart: "no"
+    depends_on:
+      glitchtip-migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://glitchtip:glitchtip@glitchtip-db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-secret-rotate-before-prod}
+      REDIS_URL: redis://glitchtip-redis:6379/0
+      GLITCHTIP_DOMAIN: http://localhost:${GLITCHTIP_PORT:-8000}
+      GT_ADMIN_EMAIL: ${GLITCHTIP_ADMIN_EMAIL:-admin@glitchtip.local}
+      GT_ADMIN_PASSWORD: ${GLITCHTIP_ADMIN_PASSWORD:-Test1234!}
+      GT_ORG_NAME: ${GLITCHTIP_ORG_NAME:-contractor-ops}
+      GT_PROJECT_NAME: ${GLITCHTIP_PROJECT_NAME:-contractor-ops}
+    volumes:
+      - ./docker/glitchtip/seed.py:/seed/seed.py:ro
+    entrypoint: ["sh", "-c"]
+    command:
+      - "./manage.py shell < /seed/seed.py"
+    networks:
+      - glitchtip
+
+  glitchtip-worker:
+    profiles: [glitchtip]
+    image: glitchtip/glitchtip:latest
+    container_name: contractor-ops-glitchtip-worker
+    restart: unless-stopped
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_started
+      glitchtip-migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://glitchtip:glitchtip@glitchtip-db:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-secret-rotate-before-prod}
+      REDIS_URL: redis://glitchtip-redis:6379/0
+    command: ./bin/run-celery-with-beat.sh
+    networks:
+      - glitchtip
 
   unleash-db:
     profiles: [unleash]
@@ -241,11 +602,17 @@ services:
 networks:
   infisical:
   unleash:
+  glitchtip:
 
 volumes:
   clamav-db:
   infisical_pg_data:
   infisical_redis_data:
   minio_data:
-  cloudbeaver_workspace:
+  pgadmin_data:
+  dbgate_data:
   unleash_pg_data:
+  app_redis_data:
+  app_db_data:
+  glitchtip_pg_data:
+  glitchtip_redis_data:

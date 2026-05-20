@@ -96,12 +96,40 @@
     <h2>Database + cache UIs</h2>
     <ul>
       <li>
-        <a href="http://localhost:8978">CloudBeaver</a> — Postgres GUI
-        <span class="profile">(new connection: host <code>infisical-db</code>, port <code>5432</code>, db <code>infisical</code>, creds from <code>docker/infisical.env</code>)</span>
+        <a href="http://localhost:8979">DBGate</a> — unified Postgres + Redis GUI (parallel rollout — will replace pgAdmin + RedisInsight once verified)
+        <span class="profile">(login <code>root / Test1234!</code>; 4 Postgres + 2 Redis connections pre-registered from env)</span>
+      </li>
+      <li>
+        <a href="http://localhost:8978">pgAdmin4</a> — Postgres GUI
+        <span class="profile">(login <code>admin@local.dev / Test1234!</code>; 4 servers pre-registered with passwords: <code>app-db</code> (browse <code>contractor_ops_eu/me/cms</code> inside), <code>infisical-db</code>, <code>unleash-db</code>, <code>glitchtip-db</code>)</span>
       </li>
       <li>
         <a href="http://localhost:5540">Redis Insight</a> — Redis GUI
-        <span class="profile">(add <code>redis://infisical-redis:6379</code>)</span>
+        <span class="profile">(app cache: add <code>redis://app-redis:6379</code>; Infisical's own Redis: <code>redis://infisical-redis:6379</code>)</span>
+      </li>
+    </ul>
+
+    <h2>Local cloud substitutes</h2>
+    <ul>
+      <li>
+        <code>app-db</code> — plain Postgres 17 on <code>localhost:5433</code> (Neon substitute, hosts both regions)
+        <span class="profile">(profile <code>dev-tooling</code>; databases <code>contractor_ops_eu</code> + <code>contractor_ops_me</code>; persistent volume <code>app_db_data</code>; run <code>pnpm db:migrate:all</code> to fan migrations across both)</span>
+      </li>
+      <li>
+        <code>app-redis</code> — plain Redis 8.6 on <code>localhost:6380</code>
+        <span class="profile">(profile <code>dev-tooling</code>; persistent volume <code>app_redis_data</code>)</span>
+      </li>
+      <li>
+        <a href="http://localhost:8079">SRH</a> — Upstash-Redis-REST proxy in front of <code>app-redis</code>
+        <span class="profile">(<code>UPSTASH_REDIS_REST_URL=http://localhost:8079</code> · <code>UPSTASH_REDIS_REST_TOKEN=example_token</code>)</span>
+      </li>
+      <li>
+        <a href="http://localhost:8089">QStash dev server</a> — Upstash QStash mock
+        <span class="profile">(set <code>QSTASH_URL=http://localhost:8089</code> + token/signing-keys printed at container startup; consumer callbacks must use <code>http://host.docker.internal:3000</code>)</span>
+      </li>
+      <li>
+        <a href="http://localhost:8000">GlitchTip</a> — Sentry-compatible error tracking
+        <span class="profile">(profile <code>glitchtip</code>; auto-seeded admin <code>admin@glitchtip.local / Test1234!</code> + org/project; grab DSN: <code>docker compose logs glitchtip-seed | grep NEXT_PUBLIC_SENTRY_DSN</code>)</span>
       </li>
     </ul>
 
@@ -119,11 +147,11 @@
 
     <h2>External / cloud-only (no local container)</h2>
     <ul>
-      <li>Neon Postgres — primary DB (<code>DATABASE_URL</code>)</li>
-      <li>Upstash Redis — rate limiting + idempotency cache (<code>UPSTASH_REDIS_REST_URL</code>)</li>
-      <li>Upstash QStash — webhook queue (<code>QSTASH_TOKEN</code>)</li>
+      <li>Neon Postgres — primary DB (<code>DATABASE_URL</code>; local substitute via <code>app-db</code> above)</li>
+      <li>Upstash Redis — rate limiting + idempotency cache (<code>UPSTASH_REDIS_REST_URL</code>; local substitute via SRH above)</li>
+      <li>Upstash QStash — webhook queue (<code>QSTASH_TOKEN</code>; local substitute via QStash dev above)</li>
       <li>Cloudflare R2 — document/PDF storage (<code>R2_ACCOUNT_ID</code>)</li>
-      <li>Sentry — errors + tracing (<code>NEXT_PUBLIC_SENTRY_DSN</code>)</li>
+      <li>Sentry — errors + tracing (<code>NEXT_PUBLIC_SENTRY_DSN</code>; local substitute via GlitchTip above)</li>
       <li>Axiom — log shipping (<code>AXIOM_TOKEN</code>)</li>
     </ul>
 

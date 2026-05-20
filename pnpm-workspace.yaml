@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "goals/qa-walk-and-fix"
 
 # Minimum release age: reject packages published less than 7 days ago (10080 minutes)
 # Protects against supply-chain attacks via freshly published malware packages

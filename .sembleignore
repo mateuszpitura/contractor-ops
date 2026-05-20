@@ -1,0 +1,49 @@
+# Dependencies & build artifacts
+node_modules
+.next
+.turbo
+dist
+out
+apps/*/out
+coverage
+*.tsbuildinfo
+
+# Generated code (Prisma client, etc.)
+generated
+packages/db/src/generated
+
+# Claude worktrees (duplicate copies of the repo)
+.claude/worktrees
+
+# Planning / docs / fixtures (not source)
+.planning
+.cursor
+docs
+
+# Test artifacts
+apps/web/e2e/perf/.auth
+apps/web/e2e/perf/results
+apps/web/e2e/functional/.auth
+apps/web/playwright-report
+test-results
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# IDE / OS
+.idea
+.vscode
+.DS_Store
+*.swp
+*.swo
+
+# Logs
+*.log
+logs

@@ -38,7 +38,10 @@
     "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
     "db:generate": "turbo db:generate",
     "db:migrate:dev": "pnpm -F @contractor-ops/db run db:migrate:dev",
+    "db:migrate:all": "pnpm -F @contractor-ops/db run db:migrate:all",
     "db:seed:dev": "pnpm -F @contractor-ops/db run db:seed:dev",
+    "seed:qa": "pnpm -F @contractor-ops/db exec tsx scripts/seed-dev.ts --profile=qa --confirm --regions=EU --seed=4242 && pnpm -F @contractor-ops/cms run seed:qa",
+    "qa:walk": "pnpm -F @contractor-ops/qa-walk run walk --",
     "postinstall": "turbo build --filter=@contractor-ops/validators --filter=@contractor-ops/auth --filter=@contractor-ops/integrations --filter=@contractor-ops/logger --filter=@contractor-ops/api",
     "prepare": "husky"
   },

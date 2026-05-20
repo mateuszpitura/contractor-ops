@@ -63,8 +63,8 @@ External services to provision (free tiers are fine for local dev):
 | ---------------- | -------------------------------------- | -------- |
 | Neon Postgres    | `apps/web`, `apps/cms` (separate DBs)  | yes      |
 | Cloudflare R2    | `apps/web` documents, `apps/cms` media | optional in dev (local FS fallback) |
-| Upstash Redis    | rate limiting + cache                  | yes      |
-| Upstash QStash   | webhook queue (cron + integrations)    | yes      |
+| Upstash Redis    | rate limiting + cache                  | yes (local substitute via SRH — see below) |
+| Upstash QStash   | webhook queue (cron + integrations)    | yes (local substitute via QStash dev server — see below) |
 | Resend           | transactional email                    | optional (Mailpit fallback) |
 | Anthropic API    | OCR invoice intake (Claude Vision)     | optional |
 | Stripe (test)    | subscription billing                   | optional |
@@ -105,13 +105,88 @@ pnpm db:seed:dev -- --confirm
 # 7. ClamAV (recommended — file upload / virus scan flows expect a healthy daemon)
 docker compose up -d clamav
 
-# 8. Extra dev tooling: Mailpit, MinIO, CloudBeaver, Redis Insight (optional)
+# 8. Extra dev tooling: Mailpit, MinIO, pgAdmin, Redis Insight,
+#    plus local Upstash substitutes (app-redis + SRH + QStash dev server).
 docker compose --profile dev-tooling up -d
+# Open http://localhost:8888 (dev-portal) for the full link directory.
 
 # 9. Local Unleash (optional — omit to use code defaults for flags)
 docker compose --profile unleash up -d
 # Optional: bootstrap Unleash flags + print env hints — `pnpm setup:dev-services`
 ```
+
+### Local Upstash substitutes (no cloud account needed)
+
+`docker compose --profile dev-tooling up -d` brings up three extra containers
+that stand in for Upstash cloud services during local development:
+
+| Container     | Host port | Purpose                                                                    |
+| ------------- | --------- | -------------------------------------------------------------------------- |
+| `app-db`      | `5433`    | Plain Postgres 17 — Neon substitute. Hosts THREE databases in one instance: `contractor_ops_eu`, `contractor_ops_me` (multi-region split) and `contractor_ops_cms` (Payload). Persistent volume `app_db_data`. Uses `@prisma/adapter-pg` so no Neon emulator needed. |
+| `app-redis`   | `6380`    | Plain Redis 8.6 — Upstash Redis substitute. Persistent volume `app_redis_data`. |
+| `srh`         | `8079`    | Serverless Redis HTTP proxy — Upstash-Redis-REST compatible front for `app-redis`. |
+| `qstash-dev`  | `8089`    | Upstash QStash mock server (`qstash dev`). Stable token + signing keys printed on startup. |
+
+**Fill `.env` for local dev:**
+
+```bash
+# Postgres — point Prisma at app-db (skip Neon for fast iteration; keep
+# Neon for pre-prod/staging to validate latency + driver behaviour).
+# After `pnpm db:migrate:dev` runs against the EU db, run `pnpm db:migrate:all`
+# to propagate the schema to ME too.
+DATABASE_URL=postgresql://app:app@localhost:5433/contractor_ops_eu
+DATABASE_URL_EU=postgresql://app:app@localhost:5433/contractor_ops_eu
+DATABASE_URL_ME=postgresql://app:app@localhost:5433/contractor_ops_me
+CMS_DATABASE_URL=postgresql://app:app@localhost:5433/contractor_ops_cms
+
+# Redis — point @upstash/redis at SRH
+UPSTASH_REDIS_REST_URL=http://localhost:8079
+UPSTASH_REDIS_REST_TOKEN=example_token
+
+# QStash — point SDK at the dev server
+QSTASH_URL=http://localhost:8089
+
+# Then read these from `docker compose logs qstash-dev` and copy into .env:
+QSTASH_TOKEN=<printed-on-startup>
+QSTASH_CURRENT_SIGNING_KEY=<printed-on-startup>
+QSTASH_NEXT_SIGNING_KEY=<printed-on-startup>
+
+# Required for QStash webhook callbacks — dev server (in container) reaches
+# Next.js (on host) via host.docker.internal:
+NEXT_PUBLIC_APP_URL=http://host.docker.internal:3000
+```
+
+**RedisInsight** (already at `http://localhost:5540`) → Add Database →
+host `app-redis`, port `6379` to inspect cache/rate-limit/idempotency keys.
+Infisical's own Redis remains reachable at `redis://infisical-redis:6379`.
+
+**Skip the substitutes**: leave `QSTASH_URL=` empty and fill `UPSTASH_*` /
+`QSTASH_*` with real Upstash console values — code falls back to the cloud
+endpoints (`https://qstash.upstash.io` and the configured Redis URL).
+
+### Local Sentry substitute — GlitchTip (optional)
+
+```bash
+docker compose --profile glitchtip up -d
+# The glitchtip-seed sidecar runs once and bootstraps:
+#   user:     admin@glitchtip.local / Test1234!
+#   org:      contractor-ops
+#   project:  contractor-ops (platform: javascript-nextjs)
+# Grab the auto-generated DSN:
+docker compose logs glitchtip-seed | grep NEXT_PUBLIC_SENTRY_DSN
+# Paste the printed line into .env, then open http://localhost:8000 to log in.
+```
+
+Override credentials/org/project names via env on the seed container —
+`GLITCHTIP_ADMIN_EMAIL`, `GLITCHTIP_ADMIN_PASSWORD`, `GLITCHTIP_ORG_NAME`,
+`GLITCHTIP_PROJECT_NAME`.
+
+GlitchTip implements the Sentry event-ingestion protocol, so `@sentry/nextjs`
+ships events to it without any code change. Useful for verifying that Sentry
+instrumentation works end-to-end before pointing at the real Sentry org.
+
+Reuses Mailpit (`docker compose --profile dev-tooling up -d mailpit`) for
+account-verification email.
 
 See **`docs/LOCAL-TESTING-GUIDE.md`** for an exhaustive env-var audit
 checklist (placeholder values, drift between `.env` and `.env.example`,
