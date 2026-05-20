@@ -3,7 +3,6 @@
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import { useLocale } from '@/i18n';
 import type { PricingPlan } from '@/lib/pricing-types';
-import { formatPrice } from '@/lib/pricing-types';
 import { TrackClick } from './analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from './motion-wrapper';
 
@@ -45,7 +44,7 @@ export function Pricing({ plans }: { plans: PricingPlan[] }) {
                     <h3 className="font-display text-lg font-bold text-foreground">{plan.name}</h3>
                     <div className="mt-3 flex items-baseline gap-1.5">
                       <span className="font-display text-4xl font-extrabold tracking-tight text-foreground">
-                        {formatPrice(plan.monthlyPrice, plan.currency)}
+                        {plan.monthlyPriceFormatted}
                       </span>
                       {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
                         <span className="text-sm text-muted-foreground">

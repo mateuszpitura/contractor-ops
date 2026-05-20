@@ -27,7 +27,7 @@ interface MockMetricCard {
 
 const PLN_FORMAT = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 
-const dashboardCards: ReadonlyArray<MockMetricCard> = [
+const dashboardCards: readonly MockMetricCard[] = [
   {
     label: 'Active contractors',
     value: 34,
@@ -53,7 +53,7 @@ interface MockDashboardRow {
   amount: string;
 }
 
-const dashboardRows: ReadonlyArray<MockDashboardRow> = [
+const dashboardRows: readonly MockDashboardRow[] = [
   { name: 'Anna Kowalska', statusLabel: 'Active', variant: 'success', amount: 'PLN 12,500' },
   { name: 'Tomasz Nowak', statusLabel: 'Pending', variant: 'warning', amount: 'PLN 8,900' },
   { name: 'Maria Wisniewska', statusLabel: 'Active', variant: 'success', amount: 'PLN 15,200' },
@@ -195,9 +195,7 @@ export function Hero() {
                         <div className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider">
                           {card.label}
                         </div>
-                        <div
-                          className="mt-1 text-lg sm:text-2xl font-display font-bold tracking-tight tabular-nums"
-                          style={{ color: card.color }}>
+                        <div className="mt-1 text-lg sm:text-2xl font-display font-bold tracking-tight tabular-nums">
                           <AnimatedNumber value={card.value} format={card.format} duration={1400} />
                         </div>
                       </TiltCard>

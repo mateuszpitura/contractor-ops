@@ -116,7 +116,10 @@ export function FeatureComparison() {
         </FadeUp>
 
         <ScaleIn className="mt-16" delay={0.15}>
-          <div className="overflow-x-auto rounded-2xl border border-border/50 bg-surface-1/60 backdrop-blur-sm">
+          <div
+            role="region"
+            aria-label="Feature comparison table"
+            className="overflow-x-auto rounded-2xl border border-border/50 bg-surface-1/60 backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <table className="w-full min-w-[640px]">
               {/* Header */}
               <thead>

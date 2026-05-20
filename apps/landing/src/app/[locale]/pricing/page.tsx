@@ -9,6 +9,7 @@ import { PricingHero } from '@/components/pricing/pricing-hero';
 import type { Locale } from '@/i18n';
 import { defaultLocale, getTranslations, isValidLocale, TranslationProvider } from '@/i18n';
 import type { CreditPack, PricingPlan } from '@/lib/pricing-types';
+import { formatCount, formatPrice } from '@/lib/pricing-types';
 import { fetchCreditPacks, fetchPricingPlans } from '@/lib/stripe';
 
 const log = createLogger({ service: 'landing-pricing-page' });
@@ -36,20 +37,28 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       ctaHref: `/signup?plan=${slug}`,
       popular: c.popular,
       order: c.order,
+      monthlyPriceFormatted: formatPrice(c.fallbackMonthlyPrice, 'pln'),
+      annualPriceFormatted: formatPrice(c.fallbackAnnualPrice, 'pln'),
     }));
-    creditPacks = Object.entries(CREDIT_PACK_CONTENT).map(([slug, c]) => ({
-      id: slug,
-      name: c.name,
-      description: c.description,
-      credits: c.fallbackCredits,
-      price: c.fallbackPrice,
-      currency: 'pln',
-      perCredit:
-        c.fallbackCredits > 0 ? Math.round((c.fallbackPrice / c.fallbackCredits) * 100) / 100 : 0,
-      ctaHref: `/signup?credits=${slug}`,
-      popular: c.popular,
-      order: c.order,
-    }));
+    creditPacks = Object.entries(CREDIT_PACK_CONTENT).map(([slug, c]) => {
+      const perCredit =
+        c.fallbackCredits > 0 ? Math.round((c.fallbackPrice / c.fallbackCredits) * 100) / 100 : 0;
+      return {
+        id: slug,
+        name: c.name,
+        description: c.description,
+        credits: c.fallbackCredits,
+        price: c.fallbackPrice,
+        currency: 'pln',
+        perCredit,
+        ctaHref: `/signup?credits=${slug}`,
+        popular: c.popular,
+        order: c.order,
+        creditsFormatted: formatCount(c.fallbackCredits),
+        priceFormatted: formatPrice(c.fallbackPrice, 'pln'),
+        perCreditFormatted: formatPrice(perCredit, 'pln'),
+      };
+    });
   }
 
   return (

@@ -5,7 +5,6 @@ import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import { useLocale } from '@/i18n';
 import type { PricingPlan } from '@/lib/pricing-types';
-import { formatPrice } from '@/lib/pricing-types';
 
 export function PricingHero({ plans }: { plans: PricingPlan[] }) {
   const locale = useLocale();
@@ -59,7 +58,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
                   <h3 className="font-display text-lg font-bold text-foreground">{plan.name}</h3>
                   <div className="mt-3 flex items-baseline gap-1.5">
                     <span className="font-display text-4xl font-extrabold tracking-tight text-foreground">
-                      {formatPrice(plan.monthlyPrice, plan.currency)}
+                      {plan.monthlyPriceFormatted}
                     </span>
                     {plan.monthlyPrice !== null && plan.monthlyPrice > 0 && (
                       <span className="text-sm text-muted-foreground">/ contractor / mo</span>
@@ -70,7 +69,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
                   </div>
                   {plan.annualPrice !== null && plan.annualPrice > 0 && (
                     <p className="mt-1.5 text-xs text-muted-foreground">
-                      or {formatPrice(plan.annualPrice, plan.currency)}/year (save ~20%)
+                      or {plan.annualPriceFormatted}/year (save ~20%)
                     </p>
                   )}
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
@@ -110,7 +109,7 @@ export function PricingHero({ plans }: { plans: PricingPlan[] }) {
 
         {/* Trust note */}
         <FadeUp className="mt-8 text-center" delay={0.35}>
-          <p className="text-xs text-muted-foreground/60">
+          <p className="text-xs text-muted-foreground">
             Prices shown in PLN &middot; VAT added where applicable &middot; Cancel anytime &middot;
             No lock-in
           </p>

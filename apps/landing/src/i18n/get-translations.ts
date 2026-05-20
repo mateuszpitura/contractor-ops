@@ -130,5 +130,76 @@ export interface TranslationMessages {
     legal: string;
     copyright: string;
     madeIn: string;
+    newsletter: {
+      headline: string;
+      description: string;
+      placeholder: string;
+      submit: string;
+      success: string;
+    };
+  };
+  bento: {
+    label: string;
+    headline: string;
+    headlineHighlight: string;
+    description: string;
+    cards: {
+      command: { title: string; description: string };
+      vault: { title: string; description: string };
+      throughput: { title: string; description: string };
+      audit: { title: string; description: string };
+      ledger: { title: string; description: string };
+      cadence: { title: string; description: string };
+    };
+  };
+  statsBand: {
+    label: string;
+    items: {
+      contractors: { value: number; suffix: string; label: string };
+      invoicesProcessed: { value: number; suffix: string; label: string };
+      hoursSaved: { value: number; suffix: string; label: string };
+      countries: { value: number; suffix: string; label: string };
+    };
+  };
+  testimonials: {
+    label: string;
+    headline: string;
+    headlineHighlight: string;
+    description: string;
+    items: ReadonlyArray<{
+      quote: string;
+      author: string;
+      role: string;
+      company: string;
+    }>;
+  };
+  integrationsGrid: {
+    label: string;
+    headline: string;
+    headlineHighlight: string;
+    description: string;
+    items: ReadonlyArray<{
+      name: string;
+      category: string;
+      description: string;
+    }>;
+  };
+  faq: {
+    label: string;
+    headline: string;
+    headlineHighlight: string;
+    description: string;
+    items: ReadonlyArray<{
+      question: string;
+      answer: string;
+    }>;
+  };
+  ctaBand: {
+    label: string;
+    headline: string;
+    headlineHighlight: string;
+    description: string;
+    ctaPrimary: string;
+    ctaSecondary: string;
   };
 }

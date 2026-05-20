@@ -5,7 +5,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import type { CreditPack } from '@/lib/pricing-types';
-import { formatPrice } from '@/lib/pricing-types';
 
 const creditCosts = [
   {
@@ -92,7 +91,7 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                 <span className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground">
                   {item.cost}
                 </span>
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                   credits
                 </span>
                 <p className="mt-2 text-sm font-medium text-foreground">{item.action}</p>
@@ -147,17 +146,16 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                 <div className="hidden sm:block h-10 w-px bg-border/40" />
                 <div className="text-center">
                   <div className="font-display text-3xl font-bold text-foreground">
-                    {formatPrice(monthlyEstimate.pack.price, monthlyEstimate.pack.currency)}
+                    {monthlyEstimate.pack.priceFormatted}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {monthlyEstimate.pack.name} ({monthlyEstimate.pack.credits.toLocaleString()}{' '}
-                    credits)
+                    {monthlyEstimate.pack.name} ({monthlyEstimate.pack.creditsFormatted} credits)
                   </div>
                 </div>
                 <div className="hidden sm:block h-10 w-px bg-border/40" />
                 <div className="text-center">
                   <div className="font-display text-3xl font-bold text-accent-warm">
-                    {formatPrice(monthlyEstimate.pack.perCredit, monthlyEstimate.pack.currency)}
+                    {monthlyEstimate.pack.perCreditFormatted}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">per credit</div>
                 </div>
@@ -186,17 +184,15 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                 <h4 className="font-display text-base font-bold text-foreground">{pack.name}</h4>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="font-display text-3xl font-extrabold tracking-tight text-foreground">
-                    {pack.credits.toLocaleString()}
+                    {pack.creditsFormatted}
                   </span>
                   <span className="text-sm text-muted-foreground">credits</span>
                 </div>
                 <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-lg font-bold text-foreground">
-                    {formatPrice(pack.price, pack.currency)}
-                  </span>
+                  <span className="text-lg font-bold text-foreground">{pack.priceFormatted}</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {formatPrice(pack.perCredit, pack.currency)} per credit
+                  {pack.perCreditFormatted} per credit
                 </p>
                 <TrackClick
                   event="credit_pack_click"

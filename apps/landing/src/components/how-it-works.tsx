@@ -99,7 +99,7 @@ export function HowItWorks() {
                   {/* Content */}
                   <div className="flex-1 max-w-xl">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-bold tracking-wider text-muted-foreground/60">
+                      <span className="font-mono text-xs font-bold tracking-wider text-muted-foreground">
                         {step.number}
                       </span>
                       <h3 className="font-display text-xl font-bold tracking-tight text-foreground">

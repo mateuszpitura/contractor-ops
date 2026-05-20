@@ -48,7 +48,7 @@ export function LogoBar() {
     <section className="relative py-12 sm:py-16 overflow-hidden">
       <FadeUp delay={0.1}>
         <div className="mx-auto max-w-6xl px-6">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 mb-8">
+          <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8">
             Trusted by teams across the EU
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-14">

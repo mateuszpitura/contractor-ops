@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "rtl": true,
+  "aliases": {
+    "components": "@/components",
+    "utils": "@contractor-ops/ui/lib/utils",
+    "ui": "@contractor-ops/ui/components/shadcn",
+    "lib": "@/lib",
+    "hooks": "@contractor-ops/ui/hooks"
+  },
+  "menuColor": "default",
+  "menuAccent": "subtle",
+  "registries": {
+    "@magic": "https://magicui.design/r/{name}.json",
+    "@aceternity": "https://ui.aceternity.com/registry/{name}.json",
+    "@cult": "https://www.cult-ui.com/r/{name}.json",
+    "@origin": "https://originui.com/r/{name}.json",
+    "@tailark": "https://tailark.com/r/{name}.json",
+    "@reui": "https://reui.io/r/{name}.json",
+    "@shadcnio": "https://shadcn.io/r/{name}.json"
+  }
+}

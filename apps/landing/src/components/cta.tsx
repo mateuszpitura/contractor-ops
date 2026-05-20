@@ -35,7 +35,7 @@ export function CTA() {
               </a>
             </div>
 
-            <p className="mt-6 text-xs text-muted-foreground/70">
+            <p className="mt-6 text-xs text-muted-foreground">
               No credit card required &middot; 14-day Pro trial &middot; Cancel anytime
             </p>
           </div>

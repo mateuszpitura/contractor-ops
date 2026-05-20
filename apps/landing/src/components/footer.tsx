@@ -68,10 +68,10 @@ export function Footer() {
         <div className="section-divider mt-12" />
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Contractor Ops. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground/50">Made in Poland for EU businesses</p>
+          <p className="text-xs text-muted-foreground">Made in Poland for EU businesses</p>
         </div>
       </div>
     </footer>

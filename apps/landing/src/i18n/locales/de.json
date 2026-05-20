@@ -121,10 +121,22 @@
     "headline": "Teams die gewechselt haben",
     "headlineHighlight": "schauen nie zurück",
     "stats": {
-      "processing": { "value": "92%", "label": "weniger Zeit für Rechnungsverarbeitung" },
-      "auditTrail": { "value": "100%", "label": "Audit-Trail-Abdeckung" },
-      "approvalTime": { "value": "< 2min", "label": "durchschnittliche Genehmigungszeit" },
-      "offboarding": { "value": "0", "label": "verpasste Offboarding-Schritte" }
+      "processing": {
+        "value": "92%",
+        "label": "weniger Zeit für Rechnungsverarbeitung"
+      },
+      "auditTrail": {
+        "value": "100%",
+        "label": "Audit-Trail-Abdeckung"
+      },
+      "approvalTime": {
+        "value": "< 2min",
+        "label": "durchschnittliche Genehmigungszeit"
+      },
+      "offboarding": {
+        "value": "0",
+        "label": "verpasste Offboarding-Schritte"
+      }
     }
   },
   "pricing": {
@@ -145,14 +157,199 @@
     "description": "Schließen Sie sich Unternehmen an, die Tabellen-Chaos durch ein einziges System für den gesamten Auftragnehmer-Lebenszyklus ersetzt haben.",
     "ctaPrimary": "Kostenlos testen",
     "ctaSecondary": "Demo buchen",
-    "trust": "Keine Kreditkarte nötig \u00b7 14-Tage Pro-Test \u00b7 Jederzeit kündbar"
+    "trust": "Keine Kreditkarte nötig · 14-Tage Pro-Test · Jederzeit kündbar"
   },
   "footer": {
     "description": "B2B-Auftragnehmer-Management für EU-Unternehmen. Verträge, Rechnungen, Genehmigungen, Zahlungen — ein System.",
     "product": "Produkt",
     "company": "Unternehmen",
     "legal": "Rechtliches",
-    "copyright": "\u00a9 2026 Contractor Ops. Alle Rechte vorbehalten.",
-    "madeIn": "Made in Poland für globale Unternehmen"
+    "copyright": "© 2026 Contractor Ops. Alle Rechte vorbehalten.",
+    "madeIn": "Made in Poland für globale Unternehmen",
+    "newsletter": {
+      "headline": "Quarterly memo",
+      "description": "One email every three months. Product changes, audit-survival tips, and the occasional rant about Excel.",
+      "placeholder": "you@company.com",
+      "submit": "Subscribe",
+      "success": "Subscribed. Welcome aboard."
+    }
+  },
+  "bento": {
+    "label": "Premium-Erlebnis",
+    "headline": "A workbench made for",
+    "headlineHighlight": "finance ops",
+    "description": "Six panels, one tab. Every contractor touchpoint — from onboarding to offboarding — sits inside a single command surface.",
+    "cards": {
+      "command": {
+        "title": "Command palette",
+        "description": "Jump to any contractor, invoice or run with ⌘K. Search across 20+ object types."
+      },
+      "vault": {
+        "title": "Document vault",
+        "description": "Contracts, MSAs and tax docs in one place. Version history and expiry alerts built in."
+      },
+      "throughput": {
+        "title": "Invoice throughput",
+        "description": "OCR + auto-match against POs. Bulk-approve in seconds, not afternoons."
+      },
+      "audit": {
+        "title": "Audit-ready by default",
+        "description": "Every action signed and timestamped. Export to your auditor in two clicks."
+      },
+      "ledger": {
+        "title": "Multi-entity ledger",
+        "description": "EU + ME multi-region. Per-jurisdiction tax rules, no manual reconciling."
+      },
+      "cadence": {
+        "title": "Payment cadence",
+        "description": "Build payment runs from filtered invoices. Approve, sign, pay — same flow."
+      }
+    }
+  },
+  "statsBand": {
+    "label": "Numbers",
+    "items": {
+      "contractors": {
+        "value": 1200,
+        "suffix": "+",
+        "label": "Contractors managed"
+      },
+      "invoicesProcessed": {
+        "value": 48000,
+        "suffix": "+",
+        "label": "Invoices processed"
+      },
+      "hoursSaved": {
+        "value": 6200,
+        "suffix": "h",
+        "label": "Hours saved per quarter"
+      },
+      "countries": {
+        "value": 14,
+        "suffix": "",
+        "label": "EU + ME jurisdictions"
+      }
+    }
+  },
+  "testimonials": {
+    "label": "Voices",
+    "headline": "What operators",
+    "headlineHighlight": "tell us",
+    "description": "Finance leaders running 5–50 contractors who switched from spreadsheets and email.",
+    "items": [
+      {
+        "quote": "Onboarding a new subcontractor went from a half-day spreadsheet ceremony to a five-minute form.",
+        "author": "Anna Kowalska",
+        "role": "CFO",
+        "company": "Helix Studios"
+      },
+      {
+        "quote": "Invoice approvals stopped being a Slack thread. We close the month two days earlier.",
+        "author": "Markus Becker",
+        "role": "Head of Finance",
+        "company": "Nordweg GmbH"
+      },
+      {
+        "quote": "Every audit since switching has been one export. The Steuerberater stopped emailing back.",
+        "author": "Yousef Al-Rashid",
+        "role": "Finance Director",
+        "company": "Dunes Procurement"
+      },
+      {
+        "quote": "Multi-region tax used to need a consultant. Now it is a dropdown.",
+        "author": "Sofia Pereira",
+        "role": "COO",
+        "company": "Tributo Logistics"
+      }
+    ]
+  },
+  "integrationsGrid": {
+    "label": "Plays well with",
+    "headline": "Connects to the tools your",
+    "headlineHighlight": "team already runs",
+    "description": "Bank feeds, accounting suites, communication, e-invoicing networks. Replace nothing.",
+    "items": [
+      {
+        "name": "Stripe",
+        "category": "Payments",
+        "description": "Charge cards, send payouts, reconcile."
+      },
+      {
+        "name": "Mistertango",
+        "category": "Banking",
+        "description": "EU SEPA + multi-currency IBANs."
+      },
+      {
+        "name": "Revolut Business",
+        "category": "Banking",
+        "description": "Bulk SEPA + FX."
+      },
+      {
+        "name": "Xero",
+        "category": "Accounting",
+        "description": "Invoice + bank feed sync."
+      },
+      {
+        "name": "DATEV",
+        "category": "Accounting",
+        "description": "German Steuerberater-ready export."
+      },
+      {
+        "name": "Peppol",
+        "category": "E-invoicing",
+        "description": "Compliant cross-border e-invoicing."
+      },
+      {
+        "name": "KSeF",
+        "category": "E-invoicing",
+        "description": "Polish national e-invoice gateway."
+      },
+      {
+        "name": "ZATCA",
+        "category": "E-invoicing",
+        "description": "Saudi e-invoicing phase 2."
+      },
+      {
+        "name": "Slack",
+        "category": "Communication",
+        "description": "Approval pings, no app-switching."
+      }
+    ]
+  },
+  "faq": {
+    "label": "Questions",
+    "headline": "Asked &",
+    "headlineHighlight": "answered",
+    "description": "The clarifications operators tend to want before signing up.",
+    "items": [
+      {
+        "question": "Do you support both EU and Middle-East regulations?",
+        "answer": "Yes. The data plane runs in two regions (EU + ME) with per-jurisdiction tax + e-invoicing rules (Peppol, KSeF, ZATCA, German Steuer rules)."
+      },
+      {
+        "question": "How long does onboarding take?",
+        "answer": "A finance team typically goes live in under a week. Most of that is importing existing contractors via CSV; the system itself sets up in minutes."
+      },
+      {
+        "question": "Can our auditor get read-only access?",
+        "answer": "Yes. Read-only seats are free. Every action is signed + timestamped, so the export is the audit."
+      },
+      {
+        "question": "What happens to my data if we churn?",
+        "answer": "A one-click export gives you every contract, invoice and payment as CSV + PDF. We delete the rest after 30 days."
+      },
+      {
+        "question": "Do you really cost less than a spreadsheet?",
+        "answer": "Spreadsheets are free. The hours your finance team spends in them are not. We replace ~6h per finance hire per week — that is the implicit price."
+      }
+    ]
+  },
+  "ctaBand": {
+    "label": "Ready when you are",
+    "headline": "Stop paying for the",
+    "headlineHighlight": "spreadsheet tax",
+    "description": "Spin up a workspace in two minutes. Bring a CSV, leave with a system of record.",
+    "ctaPrimary": "Kostenlos starten",
+    "ctaSecondary": "Book a 20-minute walkthrough"
   }
 }

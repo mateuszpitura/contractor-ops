@@ -82,7 +82,7 @@ export function SocialProof() {
                 <div className="mt-5 border-t border-border/40 pt-4">
                   <p className="text-sm font-semibold text-foreground">{t.author}</p>
                   <p className="text-xs text-muted-foreground">{t.role}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground/70">{t.company}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{t.company}</p>
                 </div>
               </div>
             </StaggerItem>

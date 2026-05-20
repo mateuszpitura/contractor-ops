@@ -2,6 +2,7 @@ import { createLogger } from '@contractor-ops/logger';
 import Stripe from 'stripe';
 import { CREDIT_PACK_CONTENT, PLAN_CONTENT } from './pricing-content';
 import type { CreditPack, PricingPlan } from './pricing-types';
+import { formatCount, formatPrice } from './pricing-types';
 
 const log = createLogger({ service: 'landing-stripe' });
 
@@ -72,17 +73,22 @@ export async function fetchPricingPlans(): Promise<PricingPlan[]> {
       const monthlyPrice = productPrices.find(p => p.recurring?.interval === 'month');
       const annualPrice = productPrices.find(p => p.recurring?.interval === 'year');
 
+      const monthlyAmount = monthlyPrice?.unit_amount ? monthlyPrice.unit_amount / 100 : null;
+      const annualAmount = annualPrice?.unit_amount ? annualPrice.unit_amount / 100 : null;
+      const currency = monthlyPrice?.currency ?? annualPrice?.currency ?? 'pln';
       return {
         id: product.id,
         name: product.name,
         description: content?.description ?? product.description ?? '',
         features: content?.features ?? [],
-        monthlyPrice: monthlyPrice?.unit_amount ? monthlyPrice.unit_amount / 100 : null,
-        annualPrice: annualPrice?.unit_amount ? annualPrice.unit_amount / 100 : null,
-        currency: monthlyPrice?.currency ?? annualPrice?.currency ?? 'pln',
+        monthlyPrice: monthlyAmount,
+        annualPrice: annualAmount,
+        currency,
         ctaHref: `/signup?plan=${slug}`,
         popular: content?.popular ?? false,
         order: Number(product.metadata.order) || content?.order || 99,
+        monthlyPriceFormatted: formatPrice(monthlyAmount, currency),
+        annualPriceFormatted: formatPrice(annualAmount, currency),
       };
     })
     .sort((a, b) => a.order - b.order);
@@ -121,17 +127,22 @@ export async function fetchCreditPacks(): Promise<CreditPack[]> {
       const amount = price?.unit_amount ? price.unit_amount / 100 : 0;
       const credits = Number(product.metadata.credits) || 0;
 
+      const currency = price?.currency ?? 'pln';
+      const perCredit = credits > 0 ? Math.round((amount / credits) * 100) / 100 : 0;
       return {
         id: product.id,
         name: product.name,
         description: content?.description ?? '',
         credits,
         price: amount,
-        currency: price?.currency ?? 'pln',
-        perCredit: credits > 0 ? Math.round((amount / credits) * 100) / 100 : 0,
+        currency,
+        perCredit,
         ctaHref: `/signup?credits=${slug}`,
         popular: content?.popular ?? false,
         order: Number(product.metadata.order) || content?.order || 99,
+        creditsFormatted: formatCount(credits),
+        priceFormatted: formatPrice(amount, currency),
+        perCreditFormatted: formatPrice(perCredit, currency),
       };
     })
     .sort((a, b) => a.order - b.order);
@@ -153,23 +164,31 @@ function getStaticFallbackPlans(): PricingPlan[] {
     ctaHref: `/signup?plan=${slug}`,
     popular: content.popular,
     order: content.order,
+    monthlyPriceFormatted: formatPrice(content.fallbackMonthlyPrice, 'pln'),
+    annualPriceFormatted: formatPrice(content.fallbackAnnualPrice, 'pln'),
   }));
 }
 
 function getStaticFallbackCredits(): CreditPack[] {
-  return Object.entries(CREDIT_PACK_CONTENT).map(([slug, content]) => ({
-    id: slug,
-    name: content.name,
-    description: content.description,
-    credits: content.fallbackCredits,
-    price: content.fallbackPrice,
-    currency: 'pln',
-    perCredit:
+  return Object.entries(CREDIT_PACK_CONTENT).map(([slug, content]) => {
+    const perCredit =
       content.fallbackCredits > 0
         ? Math.round((content.fallbackPrice / content.fallbackCredits) * 100) / 100
-        : 0,
-    ctaHref: `/signup?credits=${slug}`,
-    popular: content.popular,
-    order: content.order,
-  }));
+        : 0;
+    return {
+      id: slug,
+      name: content.name,
+      description: content.description,
+      credits: content.fallbackCredits,
+      price: content.fallbackPrice,
+      currency: 'pln',
+      perCredit,
+      ctaHref: `/signup?credits=${slug}`,
+      popular: content.popular,
+      order: content.order,
+      creditsFormatted: formatCount(content.fallbackCredits),
+      priceFormatted: formatPrice(content.fallbackPrice, 'pln'),
+      perCreditFormatted: formatPrice(perCredit, 'pln'),
+    };
+  });
 }

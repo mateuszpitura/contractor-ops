@@ -5,6 +5,10 @@
 @import "@contractor-ops/ui/styles/glass.css";
 @import "@contractor-ops/ui/styles/motion.css";
 @import "@contractor-ops/ui/styles/status.css";
+@import "@contractor-ops/ui/styles/registry-css.css";
+
+/* Scan shared UI package so Tailwind generates utilities used in its components */
+@source "../../../../packages/ui/src";
 
 @custom-variant dark (&:is(.dark *));
 
