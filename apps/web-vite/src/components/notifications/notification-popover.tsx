@@ -1,9 +1,11 @@
 /**
- * NotificationPopover — bell icon in the top bar with unread badge +
- * 10-item dropdown.
+ * NotificationPopoverShell — bell trigger + popover chrome (header + content
+ * wrapper). Presentational: receives the badge count, mark-all controls, the
+ * open-change handler, and a `children` slot for the variant body
+ * (skeletons, empty, or list) chosen by `NotificationPopoverContainer`.
  *
- * Presentational: receives state + handlers via the `popover` prop bag
- * shaped by `useNotificationPopover`. Owns no tRPC/React Query.
+ * Single render path — variant selection lives in the container per the
+ * web-vite container-decision rule.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -12,45 +14,34 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
-import { Bell, BellOff, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { NotificationData } from './notification-item.js';
-import { NotificationItem } from './notification-item.js';
-import { NotificationPopoverSkeletons } from './notification-popover-skeletons.js';
 
-export interface NotificationPopoverProps {
+export interface NotificationPopoverShellProps {
   unreadCount: number;
-  notifications: readonly NotificationData[];
-  isLoading: boolean;
-  isMarkingRead: boolean;
   isMarkingAllRead: boolean;
-  handleItemClick: (notification: NotificationData) => void;
-  handleOpenChange: (open: boolean) => void;
-  handleViewAll: () => void;
-  handleMarkAllRead: () => void;
+  onOpenChange: (open: boolean) => void;
+  onMarkAllRead: () => void;
+  children: ReactNode;
 }
 
-export function NotificationPopover({ popover }: { popover: NotificationPopoverProps }) {
+export function NotificationPopoverShell({
+  unreadCount,
+  isMarkingAllRead,
+  onOpenChange,
+  onMarkAllRead,
+  children,
+}: NotificationPopoverShellProps) {
   const t = useTranslations('Notifications');
   const tAria = useTranslations('Common.aria');
-  const {
-    unreadCount,
-    notifications,
-    isLoading,
-    isMarkingRead,
-    isMarkingAllRead,
-    handleItemClick,
-    handleOpenChange,
-    handleViewAll,
-    handleMarkAllRead,
-  } = popover;
 
   const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
     // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-    <Popover onOpenChange={handleOpenChange}>
+    <Popover onOpenChange={onOpenChange}>
       <PopoverTrigger
         render={
           <Button
@@ -82,7 +73,7 @@ export function NotificationPopover({ popover }: { popover: NotificationPopoverP
             <button
               type="button"
               // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={handleMarkAllRead}
+              onClick={onMarkAllRead}
               disabled={isMarkingAllRead}
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50">
               <CheckCheck className="h-3 w-3" aria-hidden="true" />
@@ -91,41 +82,7 @@ export function NotificationPopover({ popover }: { popover: NotificationPopoverP
           )}
         </div>
 
-        {isLoading ? (
-          <NotificationPopoverSkeletons />
-        ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10">
-            <BellOff className="h-8 w-8 text-muted-foreground" />
-            <span className="mt-2 text-sm text-muted-foreground">{t('empty')}</span>
-          </div>
-        ) : (
-          <>
-            <div className="max-h-[360px] overflow-y-auto">
-              <div className="flex flex-col">
-                {notifications.map(n => (
-                  <NotificationItem
-                    key={n.id}
-                    notification={n}
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => handleItemClick(n)}
-                    compact
-                    disabled={isMarkingRead}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t px-4 py-2 text-center">
-              <button
-                type="button"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={handleViewAll}
-                className="text-xs text-primary hover:underline">
-                {t('viewAll')}
-              </button>
-            </div>
-          </>
-        )}
+        {children}
       </PopoverContent>
     </Popover>
   );
