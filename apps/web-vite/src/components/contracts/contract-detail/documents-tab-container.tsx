@@ -20,13 +20,15 @@ export function DocumentsTabContainer({
         contractParties={contractParties}
         documents={documents}
       />
-      <SendForSignatureDialogContainer
-        open={documents.signDialogOpen}
-        onOpenChange={documents.setSignDialogOpen}
-        contractId={contractId}
-        documentId={documents.selectedDocId}
-        contractParties={contractParties}
-      />
+      {documents.signDialogOpen && (
+        <SendForSignatureDialogContainer
+          open={documents.signDialogOpen}
+          onOpenChange={documents.setSignDialogOpen}
+          contractId={contractId}
+          documentId={documents.selectedDocId}
+          contractParties={contractParties}
+        />
+      )}
     </>
   );
 }
