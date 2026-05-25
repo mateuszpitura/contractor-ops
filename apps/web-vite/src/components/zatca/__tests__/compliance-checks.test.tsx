@@ -1,32 +1,46 @@
 /**
  * Web-vite port of apps/web/src/components/zatca/__tests__/compliance-checks.test.tsx.
  *
- * ComplianceChecksView is a pure presentational component split from the
- * `useComplianceChecks` hook. The test mounts a tiny container that pulls
- * the real `Zatca.complianceChecks` translations via `useTranslations` so
- * the rendered text matches the live EN bundle without re-stubbing keys.
+ * Container splits the step into ComplianceChecksIdle (Run button) and
+ * ComplianceChecksResults (per-row status + progress). Tests render
+ * each sibling directly with live EN translations.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
 import { useTranslations } from '../../../i18n/useTranslations';
 
-import { ComplianceChecksView } from '../compliance-checks';
+import { ComplianceChecksIdle, ComplianceChecksResults } from '../compliance-checks';
 
-type ViewProps = React.ComponentProps<typeof ComplianceChecksView>;
+type ResultsProps = React.ComponentProps<typeof ComplianceChecksResults>;
 
-interface Overrides {
-  results?: ViewProps['results'];
+function IdleHarness(props: {
+  isPending?: boolean;
+  runChecks?: () => void;
+  onSuccess?: () => void;
+  onBack?: () => void;
+}) {
+  const t = useTranslations('Zatca.complianceChecks');
+  return (
+    <ComplianceChecksIdle
+      onSuccess={props.onSuccess ?? vi.fn()}
+      onBack={props.onBack ?? vi.fn()}
+      runChecks={props.runChecks ?? vi.fn()}
+      isPending={props.isPending ?? false}
+      t={t}
+    />
+  );
+}
+
+function ResultsHarness(props: {
+  results?: ResultsProps['results'];
   isPending?: boolean;
   allPassed?: boolean;
   completedCount?: number;
   progressValue?: number;
-  runChecks?: () => void;
   onSuccess?: () => void;
   onBack?: () => void;
-}
-
-function Harness(props: Overrides) {
+}) {
   const t = useTranslations('Zatca.complianceChecks');
   const testLabels = [
     t('testLabels.standardTaxInvoice'),
@@ -37,11 +51,10 @@ function Harness(props: Overrides) {
     t('testLabels.simplifiedDebitNote'),
   ];
   return (
-    <ComplianceChecksView
+    <ComplianceChecksResults
       onSuccess={props.onSuccess ?? vi.fn()}
       onBack={props.onBack ?? vi.fn()}
       results={props.results ?? []}
-      runChecks={props.runChecks ?? vi.fn()}
       isPending={props.isPending ?? false}
       allPassed={props.allPassed ?? false}
       completedCount={props.completedCount ?? 0}
@@ -54,54 +67,54 @@ function Harness(props: Overrides) {
 
 describe('ComplianceChecks (web-vite)', () => {
   it('renders step title', () => {
-    render(<Harness />);
+    render(<IdleHarness />);
     expect(screen.getByText('Step 4 of 5: Run Compliance Checks')).toBeInTheDocument();
   });
 
   it('renders Run Compliance Checks button initially', () => {
-    render(<Harness />);
+    render(<IdleHarness />);
     expect(screen.getByRole('button', { name: /run compliance checks/i })).toBeInTheDocument();
   });
 
   it('renders Back and Next buttons', () => {
-    render(<Harness />);
+    render(<IdleHarness />);
     expect(screen.getByRole('button', { name: /^back$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^next$/i })).toBeInTheDocument();
   });
 
-  it('renders Next button disabled before checks pass', () => {
-    render(<Harness />);
+  it('renders Next button disabled in idle variant', () => {
+    render(<IdleHarness />);
     expect(screen.getByRole('button', { name: /^next$/i })).toBeDisabled();
   });
 
   it('calls onBack when Back is clicked', async () => {
     const onBack = vi.fn();
-    const { user } = setup(<Harness onBack={onBack} />);
+    const { user } = setup(<IdleHarness onBack={onBack} />);
     await user.click(screen.getByRole('button', { name: /^back$/i }));
     expect(onBack).toHaveBeenCalledOnce();
   });
 
   it('disables Run button while pending', () => {
-    render(<Harness isPending />);
+    render(<IdleHarness isPending />);
     expect(screen.getByRole('button', { name: /run compliance checks/i })).toBeDisabled();
   });
 
   it('invokes runChecks when Run button is clicked', async () => {
     const runChecks = vi.fn();
-    const { user } = setup(<Harness runChecks={runChecks} />);
+    const { user } = setup(<IdleHarness runChecks={runChecks} />);
     await user.click(screen.getByRole('button', { name: /run compliance checks/i }));
     expect(runChecks).toHaveBeenCalledOnce();
   });
 
   it('enables Next button when allPassed is true', () => {
     render(
-      <Harness
+      <ResultsHarness
         results={
           Array.from({ length: 6 }, (_, i) => ({
             status: 'CLEARED',
             // biome-ignore lint/style/useTemplate: simple concat
             invoiceType: 'standardTax' + i,
-          })) as unknown as ViewProps['results']
+          })) as unknown as ResultsProps['results']
         }
         allPassed
         completedCount={6}
@@ -113,7 +126,7 @@ describe('ComplianceChecks (web-vite)', () => {
 
   it('renders results list when results are present', () => {
     render(
-      <Harness
+      <ResultsHarness
         results={
           [
             { status: 'CLEARED' },
@@ -122,7 +135,7 @@ describe('ComplianceChecks (web-vite)', () => {
             { status: 'REPORTED' },
             { status: 'REPORTED' },
             { status: 'REPORTED' },
-          ] as ViewProps['results']
+          ] as ResultsProps['results']
         }
         allPassed
         completedCount={6}
