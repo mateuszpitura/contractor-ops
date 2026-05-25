@@ -11,6 +11,12 @@ interface TaskCardRunContainerProps {
   dependencyTitle?: string;
 }
 
+/**
+ * Decisive composition container — orchestrates the task card view together
+ * with two sub-containers (attachments + comments) that own their own tRPC
+ * boundary. Per ARCHITECTURE.md "Container responsibility" rule #5 this
+ * earns a file because it composes multiple containers/views.
+ */
 export function TaskCardRunContainer({
   task,
   runId,
