@@ -29,16 +29,41 @@ import { PaymentRunBadge } from './payment-run-badge.js';
 import { PaymentRunItemRow } from './payment-run-item-row.js';
 import { WhtSummaryCardContainer } from './wht-summary-card-container.js';
 
+interface PaymentRunSidePanelSkeletonProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function PaymentRunSidePanelSkeleton({
+  open,
+  onOpenChange,
+}: PaymentRunSidePanelSkeletonProps) {
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-[400px] p-0">
+        <div className="p-6 space-y-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <div key={`skel-${i}`} className="h-4 bg-muted animate-pulse rounded w-full" />
+          ))}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+type Panel = ReturnType<typeof usePaymentRunSidePanel>;
+type LoadedRun = NonNullable<Panel['run']>;
+
 interface PaymentRunSidePanelProps {
-  runId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportStatement?: (runId: string) => void;
-  panel: ReturnType<typeof usePaymentRunSidePanel>;
+  panel: Omit<Panel, 'run'> & { run: LoadedRun };
+  showBacsPreview: boolean;
   t: TranslateFn;
   locale: string;
   formatDate: (value: Date | string) => string;
-  bacsEnabled: boolean;
   skontoEnabled: boolean;
 }
 
@@ -74,41 +99,17 @@ function DetectedFormatHint({
 }
 
 export function PaymentRunSidePanel({
-  runId,
   open,
   onOpenChange,
   onImportStatement,
   panel,
+  showBacsPreview,
   t,
   locale,
   formatDate,
-  bacsEnabled,
   skontoEnabled,
 }: PaymentRunSidePanelProps) {
-  if (panel.isLoading || !panel.run) {
-    return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[400px] p-0">
-          <div className="p-6 space-y-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <div key={`skel-${i}`} className="h-4 bg-muted animate-pulse rounded w-full" />
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  const run = panel.run;
-  const safeRunId = panel.safeRunId;
-  const status = panel.status;
-  const items = panel.items;
-  const exportFormat = run.exportFormat as string | null | undefined;
-  const showBacsPreview =
-    bacsEnabled &&
-    (exportFormat === 'BACS_STD18' ||
-      panel.detectedFormatCounts.some(([format]) => format === 'BACS_STD18'));
+  const { run, safeRunId, status, items } = panel;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -131,10 +132,7 @@ export function PaymentRunSidePanel({
                 label={t('sidePanel.created')}
                 value={formatRelativeDate(run.createdAt, locale)}
               />
-              <DetailItem
-                label={t('sidePanel.exportFormat')}
-                value={run.exportFormat ?? '\u2014'}
-              />
+              <DetailItem label={t('sidePanel.exportFormat')} value={run.exportFormat ?? '—'} />
               <DetailItem label={t('sidePanel.invoices')} value={String(run.invoiceCount)} />
               <DetailItem
                 label={t('sidePanel.total')}
