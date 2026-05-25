@@ -7,5 +7,19 @@ interface TemplateFormContainerProps {
 
 export function TemplateFormContainer({ templateId }: TemplateFormContainerProps) {
   const form = useTemplateFormSection(templateId);
-  return <TemplateForm {...form} />;
+  const showActivateCta = form.isEditing && form.templateStatus === 'DRAFT';
+  const showArchiveCta = form.isEditing && form.templateStatus === 'ACTIVE';
+  const showDuplicateCta = form.isEditing;
+  const showDeleteCta = form.isEditing && form.templateStatus === 'DRAFT';
+  const showStatusBadge = form.isEditing;
+  return (
+    <TemplateForm
+      {...form}
+      showActivateCta={showActivateCta}
+      showArchiveCta={showArchiveCta}
+      showDuplicateCta={showDuplicateCta}
+      showDeleteCta={showDeleteCta}
+      showStatusBadge={showStatusBadge}
+    />
+  );
 }

@@ -59,9 +59,75 @@ export interface TaskCardProps {
   };
   users: Array<{ id: string; name?: string | null; email?: string | null }>;
   usersQuery: { isLoading: boolean };
+  /**
+   * Container-decided flag — true when `assigneeMode === 'FIXED_USER'` and the
+   * users query is still loading. The view renders a placeholder instead of
+   * the user `<Select>` to avoid flicker.
+   */
+  isFixedUserLoading?: boolean;
 }
 
-export type TaskCardContainerProps = Omit<TaskCardProps, 'users' | 'usersQuery'>;
+export type TaskCardContainerProps = Omit<
+  TaskCardProps,
+  'users' | 'usersQuery' | 'isFixedUserLoading'
+>;
+
+interface FixedUserFieldProps {
+  index: number;
+  form: UseFormReturn<TemplateFormValues>;
+  users: Array<{ id: string; name?: string | null; email?: string | null }>;
+  isLoading: boolean;
+  value: string;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function FixedUserField({ index, form, users, isLoading, value, t }: FixedUserFieldProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-1.5">
+        <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
+        <div
+          id={`task-user-${index}`}
+          role="status"
+          aria-busy="true"
+          aria-label={t('userPlaceholder')}
+          className="h-9 w-full animate-pulse rounded-md border bg-muted/40"
+        />
+      </div>
+    );
+  }
+
+  const userItems = users.map(user => ({
+    value: user.id as string,
+    label: ((user.name ?? user.email) as string) ?? '',
+  }));
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
+      <Select
+        value={value}
+        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+        onValueChange={val =>
+          form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
+            shouldDirty: true,
+          })
+        }
+        items={userItems}>
+        <SelectTrigger id={`task-user-${index}`} className="w-full">
+          <SelectValue placeholder={t('userPlaceholder')} />
+        </SelectTrigger>
+        <SelectContent>
+          {userItems.map((item: { value: string; label: string }) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
 
 const TASK_TYPE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   DOCUMENT_COLLECTION: FileText,
@@ -106,7 +172,7 @@ export function TaskCard({
   form,
   dragHandleProps,
   users,
-  usersQuery,
+  isFixedUserLoading = false,
 }: TaskCardProps) {
   const t = useTranslations('Workflows');
   const tAria = useTranslations('Common.aria');
@@ -322,37 +388,14 @@ export function TaskCard({
             )}
 
             {assigneeMode === 'FIXED_USER' && (
-              <div className="space-y-1.5">
-                <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
-                {(() => {
-                  const userItems = users.map(user => ({
-                    value: user.id as string,
-                    label: ((user.name ?? user.email) as string) ?? '',
-                  }));
-                  return (
-                    <Select
-                      value={task?.assigneeUserId ?? ''}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onValueChange={val =>
-                        form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
-                          shouldDirty: true,
-                        })
-                      }
-                      items={userItems}>
-                      <SelectTrigger id={`task-user-${index}`} className="w-full">
-                        <SelectValue placeholder={t('userPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {userItems.map((item: { value: string; label: string }) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {item.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  );
-                })()}
-              </div>
+              <FixedUserField
+                index={index}
+                form={form}
+                users={users}
+                isLoading={isFixedUserLoading}
+                value={task?.assigneeUserId ?? ''}
+                t={t}
+              />
             )}
 
             <div className="space-y-1.5">

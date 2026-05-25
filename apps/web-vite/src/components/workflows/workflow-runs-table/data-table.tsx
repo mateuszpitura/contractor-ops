@@ -19,6 +19,12 @@ interface WorkflowRunsDataTableProps extends ReturnType<typeof useWorkflowRunsDa
   onRowClick: (run: WorkflowRunRow) => void;
   onStartWorkflow: () => void;
   parentLoading?: boolean;
+  /** Container-decided composite loading flag (own loading OR refetching OR parent). */
+  tableLoading: boolean;
+  /** Container-decided toolbar disabled flag. */
+  toolbarDisabled: boolean;
+  /** Container-decided "render the pagination footer" gate. */
+  showPaginationFooter: boolean;
 }
 
 /**
@@ -44,9 +50,10 @@ export function WorkflowRunsDataTable({
   onRowClick,
   onStartWorkflow,
   parentLoading,
+  tableLoading,
+  toolbarDisabled,
+  showPaginationFooter,
 }: WorkflowRunsDataTableProps) {
-  const tableLoading = isLoading || isRefetching || parentLoading === true;
-
   return (
     <div className={WORKBENCH_DATA_TABLE_CLASS}>
       <DataTableFilters
@@ -56,14 +63,14 @@ export function WorkflowRunsDataTable({
           overdueOnly: filters.overdueOnly,
         }}
         onFiltersChange={handleFiltersChange}
-        disabled={isLoading || parentLoading === true}
+        disabled={toolbarDisabled}
         templates={templates}>
         {(filterTrigger, filterBadges) => (
           <DataTableToolbar
             search={filters.search}
             onSearchChange={handleSearchChange}
             isSearching={isRefetching}
-            disabled={isLoading || parentLoading === true}
+            disabled={toolbarDisabled}
             onStartWorkflow={onStartWorkflow}
             filterTrigger={filterTrigger}
             filterBadges={filterBadges}
@@ -87,7 +94,7 @@ export function WorkflowRunsDataTable({
           />
         }
         footer={
-          !isLoading && totalRows > 0 ? (
+          showPaginationFooter ? (
             <DataTablePagination
               table={table}
               totalRows={totalRows}

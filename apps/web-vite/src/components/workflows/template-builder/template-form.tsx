@@ -48,7 +48,13 @@ const STATUS_BADGE_STYLES: Record<string, string> = {
   ARCHIVED: 'bg-muted/50 text-muted-foreground/60',
 };
 
-type TemplateFormProps = ReturnType<typeof useTemplateFormSection>;
+type TemplateFormProps = ReturnType<typeof useTemplateFormSection> & {
+  showActivateCta: boolean;
+  showArchiveCta: boolean;
+  showDuplicateCta: boolean;
+  showDeleteCta: boolean;
+  showStatusBadge: boolean;
+};
 
 export function TemplateForm({
   form,
@@ -59,7 +65,6 @@ export function TemplateForm({
   removeTask,
   reorderTasks,
   templateStatus,
-  isEditing,
   isSaving,
   isUpdatePending,
   isDuplicatePending,
@@ -69,6 +74,11 @@ export function TemplateForm({
   handleArchive,
   handleDuplicate,
   handleDelete,
+  showActivateCta,
+  showArchiveCta,
+  showDuplicateCta,
+  showDeleteCta,
+  showStatusBadge,
 }: TemplateFormProps) {
   const t = useTranslations('Workflows');
   const reactId = useId();
@@ -95,7 +105,7 @@ export function TemplateForm({
               {!!isDirty && <span className="me-1.5 inline-block size-2 rounded-full bg-current" />}
               {t('saveTemplate')}
             </Button>
-            {isEditing && templateStatus === 'DRAFT' && (
+            {!!showActivateCta && (
               <Button
                 type="button"
                 variant="outline"
@@ -104,7 +114,7 @@ export function TemplateForm({
                 {t('activate')}
               </Button>
             )}
-            {isEditing && templateStatus === 'ACTIVE' && (
+            {!!showArchiveCta && (
               <AlertDialog>
                 <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
                   {t('archive')}
@@ -125,7 +135,7 @@ export function TemplateForm({
                 </AlertDialogContent>
               </AlertDialog>
             )}
-            {isEditing && (
+            {!!showDuplicateCta && (
               <Button
                 type="button"
                 variant="outline"
@@ -134,7 +144,7 @@ export function TemplateForm({
                 {t('duplicate')}
               </Button>
             )}
-            {isEditing && templateStatus === 'DRAFT' && (
+            {!!showDeleteCta && (
               <AlertDialog>
                 <AlertDialogTrigger
                   render={<Button type="button" variant="destructive" className="ms-auto" />}>
@@ -192,7 +202,7 @@ export function TemplateForm({
             </SelectContent>
           </Select>
         </div>
-        {isEditing && (
+        {!!showStatusBadge && (
           <div className="shrink-0 space-y-1.5 sm:max-w-[200px]">
             <p className="text-sm font-medium leading-none">{t('columns.status')}</p>
             <div className="flex min-h-8 items-center">
