@@ -10,6 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/command';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowRight, Clock, Play, Plus, Star, Upload } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useCallback } from 'react';
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -226,34 +227,228 @@ function MatchedPageCommandItem({
   );
 }
 
-export type CommandPaletteViewProps = CommandPaletteViewModel;
+// ---------------------------------------------------------------------------
+// Body variants — container picks one of these.
+// ---------------------------------------------------------------------------
+
+export function CommandPaletteLoadingBody() {
+  return (
+    <div className="space-y-2 p-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
+      ))}
+    </div>
+  );
+}
+
+interface CommandPaletteIdleBodyProps {
+  recentItems: RecentItem[];
+  pinnedItems: PinnedItem[];
+  visibleNavItems: typeof navigationItems;
+  quickActions: readonly QuickAction[];
+  onRecentSelect: (item: RecentItem) => void;
+  onPageNavigate: (item: (typeof navigationItems)[number], label: string) => void;
+  onNavigate: (href: string) => void;
+}
+
+export function CommandPaletteIdleBody({
+  recentItems,
+  pinnedItems,
+  visibleNavItems,
+  quickActions,
+  onRecentSelect,
+  onPageNavigate,
+  onNavigate,
+}: CommandPaletteIdleBodyProps) {
+  const t = useTranslations('Search');
+  const tTime = useTranslations('Search.time');
+  const tNav = useTranslations('Navigation');
+
+  return (
+    <>
+      {recentItems.length > 0 && (
+        <CommandGroup heading={t('sections.recent')}>
+          {recentItems.map(item => (
+            <RecentCommandItem
+              key={`recent-${item.type}-${item.id}`}
+              item={item}
+              onSelect={onRecentSelect}
+              tTime={tTime}
+            />
+          ))}
+        </CommandGroup>
+      )}
+
+      {pinnedItems.length > 0 && (
+        <>
+          <CommandSeparator />
+          <CommandGroup heading={t('sections.pinned')}>
+            {pinnedItems.map(item => (
+              <PinnedCommandItem
+                key={`pinned-${item.type}-${item.id}`}
+                item={item}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </CommandGroup>
+        </>
+      )}
+
+      <CommandSeparator />
+      <CommandGroup heading={t('sections.actions')}>
+        {quickActions.map(action => (
+          <QuickActionCommandItem
+            key={action.key}
+            action={action}
+            onNavigate={onNavigate}
+            label={t(action.labelKey)}
+          />
+        ))}
+      </CommandGroup>
+
+      <CommandSeparator />
+      <CommandGroup heading={t('sections.pages')}>
+        {visibleNavItems.map(item => (
+          <PageNavigationCommandItem
+            key={`page-${item.key}`}
+            item={item}
+            label={tNav(item.key)}
+            onPageNavigate={onPageNavigate}
+          />
+        ))}
+      </CommandGroup>
+    </>
+  );
+}
+
+interface CommandPaletteSearchingBodyProps {
+  searchResults: SearchResultItem[];
+  docResults: DocSearchResultItem[];
+  isDocLoading: boolean;
+  matchedPages: typeof navigationItems;
+  matchedActions: readonly QuickAction[];
+  onEntityClick: (item: SearchResultItem) => void;
+  onPageNavigate: (item: (typeof navigationItems)[number], label: string) => void;
+  onNavigate: (href: string) => void;
+  togglePin: (item: PinnedItem) => void;
+  isPinned: (type: string, id: string) => boolean;
+}
+
+export function CommandPaletteSearchingBody({
+  searchResults,
+  docResults,
+  isDocLoading,
+  matchedPages,
+  matchedActions,
+  onEntityClick,
+  onNavigate,
+  togglePin,
+  isPinned,
+}: CommandPaletteSearchingBodyProps) {
+  const t = useTranslations('Search');
+  const tNav = useTranslations('Navigation');
+
+  return (
+    <>
+      {searchResults.length > 0 && (
+        <CommandGroup heading={t('sections.results')}>
+          {searchResults.map(item => (
+            <SearchResultCommandItem
+              key={`result-${item.type}-${item.id}`}
+              item={item}
+              onEntityClick={onEntityClick}
+              togglePin={togglePin}
+              isPinned={isPinned(item.type, item.id)}
+              pinLabel={t('pin')}
+              unpinLabel={t('unpin')}
+            />
+          ))}
+        </CommandGroup>
+      )}
+
+      {!!isDocLoading && (
+        <CommandGroup heading="Docs">
+          <div className="space-y-2 p-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
+            ))}
+          </div>
+        </CommandGroup>
+      )}
+      {!isDocLoading && docResults.length > 0 && (
+        <>
+          <CommandSeparator />
+          <CommandGroup heading="Docs">
+            {docResults.map(result => (
+              <DocResultCommandItem key={`doc-${result.provider}-${result.id}`} result={result} />
+            ))}
+          </CommandGroup>
+        </>
+      )}
+
+      {matchedPages.length > 0 && (
+        <>
+          <CommandSeparator />
+          <CommandGroup heading={t('sections.pages')}>
+            {matchedPages.map(item => (
+              <MatchedPageCommandItem
+                key={`page-${item.key}`}
+                item={item}
+                label={tNav(item.key)}
+                onNavigate={onNavigate}
+              />
+            ))}
+          </CommandGroup>
+        </>
+      )}
+
+      {matchedActions.length > 0 && (
+        <>
+          <CommandSeparator />
+          <CommandGroup heading={t('sections.actions')}>
+            {matchedActions.map(action => (
+              <QuickActionCommandItem
+                key={action.key}
+                action={action}
+                onNavigate={onNavigate}
+                label={t(action.labelKey)}
+              />
+            ))}
+          </CommandGroup>
+        </>
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shell — pure dialog + input + footer + body slot. Container picks body.
+// ---------------------------------------------------------------------------
+
+export interface CommandPaletteViewProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  query: string;
+  onQueryChange: (value: string) => void;
+  isSearching: boolean;
+  searchResultsCount: number;
+  showAriaLive: boolean;
+  body: ReactNode;
+}
 
 export function CommandPaletteView({
   open,
   setOpen,
   query,
   onQueryChange,
-  searchResults,
-  docResults,
   isSearching,
-  isLoading,
-  isDocLoading,
-  recentItems,
-  pinnedItems,
-  visibleNavItems,
-  matchedPages,
-  matchedActions,
-  quickActions,
-  onRecentSelect,
-  onEntityClick,
-  onPageNavigate,
-  onNavigate,
-  togglePin,
-  isPinned,
+  searchResultsCount,
+  showAriaLive,
+  body,
 }: CommandPaletteViewProps) {
   const t = useTranslations('Search');
-  const tTime = useTranslations('Search.time');
-  const tNav = useTranslations('Navigation');
 
   return (
     <CommandDialog
@@ -264,156 +459,16 @@ export function CommandPaletteView({
       className="w-[560px]"
       shouldFilter={!isSearching}>
       <CommandInput placeholder={t('placeholder')} value={query} onValueChange={onQueryChange} />
-      {isSearching && !isLoading && (
+      {showAriaLive && (
         <div className="sr-only" aria-live="polite" aria-atomic="true">
-          {searchResults.length > 0
-            ? t('resultsFound', { count: searchResults.length })
+          {searchResultsCount > 0
+            ? t('resultsFound', { count: searchResultsCount })
             : t('noResultsFound')}
         </div>
       )}
       <CommandList>
         <CommandEmpty>{t('noResults')}</CommandEmpty>
-
-        {!!isLoading && (
-          <div className="space-y-2 p-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
-            ))}
-          </div>
-        )}
-
-        {!(isSearching || isLoading) && (
-          <>
-            {recentItems.length > 0 && (
-              <CommandGroup heading={t('sections.recent')}>
-                {recentItems.map(item => (
-                  <RecentCommandItem
-                    key={`recent-${item.type}-${item.id}`}
-                    item={item}
-                    onSelect={onRecentSelect}
-                    tTime={tTime}
-                  />
-                ))}
-              </CommandGroup>
-            )}
-
-            {pinnedItems.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={t('sections.pinned')}>
-                  {pinnedItems.map(item => (
-                    <PinnedCommandItem
-                      key={`pinned-${item.type}-${item.id}`}
-                      item={item}
-                      onNavigate={onNavigate}
-                    />
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-
-            <CommandSeparator />
-            <CommandGroup heading={t('sections.actions')}>
-              {quickActions.map(action => (
-                <QuickActionCommandItem
-                  key={action.key}
-                  action={action}
-                  onNavigate={onNavigate}
-                  label={t(action.labelKey)}
-                />
-              ))}
-            </CommandGroup>
-
-            <CommandSeparator />
-            <CommandGroup heading={t('sections.pages')}>
-              {visibleNavItems.map(item => (
-                <PageNavigationCommandItem
-                  key={`page-${item.key}`}
-                  item={item}
-                  label={tNav(item.key)}
-                  onPageNavigate={onPageNavigate}
-                />
-              ))}
-            </CommandGroup>
-          </>
-        )}
-
-        {isSearching && !isLoading && (
-          <>
-            {searchResults.length > 0 && (
-              <CommandGroup heading={t('sections.results')}>
-                {searchResults.map(item => (
-                  <SearchResultCommandItem
-                    key={`result-${item.type}-${item.id}`}
-                    item={item}
-                    onEntityClick={onEntityClick}
-                    togglePin={togglePin}
-                    isPinned={isPinned(item.type, item.id)}
-                    pinLabel={t('pin')}
-                    unpinLabel={t('unpin')}
-                  />
-                ))}
-              </CommandGroup>
-            )}
-
-            {!!isDocLoading && (
-              <CommandGroup heading="Docs">
-                <div className="space-y-2 p-2">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                    <Skeleton key={`skel-${i}`} className="h-8 w-full rounded-md" />
-                  ))}
-                </div>
-              </CommandGroup>
-            )}
-            {!isDocLoading && docResults.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading="Docs">
-                  {docResults.map(result => (
-                    <DocResultCommandItem
-                      key={`doc-${result.provider}-${result.id}`}
-                      result={result}
-                    />
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-
-            {matchedPages.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={t('sections.pages')}>
-                  {matchedPages.map(item => (
-                    <MatchedPageCommandItem
-                      key={`page-${item.key}`}
-                      item={item}
-                      label={tNav(item.key)}
-                      onNavigate={onNavigate}
-                    />
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-
-            {matchedActions.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading={t('sections.actions')}>
-                  {matchedActions.map(action => (
-                    <QuickActionCommandItem
-                      key={action.key}
-                      action={action}
-                      onNavigate={onNavigate}
-                      label={t(action.labelKey)}
-                    />
-                  ))}
-                </CommandGroup>
-              </>
-            )}
-          </>
-        )}
+        {body}
       </CommandList>
 
       <div className="flex items-center gap-4 border-t border-border/40 px-3 py-2">
@@ -424,3 +479,6 @@ export function CommandPaletteView({
     </CommandDialog>
   );
 }
+
+// Re-export the model shape so consumers/tests continue to import from here.
+export type { CommandPaletteViewModel };
