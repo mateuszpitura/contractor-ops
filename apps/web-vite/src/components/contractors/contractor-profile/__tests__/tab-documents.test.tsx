@@ -16,7 +16,7 @@ vi.mock('../../../documents/document-card-container.js', () => ({
 
 import { render, screen } from '../../../../test/test-utils.js';
 import type { DocumentListItem } from '../../../documents/types.js';
-import { TabDocuments } from '../tab-documents.js';
+import { TabDocuments, TabDocumentsEmpty, TabDocumentsSkeleton } from '../tab-documents.js';
 
 const sampleDoc = (id: string, filename: string): DocumentListItem =>
   ({
@@ -26,15 +26,13 @@ const sampleDoc = (id: string, filename: string): DocumentListItem =>
 
 describe('TabDocuments', () => {
   it('renders skeleton rows while loading', () => {
-    const { container } = render(
-      <TabDocuments contractorId="c1" documents={[]} isLoading={true} />,
-    );
+    const { container } = render(<TabDocumentsSkeleton contractorId="c1" />);
     const skeletons = container.querySelectorAll("[data-slot='skeleton']");
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
   it('renders empty state when no documents', () => {
-    render(<TabDocuments contractorId="c1" documents={[]} isLoading={false} />);
+    render(<TabDocumentsEmpty contractorId="c1" />);
     expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
   });
 
@@ -43,7 +41,6 @@ describe('TabDocuments', () => {
       <TabDocuments
         contractorId="c1"
         documents={[sampleDoc('d1', 'NDA.pdf'), sampleDoc('d2', 'MSA.pdf')]}
-        isLoading={false}
       />,
     );
     expect(screen.getByTestId('doc-d1')).toBeInTheDocument();
@@ -51,7 +48,7 @@ describe('TabDocuments', () => {
   });
 
   it('always mounts the drop-zone (upload affordance)', () => {
-    render(<TabDocuments contractorId="c1" documents={[]} isLoading={false} />);
+    render(<TabDocumentsEmpty contractorId="c1" />);
     expect(screen.getByTestId('drop-zone')).toBeInTheDocument();
   });
 });
