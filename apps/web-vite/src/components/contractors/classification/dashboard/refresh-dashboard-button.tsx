@@ -1,0 +1,47 @@
+/**
+ * Refresh dashboard button. Port from
+ * apps/web/src/components/contractors/classification/dashboard/refresh-dashboard-button.tsx
+ */
+
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { RotateCw } from 'lucide-react';
+
+import { useTranslations } from '../../../../i18n/useTranslations.js';
+
+export type RefreshDashboardButtonViewProps = {
+  onRefresh: () => Promise<void>;
+  busy: boolean;
+  announcement: string;
+};
+
+export function RefreshDashboardButtonView({
+  onRefresh,
+  busy,
+  announcement,
+}: RefreshDashboardButtonViewProps) {
+  const t = useTranslations('Classification.polish.dashboard');
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={busy}
+        onClick={() => void onRefresh()}
+        aria-label={t('refreshButton')}
+        data-testid="refresh-dashboard-button">
+        <RotateCw aria-hidden="true" className={busy ? 'size-4 animate-spin' : 'size-4'} />
+        <span>{busy ? t('refreshingLabel') : t('refreshButton')}</span>
+      </Button>
+      <span
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="refresh-announcement">
+        {announcement}
+      </span>
+    </>
+  );
+}
