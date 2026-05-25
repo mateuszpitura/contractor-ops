@@ -2,7 +2,13 @@ import type { MergedPerson } from '@contractor-ops/validators';
 
 import { useOnboardingPeople } from './hooks/use-onboarding-people.js';
 import type { PersonSelection } from './import-wizard.js';
-import { PeopleReviewStep } from './people-review-step.js';
+import { PeopleReviewSkeleton } from './onboarding-skeletons.js';
+import {
+  PeopleReviewEmpty,
+  PeopleReviewError,
+  PeopleReviewHeader,
+  PeopleReviewStep,
+} from './people-review-step.js';
 
 type PeopleReviewStepContainerProps = {
   selectedSources: string[];
@@ -15,12 +21,30 @@ type PeopleReviewStepContainerProps = {
 export function PeopleReviewStepContainer(props: PeopleReviewStepContainerProps) {
   const section = useOnboardingPeople(props);
 
+  if (section.isLoading) {
+    return <PeopleReviewSkeleton />;
+  }
+
+  if (section.isError) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewError onRefetch={section.handleRefetch} />
+      </div>
+    );
+  }
+
+  if (section.isEmpty) {
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewEmpty />
+      </div>
+    );
+  }
+
   return (
     <PeopleReviewStep
-      isLoading={section.isLoading}
-      isError={section.isError}
-      isEmpty={section.isEmpty}
-      onRefetch={section.handleRefetch}
       filteredPeople={section.filteredPeople}
       counts={section.counts}
       activeFilter={section.activeFilter}

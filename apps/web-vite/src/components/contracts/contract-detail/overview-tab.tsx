@@ -73,43 +73,46 @@ function FieldRow({
   );
 }
 
-function ExpiryRemindersEditor({
+export function ExpiryRemindersDisplay({
   currentReminders,
-  reminders,
+  onStartEditing,
 }: {
   currentReminders: number[];
-  reminders: ReturnType<typeof useExpiryRemindersEditor>;
+  onStartEditing: () => void;
 }) {
   const t = useTranslations('ContractDetail.overview');
-  const {
-    editing,
-    handleCancel,
-    handleSave,
-    isPending,
-    reminders: remindersText,
-    setReminders,
-    startEditing,
-  } = reminders;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm">
+        {currentReminders.length > 0
+          ? t('reminders.display', {
+              days: currentReminders.join(', '),
+            })
+          : t('reminders.none')}
+      </span>
+      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
+      <Button variant="ghost" size="icon-sm" onClick={onStartEditing}>
+        <Pencil className="size-3" />
+        <span className="sr-only">{t('reminders.edit')}</span>
+      </Button>
+    </div>
+  );
+}
 
-  if (!editing) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm">
-          {currentReminders.length > 0
-            ? t('reminders.display', {
-                days: currentReminders.join(', '),
-              })
-            : t('reminders.none')}
-        </span>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="ghost" size="icon-sm" onClick={startEditing}>
-          <Pencil className="size-3" />
-          <span className="sr-only">{t('reminders.edit')}</span>
-        </Button>
-      </div>
-    );
-  }
-
+export function ExpiryRemindersEditing({
+  remindersText,
+  setReminders,
+  handleSave,
+  handleCancel,
+  isPending,
+}: {
+  remindersText: string;
+  setReminders: (value: string) => void;
+  handleSave: () => void;
+  handleCancel: () => void;
+  isPending: boolean;
+}) {
+  const t = useTranslations('ContractDetail.overview');
   return (
     <div className="flex items-center gap-2">
       <input
@@ -128,6 +131,33 @@ function ExpiryRemindersEditor({
         <X className="size-3" />
       </Button>
     </div>
+  );
+}
+
+function ExpiryRemindersEditor({
+  currentReminders,
+  reminders,
+}: {
+  currentReminders: number[];
+  reminders: ReturnType<typeof useExpiryRemindersEditor>;
+}) {
+  if (!reminders.editing) {
+    return (
+      <ExpiryRemindersDisplay
+        currentReminders={currentReminders}
+        onStartEditing={reminders.startEditing}
+      />
+    );
+  }
+
+  return (
+    <ExpiryRemindersEditing
+      remindersText={reminders.reminders}
+      setReminders={reminders.setReminders}
+      handleSave={reminders.handleSave}
+      handleCancel={reminders.handleCancel}
+      isPending={reminders.isPending}
+    />
   );
 }
 
@@ -152,13 +182,17 @@ function translateEnum(
   return value ? tEnum(`${prefix}.${enumKey(value)}` as string) : null;
 }
 
+export function extractReminderDaysBefore(metadataJson: unknown): number[] {
+  const metadata = (metadataJson as Record<string, unknown>) ?? {};
+  return (metadata.reminderDaysBefore as number[]) ?? [];
+}
+
 export function OverviewTab({ contract, reminders }: OverviewTabProps) {
   const t = useTranslations('ContractDetail.overview');
   const tEnum = useTranslations('Contracts');
   const tContractor = useTranslations('Contractors');
 
-  const metadata = (contract.metadataJson as Record<string, unknown>) ?? {};
-  const reminderDaysBefore = (metadata.reminderDaysBefore as number[]) ?? [];
+  const reminderDaysBefore = extractReminderDaysBefore(contract.metadataJson);
 
   const daysRemaining = contract.endDate ? getDaysRemaining(contract.endDate) : null;
   const daysColor = getDaysRemainingColor(daysRemaining);

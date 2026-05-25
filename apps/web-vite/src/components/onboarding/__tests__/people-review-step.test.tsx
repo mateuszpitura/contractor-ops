@@ -11,7 +11,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { PersonSelection } from '../import-wizard.js';
 import type { PeopleReviewStepProps } from '../people-review-step.js';
-import { PeopleReviewStep } from '../people-review-step.js';
+import { PeopleReviewEmpty, PeopleReviewError, PeopleReviewStep } from '../people-review-step.js';
 import { click, findButton, mount } from './_render.js';
 
 afterEach(() => {
@@ -45,10 +45,6 @@ const baseSelections = new Map<string, PersonSelection>([
 
 function baseProps(): PeopleReviewStepProps {
   return {
-    isLoading: false,
-    isError: false,
-    isEmpty: false,
-    onRefetch: vi.fn(),
     filteredPeople: samplePeople,
     counts: baseCounts,
     activeFilter: 'all',
@@ -86,34 +82,17 @@ describe('PeopleReviewStep (web-vite)', () => {
     expect(bodyRows.length).toBe(2);
   });
 
-  it('renders skeleton placeholders while loading', async () => {
-    const { container } = await mount(
-      <PeopleReviewStep {...baseProps()} isLoading={true} filteredPeople={[]} />,
-    );
-    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBeGreaterThan(0);
-  });
-
-  it('renders the error branch + retry button when isError is true', async () => {
+  it('renders the error sibling with retry button', async () => {
     const onRefetch = vi.fn();
-    const { container } = await mount(
-      <PeopleReviewStep
-        {...baseProps()}
-        isError={true}
-        filteredPeople={[]}
-        onRefetch={onRefetch}
-      />,
-    );
+    const { container } = await mount(<PeopleReviewError onRefetch={onRefetch} />);
     const retry = findButton(container, /try again/i);
     expect(retry).not.toBeNull();
     await click(retry as HTMLButtonElement);
     expect(onRefetch).toHaveBeenCalledTimes(1);
   });
 
-  it('renders the empty state when isEmpty is true', async () => {
-    const { container } = await mount(
-      <PeopleReviewStep {...baseProps()} isEmpty={true} filteredPeople={[]} />,
-    );
+  it('renders the empty sibling', async () => {
+    const { container } = await mount(<PeopleReviewEmpty />);
     expect(container.textContent).toContain('No team members found');
   });
 

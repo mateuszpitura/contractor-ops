@@ -20,7 +20,6 @@ import { useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraBrandIcon, LinearBrandIcon } from '../integrations/brand-icons.js';
 import type { ProjectSelection } from './import-wizard.js';
-import { ProjectImportSkeleton } from './onboarding-skeletons.js';
 
 const SOURCE_ICONS: Record<string, ReactNode> = {
   JIRA: <JiraBrandIcon className="size-4" />,
@@ -172,10 +171,6 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
 }
 
 export interface ProjectImportStepProps {
-  isLoading: boolean;
-  isError: boolean;
-  isEmpty: boolean;
-  onRefetch: () => void;
   projects: FetchProjectsOutput;
   getProjectKey: (project: FetchProjectsOutput[number]) => string;
   getSelectionFor: (project: FetchProjectsOutput[number]) => ProjectSelection;
@@ -183,56 +178,16 @@ export interface ProjectImportStepProps {
 }
 
 export function ProjectImportStep({
-  isLoading,
-  isError,
-  isEmpty,
-  onRefetch,
   projects,
   getProjectKey,
   getSelectionFor,
   onSelectionChange,
 }: ProjectImportStepProps) {
   const t = useTranslations('OnboardingImport.step3');
-  const tCommon = useTranslations('Common');
-  const tErr = useTranslations('Contractors.error');
-
-  if (isLoading) {
-    return <ProjectImportSkeleton />;
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-16">
-        <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={onRefetch}>
-          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-          {tErr('retry')}
-        </Button>
-      </div>
-    );
-  }
-
-  if (isEmpty) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-16">
-        <FolderKanban className="size-12 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
-        <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </div>
+      <ProjectImportHeader />
 
       <div className="space-y-4">
         {projects.map(project => {
@@ -250,6 +205,51 @@ export function ProjectImportStep({
       </div>
 
       <p className="text-sm text-muted-foreground italic">{t('syncNote')}</p>
+    </div>
+  );
+}
+
+export function ProjectImportHeader() {
+  const t = useTranslations('OnboardingImport.step3');
+  return (
+    <div>
+      <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+    </div>
+  );
+}
+
+export interface ProjectImportErrorProps {
+  onRefetch: () => void;
+}
+
+export function ProjectImportError({ onRefetch }: ProjectImportErrorProps) {
+  const tCommon = useTranslations('Common');
+  const tErr = useTranslations('Contractors.error');
+
+  return (
+    <div className="flex flex-col items-center gap-4 py-16">
+      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onClick={onRefetch}>
+        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+        {tErr('retry')}
+      </Button>
+    </div>
+  );
+}
+
+export function ProjectImportEmpty() {
+  const t = useTranslations('OnboardingImport.step3');
+  return (
+    <div className="flex flex-col items-center gap-4 py-16">
+      <FolderKanban className="size-12 text-muted-foreground" aria-hidden="true" />
+      <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
+      <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
     </div>
   );
 }

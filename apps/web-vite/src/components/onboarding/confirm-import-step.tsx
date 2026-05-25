@@ -9,10 +9,8 @@ import { FolderKanban, Users } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { RoleBreakdownEntry } from './hooks/use-onboarding-confirm.js';
-import { ImportProgressTrackerContainer } from './import-progress-tracker-container.js';
 
 export interface ConfirmImportStepProps {
-  jobId: string | null;
   peopleToImportCount: number;
   projectsToImportCount: number;
   totalSteps: number;
@@ -23,7 +21,6 @@ export interface ConfirmImportStepProps {
 }
 
 export function ConfirmImportStep({
-  jobId,
   peopleToImportCount,
   projectsToImportCount,
   totalSteps,
@@ -33,10 +30,6 @@ export function ConfirmImportStep({
   onStartImport,
 }: ConfirmImportStepProps) {
   const t = useTranslations('OnboardingImport.step4');
-
-  if (jobId) {
-    return <ImportProgressTrackerContainer jobId={jobId} />;
-  }
 
   return (
     <div className="space-y-6">

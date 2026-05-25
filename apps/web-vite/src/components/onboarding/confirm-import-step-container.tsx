@@ -1,6 +1,7 @@
 import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
 import { ConfirmImportStep } from './confirm-import-step.js';
 import { useOnboardingConfirm } from './hooks/use-onboarding-confirm.js';
+import { ImportProgressTrackerContainer } from './import-progress-tracker-container.js';
 import type { PersonSelection, ProjectSelection } from './import-wizard.js';
 
 type ConfirmImportStepContainerProps = {
@@ -21,9 +22,12 @@ export function ConfirmImportStepContainer(props: ConfirmImportStepContainerProp
     onJobIdChange: props.onJobIdChange,
   });
 
+  if (props.jobId) {
+    return <ImportProgressTrackerContainer jobId={props.jobId} />;
+  }
+
   return (
     <ConfirmImportStep
-      jobId={props.jobId}
       peopleToImportCount={section.peopleToImport.length}
       projectsToImportCount={section.projectsToImport.length}
       totalSteps={section.totalSteps}

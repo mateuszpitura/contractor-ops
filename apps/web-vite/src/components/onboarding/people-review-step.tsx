@@ -32,7 +32,6 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConflictResolutionPopover } from './conflict-resolution-popover.js';
 import type { PeopleCounts } from './hooks/use-onboarding-people.js';
 import type { PersonSelection } from './import-wizard.js';
-import { PeopleReviewSkeleton } from './onboarding-skeletons.js';
 
 const SOURCE_COLORS: Record<string, string> = {
   JIRA: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
@@ -49,10 +48,6 @@ const SOURCE_LABELS: Record<string, string> = {
 };
 
 export interface PeopleReviewStepProps {
-  isLoading: boolean;
-  isError: boolean;
-  isEmpty: boolean;
-  onRefetch: () => void;
   filteredPeople: MergedPerson[];
   counts: PeopleCounts;
   activeFilter: string;
@@ -72,10 +67,6 @@ export interface PeopleReviewStepProps {
 }
 
 export function PeopleReviewStep({
-  isLoading,
-  isError,
-  isEmpty,
-  onRefetch,
   filteredPeople,
   counts,
   activeFilter,
@@ -96,8 +87,6 @@ export function PeopleReviewStep({
   const t = useTranslations('OnboardingImport.step2');
   const tRoles = useTranslations('Users.roles');
   const tAria = useTranslations('Common.aria');
-  const tCommon = useTranslations('Common');
-  const tErr = useTranslations('Contractors.error');
 
   const ROLE_OPTIONS = invitableMemberRoleValues.map(value => {
     const roleKeyMap: Record<InvitableMemberRole, Parameters<typeof tRoles>[0]> = {
@@ -113,43 +102,9 @@ export function PeopleReviewStep({
     return { value, label: tRoles(roleKeyMap[value]) };
   });
 
-  if (isLoading) {
-    return <PeopleReviewSkeleton />;
-  }
-
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-16">
-        <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={onRefetch}>
-          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-          {tErr('retry')}
-        </Button>
-      </div>
-    );
-  }
-
-  if (isEmpty) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-16">
-        <Users className="size-12 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
-        <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </div>
+      <PeopleReviewHeader />
 
       <Card>
         <CardContent
@@ -355,6 +310,51 @@ export function PeopleReviewStep({
           </div>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+export function PeopleReviewHeader() {
+  const t = useTranslations('OnboardingImport.step2');
+  return (
+    <div>
+      <h2 className="font-display text-xl font-semibold leading-[1.2]">{t('heading')}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+    </div>
+  );
+}
+
+export interface PeopleReviewErrorProps {
+  onRefetch: () => void;
+}
+
+export function PeopleReviewError({ onRefetch }: PeopleReviewErrorProps) {
+  const tCommon = useTranslations('Common');
+  const tErr = useTranslations('Contractors.error');
+
+  return (
+    <div className="flex flex-col items-center gap-4 py-16">
+      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5"
+        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+        onClick={onRefetch}>
+        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+        {tErr('retry')}
+      </Button>
+    </div>
+  );
+}
+
+export function PeopleReviewEmpty() {
+  const t = useTranslations('OnboardingImport.step2');
+  return (
+    <div className="flex flex-col items-center gap-4 py-16">
+      <Users className="size-12 text-muted-foreground" aria-hidden="true" />
+      <h3 className="text-lg font-semibold">{t('emptyHeading')}</h3>
+      <p className="max-w-md text-center text-sm text-muted-foreground">{t('emptyBody')}</p>
     </div>
   );
 }
