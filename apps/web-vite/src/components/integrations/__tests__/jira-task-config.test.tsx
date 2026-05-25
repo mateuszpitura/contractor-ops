@@ -17,7 +17,7 @@ vi.mock('../jira-project-mapping-dialog-container', () => ({
 }));
 
 interface BuildOpts {
-  connection?: { id: string; status: string } | null | undefined;
+  connection?: { id: string; status: string };
   jiraEnabled?: boolean;
   hasMappingConfigured?: boolean;
   mappingSummary?: string;
@@ -69,11 +69,6 @@ function buildProps(overrides: BuildOpts = {}): JiraTaskConfigViewProps {
 describe('JiraTaskConfigView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('returns null when no Jira connection is present', () => {
-    const { container } = render(<JiraTaskConfigView {...buildProps({ connection: null })} />);
-    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders the enable toggle label', () => {

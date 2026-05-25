@@ -70,8 +70,8 @@ interface BuildOpts {
   channels?: typeof mockChannels;
   selectedTeamId?: string | null;
   localMapping?: Record<string, string>;
-  isLoadingChannels?: boolean;
-  isChannelError?: boolean;
+  variant?: 'loading' | 'error' | 'empty' | 'list';
+  isRefreshing?: boolean;
   isSavePending?: boolean;
   setSelectedTeamId?: Dispatch<SetStateAction<string | null>>;
   handleChannelSelect?: (category: string, channelId: string) => void;
@@ -85,8 +85,8 @@ function buildProps(overrides: BuildOpts = {}): TeamsChannelMappingCardViewProps
     channels = mockChannels,
     selectedTeamId = 't-1',
     localMapping = {},
-    isLoadingChannels = false,
-    isChannelError = false,
+    variant = 'list',
+    isRefreshing = false,
     isSavePending = false,
     setSelectedTeamId = vi.fn(),
     handleChannelSelect = vi.fn(),
@@ -122,8 +122,8 @@ function buildProps(overrides: BuildOpts = {}): TeamsChannelMappingCardViewProps
     handleChannelSelect,
     handleSave,
     handleRefresh,
-    isLoadingChannels,
-    isChannelError,
+    variant,
+    isRefreshing,
     saveMutation: { isPending: isSavePending } as never,
     t,
   };
@@ -157,15 +157,15 @@ describe('TeamsChannelMappingCardView', () => {
     expect(screen.getByRole('option', { name: 'Design' })).toBeInTheDocument();
   });
 
-  it('renders the channel error message when isChannelError is true', () => {
-    render(<TeamsChannelMappingCardView {...buildProps({ isChannelError: true })} />);
+  it('renders the channel error message when variant is "error"', () => {
+    render(<TeamsChannelMappingCardView {...buildProps({ variant: 'error' })} />);
     expect(
       screen.getByText('Could not load Teams channels. Refresh to retry.'),
     ).toBeInTheDocument();
   });
 
-  it('shows the "no channels" hint when team selected but channels list is empty', () => {
-    render(<TeamsChannelMappingCardView {...buildProps({ channels: [] })} />);
+  it('shows the "no channels" hint when variant is "empty"', () => {
+    render(<TeamsChannelMappingCardView {...buildProps({ variant: 'empty', channels: [] })} />);
     expect(
       screen.getByText('No channels visible in this team — check installation scope.'),
     ).toBeInTheDocument();
