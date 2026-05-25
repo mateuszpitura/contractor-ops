@@ -19,6 +19,21 @@ interface OrgSwitcherProps {
   onOrgSwitch: (orgId: string) => void;
 }
 
+function OrgSwitcherTrigger({ currentOrg }: { currentOrg: OrgInfo | null }) {
+  const t = useTranslations('Common.orgSwitcher');
+  return (
+    <>
+      <div className="org-logo-gradient flex aspect-square size-8 items-center justify-center rounded-lg font-display text-sm font-bold text-primary-foreground shadow-sm">
+        {currentOrg?.name?.charAt(0)?.toUpperCase() ?? 'O'}
+      </div>
+      <div className="grid flex-1 text-start text-sm leading-tight">
+        <span className="truncate font-semibold">{currentOrg?.name ?? t('selectOrg')}</span>
+      </div>
+      <ChevronsUpDown className="ms-auto size-4" />
+    </>
+  );
+}
+
 export function OrgSwitcher({ currentOrg, organizations, onOrgSwitch }: OrgSwitcherProps) {
   const t = useTranslations('Common.orgSwitcher');
   const { isMobile } = useSidebar();
@@ -32,13 +47,7 @@ export function OrgSwitcher({ currentOrg, organizations, onOrgSwitch }: OrgSwitc
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           />
         }>
-        <div className="org-logo-gradient flex aspect-square size-8 items-center justify-center rounded-lg font-display text-sm font-bold text-primary-foreground shadow-sm">
-          {currentOrg?.name?.charAt(0)?.toUpperCase() ?? 'O'}
-        </div>
-        <div className="grid flex-1 text-start text-sm leading-tight">
-          <span className="truncate font-semibold">{currentOrg?.name ?? t('selectOrg')}</span>
-        </div>
-        <ChevronsUpDown className="ms-auto size-4" />
+        <OrgSwitcherTrigger currentOrg={currentOrg} />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
@@ -59,11 +68,38 @@ export function OrgSwitcher({ currentOrg, organizations, onOrgSwitch }: OrgSwitc
             {org.name}
           </DropdownMenuItem>
         ))}
-        {organizations.length === 0 && (
-          <DropdownMenuItem disabled className="text-muted-foreground">
-            {t('selectOrg')}
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuSeparator />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function OrgSwitcherEmpty({ currentOrg }: { currentOrg: OrgInfo | null }) {
+  const t = useTranslations('Common.orgSwitcher');
+  const { isMobile } = useSidebar();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <SidebarMenuButton
+            size="lg"
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          />
+        }>
+        <OrgSwitcherTrigger currentOrg={currentOrg} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        align="start"
+        side={isMobile ? 'bottom' : 'right'}
+        sideOffset={4}>
+        <DropdownMenuLabel className="text-xs text-muted-foreground">
+          {t('label')}
+        </DropdownMenuLabel>
+        <DropdownMenuItem disabled className="text-muted-foreground">
+          {t('selectOrg')}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
       </DropdownMenuContent>
     </DropdownMenu>

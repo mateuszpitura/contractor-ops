@@ -53,7 +53,7 @@ vi.mock('@contractor-ops/ui/components/shadcn/dropdown-menu', () => ({
   DropdownMenuSeparator: () => <hr />,
 }));
 
-import { OrgSwitcher } from '../org-switcher.js';
+import { OrgSwitcher, OrgSwitcherEmpty } from '../org-switcher.js';
 import { click, mount } from './_render.js';
 
 afterEach(() => {
@@ -98,18 +98,6 @@ describe('OrgSwitcher (web-vite)', () => {
     expect(items.length).toBe(2);
   });
 
-  it('renders a disabled placeholder when there are no other organizations', async () => {
-    const { container } = await mount(
-      <OrgSwitcher currentOrg={currentOrg} organizations={[]} onOrgSwitch={vi.fn()} />,
-    );
-    const items = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('[data-testid="org-item"]'),
-    );
-    expect(items.length).toBe(1);
-    expect(items[0].disabled).toBe(true);
-    expect(items[0].textContent).toContain('Select organization');
-  });
-
   it('invokes onOrgSwitch with the chosen org id', async () => {
     const onOrgSwitch = vi.fn();
     const { container } = await mount(
@@ -124,5 +112,27 @@ describe('OrgSwitcher (web-vite)', () => {
     );
     await click(items[1]);
     expect(onOrgSwitch).toHaveBeenCalledWith('org-2');
+  });
+});
+
+describe('OrgSwitcherEmpty (web-vite)', () => {
+  it('renders a single disabled placeholder item', async () => {
+    const { container } = await mount(<OrgSwitcherEmpty currentOrg={currentOrg} />);
+    const items = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[data-testid="org-item"]'),
+    );
+    expect(items.length).toBe(1);
+    expect(items[0].disabled).toBe(true);
+    expect(items[0].textContent).toContain('Select organization');
+  });
+
+  it('renders the current org name in the trigger when one is set', async () => {
+    const { container } = await mount(<OrgSwitcherEmpty currentOrg={currentOrg} />);
+    expect(container.textContent).toContain('Acme Corp');
+  });
+
+  it('falls back to the "Select organization" label when currentOrg is null', async () => {
+    const { container } = await mount(<OrgSwitcherEmpty currentOrg={null} />);
+    expect(container.textContent).toContain('Select organization');
   });
 });
