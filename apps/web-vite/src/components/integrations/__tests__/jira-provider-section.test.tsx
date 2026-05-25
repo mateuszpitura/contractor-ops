@@ -43,7 +43,6 @@ interface BuildOpts {
   mappingDialogOpen?: boolean;
   openMappingDialog?: () => void;
   setMappingDialogOpen?: Dispatch<SetStateAction<boolean>>;
-  isLoading?: boolean;
 }
 
 function buildProps(overrides: BuildOpts = {}): JiraProviderSectionViewProps {
@@ -53,7 +52,6 @@ function buildProps(overrides: BuildOpts = {}): JiraProviderSectionViewProps {
     mappingDialogOpen = false,
     openMappingDialog = vi.fn(),
     setMappingDialogOpen = vi.fn(),
-    isLoading = false,
   } = overrides;
 
   const t = ((key: string): string => {
@@ -73,7 +71,6 @@ function buildProps(overrides: BuildOpts = {}): JiraProviderSectionViewProps {
     setMappingDialogOpen,
     openMappingDialog,
     t,
-    isLoading,
   };
 }
 

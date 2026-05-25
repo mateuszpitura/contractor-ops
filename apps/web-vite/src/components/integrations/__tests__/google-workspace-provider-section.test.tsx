@@ -52,7 +52,6 @@ interface BuildOpts {
   setWizardOpen?: Dispatch<SetStateAction<boolean>>;
   onImportClick?: () => void;
   scopeCapabilities?: null;
-  isLoading?: boolean;
 }
 
 function buildProps(overrides: BuildOpts = {}): GoogleWorkspaceProviderSectionViewProps {
@@ -62,7 +61,6 @@ function buildProps(overrides: BuildOpts = {}): GoogleWorkspaceProviderSectionVi
     setWizardOpen = vi.fn(),
     onImportClick = vi.fn(),
     scopeCapabilities = null,
-    isLoading = false,
   } = overrides;
 
   const t = ((key: string): string => {
@@ -82,7 +80,6 @@ function buildProps(overrides: BuildOpts = {}): GoogleWorkspaceProviderSectionVi
     onImportClick,
     t,
     scopeCapabilities,
-    isLoading,
   };
 }
 

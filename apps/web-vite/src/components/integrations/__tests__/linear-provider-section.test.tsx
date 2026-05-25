@@ -43,7 +43,6 @@ interface BuildOpts {
   mappingOpen?: boolean;
   openMappingDialog?: () => void;
   setMappingOpen?: Dispatch<SetStateAction<boolean>>;
-  isLoading?: boolean;
 }
 
 function buildProps(overrides: BuildOpts = {}): LinearProviderSectionViewProps {
@@ -54,7 +53,6 @@ function buildProps(overrides: BuildOpts = {}): LinearProviderSectionViewProps {
     mappingOpen = false,
     openMappingDialog = vi.fn(),
     setMappingOpen = vi.fn(),
-    isLoading = false,
   } = overrides;
 
   const t = ((key: string): string => {
@@ -77,7 +75,6 @@ function buildProps(overrides: BuildOpts = {}): LinearProviderSectionViewProps {
     setMappingOpen,
     openMappingDialog,
     t,
-    isLoading,
   };
 }
 

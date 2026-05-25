@@ -47,7 +47,6 @@ interface BuildOpts {
   fallbackOpen?: boolean;
   setFallbackOpen?: Dispatch<SetStateAction<boolean>>;
   handleOpenFallback?: () => void;
-  isLoading?: boolean;
 }
 
 function buildProps(overrides: BuildOpts = {}): TeamsProviderSectionViewProps {
@@ -58,7 +57,6 @@ function buildProps(overrides: BuildOpts = {}): TeamsProviderSectionViewProps {
     fallbackOpen = false,
     setFallbackOpen = vi.fn(),
     handleOpenFallback = vi.fn(),
-    isLoading = false,
   } = overrides;
 
   const t = ((key: string): string => {
@@ -88,7 +86,6 @@ function buildProps(overrides: BuildOpts = {}): TeamsProviderSectionViewProps {
     handleOpenFallback,
     t,
     tFb,
-    isLoading,
   };
 }
 
