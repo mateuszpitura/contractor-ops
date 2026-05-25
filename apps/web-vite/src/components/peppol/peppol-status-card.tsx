@@ -14,11 +14,9 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Settings, Unlink, Unplug } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { PeppolBrandIcon } from '../integrations/brand-icons';
 import type { PeppolStatusCardProps as StatusCardHookProps } from './hooks/use-peppol.js';
-import { PeppolWizardContainer } from './peppol-wizard-container.js';
 
 // ---------------------------------------------------------------------------
 // Status badge mapping
@@ -48,71 +46,82 @@ const STATUS_VARIANTS: Record<string, { label: string; className: string }> = {
 };
 
 // ---------------------------------------------------------------------------
-// Component
+// Skeleton — section-shaped loading state
 // ---------------------------------------------------------------------------
 
-export type PeppolStatusCardViewProps = StatusCardHookProps;
+export function PeppolStatusCardSkeleton() {
+  return (
+    <Card className="flex h-full flex-col">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <Skeleton className="size-8 rounded" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-4 w-64" />
+        <Skeleton className="mt-2 h-8 w-32" />
+      </CardContent>
+    </Card>
+  );
+}
 
-export function PeppolStatusCardView({
-  isLoading,
-  isConnected,
+// ---------------------------------------------------------------------------
+// Not-connected variant
+// ---------------------------------------------------------------------------
+
+export interface PeppolStatusCardDisconnectedProps {
+  onConnectClick: () => void;
+}
+
+export function PeppolStatusCardDisconnected({
+  onConnectClick,
+}: PeppolStatusCardDisconnectedProps) {
+  const t = useTranslations('Peppol.statusCard');
+  return (
+    <Card className="flex h-full flex-col">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <span className="flex size-8 items-center justify-center">
+            <PeppolBrandIcon className="size-8" />
+          </span>
+          <h4 className="text-base font-semibold">{t('title')}</h4>
+          <Badge variant="secondary" className="bg-muted text-muted-foreground">
+            {t('disconnectedBadge')}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col space-y-3">
+          <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
+          <div className="mt-auto pt-3">
+            <Button onClick={onConnectClick}>{t('connect')}</Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Connected variant
+// ---------------------------------------------------------------------------
+
+export type PeppolStatusCardConnectedProps = Pick<
+  StatusCardHookProps,
+  'participant' | 'connection' | 'counts' | 'onDisconnect' | 'isDisconnecting'
+> & {
+  participant: NonNullable<StatusCardHookProps['participant']>;
+};
+
+export function PeppolStatusCardConnected({
   participant,
   connection,
   counts,
   onDisconnect,
   isDisconnecting,
-}: PeppolStatusCardViewProps) {
+}: PeppolStatusCardConnectedProps) {
   const t = useTranslations('Peppol.statusCard');
-  const [wizardOpen, setWizardOpen] = useState(false);
-
-  if (isLoading) {
-    return (
-      <Card className="flex h-full flex-col">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-8 rounded" />
-            <Skeleton className="h-5 w-16" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="mt-2 h-8 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Not connected state
-  if (!(isConnected && participant)) {
-    return (
-      <>
-        <Card className="flex h-full flex-col">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center">
-                <PeppolBrandIcon className="size-8" />
-              </span>
-              <h4 className="text-base font-semibold">{t('title')}</h4>
-              <Badge variant="secondary" className="bg-muted text-muted-foreground">
-                {t('disconnectedBadge')}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col">
-            <div className="flex flex-1 flex-col space-y-3">
-              <p className="text-sm text-muted-foreground">{t('connectDescription')}</p>
-              <div className="mt-auto pt-3">
-                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <Button onClick={() => setWizardOpen(true)}>{t('connect')}</Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <PeppolWizardContainer open={wizardOpen} onOpenChange={setWizardOpen} />
-      </>
-    );
-  }
-
   const statusInfo = STATUS_VARIANTS[participant.status] ?? STATUS_VARIANTS.DEREGISTERED;
 
   return (
@@ -130,7 +139,6 @@ export function PeppolStatusCardView({
       </CardHeader>
 
       <CardContent className="flex flex-1 flex-col space-y-4">
-        {/* Details */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">{t('participantId')}</span>
@@ -148,7 +156,6 @@ export function PeppolStatusCardView({
           )}
         </div>
 
-        {/* Metrics */}
         {!!counts && (
           <div className="flex gap-6 rounded-lg bg-muted/30 p-3">
             <div className="text-center">
@@ -168,7 +175,6 @@ export function PeppolStatusCardView({
           </div>
         )}
 
-        {/* Actions */}
         <div className="mt-auto flex gap-2 pt-2">
           <Button variant="outline" size="sm">
             <Settings className="me-1.5 h-3.5 w-3.5" />
