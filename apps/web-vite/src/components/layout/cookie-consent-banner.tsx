@@ -1,6 +1,7 @@
 /**
- * Cookie-consent banner — presentational shell. Visibility + accept handler
- * are owned by `useCookieConsent` and wired by `CookieConsentBannerContainer`.
+ * Cookie-consent banner — pure presentational shell. Visibility is decided
+ * by `CookieConsentBannerContainer`; this component renders only when
+ * mounted.
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -10,15 +11,12 @@ import { Link } from 'react-router-dom';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 interface CookieConsentBannerProps {
-  visible: boolean;
   onAccept: () => void;
 }
 
-export function CookieConsentBanner({ visible, onAccept }: CookieConsentBannerProps) {
+export function CookieConsentBanner({ onAccept }: CookieConsentBannerProps) {
   const t = useTranslations('CookieConsent');
   const tCommon = useTranslations('Common');
-
-  if (!visible) return null;
 
   return (
     <div
