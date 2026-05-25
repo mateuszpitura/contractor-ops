@@ -1,7 +1,7 @@
 /**
- * Tests target `SyncStatusSectionView` with shaped props. Covers the loading
- * skeleton, the "not connected" null branch, and the connected card with
- * sync-now + import buttons.
+ * Tests target `SyncStatusSectionView` with shaped props plus the standalone
+ * `SyncStatusSectionSkeleton`. Loading and not-connected branches now live in
+ * the container; the view is the connected card with sync-now + import.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,10 +9,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TranslateFn } from '@/i18n/useTranslations';
 import { render, screen, setup } from '@/test/test-utils';
 import type { SyncStatusSectionViewProps } from '../sync-status-section';
-import { SyncStatusSectionView } from '../sync-status-section';
+import { SyncStatusSectionSkeleton, SyncStatusSectionView } from '../sync-status-section';
 
 interface BuildOpts {
-  isLoading?: boolean;
   connected?: boolean;
   lastSyncAt?: string | null;
   isTriggerPending?: boolean;
@@ -22,7 +21,6 @@ interface BuildOpts {
 
 function buildProps(overrides: BuildOpts = {}): SyncStatusSectionViewProps {
   const {
-    isLoading = false,
     connected = true,
     lastSyncAt = null,
     isTriggerPending = false,
@@ -43,7 +41,6 @@ function buildProps(overrides: BuildOpts = {}): SyncStatusSectionViewProps {
 
   return {
     onImportClick,
-    syncStatusQuery: { isLoading, data: { connected, lastSyncAt } } as never,
     syncStatus: { connected, lastSyncAt } as SyncStatusSectionViewProps['syncStatus'],
     triggerSyncMutation: { isPending: isTriggerPending } as never,
     handleTriggerSync,
@@ -56,14 +53,9 @@ describe('SyncStatusSectionView', () => {
     vi.clearAllMocks();
   });
 
-  it('renders skeleton placeholders while loading', () => {
-    const { container } = render(<SyncStatusSectionView {...buildProps({ isLoading: true })} />);
+  it('SyncStatusSectionSkeleton renders skeleton placeholders', () => {
+    const { container } = render(<SyncStatusSectionSkeleton />);
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
-  });
-
-  it('renders nothing when not connected', () => {
-    const { container } = render(<SyncStatusSectionView {...buildProps({ connected: false })} />);
-    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders the sync-now and import buttons when connected', () => {

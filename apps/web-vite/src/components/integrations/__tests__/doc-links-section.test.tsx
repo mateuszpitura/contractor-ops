@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TranslateFn } from '@/i18n/useTranslations';
 import { render, screen, setup } from '@/test/test-utils';
 import type { DocLinksSectionViewProps } from '../doc-links-section';
-import { DocLinksSectionView } from '../doc-links-section';
+import { DocLinksSectionSkeleton, DocLinksSectionView } from '../doc-links-section';
 
 vi.mock('../attach-doc-dialog-container', () => ({
   AttachDocDialog: ({ open }: { open: boolean }) =>
@@ -60,7 +60,6 @@ const mockLinks = [
 
 interface BuildOpts {
   readOnly?: boolean;
-  isListLoading?: boolean;
   docLinks?: typeof mockLinks;
   attachOpen?: boolean;
   pendingDetachId?: string | null;
@@ -78,7 +77,6 @@ interface BuildOpts {
 function buildProps(overrides: BuildOpts = {}): DocLinksSectionViewProps {
   const {
     readOnly = false,
-    isListLoading = false,
     docLinks = mockLinks,
     attachOpen = false,
     pendingDetachId = null,
@@ -115,7 +113,6 @@ function buildProps(overrides: BuildOpts = {}): DocLinksSectionViewProps {
     setAttachOpen,
     pendingDetachId,
     setPendingDetachId,
-    listQuery: { isLoading: isListLoading, data: docLinks } as never,
     detachMutation: { isPending: isDetachPending } as never,
     refreshMutation: { isPending: isRefreshPending } as never,
     handleRefresh,
@@ -124,6 +121,7 @@ function buildProps(overrides: BuildOpts = {}): DocLinksSectionViewProps {
     openAttachDialog,
     docLinks,
     refreshingId,
+    variant: docLinks.length === 0 ? 'empty' : 'list',
     t,
   };
 }
@@ -131,6 +129,19 @@ function buildProps(overrides: BuildOpts = {}): DocLinksSectionViewProps {
 describe('DocLinksSectionView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('DocLinksSectionSkeleton renders skeletons + heading', () => {
+    const t = ((key: string): string => {
+      const messages: Record<string, string> = {
+        'docs.section.heading': 'Documents',
+        'docs.section.attachButton': 'Attach Document',
+      };
+      return messages[key] ?? key;
+    }) as TranslateFn;
+    const { container } = render(<DocLinksSectionSkeleton t={t} />);
+    expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(screen.getByText('Documents')).toBeInTheDocument();
   });
 
   it('renders the section heading', () => {

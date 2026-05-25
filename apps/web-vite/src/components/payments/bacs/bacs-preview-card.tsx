@@ -1,13 +1,13 @@
 /**
- * BACS Std 18 preview card — ported from
- * apps/web/src/components/payments/bacs/bacs-preview-card.tsx.
- * Swaps:
- *   - next-intl → ../../../i18n/useTranslations
- *   - next/link → Link from ../../../i18n/navigation
- *   - @/trpc/init → useTRPC() from providers/trpc-provider
+ * BACS Std 18 preview card — presentational.
+ *
+ * The container picks the "unconfigured" sibling when the BACS submitter
+ * is missing; this view assumes a configured submitter and renders the
+ * action bar + conditional content slots (error, loading skeleton, preview
+ * payload). Slot content is computed from the hook return.
  */
 
-import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
+import { Alert, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
@@ -24,62 +24,49 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Download, FileText, Loader2 } from 'lucide-react';
 
-import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { useBacsPreview } from '../hooks/use-bacs-preview.js';
 import { BacsPreviewPre } from './bacs-preview-pre.js';
 import type { ModulusWarning } from './modulus-check-warning-list.js';
 import { ModulusCheckWarningList } from './modulus-check-warning-list.js';
 import type { TransliterationWarning } from './transliteration-warning-banner.js';
 import { TransliterationWarningBanner } from './transliteration-warning-banner.js';
 
-interface BacsPreviewCardProps {
-  preview: ReturnType<typeof useBacsPreview>;
-  showPii: boolean;
+export interface BacsPreviewData {
+  fileText: string;
+  transliterationWarnings?: unknown[];
+  modulusWarnings?: unknown[];
 }
 
-export function BacsPreviewCard({ preview, showPii }: BacsPreviewCardProps) {
+interface BacsPreviewCardProps {
+  showPii: boolean;
+  previewVisible: boolean;
+  isPreviewFetching: boolean;
+  isPreviewLoading: boolean;
+  previewData: BacsPreviewData | undefined;
+  previewError: { message: string } | null;
+  transliterationWarnings: TransliterationWarning[];
+  modulusWarnings: ModulusWarning[];
+  hasUnmappable: boolean;
+  onShowPreview: () => void;
+  onGenerate: () => void;
+  isGenerating: boolean;
+}
+
+export function BacsPreviewCard({
+  showPii,
+  previewVisible,
+  isPreviewFetching,
+  isPreviewLoading,
+  previewData,
+  previewError,
+  transliterationWarnings,
+  modulusWarnings,
+  hasUnmappable,
+  onShowPreview,
+  onGenerate,
+  isGenerating,
+}: BacsPreviewCardProps) {
   const t = useTranslations('Payments.bacs');
-  const {
-    previewVisible,
-    onShowPreview,
-    isPreviewFetching,
-    previewData,
-    previewError,
-    submitterNotConfigured,
-    onGenerate,
-    isGenerating,
-  } = preview;
-
-  if (submitterNotConfigured) {
-    return (
-      <Card data-testid="bacs-preview-card-unconfigured">
-        <CardHeader>
-          <CardTitle className="text-xl">{t('previewCardTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert variant="default" className="border-amber-300/50 bg-amber-500/5">
-            <AlertTitle className="text-amber-700 dark:text-amber-400">
-              {t('submitterNotConfigured')}
-            </AlertTitle>
-            <AlertDescription className="mt-2">
-              <Link
-                href="/settings/payments"
-                className="text-primary underline underline-offset-4 hover:no-underline">
-                {t('settingsPageTitle')} →
-              </Link>
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const transliterationWarnings = (previewData?.transliterationWarnings ??
-    []) as TransliterationWarning[];
-  const modulusWarnings = (previewData?.modulusWarnings ?? []) as ModulusWarning[];
-  const hasUnmappable = transliterationWarnings.some(w => w.replaced.length > 0);
-  const isPreviewLoading = previewVisible && isPreviewFetching && !previewData;
 
   return (
     <Card data-testid="bacs-preview-card">
