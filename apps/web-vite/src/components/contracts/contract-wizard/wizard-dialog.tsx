@@ -48,7 +48,9 @@ const contractWizardSchema = z.object({
 
 export type ContractWizardFormValues = z.infer<typeof contractWizardSchema>;
 
-function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
+type Wizard = ReturnType<typeof useContractWizardDialog>;
+
+export function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
     <div className="flex items-center justify-center gap-0 px-4 py-3">
       {steps.map((label, index) => {
@@ -87,9 +89,121 @@ function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: n
   );
 }
 
+export function WizardStepBody({
+  currentStep,
+  form,
+  contractorId,
+  stepDetails,
+  preFilledFields,
+  stepDocuments,
+  handleSkipDocuments,
+}: {
+  currentStep: number;
+  form: Wizard['form'];
+  contractorId: string | undefined;
+  stepDetails: Wizard['stepDetails'];
+  preFilledFields: Set<string>;
+  stepDocuments: Wizard['stepDocuments'];
+  handleSkipDocuments: () => void;
+}) {
+  if (currentStep === 0) {
+    return <StepDetails form={form} contractorId={contractorId} {...stepDetails} />;
+  }
+  if (currentStep === 1) {
+    return <StepFinancial form={form} preFilledFields={preFilledFields} />;
+  }
+  return (
+    <StepDocuments
+      files={stepDocuments.files}
+      onDrop={stepDocuments.onDrop}
+      removeFile={stepDocuments.removeFile}
+      onSkip={handleSkipDocuments}
+    />
+  );
+}
+
+export function WizardFooter({
+  currentStep,
+  isDirty,
+  isPending,
+  nextLabels,
+  handleBack,
+  handleClose,
+  handleNext,
+  t,
+}: {
+  currentStep: number;
+  isDirty: boolean;
+  isPending: boolean;
+  nextLabels: string[];
+  handleBack: () => void;
+  handleClose: () => void;
+  handleNext: () => void;
+  t: Wizard['t'];
+}) {
+  return (
+    <div className="flex items-center justify-between border-t pt-4 mt-2">
+      <div>
+        {currentStep > 0 ? (
+          <Button type="button" variant="outline" onClick={handleBack}>
+            {t('back')}
+          </Button>
+        ) : (
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          <Button type="button" variant="ghost" onClick={() => handleClose()}>
+            {isDirty ? t('discardChanges') : t('close')}
+          </Button>
+        )}
+      </div>
+      <Button type="button" onClick={handleNext} disabled={isPending}>
+        {isPending ? (
+          <>
+            <Loader2 className="me-2 h-4 w-4 animate-spin" />
+            {t('submit')}
+          </>
+        ) : (
+          nextLabels[currentStep]
+        )}
+      </Button>
+    </div>
+  );
+}
+
+export function WizardDiscardDialog({
+  open,
+  onOpenChange,
+  onDiscard,
+  t,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDiscard: () => void;
+  t: Wizard['t'];
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="size-4" />
+            {t('discardConfirm.title')}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onDiscard} variant="destructive">
+            {t('discardConfirm.discard')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 interface ContractWizardDialogProps {
   open: boolean;
-  wizard: ReturnType<typeof useContractWizardDialog>;
+  wizard: Wizard;
 }
 
 export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps) {
@@ -129,63 +243,36 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
           <div className="min-h-[320px] px-1">
-            {currentStep === 0 && (
-              <StepDetails form={form} contractorId={contractorId} {...stepDetails} />
-            )}
-            {currentStep === 1 && <StepFinancial form={form} preFilledFields={preFilledFields} />}
-            {currentStep === 2 && (
-              <StepDocuments
-                files={stepDocuments.files}
-                onDrop={stepDocuments.onDrop}
-                removeFile={stepDocuments.removeFile}
-                onSkip={handleSkipDocuments}
-              />
-            )}
+            <WizardStepBody
+              currentStep={currentStep}
+              form={form}
+              contractorId={contractorId}
+              stepDetails={stepDetails}
+              preFilledFields={preFilledFields}
+              stepDocuments={stepDocuments}
+              handleSkipDocuments={handleSkipDocuments}
+            />
           </div>
 
-          <div className="flex items-center justify-between border-t pt-4 mt-2">
-            <div>
-              {currentStep > 0 ? (
-                <Button type="button" variant="outline" onClick={handleBack}>
-                  {t('back')}
-                </Button>
-              ) : (
-                <Button type="button" variant="ghost" onClick={() => handleClose()}>
-                  {isDirty ? t('discardChanges') : t('close')}
-                </Button>
-              )}
-            </div>
-            <Button type="button" onClick={handleNext} disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {t('submit')}
-                </>
-              ) : (
-                nextLabels[currentStep]
-              )}
-            </Button>
-          </div>
+          <WizardFooter
+            currentStep={currentStep}
+            isDirty={isDirty}
+            isPending={isPending}
+            nextLabels={nextLabels}
+            handleBack={handleBack}
+            handleClose={handleClose}
+            handleNext={handleNext}
+            t={t}
+          />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="size-4" />
-              {t('discardConfirm.title')}
-            </AlertDialogTitle>
-            <AlertDialogDescription>{t('discardConfirm.body')}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscard} variant="destructive">
-              {t('discardConfirm.discard')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WizardDiscardDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        onDiscard={handleDiscard}
+        t={t}
+      />
     </>
   );
 }

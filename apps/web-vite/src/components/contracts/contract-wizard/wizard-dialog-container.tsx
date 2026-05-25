@@ -8,6 +8,11 @@ interface ContractWizardDialogContainerProps {
 }
 
 export function ContractWizardDialogContainer(props: ContractWizardDialogContainerProps) {
+  if (!props.open) return null;
+  return <ContractWizardDialogContainerOpen {...props} />;
+}
+
+function ContractWizardDialogContainerOpen(props: ContractWizardDialogContainerProps) {
   const wizard = useContractWizardDialog(props);
   return <ContractWizardDialog open={props.open} wizard={wizard} />;
 }
