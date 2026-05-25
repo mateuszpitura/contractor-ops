@@ -1,15 +1,15 @@
 import { LinearIssueChip } from '../../integrations/linear-issue-chip.js';
-import type { useLinearTaskIssueChip } from '../hooks/use-linear-task-issue-chip.js';
+import type { LinearTaskIssueChipModel } from '../hooks/use-linear-task-issue-chip.js';
 
-type LinearTaskIssueChipViewProps = ReturnType<typeof useLinearTaskIssueChip>;
+interface LinearTaskIssueChipViewProps {
+  chip: LinearTaskIssueChipModel;
+}
 
 /**
  * Presentational Linear issue chip for a workflow task run.
- * Renders nothing when the integration is disconnected or no issue is linked.
+ * The container guarantees `chip` is non-null; this view is a single render path.
  */
 export function LinearTaskIssueChipView({ chip }: LinearTaskIssueChipViewProps) {
-  if (!chip) return null;
-
   return (
     <LinearIssueChip
       identifier={chip.identifier}

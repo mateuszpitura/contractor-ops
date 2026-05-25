@@ -6,6 +6,7 @@ interface LinearTaskIssueChipProps {
 }
 
 export function LinearTaskIssueChip({ taskRunId }: LinearTaskIssueChipProps) {
-  const props = useLinearTaskIssueChip(taskRunId);
-  return <LinearTaskIssueChipView {...props} />;
+  const { chip } = useLinearTaskIssueChip(taskRunId);
+  if (!chip) return null;
+  return <LinearTaskIssueChipView chip={chip} />;
 }

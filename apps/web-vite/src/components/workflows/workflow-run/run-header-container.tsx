@@ -8,5 +8,6 @@ interface RunHeaderContainerProps {
 
 export function RunHeaderContainer({ run }: RunHeaderContainerProps) {
   const header = useRunHeader(run);
-  return <RunHeader run={run} {...header} />;
+  const showActions = header.canCancel || header.showOverride;
+  return <RunHeader run={run} {...header} showActions={showActions} />;
 }

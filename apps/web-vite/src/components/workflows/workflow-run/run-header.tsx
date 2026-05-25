@@ -33,6 +33,7 @@ import { getDaysOverdue } from '../hooks/use-run-header.js';
 
 type RunHeaderProps = {
   run: RunHeaderRun;
+  showActions: boolean;
 } & ReturnType<typeof useRunHeader>;
 
 interface OverrideBlockingTaskDialogProps {
@@ -129,6 +130,7 @@ export function RunHeader({
   progress,
   isOverdue,
   showOverride,
+  showActions,
   canCancel,
   cancelOpen,
   setCancelOpen,
@@ -206,7 +208,7 @@ export function RunHeader({
           </div>
         </div>
 
-        {!!(canCancel || showOverride) && (
+        {!!showActions && (
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger
