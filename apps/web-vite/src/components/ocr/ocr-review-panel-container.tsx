@@ -3,7 +3,11 @@ import type { OcrExtractionResult } from '@contractor-ops/integrations/types/ocr
 import { useOcrExtractionResult } from './hooks/use-ocr-review.js';
 import type { ExtractedInvoiceData } from './hooks/use-ocr-review-form.js';
 import { useOcrReviewForm } from './hooks/use-ocr-review-form.js';
-import { OcrReviewPanel } from './ocr-review-panel.js';
+import {
+  OcrReviewFormBody,
+  OcrReviewPanel,
+  OcrReviewPanelProcessingBody,
+} from './ocr-review-panel.js';
 
 interface OcrReviewPanelContainerProps {
   pdfUrl: string;
@@ -37,15 +41,26 @@ export function OcrReviewPanelContainer({
     onAccept,
   });
 
+  const cardBody = isProcessing ? (
+    <OcrReviewPanelProcessingBody />
+  ) : (
+    <OcrReviewFormBody
+      onDiscard={onDiscard}
+      onRetrigger={onRetrigger}
+      resultJson={typedResult}
+      form={form}
+    />
+  );
+
   return (
     <OcrReviewPanel
       pdfUrl={pdfUrl}
-      onDiscard={onDiscard}
-      onRetrigger={onRetrigger}
       extractionStatus={extractionStatus}
       resultJson={typedResult}
-      isProcessing={isProcessing}
-      form={form}
+      onRetrigger={onRetrigger}
+      fieldCount={form.derived.fieldCount}
+      totalFields={form.derived.totalFields}
+      cardBody={cardBody}
     />
   );
 }

@@ -2,7 +2,8 @@
  * Presentational OCR review panel — props-only. All state, populate-effect,
  * cascade animation and accept handler live in `hooks/use-ocr-review-form`;
  * extraction polling lives in `hooks/use-ocr-review`. Composed by
- * `ocr-review-panel-container.tsx`.
+ * `ocr-review-panel-container.tsx`, which also decides between the form
+ * card body and the processing overlay (variant pick).
  */
 
 import type { OcrExtractionResult } from '@contractor-ops/integrations/types/ocr';
@@ -30,6 +31,7 @@ import {
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { RefreshCw, Trash2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { lazy, Suspense } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -53,16 +55,12 @@ export type { ExtractedInvoiceData, LineItemFormData };
 
 interface OcrReviewPanelProps {
   pdfUrl: string;
-  onDiscard: () => void;
-  onRetrigger: () => void;
   extractionStatus: string;
   resultJson: OcrExtractionResult | null | undefined;
-  isProcessing: boolean;
-  form: {
-    state: OcrReviewFormState;
-    setters: OcrReviewFormSetters;
-    derived: OcrReviewFormDerived;
-  };
+  onRetrigger: () => void;
+  fieldCount: number;
+  totalFields: number;
+  cardBody: ReactNode;
 }
 
 function getFieldConfidence(
@@ -74,22 +72,19 @@ function getFieldConfidence(
 
 export function OcrReviewPanel({
   pdfUrl,
-  onDiscard,
-  onRetrigger,
   extractionStatus,
   resultJson,
-  isProcessing,
-  form,
+  onRetrigger,
+  fieldCount,
+  totalFields,
+  cardBody,
 }: OcrReviewPanelProps) {
-  const t = useTranslations('OcrReview');
-  const { state, setters, derived } = form;
-
   return (
     <div className="flex flex-col gap-4">
       <ExtractionStatusBar
         status={extractionStatus as 'PENDING' | 'PROCESSING' | 'EXTRACTED' | 'PARTIAL' | 'FAILED'}
-        fieldCount={derived.fieldCount}
-        totalFields={derived.totalFields}
+        fieldCount={fieldCount}
+        totalFields={totalFields}
         errorMessage={resultJson?.errorMessage}
         onRetry={onRetrigger}
       />
@@ -101,252 +96,275 @@ export function OcrReviewPanel({
           </Suspense>
         </div>
 
-        <Card className="relative bg-background">
-          {!!isProcessing && <OcrProcessingOverlay />}
-
-          {!isProcessing && (
-            <CardContent className="flex flex-col gap-6 p-6">
-              <div>
-                <h3 className="mb-4 text-xl font-semibold">{t('heading')}</h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
-                      label={t('fields.invoiceNumber')}>
-                      <Input
-                        value={state.invoiceNumber}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setters.setInvoiceNumber(e.target.value)}
-                        placeholder={t('fields.invoiceNumberPlaceholder')}
-                      />
-                    </ConfidenceFieldWrapper>
-                  </div>
-                  <div>
-                    <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
-                      label={t('fields.issueDate')}>
-                      <Input
-                        type="date"
-                        value={state.issueDate}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setters.setIssueDate(e.target.value)}
-                      />
-                    </ConfidenceFieldWrapper>
-                  </div>
-                  <div>
-                    <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
-                      label={t('fields.dueDate')}>
-                      <Input
-                        type="date"
-                        value={state.dueDate}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setters.setDueDate(e.target.value)}
-                      />
-                    </ConfidenceFieldWrapper>
-                  </div>
-                  <div>
-                    <ConfidenceFieldWrapper
-                      confidence={getFieldConfidence(resultJson?.fields, 'currency')}
-                      label={t('fields.currency')}>
-                      <Select
-                        value={state.currency}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                        onValueChange={val => {
-                          if (val) setters.setCurrency(val);
-                        }}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('fields.currencyPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OCR_CURRENCIES.map(c => (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </ConfidenceFieldWrapper>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
-                    label={t('fields.sellerNip')}>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={state.sellerTaxId}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setters.setSellerTaxId(e.target.value)}
-                        placeholder={t('fields.nipPlaceholder')}
-                      />
-                      <NipValidationBadge nip={state.sellerTaxId} />
-                    </div>
-                  </ConfidenceFieldWrapper>
-                </div>
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
-                    label={t('fields.buyerNip')}>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={state.buyerTaxId}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setters.setBuyerTaxId(e.target.value)}
-                        placeholder={t('fields.nipPlaceholder')}
-                      />
-                      <NipValidationBadge nip={state.buyerTaxId} />
-                    </div>
-                  </ConfidenceFieldWrapper>
-                </div>
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
-                    label={t('fields.sellerName')}>
-                    <Input
-                      value={state.sellerName}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => setters.setSellerName(e.target.value)}
-                      placeholder={t('fields.companyNamePlaceholder')}
-                    />
-                  </ConfidenceFieldWrapper>
-                </div>
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
-                    label={t('fields.buyerName')}>
-                    <Input
-                      value={state.buyerName}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => setters.setBuyerName(e.target.value)}
-                      placeholder={t('fields.companyNamePlaceholder')}
-                    />
-                  </ConfidenceFieldWrapper>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
-                    label={t('fields.netAmount')}>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={state.subtotalMinor}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => setters.setSubtotalMinor(e.target.value)}
-                      placeholder={t('fields.amountPlaceholder')}
-                    />
-                  </ConfidenceFieldWrapper>
-                </div>
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
-                    label={t('fields.vatAmount')}>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={state.vatAmountMinor}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => setters.setVatAmountMinor(e.target.value)}
-                      placeholder={t('fields.amountPlaceholder')}
-                    />
-                  </ConfidenceFieldWrapper>
-                </div>
-                <div>
-                  <ConfidenceFieldWrapper
-                    confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
-                    label={t('fields.totalGross')}>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={state.totalMinor}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => setters.setTotalMinor(e.target.value)}
-                      placeholder={t('fields.amountPlaceholder')}
-                    />
-                  </ConfidenceFieldWrapper>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <ConfidenceFieldWrapper
-                  confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
-                  label={t('fields.sellerBankAccount')}>
-                  <Input
-                    value={state.sellerBankAccount}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={e => setters.setSellerBankAccount(e.target.value)}
-                    placeholder={t('fields.bankAccountPlaceholder')}
-                  />
-                </ConfidenceFieldWrapper>
-              </div>
-
-              <Separator />
-
-              <LineItemsTable items={state.lineItems} onChange={setters.setLineItems} />
-
-              <Separator />
-
-              <div className="sticky bottom-0 flex flex-col gap-3 border-t bg-background pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-2">
-                  <AlertDialog>
-                    <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
-                      {t('discard.cta')}
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t('discard.title')}</AlertDialogTitle>
-                        <AlertDialogDescription>{t('discard.description')}</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t('discard.keep')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={onDiscard}>
-                          <Trash2 className="me-1.5 size-4" />
-                          {t('discard.confirm')}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger render={<Button type="button" variant="ghost" />}>
-                      {t('rerun.cta')}
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t('rerun.title')}</AlertDialogTitle>
-                        <AlertDialogDescription>{t('rerun.description')}</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t('rerun.cancel')}</AlertDialogCancel>
-                        <AlertDialogAction onClick={onRetrigger}>
-                          <RefreshCw className="me-1.5 size-4" />
-                          {t('rerun.confirm')}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-
-                <Button type="button" onClick={derived.handleAccept}>
-                  {t('acceptSave')}
-                </Button>
-              </div>
-            </CardContent>
-          )}
-        </Card>
+        <Card className="relative bg-background">{cardBody}</Card>
       </div>
     </div>
+  );
+}
+
+export function OcrReviewPanelProcessingBody() {
+  return <OcrProcessingOverlay />;
+}
+
+interface OcrReviewFormBodyProps {
+  onDiscard: () => void;
+  onRetrigger: () => void;
+  resultJson: OcrExtractionResult | null | undefined;
+  form: {
+    state: OcrReviewFormState;
+    setters: OcrReviewFormSetters;
+    derived: OcrReviewFormDerived;
+  };
+}
+
+export function OcrReviewFormBody({
+  onDiscard,
+  onRetrigger,
+  resultJson,
+  form,
+}: OcrReviewFormBodyProps) {
+  const t = useTranslations('OcrReview');
+  const { state, setters, derived } = form;
+
+  return (
+    <CardContent className="flex flex-col gap-6 p-6">
+      <div>
+        <h3 className="mb-4 text-xl font-semibold">{t('heading')}</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <ConfidenceFieldWrapper
+              confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
+              label={t('fields.invoiceNumber')}>
+              <Input
+                value={state.invoiceNumber}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => setters.setInvoiceNumber(e.target.value)}
+                placeholder={t('fields.invoiceNumberPlaceholder')}
+              />
+            </ConfidenceFieldWrapper>
+          </div>
+          <div>
+            <ConfidenceFieldWrapper
+              confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
+              label={t('fields.issueDate')}>
+              <Input
+                type="date"
+                value={state.issueDate}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => setters.setIssueDate(e.target.value)}
+              />
+            </ConfidenceFieldWrapper>
+          </div>
+          <div>
+            <ConfidenceFieldWrapper
+              confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
+              label={t('fields.dueDate')}>
+              <Input
+                type="date"
+                value={state.dueDate}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => setters.setDueDate(e.target.value)}
+              />
+            </ConfidenceFieldWrapper>
+          </div>
+          <div>
+            <ConfidenceFieldWrapper
+              confidence={getFieldConfidence(resultJson?.fields, 'currency')}
+              label={t('fields.currency')}>
+              <Select
+                value={state.currency}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                onValueChange={val => {
+                  if (val) setters.setCurrency(val);
+                }}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('fields.currencyPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {OCR_CURRENCIES.map(c => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </ConfidenceFieldWrapper>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
+            label={t('fields.sellerNip')}>
+            <div className="flex items-center gap-2">
+              <Input
+                value={state.sellerTaxId}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => setters.setSellerTaxId(e.target.value)}
+                placeholder={t('fields.nipPlaceholder')}
+              />
+              <NipValidationBadge nip={state.sellerTaxId} />
+            </div>
+          </ConfidenceFieldWrapper>
+        </div>
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
+            label={t('fields.buyerNip')}>
+            <div className="flex items-center gap-2">
+              <Input
+                value={state.buyerTaxId}
+                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+                onChange={e => setters.setBuyerTaxId(e.target.value)}
+                placeholder={t('fields.nipPlaceholder')}
+              />
+              <NipValidationBadge nip={state.buyerTaxId} />
+            </div>
+          </ConfidenceFieldWrapper>
+        </div>
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
+            label={t('fields.sellerName')}>
+            <Input
+              value={state.sellerName}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setters.setSellerName(e.target.value)}
+              placeholder={t('fields.companyNamePlaceholder')}
+            />
+          </ConfidenceFieldWrapper>
+        </div>
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
+            label={t('fields.buyerName')}>
+            <Input
+              value={state.buyerName}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setters.setBuyerName(e.target.value)}
+              placeholder={t('fields.companyNamePlaceholder')}
+            />
+          </ConfidenceFieldWrapper>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
+            label={t('fields.netAmount')}>
+            <Input
+              type="number"
+              step="0.01"
+              value={state.subtotalMinor}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setters.setSubtotalMinor(e.target.value)}
+              placeholder={t('fields.amountPlaceholder')}
+            />
+          </ConfidenceFieldWrapper>
+        </div>
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
+            label={t('fields.vatAmount')}>
+            <Input
+              type="number"
+              step="0.01"
+              value={state.vatAmountMinor}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setters.setVatAmountMinor(e.target.value)}
+              placeholder={t('fields.amountPlaceholder')}
+            />
+          </ConfidenceFieldWrapper>
+        </div>
+        <div>
+          <ConfidenceFieldWrapper
+            confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
+            label={t('fields.totalGross')}>
+            <Input
+              type="number"
+              step="0.01"
+              value={state.totalMinor}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setters.setTotalMinor(e.target.value)}
+              placeholder={t('fields.amountPlaceholder')}
+            />
+          </ConfidenceFieldWrapper>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div>
+        <ConfidenceFieldWrapper
+          confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
+          label={t('fields.sellerBankAccount')}>
+          <Input
+            value={state.sellerBankAccount}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setters.setSellerBankAccount(e.target.value)}
+            placeholder={t('fields.bankAccountPlaceholder')}
+          />
+        </ConfidenceFieldWrapper>
+      </div>
+
+      <Separator />
+
+      <LineItemsTable items={state.lineItems} onChange={setters.setLineItems} />
+
+      <Separator />
+
+      <div className="sticky bottom-0 flex flex-col gap-3 border-t bg-background pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger render={<Button type="button" variant="outline" />}>
+              {t('discard.cta')}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('discard.title')}</AlertDialogTitle>
+                <AlertDialogDescription>{t('discard.description')}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('discard.keep')}</AlertDialogCancel>
+                <AlertDialogAction onClick={onDiscard}>
+                  <Trash2 className="me-1.5 size-4" />
+                  {t('discard.confirm')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger render={<Button type="button" variant="ghost" />}>
+              {t('rerun.cta')}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('rerun.title')}</AlertDialogTitle>
+                <AlertDialogDescription>{t('rerun.description')}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('rerun.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={onRetrigger}>
+                  <RefreshCw className="me-1.5 size-4" />
+                  {t('rerun.confirm')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+
+        <Button type="button" onClick={derived.handleAccept}>
+          {t('acceptSave')}
+        </Button>
+      </div>
+    </CardContent>
   );
 }
