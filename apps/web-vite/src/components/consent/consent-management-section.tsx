@@ -14,11 +14,36 @@ import { ConsentPurposeToggle } from './consent-purpose-toggle';
 import type { UseConsentManagementResult } from './hooks/use-consent-management.js';
 import { PrivacyNoticeDisplay } from './privacy-notice-display';
 
-export type ConsentManagementSectionViewProps = UseConsentManagementResult;
+export type ConsentManagementSectionViewProps = Omit<
+  UseConsentManagementResult,
+  'isLoading' | 'showNotRequired'
+>;
+
+export function ConsentManagementSectionLoading() {
+  const t = useTranslations('Consent');
+  return (
+    <div
+      className="flex items-center justify-center py-12"
+      role="status"
+      aria-live="polite"
+      aria-label={t('settings.loading')}>
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
+
+export function ConsentManagementSectionNotRequired() {
+  const t = useTranslations('Consent');
+  return (
+    <Card>
+      <CardContent className="py-8 text-center">
+        <p className="text-sm text-muted-foreground">{t('settings.notRequired')}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function ConsentManagementSectionView({
-  isLoading,
-  showNotRequired,
   notice,
   purposeToggles,
   onToggle,
@@ -30,28 +55,6 @@ export function ConsentManagementSectionView({
   sccDownload,
 }: ConsentManagementSectionViewProps) {
   const t = useTranslations('Consent');
-
-  if (isLoading) {
-    return (
-      <div
-        className="flex items-center justify-center py-12"
-        role="status"
-        aria-live="polite"
-        aria-label={t('settings.loading')}>
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (showNotRequired) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">{t('settings.notRequired')}</p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="space-y-6">
