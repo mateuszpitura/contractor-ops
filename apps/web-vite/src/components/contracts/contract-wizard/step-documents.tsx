@@ -1,0 +1,160 @@
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import {
+  FileText,
+  Loader2,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+  UploadCloud,
+  X,
+} from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
+
+import { tDynLoose } from '../../../i18n/typed-keys.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import type { UploadingFile } from '../hooks/use-contract-wizard-step-documents.js';
+
+type UploadStatus = UploadingFile['status'];
+
+const ACCEPTED_TYPES: Record<string, string[]> = {
+  'application/pdf': ['.pdf'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'image/png': ['.png'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+};
+
+const MAX_FILE_SIZE = 25 * 1024 * 1024;
+
+function formatFileSizeData(bytes: number): { key: string; size: string } {
+  if (bytes < 1024) return { key: 'bytes', size: String(bytes) };
+  if (bytes < 1024 * 1024) return { key: 'kilobytes', size: (bytes / 1024).toFixed(1) };
+  return { key: 'megabytes', size: (bytes / (1024 * 1024)).toFixed(1) };
+}
+
+function ScanStatusBadge({ status }: { status: UploadStatus }) {
+  const t = useTranslations('Contracts.wizard');
+
+  switch (status) {
+    case 'scanning':
+    case 'confirming':
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          {t('scan.scanning')}
+        </span>
+      );
+    case 'clean':
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+          <ShieldCheck className="h-3 w-3" />
+          {t('scan.clean')}
+        </span>
+      );
+    case 'infected':
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-destructive">
+          <ShieldAlert className="h-3 w-3" />
+          {t('scan.infected')}
+        </span>
+      );
+    case 'failed':
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+          <ShieldQuestion className="h-3 w-3" />
+          {t('scan.failed')}
+        </span>
+      );
+    default:
+      return null;
+  }
+}
+
+interface StepDocumentsProps {
+  onSkip?: () => void;
+  files: UploadingFile[];
+  onDrop: (acceptedFiles: File[]) => void;
+  removeFile: (fileId: string) => void;
+}
+
+/**
+ * Step 3: Document upload via presigned URLs (requestUpload + PUT to R2 + confirmUpload).
+ */
+export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumentsProps) {
+  const t = useTranslations('Contracts.wizard');
+  const tCommon = useTranslations('Common');
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: ACCEPTED_TYPES,
+    maxSize: MAX_FILE_SIZE,
+    multiple: true,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div
+        {...getRootProps()}
+        className={`flex min-h-[160px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer ${
+          isDragActive ? 'border-primary bg-primary/[0.03]' : 'border-border bg-muted/50'
+        }`}>
+        <input {...getInputProps()} />
+        <UploadCloud
+          className={`mb-3 h-8 w-8 text-muted-foreground transition-transform ${
+            isDragActive ? 'scale-110 text-primary' : ''
+          }`}
+        />
+        <p className="text-sm text-center text-muted-foreground">
+          {t('dropZone.body')}{' '}
+          <span className="text-primary font-medium cursor-pointer">{t('dropZone.browse')}</span>
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('dropZone.accepted')}</p>
+      </div>
+
+      {files.length > 0 && (
+        <div className="space-y-2">
+          {files.map(item => (
+            <div key={item.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
+              <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm truncate">{item.file.name}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground">
+                    {(() => {
+                      const { key, size } = formatFileSizeData(item.file.size);
+                      return tDynLoose(tCommon, 'fileSize', key, { size });
+                    })()}
+                  </span>
+                  {item.status === 'uploading' ? (
+                    <Progress value={item.progress} className="h-1.5 flex-1 max-w-[120px]" />
+                  ) : (
+                    <ScanStatusBadge status={item.status} />
+                  )}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={() => removeFile(item.id)}>
+                <X className="h-3.5 w-3.5" />
+                <span className="sr-only">{tCommon('srOnly.remove')}</span>
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="text-center">
+        <button
+          type="button"
+          className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+          onClick={onSkip}>
+          {t('skipDocuments')}
+        </button>
+      </div>
+    </div>
+  );
+}

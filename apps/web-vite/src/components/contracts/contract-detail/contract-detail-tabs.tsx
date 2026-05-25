@@ -1,0 +1,63 @@
+import type { AppRouter } from '@contractor-ops/api';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@contractor-ops/ui/components/shadcn/tabs';
+import type { inferRouterOutputs } from '@trpc/server';
+
+import { tDyn } from '../../../i18n/typed-keys.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { useContractDetailTabs } from '../hooks/use-contract-detail-tabs.js';
+import { ActivityTab } from './activity-tab.js';
+import { AmendmentsTabContainer } from './amendments-tab-container.js';
+import { DocumentsTabContainer } from './documents-tab-container.js';
+import { LinearLinkedIssuesPanelContainer } from './linear-linked-issues-panel-container.js';
+import { OverviewTabContainer } from './overview-tab-container.js';
+
+type ContractDetail = NonNullable<inferRouterOutputs<AppRouter>['contract']['getById']>;
+
+type ContractDetailTabsProps = {
+  contract: ContractDetail;
+  contractParties: Array<{
+    name: string;
+    email: string;
+    role: 'signer' | 'countersigner';
+  }>;
+};
+
+export function ContractDetailTabs({ contract, contractParties }: ContractDetailTabsProps) {
+  const t = useTranslations('ContractDetail');
+  const { tabKeys, currentTab, setTab, taskRunIds } = useContractDetailTabs(contract);
+
+  return (
+    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+    <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
+      <TabsList className="w-full justify-start">
+        {tabKeys.map(key => (
+          <TabsTrigger key={key} value={key}>
+            {tDyn(t, 'tabs', key)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
+      <TabsContent value="overview" className="mt-4 min-h-[400px]">
+        <OverviewTabContainer contract={contract} />
+      </TabsContent>
+
+      <TabsContent value="documents" className="mt-4 min-h-[400px]">
+        <DocumentsTabContainer contractId={contract.id} contractParties={contractParties} />
+      </TabsContent>
+
+      <TabsContent value="amendments" className="mt-4 min-h-[400px]">
+        <AmendmentsTabContainer contract={contract} />
+      </TabsContent>
+
+      <TabsContent value="activity" className="mt-4 min-h-[400px] space-y-6">
+        <ActivityTab contract={contract} />
+        <LinearLinkedIssuesPanelContainer taskRunIds={taskRunIds} />
+      </TabsContent>
+    </Tabs>
+  );
+}
