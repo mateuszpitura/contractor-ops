@@ -1,28 +1,18 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import type { ReactNode } from 'react';
+
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { LinearIssueChip } from '../integrations/linear-issue-chip.js';
-import type { useSidePanelLinkedLinear } from './hooks/use-side-panel-linked-linear.js';
+import type { LinkedLinearIssueRow } from './hooks/use-side-panel-linked-linear.js';
 
-type LinkedLinearIssuesViewProps = ReturnType<typeof useSidePanelLinkedLinear>;
+interface LinkedLinearIssuesSectionShellProps {
+  children: ReactNode;
+}
 
-/**
- * Presentational linked-Linear-issues section for the workflow side panel.
- */
-export function LinkedLinearIssuesView({
-  showSection,
-  isLoading,
-  isError,
-  issues,
-  handleRetry,
-}: LinkedLinearIssuesViewProps) {
+export function LinkedLinearIssuesSectionShell({ children }: LinkedLinearIssuesSectionShellProps) {
   const ts = useTranslations('Workflows.sidePanel');
-  const t = useTranslations('Workflows');
-  const tCommon = useTranslations('Common');
-
-  if (!showSection) return null;
-
   return (
     <>
       <Separator />
@@ -30,40 +20,94 @@ export function LinkedLinearIssuesView({
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
           {ts('linearIssues')}
         </h3>
-
-        {isError ? (
-          <div className="flex flex-col items-start gap-2">
-            <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-            <Button variant="outline" size="sm" onClick={handleRetry}>
-              {t('errors.retry')}
-            </Button>
-          </div>
-        ) : isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 2 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <div key={`wf-linear-${i}`} className="flex items-center gap-2">
-                <Skeleton className="h-4 w-[100px]" />
-                <Skeleton className="h-6 w-[120px] rounded-md" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {issues.map(issue => (
-              <div key={issue.id} className="flex items-center gap-2">
-                <LinearIssueChip
-                  identifier={issue.metadataJson.identifier}
-                  title={issue.metadataJson.title}
-                  status={issue.metadataJson.status}
-                  statusType={issue.metadataJson.statusType}
-                  url={issue.metadataJson.url ?? issue.externalUrl}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        {children}
       </div>
     </>
   );
+}
+
+export function LinkedLinearIssuesSkeleton() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 2 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`wf-linear-${i}`} className="flex items-center gap-2">
+          <Skeleton className="h-4 w-[100px]" />
+          <Skeleton className="h-6 w-[120px] rounded-md" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface LinkedLinearIssuesErrorProps {
+  onRetry: () => void;
+}
+
+export function LinkedLinearIssuesError({ onRetry }: LinkedLinearIssuesErrorProps) {
+  const t = useTranslations('Workflows');
+  const tCommon = useTranslations('Common');
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        {t('errors.retry')}
+      </Button>
+    </div>
+  );
+}
+
+interface LinkedLinearIssuesListProps {
+  issues: LinkedLinearIssueRow[];
+}
+
+export function LinkedLinearIssuesList({ issues }: LinkedLinearIssuesListProps) {
+  return (
+    <div className="space-y-2">
+      {issues.map(issue => (
+        <div key={issue.id} className="flex items-center gap-2">
+          <LinearIssueChip
+            identifier={issue.metadataJson.identifier}
+            title={issue.metadataJson.title}
+            status={issue.metadataJson.status}
+            statusType={issue.metadataJson.statusType}
+            url={issue.metadataJson.url ?? issue.externalUrl}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Legacy combined view kept for direct consumers that build the full props
+ * bag; presentational only — single render path per variant.
+ */
+interface LinkedLinearIssuesViewProps {
+  showSection: boolean;
+  isLoading: boolean;
+  isError: boolean;
+  issues: LinkedLinearIssueRow[];
+  handleRetry: () => void;
+}
+
+export function LinkedLinearIssuesView({
+  showSection,
+  isLoading,
+  isError,
+  issues,
+  handleRetry,
+}: LinkedLinearIssuesViewProps) {
+  if (!showSection) return null;
+
+  let body: ReactNode;
+  if (isError) {
+    body = <LinkedLinearIssuesError onRetry={handleRetry} />;
+  } else if (isLoading) {
+    body = <LinkedLinearIssuesSkeleton />;
+  } else {
+    body = <LinkedLinearIssuesList issues={issues} />;
+  }
+
+  return <LinkedLinearIssuesSectionShell>{body}</LinkedLinearIssuesSectionShell>;
 }

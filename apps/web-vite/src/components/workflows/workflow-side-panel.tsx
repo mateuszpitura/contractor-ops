@@ -11,6 +11,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
+import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
@@ -30,7 +31,7 @@ const statusBadgeColors: Record<string, string> = {
   OVERDUE: 'bg-red-500/10 text-red-600 dark:text-red-400',
 };
 
-type SidePanelRun = {
+export type WorkflowSidePanelRun = {
   id: string;
   status: string;
   startedAt?: Date | string | null;
@@ -47,33 +48,69 @@ type SidePanelRun = {
   }>;
 };
 
-interface WorkflowSidePanelViewProps {
-  runId: string | null;
-  run: SidePanelRun | undefined;
-  isLoading: boolean;
-  isError: boolean;
-  handleRetry: () => void;
+interface WorkflowSidePanelShellProps {
+  open: boolean;
   onClose: () => void;
+  children: ReactNode;
 }
 
-/**
- * Slide-out side panel showing workflow run summary.
- */
-export function WorkflowSidePanelView({
-  runId,
-  run,
-  isLoading,
-  isError,
-  handleRetry,
-  onClose,
-}: WorkflowSidePanelViewProps) {
+export function WorkflowSidePanelShell({ open, onClose, children }: WorkflowSidePanelShellProps) {
+  return (
+    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
+    <Sheet open={open} onOpenChange={isOpen => !isOpen && onClose()}>
+      <SheetContent className="w-[400px] sm:w-[480px] p-0">
+        <ScrollArea className="h-full">
+          <div className="p-6 space-y-6">{children}</div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+export function WorkflowSidePanelSkeleton() {
+  return (
+    <>
+      <div className="space-y-3">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-5 w-24" />
+      </div>
+      <Skeleton className="h-2 w-full" />
+      <div className="space-y-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-4 w-36" />
+        <Skeleton className="h-4 w-28" />
+      </div>
+    </>
+  );
+}
+
+interface WorkflowSidePanelErrorProps {
+  onRetry: () => void;
+}
+
+export function WorkflowSidePanelError({ onRetry }: WorkflowSidePanelErrorProps) {
+  const t = useTranslations('Workflows');
+  return (
+    <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
+      <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
+      <Button variant="outline" onClick={onRetry}>
+        {t('errors.retry')}
+      </Button>
+    </div>
+  );
+}
+
+interface WorkflowSidePanelContentProps {
+  run: WorkflowSidePanelRun;
+}
+
+export function WorkflowSidePanelContent({ run }: WorkflowSidePanelContentProps) {
   const t = useTranslations('Workflows');
   const ts = useTranslations('Workflows.sidePanel');
 
-  const open = runId !== null;
-
   const taskSummary = useMemo(() => {
-    if (!run?.tasks) return { done: 0, inProgress: 0, overdue: 0, total: 0 };
+    if (!run.tasks) return { done: 0, inProgress: 0, overdue: 0, total: 0 };
 
     const tasks = run.tasks;
 
@@ -101,118 +138,123 @@ export function WorkflowSidePanelView({
     taskSummary.total > 0 ? Math.round((taskSummary.done / taskSummary.total) * 100) : 0;
 
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-    <Sheet open={open} onOpenChange={isOpen => !isOpen && onClose()}>
-      <SheetContent className="w-[400px] sm:w-[480px] p-0">
-        <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
-            {isLoading ? (
-              <>
-                <div className="space-y-3">
-                  <Skeleton className="h-6 w-48" />
-                  <Skeleton className="h-5 w-24" />
-                </div>
-                <Skeleton className="h-2 w-full" />
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-4 w-40" />
-                  <Skeleton className="h-4 w-36" />
-                  <Skeleton className="h-4 w-28" />
-                </div>
-              </>
-            ) : isError ? (
-              <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
-                <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflowDetail')}</h2>
-                <Button variant="outline" onClick={handleRetry}>
-                  {t('errors.retry')}
-                </Button>
-              </div>
-            ) : run ? (
-              <>
-                <SheetHeader className="space-y-3">
-                  <SheetTitle className="text-[20px] font-semibold leading-[1.2]">
-                    {run.workflowTemplate?.name ?? 'Workflow'}
-                  </SheetTitle>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
-                      {tDynLoose(t, 'runStatus', enumKey(run.status))}
-                    </Badge>
-                    {!!run.workflowTemplate && (
-                      <span className="text-sm text-muted-foreground">
-                        {run.workflowTemplate.name}
-                      </span>
-                    )}
-                  </div>
-                </SheetHeader>
+    <>
+      <SheetHeader className="space-y-3">
+        <SheetTitle className="text-[20px] font-semibold leading-[1.2]">
+          {run.workflowTemplate?.name ?? 'Workflow'}
+        </SheetTitle>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge variant="secondary" className={statusBadgeColors[run.status] ?? ''}>
+            {tDynLoose(t, 'runStatus', enumKey(run.status))}
+          </Badge>
+          {!!run.workflowTemplate && (
+            <span className="text-sm text-muted-foreground">{run.workflowTemplate.name}</span>
+          )}
+        </div>
+      </SheetHeader>
 
-                <Separator />
+      <Separator />
 
-                <div className="space-y-3">
-                  <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
-                    {ts('progress')}
-                  </h3>
-                  <Progress value={progressPercent} className="h-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {ts('tasksComplete', {
-                      done: taskSummary.done,
-                      total: taskSummary.total,
-                    })}
-                  </p>
-                </div>
+      <div className="space-y-3">
+        <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
+          {ts('progress')}
+        </h3>
+        <Progress value={progressPercent} className="h-2" />
+        <p className="text-sm text-muted-foreground">
+          {ts('tasksComplete', {
+            done: taskSummary.done,
+            total: taskSummary.total,
+          })}
+        </p>
+      </div>
 
-                <LinkedJiraIssuesSection runId={run.id} />
-                <LinkedLinearIssuesSection runId={run.id} />
+      <LinkedJiraIssuesSection runId={run.id} />
+      <LinkedLinearIssuesSection runId={run.id} />
 
-                <Separator />
+      <Separator />
 
-                <div className="space-y-3">
-                  <p className="text-sm">
-                    {ts('tasksSummary', {
-                      done: taskSummary.done,
-                      inProgress: taskSummary.inProgress,
-                      overdue: taskSummary.overdue,
-                    })}
-                  </p>
-                </div>
+      <div className="space-y-3">
+        <p className="text-sm">
+          {ts('tasksSummary', {
+            done: taskSummary.done,
+            inProgress: taskSummary.inProgress,
+            overdue: taskSummary.overdue,
+          })}
+        </p>
+      </div>
 
-                <Separator />
+      <Separator />
 
-                {!!run.contractor && (
-                  <>
-                    <div className="space-y-2">
-                      <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
-                        {ts('contractor')}
-                      </h3>
-                      <Link
-                        href={`/contractors/${run.contractor.id}`}
-                        className="text-sm text-primary hover:underline">
-                        {run.contractor.displayName ?? run.contractor.legalName}
-                      </Link>
-                    </div>
-
-                    <Separator />
-                  </>
-                )}
-
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  {!!run.startedAt && (
-                    <div className="space-y-1">
-                      <dt className="text-[13px] text-muted-foreground">{ts('startedOn')}</dt>
-                      <dd>{formatDate(run.startedAt)}</dd>
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                <Button render={<Link href={`/workflows/${run.id}`} />} className="w-full">
-                  {ts('openWorkflow')}
-                </Button>
-              </>
-            ) : null}
+      {!!run.contractor && (
+        <>
+          <div className="space-y-2">
+            <h3 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
+              {ts('contractor')}
+            </h3>
+            <Link
+              href={`/contractors/${run.contractor.id}`}
+              className="text-sm text-primary hover:underline">
+              {run.contractor.displayName ?? run.contractor.legalName}
+            </Link>
           </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+
+          <Separator />
+        </>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        {!!run.startedAt && (
+          <div className="space-y-1">
+            <dt className="text-[13px] text-muted-foreground">{ts('startedOn')}</dt>
+            <dd>{formatDate(run.startedAt)}</dd>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      <Button render={<Link href={`/workflows/${run.id}`} />} className="w-full">
+        {ts('openWorkflow')}
+      </Button>
+    </>
+  );
+}
+
+/**
+ * Legacy combined view kept for tests that construct full prop bag; render
+ * path per variant picked here, mirroring container logic.
+ */
+interface WorkflowSidePanelViewProps {
+  runId: string | null;
+  run: WorkflowSidePanelRun | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  handleRetry: () => void;
+  onClose: () => void;
+}
+
+export function WorkflowSidePanelView({
+  runId,
+  run,
+  isLoading,
+  isError,
+  handleRetry,
+  onClose,
+}: WorkflowSidePanelViewProps) {
+  const open = runId !== null;
+
+  let body: ReactNode = null;
+  if (isLoading) {
+    body = <WorkflowSidePanelSkeleton />;
+  } else if (isError) {
+    body = <WorkflowSidePanelError onRetry={handleRetry} />;
+  } else if (run) {
+    body = <WorkflowSidePanelContent run={run} />;
+  }
+
+  return (
+    <WorkflowSidePanelShell open={open} onClose={onClose}>
+      {body}
+    </WorkflowSidePanelShell>
   );
 }
