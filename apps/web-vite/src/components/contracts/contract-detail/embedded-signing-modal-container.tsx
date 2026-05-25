@@ -1,5 +1,11 @@
 import { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
-import { EmbeddedSigningModal } from './embedded-signing-modal.js';
+import {
+  EmbeddedSigningModalShell,
+  SigningBodyEmbedded,
+  SigningBodyError,
+  SigningBodyPending,
+  SigningBodyRedirect,
+} from './embedded-signing-modal.js';
 
 type EmbeddedSigningModalContainerProps = {
   envelopeId: string;
@@ -12,15 +18,49 @@ type EmbeddedSigningModalContainerProps = {
   usePortalAuth?: boolean;
 };
 
-export function EmbeddedSigningModalContainer(props: EmbeddedSigningModalContainerProps) {
-  const modal = useEmbeddedSigningModal(
-    props.envelopeId,
-    props.recipientEmail,
-    props.open,
-    props.onOpenChange,
-    props.onComplete,
-    props.usePortalAuth,
+export function EmbeddedSigningModalContainer({
+  envelopeId,
+  recipientEmail,
+  documentTitle,
+  provider,
+  open,
+  onOpenChange,
+  onComplete,
+  usePortalAuth,
+}: EmbeddedSigningModalContainerProps) {
+  const { iframeRef, isPending, signingData } = useEmbeddedSigningModal(
+    envelopeId,
+    recipientEmail,
+    open,
+    onOpenChange,
+    onComplete,
+    usePortalAuth,
   );
 
-  return <EmbeddedSigningModal {...props} modal={modal} />;
+  if (!open) return null;
+
+  let body: React.ReactNode;
+  if (isPending) {
+    body = <SigningBodyPending />;
+  } else if (signingData?.embedded && signingData.url) {
+    body = (
+      <SigningBodyEmbedded
+        url={signingData.url}
+        documentTitle={documentTitle}
+        iframeRef={iframeRef}
+      />
+    );
+  } else if (signingData?.url) {
+    body = (
+      <SigningBodyRedirect url={signingData.url} provider={provider} onOpenChange={onOpenChange} />
+    );
+  } else {
+    body = <SigningBodyError onOpenChange={onOpenChange} />;
+  }
+
+  return (
+    <EmbeddedSigningModalShell documentTitle={documentTitle} onOpenChange={onOpenChange}>
+      {body}
+    </EmbeddedSigningModalShell>
+  );
 }
