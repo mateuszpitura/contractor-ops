@@ -25,7 +25,9 @@ export function DetailHeaderContainer({ contract }: DetailHeaderContainerProps) 
   return (
     <>
       <DetailHeader contract={contract} header={header} />
-      <EditContractDialog open={header.editOpen} onOpenChange={header.setEditOpen} edit={edit} />
+      {header.editOpen && (
+        <EditContractDialog open={header.editOpen} onOpenChange={header.setEditOpen} edit={edit} />
+      )}
     </>
   );
 }
