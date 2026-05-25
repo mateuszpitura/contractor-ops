@@ -1,0 +1,274 @@
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
+import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
+import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
+import { Check } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { FeatureGateContainer } from '../billing/feature-gate-container.js';
+import { ConfirmImportStepContainer } from './confirm-import-step-container.js';
+import { PeopleReviewStepContainer } from './people-review-step-container.js';
+import { ProjectImportStepContainer } from './project-import-step-container.js';
+import { SourceSelectionStepContainer } from './source-selection-step-container.js';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type WizardStep = 1 | 2 | 3 | 4;
+
+export interface PersonSelection {
+  role: InvitableMemberRole;
+  skip: boolean;
+  resolvedConflicts: Record<string, string>;
+}
+
+export interface ProjectSelection {
+  skip: boolean;
+  name: string;
+  steps: Array<{ name: string; sortOrder: number }>;
+}
+
+// ---------------------------------------------------------------------------
+// Step indicator
+// ---------------------------------------------------------------------------
+
+function WizardStepIndicator({
+  currentStep,
+  steps,
+}: {
+  currentStep: WizardStep;
+  steps: Array<{ step: WizardStep; label: string }>;
+}) {
+  const tAria = useTranslations('Common.aria');
+
+  return (
+    <nav className="flex items-center gap-6" aria-label={tAria('wizardProgress')}>
+      {steps.map(({ step, label }, index) => {
+        const isCurrent = step === currentStep;
+        const isCompleted = step < currentStep;
+
+        return (
+          <div
+            key={step}
+            className="flex items-center gap-2"
+            aria-current={isCurrent ? 'step' : undefined}>
+            {index > 0 && (
+              <div
+                className={`hidden h-px w-8 sm:block ${isCompleted ? 'bg-primary' : 'bg-border'}`}
+                aria-hidden="true"
+              />
+            )}
+            <div className="flex items-center gap-1.5">
+              {isCompleted ? (
+                <div className="flex size-6 items-center justify-center rounded-full bg-primary">
+                  <Check className="size-3.5 text-primary-foreground" aria-hidden="true" />
+                </div>
+              ) : (
+                <div
+                  className={`flex size-6 items-center justify-center rounded-full text-xs font-medium ${
+                    isCurrent
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                  {step}
+                </div>
+              )}
+              <span
+                className={`hidden text-sm sm:inline ${
+                  isCurrent
+                    ? 'font-medium text-foreground'
+                    : isCompleted
+                      ? 'text-primary'
+                      : 'text-muted-foreground'
+                }`}>
+                {label}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Check whether any conflict person has unresolved field conflicts. */
+function checkUnresolvedConflicts(
+  people: MergedPerson[],
+  selections: Map<string, PersonSelection>,
+): boolean {
+  for (const person of people) {
+    if (person.status !== 'conflict') continue;
+    const sel = selections.get(person.email);
+    if (!sel || sel.skip) continue;
+    for (const conflict of person.conflicts ?? []) {
+      if (!sel.resolvedConflicts[conflict.field]) return true;
+    }
+  }
+  return false;
+}
+
+/** Determine whether the user can advance from the current step. */
+function computeCanContinue(
+  currentStep: WizardStep,
+  selectedSourceCount: number,
+  hasUnresolved: boolean,
+  jobId: string | null,
+): boolean {
+  switch (currentStep) {
+    case 1:
+      return selectedSourceCount > 0;
+    case 2:
+      return !hasUnresolved;
+    case 3:
+      return true;
+    case 4:
+      return !jobId;
+    default:
+      return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ImportWizard
+// ---------------------------------------------------------------------------
+
+export function ImportWizard() {
+  const t = useTranslations('OnboardingImport');
+
+  // Step navigation
+  const [step, setStep] = useState<WizardStep>(1);
+
+  // Step 1: Selected sources
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
+
+  // Step 2: People data + selections
+  const [mergedPeople, setMergedPeople] = useState<MergedPerson[]>([]);
+  const [personSelections, setPersonSelections] = useState<Map<string, PersonSelection>>(new Map());
+
+  // Step 3: Projects data + selections
+  const [projects, setProjects] = useState<FetchProjectsOutput>([]);
+  const [projectSelections, setProjectSelections] = useState<Map<string, ProjectSelection>>(
+    new Map(),
+  );
+
+  // Step 4: Import job
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  // Derived: check for unresolved conflicts
+  const hasUnresolvedConflicts = useMemo(
+    () => checkUnresolvedConflicts(mergedPeople, personSelections),
+    [mergedPeople, personSelections],
+  );
+
+  // Derived: can continue
+  const canContinue = useMemo(
+    () => computeCanContinue(step, selectedSources.length, hasUnresolvedConflicts, jobId),
+    [step, selectedSources.length, hasUnresolvedConflicts, jobId],
+  );
+
+  // Navigation handlers
+  const handleBack = useCallback(() => {
+    setStep(s => Math.max(1, s - 1) as WizardStep);
+  }, []);
+
+  const handleContinue = useCallback(() => {
+    if (step < 4) {
+      setStep(s => Math.min(4, s + 1) as WizardStep);
+    }
+  }, [step]);
+
+  // Step config for indicator
+  const stepsConfig: Array<{ step: WizardStep; label: string }> = [
+    { step: 1, label: t('nav.step1Label') },
+    { step: 2, label: t('nav.step2Label') },
+    { step: 3, label: t('nav.step3Label') },
+    { step: 4, label: t('nav.step4Label') },
+  ];
+
+  const progressPercent = step * 25;
+
+  return (
+    <FeatureGateContainer requiredTier="Pro" featureName="Onboarding import wizard">
+      <div className="flex flex-col gap-8">
+        {/* Page title */}
+        <div>
+          <h1 className="font-display text-[28px] font-semibold leading-[1.15]">
+            {t('pageTitle')}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t('pageSubtitle')}</p>
+        </div>
+
+        {/* Step indicator + progress */}
+        <div className="space-y-3">
+          <WizardStepIndicator currentStep={step} steps={stepsConfig} />
+          <Progress value={progressPercent} />
+        </div>
+
+        {/* Step content */}
+        <div className="min-h-[400px]">
+          {step === 1 && (
+            <SourceSelectionStepContainer
+              selectedSources={selectedSources}
+              onSourcesChange={setSelectedSources}
+            />
+          )}
+
+          {step === 2 && (
+            <PeopleReviewStepContainer
+              selectedSources={selectedSources}
+              mergedPeople={mergedPeople}
+              onMergedPeopleChange={setMergedPeople}
+              personSelections={personSelections}
+              onPersonSelectionsChange={setPersonSelections}
+            />
+          )}
+
+          {step === 3 && (
+            <ProjectImportStepContainer
+              selectedSources={selectedSources}
+              projects={projects}
+              onProjectsChange={setProjects}
+              projectSelections={projectSelections}
+              onProjectSelectionsChange={setProjectSelections}
+            />
+          )}
+
+          {step === 4 && (
+            <ConfirmImportStepContainer
+              mergedPeople={mergedPeople}
+              personSelections={personSelections}
+              projects={projects}
+              projectSelections={projectSelections}
+              jobId={jobId}
+              onJobIdChange={setJobId}
+            />
+          )}
+        </div>
+
+        {/* Sticky footer navigation */}
+        {!jobId && (
+          <div className="sticky bottom-0 flex items-center justify-between border-t bg-background py-4">
+            {step > 1 ? (
+              <Button variant="ghost" onClick={handleBack}>
+                {t('nav.back')}
+              </Button>
+            ) : (
+              <div />
+            )}
+
+            {step < 4 && (
+              <Button onClick={handleContinue} disabled={!canContinue}>
+                {t('nav.continue')}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </FeatureGateContainer>
+  );
+}
