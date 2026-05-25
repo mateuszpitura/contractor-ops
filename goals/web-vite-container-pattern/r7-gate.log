@@ -1,0 +1,27 @@
+==========================================
+FINAL CI GATE — Wave R7 (post-passthrough-refactor)
+Date: 2026-05-25T23:43:48Z
+==========================================
+
+1) check:data-layer
+> node ../../scripts/check-web-vite-data-layer.mjs
+
+check:web-vite-data-layer — OK
+
+2) check:page-shells
+> node ../../scripts/check-web-vite-page-shells.mjs
+
+check:web-vite-page-shells — OK
+
+3) check:web-vite-presentational
+> node scripts/check-web-vite-presentational.mjs
+
+check:web-vite-presentational — OK
+
+4) typecheck (web-vite, --force)
+Cached:    0 cached, 17 total
+  Time:    38.249s 
+
+ WARNING  no output files found for task @contractor-ops/feature-flags#build. Please check your `outputs` key in `turbo.json`
+ WARNING  no output files found for task @contractor-ops/offboarding-templates#build. Please check your `outputs` key in `turbo.json`
+   exit=0
