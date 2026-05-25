@@ -18,6 +18,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { RenderHookOptions, RenderHookResult } from '@testing-library/react';
 import { renderHook } from '@testing-library/react';
+import { NuqsTestingAdapter } from 'nuqs/adapters/testing';
 import type { ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -165,18 +166,20 @@ export function renderHookWithProviders<TResult, TProps = unknown>(
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[initialPath]}>
-          <Routes>
-            <Route
-              path="/:locale/*"
-              element={<I18nextProvider i18n={i18next}>{children}</I18nextProvider>}
-            />
-            <Route
-              path="*"
-              element={<I18nextProvider i18n={i18next}>{children}</I18nextProvider>}
-            />
-          </Routes>
-        </MemoryRouter>
+        <NuqsTestingAdapter>
+          <MemoryRouter initialEntries={[initialPath]}>
+            <Routes>
+              <Route
+                path="/:locale/*"
+                element={<I18nextProvider i18n={i18next}>{children}</I18nextProvider>}
+              />
+              <Route
+                path="*"
+                element={<I18nextProvider i18n={i18next}>{children}</I18nextProvider>}
+              />
+            </Routes>
+          </MemoryRouter>
+        </NuqsTestingAdapter>
       </QueryClientProvider>
     );
   }
