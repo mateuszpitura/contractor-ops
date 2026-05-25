@@ -13,22 +13,39 @@ vi.mock('../../../../lib/format/use-date-formatter.js', () => ({
 }));
 
 import { render, screen } from '../../../../test/test-utils.js';
-import { DocumentHistoryListView } from '../document-history-list.js';
+import {
+  DocumentHistoryListEmpty,
+  DocumentHistoryListSkeleton,
+  DocumentHistoryListView,
+} from '../document-history-list.js';
 
-function makeListQuery(overrides: Partial<{ isPending: boolean }> = {}) {
-  return {
-    isPending: false,
-    ...overrides,
-  } as unknown as Parameters<typeof DocumentHistoryListView>[0]['listQuery'];
-}
+// Minimal-shape factory keeps tests focused on the view's a11y / DOM
+// structure; the extra rule-set / hash / renderer-version fields are
+// required by the runtime type but irrelevant to the assertions.
+const makeDoc = (
+  over: Partial<{
+    id: string;
+    kind: 'SDS' | 'DRV_DEFENSE_BUNDLE';
+    generatedAt: Date;
+    byteSize: number;
+  }> = {},
+) => ({
+  id: 'd1',
+  kind: 'SDS' as const,
+  generatedAt: new Date('2025-06-01T00:00:00Z'),
+  byteSize: 45056,
+  ruleSetVersion: 'v1.0.0',
+  sha256Hash: 'a'.repeat(64),
+  rendererVersion: '1.0.0',
+  ...over,
+});
 
 describe('DocumentHistoryListView', () => {
   it('renders the heading', () => {
     render(
       <DocumentHistoryListView
         engagementId="eng-1"
-        listQuery={makeListQuery()}
-        docs={[]}
+        docs={[makeDoc()]}
         downloadDocument={vi.fn()}
       />,
     );
@@ -36,14 +53,7 @@ describe('DocumentHistoryListView', () => {
   });
 
   it('renders empty-state text when no documents', () => {
-    render(
-      <DocumentHistoryListView
-        engagementId="eng-1"
-        listQuery={makeListQuery()}
-        docs={[]}
-        downloadDocument={vi.fn()}
-      />,
-    );
+    render(<DocumentHistoryListEmpty />);
     const emptyText = document.querySelector('p.text-sm');
     expect(emptyText).toBeInTheDocument();
   });
@@ -52,26 +62,14 @@ describe('DocumentHistoryListView', () => {
     render(
       <DocumentHistoryListView
         engagementId="eng-1"
-        listQuery={makeListQuery()}
         docs={[
-          {
-            id: 'd1',
-            kind: 'SDS',
-            generatedAt: new Date('2025-06-01T00:00:00Z'),
-            byteSize: 45056,
-            ruleSetVersion: 'v1',
-            sha256Hash: 'a'.repeat(64),
-            rendererVersion: 'r1',
-          },
-          {
+          makeDoc(),
+          makeDoc({
             id: 'd2',
             kind: 'DRV_DEFENSE_BUNDLE',
             generatedAt: new Date('2025-06-02T00:00:00Z'),
             byteSize: 120000,
-            ruleSetVersion: 'v1',
-            sha256Hash: 'b'.repeat(64),
-            rendererVersion: 'r1',
-          },
+          }),
         ]}
         downloadDocument={vi.fn()}
       />,
@@ -83,18 +81,7 @@ describe('DocumentHistoryListView', () => {
     render(
       <DocumentHistoryListView
         engagementId="eng-1"
-        listQuery={makeListQuery()}
-        docs={[
-          {
-            id: 'd1',
-            kind: 'SDS',
-            generatedAt: new Date('2025-06-01T00:00:00Z'),
-            byteSize: 45056,
-            ruleSetVersion: 'v1',
-            sha256Hash: 'a'.repeat(64),
-            rendererVersion: 'r1',
-          },
-        ]}
+        docs={[makeDoc()]}
         downloadDocument={vi.fn()}
       />,
     );
@@ -102,26 +89,12 @@ describe('DocumentHistoryListView', () => {
   });
 
   it('renders section with aria-labelledby for a11y', () => {
-    render(
-      <DocumentHistoryListView
-        engagementId="eng-1"
-        listQuery={makeListQuery()}
-        docs={[]}
-        downloadDocument={vi.fn()}
-      />,
-    );
+    render(<DocumentHistoryListEmpty />);
     expect(document.querySelector('section[aria-labelledby]')).toBeInTheDocument();
   });
 
-  it('shows skeleton items when listQuery.isPending', () => {
-    const { container } = render(
-      <DocumentHistoryListView
-        engagementId="eng-1"
-        listQuery={makeListQuery({ isPending: true })}
-        docs={[]}
-        downloadDocument={vi.fn()}
-      />,
-    );
+  it('shows skeleton items when pending', () => {
+    const { container } = render(<DocumentHistoryListSkeleton />);
     const skeletons = container.querySelectorAll("[data-slot='skeleton']");
     expect(skeletons.length).toBeGreaterThan(0);
   });
