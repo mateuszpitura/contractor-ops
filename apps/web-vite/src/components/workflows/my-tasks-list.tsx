@@ -30,63 +30,62 @@ const TASK_STATUS_ICON: Record<string, { icon: React.ElementType; className: str
   OVERDUE: { icon: AlertCircle, className: 'text-destructive' },
 };
 
-type MyTasksListProps = ReturnType<typeof useMyTasksList>;
+export function MyTasksListSkeleton() {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <Card key={`skel-${i}`} className="flex items-center gap-4 p-4">
+          <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+          <Skeleton className="h-3 w-20" />
+        </Card>
+      ))}
+    </div>
+  );
+}
 
-/**
- * Presentational flat task list for the current user's assigned tasks.
- */
-export function MyTasksList({
-  tasks,
-  isLoading,
-  isError,
-  handleRetry,
-  overdueOnly,
-  setOverdueOnly,
-}: MyTasksListProps) {
+interface MyTasksListErrorProps {
+  onRetry: () => void;
+}
+
+export function MyTasksListError({ onRetry }: MyTasksListErrorProps) {
   const t = useTranslations('Workflows');
+  return (
+    <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
+      <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflows')}</h2>
+      <Button variant="outline" onClick={onRetry}>
+        {t('errors.retry')}
+      </Button>
+    </div>
+  );
+}
+
+export function MyTasksListEmpty() {
   const tEmpty = useTranslations('EmptyStates.myTasks');
+  return (
+    <AtelierEmptyState
+      variant="subview"
+      illustration={MyTasksIllustration}
+      heading={tEmpty('heading')}
+      body={tEmpty('body')}
+      renderAction={renderEmptyStateAction}
+    />
+  );
+}
+
+interface MyTasksListBodyProps {
+  tasks: MyTaskRow[];
+  overdueOnly: boolean;
+  setOverdueOnly: (value: boolean) => void;
+}
+
+export function MyTasksListBody({ tasks, overdueOnly, setOverdueOnly }: MyTasksListBodyProps) {
+  const t = useTranslations('Workflows');
   const reactId = useId();
-
-  if (isError) {
-    return (
-      <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 text-center">
-        <h2 className="text-lg font-medium">{t('errors.failedToLoadWorkflows')}</h2>
-        <Button variant="outline" onClick={handleRetry}>
-          {t('errors.retry')}
-        </Button>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Card key={`skel-${i}`} className="flex items-center gap-4 p-4">
-            <Skeleton className="h-5 w-5 rounded-full shrink-0" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-            <Skeleton className="h-3 w-20" />
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (tasks.length === 0 && !overdueOnly) {
-    return (
-      <AtelierEmptyState
-        variant="subview"
-        illustration={MyTasksIllustration}
-        heading={tEmpty('heading')}
-        body={tEmpty('body')}
-        renderAction={renderEmptyStateAction}
-      />
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -121,7 +120,7 @@ export function MyTasksList({
                   <p className="text-sm font-medium truncate">{task.title}</p>
                   <p className="text-[13px] text-muted-foreground truncate">
                     {task.workflowRun.workflowTemplate.name}
-                    {' \u00B7 '}
+                    {' · '}
                     {task.workflowRun.contractor.displayName ??
                       task.workflowRun.contractor.legalName}
                   </p>
@@ -147,5 +146,27 @@ export function MyTasksList({
         </div>
       )}
     </div>
+  );
+}
+
+type MyTasksListProps = ReturnType<typeof useMyTasksList>;
+
+/**
+ * Legacy combined presentational view — kept for tests. Single render path
+ * per variant, picked here via the same flags the container consults.
+ */
+export function MyTasksList({
+  tasks,
+  isLoading,
+  isError,
+  handleRetry,
+  overdueOnly,
+  setOverdueOnly,
+}: MyTasksListProps) {
+  if (isError) return <MyTasksListError onRetry={handleRetry} />;
+  if (isLoading) return <MyTasksListSkeleton />;
+  if (tasks.length === 0 && !overdueOnly) return <MyTasksListEmpty />;
+  return (
+    <MyTasksListBody tasks={tasks} overdueOnly={overdueOnly} setOverdueOnly={setOverdueOnly} />
   );
 }

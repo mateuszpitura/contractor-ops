@@ -1,4 +1,4 @@
-import { CalendarTaskConfigView } from './calendar-task-config.js';
+import { CalendarTaskConfigSkeleton, CalendarTaskConfigView } from './calendar-task-config.js';
 import { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
 
 interface CalendarTaskConfigProps {
@@ -6,6 +6,7 @@ interface CalendarTaskConfigProps {
 }
 
 export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) {
-  const props = useCalendarTaskConfig(taskTemplateId);
-  return <CalendarTaskConfigView {...props} />;
+  const { configQuery, ...viewProps } = useCalendarTaskConfig(taskTemplateId);
+  if (configQuery.isLoading) return <CalendarTaskConfigSkeleton />;
+  return <CalendarTaskConfigView {...viewProps} />;
 }

@@ -5,12 +5,21 @@ import { useState } from 'react';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
 import type { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
 
-type CalendarTaskConfigViewProps = ReturnType<typeof useCalendarTaskConfig>;
+export function CalendarTaskConfigSkeleton() {
+  return (
+    <div className="flex items-center gap-3">
+      <Skeleton className="h-5 w-9" />
+      <Skeleton className="h-4 w-[40%]" />
+      <Skeleton className="ms-auto h-8 w-20" />
+    </div>
+  );
+}
+
+type CalendarTaskConfigViewProps = Omit<ReturnType<typeof useCalendarTaskConfig>, 'configQuery'>;
 
 export function CalendarTaskConfigView({
   taskTemplateId,
   t,
-  configQuery,
   config,
   saveMutation,
   handleToggle,
@@ -20,16 +29,6 @@ export function CalendarTaskConfigView({
   defaultConfig,
 }: CalendarTaskConfigViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  if (configQuery.isLoading) {
-    return (
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-5 w-9" />
-        <Skeleton className="h-4 w-[40%]" />
-        <Skeleton className="ms-auto h-8 w-20" />
-      </div>
-    );
-  }
 
   return (
     <>

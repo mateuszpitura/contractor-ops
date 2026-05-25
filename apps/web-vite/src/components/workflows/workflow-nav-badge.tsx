@@ -1,11 +1,13 @@
 /**
  * WorkflowNavBadge — presentational overdue task count badge for nav.
+ * Container guarantees `count > 0`; this view is a single render path.
  */
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useWorkflowNavBadge } from './hooks/use-workflow-nav-badge.js';
 
-type WorkflowNavBadgeProps = ReturnType<typeof useWorkflowNavBadge>;
+interface WorkflowNavBadgeProps {
+  count: number;
+}
 
 export function WorkflowNavBadge({ count }: WorkflowNavBadgeProps) {
   const tAria = useTranslations('Common.aria');

@@ -12,6 +12,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { LayoutTemplate, Search, Sparkles } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -26,23 +27,98 @@ const templateTypeBadgeColors: Record<string, string> = {
   CUSTOM: 'bg-muted text-muted-foreground',
 };
 
+export function TemplatePickerListSkeleton() {
+  return (
+    <div className="space-y-2 p-1">
+      {Array.from({ length: 4 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+        <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-3 w-16" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TemplatePickerListEmpty() {
+  const tp = useTranslations('Workflows.templatePicker');
+  return (
+    <div className="py-8 text-center">
+      <p className="text-sm font-medium">{tp('noTemplates')}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{tp('noTemplatesBody')}</p>
+    </div>
+  );
+}
+
+interface TemplatePickerListProps {
+  templates: TemplateOption[];
+  selectedId: string | null;
+  setSelectedId: (id: string) => void;
+}
+
+export function TemplatePickerList({
+  templates,
+  selectedId,
+  setSelectedId,
+}: TemplatePickerListProps) {
+  const t = useTranslations('Workflows');
+  const tp = useTranslations('Workflows.templatePicker');
+
+  return (
+    <div className="space-y-1 p-1">
+      {templates.map(template => (
+        <button
+          key={template.id}
+          type="button"
+          className={`w-full text-start rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
+            selectedId === template.id ? 'ring-2 ring-primary border-primary' : ''
+          }`}
+          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+          onClick={() => setSelectedId(template.id)}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate">{template.name}</p>
+              {!!template.description && (
+                <p className="mt-0.5 text-[13px] text-muted-foreground line-clamp-2">
+                  {template.description}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Badge variant="secondary" className={templateTypeBadgeColors[template.type] ?? ''}>
+                {tDynLoose(t, 'templateType', enumKey(template.type))}
+              </Badge>
+            </div>
+          </div>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            {tp('taskCount', { count: template._count.tasks })}
+          </p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 interface TemplatePickerDialogProps extends ReturnType<typeof useTemplatePicker> {
   open: boolean;
+  listContent: ReactNode;
 }
 
 /**
  * Presentational dialog for selecting a workflow template and starting a run.
+ * The container decides which list variant (skeleton / empty / list) to render
+ * and passes it as `listContent`; this view is the single dialog shell render.
  */
 export function TemplatePicker({
   open,
   search,
   setSearch,
-  selectedId,
-  setSelectedId,
   typeFilter,
   setTypeFilter,
-  templates,
-  isLoading,
   isBulk,
   contractorIds,
   suggestionEnabled,
@@ -51,6 +127,7 @@ export function TemplatePicker({
   handleStart,
   handleOpenChange,
   canStart,
+  listContent,
 }: TemplatePickerDialogProps) {
   const t = useTranslations('Workflows');
   const tp = useTranslations('Workflows.templatePicker');
@@ -104,61 +181,7 @@ export function TemplatePicker({
           </div>
         )}
 
-        <ScrollArea className="max-h-[320px]">
-          {isLoading ? (
-            <div className="space-y-2 p-1">
-              {Array.from({ length: 4 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <div key={`skel-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-40" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-3 w-16" />
-                </div>
-              ))}
-            </div>
-          ) : templates.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-sm font-medium">{tp('noTemplates')}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{tp('noTemplatesBody')}</p>
-            </div>
-          ) : (
-            <div className="space-y-1 p-1">
-              {templates.map((template: TemplateOption) => (
-                <button
-                  key={template.id}
-                  type="button"
-                  className={`w-full text-start rounded-lg border p-3 transition-colors hover:bg-accent/50 ${
-                    selectedId === template.id ? 'ring-2 ring-primary border-primary' : ''
-                  }`}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => setSelectedId(template.id)}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate">{template.name}</p>
-                      {!!template.description && (
-                        <p className="mt-0.5 text-[13px] text-muted-foreground line-clamp-2">
-                          {template.description}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge
-                        variant="secondary"
-                        className={templateTypeBadgeColors[template.type] ?? ''}>
-                        {tDynLoose(t, 'templateType', enumKey(template.type))}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="mt-1 text-[13px] text-muted-foreground">
-                    {tp('taskCount', { count: template._count.tasks })}
-                  </p>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+        <ScrollArea className="max-h-[320px]">{listContent}</ScrollArea>
 
         <DialogFooter>
           {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
