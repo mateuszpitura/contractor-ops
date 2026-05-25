@@ -27,26 +27,31 @@ type Amendment = {
   createdAt: string | Date;
 };
 
-type AmendmentsTabProps = {
-  contract: {
-    id: string;
-    title: string | null;
-    startDate: string | Date | null;
-    createdAt: string | Date;
-    amendments: Amendment[];
-  };
-  tab: ReturnType<typeof useContractAmendmentsTab>;
-  addDialog: ReturnType<typeof useAddAmendmentDialog>;
+type AmendmentContract = {
+  id: string;
+  title: string | null;
+  startDate: string | Date | null;
+  createdAt: string | Date;
+  amendments: Amendment[];
 };
 
-function AddAmendmentDialog({
+type Tab = ReturnType<typeof useContractAmendmentsTab>;
+type AddDialog = ReturnType<typeof useAddAmendmentDialog>;
+
+type AmendmentsTabProps = {
+  contract: AmendmentContract;
+  tab: Tab;
+  addDialog: AddDialog;
+};
+
+export function AddAmendmentDialog({
   open,
   onOpenChange,
   addDialog,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  addDialog: ReturnType<typeof useAddAmendmentDialog>;
+  addDialog: AddDialog;
 }) {
   const id = useId();
   const t = useTranslations('ContractDetail.amendments');
@@ -193,80 +198,111 @@ function TimelineNode({
   );
 }
 
-export function AmendmentsTab({ contract, tab, addDialog }: AmendmentsTabProps) {
+function AmendmentsTabHeader({ openDialog }: { openDialog: () => void }) {
   const t = useTranslations('ContractDetail.amendments');
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1">
+        <SectionLabel icon={FileText}>{t('heading')}</SectionLabel>
+      </div>
+      <Button size="sm" onClick={openDialog}>
+        <Plus className="me-1.5 size-3.5" />
+        {t('addCta')}
+      </Button>
+    </div>
+  );
+}
 
-  const amendments = (contract.amendments ?? []) as Amendment[];
+export function AmendmentsTabEmpty({ tab }: { tab: Tab }) {
+  const t = useTranslations('ContractDetail.amendments');
+  return (
+    <div className="space-y-6">
+      <AmendmentsTabHeader openDialog={tab.openDialog} />
+      <AtelierEmptyState
+        variant="subview"
+        illustration={ContractsIllustration}
+        heading={t('empty.title')}
+        body={t('empty.description')}
+        primaryAction={{
+          label: t('addCta'),
+          onClick: tab.openDialog,
+          icon: Plus,
+        }}
+        renderAction={(action, variant) => {
+          const Icon = action.icon;
+          return (
+            <Button
+              variant={variant === 'secondary' ? 'outline' : 'default'}
+              onClick={action.onClick}>
+              {Icon ? <Icon className="h-4 w-4" /> : null}
+              {action.label}
+            </Button>
+          );
+        }}
+      />
+    </div>
+  );
+}
 
-  const sorted = [...amendments].sort((a, b) => {
+export function AmendmentsTabTimeline({
+  contract,
+  amendments,
+  tab,
+}: {
+  contract: AmendmentContract;
+  amendments: Amendment[];
+  tab: Tab;
+}) {
+  const t = useTranslations('ContractDetail.amendments');
+  return (
+    <div className="space-y-6">
+      <AmendmentsTabHeader openDialog={tab.openDialog} />
+      <div className="ms-1">
+        {amendments.map((amendment, i) => (
+          <TimelineNode key={amendment.id} amendment={amendment} isFirst={i === 0} isLast={false} />
+        ))}
+        <div className="relative flex gap-4">
+          <div className="flex flex-col items-center">
+            <div className="size-2 shrink-0 rounded-full bg-muted-foreground/30" />
+          </div>
+          <div className="min-w-0 flex-1 pb-2">
+            <p className="text-sm text-muted-foreground">{t('originalContract')}</p>
+            {!!contract.startDate && (
+              <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function sortAmendmentsNewestFirst(amendments: Amendment[]): Amendment[] {
+  return [...amendments].sort((a, b) => {
     const dateA = typeof a.effectiveDate === 'string' ? new Date(a.effectiveDate) : a.effectiveDate;
     const dateB = typeof b.effectiveDate === 'string' ? new Date(b.effectiveDate) : b.effectiveDate;
     return dateB.getTime() - dateA.getTime();
   });
+}
 
+// Backward-compat wrapper retained for tests that still exercise the
+// branch-in-view shape. New container code branches directly via
+// AmendmentsTabEmpty / AmendmentsTabTimeline + AddAmendmentDialog siblings.
+export function AmendmentsTab({ contract, tab, addDialog }: AmendmentsTabProps) {
+  const amendments = (contract.amendments ?? []) as Amendment[];
+  const sorted = sortAmendmentsNewestFirst(amendments);
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex-1">
-          <SectionLabel icon={FileText}>{t('heading')}</SectionLabel>
-        </div>
-        <Button size="sm" onClick={tab.openDialog}>
-          <Plus className="me-1.5 size-3.5" />
-          {t('addCta')}
-        </Button>
-      </div>
+    <>
       {sorted.length === 0 ? (
-        <AtelierEmptyState
-          variant="subview"
-          illustration={ContractsIllustration}
-          heading={t('empty.title')}
-          body={t('empty.description')}
-          primaryAction={{
-            label: t('addCta'),
-            onClick: tab.openDialog,
-            icon: Plus,
-          }}
-          renderAction={(action, variant) => {
-            const Icon = action.icon;
-            return (
-              <Button
-                variant={variant === 'secondary' ? 'outline' : 'default'}
-                onClick={action.onClick}>
-                {Icon ? <Icon className="h-4 w-4" /> : null}
-                {action.label}
-              </Button>
-            );
-          }}
-        />
+        <AmendmentsTabEmpty tab={tab} />
       ) : (
-        <div className="ms-1">
-          {sorted.map((amendment, i) => (
-            <TimelineNode
-              key={amendment.id}
-              amendment={amendment}
-              isFirst={i === 0}
-              isLast={false}
-            />
-          ))}
-          <div className="relative flex gap-4">
-            <div className="flex flex-col items-center">
-              <div className="size-2 shrink-0 rounded-full bg-muted-foreground/30" />
-            </div>
-            <div className="min-w-0 flex-1 pb-2">
-              <p className="text-sm text-muted-foreground">{t('originalContract')}</p>
-              {!!contract.startDate && (
-                <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <AmendmentsTabTimeline contract={contract} amendments={sorted} tab={tab} />
       )}
-
       <AddAmendmentDialog
         open={tab.dialogOpen}
         onOpenChange={tab.setDialogOpen}
         addDialog={addDialog}
       />
-    </div>
+    </>
   );
 }
