@@ -49,32 +49,27 @@ const stateStyles: Record<string, { bg: string; text: string; dot: string }> = {
   },
 };
 
+export function EInvoiceComplianceWidgetSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <Skeleton className="h-4 w-40" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-10 w-full" />
+      </CardContent>
+    </Card>
+  );
+}
+
 export type EInvoiceComplianceWidgetViewProps = ReturnType<typeof useEinvoiceComplianceWidget>;
 
 export function EInvoiceComplianceWidgetView({
-  isLoading,
   statuses,
   peppolState,
   stateLabels,
   t,
 }: EInvoiceComplianceWidgetViewProps) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-3">
-          <Skeleton className="h-4 w-40" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-10 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (statuses.length === 0 && !peppolState) {
-    return null;
-  }
-
   return (
     <Card>
       <CardHeader className="pb-3">

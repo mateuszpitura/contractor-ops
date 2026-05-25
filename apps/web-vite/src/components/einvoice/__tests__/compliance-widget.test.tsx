@@ -1,13 +1,13 @@
 /**
  * Step 10 port of apps/web/src/components/einvoice/__tests__/compliance-widget.test.tsx.
  *
- * The web-vite container splits cleanly: `EInvoiceComplianceWidget` calls
- * the hook and forwards props to a pure `EInvoiceComplianceWidgetView`.
- * We drive the View directly — no tRPC / React Query mocks needed —
- * which is why prior batches deferred this test (the legacy version
- * mocked four boundaries; we mock zero).
+ * Post-passthrough refactor: `EInvoiceComplianceWidget` (container) now
+ * branches on `isLoading` and the empty case (no statuses + no peppol),
+ * delegating render to `EInvoiceComplianceWidgetSkeleton`,
+ * returning `null`, or rendering `EInvoiceComplianceWidgetView`. These
+ * tests exercise the siblings directly — no tRPC / React Query mocks.
  *
- * The view renders `<Link>` from `../../i18n/navigation.js`, which is a
+ * The view renders `<Link>` from `../../i18n/navigation.js`, a
  * thin `react-router-dom` wrapper, so we wrap in `<MemoryRouter>`.
  */
 
@@ -16,7 +16,10 @@ import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { EInvoiceComplianceWidgetViewProps } from '../compliance-widget.js';
-import { EInvoiceComplianceWidgetView } from '../compliance-widget.js';
+import {
+  EInvoiceComplianceWidgetSkeleton,
+  EInvoiceComplianceWidgetView,
+} from '../compliance-widget.js';
 import { findByText, mount } from './_render.js';
 
 function withRouter(node: ReactElement): ReactElement {
@@ -61,6 +64,14 @@ const tStub = ((key: string) => {
 
 afterEach(() => {
   document.body.innerHTML = '';
+});
+
+describe('EInvoiceComplianceWidgetSkeleton (web-vite)', () => {
+  it('renders skeleton placeholders and no widget title', async () => {
+    const { container } = await mount(withRouter(<EInvoiceComplianceWidgetSkeleton />));
+    expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(findByText(container, 'E-Invoicing Compliance')).toBeNull();
+  });
 });
 
 describe('EInvoiceComplianceWidgetView (web-vite)', () => {
@@ -118,36 +129,5 @@ describe('EInvoiceComplianceWidgetView (web-vite)', () => {
     // localePath() prefixes `/en`, react-router preserves the `#einvoice` hash.
     expect(links[0]?.getAttribute('href') ?? '').toContain('/settings');
     expect(links[0]?.getAttribute('href') ?? '').toContain('einvoice');
-  });
-
-  it('renders a skeleton card while loading and no status rows', async () => {
-    const { container } = await mount(
-      withRouter(
-        <EInvoiceComplianceWidgetView
-          isLoading={true}
-          statuses={[]}
-          peppolState={null}
-          stateLabels={stateLabels}
-          t={tStub}
-        />,
-      ),
-    );
-    expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
-    expect(findByText(container, 'E-Invoicing Compliance')).toBeNull();
-  });
-
-  it('renders nothing when there are no statuses and no peppol state', async () => {
-    const { container } = await mount(
-      withRouter(
-        <EInvoiceComplianceWidgetView
-          isLoading={false}
-          statuses={[]}
-          peppolState={null}
-          stateLabels={stateLabels}
-          t={tStub}
-        />,
-      ),
-    );
-    expect(container.querySelector('[data-slot="card"]')).toBeNull();
   });
 });
