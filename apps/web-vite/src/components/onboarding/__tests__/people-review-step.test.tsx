@@ -1,13 +1,145 @@
 /**
- * PORTED STUB — apps/web/src/components/onboarding/__tests__/people-review-step.test.tsx migrated as a deferred skip-stub.
+ * Step 10 port of apps/web/src/components/onboarding/__tests__/people-review-step.test.tsx.
  *
- * Bulk-port attempted but failed: web-vite component diverged (different
- * prop signature, missing dep, container/component split shape change).
- * Harness ready: apps/web-vite/src/test/{test-utils,setup}.ts.
+ * The web-vite PeopleReviewStep is presentational — it consumes already-shaped
+ * `filteredPeople`, `counts`, `personSelections`, etc. and exposes callbacks
+ * for every interaction. We focus on the visible top-level UI (header,
+ * summary chip, empty/loading/error states) rather than the full table
+ * combinatorics (those live in dedicated row tests).
  */
 
-import { describe } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { PersonSelection } from '../import-wizard.js';
+import type { PeopleReviewStepProps } from '../people-review-step.js';
+import { PeopleReviewStep } from '../people-review-step.js';
+import { click, findButton, mount } from './_render.js';
 
-describe.skip('[DEFERRED] people-review-step', () => {
-  // Body intentionally empty — unskip + adapt per file when next touched.
+afterEach(() => {
+  document.body.innerHTML = '';
+  vi.clearAllMocks();
+});
+
+const baseCounts = { new: 2, conflict: 1, exists: 1, total: 4 };
+
+const samplePeople = [
+  {
+    email: 'alice@test.com',
+    name: 'Alice',
+    status: 'new' as const,
+    sources: [{ source: 'JIRA', value: 'Alice' }],
+    conflicts: [],
+  },
+  {
+    email: 'bob@test.com',
+    name: 'Bob',
+    status: 'exists' as const,
+    sources: [{ source: 'SLACK', value: 'Bob' }],
+    conflicts: [],
+  },
+];
+
+const baseSelections = new Map<string, PersonSelection>([
+  ['alice@test.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],
+  ['bob@test.com', { role: 'readonly', skip: false, resolvedConflicts: {} }],
+]);
+
+function baseProps(): PeopleReviewStepProps {
+  return {
+    isLoading: false,
+    isError: false,
+    isEmpty: false,
+    onRefetch: vi.fn(),
+    filteredPeople: samplePeople,
+    counts: baseCounts,
+    activeFilter: 'all',
+    setActiveFilter: vi.fn(),
+    personSelections: baseSelections,
+    checkedEmails: new Set<string>(),
+    allSelected: false,
+    someSelected: false,
+    onSelectAll: vi.fn(),
+    onRowCheck: vi.fn(),
+    onSkipRow: vi.fn(),
+    onRoleChange: vi.fn(),
+    onResolveConflict: vi.fn(),
+    onBatchImport: vi.fn(),
+    onBatchSkip: vi.fn(),
+    onBatchRole: vi.fn(),
+  } as unknown as PeopleReviewStepProps;
+}
+
+describe('PeopleReviewStep (web-vite)', () => {
+  it('renders the heading + summary chips with provided counts', async () => {
+    const { container } = await mount(<PeopleReviewStep {...baseProps()} />);
+    expect(container.textContent).toContain('Review team members');
+    // Numbers from baseCounts show up in the summary chip.
+    expect(container.textContent).toContain('2');
+    expect(container.textContent).toContain('1');
+    expect(container.textContent).toContain('4');
+  });
+
+  it('renders one body row per filtered person', async () => {
+    const { container } = await mount(<PeopleReviewStep {...baseProps()} />);
+    expect(container.textContent).toContain('Alice');
+    expect(container.textContent).toContain('Bob');
+    const bodyRows = container.querySelectorAll('tbody tr');
+    expect(bodyRows.length).toBe(2);
+  });
+
+  it('renders skeleton placeholders while loading', async () => {
+    const { container } = await mount(
+      <PeopleReviewStep {...baseProps()} isLoading={true} filteredPeople={[]} />,
+    );
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
+  });
+
+  it('renders the error branch + retry button when isError is true', async () => {
+    const onRefetch = vi.fn();
+    const { container } = await mount(
+      <PeopleReviewStep
+        {...baseProps()}
+        isError={true}
+        filteredPeople={[]}
+        onRefetch={onRefetch}
+      />,
+    );
+    const retry = findButton(container, /try again/i);
+    expect(retry).not.toBeNull();
+    await click(retry as HTMLButtonElement);
+    expect(onRefetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the empty state when isEmpty is true', async () => {
+    const { container } = await mount(
+      <PeopleReviewStep {...baseProps()} isEmpty={true} filteredPeople={[]} />,
+    );
+    expect(container.textContent).toContain('No team members found');
+  });
+
+  it('renders the batch-action bar only when emails are checked', async () => {
+    const { container: empty } = await mount(<PeopleReviewStep {...baseProps()} />);
+    expect(empty.textContent).not.toContain('Import Selected');
+
+    const { container } = await mount(
+      <PeopleReviewStep {...baseProps()} checkedEmails={new Set(['alice@test.com'])} />,
+    );
+    expect(container.textContent).toContain('Import Selected');
+    expect(container.textContent).toContain('Skip Selected');
+  });
+
+  it('invokes onBatchImport when the batch import button is clicked', async () => {
+    const onBatchImport = vi.fn();
+    const { container } = await mount(
+      <PeopleReviewStep
+        {...baseProps()}
+        checkedEmails={new Set(['alice@test.com'])}
+        onBatchImport={onBatchImport}
+      />,
+    );
+    const btn = findButton(container, 'Import Selected');
+    expect(btn).not.toBeNull();
+    await click(btn as HTMLButtonElement);
+    expect(onBatchImport).toHaveBeenCalledTimes(1);
+  });
 });
