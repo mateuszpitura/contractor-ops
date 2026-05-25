@@ -1,5 +1,8 @@
 /**
  * Presentational shell for the new payment run wizard.
+ *
+ * The container picks the active step content; this shell renders the
+ * dialog frame + step indicator and yields the body as `children`.
  */
 
 import {
@@ -9,12 +12,9 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { CreditCard } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import type { NewPaymentRunConfirmationData } from '../hooks/use-new-payment-run-dialog.js';
-import { StepConfirmation } from './step-confirmation.js';
-import { StepReviewContainer } from './step-review-container.js';
-import { StepSelectContainer } from './step-select-container.js';
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
   return (
@@ -34,36 +34,20 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 export interface NewPaymentRunDialogViewProps {
   open: boolean;
   step: 1 | 2 | 3;
-  setStep: (step: 1 | 2 | 3) => void;
-  selectedInvoiceIds: string[];
-  setSelectedInvoiceIds: (ids: string[]) => void;
-  groupByCurrency: boolean;
-  setGroupByCurrency: (v: boolean) => void;
-  confirmationData: NewPaymentRunConfirmationData | null;
-  handleOpenChange: (open: boolean) => void;
-  handleComplete: (data: NewPaymentRunConfirmationData) => void;
-  onViewRunFromConfirmation: () => void;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
+  children: ReactNode;
 }
 
 export function NewPaymentRunDialogView({
   open,
   step,
-  setStep,
-  selectedInvoiceIds,
-  setSelectedInvoiceIds,
-  groupByCurrency,
-  setGroupByCurrency,
-  confirmationData,
-  handleOpenChange,
-  handleComplete,
-  onViewRunFromConfirmation,
-  onClose,
+  onOpenChange,
+  children,
 }: NewPaymentRunDialogViewProps) {
   const t = useTranslations('Payments');
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -73,38 +57,7 @@ export function NewPaymentRunDialogView({
           <StepIndicator currentStep={step} />
         </DialogHeader>
 
-        {step === 1 && (
-          <StepSelectContainer
-            selectedInvoiceIds={selectedInvoiceIds}
-            onSelectionChange={setSelectedInvoiceIds}
-            groupByCurrency={groupByCurrency}
-            onGroupByCurrencyChange={setGroupByCurrency}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onCancel={() => handleOpenChange(false)}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onNext={() => setStep(2)}
-          />
-        )}
-
-        {step === 2 && (
-          <StepReviewContainer
-            selectedInvoiceIds={selectedInvoiceIds}
-            groupByCurrency={groupByCurrency}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onBack={() => setStep(1)}
-            onComplete={handleComplete}
-          />
-        )}
-
-        {step === 3 && confirmationData && (
-          <StepConfirmation
-            {...confirmationData}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onViewRun={onViewRunFromConfirmation}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClose={onClose}
-          />
-        )}
+        {children}
       </DialogContent>
     </Dialog>
   );
