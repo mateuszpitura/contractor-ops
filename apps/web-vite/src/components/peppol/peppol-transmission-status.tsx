@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
 } from '@contractor-ops/ui/components/shadcn/collapsible';
 import { RefreshCw } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 // ---------------------------------------------------------------------------
@@ -87,23 +88,16 @@ function TimelineStep({
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Shared card shell
 // ---------------------------------------------------------------------------
 
-export type PeppolTransmissionStatusViewProps = PeppolTransmissionStatusProps & {
-  isFailed: boolean;
-  onRetry: () => void;
-  isRetrying: boolean;
-};
+interface PeppolTransmissionCardShellProps {
+  transmission: PeppolTransmission;
+  extras?: ReactNode;
+}
 
-export function PeppolTransmissionStatusView({
-  transmission,
-  isFailed,
-  onRetry,
-  isRetrying,
-}: PeppolTransmissionStatusViewProps) {
+function PeppolTransmissionCardShell({ transmission, extras }: PeppolTransmissionCardShellProps) {
   const t = useTranslations('Peppol.transmission');
-
   const statusInfo = TX_STATUS[transmission.status] ?? TX_STATUS.PENDING;
 
   return (
@@ -117,7 +111,6 @@ export function PeppolTransmissionStatusView({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="space-y-4 px-4 pb-4 pt-0">
-            {/* Timeline */}
             <div className="space-y-3">
               <TimelineStep label={t('created')} timestamp={transmission.createdAt} done={true} />
               <TimelineStep
@@ -132,28 +125,58 @@ export function PeppolTransmissionStatusView({
               />
             </div>
 
-            {/* Error message */}
-            {!!isFailed && !!transmission.errorMessage && (
-              <p className="text-sm text-destructive">{transmission.errorMessage}</p>
-            )}
-
-            {/* ASP Reference */}
             {!!transmission.aspTransmissionId && (
               <p className="font-mono text-xs text-muted-foreground">
                 {t('aspRef')} {transmission.aspTransmissionId}
               </p>
             )}
 
-            {/* Retry button */}
-            {!!isFailed && (
-              <Button variant="outline" size="sm" onClick={onRetry} disabled={isRetrying}>
-                <RefreshCw className="me-1.5 h-3.5 w-3.5" />
-                {isRetrying ? t('retrying') : t('retryTransmission')}
-              </Button>
-            )}
+            {extras}
           </CardContent>
         </CollapsibleContent>
       </Card>
     </Collapsible>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Success / pending variant — no error block, no retry control
+// ---------------------------------------------------------------------------
+
+export function PeppolTransmissionTimeline({ transmission }: PeppolTransmissionStatusProps) {
+  return <PeppolTransmissionCardShell transmission={transmission} />;
+}
+
+// ---------------------------------------------------------------------------
+// Failed variant — adds error message + retry control
+// ---------------------------------------------------------------------------
+
+export interface PeppolTransmissionTimelineFailedProps extends PeppolTransmissionStatusProps {
+  onRetry: () => void;
+  isRetrying: boolean;
+}
+
+export function PeppolTransmissionTimelineFailed({
+  transmission,
+  onRetry,
+  isRetrying,
+}: PeppolTransmissionTimelineFailedProps) {
+  const t = useTranslations('Peppol.transmission');
+
+  return (
+    <PeppolTransmissionCardShell
+      transmission={transmission}
+      extras={
+        <>
+          {!!transmission.errorMessage && (
+            <p className="text-sm text-destructive">{transmission.errorMessage}</p>
+          )}
+          <Button variant="outline" size="sm" onClick={onRetry} disabled={isRetrying}>
+            <RefreshCw className="me-1.5 h-3.5 w-3.5" />
+            {isRetrying ? t('retrying') : t('retryTransmission')}
+          </Button>
+        </>
+      }
+    />
   );
 }
