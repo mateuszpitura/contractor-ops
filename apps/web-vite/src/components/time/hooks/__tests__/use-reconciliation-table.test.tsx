@@ -1,13 +1,16 @@
 /**
  * `useReconciliationTable` — flattens the reconciliation infinite-query
- * pages into a single `items` array and exposes a `totalCount`.
+ * pages into a single `items` array and exposes a `totalCount` plus the
+ * decisive variant flags (`isLoading` / `isError` / `isEmpty` /
+ * `showData`) the container consumes to pick a render path.
  *
  * Covers:
  *   - flattens items across pages
  *   - total comes from the last page when present
  *   - total falls back to items.length when missing
- *   - empty data → empty list + zero count
- *   - error state surfaces through the inner query
+ *   - empty data → isEmpty flag flips, zero count
+ *   - loading + error flags pass through from the inner query
+ *   - onRetry / onLoadMore proxy to the inner query
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -64,10 +67,14 @@ describe('useReconciliationTable', () => {
       isLoading: false,
       isError: false,
       hasNextPage: false,
+      refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.items.map(i => i.invoice.id)).toEqual(['a', 'b', 'c']);
     expect(result.current.totalCount).toBe(5);
+    expect(result.current.showData).toBe(true);
+    expect(result.current.isEmpty).toBe(false);
   });
 
   it('falls back to items.length when last page lacks total', () => {
@@ -78,45 +85,79 @@ describe('useReconciliationTable', () => {
       isLoading: false,
       isError: false,
       hasNextPage: false,
+      refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.totalCount).toBe(2);
   });
 
-  it('returns empty list and zero count for an empty data set', () => {
+  it('returns empty list and flips isEmpty when the data set is empty', () => {
     useReconciliationListMock.mockReturnValue({
       data: { pages: [{ items: [], nextCursor: null }] },
       isLoading: false,
       isError: false,
       hasNextPage: false,
+      refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.items).toEqual([]);
     expect(result.current.totalCount).toBe(0);
+    expect(result.current.isEmpty).toBe(true);
+    expect(result.current.showData).toBe(false);
   });
 
-  it('surfaces loading state through the inner query', () => {
+  it('exposes loading state via the isLoading flag', () => {
     useReconciliationListMock.mockReturnValue({
       data: undefined,
       isLoading: true,
       isError: false,
       hasNextPage: false,
+      refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
-    expect(result.current.query.isLoading).toBe(true);
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.showData).toBe(false);
+    expect(result.current.isEmpty).toBe(false);
     expect(result.current.items).toEqual([]);
   });
 
-  it('surfaces error state through the inner query', () => {
+  it('exposes error state via the isError flag', () => {
     useReconciliationListMock.mockReturnValue({
       data: undefined,
       isLoading: false,
       isError: true,
       error: new Error('boom'),
       hasNextPage: false,
+      refetch: vi.fn(),
+      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
-    expect(result.current.query.isError).toBe(true);
+    expect(result.current.isError).toBe(true);
+    expect(result.current.showData).toBe(false);
+    expect(result.current.isEmpty).toBe(false);
     expect(result.current.items).toEqual([]);
+  });
+
+  it('onRetry and onLoadMore proxy to the inner query', () => {
+    const refetch = vi.fn();
+    const fetchNextPage = vi.fn();
+    useReconciliationListMock.mockReturnValue({
+      data: { pages: [{ items: [makeItem('a')], nextCursor: 'c1' }] },
+      isLoading: false,
+      isError: false,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+      refetch,
+      fetchNextPage,
+    });
+    const { result } = renderHookWithProviders(() => useReconciliationTable());
+    result.current.onRetry();
+    result.current.onLoadMore();
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(fetchNextPage).toHaveBeenCalledTimes(1);
+    expect(result.current.hasNextPage).toBe(true);
   });
 });
