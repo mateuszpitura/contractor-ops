@@ -1,0 +1,137 @@
+/**
+ * Edit BoE rate dialog. Step 10 batch port from
+ * apps/web/src/components/admin/boe-rate/edit-boe-rate-dialog.tsx:
+ *   - `'use client'` stripped
+ *   - `next-intl#useTranslations` → `../../../i18n/useTranslations.js`
+ *   - `@/trpc/init` → `useTRPC()` proxy
+ */
+
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@contractor-ops/ui/components/shadcn/dialog';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { AlertTriangleIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import type {
+  BoeRateEntry,
+  useBoeRateUpdate,
+  useBoeRateValidation,
+} from '../hooks/use-admin-boe-rate.js';
+
+export type { BoeRateEntry };
+
+interface EditBoeRateDialogProps {
+  entry: BoeRateEntry;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  validation: ReturnType<typeof useBoeRateValidation>;
+  updateMutation: ReturnType<typeof useBoeRateUpdate>;
+}
+
+export function EditBoeRateDialog({
+  entry,
+  open,
+  onOpenChange,
+  validation,
+  updateMutation,
+}: EditBoeRateDialogProps) {
+  const t = useTranslations('Admin.BoeRate');
+  const tCommon = useTranslations('Common');
+  const { validateRate } = validation;
+
+  const [ratePercent, setRatePercent] = useState('');
+  const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    setRatePercent(Number(entry.ratePercent).toFixed(2));
+    setNotes(entry.notes ?? '');
+  }, [entry]);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const rate = validateRate(ratePercent);
+    if (rate === null) return;
+
+    updateMutation.mutate({
+      id: entry.id,
+      ratePercent: rate,
+      notes: notes || undefined,
+    });
+  }
+
+  const effectiveDate = new Date(entry.effectiveFrom).toISOString().slice(0, 10);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('editDialogTitle')}</DialogTitle>
+          <DialogDescription>{t('editDialogDesc', { date: effectiveDate })}</DialogDescription>
+        </DialogHeader>
+
+        {entry.source === 'BOE_API' && (
+          <div className="flex items-start gap-2 rounded-md bg-warning/10 p-3 text-sm text-warning">
+            <AlertTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <span>{t('editApiSourceWarning')}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t('colEffectiveFrom')}</Label>
+            <Input type="date" value={effectiveDate} disabled className="bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-rate-percent">{t('colRatePercent')}</Label>
+            <Input
+              id="edit-rate-percent"
+              type="number"
+              step="0.01"
+              min="0"
+              max="99.99"
+              value={ratePercent}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setRatePercent(e.target.value)}
+              className="tabular-nums"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="edit-notes">{t('colNotes')}</Label>
+            <Textarea
+              id="edit-notes"
+              value={notes}
+              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+              onChange={e => setNotes(e.target.value)}
+              placeholder={t('editNotesPlaceholder')}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              // biome-ignore lint/nursery/noJsxPropsBind: dialog close handler
+              onClick={() => onOpenChange(false)}>
+              {tCommon('cancel')}
+            </Button>
+            <Button type="submit" disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? t('saving') : t('saveChanges')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
