@@ -16,14 +16,10 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Check, Loader2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { useImportWizardDialog } from './hooks/use-import-wizard.js';
-import { StepConfirm } from './step-confirm.js';
-import { StepDuplicates } from './step-duplicates.js';
-import { StepMapping } from './step-mapping.js';
-import { StepPreview } from './step-preview.js';
-import { StepUpload } from './step-upload.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -141,8 +137,29 @@ export interface ImportWizardDialogProps {
   defaultEntityType?: EntityType;
 }
 
-export type ImportWizardDialogViewProps = ImportWizardDialogProps &
-  ReturnType<typeof useImportWizardDialog>;
+type HookReturn = ReturnType<typeof useImportWizardDialog>;
+
+export interface ImportWizardDialogViewProps
+  extends Pick<ImportWizardDialogProps, 'open'>,
+    Pick<
+      HookReturn,
+      | 't'
+      | 'currentStep'
+      | 'showDiscardDialog'
+      | 'setShowDiscardDialog'
+      | 'fileBase64'
+      | 'importResult'
+      | 'isProcessing'
+      | 'handleClose'
+      | 'handleDiscard'
+      | 'handleNext'
+      | 'handleBack'
+      | 'canProceed'
+      | 'stepLabels'
+      | 'getNextLabel'
+    > {
+  stepBody: ReactNode;
+}
 
 export function ImportWizardDialogView({
   open,
@@ -150,20 +167,9 @@ export function ImportWizardDialogView({
   currentStep,
   showDiscardDialog,
   setShowDiscardDialog,
-  entityType,
-  setEntityType,
   fileBase64,
-  fileName,
-  parseResult,
-  columnMapping,
-  setColumnMapping,
-  validateResult,
-  duplicateActions,
-  setDuplicateActions,
   importResult,
   isProcessing,
-  commitMutation,
-  handleFileSelected,
   handleClose,
   handleDiscard,
   handleNext,
@@ -171,9 +177,7 @@ export function ImportWizardDialogView({
   canProceed,
   stepLabels,
   getNextLabel,
-  confirmCounts,
-  setFileBase64,
-  setFileName,
+  stepBody,
 }: ImportWizardDialogViewProps) {
   return (
     <>
@@ -188,55 +192,7 @@ export function ImportWizardDialogView({
           <StepIndicator steps={stepLabels} currentStep={currentStep} />
 
           {/* Step content */}
-          <div className="min-h-[360px]">
-            {currentStep === 0 && (
-              <StepUpload
-                entityType={entityType}
-                onEntityTypeChange={setEntityType}
-                onFileSelected={handleFileSelected}
-                fileName={fileName}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onFileRemoved={() => {
-                  setFileBase64(null);
-                  setFileName(null);
-                }}
-              />
-            )}
-            {currentStep === 1 && parseResult && (
-              <StepMapping
-                headers={parseResult.headers}
-                sampleRows={parseResult.sampleRows}
-                suggestedMapping={parseResult.suggestedMapping}
-                entityType={entityType}
-                columnMapping={columnMapping}
-                onMappingChange={setColumnMapping}
-              />
-            )}
-            {currentStep === 2 && validateResult && (
-              <StepPreview
-                validRows={validateResult.validRows}
-                invalidRows={validateResult.invalidRows}
-                totalRows={validateResult.totalRows}
-              />
-            )}
-            {currentStep === 3 && validateResult && (
-              <StepDuplicates
-                duplicateRows={validateResult.duplicateRows}
-                duplicateActions={duplicateActions}
-                onActionsChange={setDuplicateActions}
-              />
-            )}
-            {currentStep === 4 && (
-              <StepConfirm
-                entityType={entityType}
-                counts={confirmCounts}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onImport={async () => handleNext()}
-                importResult={importResult}
-                isImporting={commitMutation.isPending}
-              />
-            )}
-          </div>
+          <div className="min-h-[360px]">{stepBody}</div>
 
           {/* Footer */}
           {!importResult && (

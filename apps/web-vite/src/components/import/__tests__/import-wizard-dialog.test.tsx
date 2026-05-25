@@ -1,13 +1,10 @@
 /**
  * View-only test for the import wizard dialog shell.
  *
- * Verifies the step indicator + footer + step body switch off the hook
- * return shape without going near tRPC / React Query — the
- * `ImportWizardDialogView` is presentational, so we feed it a hand-built
- * `useImportWizardDialog` payload and assert the rendered surface.
- *
- * The deep step components (`StepUpload`, `StepMapping`, …) are mocked to
- * keep this test focused on dialog wiring and well under the 1s budget.
+ * The presentational shell now takes a pre-built `stepBody` ReactNode
+ * (container picks the variant per `currentStep`). We feed shaped stubs
+ * for the dialog wiring (step indicator, footer, discard) and hand the
+ * view the chosen step body directly.
  */
 
 import { render, screen, setup } from '@/test/test-utils';
@@ -15,27 +12,10 @@ import type { useTranslations } from '../../../i18n/useTranslations';
 import type {
   CommitResult,
   ImportResult,
-  ImportWizardDialogProps,
   ImportWizardDialogViewProps,
   ParseResult,
 } from '../import-wizard-dialog';
 import { ImportWizardDialogView } from '../import-wizard-dialog';
-
-vi.mock('../step-upload', () => ({
-  StepUpload: () => <div data-testid="step-upload" />,
-}));
-vi.mock('../step-mapping', () => ({
-  StepMapping: () => <div data-testid="step-mapping" />,
-}));
-vi.mock('../step-preview', () => ({
-  StepPreview: () => <div data-testid="step-preview" />,
-}));
-vi.mock('../step-duplicates', () => ({
-  StepDuplicates: () => <div data-testid="step-duplicates" />,
-}));
-vi.mock('../step-confirm', () => ({
-  StepConfirm: () => <div data-testid="step-confirm" />,
-}));
 
 const baseParseResult: ParseResult = {
   headers: ['A'],
@@ -52,35 +32,18 @@ const baseValidateResult: ImportResult = {
   columnMapping: { A: null },
 };
 
-type HookReturn = Omit<ImportWizardDialogViewProps, keyof ImportWizardDialogProps>;
+type ViewProps = ImportWizardDialogViewProps;
 
-function makeHookReturn(overrides: Partial<HookReturn> = {}): HookReturn {
-  return { ...buildBase(), ...overrides };
-}
-
-function buildBase(): HookReturn {
-  // `as` casts on `vi.fn()` setters mirror the hook's `as const` readonly
-  // contract — the View only reads these in JSX so the cast is inert.
+function makeViewProps(overrides: Partial<ViewProps> = {}): ViewProps {
   return {
+    open: true,
     t: ((key: string) => key) as ReturnType<typeof useTranslations>,
     currentStep: 0,
     showDiscardDialog: false,
-    setShowDiscardDialog: vi.fn() as HookReturn['setShowDiscardDialog'],
-    entityType: 'contractor',
-    setEntityType: vi.fn() as HookReturn['setEntityType'],
+    setShowDiscardDialog: vi.fn() as ViewProps['setShowDiscardDialog'],
     fileBase64: null,
-    fileName: null,
-    parseResult: null,
-    columnMapping: {},
-    setColumnMapping: vi.fn() as HookReturn['setColumnMapping'],
-    validateResult: null,
-    duplicateActions: {},
-    setDuplicateActions: vi.fn() as HookReturn['setDuplicateActions'],
     importResult: null,
     isProcessing: false,
-    commitMutation: { isPending: false } as HookReturn['commitMutation'],
-    hasDuplicates: false,
-    handleFileSelected: vi.fn(),
     handleClose: vi.fn(),
     handleDiscard: vi.fn(),
     handleNext: vi.fn(),
@@ -94,44 +57,40 @@ function buildBase(): HookReturn {
       { label: 'Confirm', visible: true },
     ],
     getNextLabel: () => 'Next',
-    confirmCounts: { newRecords: 0, updates: 0, skippedDuplicates: 0, skippedErrors: 0 },
-    setFileBase64: vi.fn() as HookReturn['setFileBase64'],
-    setFileName: vi.fn() as HookReturn['setFileName'],
+    stepBody: <div data-testid="step-upload" />,
+    ...overrides,
   };
 }
 
-const baseProps: ImportWizardDialogProps = {
-  open: true,
-  onOpenChange: vi.fn(),
-};
-
 describe('ImportWizardDialogView', () => {
-  it('renders the upload step body and footer Next button on step 0', () => {
-    render(<ImportWizardDialogView {...baseProps} {...makeHookReturn()} />);
+  it('renders the supplied step body and footer Next button on step 0', () => {
+    render(<ImportWizardDialogView {...makeViewProps()} />);
     expect(screen.getByTestId('step-upload')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
   });
 
-  it('shows the mapping body when currentStep is 1 and parseResult is set', () => {
+  it('renders the mapping body when stepBody is the mapping variant', () => {
+    void baseParseResult;
     render(
       <ImportWizardDialogView
-        {...baseProps}
-        {...makeHookReturn({ currentStep: 1, parseResult: baseParseResult })}
+        {...makeViewProps({
+          currentStep: 1,
+          stepBody: <div data-testid="step-mapping" />,
+        })}
       />,
     );
     expect(screen.getByTestId('step-mapping')).toBeInTheDocument();
   });
 
   it('disables Next when canProceed is false', () => {
-    render(<ImportWizardDialogView {...baseProps} {...makeHookReturn({ canProceed: false })} />);
+    render(<ImportWizardDialogView {...makeViewProps({ canProceed: false })} />);
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   });
 
   it('shows the processing label when isProcessing is true', () => {
     render(
       <ImportWizardDialogView
-        {...baseProps}
-        {...makeHookReturn({ isProcessing: true, getNextLabel: () => 'Next' })}
+        {...makeViewProps({ isProcessing: true, getNextLabel: () => 'Next' })}
       />,
     );
     expect(screen.getByText('actions.processing')).toBeInTheDocument();
@@ -140,8 +99,10 @@ describe('ImportWizardDialogView', () => {
   it('renders Back instead of Close once past step 0', () => {
     render(
       <ImportWizardDialogView
-        {...baseProps}
-        {...makeHookReturn({ currentStep: 1, parseResult: baseParseResult })}
+        {...makeViewProps({
+          currentStep: 1,
+          stepBody: <div data-testid="step-mapping" />,
+        })}
       />,
     );
     expect(screen.getByRole('button', { name: 'actions.back' })).toBeInTheDocument();
@@ -149,22 +110,17 @@ describe('ImportWizardDialogView', () => {
 
   it('fires handleClose when the dialog requests close via the cancel button', async () => {
     const handleClose = vi.fn();
-    const { user } = setup(
-      <ImportWizardDialogView {...baseProps} {...makeHookReturn({ handleClose })} />,
-    );
+    const { user } = setup(<ImportWizardDialogView {...makeViewProps({ handleClose })} />);
     await user.click(screen.getByRole('button', { name: 'actions.close' }));
     expect(handleClose).toHaveBeenCalled();
   });
 
-  it('routes step 3 to the duplicates body and hides the duplicates pill when not needed', () => {
+  it('routes step 3 to the duplicates body when supplied', () => {
     render(
       <ImportWizardDialogView
-        {...baseProps}
-        {...makeHookReturn({
+        {...makeViewProps({
           currentStep: 3,
-          parseResult: baseParseResult,
-          validateResult: baseValidateResult,
-          hasDuplicates: true,
+          stepBody: <div data-testid="step-duplicates" />,
         })}
       />,
     );
@@ -172,13 +128,14 @@ describe('ImportWizardDialogView', () => {
   });
 
   it('hides the footer once an importResult is set (terminal state)', () => {
+    const importResult: CommitResult = { created: 1, updated: 0, skipped: 0, failed: 0 };
+    void baseValidateResult;
     render(
       <ImportWizardDialogView
-        {...baseProps}
-        {...makeHookReturn({
+        {...makeViewProps({
           currentStep: 4,
-          validateResult: baseValidateResult,
-          importResult: { created: 1, updated: 0, skipped: 0, failed: 0 },
+          importResult,
+          stepBody: <div data-testid="step-confirm" />,
         })}
       />,
     );
