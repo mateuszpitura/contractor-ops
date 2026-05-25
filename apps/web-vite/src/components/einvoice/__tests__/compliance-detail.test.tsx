@@ -1,18 +1,22 @@
 /**
  * Step 10 port of apps/web/src/components/einvoice/__tests__/compliance-detail.test.tsx.
  *
- * The web-vite container splits cleanly: `EInvoiceComplianceDetail` calls the
- * hook and forwards the props bag to a pure `EInvoiceComplianceDetailView`.
- * We drive the View directly — no tRPC / React Query mocks needed — which is
- * why prior batches deferred this test (the legacy version mocked the
- * `useQuery` boundary). Hook coverage now lives in
- * `hooks/__tests__/use-einvoice-compliance-detail.test.tsx`.
+ * Post-passthrough refactor: the container `EInvoiceComplianceDetail` now
+ * branches on `isLoading` and empty `statuses`, rendering one of three
+ * presentational siblings — `EInvoiceComplianceDetailSkeleton`,
+ * `EInvoiceComplianceDetailEmpty`, or `EInvoiceComplianceDetailView`.
+ * These tests drive each sibling directly — no tRPC / React Query mocks.
+ * Hook coverage lives in `hooks/__tests__/use-einvoice-compliance-detail.test.tsx`.
  */
 
 import type { ComplianceStatus } from '@contractor-ops/einvoice/compliance';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { EInvoiceComplianceDetailViewProps } from '../compliance-detail.js';
-import { EInvoiceComplianceDetailView } from '../compliance-detail.js';
+import {
+  EInvoiceComplianceDetailEmpty,
+  EInvoiceComplianceDetailSkeleton,
+  EInvoiceComplianceDetailView,
+} from '../compliance-detail.js';
 import { findByText, mount } from './_render.js';
 
 function makeStatus(overrides: Partial<ComplianceStatus> = {}): ComplianceStatus {
@@ -79,25 +83,33 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('EInvoiceComplianceDetailView (web-vite)', () => {
-  it('renders loading skeletons when isLoading is true', async () => {
-    const { container } = await mount(
-      <EInvoiceComplianceDetailView
-        isLoading={true}
-        statuses={[]}
-        stateLabels={stateLabels}
-        formatTimeAgo={formatTimeAgoStub}
-        t={tStub}
-      />,
-    );
+describe('EInvoiceComplianceDetailSkeleton (web-vite)', () => {
+  it('renders skeleton placeholders', async () => {
+    const { container } = await mount(<EInvoiceComplianceDetailSkeleton />);
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
+});
 
-  it('renders heading and subline once loaded', async () => {
+describe('EInvoiceComplianceDetailEmpty (web-vite)', () => {
+  it('renders heading, subline, and empty-state body', async () => {
+    const { container } = await mount(<EInvoiceComplianceDetailEmpty t={tStub} />);
+    expect(findByText(container, 'E-Invoicing Compliance')).not.toBeNull();
+    expect(findByText(container, /Status of connected e-invoicing profiles/)).not.toBeNull();
+    expect(findByText(container, 'No e-invoicing profiles configured.')).not.toBeNull();
+  });
+
+  it('renders the section element with an id ending in -einvoice', async () => {
+    const { container } = await mount(<EInvoiceComplianceDetailEmpty t={tStub} />);
+    expect(container.querySelector('[id$="-einvoice"]')).not.toBeNull();
+  });
+});
+
+describe('EInvoiceComplianceDetailView (web-vite)', () => {
+  it('renders heading and subline', async () => {
     const { container } = await mount(
       <EInvoiceComplianceDetailView
         isLoading={false}
-        statuses={[]}
+        statuses={[makeStatus()]}
         stateLabels={stateLabels}
         formatTimeAgo={formatTimeAgoStub}
         t={tStub}
@@ -105,19 +117,6 @@ describe('EInvoiceComplianceDetailView (web-vite)', () => {
     );
     expect(findByText(container, 'E-Invoicing Compliance')).not.toBeNull();
     expect(findByText(container, /Status of connected e-invoicing profiles/)).not.toBeNull();
-  });
-
-  it('renders the empty-state body when no profiles are configured', async () => {
-    const { container } = await mount(
-      <EInvoiceComplianceDetailView
-        isLoading={false}
-        statuses={[]}
-        stateLabels={stateLabels}
-        formatTimeAgo={formatTimeAgoStub}
-        t={tStub}
-      />,
-    );
-    expect(findByText(container, 'No e-invoicing profiles configured.')).not.toBeNull();
   });
 
   it('renders a profile card with display name, badge, country and health score', async () => {
@@ -217,7 +216,7 @@ describe('EInvoiceComplianceDetailView (web-vite)', () => {
     const { container } = await mount(
       <EInvoiceComplianceDetailView
         isLoading={false}
-        statuses={[]}
+        statuses={[makeStatus()]}
         stateLabels={stateLabels}
         formatTimeAgo={formatTimeAgoStub}
         t={tStub}
