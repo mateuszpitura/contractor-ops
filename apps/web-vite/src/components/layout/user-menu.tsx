@@ -14,7 +14,6 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 interface UserMenuProps {
-  isPending: boolean;
   user: {
     name?: string | null;
     email?: string | null;
@@ -25,21 +24,21 @@ interface UserMenuProps {
   onSignOut: () => void;
 }
 
-export function UserMenu({ isPending, user, displayName, initials, onSignOut }: UserMenuProps) {
+export function UserMenuSkeleton() {
+  return (
+    <SidebarMenuButton size="lg" className="pointer-events-none">
+      <Skeleton className="size-8 rounded-lg" />
+      <div className="grid flex-1 gap-1">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+    </SidebarMenuButton>
+  );
+}
+
+export function UserMenu({ user, displayName, initials, onSignOut }: UserMenuProps) {
   const t = useTranslations('Common');
   const { isMobile } = useSidebar();
-
-  if (isPending) {
-    return (
-      <SidebarMenuButton size="lg" className="pointer-events-none">
-        <Skeleton className="size-8 rounded-lg" />
-        <div className="grid flex-1 gap-1">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-3 w-32" />
-        </div>
-      </SidebarMenuButton>
-    );
-  }
 
   return (
     <DropdownMenu>

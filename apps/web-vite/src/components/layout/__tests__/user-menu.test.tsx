@@ -65,7 +65,7 @@ vi.mock('@contractor-ops/ui/components/shadcn/dropdown-menu', () => ({
   DropdownMenuSeparator: () => <hr />,
 }));
 
-import { UserMenu } from '../user-menu.js';
+import { UserMenu, UserMenuSkeleton } from '../user-menu.js';
 import { click, findButton, mount } from './_render.js';
 
 afterEach(() => {
@@ -90,16 +90,10 @@ const baseUser = {
 };
 
 describe('UserMenu (web-vite)', () => {
-  it('renders the display name and email when not pending', async () => {
+  it('renders the display name and email', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu
-          isPending={false}
-          user={baseUser}
-          displayName="Alice Smith"
-          initials="AS"
-          onSignOut={vi.fn()}
-        />,
+        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
       ),
     );
     expect(container.textContent).toContain('Alice Smith');
@@ -109,13 +103,7 @@ describe('UserMenu (web-vite)', () => {
   it('renders the avatar fallback initials', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu
-          isPending={false}
-          user={baseUser}
-          displayName="Alice Smith"
-          initials="AS"
-          onSignOut={vi.fn()}
-        />,
+        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
       ),
     );
     expect(container.textContent).toContain('AS');
@@ -125,7 +113,6 @@ describe('UserMenu (web-vite)', () => {
     const { container } = await mount(
       withRouter(
         <UserMenu
-          isPending={false}
           user={{ ...baseUser, image: 'https://example.com/avatar.png' }}
           displayName="Alice Smith"
           initials="AS"
@@ -141,32 +128,10 @@ describe('UserMenu (web-vite)', () => {
     }
   });
 
-  it('renders skeleton placeholders while the session is pending', async () => {
-    const { container } = await mount(
-      withRouter(
-        <UserMenu
-          isPending={true}
-          user={null}
-          displayName={null}
-          initials=""
-          onSignOut={vi.fn()}
-        />,
-      ),
-    );
-    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBeGreaterThan(0);
-  });
-
   it('renders a settings link', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu
-          isPending={false}
-          user={baseUser}
-          displayName="Alice Smith"
-          initials="AS"
-          onSignOut={vi.fn()}
-        />,
+        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
       ),
     );
     const settingsLink = Array.from(container.querySelectorAll('a')).find(a =>
@@ -180,18 +145,20 @@ describe('UserMenu (web-vite)', () => {
     const onSignOut = vi.fn();
     const { container } = await mount(
       withRouter(
-        <UserMenu
-          isPending={false}
-          user={baseUser}
-          displayName="Alice Smith"
-          initials="AS"
-          onSignOut={onSignOut}
-        />,
+        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={onSignOut} />,
       ),
     );
     const signOut = findButton(container, /sign out/i);
     expect(signOut).not.toBeNull();
     await click(signOut as HTMLButtonElement);
     expect(onSignOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('UserMenuSkeleton (web-vite)', () => {
+  it('renders skeleton placeholders', async () => {
+    const { container } = await mount(withRouter(<UserMenuSkeleton />));
+    const skeletons = container.querySelectorAll('[data-slot="skeleton"]');
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 });

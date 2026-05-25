@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useUserMenu } from './hooks/use-user-menu.js';
-import { UserMenu } from './user-menu.js';
+import { UserMenu, UserMenuSkeleton } from './user-menu.js';
 
 export function UserMenuContainer() {
   const { isPending, user, displayName, initials, handleSignOut } = useUserMenu();
@@ -10,13 +10,11 @@ export function UserMenuContainer() {
     void handleSignOut();
   }, [handleSignOut]);
 
+  if (isPending) {
+    return <UserMenuSkeleton />;
+  }
+
   return (
-    <UserMenu
-      isPending={isPending}
-      user={user}
-      displayName={displayName}
-      initials={initials}
-      onSignOut={onSignOut}
-    />
+    <UserMenu user={user} displayName={displayName} initials={initials} onSignOut={onSignOut} />
   );
 }
