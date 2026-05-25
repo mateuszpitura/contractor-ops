@@ -14,6 +14,11 @@ type SendForSignatureDialogContainerProps = {
 };
 
 export function SendForSignatureDialogContainer(props: SendForSignatureDialogContainerProps) {
+  if (!props.open) return null;
+  return <SendForSignatureDialogContainerOpen {...props} />;
+}
+
+function SendForSignatureDialogContainerOpen(props: SendForSignatureDialogContainerProps) {
   const dialog = useSendForSignatureDialog(
     props.open,
     props.onOpenChange,
