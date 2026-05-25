@@ -1,0 +1,96 @@
+/**
+ * Skonto apply checkbox — ported from
+ * apps/web/src/components/payments/run/skonto-apply-checkbox.tsx.
+ * Swaps:
+ *   - next-intl → ../../../i18n/useTranslations
+ *   - @/trpc/init → useTRPC()
+ *   - @/lib/utils → ../../../lib/utils
+ */
+
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { cn } from '../../../lib/utils.js';
+import type { useSkontoApply } from '../hooks/use-skonto-apply.js';
+
+function formatEUR(minorAmount: number): string {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(minorAmount / 100);
+}
+
+interface SkontoApplyCheckboxProps {
+  paymentRunItemId: string;
+  invoiceId: string;
+  isWithinWindow: boolean;
+  discountPercent: number;
+  discountAmountMinor: number;
+  originalAmountMinor: number;
+  discountedAmountMinor: number;
+  windowExpiryDate?: string;
+  onSkontoToggle?: (itemId: string, applied: boolean) => void;
+  skonto: ReturnType<typeof useSkontoApply>;
+}
+
+export function SkontoApplyCheckbox({
+  paymentRunItemId,
+  isWithinWindow,
+  discountPercent,
+  discountAmountMinor,
+  discountedAmountMinor,
+  windowExpiryDate,
+  skonto,
+}: SkontoApplyCheckboxProps) {
+  const t = useTranslations('Payments.skonto.paymentRun');
+  const { applied, handleToggle, isPending } = skonto;
+
+  if (!isWithinWindow) {
+    return (
+      <div className="flex items-center gap-2 opacity-60">
+        <Checkbox
+          id={`skonto-${paymentRunItemId}`}
+          checked={false}
+          disabled
+          aria-label={t('pastWindowLabel')}
+        />
+        <Label
+          htmlFor={`skonto-${paymentRunItemId}`}
+          className="text-sm text-muted-foreground cursor-not-allowed">
+          {t('pastWindowDescription', { date: windowExpiryDate ?? '' })}
+        </Label>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Checkbox
+        id={`skonto-${paymentRunItemId}`}
+        checked={applied}
+        onCheckedChange={handleToggle}
+        disabled={isPending}
+        aria-label={t('applyLabel', {
+          percent: discountPercent,
+          amount: formatEUR(discountAmountMinor),
+        })}
+      />
+      <Label
+        htmlFor={`skonto-${paymentRunItemId}`}
+        className={cn('text-sm cursor-pointer', applied && 'text-green-800 dark:text-green-400')}>
+        {t('applyDescription', {
+          percent: discountPercent,
+          amount: formatEUR(discountAmountMinor),
+        })}
+      </Label>
+      {applied && (
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {t('newAmount', { amount: formatEUR(discountedAmountMinor) })}
+        </span>
+      )}
+    </div>
+  );
+}

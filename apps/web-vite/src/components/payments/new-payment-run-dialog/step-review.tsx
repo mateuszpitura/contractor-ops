@@ -1,0 +1,191 @@
+/**
+ * StepReview — ported from
+ * apps/web/src/components/payments/new-payment-run-dialog/step-review.tsx.
+ * Swaps:
+ *   - next-intl → ../../../i18n/useTranslations
+ *   - @/trpc/init → useTRPC()
+ */
+
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import { Label } from '@contractor-ops/ui/components/shadcn/label';
+import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@contractor-ops/ui/components/shadcn/select';
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
+import { Loader2 } from 'lucide-react';
+
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import type { usePaymentRunStepReview } from '../hooks/use-payment-run-step-review.js';
+
+function formatMinorUnits(minor: number): string {
+  return new Intl.NumberFormat('pl-PL', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(minor / 100);
+}
+
+interface StepReviewProps {
+  selectedInvoiceIds: string[];
+  groupByCurrency: boolean;
+  onBack: () => void;
+  onComplete: (result: {
+    runId: string;
+    runNumber: string;
+    fileBase64: string;
+    fileName: string;
+    invoiceCount: number;
+    totalMinor: number;
+    currency: string;
+    exportFormat: string;
+  }) => void;
+  review: ReturnType<typeof usePaymentRunStepReview>;
+}
+
+export function StepReview({
+  selectedInvoiceIds,
+  groupByCurrency,
+  onBack,
+  onComplete,
+  review,
+}: StepReviewProps) {
+  const t = useTranslations('Payments');
+
+  const {
+    name,
+    setName,
+    notes,
+    setNotes,
+    exportFormat,
+    setExportFormat,
+    isLocking,
+    groupedByCurrency,
+    currencies,
+    grandTotal,
+    hasPLN,
+    hasEUR,
+    handleLockAndExport,
+  } = review;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="text-center">
+        <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
+        <p className="text-xs text-muted-foreground">{t('step2.runNumberLabel')}</p>
+      </div>
+
+      <div className="grid gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs">{t('step2.nameLabel')}</Label>
+          <Input
+            placeholder={t('step2.namePlaceholder')}
+            value={name}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setName(e.target.value)}
+            maxLength={100}
+            className="h-8 text-sm"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">{t('step2.descriptionLabel')}</Label>
+          <Textarea
+            placeholder={t('step2.descriptionPlaceholder')}
+            value={notes}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => setNotes(e.target.value)}
+            maxLength={500}
+            className="h-16 text-sm resize-none"
+          />
+        </div>
+      </div>
+
+      <Separator />
+
+      <ScrollArea className="max-h-[300px]">
+        {currencies.map(curr => {
+          const group = groupedByCurrency[curr];
+          if (!group) return null;
+          return (
+            <div key={curr} className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">
+                  {curr} &mdash; {group.invoices.length} {t('step2.invoices')}
+                </span>
+                <span className="text-[20px] font-semibold tabular-nums">
+                  {formatMinorUnits(group.totalMinor)} {curr}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {group.invoices.slice(0, 10).map(inv => (
+                  <div key={inv.id} className="flex items-center justify-between py-1 px-2 text-xs">
+                    <span className="font-medium">{inv.invoiceNumber}</span>
+                    <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
+                    <span className="font-mono tabular-nums">
+                      {formatMinorUnits(inv.amountToPayMinor)}
+                    </span>
+                  </div>
+                ))}
+                {group.invoices.length > 10 && (
+                  <p className="text-xs text-muted-foreground text-center py-1">
+                    +{group.invoices.length - 10} more
+                  </p>
+                )}
+              </div>
+              {currencies.length > 1 && <Separator className="mt-3" />}
+            </div>
+          );
+        })}
+      </ScrollArea>
+
+      <div className="flex items-center justify-between border-t-2 pt-3">
+        <span className="text-sm font-medium">{t('step2.grandTotal')}</span>
+        <div className="text-end">
+          {currencies.map(curr => (
+            <p key={curr} className="text-[20px] font-semibold tabular-nums">
+              {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0)} {curr}
+            </p>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
+        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
+        <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
+          <SelectTrigger className="w-full h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="CSV">{t('step2.formatCsv')}</SelectItem>
+            {hasPLN && <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem>}
+            {hasEUR && <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem>}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex items-center justify-end gap-2 border-t pt-4">
+        <Button variant="ghost" onClick={onBack} disabled={isLocking}>
+          {t('step2.back')}
+        </Button>
+        <Button onClick={handleLockAndExport} disabled={isLocking}>
+          {isLocking ? (
+            <>
+              <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
+              {t('step2.locking')}
+            </>
+          ) : (
+            t('step2.lockAndExport')
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
