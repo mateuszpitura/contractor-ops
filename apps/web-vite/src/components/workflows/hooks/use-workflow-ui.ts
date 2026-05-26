@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -141,6 +142,7 @@ export function useWorkflowTemplatesList(page: number, pageSize = 25) {
 export function useWorkflowSeedStarterTemplates() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   return useResourceMutation(
     trpc.workflow.seedStarterTemplates.mutationOptions({
@@ -148,7 +150,7 @@ export function useWorkflowSeedStarterTemplates() {
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
-    { successMessage: 'Done.' },
+    { successMessage: toasts.done() },
   );
 }
 
@@ -178,6 +180,7 @@ export function useWorkflowSuggestedTemplate(contractorId: string | undefined, e
 export function useWorkflowStartRun() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   return useResourceMutation(
     trpc.workflow.startRun.mutationOptions({
@@ -185,7 +188,7 @@ export function useWorkflowStartRun() {
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
-    { successMessage: 'Done.' },
+    { successMessage: toasts.done() },
   );
 }
 

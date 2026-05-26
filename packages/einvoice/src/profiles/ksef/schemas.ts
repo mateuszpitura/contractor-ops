@@ -28,6 +28,7 @@ export const ksefConnectionConfigSchema = z
       return true;
     },
     {
+      // biome-ignore lint/plugin/no-untranslated-zod-message: server-side connection config validator; never reaches an end user
       message: "Token is required when authMethod is 'token'",
       path: ['token'],
     },
@@ -40,6 +41,7 @@ export const ksefConnectionConfigSchema = z
       return true;
     },
     {
+      // biome-ignore lint/plugin/no-untranslated-zod-message: server-side connection config validator; never reaches an end user
       message: "Certificate is required when authMethod is 'certificate'",
       path: ['certificateBase64'],
     },

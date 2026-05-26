@@ -8,6 +8,7 @@
 
 import { useCallback } from 'react';
 
+import { useCommonToasts } from '../i18n/use-common-toasts.js';
 import { useTRPC } from '../providers/trpc-provider.js';
 import { useResourceMutation } from './use-resource-mutation.js';
 
@@ -22,6 +23,7 @@ export function useApprovalActions(
   isPending: boolean;
 } {
   const trpc = useTRPC();
+  const toasts = useCommonToasts();
 
   const approveMutation = useResourceMutation(
     trpc.approval.approve.mutationOptions({
@@ -31,8 +33,8 @@ export function useApprovalActions(
     }),
     {
       invalidate: [[['approval', 'listPending']]],
-      successMessage: 'Approved',
-      errorMessage: 'Failed to approve',
+      successMessage: toasts.approved(),
+      errorMessage: toasts.failedToApprove(),
     },
   );
 
@@ -44,8 +46,8 @@ export function useApprovalActions(
     }),
     {
       invalidate: [[['approval', 'listPending']]],
-      successMessage: 'Rejected',
-      errorMessage: 'Failed to reject',
+      successMessage: toasts.rejected(),
+      errorMessage: toasts.failedToReject(),
     },
   );
 
@@ -57,8 +59,8 @@ export function useApprovalActions(
     }),
     {
       invalidate: [[['approval', 'listPending']]],
-      successMessage: 'Clarification requested',
-      errorMessage: 'Failed to request clarification',
+      successMessage: toasts.clarificationRequested(),
+      errorMessage: toasts.failedToRequestClarification(),
     },
   );
 
@@ -70,8 +72,8 @@ export function useApprovalActions(
     }),
     {
       invalidate: [[['approval', 'listPending']]],
-      successMessage: 'Delegated',
-      errorMessage: 'Failed to delegate',
+      successMessage: toasts.delegated(),
+      errorMessage: toasts.failedToDelegate(),
     },
   );
 

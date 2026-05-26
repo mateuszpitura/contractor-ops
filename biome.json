@@ -1,10 +1,5 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
-  "plugins": [
-    "./tools/biome-plugins/no-untranslated-toast.grit",
-    "./tools/biome-plugins/no-untranslated-trpc-error.grit",
-    "./tools/biome-plugins/no-untranslated-zod-message.grit"
-  ],
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "css": {
     "parser": {
@@ -147,6 +142,17 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["apps/web-vite/src/**"],
+      "plugins": [
+        "./tools/biome-plugins/no-untranslated-toast.grit",
+        "./tools/biome-plugins/no-untranslated-zod-message.grit"
+      ]
+    },
+    {
+      "includes": ["packages/api/src/**"],
+      "plugins": ["./tools/biome-plugins/no-untranslated-trpc-error.grit"]
+    },
     {
       "includes": ["apps/web/src/app/globals.css"],
       "linter": {

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function usePaymentRunStepReview(options: {
@@ -20,6 +21,7 @@ export function usePaymentRunStepReview(options: {
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
@@ -57,7 +59,7 @@ export function usePaymentRunStepReview(options: {
       },
     }),
     {
-      successMessage: 'Done.',
+      successMessage: toasts.done(),
     },
   );
 
@@ -68,7 +70,7 @@ export function usePaymentRunStepReview(options: {
       },
     }),
     {
-      successMessage: 'Done.',
+      successMessage: toasts.done(),
     },
   );
 

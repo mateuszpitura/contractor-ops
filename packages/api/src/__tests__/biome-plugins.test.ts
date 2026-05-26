@@ -11,20 +11,26 @@
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const REPO_ROOT = resolve(import.meta.dirname, '../../../..');
 
+// Plugin scope is `packages/api/src/**` (TRPCError) and
+// `apps/web-vite/src/**` (toast / Zod) per biome.json overrides, so the
+// fixtures must live under one of those roots — `tmpdir()` would sit
+// outside the override `includes` and biome would skip the plugins.
 let workdir: string;
+let webVworkdir: string;
 
 beforeAll(() => {
-  workdir = mkdtempSync(join(tmpdir(), 'biome-plugin-fixtures-'));
+  workdir = mkdtempSync(resolve(import.meta.dirname, 'biome-plugin-fixtures-'));
+  webVworkdir = mkdtempSync(resolve(REPO_ROOT, 'apps/web-vite/src/__biome-plugin-fixtures__-'));
 });
 
 afterAll(() => {
   rmSync(workdir, { recursive: true, force: true });
+  rmSync(webVworkdir, { recursive: true, force: true });
 });
 
 interface BiomeRun {
@@ -32,8 +38,14 @@ interface BiomeRun {
   exitCode: number;
 }
 
-function writeFixture(name: string, content: string): string {
+function writeApiFixture(name: string, content: string): string {
   const filePath = join(workdir, name);
+  writeFileSync(filePath, content, 'utf8');
+  return filePath;
+}
+
+function writeWebViteFixture(name: string, content: string): string {
+  const filePath = join(webVworkdir, name);
   writeFileSync(filePath, content, 'utf8');
   return filePath;
 }
@@ -59,7 +71,7 @@ function countPluginDiagnostics(output: string): number {
 
 describe('no-untranslated-toast.grit', () => {
   it('flags literal toast.success / error / info / warning arguments', () => {
-    const file = writeFixture(
+    const file = writeWebViteFixture(
       'reject-toast.tsx',
       `
         declare const toast: {
@@ -82,7 +94,7 @@ describe('no-untranslated-toast.grit', () => {
   });
 
   it('does not flag wrapped / templated values', () => {
-    const file = writeFixture(
+    const file = writeWebViteFixture(
       'allow-toast.tsx',
       `
         declare const toast: {
@@ -111,7 +123,7 @@ describe('no-untranslated-toast.grit', () => {
 
 describe('no-untranslated-trpc-error.grit', () => {
   it('flags literal `message` on `new TRPCError`', () => {
-    const file = writeFixture(
+    const file = writeApiFixture(
       'reject-trpc.tsx',
       `
         declare class TRPCError {
@@ -128,7 +140,7 @@ describe('no-untranslated-trpc-error.grit', () => {
   });
 
   it('does not flag identifier-reference `message`', () => {
-    const file = writeFixture(
+    const file = writeApiFixture(
       'allow-trpc.tsx',
       `
         declare class TRPCError {
@@ -150,7 +162,7 @@ describe('no-untranslated-trpc-error.grit', () => {
 
 describe('no-untranslated-zod-message.grit', () => {
   it('flags literal `message` on Zod chain methods', () => {
-    const file = writeFixture(
+    const file = writeWebViteFixture(
       'reject-zod.tsx',
       `
         declare const z: {

@@ -31,5 +31,13 @@ export function useCommonToasts() {
     teamUpdated: () => t('toastTeamUpdated'),
     teamArchived: () => t('toastTeamArchived'),
     mergeResolved: () => t('toastMergeResolved'),
+    approved: () => t('toastApproved'),
+    rejected: () => t('toastRejected'),
+    clarificationRequested: () => t('toastClarificationRequested'),
+    delegated: () => t('toastDelegated'),
+    failedToApprove: () => t('toastFailedToApprove'),
+    failedToReject: () => t('toastFailedToReject'),
+    failedToRequestClarification: () => t('toastFailedToRequestClarification'),
+    failedToDelegate: () => t('toastFailedToDelegate'),
   };
 }

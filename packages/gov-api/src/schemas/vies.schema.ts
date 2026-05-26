@@ -39,6 +39,7 @@ export const viesLookupResponseSchema = z
     traderCityMatch: z.enum(['1', '2', '3']).optional(),
   })
   .refine(data => data.isValid !== undefined || data.userError !== undefined, {
+    // biome-ignore lint/plugin/no-untranslated-zod-message: server-side wire-format validator; never reaches an end user
     message: 'VIES response must contain either isValid or userError',
   });
 

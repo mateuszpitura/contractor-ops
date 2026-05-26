@@ -25,6 +25,7 @@ export type Region = z.infer<typeof regionSchema>;
 
 export const flagDefinitionSchema = z.object({
   key: z.string().regex(/^[a-z0-9]+(\.[a-z0-9-]+)+$/, {
+    // biome-ignore lint/plugin/no-untranslated-zod-message: developer-facing registry validator; never reaches an end user
     message: 'Flag key must be lowercase dot-namespaced kebab-case, e.g. "module.legal-approval"',
   }),
   description: z.string().min(1),

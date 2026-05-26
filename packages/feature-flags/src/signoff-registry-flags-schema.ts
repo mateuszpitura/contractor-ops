@@ -23,6 +23,7 @@ const flagSignoffEntryObjectSchema = z.object({
   legalTicketRef: z
     .string()
     .regex(/^(LEGAL-\d+|https?:\/\/.+)$/, {
+      // biome-ignore lint/plugin/no-untranslated-zod-message: developer-facing registry validator; never reaches an end user
       message: 'legalTicketRef must be a LEGAL-N ticket id or full URL',
     })
     .optional(),
@@ -35,6 +36,7 @@ export const FlagSignoffEntrySchema = flagSignoffEntryObjectSchema.refine(
     return !!(entry.approvedBy && entry.approvedAt && entry.approverRole && entry.legalTicketRef);
   },
   {
+    // biome-ignore lint/plugin/no-untranslated-zod-message: developer-facing registry validator; never reaches an end user
     message: 'APPROVED entries require approvedBy, approvedAt, approverRole, AND legalTicketRef',
   },
 );

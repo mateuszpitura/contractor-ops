@@ -2,7 +2,7 @@
 // from `sonner`. Wrap the value in `t(...)`, `tKey(...)`, or pass a
 // `TranslationKey` literal so the displayed text always flows through i18n.
 //
-// Phase 1: severity is `warn`. Phase 3 flip raises to `error`.
+// Phase 3 flip: severity is `error`.
 //
 // Allowed forms (not flagged):
 //   - toast.success(t('Foo.bar'))
@@ -19,7 +19,7 @@
   $arg <: or { `"$_"`, `'$_'` },
   register_diagnostic(
     span = $arg,
-    severity = "warn",
+    severity = "error",
     message = "Hardcoded sonner toast text. Wrap in t(...) / tKey(...) or pass a TranslationKey literal — goals/i18n-system-messages."
   )
 }

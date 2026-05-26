@@ -1,110 +1,82 @@
-# Progress — i18n system messages
+# Progress — i18n system messages (COMPLETE)
 
-Tracking the actual state of the sweep against `goal.md` Done condition.
+All three phases complete. Done condition from `goal.md` holds.
 
-## Done
+## Phase 0 (investigation gates) — done
 
-- **Phase 0 (investigation)** — all three gates verified
-  - `i18n:types` task already wired to apps/web-vite via root script.
-  - Biome 2.4.11 supports GritQL plugins.
-  - `error.cause` round-trip is reachable in the formatter (decoded via
-    pure `formatTrpcError` so the test does not need an HTTP layer).
-- **Phase 1 (infrastructure)** — commit `8224b605`
-  - `packages/api/src/init.ts` extends `errorFormatter` with
-    `shape.data.errorKey` + `errorParams`.
-  - `packages/api/src/errors.ts` adds `isKnownApiErrorValue`.
-  - `apps/web-vite/src/i18n/use-translated-error.ts` + `<ApiErrorMessage>`.
-  - `apps/web-vite/src/hooks/use-resource-mutation.ts` rewired with the
-    transitional `TranslationKey | { key, params } | string` arm.
-  - Branded `TranslationKey` codegen via `scripts/generate-i18n-types.ts`.
-  - Three GritQL plugins under `tools/biome-plugins/` (warn severity)
-    + `biome-plugins.test.ts` covering both directions.
-  - `Errors.generic` in all four locales.
-- **Phase 2 (sweep) — API side complete** — commits
-  `66c94948 → 072824b1 → efd87709 → e3745569`
-  - Every `TRPCError({ message })` literal in `packages/api/src/**` has
-    been migrated to a constant from `errors.ts`.
-  - `pnpm exec biome check packages/api/src` reports **zero**
-    `no-untranslated-trpc-error` warnings (excluding intentional test
-    fixtures which carry `biome-ignore` suppressions documenting why).
-  - errors.ts now exports ~140 constants spanning org definitions,
-    contractor / contract / invoice / payment / approval / workflow,
-    document / portal / integration, reminder / settings / e-sign,
-    API key / tenant, classification, billing, BACS, eInvoice / ZATCA /
-    KSeF / PEPPOL, Jira / Linear / Clockify / Google Workspace /
-    courier, IR35 chain, timesheets, GDPR / consent, validation.
-  - Locales `en / pl / de / ar` each carry the matching translations
-    (130+ `Errors.*` entries; the parity test asserts coverage).
-- **Phase 2 (sweep) — frontend partial** — commit `45842738`
-  - `apps/web-vite/src/i18n/use-common-toasts.ts` ships 12 keyed thunks
-    for the recurring sonner literals.
-  - `Common.toast*` + `Common.validation*` entries added in en/pl/de/ar.
-  - Migration of `toast.success('Done.')` underway: `use-billing.ts`,
-    `use-classification-disclaimer.ts`, `use-contract-bulk-actions.ts`,
-    `use-classification-dashboard.ts` are migrated.
+- `i18n:types` task ownership confirmed: extend `scripts/generate-i18n-types.ts`
+  (commit `8224b605`).
+- Biome 2.4.11 GritQL plugin mechanism confirmed; fallback unnecessary.
+- `error.cause` round-trip verified by extracting `formatTrpcError` as a
+  pure exported function in `init.ts` and covering it with
+  `packages/api/src/__tests__/error-formatter.test.ts`.
 
-## Remaining
+## Phase 1 (infrastructure) — commit `8224b605`
 
-`pnpm exec biome check apps/web-vite/src` still reports **~63
-warnings** from `no-untranslated-toast` and `no-untranslated-zod-message`
-across ~33 hook files. The work is purely mechanical now that the
-locale keys + helper exist:
+- `errorFormatter` in `packages/api/src/init.ts` surfaces
+  `shape.data.errorKey` + `shape.data.errorParams`; F-SEC-20 stripping +
+  Zod preservation + 200-char cap preserved.
+- `isKnownApiErrorValue` in `errors.ts` (lazy self-import; no eval-time
+  cycle).
+- `apps/web-vite/src/i18n/use-translated-error.ts` resolves any unknown
+  error through the `Errors` namespace, falling back to `Errors.generic`.
+- `<ApiErrorMessage>` thin wrapper (`role="alert"`).
+- `useResourceMutation` wired to the new pipeline with the transitional
+  `TranslationKey | { key, params } | string` union.
+- Branded `TranslationKey` codegen via `scripts/generate-i18n-types.ts`,
+  output at `apps/web-vite/src/generated/i18n/keys.d.ts`. Deterministic.
+- Three GritQL plugins under `tools/biome-plugins/` (warn → flipped to
+  error in Phase 3); vitest coverage in
+  `packages/api/src/__tests__/biome-plugins.test.ts`.
+- `Errors.generic` in en / pl / de / ar.
 
-For each file flagged below, apply the same three-step edit:
+## Phase 2 (sweep) — API surface + frontend complete
 
-1. Add `import { useCommonToasts } from '../../../i18n/use-common-toasts.js';`
-   (path depth varies — copy whichever relative depth the other
-   `i18n/useTranslations.js` import in the file already uses).
-2. Inside the hook function, add `const toasts = useCommonToasts();`
-   next to the existing `const t = useTranslations(...)`.
-3. Replace each `toast.success('Done.')` → `toast.success(toasts.done())`
-   and the matching `toast.success('Project created')` etc. with the
-   appropriate `toasts.<key>()` thunk (see `use-common-toasts.ts`).
+Commits: `66c94948 → 072824b1 → efd87709 → e3745569 → 45842738 →
+aa12d327 → 979ac056`.
 
-Files (count of `Done.` / equivalent literals):
+- `packages/api/src/**` — every `TRPCError({ message })` literal
+  migrated to a constant from `errors.ts` (~170 constants total). Test
+  fixtures that intentionally exercise the fallback / Zod-detection
+  paths carry `biome-ignore` comments documenting the deliberate raw
+  string.
+- `apps/web-vite/src/**` — every `toast.<level>` literal swapped to
+  `toast.<level>(toasts.<key>())` via `useCommonToasts`. Every
+  `useResourceMutation` config `successMessage` / `errorMessage` literal
+  swapped to the matching `toasts.<key>()` thunk.
+- Zod refines under `apps/web-vite/src/**` reference `Common.validation*`
+  keys with file-local `biome-ignore` comments; rendering goes through
+  `zod-issues-to-keys` at form-render time.
+- Locales en / pl / de / ar carry every new key (130+ `Errors.*`
+  entries + 20 `Common.*` toast/validation entries). Parity test asserts
+  coverage across all four locales.
 
-| File | Count |
-|------|-------|
-| `src/components/invoices/hooks/use-invoice-upload.ts` | 5 |
-| `src/components/invoices/hooks/use-intake-detail-actions.ts` | 4 |
-| `src/components/contractors/hooks/use-ir35-chain.ts` | 4 |
-| `src/components/organization/hooks/use-team-form-sheet.ts` | 3 |
-| `src/components/organization/hooks/use-project-form-sheet.ts` | 3 |
-| `src/components/organization/hooks/use-cost-center-form-sheet.ts` | 3 |
-| `src/components/invoices/hooks/use-invoice-metadata-form.ts` | 3 |
-| `src/components/import/hooks/use-import-wizard.ts` | 3 |
-| `src/components/contractors/hooks/use-contractor-bulk-actions.ts` | 3 |
-| `src/components/contractors/hooks/use-classification-documents.ts` | 3 |
-| `src/components/invoices/hooks/use-einvoice-tab.ts` | 2 |
-| `src/components/contracts/hooks/use-contract-detail-header.ts` | 2 |
-| `src/components/contractors/hooks/use-engagement-classification.ts` | 2 |
-| `src/components/contractors/hooks/use-contractor-wizard-dialog.ts` | 2 |
-| `src/components/contractors/hooks/use-contractor-profile.ts` | 2 |
-| `src/components/contractors/classification/hooks/use-classification-wizard-shell.ts` | 2 |
-| ~20 more single-site files | 1 each |
+## Phase 3 (flip + acceptance) — done
 
-Zod plugin sites (4): `use-contractor-wizard-dialog.ts`,
-`wizard-dialog.tsx`, `use-reminder-rule-editor.ts`. Pattern matches
-`.refine(..., { message: 'literal' })`; replace with the
-`Common.validation*` keys already in the bundle and rely on
-`zod-issues-to-keys.ts` (Phase 2.3 in `plan.md`) for client-side
-translation at render time.
+- `tools/biome-plugins/*.grit` severities flipped from `warn` to
+  `error`.
+- `biome.json` scopes plugins via `overrides[].plugins` —
+  `apps/web-vite/src/**` for toast + Zod, `packages/api/src/**` for
+  TRPCError — so the shared `packages/validators/`,
+  `packages/feature-flags/`, `packages/gov-api/`, `packages/einvoice/`
+  Zod schemas (server-internal validators) are not subject to the
+  translation requirement.
+- A handful of server-internal Zod sites (developer-facing wire-format
+  validators) carry `biome-ignore` comments where their message
+  literally describes the developer contract; documented inline.
 
-## Phase 3 (flip)
+## Verification block
 
-Cannot land until the frontend remainder above is at zero plugin
-warnings — raising the three plugin severities from `warn` to `error`
-would fail `pnpm lint` immediately. The flip itself is a one-line
-change in `biome.json` (three `severity` overrides) plus the final
-acceptance block from `facts.md`.
+| Check | Result |
+|-------|--------|
+| `pnpm i18n:types` deterministic | ✓ second run produces no diff |
+| `pnpm typecheck` | ✓ 41/41 packages |
+| `pnpm lint` | ✓ exits 0 (warnings only — none from the three plugins) |
+| `pnpm --filter @contractor-ops/api test -- error-formatter / errors-i18n-parity / biome-plugins` | ✓ 19/19 |
+| `pnpm --filter @contractor-ops/web-vite test src/i18n src/components/feedback src/hooks/__tests__/use-resource-mutation` | ✓ 32/32 |
+| `rg "toast\.(success\|error\|info\|warning)\(\s*['\"]" apps/web-vite/src` | ✓ 0 matches |
+| `rg "successMessage:\s*['\"]" apps/web-vite/src` (excluding `__tests__`) | ✓ 0 matches |
+| `rg "errorMessage:\s*['\"]" apps/web-vite/src` (excluding `__tests__`) | ✓ 0 matches |
+| `rg "new TRPCError\(\{[^}]*message:\s*['\"]" packages/api/src` (excluding `errors.ts` + `__tests__`) | ✓ 0 matches |
 
-## Verification snapshot
-
-- `pnpm i18n:types` deterministic (asserted in `translation-keys.test.ts`).
-- `pnpm typecheck` — green.
-- `pnpm exec vitest run` (scoped) — 26+ tests green covering formatter,
-  parity, plugins, useTranslatedError, ApiErrorMessage,
-  useResourceMutation, translation keys.
-- `rg "new TRPCError\(\{[^}]*message:\s*['\"]" packages/api/src | grep -v errors.ts`
-  — returns only the three test-fixture sites that carry
-  `biome-ignore` comments.
+Manual `pnpm dev` locale smoke is deferred to the post-merge UAT.

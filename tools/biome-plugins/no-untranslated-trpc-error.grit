@@ -2,7 +2,7 @@
 // throws inside `packages/api/src/**`. Replace the literal with an import
 // from `packages/api/src/errors.ts` so every error has a translation anchor.
 //
-// Phase 1: severity is `warn`. Phase 3 flip raises to `error`.
+// Phase 3 flip: severity is `error`.
 //
 // Allowed forms:
 //   - new TRPCError({ message: E.CONTRACTOR_NOT_FOUND })
@@ -16,7 +16,7 @@
   $value <: or { `"$_"`, `'$_'` },
   register_diagnostic(
     span = $value,
-    severity = "warn",
+    severity = "error",
     message = "Hardcoded TRPCError message. Import a constant from packages/api/src/errors.ts — goals/i18n-system-messages."
   )
 }

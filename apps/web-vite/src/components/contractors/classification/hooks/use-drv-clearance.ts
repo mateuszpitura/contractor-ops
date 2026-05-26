@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { useResourceMutation } from '../../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 
 type Outcome = 'PENDING' | 'SELBSTANDIG' | 'ABHANGIG' | 'WITHDRAWN';
@@ -23,12 +24,13 @@ export function useDrvClearanceList(engagementId: string) {
 
 export function useDrvClearanceFormMutations(onClose: () => void) {
   const trpc = useTRPC();
+  const toasts = useCommonToasts();
 
   const createMutation = useResourceMutation(
     trpc.statusfeststellungsverfahren.create.mutationOptions(),
     {
       invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
-      successMessage: 'Done.',
+      successMessage: toasts.done(),
       onClose,
     },
   );
@@ -37,7 +39,7 @@ export function useDrvClearanceFormMutations(onClose: () => void) {
     trpc.statusfeststellungsverfahren.update.mutationOptions(),
     {
       invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
-      successMessage: 'Done.',
+      successMessage: toasts.done(),
       onClose,
     },
   );
@@ -48,6 +50,7 @@ export function useDrvClearanceFormMutations(onClose: () => void) {
 export function useDrvDecisionLetterUpload(classificationAssessmentId: string | undefined) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const uploadMutation = useResourceMutation(
     trpc.classificationDocument.uploadDrvDecisionLetter.mutationOptions({
@@ -56,7 +59,7 @@ export function useDrvDecisionLetterUpload(classificationAssessmentId: string | 
       },
     }),
     {
-      successMessage: 'Done.',
+      successMessage: toasts.done(),
     },
   );
 

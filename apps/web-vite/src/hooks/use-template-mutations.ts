@@ -10,6 +10,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import type { LooseTranslator } from '../i18n/typed-keys.js';
+import { useCommonToasts } from '../i18n/use-common-toasts.js';
 import { useTRPC } from '../providers/trpc-provider.js';
 import { useResourceMutation } from './use-resource-mutation.js';
 
@@ -22,6 +23,7 @@ export function useTemplateMutations(t: LooseTranslator): {
 } {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: [['workflow', 'listTemplates']] });
@@ -33,7 +35,7 @@ export function useTemplateMutations(t: LooseTranslator): {
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
-    { successMessage: 'Done.' },
+    { successMessage: toasts.done() },
   );
 
   const deleteMutation = useResourceMutation(
@@ -42,7 +44,7 @@ export function useTemplateMutations(t: LooseTranslator): {
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
-    { successMessage: 'Done.' },
+    { successMessage: toasts.done() },
   );
 
   const duplicateMutation = useResourceMutation(
@@ -51,7 +53,7 @@ export function useTemplateMutations(t: LooseTranslator): {
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
-    { successMessage: 'Done.' },
+    { successMessage: toasts.done() },
   );
 
   const activate = useCallback(
