@@ -3,11 +3,14 @@ import { IntakeDetailActionsBar } from './intake-detail-actions-bar.js';
 import type { IntakeStatus } from './intake-status-pill.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
 
-// Toolbar always renders. Individual button visibility (showAccept,
-// canReject, showConfirmMatch, canConvert) is derived from intake status
-// flags inside the hook and toggles inline buttons in a single toolbar
-// view — not a variant pick. Container stays thin to keep the hook
-// boundary inside the invoices folder.
+// Decision: mutation-host toolbar that always renders the same shape — the
+// parent `IntakeDetailClient` owns the loading/error gate for the intake
+// itself. The hook returns per-button enable/visibility flags
+// (`showAccept`, `canReject`, `showConfirmMatch`, `canConvert`) which toggle
+// inline buttons inside a single toolbar, so there is no full-view variant
+// to pick. Container exists to keep the four mutations
+// (`convertToInvoice`, `confirmMatch`, `acknowledgeValidation`, `reject`)
+// inside the invoices folder.
 
 interface IntakeDetailActionsBarContainerProps {
   intakeId: string;

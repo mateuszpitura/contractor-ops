@@ -6,6 +6,11 @@ import {
   ClassificationWizardUnsupportedCountry,
 } from './classification-wizard-shell.js';
 
+/**
+ * Decisive: variant pick on `countryCode` — unsupported countries render the
+ * `ClassificationWizardUnsupportedCountry` notice; supported (GB/DE) wire the
+ * autosave + submit shell to the view.
+ */
 export function ClassificationWizardShellContainer(
   props: Pick<
     ClassificationWizardShellViewProps,

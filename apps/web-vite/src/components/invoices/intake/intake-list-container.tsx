@@ -9,9 +9,18 @@ interface IntakeListContainerProps {
 export function IntakeListContainer({ initialStatus }: IntakeListContainerProps) {
   const list = useIntakeList(initialStatus);
 
+  if (list.isError) {
+    return (
+      <>
+        <IntakeListError onRetry={list.handleRetry} />
+        <IntakeUploadDialogContainer open={list.uploadOpen} onOpenChange={list.setUploadOpen} />
+      </>
+    );
+  }
+
   return (
     <>
-      {list.isError ? <IntakeListError onRetry={list.handleRetry} /> : <IntakeList list={list} />}
+      <IntakeList list={list} />
       <IntakeUploadDialogContainer open={list.uploadOpen} onOpenChange={list.setUploadOpen} />
     </>
   );

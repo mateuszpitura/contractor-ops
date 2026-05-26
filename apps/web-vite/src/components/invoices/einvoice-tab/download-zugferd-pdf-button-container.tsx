@@ -6,10 +6,11 @@ interface DownloadZugferdPdfButtonContainerProps {
   className?: string;
 }
 
-// Thin button-level boundary: hook supplies the download mutation and its
-// pending flag, which the button renders as a different label inline. No
-// isLoading/isEmpty/isError variant to lift — kept to scope the tRPC
-// boundary to the invoices folder.
+// Decision: button-level mutation host — the parent invoice detail screen
+// already owns its own loading/empty/error gating, so this container exists
+// only to scope the `einvoice.generateZugferdPdf` mutation (and its `isPending`
+// label flip) inside the invoices folder. No variant pick to lift; the single
+// button is the entire surface.
 export function DownloadZugferdPdfButtonContainer({
   invoiceId,
   className,
