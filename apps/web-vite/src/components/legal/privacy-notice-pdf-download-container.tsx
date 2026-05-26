@@ -5,16 +5,9 @@ export interface PrivacyNoticePdfDownloadContainerProps {
   jurisdiction: 'GB' | 'DE' | 'EU';
 }
 
-/**
- * Decision rule (apps/web-vite/ARCHITECTURE.md): thin mutation host. The
- * hook owns the `legal.generatePrivacyNoticePdf` mutation lifecycle plus
- * its success/error toasts and cache invalidation. The view is a single
- * button whose pending vs idle visual (Loader2 swap + `disabled`) is per-
- * attribute presentational state of the same render path — there is no
- * loading/error/empty variant to pick, no permission gate, no redirect,
- * and no composition. Kept as annotation-only per the audit's mutation-
- * host criterion.
- */
+// Decision: mutation host — useLegalPrivacyPdfDownload owns the
+// generatePrivacyNoticePdf mutation; the view's button consumes isPending
+// inline. Mounted by PrivacyNoticeLayout; no variant flag.
 export function PrivacyNoticePdfDownloadContainer({
   jurisdiction,
 }: PrivacyNoticePdfDownloadContainerProps) {
