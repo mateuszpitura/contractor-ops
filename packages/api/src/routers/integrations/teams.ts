@@ -180,7 +180,7 @@ export const teamsRouter = router({
         select: { id: true },
       });
       if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Team not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.TEAM_NOT_FOUND });
       }
       await ctx.db.team.update({
         where: { id: input.teamId },

@@ -1325,7 +1325,7 @@ export const contractorRouter = router({
         select: { countryCode: true },
       });
       if (!org.countryCode) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Organization has no country set' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: E.ORG_NO_COUNTRY });
       }
       const schema = countryFieldsSchemaMap[org.countryCode];
       if (!schema) {

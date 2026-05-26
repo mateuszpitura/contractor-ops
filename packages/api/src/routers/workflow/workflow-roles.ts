@@ -13,6 +13,7 @@ import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { ROLE_TEMPLATE_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -118,7 +119,7 @@ export const workflowRolesRouter = router({
         select: { id: true, isSeed: true },
       });
       if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Role template not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: ROLE_TEMPLATE_NOT_FOUND });
       }
       if (existing.isSeed) {
         throw new TRPCError({
@@ -175,7 +176,7 @@ export const workflowRolesRouter = router({
         select: { id: true, isSeed: true },
       });
       if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Role template not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: ROLE_TEMPLATE_NOT_FOUND });
       }
       if (existing.isSeed) {
         throw new TRPCError({

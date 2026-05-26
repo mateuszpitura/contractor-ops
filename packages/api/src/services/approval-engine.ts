@@ -1,5 +1,6 @@
 import type { Prisma, PrismaClient } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
+import { APPROVAL_NO_USER_WITH_ROLE } from '../errors';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -178,7 +179,7 @@ export async function createApprovalFlow(
       if (!member) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'errors.approval.noUserWithRole',
+          message: APPROVAL_NO_USER_WITH_ROLE,
         });
       }
 

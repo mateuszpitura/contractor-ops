@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import { SERVER_MISCONFIGURED } from '../errors';
 import { t } from '../init';
 
 const log = createLogger({ service: 'cron-trpc-middleware' });
@@ -17,7 +18,7 @@ const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
   const cronSecret = getServerEnv().CRON_SECRET;
   if (!cronSecret || cronSecret.length < 16) {
     log.error('CRON_SECRET misconfigured — rejecting cron tRPC call');
-    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Server misconfigured' });
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: SERVER_MISCONFIGURED });
   }
 
   const authHeader = ctx.headers.get('authorization') ?? '';

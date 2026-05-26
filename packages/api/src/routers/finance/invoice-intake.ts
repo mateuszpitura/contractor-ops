@@ -21,6 +21,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import { INVOICE_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -130,7 +131,7 @@ function mapIntakeErrorToTrpc(err: unknown): TRPCError {
           message: 'INVALID_STATE_TRANSITION',
         });
       case 'NOT_FOUND':
-        return new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        return new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       case 'VALIDATION_NOT_REQUIRED':
         return new TRPCError({
           code: 'CONFLICT',
@@ -292,7 +293,7 @@ export const invoiceIntakeRouter = router({
         where: { id: input.intakeId, organizationId: ctx.organizationId },
       })) as Record<string, unknown> | null;
       if (!row) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
       return row as unknown;
     }),
@@ -322,7 +323,7 @@ export const invoiceIntakeRouter = router({
       } | null;
 
       if (!intake) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
 
       return rankIntakeCandidates(ctx.db as never, ctx.organizationId, {
@@ -419,7 +420,7 @@ export const invoiceIntakeRouter = router({
     .query(async ({ ctx, input }) => {
       const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
       if (!intake?.rawFileKey) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
       const { signedUrl, expiresInSeconds } = await signExistingDownload(intake.rawFileKey, 300);
       return { url: signedUrl, expiresInSeconds };
@@ -435,11 +436,11 @@ export const invoiceIntakeRouter = router({
     .query(async ({ ctx, input }) => {
       const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
       if (!intake) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
       const key = intake.extractedXmlKey ?? intake.rawFileKey;
       if (!key) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
       const { signedUrl, expiresInSeconds } = await signExistingDownload(key, 300);
       return { url: signedUrl, expiresInSeconds };
@@ -455,7 +456,7 @@ export const invoiceIntakeRouter = router({
     .query(async ({ ctx, input }) => {
       const intake = await loadIntakeScoped(ctx.db as never, input.intakeId, ctx.organizationId);
       if (!intake) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'NOT_FOUND' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
       if (!intake.validationReportKey) return null;
       const { signedUrl, expiresInSeconds } = await signExistingDownload(

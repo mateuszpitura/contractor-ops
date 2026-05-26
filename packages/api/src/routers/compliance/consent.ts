@@ -14,6 +14,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { DPA_NOT_AVAILABLE, INVALID_TOS_VERSION_FORMAT, SCC_NOT_REQUIRED } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { sensitiveActionProcedure } from '../../middleware/sensitive';
@@ -161,7 +162,7 @@ export const consentRouter = router({
       if (!result) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'DPA not available for this jurisdiction',
+          message: DPA_NOT_AVAILABLE,
         });
       }
       return result;
@@ -178,7 +179,7 @@ export const consentRouter = router({
       if (!result) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'No cross-border transfer detected — SCC not required for your jurisdiction',
+          message: SCC_NOT_REQUIRED,
         });
       }
       return result;
@@ -240,7 +241,7 @@ export const consentRouter = router({
       if (!semverPattern.test(input.version)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Invalid ToS version format. Expected: YYYY.N.N',
+          message: INVALID_TOS_VERSION_FORMAT,
         });
       }
 

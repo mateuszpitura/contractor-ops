@@ -38,6 +38,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { SDS_APPROVAL_ALREADY_EXISTS } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { classificationSaveAnswerRateLimit } from '../../middleware/classification-rate-limit';
@@ -950,7 +951,7 @@ export const classificationRouter = router({
           'code' in err &&
           (err as { code: string }).code === 'P2002'
         ) {
-          throw new TRPCError({ code: 'CONFLICT', message: 'SDS_APPROVAL_ALREADY_EXISTS' });
+          throw new TRPCError({ code: 'CONFLICT', message: SDS_APPROVAL_ALREADY_EXISTS });
         }
         throw err;
       }

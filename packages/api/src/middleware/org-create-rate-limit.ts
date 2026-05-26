@@ -26,6 +26,10 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import {
+  ORGANIZATION_CREATE_RATE_LIMIT_EXCEEDED,
+  ORGANIZATION_RATE_LIMITER_UNAVAILABLE,
+} from '../errors';
 import { t } from '../init';
 
 const log = createLogger({ service: 'api', component: 'org-create-rate-limit' });
@@ -137,7 +141,7 @@ export const orgCreateRateLimitMiddleware = t.middleware(async ({ ctx, next }) =
         );
         throw new TRPCError({
           code: 'SERVICE_UNAVAILABLE',
-          message: 'errors.organization.rateLimiterUnavailable',
+          message: ORGANIZATION_RATE_LIMITER_UNAVAILABLE,
         });
       }
       log.warn(
@@ -158,7 +162,7 @@ export const orgCreateRateLimitMiddleware = t.middleware(async ({ ctx, next }) =
     log.warn({ userId }, 'organization.create rate limit exceeded');
     throw new TRPCError({
       code: 'TOO_MANY_REQUESTS',
-      message: 'errors.organization.createRateLimitExceeded',
+      message: ORGANIZATION_CREATE_RATE_LIMIT_EXCEEDED,
     });
   }
 

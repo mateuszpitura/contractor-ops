@@ -12,6 +12,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { COST_CENTER_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -57,7 +58,7 @@ export const costCenterRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const cc = await ctx.db.costCenter.findFirst({ where: { id: input.id } });
-      if (!cc) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cost center not found' });
+      if (!cc) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
       return cc;
     }),
 
@@ -92,7 +93,7 @@ export const costCenterRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
       const before = await ctx.db.costCenter.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cost center not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
 
       const updated = await ctx.db.costCenter.update({ where: { id }, data: rest });
       await writeAuditLog({
@@ -114,7 +115,7 @@ export const costCenterRouter = router({
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
       const before = await ctx.db.costCenter.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cost center not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: COST_CENTER_NOT_FOUND });
 
       const updated = await ctx.db.costCenter.update({
         where: { id: input.id },

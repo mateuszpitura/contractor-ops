@@ -142,7 +142,7 @@ describe('sensitiveActionProcedure', () => {
     ).rejects.toMatchObject({ code: 'UNAUTHORIZED' });
   });
 
-  it('throws FORBIDDEN with REAUTH_REQUIRED cause when session is older than 5 minutes', async () => {
+  it('throws FORBIDDEN with reauthRequired message when session is older than 5 minutes', async () => {
     const old = new Date(Date.now() - 6 * 60 * 1000);
     try {
       await createCaller(ctxWithSessionAge(old)).sensitive();
@@ -150,12 +150,7 @@ describe('sensitiveActionProcedure', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('FORBIDDEN');
-      const cause = (e as TRPCError).cause;
-      if (cause instanceof Error) {
-        expect(cause.message).toBe('REAUTH_REQUIRED');
-      } else {
-        expect(cause).toBe('REAUTH_REQUIRED');
-      }
+      expect((e as TRPCError).message).toBe('reauthRequired');
     }
   });
 

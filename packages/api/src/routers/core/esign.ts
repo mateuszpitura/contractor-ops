@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { ESIGN_ENVELOPE_NOT_FOUND, ESIGN_NOT_RECIPIENT } from '../../errors';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { requirePermission } from '../../middleware/rbac';
@@ -146,18 +147,18 @@ export const esignRouter = router({
     });
 
     if (!envelope) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'Envelope not found' });
+      throw new TRPCError({ code: 'NOT_FOUND', message: ESIGN_ENVELOPE_NOT_FOUND });
     }
 
     const contractorEmail = ctx.contractor?.email?.toLowerCase();
     if (!contractorEmail) {
-      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a recipient of this envelope' });
+      throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
     }
 
     const isRecipient = envelope.recipients.some(r => r.email.toLowerCase() === contractorEmail);
 
     if (!isRecipient) {
-      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not a recipient of this envelope' });
+      throw new TRPCError({ code: 'FORBIDDEN', message: ESIGN_NOT_RECIPIENT });
     }
 
     return getSigningUrl({

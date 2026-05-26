@@ -1,6 +1,7 @@
 import type { FlagKey, FlagValues } from '@contractor-ops/feature-flags';
 import { FLAG_KEYS, FLAGS } from '@contractor-ops/feature-flags';
 import { TRPCError } from '@trpc/server';
+import { PLATFORM_ADMIN_REQUIRED } from '../../errors';
 import { router } from '../../init';
 import { tenantFlaggedProcedure } from '../../middleware/feature-flag';
 
@@ -24,7 +25,7 @@ export const featureFlagsRouter = router({
    */
   list: tenantFlaggedProcedure.query(({ ctx }) => {
     if (ctx.user.role !== 'admin') {
-      throw new TRPCError({ code: 'FORBIDDEN', message: 'PLATFORM_ADMIN_REQUIRED' });
+      throw new TRPCError({ code: 'FORBIDDEN', message: PLATFORM_ADMIN_REQUIRED });
     }
     return FLAG_KEYS.map(key => ({
       key,

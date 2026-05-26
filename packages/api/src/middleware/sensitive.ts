@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server';
+import { REAUTH_REQUIRED } from '../errors';
 import { t } from '../init';
 import { tenantProcedure } from './tenant';
 
@@ -26,8 +27,7 @@ export const sensitiveActionMiddleware = t.middleware(async ({ ctx, next }) => {
   if (now - sessionCreatedAt > SENSITIVE_ACTION_MAX_AGE_MS) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'This action requires re-authentication. Please sign in again to continue.',
-      cause: 'REAUTH_REQUIRED',
+      message: REAUTH_REQUIRED,
     });
   }
 

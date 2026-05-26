@@ -14,6 +14,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { PENDING_MERGE_NOT_FOUND, PROJECT_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -75,7 +76,7 @@ export const projectRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const project = await ctx.db.project.findFirst({ where: { id: input.id } });
-      if (!project) throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+      if (!project) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
       return project;
     }),
 
@@ -116,7 +117,7 @@ export const projectRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
       const before = await ctx.db.project.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
 
       const updated = await ctx.db.project.update({
         where: { id },
@@ -145,7 +146,7 @@ export const projectRouter = router({
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
       const before = await ctx.db.project.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Project not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: PROJECT_NOT_FOUND });
 
       const updated = await ctx.db.project.update({
         where: { id: input.id },
@@ -256,7 +257,7 @@ export const projectRouter = router({
         where: { id: input.pendingMergeId },
       });
       if (!pending) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Pending merge not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: PENDING_MERGE_NOT_FOUND });
       }
 
       if (input.action === 'merge') {

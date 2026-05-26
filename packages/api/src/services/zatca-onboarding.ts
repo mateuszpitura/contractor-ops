@@ -30,6 +30,14 @@ import {
 } from '@contractor-ops/einvoice';
 import { createZatcaSecretStore, ZATCA_SECRET_NAMES } from '@contractor-ops/integrations';
 import { TRPCError } from '@trpc/server';
+import {
+  ZATCA_API_CLIENT_UNAVAILABLE,
+  ZATCA_COMPLIANCE_CHECKS_MUST_PASS,
+  ZATCA_COMPLIANCE_CSID_REQUIRED,
+  ZATCA_CSR_REQUIRED,
+  ZATCA_TAX_DETAILS_REQUIRED,
+  ZATCA_TAX_DETAILS_REQUIRED_FOR_COMPLIANCE,
+} from '../errors';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -94,7 +102,7 @@ async function loadZatcaApiClient(options: Record<string, unknown>): Promise<Zat
   } catch {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'errors.zatca.apiClientUnavailable',
+      message: ZATCA_API_CLIENT_UNAVAILABLE,
     });
   }
 }
@@ -207,7 +215,7 @@ export async function generateAndStoreCsr(organizationId: string): Promise<{ csr
   if (!taxDetails) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.zatca.taxDetailsRequired',
+      message: ZATCA_TAX_DETAILS_REQUIRED,
     });
   }
 
@@ -269,7 +277,7 @@ export async function requestComplianceCsid(
   if (!csrPem) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.zatca.csrRequired',
+      message: ZATCA_CSR_REQUIRED,
     });
   }
 
@@ -319,7 +327,7 @@ export async function runComplianceChecks(
   if (!taxDetails) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.zatca.taxDetailsRequiredForCompliance',
+      message: ZATCA_TAX_DETAILS_REQUIRED_FOR_COMPLIANCE,
     });
   }
 
@@ -333,7 +341,7 @@ export async function runComplianceChecks(
   if (!(certificate && apiSecret)) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.zatca.complianceCsidRequired',
+      message: ZATCA_COMPLIANCE_CSID_REQUIRED,
     });
   }
 
@@ -421,7 +429,7 @@ export async function exchangeProductionCertificate(organizationId: string): Pro
   if (!(requestId && certificate && apiSecret)) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.zatca.complianceChecksMustPass',
+      message: ZATCA_COMPLIANCE_CHECKS_MUST_PASS,
     });
   }
 

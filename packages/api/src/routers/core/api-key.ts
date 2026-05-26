@@ -1,5 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { API_KEY_CANNOT_UPDATE_REVOKED, API_KEY_REVOKED } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { PUBLIC_API_SCOPES } from '../../lib/scope-utils';
@@ -144,7 +145,7 @@ export const apiKeyRouter = router({
     );
 
     if (existing.revokedAt) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot update a revoked key.' });
+      throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_CANNOT_UPDATE_REVOKED });
     }
 
     const updated = await ctx.db.organizationApiKey.update({
@@ -199,7 +200,7 @@ export const apiKeyRouter = router({
       );
 
       if (existing.revokedAt) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Key is already revoked.' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: API_KEY_REVOKED });
       }
 
       await ctx.db.organizationApiKey.update({

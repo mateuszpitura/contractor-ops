@@ -14,6 +14,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { UPLOAD_RATE_LIMIT_EXCEEDED, UPLOAD_RATE_LIMITER_UNAVAILABLE } from '../errors';
 import { t } from '../init';
 
 const log = createLogger({ service: 'api', component: 'upload-rate-limit' });
@@ -127,7 +128,7 @@ export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
         // 503 SERVICE_UNAVAILABLE — clients should retry with backoff.
         throw new TRPCError({
           code: 'SERVICE_UNAVAILABLE',
-          message: 'errors.upload.rateLimiterUnavailable',
+          message: UPLOAD_RATE_LIMITER_UNAVAILABLE,
         });
       }
       log.warn(
@@ -147,7 +148,7 @@ export const uploadRateLimitMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!allowed) {
     throw new TRPCError({
       code: 'TOO_MANY_REQUESTS',
-      message: 'errors.upload.rateLimitExceeded',
+      message: UPLOAD_RATE_LIMIT_EXCEEDED,
     });
   }
 

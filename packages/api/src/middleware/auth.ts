@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server';
+import { ACCOUNT_BANNED } from '../errors';
 import { publicProcedure, t } from '../init';
 
 /**
@@ -13,7 +14,7 @@ export const authMiddleware = t.middleware(async ({ ctx, next }) => {
   if (ctx.user.banned) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'ACCOUNT_BANNED',
+      message: ACCOUNT_BANNED,
     });
   }
 

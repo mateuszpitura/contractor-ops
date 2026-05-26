@@ -1,5 +1,6 @@
 import { prisma } from '@contractor-ops/db';
 import { TRPCError } from '@trpc/server';
+import { PAYMENT_RUN_ITEM_NOT_FOUND, WHT_NOT_APPLICABLE } from '../errors';
 
 /**
  * Generate a unique certificate number: WHT-{orgShortId}-{year}-{seq}
@@ -40,11 +41,11 @@ export async function createWhtCertificate(params: {
   });
 
   if (!item || item.organizationId !== organizationId) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Payment run item not found' });
+    throw new TRPCError({ code: 'NOT_FOUND', message: PAYMENT_RUN_ITEM_NOT_FOUND });
   }
 
   if (!item.whtAmountMinor || item.whtAmountMinor === 0) {
-    throw new TRPCError({ code: 'BAD_REQUEST', message: 'No WHT applicable to this payment item' });
+    throw new TRPCError({ code: 'BAD_REQUEST', message: WHT_NOT_APPLICABLE });
   }
 
   const certificateNumber = await generateCertificateNumber(organizationId);

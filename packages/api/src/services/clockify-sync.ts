@@ -4,6 +4,7 @@ import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clock
 import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { TRPCError } from '@trpc/server';
+import { CLOCKIFY_CONNECTION_NOT_FOUND } from '../errors';
 import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
@@ -152,7 +153,7 @@ async function loadClockifyConnection(prisma: PrismaClient, connectionId: string
   });
 
   if (!connection) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'Clockify connection not found' });
+    throw new TRPCError({ code: 'NOT_FOUND', message: CLOCKIFY_CONNECTION_NOT_FOUND });
   }
 
   if (connection.status !== 'CONNECTED') {

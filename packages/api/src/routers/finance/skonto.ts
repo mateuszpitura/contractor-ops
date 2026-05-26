@@ -9,6 +9,7 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { BILLING_PROFILE_NOT_FOUND, INVOICE_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
@@ -115,7 +116,7 @@ export const skontoRouter = router({
       });
 
       if (!invoice) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       }
 
       const term = await upsertSkontoTermByOwner(
@@ -173,7 +174,7 @@ export const skontoRouter = router({
       });
 
       if (!profile) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Billing profile not found' });
+        throw new TRPCError({ code: 'NOT_FOUND', message: BILLING_PROFILE_NOT_FOUND });
       }
 
       const term = await upsertSkontoTermByOwner(

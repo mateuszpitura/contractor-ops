@@ -20,6 +20,11 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import {
+  CLASSIFICATION_ASSESSMENT_ID_REQUIRED,
+  CLASSIFICATION_AUTOSAVE_RATE_LIMIT_EXCEEDED,
+  CLASSIFICATION_RATE_LIMITER_UNAVAILABLE,
+} from '../errors';
 import { t } from '../init';
 
 const log = createLogger({ service: 'api', component: 'classification-rate-limit' });
@@ -132,7 +137,7 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
   if (!assessmentId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'classification.saveAnswer requires assessmentId in input.',
+      message: CLASSIFICATION_ASSESSMENT_ID_REQUIRED,
     });
   }
 
@@ -165,7 +170,7 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
         // retry. The autosave UX already tolerates transient failures.
         throw new TRPCError({
           code: 'SERVICE_UNAVAILABLE',
-          message: 'errors.classification.rateLimiterUnavailable',
+          message: CLASSIFICATION_RATE_LIMITER_UNAVAILABLE,
         });
       }
       log.warn(
@@ -181,7 +186,7 @@ export const classificationSaveAnswerRateLimit = t.middleware(async ({ ctx, inpu
   if (!allowed) {
     throw new TRPCError({
       code: 'TOO_MANY_REQUESTS',
-      message: 'errors.classification.autosaveRateLimitExceeded',
+      message: CLASSIFICATION_AUTOSAVE_RATE_LIMIT_EXCEEDED,
     });
   }
 

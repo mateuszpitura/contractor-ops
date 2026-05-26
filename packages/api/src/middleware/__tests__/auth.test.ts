@@ -139,7 +139,7 @@ describe('authMiddleware', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('FORBIDDEN');
-      expect((e as TRPCError).message).toBe('ACCOUNT_BANNED');
+      expect((e as TRPCError).message).toBe('accountBanned');
     }
   });
 

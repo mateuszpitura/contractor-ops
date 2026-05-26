@@ -2,6 +2,7 @@ import type { FlagKey, LazyFlagBag } from '@contractor-ops/feature-flags';
 import { lazyFlagBag } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
+import { FEATURE_FLAG_UNAVAILABLE } from '../errors';
 import { t } from '../init';
 import { apiKeyTenantProcedure } from './api-key-auth';
 import { tenantProcedure } from './tenant';
@@ -93,8 +94,7 @@ export function requireFeatureFlag<K extends FlagKey>(key: K) {
     if (!flags) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message:
-          'requireFeatureFlag used on a procedure without ctx.flags. Chain tenantFlaggedProcedure or apiKeyTenantFlaggedProcedure first.',
+        message: FEATURE_FLAG_UNAVAILABLE,
       });
     }
     if (!flags.isEnabled(key)) {

@@ -184,7 +184,7 @@ const tenantMiddleware = t.middleware(async ({ ctx, next }) => {
   if (!orgId) {
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'errors.tenant.noActiveOrganization',
+      message: E.TENANT_NO_ACTIVE_ORGANIZATION,
     });
   }
 

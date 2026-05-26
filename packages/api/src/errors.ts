@@ -42,6 +42,15 @@ export const ACCOUNT_BANNED = 'accountBanned';
 export const LAST_ADMIN_CANNOT_DEACTIVATE = 'lastAdminCannotDeactivate';
 export const PERMISSION_DENIED = 'permissionDenied';
 export const UNKNOWN_ERROR = 'unknownError';
+export const PLATFORM_ADMIN_REQUIRED = 'platformAdminRequired';
+export const SERVER_MISCONFIGURED = 'serverMisconfigured';
+
+// ─── Org definitions (projects / teams / cost centers) ───────────
+export const PROJECT_NOT_FOUND = 'projectNotFound';
+export const PENDING_MERGE_NOT_FOUND = 'pendingMergeNotFound';
+export const TEAM_NOT_FOUND = 'teamNotFound';
+export const COST_CENTER_NOT_FOUND = 'costCenterNotFound';
+export const ORG_NO_COUNTRY = 'orgNoCountry';
 
 // ─── Contractor ──────────────────────────────────────────────────
 export const CONTRACTOR_NOT_FOUND = 'contractorNotFound';
@@ -136,14 +145,81 @@ export const ESIGN_DOCUMENT_NOT_FOUND = 'esignDocumentNotFound';
 export const ESIGN_DOWNLOAD_FAILED = 'esignDownloadFailed';
 export const ESIGN_ENVELOPE_NOT_FOUND = 'esignEnvelopeNotFound';
 export const ESIGN_NO_EXTERNAL_ID = 'esignNoExternalId';
+export const ESIGN_NOT_RECIPIENT = 'esignNotRecipient';
 
 // ─── API Key ────────────────────────────────────────────────────
 export const INVALID_API_KEY = 'invalidApiKey';
 export const API_KEY_REVOKED = 'apiKeyRevoked';
 export const API_KEY_EXPIRED = 'apiKeyExpired';
+export const API_KEY_CANNOT_UPDATE_REVOKED = 'apiKeyCannotUpdateRevoked';
 
 // ─── Tenant ─────────────────────────────────────────────────────
 export const ORG_SUSPENDED = 'orgSuspended';
+export const TENANT_NO_ACTIVE_ORGANIZATION = 'tenantNoActiveOrganization';
+
+// ─── Approval (extended) ────────────────────────────────────────
+export const APPROVAL_NO_USER_WITH_ROLE = 'approvalNoUserWithRole';
+
+// ─── Workflow roles ─────────────────────────────────────────────
+export const ROLE_TEMPLATE_NOT_FOUND = 'roleTemplateNotFound';
+
+// ─── Classification ─────────────────────────────────────────────
+export const SDS_APPROVAL_ALREADY_EXISTS = 'sdsApprovalAlreadyExists';
+export const CLASSIFICATION_RATE_LIMITER_UNAVAILABLE = 'classificationRateLimiterUnavailable';
+export const CLASSIFICATION_AUTOSAVE_RATE_LIMIT_EXCEEDED =
+  'classificationAutosaveRateLimitExceeded';
+export const CLASSIFICATION_ASSESSMENT_ID_REQUIRED = 'classificationAssessmentIdRequired';
+export const CLASSIFICATION_ENGINE_DISABLED = 'classificationEngineDisabled';
+export const CLASSIFICATION_ASSESSMENT_NOT_FOUND = 'classificationAssessmentNotFound';
+export const CLASSIFICATION_ASSESSMENT_NOT_COMPLETED = 'classificationAssessmentNotCompleted';
+export const CLASSIFICATION_GENERATE_SDS_IR35_ONLY = 'classificationGenerateSdsIr35Only';
+export const SDS_NOT_APPROVED = 'sdsNotApproved';
+export const CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED = 'classificationDrvBundleNotCompleted';
+export const CLASSIFICATION_DRV_BUNDLE_DE_ONLY = 'classificationDrvBundleDeOnly';
+export const CLASSIFICATION_ATTESTATION_REQUIRED = 'classificationAttestationRequired';
+export const CLASSIFICATION_DOCUMENT_NOT_FOUND = 'classificationDocumentNotFound';
+export const CLASSIFICATION_DRV_DE_ONLY = 'classificationDrvDeOnly';
+export const FILE_SIZE_MISMATCH = 'fileSizeMismatch';
+export const MIME_MAGIC_BYTE_MISMATCH = 'mimeMagicByteMismatch';
+export const R2_UPLOAD_FAILED = 'r2UploadFailed';
+export const DPA_NOT_AVAILABLE = 'dpaNotAvailable';
+export const SCC_NOT_REQUIRED = 'sccNotRequired';
+export const INVALID_TOS_VERSION_FORMAT = 'invalidTosVersionFormat';
+export const REAUTH_REQUIRED = 'reauthRequired';
+export const FEATURE_FLAG_UNAVAILABLE = 'featureFlagUnavailable';
+
+// ─── Organization rate limit ────────────────────────────────────
+export const ORGANIZATION_RATE_LIMITER_UNAVAILABLE = 'organizationRateLimiterUnavailable';
+export const ORGANIZATION_CREATE_RATE_LIMIT_EXCEEDED = 'organizationCreateRateLimitExceeded';
+
+// ─── Upload rate limit ──────────────────────────────────────────
+export const UPLOAD_RATE_LIMITER_UNAVAILABLE = 'uploadRateLimiterUnavailable';
+export const UPLOAD_RATE_LIMIT_EXCEEDED = 'uploadRateLimitExceeded';
+
+// ─── Billing / Finance (extended) ───────────────────────────────
+export const BILLING_PROFILE_NOT_FOUND = 'billingProfileNotFound';
+export const WHT_NOT_APPLICABLE = 'whtNotApplicable';
+
+// ─── Integrations (extended) ────────────────────────────────────
+export const CLOCKIFY_CONNECTION_NOT_FOUND = 'clockifyConnectionNotFound';
+
+// ─── Timesheets ─────────────────────────────────────────────────
+export const TIMESHEET_NOT_FOUND = 'timesheetNotFound';
+export const TIMESHEET_ENTRY_NOT_FOUND = 'timesheetEntryNotFound';
+export const TIMESHEET_WEEK_START_DATE_MUST_BE_MONDAY = 'timesheetWeekStartDateMustBeMonday';
+export const TIMESHEET_CANNOT_EDIT_IMPORTED = 'timesheetCannotEditImported';
+export const TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED = 'timesheetCanOnlyEditDraftOrRejected';
+export const TIMESHEET_CANNOT_SUBMIT = 'timesheetCannotSubmit';
+export const TIMESHEET_CANNOT_APPROVE = 'timesheetCannotApprove';
+export const TIMESHEET_CANNOT_REJECT = 'timesheetCannotReject';
+
+// ─── ZATCA onboarding ───────────────────────────────────────────
+export const ZATCA_API_CLIENT_UNAVAILABLE = 'zatcaApiClientUnavailable';
+export const ZATCA_COMPLIANCE_CHECKS_MUST_PASS = 'zatcaComplianceChecksMustPass';
+export const ZATCA_COMPLIANCE_CSID_REQUIRED = 'zatcaComplianceCsidRequired';
+export const ZATCA_CSR_REQUIRED = 'zatcaCsrRequired';
+export const ZATCA_TAX_DETAILS_REQUIRED = 'zatcaTaxDetailsRequired';
+export const ZATCA_TAX_DETAILS_REQUIRED_FOR_COMPLIANCE = 'zatcaTaxDetailsRequiredForCompliance';
 
 // ─── Validation (import processor) ──────────────────────────────
 export const VALIDATION_LEGAL_NAME_REQUIRED = 'validationLegalNameRequired';

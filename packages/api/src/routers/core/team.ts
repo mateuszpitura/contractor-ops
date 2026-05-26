@@ -13,6 +13,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { TEAM_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -64,7 +65,7 @@ export const teamRouter = router({
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const team = await ctx.db.team.findFirst({ where: { id: input.id } });
-      if (!team) throw new TRPCError({ code: 'NOT_FOUND', message: 'Team not found' });
+      if (!team) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
       return team;
     }),
 
@@ -102,7 +103,7 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { id, ...rest } = input;
       const before = await ctx.db.team.findFirst({ where: { id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Team not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
 
       const updated = await ctx.db.team.update({ where: { id }, data: rest });
       await writeAuditLog({
@@ -136,7 +137,7 @@ export const teamRouter = router({
     .input(orgDefinitionArchiveSchema)
     .mutation(async ({ ctx, input }) => {
       const before = await ctx.db.team.findFirst({ where: { id: input.id } });
-      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: 'Team not found' });
+      if (!before) throw new TRPCError({ code: 'NOT_FOUND', message: TEAM_NOT_FOUND });
 
       const updated = await ctx.db.team.update({
         where: { id: input.id },

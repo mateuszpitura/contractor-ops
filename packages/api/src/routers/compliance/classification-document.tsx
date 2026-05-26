@@ -17,6 +17,20 @@ import { createHash } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import {
+  CLASSIFICATION_ASSESSMENT_NOT_COMPLETED,
+  CLASSIFICATION_ASSESSMENT_NOT_FOUND,
+  CLASSIFICATION_ATTESTATION_REQUIRED,
+  CLASSIFICATION_DOCUMENT_NOT_FOUND,
+  CLASSIFICATION_DRV_BUNDLE_DE_ONLY,
+  CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED,
+  CLASSIFICATION_DRV_DE_ONLY,
+  CLASSIFICATION_GENERATE_SDS_IR35_ONLY,
+  FILE_SIZE_MISMATCH,
+  MIME_MAGIC_BYTE_MISMATCH,
+  R2_UPLOAD_FAILED,
+  SDS_NOT_APPROVED,
+} from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
@@ -110,22 +124,21 @@ export const classificationDocumentRouter = router({
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Classification assessment not found.',
+            message: CLASSIFICATION_ASSESSMENT_NOT_FOUND,
           });
         });
 
       if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message:
-            'Assessment must be completed with a captured questions snapshot before generating an SDS.',
+          message: CLASSIFICATION_ASSESSMENT_NOT_COMPLETED,
         });
       }
       const outcome = assessment.outcome as { kind?: string } | null;
       if (!outcome || outcome.kind !== 'IR35') {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'generateSds only applies to IR35 (GB) classification assessments.',
+          message: CLASSIFICATION_GENERATE_SDS_IR35_ONLY,
         });
       }
 
@@ -137,8 +150,7 @@ export const classificationDocumentRouter = router({
       if (!sdsApproval) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'SDS_NOT_APPROVED',
-          cause: { hint: 'Call classification.approveSds before generating the SDS PDF' },
+          message: SDS_NOT_APPROVED,
         });
       }
 
@@ -181,23 +193,21 @@ export const classificationDocumentRouter = router({
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Classification assessment not found.',
+            message: CLASSIFICATION_ASSESSMENT_NOT_FOUND,
           });
         });
 
       if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message:
-            'Assessment must be completed with a captured questions snapshot before generating a DRV defense bundle.',
+          message: CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED,
         });
       }
       const outcome = assessment.outcome as { kind?: string } | null;
       if (!outcome || outcome.kind !== 'SCHEINSELBSTANDIGKEIT') {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message:
-            'generateDrvDefenseBundle only applies to Scheinselbständigkeit (DE) classification assessments.',
+          message: CLASSIFICATION_DRV_BUNDLE_DE_ONLY,
         });
       }
 
@@ -208,8 +218,7 @@ export const classificationDocumentRouter = router({
       if (!attestation?.signedAt) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message:
-            'Signed other-client attestation is required before generating a DRV defense bundle.',
+          message: CLASSIFICATION_ATTESTATION_REQUIRED,
         });
       }
 
@@ -244,7 +253,7 @@ export const classificationDocumentRouter = router({
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Document not found.',
+            message: CLASSIFICATION_DOCUMENT_NOT_FOUND,
           });
         });
 
@@ -327,13 +336,13 @@ export const classificationDocumentRouter = router({
       if (assessment.countryCode !== 'DE') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'DRV decision letters are only applicable to DE assessments',
+          message: CLASSIFICATION_DRV_DE_ONLY,
         });
       }
 
       const fileBuffer = Buffer.from(input.fileBase64, 'base64');
       if (fileBuffer.byteLength !== input.fileSizeBytes) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'File size mismatch' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: FILE_SIZE_MISMATCH });
       }
 
       // Magic byte validation
@@ -346,7 +355,7 @@ export const classificationDocumentRouter = router({
         (input.mimeType === 'image/jpeg' && isJpeg) ||
         (input.mimeType === 'image/png' && isPng);
       if (!mimeValid) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'MIME_MAGIC_BYTE_MISMATCH' });
+        throw new TRPCError({ code: 'BAD_REQUEST', message: MIME_MAGIC_BYTE_MISMATCH });
       }
 
       const sha256Hash = createHash('sha256').update(fileBuffer).digest('hex');
@@ -368,7 +377,7 @@ export const classificationDocumentRouter = router({
         });
         signedUrl = result.signedUrl;
       } catch {
-        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'R2_UPLOAD_FAILED' });
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: R2_UPLOAD_FAILED });
       }
 
       let doc: { id: string };

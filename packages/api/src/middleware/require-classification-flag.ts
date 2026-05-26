@@ -17,6 +17,7 @@
 import { evaluate } from '@contractor-ops/feature-flags';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
+import { CLASSIFICATION_ENGINE_DISABLED } from '../errors';
 import { tenantProcedure } from './tenant';
 
 const log = createLogger({ service: 'classification-flag-guard' });
@@ -40,7 +41,7 @@ export const classificationProcedure = tenantProcedure.use(async ({ ctx, next })
     );
     throw new TRPCError({
       code: 'FORBIDDEN',
-      message: 'CLASSIFICATION_ENGINE_DISABLED',
+      message: CLASSIFICATION_ENGINE_DISABLED,
       cause: { flag: 'module.classification-engine', reason: result.reason },
     });
   }

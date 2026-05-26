@@ -1,5 +1,15 @@
 import type { TimeEntry } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
+import {
+  TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED,
+  TIMESHEET_CANNOT_APPROVE,
+  TIMESHEET_CANNOT_EDIT_IMPORTED,
+  TIMESHEET_CANNOT_REJECT,
+  TIMESHEET_CANNOT_SUBMIT,
+  TIMESHEET_ENTRY_NOT_FOUND,
+  TIMESHEET_NOT_FOUND,
+  TIMESHEET_WEEK_START_DATE_MUST_BE_MONDAY,
+} from '../errors';
 import type { DbClient } from './types';
 
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -40,7 +50,7 @@ export async function getOrCreateTimesheet(
   if (monday.getTime() !== weekStartDate.getTime()) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'errors.timesheet.weekStartDateMustBeMonday',
+      message: TIMESHEET_WEEK_START_DATE_MUST_BE_MONDAY,
     });
   }
 
@@ -79,12 +89,12 @@ async function updateExistingEntry(
     where: { id: entryId, organizationId, contractorId, timesheetId },
   });
   if (!existing) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'errors.timesheet.entryNotFound' });
+    throw new TRPCError({ code: 'NOT_FOUND', message: TIMESHEET_ENTRY_NOT_FOUND });
   }
   if (existing.source !== 'MANUAL') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'errors.timesheet.cannotEditImportedEntries',
+      message: TIMESHEET_CANNOT_EDIT_IMPORTED,
     });
   }
   return tx.timeEntry.update({
@@ -123,14 +133,14 @@ export async function saveDraftEntries(
   if (!timesheet) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'errors.timesheet.notFound',
+      message: TIMESHEET_NOT_FOUND,
     });
   }
 
   if (timesheet.status !== 'DRAFT' && timesheet.status !== 'REJECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'errors.timesheet.canOnlyEditDraftOrRejected',
+      message: TIMESHEET_CAN_ONLY_EDIT_DRAFT_OR_REJECTED,
     });
   }
 
@@ -199,7 +209,7 @@ export async function submitTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'errors.timesheet.cannotSubmit',
+      message: TIMESHEET_CANNOT_SUBMIT,
     });
   }
 
@@ -236,7 +246,7 @@ export async function approveTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'errors.timesheet.cannotApprove',
+      message: TIMESHEET_CANNOT_APPROVE,
     });
   }
 
@@ -275,7 +285,7 @@ export async function rejectTimesheet(
   if (updated.count === 0) {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'errors.timesheet.cannotReject',
+      message: TIMESHEET_CANNOT_REJECT,
     });
   }
 
