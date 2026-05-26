@@ -1,3 +1,8 @@
+// Decision: composes three billing sections — UsageDashboardContainer,
+// optional ProrationPreviewContainer (gated by local `selectedPriceId` state),
+// and the optional Manage-billing portal CTA (gated by subscription presence).
+// Owns the plan-change state machine + checkout / portal mutation handlers.
+
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Loader2 } from 'lucide-react';
