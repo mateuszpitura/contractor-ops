@@ -106,7 +106,7 @@ function ClassificationWizardEntry() {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || !draft) {
     return <WizardLoading />;
   }
 
@@ -129,7 +129,7 @@ function ClassificationWizardEntry() {
 
   return (
     <ClassificationWizardShellContainer
-      assessmentId={draft?.id}
+      assessmentId={draft.id}
       contractorAssignmentId={engagementId}
       contractorId={params.id ?? ''}
       countryCode={countryCode as WizardCountryCode}

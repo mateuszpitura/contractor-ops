@@ -16,7 +16,7 @@ export function useClassificationAssessmentList(contractorId: string) {
   const trpc = useTRPC();
 
   const listQuery = useQuery({
-    ...trpc.classification?.listByContractor.queryOptions({ contractorId }),
+    ...trpc.classification!.listByContractor.queryOptions({ contractorId }),
     retry: false,
   });
 

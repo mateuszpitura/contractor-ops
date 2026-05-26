@@ -28,7 +28,7 @@ export function useRecomputeCompliance(onSuccess?: () => void) {
   const t = useTranslations('Contractors.Compliance.Recompute');
 
   const mutation = useMutation(
-    trpc.classification?.recreateComplianceAssessment.mutationOptions({
+    trpc.classification!.recreateComplianceAssessment.mutationOptions({
       onSuccess: (data: MutationResultPayload) => {
         const updated = data.results
           .filter(r => r.noop !== true && !r.error)
@@ -43,7 +43,7 @@ export function useRecomputeCompliance(onSuccess?: () => void) {
         } else {
           toast.success(t('toast.success', { updated }));
         }
-        queryClient.invalidateQueries(trpc.classification?.pathFilter());
+        queryClient.invalidateQueries(trpc.classification!.pathFilter());
         onSuccess?.();
       },
       onError: (err: { message?: string }) => {

@@ -9,11 +9,11 @@ export function useOtherClientAttestation(engagementId: string) {
   const queryClient = useQueryClient();
 
   const existingQuery = useQuery(
-    trpc.ir35Attestation?.getForEngagement.queryOptions({ contractorAssignmentId: engagementId }),
+    trpc.ir35Attestation!.getForEngagement.queryOptions({ contractorAssignmentId: engagementId }),
   );
 
   const mutation = useMutation(
-    trpc.ir35Attestation?.upsert.mutationOptions({
+    trpc.ir35Attestation!.upsert.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
           queryKey: [['ir35Attestation', 'getForEngagement']],

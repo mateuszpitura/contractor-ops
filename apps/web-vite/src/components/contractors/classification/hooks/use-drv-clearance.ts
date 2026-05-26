@@ -10,7 +10,7 @@ export function useDrvClearanceList(engagementId: string) {
   const trpc = useTRPC();
 
   const listQuery = useQuery(
-    trpc.statusfeststellungsverfahren?.listByEngagement.queryOptions({
+    trpc.statusfeststellungsverfahren!.listByEngagement.queryOptions({
       contractorAssignmentId: engagementId,
     }),
   );
@@ -25,7 +25,7 @@ export function useDrvClearanceFormMutations(onClose: () => void) {
   const trpc = useTRPC();
 
   const createMutation = useResourceMutation(
-    trpc.statusfeststellungsverfahren?.create.mutationOptions(),
+    trpc.statusfeststellungsverfahren!.create.mutationOptions(),
     {
       invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
       successMessage: 'Done.',
@@ -34,7 +34,7 @@ export function useDrvClearanceFormMutations(onClose: () => void) {
   );
 
   const updateMutation = useResourceMutation(
-    trpc.statusfeststellungsverfahren?.update.mutationOptions(),
+    trpc.statusfeststellungsverfahren!.update.mutationOptions(),
     {
       invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
       successMessage: 'Done.',
@@ -50,9 +50,9 @@ export function useDrvDecisionLetterUpload(classificationAssessmentId: string | 
   const queryClient = useQueryClient();
 
   const uploadMutation = useResourceMutation(
-    trpc.classificationDocument?.uploadDrvDecisionLetter.mutationOptions({
+    trpc.classificationDocument!.uploadDrvDecisionLetter.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.classificationDocument?.pathFilter());
+        queryClient.invalidateQueries(trpc.classificationDocument!.pathFilter());
       },
     }),
     {
