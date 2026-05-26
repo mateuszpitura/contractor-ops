@@ -16,7 +16,7 @@ vi.mock('../../billing/feature-gate-container', () => ({
 import { render, screen, setup } from '@/test/test-utils';
 import type { CalendarConnection, useMyCalendarSection } from '../hooks/use-my-calendar-section';
 import type { useOrgCalendarSection } from '../hooks/use-org-calendar-section';
-import { OrgCalendarSection } from '../org-calendar-section';
+import { OrgCalendarSection, OrgCalendarSectionSkeleton } from '../org-calendar-section';
 
 type HookReturn = ReturnType<typeof useOrgCalendarSection>;
 
@@ -54,8 +54,8 @@ const connectedOutlook: CalendarConnection = {
 type Hook = ReturnType<typeof useMyCalendarSection>;
 
 describe('OrgCalendarSection', () => {
-  it('renders skeleton placeholders while loading', () => {
-    const { container } = render(<OrgCalendarSection {...buildProps({ isLoading: true })} />);
+  it('renders skeleton placeholders via the Skeleton sibling export', () => {
+    const { container } = render(<OrgCalendarSectionSkeleton t={tStub} />);
     expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
