@@ -8,6 +8,9 @@ import {
   Sparkline,
   TiltCard,
 } from '@contractor-ops/ui';
+import { Spotlight } from '@contractor-ops/ui/components/ace/spotlight-new';
+import { AuroraText } from '@contractor-ops/ui/components/magic/aurora-text';
+import { BlurFade } from '@contractor-ops/ui/components/magic/blur-fade';
 import { ArrowRight, Play } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useTranslations } from '@/i18n';
@@ -79,9 +82,14 @@ export function Hero({ market }: HeroProps) {
   const heroExperiment = heroExperimentFor(market);
   const badgeText = messages.hero.badge;
   const controlSubheadline = messages.hero.subheadline;
+  const headlineText = messages.hero.headline;
+  const headlineHighlight = messages.hero.headlineHighlight;
 
   return (
     <section className="hero-mesh noise-overlay relative min-h-[100dvh] flex items-center justify-center pt-20 pb-16 overflow-hidden">
+      {/* Aceternity spotlight — ambient lighting layer above mesh, below content */}
+      {!reduced && <Spotlight />}
+
       {/* Floating orbs — restrained to 2, higher blur for subtlety */}
       <div className="orb orb-teal absolute -top-20 -left-32 h-[500px] w-[500px] opacity-70" />
       <div className="orb orb-amber absolute top-40 -right-24 h-[400px] w-[400px] opacity-60" />
@@ -103,14 +111,18 @@ export function Hero({ market }: HeroProps) {
           {badgeText}
         </motion.div>
 
-        {/* Headline */}
+        {/* Headline — keyword (locale-specific) rendered through Magic UI AuroraText */}
         <motion.h1
           initial={{ opacity: 0, y: 40, filter: 'blur(16px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={t ?? { duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-4xl font-display text-hero leading-[1.05] tracking-[-0.035em]">
-          Stop managing contractors <br className="hidden sm:block" />
-          in <span className="gradient-text">spreadsheets</span>
+          {headlineText} <br className="hidden sm:block" />
+          {reduced ? (
+            <span className="gradient-text">{headlineHighlight}</span>
+          ) : (
+            <AuroraText className="font-display">{headlineHighlight}</AuroraText>
+          )}
         </motion.h1>
 
         {/* Subheadline — variant slot per market */}
@@ -158,8 +170,8 @@ export function Hero({ market }: HeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={t ?? { duration: 0.6, delay: 0.85, ease: [0.16, 1, 0.3, 1] }}
           className="mt-16 flex flex-wrap items-center justify-center gap-8 sm:gap-14">
-          {metrics.map(m => (
-            <div key={m.label} className="flex flex-col items-center">
+          {metrics.map((m, i) => (
+            <BlurFade key={m.label} delay={0.95 + i * 0.08} className="flex flex-col items-center">
               <AnimatedCounter
                 value={m.value}
                 suffix={m.suffix}
@@ -167,7 +179,7 @@ export function Hero({ market }: HeroProps) {
                 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
               />
               <span className="mt-1 text-sm text-muted-foreground">{m.label}</span>
-            </div>
+            </BlurFade>
           ))}
         </motion.div>
 
@@ -205,13 +217,7 @@ export function Hero({ market }: HeroProps) {
                 {/* Metric cards — TiltCard + AnimatedNumber */}
                 <div className="grid grid-cols-3 gap-4 sm:gap-5 mb-5">
                   {dashboardCards.map((card, i) => (
-                    <motion.div
-                      key={card.label}
-                      initial={reduced ? false : { opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={
-                        t ?? { duration: 0.5, delay: 1.6 + i * 0.12, ease: [0.16, 1, 0.3, 1] }
-                      }>
+                    <BlurFade key={card.label} delay={1.6 + i * 0.12}>
                       <TiltCard className="!rounded-xl !p-3 sm:!p-4">
                         <div className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider">
                           {card.label}
@@ -220,7 +226,7 @@ export function Hero({ market }: HeroProps) {
                           <AnimatedNumber value={card.value} format={card.format} duration={1400} />
                         </div>
                       </TiltCard>
-                    </motion.div>
+                    </BlurFade>
                   ))}
                 </div>
 
@@ -251,13 +257,10 @@ export function Hero({ market }: HeroProps) {
                 {/* Table rows — AtelierStatusPill */}
                 <div className="space-y-2">
                   {dashboardRows.map((row, i) => (
-                    <motion.div
+                    <BlurFade
                       key={row.name}
-                      initial={reduced ? false : { opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={
-                        t ?? { duration: 0.45, delay: 2.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }
-                      }
+                      delay={2.1 + i * 0.1}
+                      direction="right"
                       className="flex items-center justify-between rounded-lg border border-border/30 bg-surface-1/60 px-3 sm:px-4 py-2 sm:py-2.5 backdrop-blur-sm">
                       <div className="flex items-center gap-3">
                         <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] sm:text-xs font-bold text-primary">
@@ -278,7 +281,7 @@ export function Hero({ market }: HeroProps) {
                           {row.amount}
                         </span>
                       </div>
-                    </motion.div>
+                    </BlurFade>
                   ))}
                 </div>
 

@@ -44,7 +44,7 @@ export default async function AuthorPage({
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         <section className="mx-auto max-w-3xl px-6 text-center">
           <span className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 via-primary/10 to-transparent text-2xl font-semibold">
             {author.name

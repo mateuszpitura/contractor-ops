@@ -1,5 +1,6 @@
 'use client';
 
+import { ShiftCard } from '@contractor-ops/ui/components/cult';
 import {
   Banknote,
   BarChart3,
@@ -7,6 +8,7 @@ import {
   FileText,
   Receipt,
   Shield,
+  Sparkles,
   UserMinus,
   UserPlus,
 } from 'lucide-react';
@@ -101,6 +103,51 @@ export function Features() {
             From the first contract signature to the final offboarding checklist. Every step
             tracked, every approval audited, every payment reconciled.
           </p>
+        </FadeUp>
+
+        {/* Flagship Cult shift-card — hero-class "Why contractor-ops" preview */}
+        <FadeUp className="mt-14 flex justify-center" delay={0.1}>
+          <ShiftCard
+            className="!w-[280px] md:!w-[320px] !bg-primary text-primary-foreground"
+            topContent={
+              <div className="flex items-center gap-2 pt-2">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-foreground/15">
+                  <Sparkles aria-hidden className="size-4" />
+                </span>
+                <span className="text-sm font-semibold">Why contractor-ops</span>
+              </div>
+            }
+            middleContent={
+              <p className="px-1 pt-6 text-xs leading-relaxed opacity-90">
+                One source of truth across contracts, invoices, approvals, and payments.
+              </p>
+            }
+            topAnimateContent={
+              <p className="px-1 pt-2 text-xs font-medium uppercase tracking-[0.18em] opacity-80">
+                Hover to expand
+              </p>
+            }
+            bottomContent={
+              <ul className="space-y-2 px-1 pb-4 text-xs">
+                <li className="flex gap-2">
+                  <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+                  Contracts &amp; e-sign in one timeline
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+                  KSeF-native invoice reconciliation
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+                  Approval chains with full audit trail
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+                  Payments orchestrated, not chased
+                </li>
+              </ul>
+            }
+          />
         </FadeUp>
 
         <StaggerContainer

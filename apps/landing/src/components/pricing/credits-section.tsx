@@ -50,12 +50,22 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
     const creditsPerContractor = 2 * 1 + 1 * 2 + 0.5 * 5 + 0.3 * 3;
     const totalCredits = Math.ceil(contractors * creditsPerContractor);
 
-    // Find best pack
+    // Find best pack — undefined when `creditPacks` is empty (Stripe API
+    // unreachable in dev or pricing not yet configured for the market).
     const pack =
       creditPacks.find(p => p.credits >= totalCredits) ?? creditPacks[creditPacks.length - 1];
 
     return { credits: totalCredits, pack };
   }, [contractors, creditPacks]);
+
+  // Render nothing when Stripe didn't return any credit packs — `monthlyEstimate.pack`
+  // would be `undefined` and every `.priceFormatted` / `.name` access below would crash
+  // the whole pricing route. Pricing page caller wraps this section in a SectionTracker
+  // so the surrounding layout still renders without the credits block.
+  if (!monthlyEstimate.pack || creditPacks.length === 0) {
+    return null;
+  }
+  const pack = monthlyEstimate.pack;
 
   return (
     <section className="relative py-28 sm:py-36 overflow-hidden">
@@ -125,8 +135,12 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                   max={sliderStops.length - 1}
                   value={contractorsCount}
                   onChange={handleSliderChange}
-                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
+                  className="w-full h-2 rounded-full appearance-none cursor-pointer bg-muted accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   aria-label="Number of contractors"
+                  aria-valuemin={10}
+                  aria-valuemax={500}
+                  aria-valuenow={contractors}
+                  aria-valuetext={`${contractors} contractors`}
                 />
                 <div className="mt-4 flex items-baseline justify-center gap-2">
                   <span className="font-display text-4xl font-extrabold tracking-tight text-foreground">
@@ -146,16 +160,16 @@ export function CreditsSection({ creditPacks }: { creditPacks: CreditPack[] }) {
                 <div className="hidden sm:block h-10 w-px bg-border/40" />
                 <div className="text-center">
                   <div className="font-display text-3xl font-bold text-foreground">
-                    {monthlyEstimate.pack.priceFormatted}
+                    {pack.priceFormatted}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {monthlyEstimate.pack.name} ({monthlyEstimate.pack.creditsFormatted} credits)
+                    {pack.name} ({pack.creditsFormatted} credits)
                   </div>
                 </div>
                 <div className="hidden sm:block h-10 w-px bg-border/40" />
                 <div className="text-center">
                   <div className="font-display text-3xl font-bold text-accent-warm">
-                    {monthlyEstimate.pack.perCreditFormatted}
+                    {pack.perCreditFormatted}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">per credit</div>
                 </div>

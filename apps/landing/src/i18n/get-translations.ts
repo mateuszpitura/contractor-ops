@@ -26,6 +26,7 @@ export interface TranslationMessages {
     pricing: string;
     login: string;
     getStarted: string;
+    skipToContent: string;
   };
   hero: {
     badge: string;

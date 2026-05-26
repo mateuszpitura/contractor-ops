@@ -1,6 +1,6 @@
 'use client';
 
-import { ShimmerButton } from '@contractor-ops/ui/components/magic/shimmer-button';
+import { Button as MovingBorderButton } from '@contractor-ops/ui/components/ace/moving-border';
 import { ArrowRight, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -47,19 +47,17 @@ export function CtaBand({
         </p>
 
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <ShimmerButton
-            shimmerColor="rgba(255,255,255,0.85)"
-            shimmerSize="0.08em"
+          <MovingBorderButton
             borderRadius="999px"
-            background="oklch(var(--color-primary) / 1)"
-            className="px-7 py-3 text-base font-semibold"
+            duration={2800}
+            containerClassName="h-14 w-auto"
+            borderClassName="bg-[radial-gradient(var(--color-primary)_40%,transparent_60%)] opacity-80"
+            className="bg-primary px-7 text-primary-foreground border-primary/40 text-base font-semibold gap-2"
             onClick={() => router.push(signupHref)}
             aria-label={ctaPrimary}>
-            <span className="inline-flex items-center gap-2 text-primary-foreground">
-              {ctaPrimary}
-              <ArrowRight aria-hidden className="size-4" />
-            </span>
-          </ShimmerButton>
+            {ctaPrimary}
+            <ArrowRight aria-hidden className="size-4" />
+          </MovingBorderButton>
 
           <Link
             href={contactHref}

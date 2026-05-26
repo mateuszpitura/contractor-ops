@@ -1,3 +1,6 @@
+'use client';
+
+import { DirectionAwareHover } from '@contractor-ops/ui/components/ace/direction-aware-hover';
 import { GlowingEffect } from '@contractor-ops/ui/components/ace/glowing-effect';
 import Link from 'next/link';
 import type { CmsPostSummary } from '@/lib/cms';
@@ -16,13 +19,12 @@ export function PostCard({ post, locale }: PostCardProps) {
       <GlowingEffect spread={24} glow proximity={36} inactiveZone={0.3} disabled={false} />
       <Link href={href} className="block focus-visible:outline-none">
         {post.coverImage?.url ? (
-          // biome-ignore lint/performance/noImgElement: marketing static-export landing — Next/Image not configured here.
-          <img
-            src={post.coverImage.url}
-            alt={post.coverImage.alt ?? ''}
-            className="aspect-[16/9] w-full object-cover"
-            loading="lazy"
-          />
+          <DirectionAwareHover
+            imageUrl={post.coverImage.url}
+            className="aspect-[16/9] w-full h-auto rounded-none"
+            imageClassName="object-cover">
+            <span className="sr-only">{post.coverImage.alt ?? post.title}</span>
+          </DirectionAwareHover>
         ) : (
           <div className="aspect-[16/9] w-full bg-gradient-to-br from-primary/15 via-primary/5 to-transparent" />
         )}

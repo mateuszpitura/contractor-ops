@@ -90,7 +90,7 @@ export default async function PostPage({
     <TranslationProvider translations={t} locale={locale}>
       <ReadingProgress />
       <Navbar />
-      <main className="pt-28 pb-24">
+      <main id="main" className="pt-28 pb-24">
         <article className="mx-auto max-w-3xl px-6">
           <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground">
             <ol className="flex items-center gap-2">

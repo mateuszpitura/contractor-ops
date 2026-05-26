@@ -9,7 +9,15 @@ import { slugify } from '../lib/slugify';
 
 const REVALIDATE_PROFILE = 'max';
 
+// Skip revalidateTag during one-shot seed scripts. `next/cache`'s
+// revalidateTag requires the Next.js request-scoped static-generation store;
+// it throws "Invariant: static generation store missing" when invoked from a
+// plain tsx script (see apps/cms/scripts/seed-qa.ts, seed-admin.ts,
+// migrate-legal-from-tsx.ts). Set CMS_SUPPRESS_WEBHOOKS=1 in those scripts.
+const isSuppressed = (): boolean => process.env.CMS_SUPPRESS_WEBHOOKS === '1';
+
 const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('authors:list', REVALIDATE_PROFILE);
   if (doc?.handle) {
     revalidateTag(`author:${doc.handle}`, REVALIDATE_PROFILE);
@@ -18,6 +26,7 @@ const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
 };
 
 const onAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('authors:list', REVALIDATE_PROFILE);
   if (doc?.handle) {
     revalidateTag(`author:${doc.handle}`, REVALIDATE_PROFILE);

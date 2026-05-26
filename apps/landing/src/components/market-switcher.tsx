@@ -94,7 +94,7 @@ export function MarketSwitcher() {
                   aria-selected={locale === currentLocale}
                   // biome-ignore lint/nursery/noJsxPropsBind: per-item handler closes over locale
                   onClick={() => handleSelect(locale)}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted/40 focus:bg-muted/40 focus:outline-none">
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
                   <span className="flex flex-col">
                     <span className="font-medium text-foreground">{MARKET_LABELS[market]}</span>
                     <span className="text-[11px] text-muted-foreground">

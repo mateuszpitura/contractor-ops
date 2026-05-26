@@ -35,7 +35,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
-      <main>
+      <main id="main">
         <SectionTracker name="pricing-hero">
           <PricingHero views={views} annualSavings={annualSavings} />
         </SectionTracker>

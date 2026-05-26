@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
-import type { Locale } from '@/i18n/config';
 import { direction, isSupportedLocale, SUPPORTED_LOCALES } from '@/i18n/config';
 
 type Props = {

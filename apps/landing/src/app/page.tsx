@@ -23,7 +23,7 @@ export default function RootPage() {
     <>
       <meta httpEquiv="refresh" content={`0;url=/${defaultLocale}`} />
       <noscript>
-        <p style={{ padding: 24, fontFamily: 'system-ui' }}>
+        <p>
           Redirecting to <a href={`/${defaultLocale}`}>Contractor Ops</a>…
         </p>
       </noscript>

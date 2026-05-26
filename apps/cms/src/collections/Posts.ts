@@ -40,7 +40,12 @@ function estimateWordCount(value: unknown): number {
   return count;
 }
 
+// See Authors.ts for rationale — revalidateTag needs the Next.js
+// request-scoped store and crashes inside one-shot tsx seed scripts.
+const isSuppressed = (): boolean => process.env.CMS_SUPPRESS_WEBHOOKS === '1';
+
 const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('posts:list', REVALIDATE_PROFILE);
   if (doc?.id) {
     revalidateTag(`post:${doc.id}`, REVALIDATE_PROFILE);
@@ -49,6 +54,7 @@ const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
 };
 
 const onAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('posts:list', REVALIDATE_PROFILE);
   if (doc?.id) {
     revalidateTag(`post:${doc.id}`, REVALIDATE_PROFILE);

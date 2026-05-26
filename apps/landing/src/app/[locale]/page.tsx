@@ -53,7 +53,7 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
     <TranslationProvider translations={t} locale={locale}>
       <StructuredData locale={locale} plans={plans} />
       <Navbar />
-      <main>
+      <main id="main">
         <SectionTracker name="hero">
           <Hero market={market} />
         </SectionTracker>

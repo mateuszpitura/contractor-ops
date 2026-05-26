@@ -1,5 +1,6 @@
 'use client';
 
+import { WorldMap } from '@contractor-ops/ui/components/ace';
 import { GlowingEffect } from '@contractor-ops/ui/components/ace/glowing-effect';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -12,6 +13,22 @@ import {
   MessageSquare,
   Receipt,
 } from 'lucide-react';
+
+// EU hub (Warsaw) → UK + Gulf coverage. Matches contractor-ops EU/UK/Gulf markets.
+const COVERAGE_DOTS = [
+  {
+    start: { lat: 52.23, lng: 21.01, label: 'Warsaw' },
+    end: { lat: 51.5, lng: -0.13, label: 'London' },
+  },
+  {
+    start: { lat: 52.23, lng: 21.01, label: 'Warsaw' },
+    end: { lat: 25.27, lng: 55.3, label: 'Dubai' },
+  },
+  {
+    start: { lat: 52.23, lng: 21.01, label: 'Warsaw' },
+    end: { lat: 24.71, lng: 46.67, label: 'Riyadh' },
+  },
+];
 
 interface IntegrationItem {
   name: string;
@@ -60,6 +77,10 @@ export function IntegrationsGrid({
           </h2>
           <p className="mt-4 text-base text-muted-foreground md:text-lg">{description}</p>
         </header>
+
+        <div className="mb-12 overflow-hidden rounded-2xl border border-border/40">
+          <WorldMap dots={COVERAGE_DOTS} lineColor="var(--color-primary)" />
+        </div>
 
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(item => {

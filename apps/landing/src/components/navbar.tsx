@@ -129,7 +129,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={closeMobileMenu}
-                className="rounded-xl px-4 py-3.5 text-lg font-medium text-foreground transition-colors hover:bg-muted/50">
+                className="flex min-h-12 items-center rounded-xl px-4 py-3.5 text-lg font-medium text-foreground transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 {link.label}
               </a>
             ))}
@@ -138,13 +138,13 @@ export function Navbar() {
             <MarketSwitcher />
             <a
               href="/login"
-              className="rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground">
+              className="flex min-h-12 items-center justify-center rounded-xl border border-border px-4 py-3 text-center text-base font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               Log in
             </a>
             <button
               type="button"
               onClick={scrollToCta}
-              className="rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground shadow-md">
+              className="min-h-12 rounded-xl bg-primary px-4 py-3 text-center text-base font-semibold text-primary-foreground shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
               Get started free
             </button>
           </div>

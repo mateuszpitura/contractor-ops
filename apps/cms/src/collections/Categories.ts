@@ -9,7 +9,12 @@ import { slugify } from '../lib/slugify';
 
 const REVALIDATE_PROFILE = 'max';
 
+// See Authors.ts for rationale — revalidateTag needs the Next.js
+// request-scoped store and crashes inside one-shot tsx seed scripts.
+const isSuppressed = (): boolean => process.env.CMS_SUPPRESS_WEBHOOKS === '1';
+
 const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('categories:list', REVALIDATE_PROFILE);
   if (doc?.slug) {
     revalidateTag(`category:${doc.slug}`, REVALIDATE_PROFILE);
@@ -18,6 +23,7 @@ const onAfterChange: CollectionAfterChangeHook = ({ doc }) => {
 };
 
 const onAfterDelete: CollectionAfterDeleteHook = ({ doc }) => {
+  if (isSuppressed()) return doc;
   revalidateTag('categories:list', REVALIDATE_PROFILE);
   if (doc?.slug) {
     revalidateTag(`category:${doc.slug}`, REVALIDATE_PROFILE);

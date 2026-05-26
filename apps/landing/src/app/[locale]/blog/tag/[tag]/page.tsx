@@ -42,7 +42,7 @@ export default async function TagArchivePage({
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         <section className="mx-auto max-w-3xl px-6 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">
             Tag archive

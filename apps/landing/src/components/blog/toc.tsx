@@ -1,5 +1,6 @@
 'use client';
 
+import { TracingBeam } from '@contractor-ops/ui/components/ace/tracing-beam';
 import { cn } from '@contractor-ops/ui/lib/utils';
 import { useEffect, useState } from 'react';
 
@@ -50,27 +51,29 @@ export function Toc({ headings, className }: TocProps) {
 
   return (
     <nav aria-label="Table of contents" className={cn('text-sm', className)}>
-      <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-        On this page
-      </p>
-      <ol className="space-y-1.5 border-s border-border/40 ps-4">
-        {headings.map(heading => {
-          const active = activeId === heading.id;
-          return (
-            <li key={heading.id} className={heading.level === 3 ? 'ps-3' : ''}>
-              <a
-                href={`#${heading.id}`}
-                className={cn(
-                  'block text-muted-foreground transition-colors',
-                  active && 'font-medium text-primary',
-                  !active && 'hover:text-foreground',
-                )}>
-                {heading.text}
-              </a>
-            </li>
-          );
-        })}
-      </ol>
+      <TracingBeam className="!max-w-none">
+        <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+          On this page
+        </p>
+        <ol className="space-y-1.5 ps-4">
+          {headings.map(heading => {
+            const active = activeId === heading.id;
+            return (
+              <li key={heading.id} className={heading.level === 3 ? 'ps-3' : ''}>
+                <a
+                  href={`#${heading.id}`}
+                  className={cn(
+                    'block text-muted-foreground transition-colors',
+                    active && 'font-medium text-primary',
+                    !active && 'hover:text-foreground',
+                  )}>
+                  {heading.text}
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </TracingBeam>
     </nav>
   );
 }

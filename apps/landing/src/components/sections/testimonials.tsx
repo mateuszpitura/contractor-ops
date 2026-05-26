@@ -1,8 +1,6 @@
 'use client';
 
-import { Marquee } from '@contractor-ops/ui/components/magic/marquee';
-import { cn } from '@contractor-ops/ui/lib/utils';
-import { Quote } from 'lucide-react';
+import { InfiniteMovingCards } from '@contractor-ops/ui/components/ace/infinite-moving-cards';
 
 interface TestimonialItem {
   quote: string;
@@ -27,8 +25,8 @@ export function Testimonials({
   items,
 }: TestimonialsProps) {
   const half = Math.ceil(items.length / 2);
-  const firstRow = items.slice(0, half);
-  const secondRow = items.slice(half);
+  const firstRow = items.slice(0, half).map(toCardItem);
+  const secondRow = items.slice(half).map(toCardItem);
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -44,38 +42,17 @@ export function Testimonials({
       </div>
 
       <div className="relative flex flex-col gap-6">
-        <Marquee pauseOnHover className="[--duration:70s] [--gap:1.5rem]">
-          {firstRow.map(item => (
-            <TestimonialCard key={`${item.author}-${item.company}`} item={item} />
-          ))}
-        </Marquee>
-        <Marquee reverse pauseOnHover className="[--duration:85s] [--gap:1.5rem]">
-          {secondRow.map(item => (
-            <TestimonialCard key={`${item.author}-${item.company}`} item={item} />
-          ))}
-        </Marquee>
+        <InfiniteMovingCards items={firstRow} direction="left" speed="slow" pauseOnHover />
+        <InfiniteMovingCards items={secondRow} direction="right" speed="slow" pauseOnHover />
       </div>
     </section>
   );
 }
 
-function TestimonialCard({ item }: { item: TestimonialItem }) {
-  return (
-    <figure
-      className={cn(
-        'relative flex w-[24rem] max-w-[80vw] flex-col gap-4 rounded-2xl border border-border/50 bg-card/70 p-6 backdrop-blur',
-        'transition-colors hover:border-primary/40',
-      )}>
-      <Quote aria-hidden className="size-5 text-primary/70" />
-      <blockquote className="text-base leading-relaxed text-foreground/90">
-        "{item.quote}"
-      </blockquote>
-      <figcaption className="mt-2 flex flex-col">
-        <span className="text-sm font-semibold text-foreground">{item.author}</span>
-        <span className="text-xs text-muted-foreground">
-          {item.role} · {item.company}
-        </span>
-      </figcaption>
-    </figure>
-  );
+function toCardItem(item: TestimonialItem) {
+  return {
+    quote: item.quote,
+    name: item.author,
+    title: `${item.role} · ${item.company}`,
+  };
 }

@@ -1,4 +1,5 @@
 import { createLogger } from '@contractor-ops/logger';
+import { BlurFade } from '@contractor-ops/ui/components/magic/blur-fade';
 import Link from 'next/link';
 import { PostCard } from '@/components/blog/post-card';
 import { Footer } from '@/components/footer';
@@ -63,7 +64,7 @@ export default async function BlogIndexPage({
   return (
     <TranslationProvider translations={t} locale={locale}>
       <Navbar />
-      <main className="pt-32 pb-24">
+      <main id="main" className="pt-32 pb-24">
         <section className="mx-auto max-w-5xl px-6">
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">
             Field notes
@@ -103,9 +104,11 @@ export default async function BlogIndexPage({
         {rest.length > 0 ? (
           <section className="mx-auto mt-12 max-w-5xl px-6">
             <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {rest.map(post => (
+              {rest.map((post, i) => (
                 <li key={post.id}>
-                  <PostCard post={post} locale={locale} />
+                  <BlurFade delay={i * 0.06} inView>
+                    <PostCard post={post} locale={locale} />
+                  </BlurFade>
                 </li>
               ))}
             </ul>

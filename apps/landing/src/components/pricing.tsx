@@ -1,13 +1,16 @@
 'use client';
 
-import { ArrowRight, Check, Sparkles } from 'lucide-react';
+import { Button as MovingBorderButton } from '@contractor-ops/ui/components/ace/moving-border';
+import type { TailarkPricingTier } from '@contractor-ops/ui/components/tailark/pricing';
+import { TailarkPricing } from '@contractor-ops/ui/components/tailark/pricing';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useLocale, useTranslations } from '@/i18n';
 import { intlLocaleFor } from '@/lib/market';
 import type { LandingPlanView } from '@/lib/pricing-types';
 import { formatPrice } from '@/lib/pricing-types';
 import { TrackClick } from './analytics/track-click';
-import { FadeUp, StaggerContainer, StaggerItem } from './motion-wrapper';
+import { FadeUp } from './motion-wrapper';
 
 type Period = 'month' | 'year';
 
@@ -46,15 +49,14 @@ export function Pricing({ views, annualSavings }: PricingProps) {
 
         <FadeUp className="mt-10 flex flex-col items-center gap-2" delay={0.15}>
           <div
-            role="tablist"
+            role="group"
             aria-label="Billing period"
             className="inline-flex items-center rounded-full border border-border/60 bg-surface-1/60 p-1">
             <button
-              role="tab"
               type="button"
-              aria-selected={period === 'month'}
+              aria-pressed={period === 'month'}
               onClick={() => setPeriod('month')}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 period === 'month'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -62,11 +64,10 @@ export function Pricing({ views, annualSavings }: PricingProps) {
               {toggleMonthly}
             </button>
             <button
-              role="tab"
               type="button"
-              aria-selected={period === 'year'}
+              aria-pressed={period === 'year'}
               onClick={() => setPeriod('year')}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 period === 'year'
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -79,83 +80,66 @@ export function Pricing({ views, annualSavings }: PricingProps) {
           )}
         </FadeUp>
 
-        <StaggerContainer
-          className="mt-12 mx-auto max-w-4xl grid grid-cols-1 gap-5 md:grid-cols-3 items-stretch"
-          staggerDelay={0.1}>
-          {views.map(view => {
-            const { plan, features, ctaHref, ctaLabel } = view;
-            const price = period === 'month' ? plan.monthly : plan.annual;
-            const priceAmount = price?.amount ?? null;
-            const checkoutHref = price
-              ? `${ctaHref}&priceId=${price.stripePriceId}&period=${period}`
-              : ctaHref;
-            return (
-              <StaggerItem key={plan.id}>
-                <div className="relative h-full">
-                  {plan.popular && (
-                    <div className="absolute -top-3.5 left-1/2 z-10 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-md">
-                      <Sparkles className="h-3 w-3" />
-                      Most popular
-                    </div>
-                  )}
-                  <div
-                    className={`card-glow glass-medium atelier-shimmer relative flex h-full flex-col rounded-2xl p-7 ${
-                      plan.popular ? 'atelier-border-glow' : ''
-                    }`}>
-                    <div className="mb-6">
-                      <h3 className="font-display text-lg font-bold text-foreground">
-                        {plan.name}
-                      </h3>
-                      <div className="mt-3 flex items-baseline gap-1.5">
-                        <span className="font-display text-4xl font-extrabold tracking-tight text-foreground">
-                          {formatPrice(priceAmount, price?.currency ?? 'eur', {
-                            locale: intlLocale,
-                          })}
+        <FadeUp className="mt-12 mx-auto max-w-5xl" delay={0.2}>
+          <TailarkPricing
+            tiers={views.map((view): TailarkPricingTier => {
+              const { plan, features, ctaHref, ctaLabel } = view;
+              const price = period === 'month' ? plan.monthly : plan.annual;
+              const priceAmount = price?.amount ?? null;
+              const checkoutHref = price
+                ? `${ctaHref}&priceId=${price.stripePriceId}&period=${period}`
+                : ctaHref;
+              return {
+                id: plan.id,
+                name: plan.name,
+                priceLabel: formatPrice(priceAmount, price?.currency ?? 'eur', {
+                  locale: intlLocale,
+                }),
+                priceSuffix:
+                  priceAmount !== null && priceAmount > 0
+                    ? `/ ${period === 'month' ? 'mo' : 'yr'}`
+                    : undefined,
+                description: `${plan.description} · Includes ${plan.includedSeats} seats · ${plan.creditsIncluded} OCR credits`,
+                features,
+                popular: plan.popular,
+                cta: (
+                  <TrackClick
+                    event="pricing_cta_click"
+                    properties={{
+                      plan: plan.id,
+                      tier: plan.tier,
+                      market: plan.market,
+                      period,
+                    }}>
+                    {plan.popular ? (
+                      <MovingBorderButton
+                        as="a"
+                        href={checkoutHref}
+                        borderRadius="0.875rem"
+                        duration={3200}
+                        containerClassName="h-12 w-full"
+                        borderClassName="bg-[radial-gradient(var(--color-primary)_40%,transparent_60%)] opacity-80"
+                        className="bg-primary px-5 text-primary-foreground border-primary/40 text-sm font-semibold gap-2 w-full">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3" />
+                          {ctaLabel}
                         </span>
-                        {priceAmount !== null && priceAmount > 0 && (
-                          <span className="text-sm text-muted-foreground">
-                            / {period === 'month' ? 'mo' : 'yr'}
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Includes {plan.includedSeats} seats &middot; {plan.creditsIncluded} OCR
-                        credits
-                      </p>
-                      <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                        {plan.description}
-                      </p>
-                    </div>
-
-                    <ul className="mb-8 flex-1 space-y-3">
-                      {features.map(feature => (
-                        <li key={feature} className="flex items-start gap-2.5">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                          <span className="text-sm text-foreground/85">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <TrackClick
-                      event="pricing_cta_click"
-                      properties={{ plan: plan.id, tier: plan.tier, market: plan.market, period }}>
+                        <ArrowRight className="h-4 w-4" />
+                      </MovingBorderButton>
+                    ) : (
                       <a
                         href={checkoutHref}
-                        className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${
-                          plan.popular
-                            ? 'bg-primary text-primary-foreground shadow-md hover:bg-primary/90'
-                            : 'border border-border bg-surface-1 text-foreground hover:bg-muted/50'
-                        }`}>
+                        className="group inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] border border-border bg-surface-1 text-foreground hover:bg-muted/50">
                         {ctaLabel}
                         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                       </a>
-                    </TrackClick>
-                  </div>
-                </div>
-              </StaggerItem>
-            );
-          })}
-        </StaggerContainer>
+                    )}
+                  </TrackClick>
+                ),
+              };
+            })}
+          />
+        </FadeUp>
 
         <FadeUp className="mt-10 text-center" delay={0.3}>
           <a
