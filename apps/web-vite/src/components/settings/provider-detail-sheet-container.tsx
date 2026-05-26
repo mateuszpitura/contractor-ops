@@ -1,6 +1,3 @@
-// Decision: side-effect setup — owns local disconnect-dialog state and wires onDisconnectDialogClose
-// callback into the hook. Sheet open state is parent-owned (ProviderConnectionCard). View renders
-// presentational sheet content.
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
@@ -15,6 +12,8 @@ interface ProviderDetailSheetContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: side-effect setup — owns local disconnect-dialog state wired through the
+// hook's onDisconnectDialogClose; sheet open prop gated by ProviderConnectionCard.
 export function ProviderDetailSheetContainer({
   provider,
   displayName,

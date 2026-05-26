@@ -1,7 +1,3 @@
-// Decision: side-effect setup — owns 2 dialog states (disconnect confirm + detail sheet) spanning
-// presentational siblings inside the card, and wires onDisconnected callback that closes the
-// confirm dialog. Hook owns connection mutation; view renders card with dialog slots.
-
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 
@@ -15,6 +11,8 @@ interface ProviderConnectionCardContainerProps {
   description: string;
 }
 
+// Decision: side-effect setup — owns disconnect-confirm + detail-sheet dialog states
+// spanning sibling slots inside the card; mounted by IntegrationsTab per provider.
 export function ProviderConnectionCardContainer(props: ProviderConnectionCardContainerProps) {
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);

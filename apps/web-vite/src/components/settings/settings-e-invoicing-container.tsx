@@ -1,6 +1,3 @@
-// Decision: composition — orchestrates breadcrumb, page header, log-link CTA, and 2 child
-// containers (PeppolParticipantCardContainer + LeitwegIdListCardContainer) into the e-invoicing
-// settings page. Each card hosts its own variant decisions internally.
 import { AtelierPageHeader } from '@contractor-ops/ui';
 import {
   Breadcrumb,
@@ -18,6 +15,9 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { LeitwegIdListCardContainer } from './e-invoicing/leitweg-id-list-card-container.js';
 import { PeppolParticipantCardContainer } from './e-invoicing/peppol-participant-card-container.js';
 
+// Decision: composition — orchestrates breadcrumb, page header, log-link CTA, and
+// PeppolParticipantCardContainer + LeitwegIdListCardContainer into the e-invoicing
+// settings route page.
 export function SettingsEInvoicingContainer() {
   const t = useTranslations('EInvoice.Settings');
   const tSettings = useTranslations('Settings');

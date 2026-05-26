@@ -1,6 +1,3 @@
-// Decision: form widget mounted by carrier provider section (dpd/ups) inside a decisive parent
-// section. Container scopes per-carrier hook lifecycle and forwards carrier label. View owns
-// form validation branches via hook's form state.
 import { CarrierCredentialForm } from './carrier-credential-form.js';
 import { useCarrierCredentialForm } from './hooks/use-carrier-credential-form.js';
 
@@ -9,6 +6,8 @@ interface CarrierCredentialFormContainerProps {
   carrierLabel: string;
 }
 
+// Decision: form host — carrier credential form mounted by CarrierProviderSection
+// (per dpd/ups); hook scopes the per-carrier credential mutation lifecycle.
 export function CarrierCredentialFormContainer({
   carrier,
   carrierLabel,

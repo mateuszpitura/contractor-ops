@@ -1,5 +1,3 @@
-// Decision: composition — orchestrates breadcrumb, page header, and TransmissionsLogCardContainer
-// into the e-invoicing log page. Child card hosts its own variant decisions internally.
 import { AtelierPageHeader } from '@contractor-ops/ui';
 import {
   Breadcrumb,
@@ -13,6 +11,8 @@ import {
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { TransmissionsLogCardContainer } from './e-invoicing/transmissions-log-card-container.js';
 
+// Decision: composition — orchestrates breadcrumb, page header, and
+// TransmissionsLogCardContainer into the e-invoicing log route page.
 export function SettingsEInvoicingLogContainer() {
   const t = useTranslations('EInvoice.TransmissionsLog');
   const tSettings = useTranslations('EInvoice.Settings');

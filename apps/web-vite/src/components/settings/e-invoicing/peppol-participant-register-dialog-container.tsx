@@ -1,6 +1,3 @@
-// Decision: side-effect setup — owns local resetNonce state to force-remount the form after each
-// successful register, wired through the hook's onReset callback. Dialog rendered conditionally by
-// PeppolParticipantCard via open prop.
 import { useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -12,6 +9,8 @@ interface PeppolParticipantRegisterDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: side-effect setup — owns local resetNonce to force-remount the form after
+// each successful register via the hook's onReset; open prop gated by PeppolParticipantCard.
 export function PeppolParticipantRegisterDialogContainer({
   open,
   onOpenChange,

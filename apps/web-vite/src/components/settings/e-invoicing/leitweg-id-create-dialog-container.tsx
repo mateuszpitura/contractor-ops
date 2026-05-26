@@ -1,6 +1,3 @@
-// Decision: side-effect setup — owns local formError state surfaced into the hook callback path
-// and into the view. Dialog rendered conditionally by LeitwegIdListCard via open prop. Container
-// also seeds initial/prefill for create-vs-edit mode pick.
 import { useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -16,6 +13,8 @@ interface LeitwegIdCreateDialogContainerProps {
   onSaved?: (id: string) => void;
 }
 
+// Decision: side-effect setup — owns local formError state passed back through the hook
+// callback; dialog open prop gated by LeitwegIdListCard (create + per-row edit reuse).
 export function LeitwegIdCreateDialogContainer({
   open,
   onOpenChange,
