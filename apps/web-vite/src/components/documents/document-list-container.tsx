@@ -13,8 +13,23 @@ export function DocumentListContainer({ entityType, entityId }: DocumentListCont
     entityId,
   );
 
+  if (isLoading) {
+    return (
+      <DocumentList isLoading isEmpty={false}>
+        {null}
+      </DocumentList>
+    );
+  }
+  if (isEmpty) {
+    return (
+      <DocumentList isLoading={false} isEmpty>
+        {null}
+      </DocumentList>
+    );
+  }
+
   return (
-    <DocumentList isLoading={isLoading} isEmpty={isEmpty}>
+    <DocumentList isLoading={false} isEmpty={false}>
       {documents.map((doc, i) => (
         <DocumentCardContainer
           key={doc.id}
