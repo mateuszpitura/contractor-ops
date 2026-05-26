@@ -2,6 +2,7 @@ import {
   AtelierEmptyState,
   AtelierPageHeader,
   EquipmentIllustration,
+  QueryErrorPanel,
   SectionLabel,
   WORKBENCH_TABLE_PAGE_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
@@ -15,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
-import { Package, Plus, RefreshCw } from 'lucide-react';
+import { Package, Plus } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -101,17 +102,11 @@ export function EquipmentListContainer() {
           <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>
         <AnimateIn delay={1}>
-          <div className="flex flex-col items-center gap-4 py-12">
-            <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => void list.refetchCount()}>
-              <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-              {tProfile('error.retry')}
-            </Button>
-          </div>
+          <QueryErrorPanel
+            message={tCommon('networkError')}
+            retryLabel={tProfile('error.retry')}
+            onRetry={() => void list.refetchCount()}
+          />
         </AnimateIn>
       </div>
     );

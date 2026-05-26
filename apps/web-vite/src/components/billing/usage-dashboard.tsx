@@ -1,8 +1,9 @@
+import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { Crown, RefreshCw, Zap } from 'lucide-react';
+import { Crown, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from '../../i18n/navigation';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -85,14 +86,7 @@ export function UsageDashboard({
   // ---- Error state ----
   if (isError) {
     return (
-      <div className="flex flex-col items-center gap-4 py-12">
-        <p className="text-sm text-muted-foreground">{t('errorLoading')}</p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw size={14} aria-hidden="true" />
-          {t('retry')}
-        </Button>
-      </div>
+      <QueryErrorPanel message={t('errorLoading')} retryLabel={t('retry')} onRetry={refetch} />
     );
   }
 

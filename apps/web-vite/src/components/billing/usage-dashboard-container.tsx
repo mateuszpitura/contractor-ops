@@ -1,6 +1,5 @@
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { RefreshCw } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import {
@@ -31,14 +30,11 @@ export function UsageDashboardContainer() {
 
   if (dashboard.isError) {
     return (
-      <div className="flex flex-col items-center gap-4 py-12">
-        <p className="text-sm text-muted-foreground">{t('errorLoading')}</p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" size="sm" onClick={() => dashboard.refetch()}>
-          <RefreshCw size={14} aria-hidden="true" />
-          {t('retry')}
-        </Button>
-      </div>
+      <QueryErrorPanel
+        message={t('errorLoading')}
+        retryLabel={t('retry')}
+        onRetry={() => void dashboard.refetch()}
+      />
     );
   }
 

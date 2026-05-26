@@ -3,6 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import type React from 'react';
 import { toast } from 'sonner';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { COMMON_TOAST } from '../../i18n/common-toast-keys.js';
 import { setupTestI18n } from '../../test-utils/setup-test-i18n.js';
 import { useResourceMutation } from '../use-resource-mutation';
 
@@ -32,7 +33,7 @@ describe('useResourceMutation', () => {
     vi.clearAllMocks();
   });
 
-  it('shows success toast and calls onClose on successful mutation (transitional string)', async () => {
+  it('translates a TranslationKey successMessage through t()', async () => {
     const onClose = vi.fn();
     const { Wrapper } = createWrapper();
 
@@ -40,7 +41,7 @@ describe('useResourceMutation', () => {
       () =>
         useResourceMutation(
           { mutationFn: async (vars: { id: string }) => ({ ok: true, id: vars.id }) },
-          { successMessage: 'Created', onClose },
+          { successMessage: COMMON_TOAST.done, onClose },
         ),
       { wrapper: Wrapper },
     );
@@ -48,11 +49,11 @@ describe('useResourceMutation', () => {
     result.current.mutate({ id: '42' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(toast.success).toHaveBeenCalledWith('Created');
+    expect(toast.success).toHaveBeenCalledWith('Done.');
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('translates a TranslationKey successMessage through t()', async () => {
+  it('translates an Errors.* key through t()', async () => {
     const { Wrapper } = createWrapper();
 
     const { result } = renderHook(
@@ -88,9 +89,8 @@ describe('useResourceMutation', () => {
     );
 
     // No assertion on output (the locale bundle may or may not have a
-    // matching key); the point of this test is that the structured form
-    // does not throw at the type or runtime level. Phase 2 adds richer
-    // coverage as ICU keys land.
+    // matching key); the point is that the structured form does not throw
+    // at the type or runtime level.
     result.current.mutate(undefined);
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(toast.success).toHaveBeenCalledTimes(1);
@@ -109,7 +109,7 @@ describe('useResourceMutation', () => {
               ['contractor', 'list'],
               ['contractor', 'stats'],
             ],
-            successMessage: 'Done',
+            successMessage: COMMON_TOAST.done,
           },
         ),
       { wrapper: Wrapper },
@@ -133,7 +133,10 @@ describe('useResourceMutation', () => {
               throw new Error('Server boom');
             },
           },
-          { successMessage: 'never', errorMessage: 'Failed to create' },
+          {
+            successMessage: COMMON_TOAST.done,
+            errorMessage: COMMON_TOAST.failedToApprove,
+          },
         ),
       { wrapper: Wrapper },
     );
@@ -141,7 +144,7 @@ describe('useResourceMutation', () => {
     result.current.mutate(undefined);
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(toast.error).toHaveBeenCalledWith('Failed to create');
+    expect(toast.error).toHaveBeenCalledWith('Failed to approve.');
     expect(toast.success).not.toHaveBeenCalled();
   });
 
@@ -160,7 +163,7 @@ describe('useResourceMutation', () => {
               throw apiError;
             },
           },
-          { successMessage: 'never' },
+          { successMessage: COMMON_TOAST.done },
         ),
       { wrapper: Wrapper },
     );
@@ -182,7 +185,7 @@ describe('useResourceMutation', () => {
               throw new Error('Server boom');
             },
           },
-          { successMessage: 'never' },
+          { successMessage: COMMON_TOAST.done },
         ),
       { wrapper: Wrapper },
     );
@@ -206,7 +209,7 @@ describe('useResourceMutation', () => {
       () =>
         useResourceMutation(
           { mutationFn: async () => ({ value: 1 }), onSuccess: callerOnSuccess },
-          { invalidate: [['x']], successMessage: 'Saved' },
+          { invalidate: [['x']], successMessage: COMMON_TOAST.done },
         ),
       { wrapper: Wrapper },
     );
@@ -216,7 +219,7 @@ describe('useResourceMutation', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(callerOnSuccess).toHaveBeenCalled();
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['x'] });
-    expect(toast.success).toHaveBeenCalledWith('Saved');
+    expect(toast.success).toHaveBeenCalledWith('Done.');
   });
 
   it('does not call onClose when mutation errors', async () => {
@@ -231,7 +234,11 @@ describe('useResourceMutation', () => {
               throw new Error('nope');
             },
           },
-          { successMessage: 'never', errorMessage: 'oops', onClose },
+          {
+            successMessage: COMMON_TOAST.done,
+            errorMessage: COMMON_TOAST.failedToApprove,
+            onClose,
+          },
         ),
       { wrapper: Wrapper },
     );

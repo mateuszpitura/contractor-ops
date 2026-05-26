@@ -28,7 +28,7 @@ export function AdminShell() {
   return (
     <aside className="flex w-64 flex-col border-r border-border bg-sidebar">
       <div className="border-b border-border p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
           {t('sidebarHeading')}
         </h2>
       </div>

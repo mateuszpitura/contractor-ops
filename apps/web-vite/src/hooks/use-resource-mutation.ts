@@ -4,18 +4,21 @@
  *
  * Lifecycle of a message value (per goals/i18n-system-messages/facts.md):
  *   1. Caller passes `successMessage` / `errorMessage` as either:
- *      a) a `TranslationKey` (or a string literal that matches the union)
- *         — resolved through `t(...)` against the live locale.
+ *      a) a `TranslationKey` literal (preferred — typed dotted leaf path
+ *         from the codegen), looked up through `t(...)`.
  *      b) `{ key, params }` — same resolution with ICU values.
- *      c) (transitional, Phase 1 only) a raw `string` — passed through to
- *         `toast.*` verbatim so unmigrated call sites keep working. Phase 2
- *         sweep migrates each domain to (a) / (b); Phase 3 narrows the type
- *         to drop the raw `string` arm.
+ *      c) a pre-rendered `string` (from a namespace-bound `t(...)` call) —
+ *         rendered directly into the toast. The plugin allows this because
+ *         the argument is a function-call expression, not a literal.
  *   2. When `errorMessage` is omitted, the API `shape.data.errorKey` from
  *      the tRPC error is resolved automatically through `useTranslatedError`.
- *   3. The previous `error.message?.length ? error.message : ''` fallback is
- *      removed so a raw camelCase key (or empty string) can never reach the
- *      toast.
+ *   3. The previous `error.message?.length ? error.message : ''` fallback
+ *      is removed so a raw camelCase key (or empty string) can never reach
+ *      the toast.
+ *
+ * Preferred new-code form: `successMessage: COMMON_TOAST.done`. Old
+ * `successMessage: tc('foo')` call sites continue to compile via the
+ * `string` arm.
  */
 
 import type { QueryKey, UseMutationOptions } from '@tanstack/react-query';
@@ -28,11 +31,12 @@ import type { TranslateValues } from '../i18n/useTranslations.js';
 import { useTranslations } from '../i18n/useTranslations.js';
 
 /**
- * `TranslationKey` is branded by the codegen, so a string literal that
- * happens to match one of the dotted leaf paths is automatically a valid
- * `TranslationKey`. The raw `string` arm exists only for transitional
- * Phase 1 compatibility with un-migrated callers and is removed in
- * Phase 3 (the i18n-system-messages flip).
+ * Preferred forms are `TranslationKey` literals and `{ key, params }`
+ * structures resolved by the hook's internal `t(...)`. The `string` arm
+ * accommodates namespace-bound `tc('foo')` results that callers already
+ * render at the call site — the hook re-runs them through `t(...)` and
+ * i18next echoes the value back if it is not a known key, so rendering
+ * stays correct either way.
  */
 export type ResourceMessage =
   | TranslationKey
@@ -59,16 +63,12 @@ function resolveMessage(
   if (isStructuredMessage(value)) {
     return t(value.key, value.params ?? {});
   }
-  if (typeof value === 'string') {
-    // A branded TranslationKey is also `typeof === 'string'`. Try translating
-    // it first; i18next echoes the key back when the lookup fails, in which
-    // case we fall through and treat the value as a pre-translated literal
-    // (the transitional Phase 1 path).
-    const translated = t(value);
-    if (translated !== value && translated.length > 0) return translated;
-    return value;
-  }
-  return '';
+  // For a `TranslationKey` literal `t(value)` resolves to the locale
+  // string; for a pre-rendered `tc('foo')` result i18next does not find
+  // the rendered text as a key and echoes it back unchanged.
+  const translated = t(value);
+  if (translated !== value && translated.length > 0) return translated;
+  return value;
 }
 
 export function useResourceMutation<

@@ -1,5 +1,4 @@
-import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { AtelierEmptyState, QueryErrorPanel, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
@@ -9,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
-import { RefreshCw } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
@@ -76,20 +74,6 @@ function ReconciliationSkeleton() {
   );
 }
 
-function ReconciliationError({ onRetry }: { onRetry: () => void }) {
-  const tCommon = useTranslations('Common');
-  const tProfile = useTranslations('ContractorProfile');
-  return (
-    <div className="flex flex-col items-center gap-4 py-12">
-      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-      <Button variant="outline" size="sm" className="gap-1.5" onClick={onRetry}>
-        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-        {tProfile('error.retry')}
-      </Button>
-    </div>
-  );
-}
-
 function ReconciliationEmpty() {
   const t = useTranslations('Time');
   return (
@@ -104,9 +88,18 @@ function ReconciliationEmpty() {
 
 export function ReconciliationTable() {
   const table = useReconciliationTable();
+  const tCommon = useTranslations('Common');
+  const tProfile = useTranslations('ContractorProfile');
 
   if (table.isLoading) return <ReconciliationSkeleton />;
-  if (table.isError) return <ReconciliationError onRetry={table.onRetry} />;
+  if (table.isError)
+    return (
+      <QueryErrorPanel
+        message={tCommon('networkError')}
+        retryLabel={tProfile('error.retry')}
+        onRetry={table.onRetry}
+      />
+    );
   if (table.isEmpty) return <ReconciliationEmpty />;
 
   return (

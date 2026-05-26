@@ -30,6 +30,7 @@ export {
 } from './empty-state-illustrations.js';
 export { AtelierPageHeader, type AtelierPageHeaderProps } from './page-header.js';
 export { AtelierPanel, type AtelierPanelProps } from './panel.js';
+export { QueryErrorPanel, type QueryErrorPanelProps } from './query-error-panel.js';
 export { TableChrome, type TableChromeProps } from './table-chrome.js';
 export {
   WORKBENCH_DATA_TABLE_CLASS,

@@ -1,5 +1,5 @@
+import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -92,18 +92,11 @@ export function SourceSelectionError({ onRefetch, onSkip }: SourceSelectionError
   return (
     <div className="space-y-6">
       <SourceSelectionHeader />
-      <div className="flex flex-col items-center gap-4 py-12">
-        <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={onRefetch}>
-          <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-          {tErr('retry')}
-        </Button>
-      </div>
+      <QueryErrorPanel
+        message={tCommon('networkError')}
+        retryLabel={tErr('retry')}
+        onRetry={onRefetch}
+      />
       <div className="text-center">
         <Button variant="link" onClick={onSkip} className="text-muted-foreground">
           {t('step1.skipLink')}

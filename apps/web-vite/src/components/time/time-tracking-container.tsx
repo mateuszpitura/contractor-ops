@@ -9,6 +9,7 @@
 import {
   AtelierEmptyState,
   AtelierPageHeader,
+  QueryErrorPanel,
   SectionLabel,
   TimeTrackingIllustration,
 } from '@contractor-ops/ui';
@@ -36,7 +37,7 @@ import {
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import { addDays, format, startOfISOWeek } from 'date-fns';
-import { Clock, RefreshCw } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
@@ -56,21 +57,6 @@ function formatPeriod(weekStart: string | Date): string {
 function minutesToDisplay(minutes: number): string {
   const hours = minutes / 60;
   return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
-}
-
-function QueryErrorPanel({ onRetry }: { onRetry: () => void }) {
-  const tCommon = useTranslations('Common');
-  const tProfile = useTranslations('ContractorProfile');
-
-  return (
-    <div className="flex flex-col items-center gap-4 py-12">
-      <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-      <Button variant="outline" size="sm" className="gap-1.5" onClick={onRetry}>
-        <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-        {tProfile('error.retry')}
-      </Button>
-    </div>
-  );
 }
 
 export function TimeTrackingContainer() {
@@ -99,6 +85,8 @@ export function TimeTrackingContainer() {
   } = useTimeTracking();
   const tSettings = useTranslations('Settings.provider');
   const tTransmissions = useTranslations('EInvoice.TransmissionsLog');
+  const tCommon = useTranslations('Common');
+  const tProfile = useTranslations('ContractorProfile');
 
   return (
     <div className="space-y-6">
@@ -128,7 +116,11 @@ export function TimeTrackingContainer() {
               {pendingQuery.isLoading ? (
                 <LoadingSkeleton />
               ) : pendingQuery.isError ? (
-                <QueryErrorPanel onRetry={() => void pendingQuery.refetch()} />
+                <QueryErrorPanel
+                  message={tCommon('networkError')}
+                  retryLabel={tProfile('error.retry')}
+                  onRetry={() => void pendingQuery.refetch()}
+                />
               ) : pendingTimesheets.length === 0 ? (
                 <AtelierEmptyState
                   illustration={TimeTrackingIllustration}
@@ -175,7 +167,11 @@ export function TimeTrackingContainer() {
               {allQuery.isLoading ? (
                 <LoadingSkeleton />
               ) : allQuery.isError ? (
-                <QueryErrorPanel onRetry={() => void allQuery.refetch()} />
+                <QueryErrorPanel
+                  message={tCommon('networkError')}
+                  retryLabel={tProfile('error.retry')}
+                  onRetry={() => void allQuery.refetch()}
+                />
               ) : allTimesheets.length === 0 ? (
                 <AtelierEmptyState
                   illustration={TimeTrackingIllustration}
