@@ -1,0 +1,27 @@
+==========================================
+R10 FINAL GATE — post R8+R9
+Date: 2026-05-26T08:19:38Z
+==========================================
+
+1) check:data-layer
+> node ../../scripts/check-web-vite-data-layer.mjs
+
+check:web-vite-data-layer — OK
+
+2) check:page-shells
+> node ../../scripts/check-web-vite-page-shells.mjs
+
+check:web-vite-page-shells — OK
+
+3) check:web-vite-presentational
+> node scripts/check-web-vite-presentational.mjs
+
+check:web-vite-presentational — OK
+
+4) typecheck --force
+Failed:    @contractor-ops/ui#build
+
+ WARNING  no output files found for task @contractor-ops/feature-flags#build. Please check your `outputs` key in `turbo.json`
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.
+   exit=0
