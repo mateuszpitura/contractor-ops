@@ -93,8 +93,7 @@ export async function linearGraphQL<T>(
     if (response.status === 401) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message:
-          'Linear access token is invalid or expired. Please reconnect your Linear integration.',
+        message: E.LINEAR_TOKEN_INVALID,
       });
     }
 

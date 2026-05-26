@@ -1101,6 +1101,7 @@ describe('portal router — submitFinancialChangeRequest', () => {
     });
     mockPrisma.contractorBillingProfile.findFirst.mockResolvedValueOnce(null);
     mockCreateChangeRequest.mockRejectedValueOnce(
+      // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture mirroring the legacy literal payload
       new TRPCError({ code: 'CONFLICT', message: 'PORTAL_PENDING_CHANGE_EXISTS' }),
     );
 

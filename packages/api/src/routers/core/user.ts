@@ -2,6 +2,7 @@ import { authApi } from '@contractor-ops/auth';
 import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { CANNOT_DEACTIVATE_SELF, LAST_ADMIN_CANNOT_DEACTIVATE } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
@@ -59,7 +60,7 @@ async function guardLastAdmin(
   if (adminCount <= 1) {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'LAST_ADMIN_CANNOT_DEACTIVATE',
+      message: LAST_ADMIN_CANNOT_DEACTIVATE,
     });
   }
 
@@ -282,7 +283,7 @@ export const userRouter = router({
       if (input.userId === ctx.user.id) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'CANNOT_DEACTIVATE_SELF',
+          message: CANNOT_DEACTIVATE_SELF,
         });
       }
 

@@ -7,6 +7,7 @@ import {
   syncExternalEntriesSchema,
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import { TIMESHEET_NO_ACTIVE_CONTRACT } from '../../errors';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { syncClockifyEntries } from '../../services/clockify-sync';
@@ -256,7 +257,7 @@ export const portalTimeRouter = router({
       if (!contract) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'No active contract found. You need an active contract to import time entries.',
+          message: TIMESHEET_NO_ACTIVE_CONTRACT,
         });
       }
 

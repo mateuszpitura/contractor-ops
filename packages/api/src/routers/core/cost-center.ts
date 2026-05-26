@@ -12,7 +12,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { COST_CENTER_NOT_FOUND } from '../../errors';
+import { COST_CENTER_NOT_FOUND, TEMPLATE_CODES_ALREADY_EXIST } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -178,7 +178,7 @@ export const costCenterRouter = router({
         if (typeof err === 'object' && err !== null && 'code' in err && err.code === 'P2002') {
           throw new TRPCError({
             code: 'CONFLICT',
-            message: 'One or more codes already exist in this organisation',
+            message: TEMPLATE_CODES_ALREADY_EXIST,
           });
         }
         throw err;

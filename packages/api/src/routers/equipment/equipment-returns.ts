@@ -10,6 +10,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { RETURN_REQUEST_NOT_PENDING } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
@@ -56,7 +57,7 @@ export const equipmentReturnsRouter = router({
       if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'RETURN_REQUEST_NOT_PENDING',
+          message: RETURN_REQUEST_NOT_PENDING,
         });
       }
 
@@ -231,7 +232,7 @@ export const equipmentReturnsRouter = router({
       if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'RETURN_REQUEST_NOT_PENDING',
+          message: RETURN_REQUEST_NOT_PENDING,
         });
       }
 

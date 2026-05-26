@@ -535,6 +535,7 @@ describe('portal.submitFinancialChangeRequest', () => {
     vi.mocked(createChangeRequest).mockRejectedValueOnce(
       new TRPCError({
         code: 'CONFLICT',
+        // biome-ignore lint/plugin/no-untranslated-trpc-error: test fixture mirroring the legacy literal payload
         message: 'PORTAL_PENDING_CHANGE_EXISTS',
       }),
     );

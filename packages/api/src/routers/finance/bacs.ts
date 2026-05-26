@@ -356,8 +356,7 @@ export const bacsRouter = router({
       if (hasUnmappable) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message:
-            'BACS file contains unmappable characters; resolve transliteration warnings before downloading.',
+          message: E.BACS_UNMAPPABLE_CHARACTERS,
         });
       }
 

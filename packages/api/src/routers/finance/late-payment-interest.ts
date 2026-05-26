@@ -307,7 +307,7 @@ export const latePaymentInterestRouter = router({
       if (existingWaiver) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'An active waiver of this type already exists for this invoice',
+          message: E.INVOICE_INTEREST_WAIVER_EXISTS,
         });
       }
 
@@ -419,7 +419,7 @@ export const latePaymentInterestRouter = router({
       if (invoice.interestClaims.length > 0) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Interest has already been claimed on this invoice',
+          message: E.INTEREST_ALREADY_CLAIMED,
         });
       }
 
@@ -459,7 +459,7 @@ export const latePaymentInterestRouter = router({
       if (result.totalClaimMinor <= 0) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'No interest or compensation to claim',
+          message: E.INTEREST_NOTHING_TO_CLAIM,
         });
       }
 

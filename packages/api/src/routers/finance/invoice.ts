@@ -85,7 +85,7 @@ function validateServicePeriod(
   if (effectiveStart && effectiveEnd && effectiveEnd < effectiveStart) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Service period end date must be on or after the start date.',
+      message: E.SERVICE_PERIOD_END_BEFORE_START,
     });
   }
 }

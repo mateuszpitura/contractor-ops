@@ -14,6 +14,10 @@ import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/valida
 import * as Sentry from '@sentry/nextjs';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import {
+  GOOGLE_WORKSPACE_ADAPTER_NOT_REGISTERED,
+  GOOGLE_WORKSPACE_NOT_CONNECTED,
+} from '../../errors';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
@@ -45,7 +49,7 @@ async function getGoogleWorkspaceConnection(db: TenantScopedDb, organizationId: 
   if (!connection) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Google Workspace not connected',
+      message: GOOGLE_WORKSPACE_NOT_CONNECTED,
     });
   }
 
@@ -53,7 +57,7 @@ async function getGoogleWorkspaceConnection(db: TenantScopedDb, organizationId: 
   if (!adapter) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Google Workspace adapter not registered',
+      message: GOOGLE_WORKSPACE_ADAPTER_NOT_REGISTERED,
     });
   }
 

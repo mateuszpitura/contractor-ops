@@ -286,8 +286,7 @@ export async function syncJiraWorklogs(
     if (!externalLink) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message:
-          'Jira account ID not found. Please map your Jira user account in integration settings.',
+        message: E.JIRA_ACCOUNT_NOT_MAPPED,
       });
     }
 
@@ -337,8 +336,7 @@ export async function syncJiraWorklogs(
       if (searchResponse.status === 401) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
-          message:
-            'Jira access token is invalid or expired. Please reconnect your Jira integration.',
+          message: E.JIRA_TOKEN_INVALID,
         });
       }
 

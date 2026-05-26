@@ -341,7 +341,7 @@ async function validateContractorVatId(
   if (!contractor.vatId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Contractor has no VAT ID to validate',
+      message: E.CONTRACTOR_NO_VAT_ID,
     });
   }
   const taxIdType: TaxIdType | null =
@@ -353,7 +353,7 @@ async function validateContractorVatId(
   if (!taxIdType) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'VAT validation not supported for this country',
+      message: E.VAT_VALIDATION_UNSUPPORTED_COUNTRY,
     });
   }
   const result = await validateTaxId(

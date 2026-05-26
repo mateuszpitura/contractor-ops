@@ -200,7 +200,7 @@ export const linearRouter = router({
       if (connection.id !== input.connectionId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Connection ID does not match the active Linear connection.',
+          message: E.LINEAR_WRONG_CONNECTION_ID,
         });
       }
 

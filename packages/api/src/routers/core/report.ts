@@ -1,6 +1,7 @@
 import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { EXPORT_ENQUEUE_FAILED } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -69,7 +70,7 @@ async function enqueueExport(args: {
   } catch (err) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to enqueue export',
+      message: EXPORT_ENQUEUE_FAILED,
       cause: err instanceof Error ? err.message : String(err),
     });
   }

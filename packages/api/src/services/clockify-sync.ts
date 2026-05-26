@@ -5,6 +5,7 @@ import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { TRPCError } from '@trpc/server';
 import {
+  CLOCKIFY_API_KEY_INVALID,
   CLOCKIFY_CONFIG_INCOMPLETE,
   CLOCKIFY_CONNECTION_NOT_FOUND,
   CLOCKIFY_SYNC_FAILED,
@@ -215,8 +216,7 @@ async function fetchAllClockifyEntries(
     if (response.status === 401) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message:
-          'Clockify API key is invalid or expired. Please reconnect your Clockify integration.',
+        message: CLOCKIFY_API_KEY_INVALID,
       });
     }
 

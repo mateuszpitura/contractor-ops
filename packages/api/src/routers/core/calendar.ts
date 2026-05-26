@@ -1,6 +1,11 @@
 import { calendarTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import {
+  INTEGRATION_NOT_FOUND,
+  PERMISSION_DENIED,
+  WORKFLOW_TEMPLATE_NOT_FOUND,
+} from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -99,7 +104,7 @@ export const calendarRouter = router({
       if (!connection) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'INTEGRATION_NOT_FOUND',
+          message: INTEGRATION_NOT_FOUND,
         });
       }
 
@@ -108,7 +113,7 @@ export const calendarRouter = router({
       if (connection.userId !== null && connection.userId !== ctx.user?.id) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'PERMISSION_DENIED',
+          message: PERMISSION_DENIED,
         });
       }
 
@@ -194,7 +199,7 @@ export const calendarRouter = router({
       if (!template) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'WORKFLOW_TEMPLATE_NOT_FOUND',
+          message: WORKFLOW_TEMPLATE_NOT_FOUND,
         });
       }
 

@@ -234,14 +234,14 @@ export const workflowTemplatesRouter = router({
       if (template.status !== 'DRAFT') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Only draft templates can be deleted. Archive the template instead.',
+          message: E.WORKFLOW_TEMPLATE_ONLY_DRAFT_DELETE,
         });
       }
 
       if (template._count.runs > 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Cannot delete a template that has existing runs. Archive it instead.',
+          message: E.WORKFLOW_TEMPLATE_HAS_RUNS,
         });
       }
 

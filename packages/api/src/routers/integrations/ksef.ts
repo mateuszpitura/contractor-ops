@@ -59,7 +59,7 @@ export const ksefRouter = router({
       if (!nip) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Organization NIP must be set in settings before connecting KSeF.',
+          message: E.KSEF_REQUIRES_NIP,
         });
       }
 
@@ -73,14 +73,14 @@ export const ksefRouter = router({
         if (!input.token) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'Token is required for token-based auth.',
+            message: E.TOKEN_REQUIRED,
           });
         }
         const valid = await client.verifyCredentials(input.token, nip);
         if (!valid) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'KSeF credential verification failed',
+            message: E.KSEF_CREDENTIAL_VERIFICATION_FAILED,
           });
         }
       }

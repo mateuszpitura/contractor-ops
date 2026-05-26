@@ -14,7 +14,13 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { PENDING_MERGE_NOT_FOUND, PROJECT_NOT_FOUND } from '../../errors';
+import {
+  INTEGRATION_CONNECTION_NOT_FOUND,
+  PENDING_MERGE_NOT_FOUND,
+  PROJECT_MERGE_ID_NOT_CANDIDATE,
+  PROJECT_MERGE_ID_REQUIRED,
+  PROJECT_NOT_FOUND,
+} from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -199,7 +205,7 @@ export const projectRouter = router({
       if (!connection || (connection.provider !== 'JIRA' && connection.provider !== 'LINEAR')) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Integration connection not found or unsupported provider',
+          message: INTEGRATION_CONNECTION_NOT_FOUND,
         });
       }
 
@@ -265,13 +271,13 @@ export const projectRouter = router({
         if (!mergeTargetId) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'mergeIntoProjectId required for merge action',
+            message: PROJECT_MERGE_ID_REQUIRED,
           });
         }
         if (!pending.candidateProjectIds.includes(mergeTargetId)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'mergeIntoProjectId must be one of the suggested candidates',
+            message: PROJECT_MERGE_ID_NOT_CANDIDATE,
           });
         }
 

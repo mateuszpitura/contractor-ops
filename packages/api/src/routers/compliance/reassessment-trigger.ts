@@ -8,6 +8,7 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { TRIGGER_NOT_ACKNOWLEDGEABLE, TRIGGER_NOT_DISMISSIBLE } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
@@ -82,7 +83,7 @@ export const reassessmentTriggerRouter = router({
       if (row.status !== 'OPEN') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Only OPEN triggers can be acknowledged.',
+          message: TRIGGER_NOT_ACKNOWLEDGEABLE,
         });
       }
       return ctx.db.reassessmentTrigger.update({
@@ -103,7 +104,7 @@ export const reassessmentTriggerRouter = router({
     if (row.status === 'RESOLVED' || row.status === 'DISMISSED') {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'Only OPEN or ACKNOWLEDGED triggers can be dismissed.',
+        message: TRIGGER_NOT_DISMISSIBLE,
       });
     }
     return ctx.db.reassessmentTrigger.update({

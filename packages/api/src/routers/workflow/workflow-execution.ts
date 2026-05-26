@@ -1189,7 +1189,7 @@ export const workflowExecutionRouter = router({
         if (openIpTasks.length === 0) {
           throw new TRPCError({
             code: 'PRECONDITION_FAILED',
-            message: 'No open IP_VERIFICATION task to override',
+            message: E.PORTAL_NO_IP_VERIFICATION_TASK,
           });
         }
 

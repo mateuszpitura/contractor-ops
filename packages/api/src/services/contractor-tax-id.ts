@@ -1,5 +1,6 @@
 import { isValidNip } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import { CONTRACTOR_INVALID_NIP } from '../errors';
 
 export function normalizeContractorTaxId(
   countryCode: string | null | undefined,
@@ -20,7 +21,7 @@ export function assertValidContractorTaxId(
   if (!isValidContractorTaxId(countryCode, taxId)) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Invalid NIP number',
+      message: CONTRACTOR_INVALID_NIP,
     });
   }
 }

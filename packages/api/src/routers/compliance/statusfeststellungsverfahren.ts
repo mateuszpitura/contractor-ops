@@ -16,6 +16,7 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { STATUS_VAL_DATES_REQUIRED } from '../../errors';
 
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
@@ -55,7 +56,7 @@ const createInput = z
       d.outcome === 'WITHDRAWN' ||
       (d.validFrom !== undefined && d.validTo !== undefined),
     {
-      message: 'validFrom and validTo are required when outcome is SELBSTANDIG or ABHANGIG',
+      message: STATUS_VAL_DATES_REQUIRED,
       path: ['validFrom'],
     },
   );
@@ -150,7 +151,7 @@ export const statusfeststellungsverfahrenRouter = router({
     ) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'validFrom and validTo are required when outcome is SELBSTANDIG or ABHANGIG',
+        message: STATUS_VAL_DATES_REQUIRED,
       });
     }
 

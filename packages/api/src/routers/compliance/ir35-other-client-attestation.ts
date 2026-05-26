@@ -10,6 +10,7 @@
 
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { CONTRACTOR_NOT_FOUND } from '../../errors';
 
 import { router } from '../../init';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
@@ -100,7 +101,7 @@ export const ir35AttestationRouter = router({
       await ctx.db.contractor.findUniqueOrThrow({ where: { id: input.contractorId } }).catch(() => {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Contractor not found.',
+          message: CONTRACTOR_NOT_FOUND,
         });
       });
 

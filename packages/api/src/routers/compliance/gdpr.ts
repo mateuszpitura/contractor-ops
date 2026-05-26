@@ -71,7 +71,8 @@ export const gdprRouter = router({
     .input(
       z.object({
         confirmPhrase: z.string().refine(v => v === 'DELETE ALL DATA', {
-          message: 'You must type "DELETE ALL DATA" to confirm',
+          // biome-ignore lint/plugin/no-untranslated-zod-message: confirm phrase must match literally; user-facing client copy lives in apps/web-vite/src/components/legal/delete-all-data-dialog
+          message: 'gdprConfirmPhraseRequired',
         }),
         /** Keep invoices for tax compliance (default: true). */
         retainFinancialRecords: z.boolean().default(true),

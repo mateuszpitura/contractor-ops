@@ -45,6 +45,7 @@ import {
   CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
   CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
   CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
+  CLASSIFICATION_STALE_ANSWER,
   SDS_APPROVAL_ALREADY_EXISTS,
 } from '../../errors';
 import { router } from '../../init';
@@ -589,8 +590,7 @@ export const classificationRouter = router({
       if (input.expectedUpdatedAt && row.updatedAt.getTime() > input.expectedUpdatedAt.getTime()) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message:
-            'Assessment was updated by another tab; reload to pick up the latest answers before saving again.',
+          message: CLASSIFICATION_STALE_ANSWER,
         });
       }
 

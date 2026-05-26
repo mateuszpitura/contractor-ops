@@ -280,6 +280,57 @@ export const CLASSIFICATION_SDS_APPROVAL_IR35_ONLY = 'classificationSdsApprovalI
 
 // ─── BACS / Payments (extended) ────────────────────────────────
 export const BACS_SUBMITTER_NOT_CONFIGURED = 'bacsSubmitterNotConfigured';
+
+// ─── Batch 3 (remaining sweep) ─────────────────────────────────
+export const INVOICE_INTEREST_WAIVER_EXISTS = 'invoiceInterestWaiverExists';
+export const WORKFLOW_TEMPLATE_HAS_RUNS = 'workflowTemplateHasRuns';
+export const LEITWEG_ID_NOT_CONTRACTOR_DEFAULT = 'leitwegIdNotContractorDefault';
+export const CANNOT_DEACTIVATE_SELF = 'cannotDeactivateSelf';
+export const LINEAR_WRONG_CONNECTION_ID = 'linearWrongConnectionId';
+export const CONTRACTOR_NO_VAT_ID = 'contractorNoVatId';
+export const COURIER_CONFIG_NOT_FOUND = 'courierConfigNotFound';
+export const SKONTO_DISCOUNT_PERIOD_INVALID = 'skontoDiscountPeriodInvalid';
+export const DOC_LINK_NOT_FOUND = 'docLinkNotFound';
+export const EXPORT_ENQUEUE_FAILED = 'exportEnqueueFailed';
+export const EINVOICE_FAILED_TRANSMISSION_NOT_RETRYABLE = 'einvoiceFailedTransmissionNotRetryable';
+export const GOOGLE_WORKSPACE_ADAPTER_NOT_REGISTERED = 'googleWorkspaceAdapterNotRegistered';
+export const GOOGLE_WORKSPACE_NOT_CONNECTED = 'googleWorkspaceNotConnected';
+export const INTEGRATION_CONNECTION_NOT_FOUND = 'integrationConnectionNotFound';
+export const INTEREST_ALREADY_CLAIMED = 'interestAlreadyClaimed';
+export const INVOICE_MUST_BE_MATCHED = 'invoiceMustBeMatched';
+export const KLEINUNTERNEHMER_DE_ONLY = 'kleinunternehmerDeOnly';
+export const KSEF_CREDENTIAL_VERIFICATION_FAILED = 'ksefCredentialVerificationFailed';
+export const LEITWEG_ID_EXISTS = 'leitwegIdExists';
+export const PROJECT_MERGE_ID_NOT_CANDIDATE = 'projectMergeIdNotCandidate';
+export const PROJECT_MERGE_ID_REQUIRED = 'projectMergeIdRequired';
+export const TIMESHEET_NO_ACTIVE_CONTRACT = 'timesheetNoActiveContract';
+export const APPROVAL_NO_CHAIN_CONFIGURED = 'approvalNoChainConfigured';
+export const INTEREST_NOTHING_TO_CLAIM = 'interestNothingToClaim';
+export const PORTAL_NO_IP_VERIFICATION_TASK = 'portalNoIpVerificationTask';
+export const TEMPLATE_CODES_ALREADY_EXIST = 'templateCodesAlreadyExist';
+export const WORKFLOW_TEMPLATE_ONLY_DRAFT_DELETE = 'workflowTemplateOnlyDraftDelete';
+export const TRIGGER_NOT_DISMISSIBLE = 'triggerNotDismissible';
+export const TRIGGER_NOT_ACKNOWLEDGEABLE = 'triggerNotAcknowledgeable';
+export const PEPPOL_ALREADY_CONNECTED = 'peppolAlreadyConnected';
+export const KSEF_REQUIRES_NIP = 'ksefRequiresNip';
+export const PENDING_UPLOAD_INVALID = 'pendingUploadInvalid';
+export const RETURN_REQUEST_NOT_PENDING = 'returnRequestNotPending';
+export const WORKFLOW_TEMPLATE_SEED_NO_DELETE = 'workflowTemplateSeedNoDelete';
+export const WORKFLOW_TEMPLATE_SEED_NO_UPDATE = 'workflowTemplateSeedNoUpdate';
+export const SERVICE_PERIOD_END_BEFORE_START = 'servicePeriodEndBeforeStart';
+export const TIMESHEET_NOT_FOUND_LEGACY = 'timesheetNotFoundLegacy';
+export const TOKEN_REQUIRED = 'tokenRequired';
+export const STATUS_VAL_DATES_REQUIRED = 'statusValDatesRequired';
+export const CONTRACTOR_INVALID_NIP = 'contractorInvalidNip';
+export const VAT_VALIDATION_UNSUPPORTED_COUNTRY = 'vatValidationUnsupportedCountry';
+export const BACS_UNMAPPABLE_CHARACTERS = 'bacsUnmappableCharacters';
+export const PAYMENT_RUN_CANCEL_ADMIN_ONLY = 'paymentRunCancelAdminOnly';
+export const CLASSIFICATION_STALE_ANSWER = 'classificationStaleAnswer';
+export const CLOCKIFY_API_KEY_INVALID = 'clockifyApiKeyInvalid';
+export const JIRA_TASK_NOT_CONFIGURED = 'jiraTaskNotConfigured';
+export const JIRA_ACCOUNT_NOT_MAPPED = 'jiraAccountNotMapped';
+export const LINEAR_TOKEN_INVALID = 'linearTokenInvalid';
+export const GDPR_CONFIRM_PHRASE_REQUIRED = 'gdprConfirmPhraseRequired';
 export const REAUTH_REQUIRED = 'reauthRequired';
 export const FEATURE_FLAG_UNAVAILABLE = 'featureFlagUnavailable';
 

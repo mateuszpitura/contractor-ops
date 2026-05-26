@@ -123,8 +123,7 @@ export async function createJiraIssue(
   if (!(jiraConfig?.jiraEnabled && jiraConfig.jiraProjectId && jiraConfig.jiraIssueTypeId)) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message:
-        'Jira is not configured for this task template. Set project and issue type mapping in workflow settings.',
+      message: E.JIRA_TASK_NOT_CONFIGURED,
     });
   }
 

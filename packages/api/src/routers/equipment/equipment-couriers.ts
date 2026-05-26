@@ -14,6 +14,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { SHIPMENT_NO_INPOST_LABEL } from '../../errors';
 import { router } from '../../init';
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -683,7 +684,7 @@ export const equipmentCouriersRouter = router({
       if (shipment.carrier !== 'InPost' || !shipment.externalId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'SHIPMENT_NO_INPOST_LABEL',
+          message: SHIPMENT_NO_INPOST_LABEL,
         });
       }
 

@@ -41,6 +41,7 @@ describe('formatTrpcError — errorKey / errorParams contract', () => {
   it('falls back to unknownError when message is not a registered key', () => {
     const error = new TRPCError({
       code: 'BAD_REQUEST',
+      // biome-ignore lint/plugin/no-untranslated-trpc-error: deliberate non-key string for fallback assertion
       message: 'something raw and english',
     });
     const result = formatTrpcError({
@@ -102,6 +103,7 @@ describe('formatTrpcError — F-SEC-20 production hardening', () => {
   it('strips INTERNAL_SERVER_ERROR message and forces errorKey unknownError', () => {
     const error = new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
+      // biome-ignore lint/plugin/no-untranslated-trpc-error: deliberate raw message for F-SEC-20 stripping assertion
       message: 'Prisma constraint violation foo_bar_idx',
     });
     const result = formatTrpcError({

@@ -27,6 +27,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { TRPCError } from '@trpc/server';
+import { PENDING_UPLOAD_INVALID } from '../errors';
 import { generateStorageKey } from './r2';
 import { createRegionalPresignedUploadUrl } from './regional-storage';
 
@@ -191,7 +192,7 @@ export async function consumePendingUpload(
   if (result.count === 0) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'PENDING_UPLOAD_INVALID',
+      message: PENDING_UPLOAD_INVALID,
     });
   }
 
@@ -206,7 +207,7 @@ export async function consumePendingUpload(
   if (!row || row.organizationId !== input.organizationId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'PENDING_UPLOAD_INVALID',
+      message: PENDING_UPLOAD_INVALID,
     });
   }
 

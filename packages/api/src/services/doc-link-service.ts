@@ -6,6 +6,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import type { DocSearchResult } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import { DOC_LINK_NOT_FOUND } from '../errors';
 import type { DbClient } from './types';
 
 const log = createLogger({ service: 'doc-link-service' });
@@ -127,7 +128,7 @@ export async function detachDocLink(
   if (!link) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Doc link not found',
+      message: DOC_LINK_NOT_FOUND,
     });
   }
 
@@ -332,7 +333,7 @@ export async function refreshDocMetadata(
   if (!link) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Doc link not found',
+      message: DOC_LINK_NOT_FOUND,
     });
   }
 

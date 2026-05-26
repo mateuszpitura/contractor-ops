@@ -158,7 +158,7 @@ export const leitwegIdRouter = router({
       if (isPrismaUniqueViolation(err)) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Leitweg-ID already exists for this organization',
+          message: E.LEITWEG_ID_EXISTS,
         });
       }
       throw err;
@@ -222,7 +222,7 @@ export const leitwegIdRouter = router({
       if (isPrismaUniqueViolation(err)) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Leitweg-ID already exists for this organization',
+          message: E.LEITWEG_ID_EXISTS,
         });
       }
       throw err;
@@ -246,7 +246,7 @@ export const leitwegIdRouter = router({
       if (!row.contractorId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Cannot set a non-contractor-scoped Leitweg-ID as a contractor default',
+          message: E.LEITWEG_ID_NOT_CONTRACTOR_DEFAULT,
         });
       }
 

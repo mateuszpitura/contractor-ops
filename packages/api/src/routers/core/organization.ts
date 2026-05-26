@@ -1,6 +1,7 @@
 import { authApi } from '@contractor-ops/auth';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { KLEINUNTERNEHMER_DE_ONLY } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -49,7 +50,7 @@ export const organizationRouter = router({
       if (org.countryCode !== 'DE') {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Kleinunternehmerregelung is only available for German organizations',
+          message: KLEINUNTERNEHMER_DE_ONLY,
         });
       }
       const updated = await ctx.db.organization.update({

@@ -1,4 +1,5 @@
 import { TRPCError } from '@trpc/server';
+import { COURIER_CONFIG_NOT_FOUND } from '../../errors';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import type { CourierClient } from './courier-client';
 import type { DPDClientConfig } from './dpd-client';
@@ -58,7 +59,7 @@ export async function loadCourierClient(
   if (!courierConfig) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'COURIER_CONFIG_NOT_FOUND',
+      message: COURIER_CONFIG_NOT_FOUND,
     });
   }
 

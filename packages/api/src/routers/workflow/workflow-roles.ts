@@ -13,7 +13,11 @@ import { Prisma } from '@contractor-ops/db/generated/prisma/client';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { ROLE_TEMPLATE_NOT_FOUND } from '../../errors';
+import {
+  ROLE_TEMPLATE_NOT_FOUND,
+  WORKFLOW_TEMPLATE_SEED_NO_DELETE,
+  WORKFLOW_TEMPLATE_SEED_NO_UPDATE,
+} from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -124,7 +128,7 @@ export const workflowRolesRouter = router({
       if (existing.isSeed) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Seed templates cannot be updated',
+          message: WORKFLOW_TEMPLATE_SEED_NO_UPDATE,
         });
       }
 
@@ -181,7 +185,7 @@ export const workflowRolesRouter = router({
       if (existing.isSeed) {
         throw new TRPCError({
           code: 'FORBIDDEN',
-          message: 'Seed templates cannot be deleted',
+          message: WORKFLOW_TEMPLATE_SEED_NO_DELETE,
         });
       }
       await ctx.db.workflowRoleTemplate.delete({ where: { id: input.id } });

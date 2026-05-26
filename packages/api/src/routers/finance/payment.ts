@@ -1048,8 +1048,7 @@ export const paymentRouter = router({
           if (member?.role !== 'admin') {
             throw new TRPCError({
               code: 'FORBIDDEN',
-              message:
-                'Only administrators can cancel exported payment runs. Ensure the export was NOT submitted to your bank before cancelling.',
+              message: E.PAYMENT_RUN_CANCEL_ADMIN_ONLY,
             });
           }
         }

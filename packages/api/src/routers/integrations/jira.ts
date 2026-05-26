@@ -43,7 +43,7 @@ function buildJiraApiContext(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
+      message: E.JIRA_MISSING_CLOUD_ID,
     });
   }
 

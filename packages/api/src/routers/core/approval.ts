@@ -1209,7 +1209,7 @@ export const approvalRouter = router({
         if (!allowedMatchStatuses.includes(invoice.matchStatus)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'Invoice must be matched or manually confirmed before submitting for approval',
+            message: E.INVOICE_MUST_BE_MATCHED,
           });
         }
 
@@ -1228,7 +1228,7 @@ export const approvalRouter = router({
         if (!chainConfig) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: 'No approval chain configured for this organization',
+            message: E.APPROVAL_NO_CHAIN_CONFIGURED,
           });
         }
 

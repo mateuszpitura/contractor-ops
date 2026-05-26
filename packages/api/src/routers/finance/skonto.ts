@@ -9,7 +9,11 @@
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { BILLING_PROFILE_NOT_FOUND, INVOICE_NOT_FOUND } from '../../errors';
+import {
+  BILLING_PROFILE_NOT_FOUND,
+  INVOICE_NOT_FOUND,
+  SKONTO_DISCOUNT_PERIOD_INVALID,
+} from '../../errors';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
@@ -30,7 +34,7 @@ const skontoTermInputSchema = z
     netDays: z.number().int().lte(180),
   })
   .refine(d => d.discountDays < d.netDays, {
-    message: 'Discount period must be shorter than net period',
+    message: SKONTO_DISCOUNT_PERIOD_INVALID,
   });
 
 // ---------------------------------------------------------------------------
@@ -254,7 +258,7 @@ export const skontoRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Invoice not found',
+          message: INVOICE_NOT_FOUND,
         });
       }
 

@@ -9,6 +9,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { TIMESHEET_NOT_FOUND } from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -143,7 +144,7 @@ export const timeRouter = router({
       if (!timesheet) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Timesheet not found',
+          message: TIMESHEET_NOT_FOUND,
         });
       }
 

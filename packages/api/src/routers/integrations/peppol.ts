@@ -54,7 +54,7 @@ export const peppolRouter = router({
       if (existing) {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Organization already has an active Peppol participant. Disconnect first.',
+          message: E.PEPPOL_ALREADY_CONNECTED,
         });
       }
 
@@ -417,7 +417,7 @@ export const peppolRouter = router({
       if (!transmission) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Failed transmission not found or not in retryable state.',
+          message: E.EINVOICE_FAILED_TRANSMISSION_NOT_RETRYABLE,
         });
       }
 
@@ -458,7 +458,7 @@ export const peppolRouter = router({
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'PEPPOL_NOT_CONNECTED',
+          message: E.PEPPOL_NOT_CONNECTED,
         });
       }
 
