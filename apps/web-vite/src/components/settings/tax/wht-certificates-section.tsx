@@ -38,10 +38,44 @@ export function WhtCertificatesSectionSkeleton({ t }: { t: WhtCertificatesSectio
         <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('table.certificateNumber')}</TableHead>
+                <TableHead>{t('table.contractor')}</TableHead>
+                <TableHead>{t('table.country')}</TableHead>
+                <TableHead className="text-end">{t('table.whtAmount')}</TableHead>
+                <TableHead>{t('table.paymentDate')}</TableHead>
+                <TableHead className="text-end">{t('table.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 3 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <TableRow key={`wht-cert-skel-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-10 rounded-full" />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Skeleton className="ms-auto h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Skeleton className="ms-auto size-7 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </CardContent>
     </Card>

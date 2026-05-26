@@ -91,26 +91,63 @@ const EVENT_CONFIG: Record<
 
 export function NotificationPreferencesSkeleton() {
   return (
-    <div className="space-y-4">
-      <div>
+    <Card>
+      <CardHeader>
         <Skeleton className="h-5 w-48" />
         <Skeleton className="mt-1 h-4 w-96" />
-      </div>
-      <div className="space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`pref-${i}`} className="flex items-center gap-4 py-3">
-            <Skeleton className="size-8 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-            <div className="ms-auto flex gap-8">
-              <Skeleton className="h-5 w-10" />
-              <Skeleton className="h-5 w-10" />
-              <Skeleton className="h-5 w-10" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-auto">
+                <Skeleton className="h-4 w-24" />
+              </TableHead>
+              <TableHead className="w-20 text-center">
+                <Skeleton className="mx-auto h-4 w-12" />
+              </TableHead>
+              <TableHead className="w-20 text-center">
+                <Skeleton className="mx-auto h-4 w-12" />
+              </TableHead>
+              <TableHead className="w-20 text-center">
+                <Skeleton className="mx-auto h-4 w-12" />
+              </TableHead>
+              <TableHead className="w-20 text-center">
+                <Skeleton className="mx-auto h-4 w-12" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 6 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <TableRow key={`pref-${i}`}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-8 rounded-full" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-5 w-10" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-5 w-10" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-5 w-10" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-5 w-10" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+      <CardFooter>
+        <Skeleton className="h-9 w-40" />
+      </CardFooter>
+    </Card>
   );
 }
 

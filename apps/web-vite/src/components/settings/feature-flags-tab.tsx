@@ -1,4 +1,5 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -7,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
-import { Flag, Loader2 } from 'lucide-react';
+import { Flag } from 'lucide-react';
 
 import type { useFeatureFlagsTab } from './hooks/use-feature-flags-tab.js';
 
@@ -25,8 +26,50 @@ export type FeatureFlagsTabProps = ReturnType<typeof useFeatureFlagsTab>;
 
 export function FeatureFlagsTabSkeleton() {
   return (
-    <div className="flex items-center justify-center py-12">
-      <Loader2 className="size-5 animate-spin text-muted-foreground" />
+    <div className="space-y-4">
+      <div>
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="mt-1 h-4 w-72" />
+      </div>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <Skeleton className="h-4 w-16" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-4 w-20" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-4 w-24" />
+              </TableHead>
+              <TableHead>
+                <Skeleton className="h-4 w-12" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 3 }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+              <TableRow key={`feature-flag-skel-${i}`}>
+                <TableCell>
+                  <Skeleton className="h-4 w-40" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-10 rounded-full" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
