@@ -16,7 +16,16 @@ interface InvoiceOcrSectionProps {
 }
 
 export function InvoiceOcrSectionSkeleton() {
-  return <Skeleton className="h-20 w-full rounded-lg" />;
+  return (
+    <Card data-slot="invoice-ocr-section">
+      <CardHeader className="pb-3">
+        <Skeleton className="h-5 w-40" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Skeleton className="h-10 w-full" />
+      </CardContent>
+    </Card>
+  );
 }
 
 /**

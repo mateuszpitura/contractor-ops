@@ -8,7 +8,10 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 export function IntakeDetailSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-10 w-64" />
+      <div className="space-y-2">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-4 w-48" />
+      </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Skeleton className="h-[600px] w-full rounded-lg" />
         <div className="space-y-6">
