@@ -69,9 +69,7 @@ export default async function BlogIndexPage({
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">
             Field notes
           </p>
-          <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tight md:text-6xl">
-            Contractor Ops blog
-          </h1>
+          <h1 className="mt-3 text-balance font-display text-display">Contractor Ops blog</h1>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
             Finance ops, audit-survival tips, and the occasional rant about Excel. Updated when
             there is something worth saying.

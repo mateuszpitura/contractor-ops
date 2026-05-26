@@ -32,7 +32,7 @@ export function Testimonials({
     <section className="relative overflow-hidden py-24">
       <div className="mx-auto mb-12 max-w-2xl px-6 text-center">
         <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-primary">{label}</p>
-        <h2 className="text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+        <h2 className="text-balance font-display text-display">
           {headline}{' '}
           <span className="bg-gradient-to-r from-primary via-primary/80 to-foreground bg-clip-text text-transparent">
             {headlineHighlight}

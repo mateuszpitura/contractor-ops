@@ -36,7 +36,7 @@ export function FaqSection({
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-primary">
             {label}
           </p>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+          <h2 className="text-balance font-display text-display">
             {headline}{' '}
             <span className="bg-gradient-to-r from-primary via-primary/80 to-foreground bg-clip-text text-transparent">
               {headlineHighlight}

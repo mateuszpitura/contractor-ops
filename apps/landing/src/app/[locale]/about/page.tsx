@@ -44,7 +44,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <main id="main" className="pt-32">
         <section className="mx-auto max-w-3xl px-6 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">About</p>
-          <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight md:text-6xl">
+          <h1 className="mt-4 text-balance font-display text-display">
             Operational software, built like an editorial product.
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">

@@ -36,7 +36,7 @@ export function CtaBand({
       />
       <div className="mx-auto max-w-3xl px-6 text-center">
         <p className="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-primary">{label}</p>
-        <h2 className="text-balance text-4xl font-semibold tracking-tight md:text-6xl">
+        <h2 className="text-balance font-display text-display">
           {headline}{' '}
           <span className="bg-gradient-to-r from-primary via-primary/80 to-foreground bg-clip-text text-transparent">
             {headlineHighlight}
