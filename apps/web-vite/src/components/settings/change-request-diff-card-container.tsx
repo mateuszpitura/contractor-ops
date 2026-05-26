@@ -1,5 +1,3 @@
-// Decision: card widget mounted by parent change-request inbox (out of settings scope). Container
-// scopes the approve/reject mutation hooks per request id.
 import { ChangeRequestDiffCard } from './change-request-diff-card.js';
 import { useChangeRequestDiffCard } from './hooks/use-change-request-diff-card.js';
 
@@ -17,6 +15,8 @@ interface ChangeRequestDiffCardContainerProps {
   onRejected?: () => void;
 }
 
+// Decision: mutation host — card mounted by the change-request inbox per request id;
+// hook exposes approve/reject handlers + isPending consumed inline by the card view.
 export function ChangeRequestDiffCardContainer({
   request,
   onApproved,
