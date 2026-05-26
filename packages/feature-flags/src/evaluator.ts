@@ -149,6 +149,26 @@ export function evaluate(key: FlagKey, ctx: EvalContext): EvalResult {
   const client = getFlagClient(ctx.region);
   const base = evaluateAgainst(def, ctx, client);
 
+  // QA walk override: force-enable dark-shipped flags for the seeded QA
+  // org so the walk can exercise classification / einvoice routes without
+  // touching Unleash UI or default state. Only honoured in development
+  // when the request's organizationId matches QA_DEFAULT_ORG_ID — the env
+  // var is read at server boot so changes require a dev-server restart
+  // (Next.js does not hot-reload .env). Production never matches because
+  // production never sets QA_DEFAULT_ORG_ID.
+  if (process.env.NODE_ENV === 'development') {
+    const qaOrgId = process.env.QA_DEFAULT_ORG_ID;
+    if (qaOrgId && ctx.organizationId === qaOrgId) {
+      const QA_FORCED_KEYS: readonly string[] = [
+        'module.classification-engine',
+        'einvoice.import-enabled',
+      ];
+      if (QA_FORCED_KEYS.includes(key)) {
+        return { enabled: true, reason: 'unleash' };
+      }
+    }
+  }
+
   // Phase 64 D-10 — classification disclaimer gate override
   const gate = gateRegistry.__contractorOpsClassificationGate;
   if (key === CLASSIFICATION_ENGINE_FLAG && base.enabled && gate) {

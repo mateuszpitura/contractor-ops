@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { pLimit, type LimitFunction } from '../services/concurrency.js';
+import type { LimitFunction } from '../services/concurrency.js';
+import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';

@@ -24,6 +24,29 @@ this README is the reference for *what* it ships and *how* to use it.
 
 ---
 
+## Registry pack (`goals/registry-component-pack`)
+
+Tier-1 components curated from 7 external shadcn registries. Add new components with
+`pnpm dlx shadcn add @<registry>/<name>` from `packages/ui/` — they land in the matching
+folder below and are consumed via subpath `@contractor-ops/ui/components/<folder>`.
+
+| Namespace | Folder | Source | Registry alias |
+|---|---|---|---|
+| Magic UI | `components/magic/` | magicui.design | `@magic` |
+| Aceternity | `components/ace/` | ui.aceternity.com | `@aceternity` |
+| Cult UI | `components/cult/` | cult-ui.com | `@cult` |
+| Origin UI | `components/origin/` | originui.com | `@origin` |
+| Tailark | `components/tailark/` | tailark.com | `@tailark` |
+| reui | `components/reui/` | reui.io | `@reui` |
+| shadcn.io | `components/shadcnio/` | shadcn.io | `@shadcnio` |
+
+Registry aliases declared in [`components.json`](./components.json). Subpath exports per
+namespace declared in [`package.json`](./package.json). Each folder ships an `index.ts`
+barrel re-exporting installed components — apps must import via the barrel, never
+relative paths.
+
+---
+
 ## CSS imports
 
 Both apps' `globals.css` import the shared layer at the top:

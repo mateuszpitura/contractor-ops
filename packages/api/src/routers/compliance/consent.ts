@@ -204,8 +204,28 @@ export const consentRouter = router({
   }),
 
   // ---------------------------------------------------------------------------
-  // Phase 64 · LEGAL-07 — recordToS (D-30)
+  // Phase 64 · LEGAL-07 — ToS acceptance (D-30)
   // ---------------------------------------------------------------------------
+
+  /**
+   * Check whether the authenticated user has accepted a specific ToS version.
+   * Used by the SPA dashboard shell to gate rendering behind TosReacceptanceModal.
+   */
+  hasAcceptedToS: tenantProcedure
+    .input(z.object({ version: z.string().min(1).max(50) }))
+    .query(async ({ ctx, input }) => {
+      const event = await ctx.db.consentEvent.findFirst({
+        where: {
+          userId: ctx.user.id,
+          organizationId: ctx.organizationId,
+          scope: 'TOS',
+          version: input.version,
+        },
+        select: { id: true },
+        orderBy: { acceptedAt: 'desc' },
+      });
+      return { accepted: event !== null };
+    }),
 
   /**
    * Record Terms of Service acceptance.

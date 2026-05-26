@@ -16,7 +16,7 @@
 // comes from `@contractor-ops/validators` locked-phrase constants — any
 // drift there is a locked-phrases guard violation + Phase-56 break.
 
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 import { Document, Font, Page, renderToBuffer, StyleSheet, Text, View } from '@react-pdf/renderer';
 
@@ -32,16 +32,24 @@ import type { EInvoice, EInvoiceLine, EInvoiceTaxSubtotal } from '../../types/in
 // font bytes in module scope.
 // ---------------------------------------------------------------------------
 
-const FONT_REG_PATH = fileURLToPath(new URL('./assets/NotoSans-Regular.ttf', import.meta.url));
-const FONT_BOLD_PATH = fileURLToPath(new URL('./assets/NotoSans-Bold.ttf', import.meta.url));
-
-Font.register({
-  family: 'Noto Sans',
-  fonts: [
-    { src: FONT_REG_PATH, fontWeight: 'normal' },
-    { src: FONT_BOLD_PATH, fontWeight: 'bold' },
-  ],
-});
+// Asset paths resolved lazily at PDF-render time, not module-load. Turbopack
+// SSR ships `import.meta` without `.dirname` and rewrites `import.meta.url`
+// into a non-Node URL realm — both produce throws at module evaluation if
+// the resolution happens at the top level. Deferring until actual font
+// registration keeps the module importable from any Next.js context.
+let fontsRegistered = false;
+function ensureFontsRegistered() {
+  if (fontsRegistered) return;
+  fontsRegistered = true;
+  const assetsDir = path.join(path.dirname(new URL(import.meta.url).pathname), 'assets');
+  Font.register({
+    family: 'Noto Sans',
+    fonts: [
+      { src: path.join(assetsDir, 'NotoSans-Regular.ttf'), fontWeight: 'normal' },
+      { src: path.join(assetsDir, 'NotoSans-Bold.ttf'), fontWeight: 'bold' },
+    ],
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Locked statutory phrases — mirror of @contractor-ops/validators/legal/de.
@@ -382,6 +390,7 @@ export function InvoiceDocument({ invoice }: InvoiceTemplateProps) {
  * `wrapToPdfA3` to produce the final ZUGFeRD-compliant PDF/A-3 document.
  */
 export async function renderInvoiceToPdfBuffer(invoice: EInvoice): Promise<Uint8Array> {
+  ensureFontsRegistered();
   const buffer = await renderToBuffer(<InvoiceDocument invoice={invoice} />);
   // renderToBuffer returns a Buffer (Node) or Uint8Array depending on env;
   // normalise to a plain Uint8Array to keep downstream consumers simple.

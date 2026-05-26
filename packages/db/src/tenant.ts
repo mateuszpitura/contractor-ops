@@ -52,6 +52,18 @@ const globalModels = new Set([
   'Invitation',
   // Phase 63 — Global reference data (no organizationId)
   'BoEBaseRateHistory',
+  // Phase 60 CLASS-09 — cron-state singleton keyed by `name` only.
+  // Auto-injecting organizationId here throws PrismaClientValidationError
+  // because the model has no organizationId column.
+  'CronScanState',
+  // Global reference / per-user models with no organizationId column.
+  'ExchangeRate',
+  'UserPinnedView',
+  // Child models with no organizationId column — tenancy enforced via the
+  // parent relation filter at call site (e.g. SigningRecipient ↔
+  // SigningEnvelope.organizationId, SigningEvent ↔ SigningEnvelope).
+  'SigningRecipient',
+  'SigningEvent',
 ]);
 
 /** Operations that filter by `where.organizationId`. */

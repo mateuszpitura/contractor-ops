@@ -349,7 +349,7 @@ function makeCronCaller() {
   });
 }
 
-const caller = makeCaller();
+const _caller = makeCaller();
 
 // ---------------------------------------------------------------------------
 // Reset mocks

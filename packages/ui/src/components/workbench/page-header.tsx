@@ -29,7 +29,7 @@ export function AtelierPageHeader({
     <div className="mb-2 flex flex-col gap-3 border-b border-border/50 pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div className="min-w-0">
         {eyebrow ? (
-          <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+          <span className="block text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
             {eyebrow}
           </span>
         ) : null}

@@ -13,14 +13,19 @@ import type { Prisma } from '@contractor-ops/db';
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
+import type { ConversationReference } from '@microsoft/agents-activity';
+import { Activity } from '@microsoft/agents-activity';
 import type {
   AdaptiveCardInvokeResponse,
   AdaptiveCardInvokeValue,
-  ConversationReference,
+  TurnContext,
+} from '@microsoft/agents-hosting';
+import { CardFactory } from '@microsoft/agents-hosting';
+import type {
   TaskModuleRequest,
   TaskModuleResponse,
-} from 'botbuilder';
-import { CardFactory, TeamsActivityHandler, TurnContext } from 'botbuilder';
+} from '@microsoft/agents-hosting-extensions-teams';
+import { TeamsActivityHandler } from '@microsoft/agents-hosting-extensions-teams';
 import { z } from 'zod';
 import { advanceFlow } from '../approval-engine';
 import { buildApprovalResultCard } from './cards/approval-result-card';
@@ -336,15 +341,19 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           viewUrl: `${getServerEnv().NEXT_PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
         });
 
-        // Update the original card in-place
-        const activity = context.activity;
-        if (activity.replyToId) {
-          await context.updateActivity({
-            ...activity,
-            id: activity.replyToId,
+        // Update the original card in-place. Agents SDK expects an
+        // `Activity` instance; build via `Activity.fromObject` so the
+        // typed methods (`applyConversationReference`, etc.) are present
+        // when `TurnContext.updateActivity` calls them.
+        const original = context.activity;
+        if (original.replyToId) {
+          const updated = Activity.fromObject({
+            ...original,
+            id: original.replyToId,
             type: 'message',
             attachments: [CardFactory.adaptiveCard(resultCard)],
           });
+          await context.updateActivity(updated);
         }
       }
     } catch (error) {
@@ -613,14 +622,24 @@ export class TeamsBotHandler extends TeamsActivityHandler {
   /**
    * Called when the bot is installed in a personal scope or team.
    * Captures the ConversationReference for future proactive messaging.
+   *
+   * Agents SDK: the dedicated `onInstallationUpdateAddActivity` protected
+   * hook was collapsed into a single `onInstallationUpdateActivity` (covers
+   * both add + remove). We filter to `action === 'add'` so this only fires
+   * on install, matching the previous behaviour.
    */
-  protected override async onInstallationUpdateAddActivity(context: TurnContext): Promise<void> {
+  protected override async onInstallationUpdateActivity(context: TurnContext): Promise<void> {
+    const action = (context.activity as unknown as { action?: string }).action;
+    if (action && action !== 'add') return;
     await this.captureConversationReference(context);
   }
 
   private async captureConversationReference(context: TurnContext): Promise<void> {
     try {
-      const ref = TurnContext.getConversationReference(context.activity);
+      // Agents SDK: `getConversationReference` moved from
+      // `TurnContext.getConversationReference(activity)` (static) to an
+      // instance method on Activity.
+      const ref = context.activity.getConversationReference();
 
       // Look up the org by finding a MICROSOFT_TEAMS connection
       const tenantId = context.activity.conversation?.tenantId;

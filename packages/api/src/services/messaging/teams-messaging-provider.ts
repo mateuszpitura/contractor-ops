@@ -9,8 +9,16 @@
 import { prisma } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
-import type { ConversationReference, TurnContext } from 'botbuilder';
-import { CardFactory, CloudAdapter, ConfigurationBotFrameworkAuthentication } from 'botbuilder';
+// Migrated 2026-05-22 from archived `botbuilder` → Microsoft 365 Agents SDK.
+// `ConfigurationBotFrameworkAuthentication(process.env)` is replaced by a
+// plain `AuthConfiguration` object — we keep the existing `AZURE_BOT_APP_*`
+// env vars instead of renaming to `clientId/clientSecret` so Render config
+// stays unchanged. Multi-tenant is the default (no MicrosoftAppType field).
+// `adapter.continueConversationAsync` was renamed to `continueConversation`
+// in the Agents SDK.
+import type { ConversationReference } from '@microsoft/agents-activity';
+import type { AuthConfiguration, TurnContext } from '@microsoft/agents-hosting';
+import { CardFactory, CloudAdapter, MessageFactory } from '@microsoft/agents-hosting';
 import { buildActivityAlertCard } from '../teams/cards/activity-alert-card';
 import { buildApprovalCard } from '../teams/cards/approval-card';
 import { buildApprovalReminderCard } from '../teams/cards/approval-reminder-card';
@@ -34,13 +42,12 @@ function getCloudAdapter(): CloudAdapter {
   if (adapterInstance) return adapterInstance;
 
   const { AZURE_BOT_APP_ID, AZURE_BOT_APP_SECRET } = getServerEnv();
-  const auth = new ConfigurationBotFrameworkAuthentication({
-    MicrosoftAppId: AZURE_BOT_APP_ID ?? '',
-    MicrosoftAppPassword: AZURE_BOT_APP_SECRET ?? '',
-    MicrosoftAppType: 'MultiTenant',
-  });
+  const authConfig: AuthConfiguration = {
+    clientId: AZURE_BOT_APP_ID ?? '',
+    clientSecret: AZURE_BOT_APP_SECRET ?? '',
+  };
 
-  adapterInstance = new CloudAdapter(auth);
+  adapterInstance = new CloudAdapter(authConfig);
   return adapterInstance;
 }
 
@@ -112,14 +119,13 @@ export class TeamsMessagingProvider implements MessagingProvider {
     });
 
     const adapter = getCloudAdapter();
-    await adapter.continueConversationAsync(
+    await adapter.continueConversation(
       getServerEnv().AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
-        await context.sendActivity({
-          type: 'message',
-          attachments: [CardFactory.adaptiveCard(card)],
-        });
+        // Agents SDK requires an `Activity` instance — MessageFactory.attachment
+        // returns one populated with conversation-reference plumbing.
+        await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(card)));
       },
     );
   }
@@ -146,25 +152,23 @@ export class TeamsMessagingProvider implements MessagingProvider {
         flowId: params.flowId,
       });
 
-      await adapter.continueConversationAsync(
+      await adapter.continueConversation(
         getServerEnv().AZURE_BOT_APP_ID ?? '',
         convRef,
         async (context: TurnContext) => {
-          await context.sendActivity({
-            type: 'message',
-            attachments: [CardFactory.adaptiveCard(card)],
-          });
+          await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(card)));
         },
       );
       return;
     }
 
-    // Simple text reminder
-    await adapter.continueConversationAsync(
+    // Simple text reminder. Agents SDK accepts string directly here —
+    // it wraps in a Message activity internally.
+    await adapter.continueConversation(
       getServerEnv().AZURE_BOT_APP_ID ?? '',
       convRef,
       async (context: TurnContext) => {
-        await context.sendActivity({ type: 'message', text: params.text });
+        await context.sendActivity(params.text);
       },
     );
   }
@@ -201,14 +205,11 @@ export class TeamsMessagingProvider implements MessagingProvider {
     });
 
     const adapter = getCloudAdapter();
-    await adapter.continueConversationAsync(
+    await adapter.continueConversation(
       getServerEnv().AZURE_BOT_APP_ID ?? '',
       channelRef as ConversationReference,
       async (context: TurnContext) => {
-        await context.sendActivity({
-          type: 'message',
-          attachments: [CardFactory.adaptiveCard(card)],
-        });
+        await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(card)));
       },
     );
   }

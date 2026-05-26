@@ -508,7 +508,13 @@ export const invoiceRouter = router({
         },
         include: {
           contractor: {
-            select: { id: true, legalName: true, taxId: true },
+            select: {
+              id: true,
+              legalName: true,
+              taxId: true,
+              countryCode: true,
+              isBusinessCustomer: true,
+            },
           },
           contract: {
             select: {

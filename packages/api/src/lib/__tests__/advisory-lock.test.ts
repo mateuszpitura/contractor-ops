@@ -116,7 +116,7 @@ describe('advisory-lock — transaction-scoped helpers', () => {
   });
 
   it('uses the correct class_id for each namespace', async () => {
-    const expected: Array<[Parameters<typeof acquireXactLock>[1], number]> = [
+    const expected: [Parameters<typeof acquireXactLock>[1], number][] = [
       ['cron', 1],
       ['org', 2],
       ['payment', 3],

@@ -16,6 +16,7 @@ vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
 vi.mock('@contractor-ops/integrations/adapters/notion-adapter', () => {
   return {
     NotionAdapter: class {
+      slug = 'notion';
       searchPages = mockNotionSearchPages;
     },
   };
@@ -24,6 +25,7 @@ vi.mock('@contractor-ops/integrations/adapters/notion-adapter', () => {
 vi.mock('@contractor-ops/integrations/adapters/confluence-adapter', () => {
   return {
     ConfluenceAdapter: class {
+      slug = 'confluence';
       searchPages = mockConfluenceSearchPages;
     },
   };

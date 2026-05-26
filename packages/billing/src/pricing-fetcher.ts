@@ -92,7 +92,7 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const tier = md.tier!.trim().toUpperCase();
+  const tier = md.tier?.trim().toUpperCase();
   if (!isTier(tier)) {
     throw new PricingMetadataError(
       `Stripe product ${product.id} has invalid tier "${md.tier}". Expected one of: ${TIERS.join(', ')}`,
@@ -101,7 +101,7 @@ function parseProductMetadata(product: Stripe.Product): ProductMetadata {
     );
   }
 
-  const market = md.market!.trim().toUpperCase();
+  const market = md.market?.trim().toUpperCase();
   if (!isMarket(market)) {
     throw new PricingMetadataError(
       `Stripe product ${product.id} has invalid market "${md.market}". Expected one of: ${MARKETS.join(', ')}`,

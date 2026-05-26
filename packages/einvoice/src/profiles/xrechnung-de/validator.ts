@@ -24,7 +24,6 @@
 
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createLogger } from '@contractor-ops/logger';
 import libxmljs from 'libxmljs2';
 import SaxonJS from 'saxon-js';
@@ -35,9 +34,15 @@ import { normaliseSvrl } from './svrl-normalizer.js';
 
 const log = createLogger({ service: 'einvoice.xrechnung-de.validator' });
 
-const Dirname = path.dirname(fileURLToPath(import.meta.url));
-const BUNDLE_DIR = path.join(Dirname, 'validator-bundle');
-const XSD_DIR = path.join(BUNDLE_DIR, 'CII-D16B-schema');
+// Lazy — turbopack SSR strips `import.meta.dirname`, so resolving these at
+// module-load throws on every route that imports this module, even routes
+// that never run the validator.
+function getBundleDir(): string {
+  return path.join(path.dirname(new URL(import.meta.url).pathname), 'validator-bundle');
+}
+function getXsdDir(): string {
+  return path.join(getBundleDir(), 'CII-D16B-schema');
+}
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -79,10 +84,12 @@ function loadBundle(): Promise<BundleArtefacts> {
   // biome-ignore lint/nursery/noMisusedPromises: memoized Promise — return-cached-or-create pattern, never awaited inside the conditional
   if (bundlePromise) return bundlePromise;
   bundlePromise = (async () => {
+    const bundleDir = getBundleDir();
+    const xsdDir = getXsdDir();
     const [en16931Raw, xrechnungRaw, ciiXsd] = await Promise.all([
-      readFile(path.join(BUNDLE_DIR, 'EN16931-CII-validation.sef.json'), 'utf8'),
-      readFile(path.join(BUNDLE_DIR, 'XRechnung-CII-validation.sef.json'), 'utf8'),
-      readFile(path.join(XSD_DIR, 'CrossIndustryInvoice_100pD16B.xsd'), 'utf8'),
+      readFile(path.join(bundleDir, 'EN16931-CII-validation.sef.json'), 'utf8'),
+      readFile(path.join(bundleDir, 'XRechnung-CII-validation.sef.json'), 'utf8'),
+      readFile(path.join(xsdDir, 'CrossIndustryInvoice_100pD16B.xsd'), 'utf8'),
     ]);
     return {
       en16931Sef: JSON.parse(en16931Raw) as object,
@@ -109,7 +116,7 @@ function runXsd(xml: string, ciiXsd: string): XsdRun {
   let instanceDoc: libxmljs.Document;
   try {
     xsdDoc = libxmljs.parseXml(ciiXsd, {
-      baseUrl: XSD_DIR + path.sep,
+      baseUrl: getXsdDir() + path.sep,
       nonet: true,
     });
   } catch (err) {

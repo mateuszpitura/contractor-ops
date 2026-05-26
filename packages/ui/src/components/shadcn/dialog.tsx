@@ -2,8 +2,8 @@
 
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { XIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type * as React from 'react';
+import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 import { Button } from './button.js';
 
@@ -40,18 +40,24 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  closeAriaLabel,
   onPointerDownOutside: _onPointerDownOutside,
   onInteractOutside: _onInteractOutside,
   onEscapeKeyDown: _onEscapeKeyDown,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
+  /**
+   * Per-instance override for the floating close button's `aria-label`.
+   * Defaults to the host translator's `aria.closeDialog` key.
+   */
+  closeAriaLabel?: string;
   onPointerDownOutside?: (event: Event) => void;
   onInteractOutside?: (event: Event) => void;
   onEscapeKeyDown?: (event: Event) => void;
 }) {
-  const t = useTranslations('Common');
-
+  const t = useUITranslations();
+  const resolvedCloseAriaLabel = closeAriaLabel ?? t('aria.closeDialog');
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -76,7 +82,7 @@ function DialogContent({
                 variant="ghost"
                 className="absolute top-2 end-2"
                 size="icon-sm"
-                aria-label={t('aria.closeDialog')}
+                aria-label={resolvedCloseAriaLabel}
               />
             }>
             <XIcon aria-hidden="true" />

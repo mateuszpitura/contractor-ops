@@ -34,6 +34,7 @@ import {
 import type { EngagementContext, Jurisdiction } from '@contractor-ops/compliance-policy';
 import { POLICY_RULE_SET_VERSION } from '@contractor-ops/compliance-policy';
 import type { Prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
@@ -144,6 +145,8 @@ const listByContractorInput = z.object({
 });
 
 // Phase 64 — new input schemas
+const logger = createLogger({ service: 'classification-router' });
+
 const logEscalationInput = z.object({
   assessmentId: cuid,
   triggerKind: z.enum(['AMBER_VERDICT_AUTO', 'GET_EXPERT_HELP_CLICK', 'MANUAL_FLAG']),
@@ -805,8 +808,24 @@ export const classificationRouter = router({
 
     // Defence-in-depth: re-parse outcome on read so a malformed/forged JSON
     // never reaches the client (Pitfall 12). Drafts have null outcome — skip.
+    //
+    // safeParse, not parse: legacy / dev-seeded rows can carry an older
+    // outcome shape (pre-discriminated-union schema). Throwing 500 on a
+    // read makes the entire detail page unreachable. Log + redact instead
+    // so the UI still renders the metadata and the malformed outcome
+    // surfaces to the user as "outcome unavailable" rather than a crash.
     if (row.outcome !== null && row.outcome !== undefined) {
-      outcomeSchema.parse(row.outcome);
+      const parsed = outcomeSchema.safeParse(row.outcome);
+      if (!parsed.success) {
+        logger.warn(
+          {
+            assessmentId: input.assessmentId,
+            zodIssues: parsed.error.issues,
+          },
+          'classification.getById: outcome failed schema validation; redacting before return',
+        );
+        return { ...row, outcome: null };
+      }
     }
     return row;
   }),

@@ -145,7 +145,7 @@ export type WriteAuditLogManyRow = Omit<WriteAuditLogInput, 'tx'>;
 
 export interface WriteAuditLogManyInput {
   /** Audit rows to insert. Each row is validated independently. */
-  rows: ReadonlyArray<WriteAuditLogManyRow>;
+  rows: readonly WriteAuditLogManyRow[];
   /**
    * Optional Prisma transaction client — when supplied the batch insert joins
    * the caller's transaction. Defaults to the shared `prisma` client.

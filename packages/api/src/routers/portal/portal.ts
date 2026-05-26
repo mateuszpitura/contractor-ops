@@ -850,6 +850,7 @@ export const portalRouter = router({
 
     return items.map(item => ({
       id: item.id,
+      invoiceId: item.invoiceId,
       invoiceNumber: item.invoice.invoiceNumber,
       amountMinor: item.amountMinor,
       currency: item.currency,

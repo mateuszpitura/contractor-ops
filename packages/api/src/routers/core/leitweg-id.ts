@@ -76,7 +76,7 @@ const listSelect = {
   createdAt: true,
   updatedAt: true,
   contractor: { select: { id: true, displayName: true } },
-  contract: { select: { id: true, reference: true } },
+  contract: { select: { id: true, title: true } },
 } as const;
 
 // ---------------------------------------------------------------------------

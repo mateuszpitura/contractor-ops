@@ -57,7 +57,7 @@ export interface CalendarAdapter {
   getFreeBusy(
     accessToken: string,
     args: { calendarId?: string; timeMin: string; timeMax: string },
-  ): Promise<{ busy: ReadonlyArray<BusyRange> }>;
+  ): Promise<{ busy: readonly BusyRange[] }>;
 }
 
 export interface ResolveAssigneeWithPtoArgs {
@@ -138,7 +138,7 @@ export async function isManagerOnPto(
     Date.UTC(args.today.getUTCFullYear(), args.today.getUTCMonth(), args.today.getUTCDate()),
   );
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-  let busy: ReadonlyArray<BusyRange> = [];
+  let busy: readonly BusyRange[] = [];
   try {
     const result = await args.calendarAdapter.getFreeBusy(args.managerCalendarAccessToken, {
       calendarId: args.managerCalendarId,

@@ -2,8 +2,8 @@
 
 import { Command as CommandPrimitive } from 'cmdk';
 import { CheckIcon, SearchIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type * as React from 'react';
+import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './dialog.js';
 import { InputGroup, InputGroupAddon } from './input-group.js';
@@ -37,22 +37,22 @@ function CommandDialog({
   shouldFilter?: boolean;
   children: React.ReactNode;
 }) {
-  const t = useTranslations('Common.commandPalette');
-  const resolvedTitle = title ?? t('title');
-  const resolvedDescription = description ?? t('description');
+  const t = useUITranslations();
+  const resolvedTitle = title ?? t('commandPalette.title');
+  const resolvedDescription = description ?? t('commandPalette.description');
 
   return (
     <Dialog {...props}>
-      <DialogHeader className="sr-only">
-        <DialogTitle>{resolvedTitle}</DialogTitle>
-        <DialogDescription>{resolvedDescription}</DialogDescription>
-      </DialogHeader>
       <DialogContent
         className={cn(
           'top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0 shadow-2xl ring-1 ring-primary/20',
           className,
         )}
         showCloseButton={showCloseButton}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>{resolvedTitle}</DialogTitle>
+          <DialogDescription>{resolvedDescription}</DialogDescription>
+        </DialogHeader>
         <Command
           shouldFilter={shouldFilter}
           className="**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-muted-foreground">

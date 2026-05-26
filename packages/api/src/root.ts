@@ -112,7 +112,12 @@ const ClassificationFlagBag = buildFlagBag({
   organizationId: 'ROOT',
   region: 'EU', // jurisdiction='ANY' — region value doesn't affect evaluation
 });
-const CLASSIFICATION_ENABLED = ClassificationFlagBag.isEnabled('module.classification-engine');
+// QA walk bypass — when QA_DEFAULT_ORG_ID is set we force-register the
+// classification routers so the seeded QA org can exercise the gated UI.
+// Production never sets QA_DEFAULT_ORG_ID.
+const CLASSIFICATION_ENABLED =
+  ClassificationFlagBag.isEnabled('module.classification-engine') ||
+  Boolean(process.env.QA_DEFAULT_ORG_ID);
 
 export const appRouter = router({
   adminBoeRate: adminBoeRateRouter, // adminBoeRate: Super-admin BoE base rate CRUD — list, insert, update, delete (Phase 63 D-10)

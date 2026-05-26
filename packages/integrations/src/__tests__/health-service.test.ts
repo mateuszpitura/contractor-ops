@@ -49,6 +49,7 @@ describe('health-service', () => {
       expect(result).toEqual({
         status: 'DISCONNECTED',
         provider: 'slack',
+        connectionId: null,
         displayName: null,
         connectedAt: null,
         lastSyncAt: null,

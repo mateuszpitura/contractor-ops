@@ -2,8 +2,8 @@
 
 import { Dialog as SheetPrimitive } from '@base-ui/react/dialog';
 import { XIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type * as React from 'react';
+import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 import { Button } from './button.js';
 
@@ -41,13 +41,19 @@ function SheetContent({
   children,
   side = 'right',
   showCloseButton = true,
+  closeAriaLabel,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left';
   showCloseButton?: boolean;
+  /**
+   * Per-instance override for the floating close button's `aria-label`.
+   * Defaults to the host translator's `aria.closePanel` key.
+   */
+  closeAriaLabel?: string;
 }) {
-  const t = useTranslations('Common');
-
+  const t = useUITranslations();
+  const resolvedCloseAriaLabel = closeAriaLabel ?? t('aria.closePanel');
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -68,7 +74,7 @@ function SheetContent({
                 variant="ghost"
                 className="absolute top-3 end-3"
                 size="icon-sm"
-                aria-label={t('aria.closePanel')}
+                aria-label={resolvedCloseAriaLabel}
               />
             }>
             <XIcon aria-hidden="true" />

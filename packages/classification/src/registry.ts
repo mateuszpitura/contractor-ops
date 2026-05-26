@@ -17,13 +17,14 @@ import type { ClassificationProfile } from './types/profile.js';
 const profiles = new Map<string, ClassificationProfile>();
 
 /**
- * Register a country profile. Throws if a profile with the same ID
- * is already registered (prevents silent overwrites).
+ * Register a country profile. Idempotent — re-registering the same
+ * profileId is a no-op (Next.js dev HMR re-evaluates the registering
+ * module on every request, which would otherwise crash every tRPC call
+ * with `Classification profile already registered`). Production runs
+ * register exactly once at module init.
  */
 export function registerProfile(profile: ClassificationProfile): void {
-  if (profiles.has(profile.profileId)) {
-    throw new Error(`Classification profile already registered: ${profile.profileId}`);
-  }
+  if (profiles.has(profile.profileId)) return;
   profiles.set(profile.profileId, profile);
 }
 

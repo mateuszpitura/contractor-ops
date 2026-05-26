@@ -33,7 +33,7 @@
 // Re-export `generateState` so call sites pick up the same arctic version
 // that's pinned at the workspace root, without adding `arctic` as a direct
 // dep on every package that needs OAuth.
-export { generateState, generateCodeVerifier } from 'arctic';
+export { generateCodeVerifier, generateState } from 'arctic';
 
 /**
  * Smoke-test helper used by the Phase-2 verification. Imports a single arctic

@@ -3,16 +3,21 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { ChevronRightIcon, MoreHorizontalIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type * as React from 'react';
+import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 
-function Breadcrumb({ className, ...props }: React.ComponentProps<'nav'>) {
-  const t = useTranslations('Common');
+// Localized labels come from `<UITranslationsProvider>` mounted at the host
+// root (next-intl for apps/web + apps/landing, i18next for apps/web-vite).
+// Per-instance overrides via standard React props (`aria-label` etc.) take
+// precedence so consumers can tighten the label without touching the
+// translation namespace.
 
+function Breadcrumb({ className, 'aria-label': ariaLabel, ...props }: React.ComponentProps<'nav'>) {
+  const t = useUITranslations();
   return (
     <nav
-      aria-label={t('aria.breadcrumb')}
+      aria-label={ariaLabel ?? t('aria.breadcrumb')}
       data-slot="breadcrumb"
       className={cn(className)}
       {...props}
@@ -84,9 +89,14 @@ function BreadcrumbSeparator({ children, className, ...props }: React.ComponentP
   );
 }
 
-function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
-  const t = useTranslations('Common');
+interface BreadcrumbEllipsisProps extends React.ComponentProps<'span'> {
+  /** Screen-reader label for the truncation indicator. Overrides the
+   * translator's `srOnly.more` key when supplied. */
+  srMoreLabel?: string;
+}
 
+function BreadcrumbEllipsis({ className, srMoreLabel, ...props }: BreadcrumbEllipsisProps) {
+  const t = useUITranslations();
   return (
     <span
       data-slot="breadcrumb-ellipsis"
@@ -95,7 +105,7 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'
       className={cn('flex size-5 items-center justify-center [&>svg]:size-4', className)}
       {...props}>
       <MoreHorizontalIcon />
-      <span className="sr-only">{t('srOnly.more')}</span>
+      <span className="sr-only">{srMoreLabel ?? t('srOnly.more')}</span>
     </span>
   );
 }

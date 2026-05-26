@@ -301,6 +301,28 @@ export const skontoRouter = router({
       // `paidAt` lets the invoice-detail banner distinguish "discount window
       // still open" from "discount was already applied/missed at payment"
       // without an extra round-trip to fetch the invoice.
-      return { ...result, paidAt: invoice.paidAt };
+      const invoiceTermMapped = invoiceTerm
+        ? {
+            discountPercent: invoiceTerm.discountPercent,
+            discountDays: invoiceTerm.discountPeriodDays,
+            netDays: invoiceTerm.netPeriodDays,
+          }
+        : null;
+      const profileDefaultMapped = profileTerm
+        ? {
+            discountPercent: profileTerm.discountPercent,
+            discountDays: profileTerm.discountPeriodDays,
+            netDays: profileTerm.netPeriodDays,
+          }
+        : null;
+
+      return {
+        ...result,
+        paidAt: invoice.paidAt,
+        formTerms: {
+          invoiceTerm: invoiceTermMapped,
+          profileDefault: profileDefaultMapped,
+        },
+      };
     }),
 });

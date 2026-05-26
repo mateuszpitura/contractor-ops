@@ -1,3 +1,4 @@
+import type { FlagKey, FlagValues } from '@contractor-ops/feature-flags';
 import { FLAG_KEYS, FLAGS } from '@contractor-ops/feature-flags';
 import { TRPCError } from '@trpc/server';
 import { router } from '../../init';
@@ -32,5 +33,17 @@ export const featureFlagsRouter = router({
       jurisdiction: FLAGS[key].jurisdiction,
       enabled: ctx.flags.isEnabled(key),
     }));
+  }),
+
+  /**
+   * Session-scoped flag bag for client hydration. Any authenticated org member
+   * can read resolved booleans for their tenant — unlike `list`, which is
+   * platform-admin metadata introspection.
+   */
+  getBag: tenantFlaggedProcedure.query(({ ctx }) => {
+    return FLAG_KEYS.reduce<FlagValues>((acc, key) => {
+      acc[key as FlagKey] = ctx.flags.isEnabled(key);
+      return acc;
+    }, {} as FlagValues);
   }),
 });

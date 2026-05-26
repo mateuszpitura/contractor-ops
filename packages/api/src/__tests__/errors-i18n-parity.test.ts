@@ -24,8 +24,13 @@ describe('errors.ts vs i18n Errors namespace', () => {
     errorCodeExports.push(value);
   }
 
+  /** Page-level error layouts (heading/body/cta) share keys with some API codes. */
+  const isPageLayoutEntry = (value: unknown): boolean =>
+    typeof value === 'object' && value !== null && 'heading' in value;
+
   it('has a matching string translation in en.json and pl.json for each code', () => {
     for (const code of errorCodeExports) {
+      if (isPageLayoutEntry(en.Errors[code])) continue;
       expect(typeof en.Errors[code], `en.json Errors.${code} missing`).toBe('string');
       expect(typeof pl.Errors[code], `pl.json Errors.${code} missing`).toBe('string');
       expect((en.Errors[code] as string).length).toBeGreaterThan(0);

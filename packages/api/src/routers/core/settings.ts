@@ -283,7 +283,21 @@ export const settingsRouter = router({
 
   /**
    * Get a presigned upload URL for organization logo.
-   * Accepts image/png, image/jpeg, image/svg+xml. Max 2MB enforced client-side.
+   *
+   * Accepts image/png, image/jpeg, image/webp. Max 2MB enforced client-side.
+   *
+   * `image/svg+xml` is deliberately NOT in this allow-list. SVG is an XML
+   * document type and can carry `<script>` / `<foreignObject>` payloads —
+   * uploading a malicious SVG into the public R2 bucket would yield a
+   * stored XSS on `*.r2.cloudflarestorage.com` (the bucket's serving
+   * origin) whenever someone opens the logo URL directly in a tab. The
+   * SPA only ever renders the logo inside `<img src>` where the browser
+   * disables scripting, but a direct fetch by any link share would
+   * execute. The presigned-PUT upload flow never gives the server a
+   * chance to sanitize before publish, so the only safe path is to
+   * exclude SVG entirely. Re-enabling SVG support requires a server-side
+   * sanitization step (DOMPurify with SVG profile) on a non-presigned
+   * upload path.
    */
   getLogoUploadUrl: tenantProcedure
     .use(requirePermission({ settings: ['update'] }))
@@ -293,8 +307,8 @@ export const settingsRouter = router({
         contentType: z
           .string()
           .refine(
-            ct => ['image/png', 'image/jpeg', 'image/svg+xml'].includes(ct),
-            'Must be PNG, JPEG, or SVG',
+            ct => ['image/png', 'image/jpeg', 'image/webp'].includes(ct),
+            'Must be PNG, JPEG, or WEBP',
           ),
       }),
     )

@@ -370,7 +370,7 @@ function buildEInvoiceFromPrisma(
     },
     customer: {
       id: invoice.buyerTaxId ?? '',
-      name: ((invoice.contractor as Record<string, unknown> | null)?.name as string) ?? '',
+      name: ((invoice.contractor as Record<string, unknown> | null)?.displayName as string) ?? '',
     },
     lines: (invoice.lines ?? []).map((line: Record<string, unknown>, idx: number) => ({
       lineNumber: idx + 1,

@@ -40,7 +40,7 @@ import type { IntegrationProviderAdapter } from '../types/provider.js';
 
 const mockGetAdapter = vi.mocked(getAdapter);
 const mockPrismaCreate = vi.mocked(prisma.webhookDelivery.create);
-const mockGetQStashClient = vi.mocked(getQStashClient);
+const _mockGetQStashClient = vi.mocked(getQStashClient);
 const mockPublishJSONWithContext = vi.mocked(publishJSONWithContext);
 
 describe('webhook-dispatcher', () => {

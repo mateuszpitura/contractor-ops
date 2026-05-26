@@ -320,3 +320,34 @@ describe('featureFlags.list', () => {
     });
   });
 });
+
+describe('featureFlags.getBag', () => {
+  it('returns Record<FlagKey, boolean> for every FLAG_KEYS entry', async () => {
+    const result = await caller.featureFlags.getBag();
+
+    expect(Object.keys(result)).toHaveLength(mockFlagKeys.length);
+    for (const key of mockFlagKeys) {
+      expect(result).toHaveProperty(key, expect.any(Boolean));
+    }
+  });
+
+  it('enabled values reflect ctx.flags.isEnabled per key', async () => {
+    mockIsEnabled.mockImplementation((key: string) => key === 'module.ksef');
+
+    const result = await caller.featureFlags.getBag();
+
+    expect(result['module.legal-approval']).toBe(false);
+    expect(result['module.ksef']).toBe(true);
+  });
+
+  it('is available to non-platform-admin org members', async () => {
+    const orgMemberCaller = makeCaller(USER_ID, ORG_ID, 'user');
+
+    await expect(orgMemberCaller.featureFlags.getBag()).resolves.toEqual(
+      expect.objectContaining({
+        'module.legal-approval': false,
+        'module.ksef': false,
+      }),
+    );
+  });
+});

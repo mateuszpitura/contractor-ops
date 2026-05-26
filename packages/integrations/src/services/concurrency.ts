@@ -14,5 +14,5 @@
 // bulk Slack notifications). Pick the limit based on the upstream's rate
 // budget — most providers are happy with 5–10 concurrent calls per process.
 
-export { default as pLimit } from 'p-limit';
 export type { LimitFunction } from 'p-limit';
+export { default as pLimit } from 'p-limit';

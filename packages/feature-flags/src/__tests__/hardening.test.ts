@@ -181,27 +181,32 @@ describe('buildFlagBag total', () => {
 // ---------------------------------------------------------------------------
 
 describe('flag bag prototype safety', () => {
-  it('bag.values has null prototype (no inherited keys)', () => {
+  // bag.values intentionally uses a plain-object prototype (not Object.create(null))
+  // so the bag survives RSC serialization across the Server → Client boundary —
+  // RSC rejects null-prototype objects with "Classes or null prototypes are not
+  // supported". Prototype-pollution defense lives in the isEnabled strict
+  // `=== true` check below, not in the prototype shape.
+  it('bag.values is a plain object that round-trips through structuredClone', () => {
     setFlagClientForTesting('EU', { isEnabled: (_n, _c, fb) => fb });
     const bag = buildFlagBag(euCtx);
-    expect(Object.getPrototypeOf(bag.values)).toBeNull();
-    // A classic prototype-pollution probe — must be undefined, not a function.
-    expect((bag.values as unknown as Record<string, unknown>).hasOwnProperty).toBeUndefined();
-    expect((bag.values as unknown as Record<string, unknown>).__proto__).toBeUndefined();
+    expect(Object.getPrototypeOf(bag.values)).toBe(Object.prototype);
+    expect(() => structuredClone(bag.values)).not.toThrow();
   });
 
   it('isEnabled returns false for non-literal string access', () => {
     setFlagClientForTesting('EU', { isEnabled: (_n, _c, fb) => fb });
     const bag = buildFlagBag(euCtx);
     // Cast away type safety to simulate a bug that reads an unknown key.
-    // The isEnabled helper uses strict `=== true` so undefined never leaks.
+    // The isEnabled helper uses strict `=== true` so undefined never leaks,
+    // and inherited keys like `constructor` never resolve to `true`.
     const sneakyKey = 'constructor' as unknown as Parameters<typeof bag.isEnabled>[0];
     expect(bag.isEnabled(sneakyKey)).toBe(false);
   });
 
-  it('emptyFlagBag also has null prototype', () => {
+  it('emptyFlagBag is also a plain serializable object', () => {
     const bag = emptyFlagBag();
-    expect(Object.getPrototypeOf(bag.values)).toBeNull();
+    expect(Object.getPrototypeOf(bag.values)).toBe(Object.prototype);
+    expect(() => structuredClone(bag.values)).not.toThrow();
   });
 
   it('lazyFlagBag isEnabled is null-prototype safe (constructor key returns false)', async () => {

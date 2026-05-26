@@ -206,9 +206,20 @@ export const auth = betterAuth({
 
   advanced: {
     defaultCookieAttributes: {
-      sameSite: 'lax',
-      secure: authEnv.isProduction,
+      // Cross-subdomain mode (apps/api ↔ apps/web-vite): env sets sameSite='none'
+      // + Domain='.contractor-ops.com'. Same-origin legacy posture (current
+      // Next app): env omits both → sameSite='lax', Domain unset.
+      // SameSite=None forces Secure=true regardless of env so browsers honour
+      // the cookie (Chrome rejects None+!Secure outright).
+      sameSite: authEnv.cookieSameSite,
+      secure: authEnv.isProduction || authEnv.cookieSameSite === 'none',
+      // Explicit defence-in-depth — Better Auth defaults httpOnly to true,
+      // but the cross-subdomain SameSite=None posture warrants pinning it
+      // here so a future upstream default change can't silently expose the
+      // session cookie to JS.
+      httpOnly: true,
       path: '/',
+      ...(authEnv.cookieDomain ? { domain: authEnv.cookieDomain } : {}),
     },
   },
 

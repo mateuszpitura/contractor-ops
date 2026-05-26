@@ -204,10 +204,7 @@ export function getExportDefinition(type: string): ExportDefinition {
  * specific schema). Callers cast at the use-site since the handler
  * dispatcher already discriminates on `type`.
  */
-export function parseExportParams<TType extends ExportType>(
-  type: TType,
-  params: unknown,
-): unknown {
+export function parseExportParams<TType extends ExportType>(type: TType, params: unknown): unknown {
   const def = EXPORT_REGISTRY[type];
   return def.paramsSchema.parse(params);
 }

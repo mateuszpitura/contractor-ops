@@ -822,7 +822,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
         organizationId: ORG_A,
         status: 'ACTIVE',
         contractorId: 'c-evil',
-        contractor: { id: 'c-evil', name: `=cmd|'/C calc'!A1`, countryCode: 'GB' },
+        contractor: { id: 'c-evil', displayName: `=cmd|'/C calc'!A1`, countryCode: 'GB' },
       },
     ];
     const caller = makeCaller(ORG_A);
@@ -849,7 +849,7 @@ describe('classificationDashboard.exportMarketCsv (60-04-05, 60-04-06)', () => {
         contractorId: 'c-evil-2',
         contractor: {
           id: 'c-evil-2',
-          name: `=HYPERLINK("http://evil","click")`,
+          displayName: `=HYPERLINK("http://evil","click")`,
           countryCode: 'GB',
         },
       },

@@ -34,8 +34,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const ORG_A = 'clorgaaaaaaaaaaaaaaaaaaaaaa';
 const ORG_B = 'clorgbbbbbbbbbbbbbbbbbbbbbb';
 const USER_ID = 'cluseraaaaaaaaaaaaaaaaaaaaa';
-const CONTRACTOR_K1 = 'clcontractorK1aaaaaaaaaaaaa';
-const CONTRACTOR_K2 = 'clcontractorK2aaaaaaaaaaaaa';
+const CONTRACTOR_K1 = 'clcontractork1aaaaaaaaaaaaa';
+const CONTRACTOR_K2 = 'clcontractork2aaaaaaaaaaaaa';
 
 // Valid Leitweg-IDs — fixtures round-tripped through computeLeitwegCheckDigit
 // against the Plan 01 ground-truth corpus.

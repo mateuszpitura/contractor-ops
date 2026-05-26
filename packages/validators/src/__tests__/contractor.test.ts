@@ -240,13 +240,21 @@ describe('contractorListSchema', () => {
     }
   });
 
-  it('rejects pageSize > 50', () => {
-    const result = contractorListSchema.safeParse({ pageSize: 51 });
+  it('rejects pageSize > 100', () => {
+    // Max raised from 50 to 100: dropdown selectors hydrate a single-shot
+    // picklist of all org contractors; 50 forced silent truncation for orgs
+    // with >50 contractors. See contractor.ts pageSize comment.
+    const result = contractorListSchema.safeParse({ pageSize: 101 });
     expect(result.success).toBe(false);
     if (!result.success) {
       const issue = result.error.issues.find(i => i.path.includes('pageSize'));
       expect(issue).toBeDefined();
     }
+  });
+
+  it('accepts pageSize at upper bound of 100', () => {
+    const result = contractorListSchema.safeParse({ pageSize: 100 });
+    expect(result.success).toBe(true);
   });
 
   it('rejects pageSize below minimum of 10', () => {

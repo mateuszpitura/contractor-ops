@@ -54,9 +54,17 @@ describe('classification registry', () => {
     expect(listProfiles()).toHaveLength(1);
   });
 
-  it('rejects duplicate profileId registrations', () => {
-    registerProfile(makeProfile());
-    expect(() => registerProfile(makeProfile())).toThrow(/already registered/);
+  it('is idempotent on duplicate profileId registrations (HMR-safe)', () => {
+    // Registry is intentionally idempotent: re-registering the same profileId
+    // is a no-op so Next.js dev HMR (which re-evaluates registering modules
+    // on every request) does not crash every tRPC call. The first
+    // registration wins; subsequent ones are silently ignored.
+    const first = makeProfile({ displayName: 'First' });
+    const second = makeProfile({ displayName: 'Second' });
+    registerProfile(first);
+    expect(() => registerProfile(second)).not.toThrow();
+    expect(listProfiles()).toHaveLength(1);
+    expect(getProfile('test-profile')).toBe(first);
   });
 
   it('retrieves registered profile by ID', () => {

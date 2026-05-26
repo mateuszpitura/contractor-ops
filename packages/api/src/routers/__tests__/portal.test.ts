@@ -504,13 +504,14 @@ describe('portal router — getSession + overview', () => {
         id: ORG_ID,
         name: 'Northwind',
         logo: 'https://cdn.example/logo.png',
+        metadata: null,
       });
 
     const out = await authedPortalCaller().getSession();
 
-    expect(mockPrisma.organization.findUnique).toHaveBeenCalledWith({
+    expect(mockPrisma.organization.findUnique).toHaveBeenNthCalledWith(2, {
       where: { id: ORG_ID },
-      select: { id: true, name: true, logo: true },
+      select: { id: true, name: true, logo: true, metadata: true },
     });
     expect(out).toEqual({
       contractor: {
@@ -522,6 +523,9 @@ describe('portal router — getSession + overview', () => {
         id: ORG_ID,
         name: 'Northwind',
         logo: 'https://cdn.example/logo.png',
+        dateFormat: null,
+        timeFormat: null,
+        timezone: null,
       },
     });
   });
@@ -777,6 +781,8 @@ describe('portal router — documents, payments, uploads', () => {
       }),
     );
     expect(rows[0]).toMatchObject({
+      id: 'pri-1',
+      invoiceId: INV_ID,
       invoiceNumber: 'INV-P1',
       amountMinor: 99_00,
       currency: 'PLN',

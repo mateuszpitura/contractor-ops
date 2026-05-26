@@ -18,106 +18,111 @@ describe('withSoftDelete', () => {
       },
       $extends: (ext: {
         query: {
-          $allModels: Record<string, (p: unknown) => Promise<unknown>>;
+          $allModels: Record<string, (this: unknown, p: unknown) => Promise<unknown>>;
         };
       }) => {
         const models = ext.query.$allModels;
-        return {
-          invoice: {
-            delete: (args: unknown) =>
-              models.delete({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            deleteMany: (args: unknown) =>
-              models.deleteMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            findMany: (args: unknown) =>
-              models.findMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            findFirst: (args: unknown) =>
-              models.findFirst({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            count: (args: unknown) =>
-              models.count({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            findFirstOrThrow: (args: unknown) =>
-              models.findFirstOrThrow({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            findUnique: (args: unknown) =>
-              models.findMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            findUniqueOrThrow: (args: unknown) =>
-              models.findMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            aggregate: (args: unknown) =>
-              models.findMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            groupBy: (args: unknown) =>
-              models.findMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            update: (args: unknown) =>
-              models.update({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            updateMany: (args: unknown) =>
-              models.updateMany({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-            upsert: (args: unknown) =>
-              models.upsert({
-                model: 'Invoice',
-                args,
-                query: innerQuery,
-              }),
-          },
-          verification: {
-            delete: (args: unknown) =>
-              models.delete({
-                model: 'Verification',
-                args,
-                query: innerQuery,
-              }),
-            update: (args: unknown) =>
-              models.update({
-                model: 'Verification',
-                args,
-                query: innerQuery,
-              }),
-          },
+        // `extendedClient` is the value real Prisma binds as `this` when invoking
+        // a `$allModels` hook — `Prisma.getExtensionContext(this)` returns it,
+        // and the soft-delete impl looks up `ctx[modelName].update` on it.
+        // We assemble it first as a holder so the hooks can reference back to
+        // the fully-wired delegates (invoice.update, invoice.updateMany).
+        const extendedClient: Record<string, unknown> = {};
+        extendedClient.invoice = {
+          delete: (args: unknown) =>
+            models.delete.call(extendedClient, {
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          deleteMany: (args: unknown) =>
+            models.deleteMany.call(extendedClient, {
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          findMany: (args: unknown) =>
+            models.findMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          findFirst: (args: unknown) =>
+            models.findFirst({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          count: (args: unknown) =>
+            models.count({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          findFirstOrThrow: (args: unknown) =>
+            models.findFirstOrThrow({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          findUnique: (args: unknown) =>
+            models.findMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          findUniqueOrThrow: (args: unknown) =>
+            models.findMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          aggregate: (args: unknown) =>
+            models.findMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          groupBy: (args: unknown) =>
+            models.findMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          update: (args: unknown) =>
+            models.update({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          updateMany: (args: unknown) =>
+            models.updateMany({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
+          upsert: (args: unknown) =>
+            models.upsert({
+              model: 'Invoice',
+              args,
+              query: innerQuery,
+            }),
         };
+        extendedClient.verification = {
+          delete: (args: unknown) =>
+            models.delete.call(extendedClient, {
+              model: 'Verification',
+              args,
+              query: innerQuery,
+            }),
+          update: (args: unknown) =>
+            models.update({
+              model: 'Verification',
+              args,
+              query: innerQuery,
+            }),
+        };
+        return extendedClient;
       },
     };
 
@@ -125,21 +130,23 @@ describe('withSoftDelete', () => {
     return { client, innerQuery, invoiceUpdate, invoiceUpdateMany };
   }
 
+  // delete is routed through the extended client (Prisma.getExtensionContext),
+  // so it re-enters the `update` hook which adds `deletedAt: null` to where.
+  // The final sink is `innerQuery` (the inner Prisma engine call).
   it('converts delete on soft-delete models to update with deletedAt', async () => {
-    const { client, invoiceUpdate, innerQuery } = createMockClient();
+    const { client, innerQuery } = createMockClient();
     await client.invoice.delete({ where: { id: 'i1' } });
-    expect(invoiceUpdate).toHaveBeenCalledWith({
-      where: { id: 'i1' },
+    expect(innerQuery).toHaveBeenCalledWith({
+      where: { id: 'i1', deletedAt: null },
       data: { deletedAt: expect.any(Date) },
     });
-    expect(innerQuery).not.toHaveBeenCalled();
   });
 
   it('converts deleteMany to updateMany with deletedAt for soft-delete models', async () => {
-    const { client, invoiceUpdateMany } = createMockClient();
+    const { client, innerQuery } = createMockClient();
     await client.invoice.deleteMany({ where: { status: 'DRAFT' } });
-    expect(invoiceUpdateMany).toHaveBeenCalledWith({
-      where: { status: 'DRAFT' },
+    expect(innerQuery).toHaveBeenCalledWith({
+      where: { status: 'DRAFT', deletedAt: null },
       data: { deletedAt: expect.any(Date) },
     });
   });

@@ -24,7 +24,7 @@ export function SectionLabel({ children, icon: Icon, variant = 'dashboard' }: Se
           <Icon className="h-3 w-3 text-primary" />
         </div>
       ) : null}
-      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
+      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
         {children}
       </span>
       <div className="h-px flex-1 bg-gradient-to-r from-border/50 to-transparent" />

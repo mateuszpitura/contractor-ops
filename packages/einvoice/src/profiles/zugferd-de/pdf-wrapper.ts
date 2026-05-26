@@ -29,7 +29,7 @@
 //     embedded by `invoice-template.tsx`).
 
 import fs from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 
 import { createLogger } from '@contractor-ops/logger';
 import { AFRelationship, PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from 'pdf-lib';
@@ -37,9 +37,12 @@ import type { ZugferdConformanceLevel } from './constants.js';
 import { ZUGFERD_ATTACHMENT_FILENAME, ZUGFERD_ATTACHMENT_MIME } from './constants.js';
 import { buildZugferdXmpPacket } from './xmp-template.js';
 
-// Path resolves at module-load via import.meta.url so the helper works from
-// both dist/ (compiled) and src/ (vitest) contexts.
-const ICC_PATH = fileURLToPath(new URL('./assets/sRGB2014.icc', import.meta.url));
+// Resolve lazily — turbopack SSR strips `import.meta.dirname` and rewrites
+// `import.meta.url`, so any path resolution at module-load throws even on
+// routes that never wrap a PDF.
+function getIccPath(): string {
+  return path.join(path.dirname(new URL(import.meta.url).pathname), 'assets', 'sRGB2014.icc');
+}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -109,7 +112,7 @@ export async function wrapToPdfA3(
 
   // 4. Embed sRGB ICC OutputIntent. PDF/A-3 B requires exactly one
   //    OutputIntents entry with /S=/GTS_PDFA1 and a DestOutputProfile.
-  const iccBuf = await fs.readFile(ICC_PATH);
+  const iccBuf = await fs.readFile(getIccPath());
   const iccBytes = new Uint8Array(iccBuf.buffer, iccBuf.byteOffset, iccBuf.byteLength);
   const iccStream = doc.context.stream(iccBytes, {
     N: PDFNumber.of(3),

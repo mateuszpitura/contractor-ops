@@ -1,39 +1,71 @@
+'use client';
+
 import type { ReactNode } from 'react';
+
+import { cn } from '../../lib/utils.js';
 
 export interface AtelierTableShellProps {
   children: ReactNode;
+  /** Fixed chrome above the scroll region (e.g. column visibility toggle). */
+  chrome?: ReactNode;
   /** Whether to render a translucent loading overlay on top of the rows. */
   isLoading?: boolean;
   /** Translucent overlay copy when isLoading. Defaults to nothing visible. */
   loadingLabel?: string;
   /** Optional pagination row rendered below the scroll area. */
   footer?: ReactNode;
+  /**
+   * When true (default), the shell participates in a flex column and the
+   * scroll region grows to fill remaining space (`min-h-0 flex-1`) with
+   * internal overflow and a sticky column header. Set false for dialogs
+   * or compact embeds.
+   */
+  constrainHeight?: boolean;
+  className?: string;
 }
 
 /**
  * Workbench-tier table shell. Wraps a `<table>` (or any tabular layout)
- * with consistent chrome: rounded border, sticky-header support via
- * caller's <thead> position:sticky, and an optional loading overlay
- * that doesn't shift layout.
+ * with consistent chrome: rounded border, flex-fill scroll, sticky column
+ * headers, and an optional loading overlay that doesn't shift layout.
  *
- * **Workbench discipline (§3.3):** no backdrop-filter, no per-row
- * tilt, no per-row shimmer, no per-row glass. The overlay uses
- * solid --background with an opacity, not glass.
- *
- * The shell does NOT render the table itself — the caller controls
- * <table>/<thead>/<tbody>/<tr>/<td>. This keeps the primitive
- * compatible with @tanstack/react-table render functions.
+ * **Viewport discipline:** height is driven by CSS flex (`min-h-0 flex-1`)
+ * from the dashboard shell down — not by scroll-triggered JS measurement.
+ * Parent chain must include `flex min-h-0 flex-1 flex-col` (see
+ * `WORKBENCH_*_CLASS` helpers in `table-page-layout.ts`).
  */
 export function AtelierTableShell({
   children,
+  chrome,
   isLoading = false,
   loadingLabel,
   footer,
+  constrainHeight = true,
+  className,
 }: AtelierTableShellProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card">
-        <div className="overflow-x-auto">{children}</div>
+    <div className={cn('flex flex-col gap-2', constrainHeight && 'min-h-0 flex-1', className)}>
+      <div
+        className={cn(
+          'relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card',
+          constrainHeight && 'min-h-[320px] max-h-max flex-1',
+        )}>
+        {chrome ? (
+          <div className="shrink-0 border-b border-border/50 bg-muted/40">{chrome}</div>
+        ) : null}
+        <div
+          role="region"
+          aria-label="Table content"
+          className={cn(
+            'overflow-auto [scrollbar-gutter:stable] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+            '[&_[data-slot=table-container]]:overflow-visible',
+            '[&_[data-slot=table-header]]:bg-transparent [&_[data-slot=table-header]>tr>th]:border-b-0',
+            '[&_[data-slot=table-head]]:sticky [&_[data-slot=table-head]]:top-0 [&_[data-slot=table-head]]:z-10',
+            '[&_[data-slot=table-head]]:bg-muted [&_[data-slot=table-head]]:shadow-[0_1px_0_0_hsl(var(--border)/0.5)]',
+            constrainHeight && 'min-h-0 flex-1',
+          )}>
+          {children}
+        </div>
         {isLoading ? (
           <div
             aria-busy="true"
@@ -47,7 +79,9 @@ export function AtelierTableShell({
           </div>
         ) : null}
       </div>
-      {footer ? <div className="flex items-center justify-between gap-3">{footer}</div> : null}
+      {footer ? (
+        <div className="flex shrink-0 items-center justify-between gap-3">{footer}</div>
+      ) : null}
     </div>
   );
 }

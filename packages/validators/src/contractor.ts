@@ -136,10 +136,14 @@ export type ContractorUpdateInput = z.infer<typeof contractorUpdateSchema>;
  */
 export const contractorListSchema = z.object({
   page: z.number().min(1).default(1),
-  pageSize: z.number().min(10).max(50).default(25),
+  // Max 100: dropdown selectors (e.g. leitweg-id-create-dialog) hydrate a
+  // single-shot picklist of all org contractors. 50 was too low for orgs
+  // with >50 contractors and forced silent truncation; 100 keeps the
+  // unbounded-page-scan risk bounded while covering typical SMB tenants.
+  pageSize: z.number().min(10).max(100).default(25),
   search: z.string().optional(),
   sortBy: z
-    .enum(['createdAt', 'legalName', 'status', 'lifecycleStage', 'type'])
+    .enum(['createdAt', 'legalName', 'displayName', 'status', 'lifecycleStage', 'type'])
     .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
   filters: z

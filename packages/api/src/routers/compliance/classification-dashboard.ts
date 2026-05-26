@@ -200,7 +200,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
 
   const assignments = await db.contractorAssignment.findMany({
     where: { organizationId: orgId, status: 'ACTIVE', contractor: { countryCode: market } },
-    include: { contractor: { select: { id: true, name: true, countryCode: true } } },
+    include: { contractor: { select: { id: true, displayName: true, countryCode: true } } },
     take: DETAIL_ROW_TAKE,
   });
 
@@ -264,7 +264,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
 
   const rows: DashboardRow[] = assignments.map(a => {
     const assignmentId = a.id as string;
-    const contractor = a.contractor as { name?: unknown } | undefined;
+    const contractor = a.contractor as { displayName?: unknown } | undefined;
     const latest = latestByAssignment.get(assignmentId);
     const alert = alertByAssignment.get(assignmentId);
     const drv = drvByAssignment.get(assignmentId);
@@ -280,7 +280,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
 
     return {
       engagementId: assignmentId,
-      contractorName: typeof contractor?.name === 'string' ? contractor.name : '',
+      contractorName: typeof contractor?.displayName === 'string' ? contractor.displayName : '',
       country: market,
       latestVerdict: verdict,
       latestCompletedAt: (latest?.completedAt as Date) ?? null,
@@ -452,7 +452,7 @@ export const classificationDashboardRouter = router({
           Array<{
             id: string;
             contractorAssignmentId: string;
-            contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
+            contractorAssignment?: { contractor?: { displayName?: string | null } | null } | null;
           }>
         >;
       };
@@ -461,7 +461,7 @@ export const classificationDashboardRouter = router({
           Array<{
             contractorAssignmentId: string;
             completedAt: Date | null;
-            contractorAssignment?: { contractor?: { name?: string | null } | null } | null;
+            contractorAssignment?: { contractor?: { displayName?: string | null } | null } | null;
           }>
         >;
       };
@@ -478,7 +478,7 @@ export const classificationDashboardRouter = router({
         },
         include: {
           contractorAssignment: {
-            include: { contractor: { select: { name: true, countryCode: true } } },
+            include: { contractor: { select: { displayName: true, countryCode: true } } },
           },
         },
         take: DETAIL_ROW_TAKE,
@@ -486,7 +486,7 @@ export const classificationDashboardRouter = router({
 
       const items = triggers.map(t => ({
         contractorAssignmentId: t.contractorAssignmentId,
-        contractorName: t.contractorAssignment?.contractor?.name ?? '',
+        contractorName: t.contractorAssignment?.contractor?.displayName ?? '',
         reason: 'reassessment-trigger',
       }));
 
@@ -506,7 +506,7 @@ export const classificationDashboardRouter = router({
       },
       include: {
         contractorAssignment: {
-          include: { contractor: { select: { name: true, countryCode: true } } },
+          include: { contractor: { select: { displayName: true, countryCode: true } } },
         },
       },
       orderBy: { completedAt: 'desc' },
@@ -523,7 +523,7 @@ export const classificationDashboardRouter = router({
 
     const items = [...latestByAssignment.values()].map(r => ({
       contractorAssignmentId: r.contractorAssignmentId,
-      contractorName: r.contractorAssignment?.contractor?.name ?? '',
+      contractorName: r.contractorAssignment?.contractor?.displayName ?? '',
       reason: 'over-12-months',
     }));
 

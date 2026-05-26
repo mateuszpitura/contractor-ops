@@ -32,7 +32,7 @@
  * current_setting inside transactions, which is schema-independent.
  */
 
-import { PrismaNeon } from '@prisma/adapter-neon';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { PrismaClient } from '../generated/prisma/client/client.js';
@@ -43,7 +43,7 @@ import { withRlsSession } from '../rls.js';
 // ---------------------------------------------------------------------------
 
 function createTestClient(url: string): PrismaClient {
-  const adapter = new PrismaNeon({ connectionString: url });
+  const adapter = new PrismaPg({ connectionString: url });
   return new PrismaClient({ adapter });
 }
 

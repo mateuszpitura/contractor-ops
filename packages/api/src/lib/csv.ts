@@ -18,7 +18,8 @@
  */
 
 import { Readable } from 'node:stream';
-import { stringify, type Stringifier } from 'csv-stringify';
+import type { Stringifier } from 'csv-stringify';
+import { stringify } from 'csv-stringify';
 
 export const UTF8_BOM = Buffer.from([0xef, 0xbb, 0xbf]);
 

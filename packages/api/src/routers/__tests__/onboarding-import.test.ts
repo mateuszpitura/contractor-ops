@@ -20,6 +20,8 @@ const {
   mockCreateInvitation,
   mockGetFullOrganization,
   mockFetch,
+  mockFetchJiraProjects,
+  mockFetchLinearTeams,
   mockGetSubscription,
 } = vi.hoisted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +53,8 @@ const {
     members: [{ user: { email: 'existing@example.com' } }],
   }));
   const mockFetch = vi.fn();
+  const mockFetchJiraProjects = vi.fn();
+  const mockFetchLinearTeams = vi.fn();
 
   const mockGetSubscription = vi.fn(async () => ({
     id: 'sub_onb_mock',
@@ -64,6 +68,8 @@ const {
     mockCreateInvitation,
     mockGetFullOrganization,
     mockFetch,
+    mockFetchJiraProjects,
+    mockFetchLinearTeams,
     mockGetSubscription,
   };
 });
@@ -188,6 +194,9 @@ vi.mock('@contractor-ops/integrations', () => ({
     expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
   })),
   encryptCredentials: vi.fn(() => 'encrypted-ref'),
+  fetchWithTimeout: mockFetch,
+  fetchJiraProjects: mockFetchJiraProjects,
+  fetchLinearTeams: mockFetchLinearTeams,
 }));
 
 vi.mock('@contractor-ops/integrations/services/credential-service', () => ({
@@ -513,44 +522,29 @@ describe('onboardingImport', () => {
         configJson: {},
       });
 
-    // Jira projects
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [{ id: '10001', key: 'PRJ', name: 'Project Alpha' }],
-      })
-      // Jira project statuses
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [
-          {
-            id: '10001',
-            statuses: [
-              { id: '1', name: 'To Do', statusCategory: { colorName: 'blue-gray' } },
-              { id: '2', name: 'Done', statusCategory: { colorName: 'green' } },
-            ],
-          },
-        ],
-      });
-
-    // Linear teams
-    mockLinearGraphQL.mockResolvedValue({
-      teams: {
-        nodes: [
-          {
-            id: 'tm1',
-            name: 'Engineering',
-            key: 'ENG',
-            states: {
-              nodes: [
-                { id: 'st1', name: 'Todo', type: 'unstarted', color: '#ccc', position: 0 },
-                { id: 'st2', name: 'Done', type: 'completed', color: '#0f0', position: 1 },
-              ],
-            },
-          },
+    mockFetchJiraProjects.mockResolvedValue([
+      {
+        externalId: '10001',
+        name: 'Project Alpha',
+        key: 'PRJ',
+        statuses: [
+          { id: '1', name: 'To Do', color: 'blue-gray' },
+          { id: '2', name: 'Done', color: 'green' },
         ],
       },
-    });
+    ]);
+
+    mockFetchLinearTeams.mockResolvedValue([
+      {
+        externalId: 'tm1',
+        name: 'Engineering',
+        key: 'ENG',
+        states: [
+          { id: 'st1', name: 'Todo', type: 'unstarted', color: '#ccc', position: 0 },
+          { id: 'st2', name: 'Done', type: 'completed', color: '#0f0', position: 1 },
+        ],
+      },
+    ]);
 
     const result = await caller.fetchProjects({ sources: ['JIRA', 'LINEAR'] });
 

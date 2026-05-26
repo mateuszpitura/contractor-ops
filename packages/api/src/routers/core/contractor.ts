@@ -563,6 +563,14 @@ export const contractorRouter = router({
               isDefault: true,
               validFrom: true,
               validTo: true,
+              skontoTerms: {
+                take: 1,
+                select: {
+                  discountPercent: true,
+                  discountPeriodDays: true,
+                  netPeriodDays: true,
+                },
+              },
             },
           },
           complianceItems: {

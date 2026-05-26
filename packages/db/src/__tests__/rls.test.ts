@@ -138,7 +138,13 @@ describe('withRlsReads', () => {
 
   it('wraps a scoped-model findMany in a tx that issues SET LOCAL first', async () => {
     type ExtensionConfig = {
-      query: Record<string, Record<string, (p: { args: unknown; query: (a: unknown) => Promise<unknown> }) => Promise<unknown>>>;
+      query: Record<
+        string,
+        Record<
+          string,
+          (p: { args: unknown; query: (a: unknown) => Promise<unknown> }) => Promise<unknown>
+        >
+      >;
     };
 
     let registered: ExtensionConfig | null = null;
@@ -215,7 +221,13 @@ describe('withRlsReads', () => {
     // AGAIN. The re-entrancy guard must short-circuit to `query(args)` so
     // we don't open another nested $transaction.
     type ExtensionConfig = {
-      query: Record<string, Record<string, (p: { args: unknown; query: (a: unknown) => Promise<unknown> }) => Promise<unknown>>>;
+      query: Record<
+        string,
+        Record<
+          string,
+          (p: { args: unknown; query: (a: unknown) => Promise<unknown> }) => Promise<unknown>
+        >
+      >;
     };
 
     let registered: ExtensionConfig | null = null;

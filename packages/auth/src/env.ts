@@ -58,6 +58,19 @@ const authEnvSchema = z.object({
    * placeholder so local/test environments boot without extra config.
    */
   EMAIL_FROM: z.email().default('noreply@contractor-ops.com'),
+
+  /**
+   * Cross-subdomain cookie posture. Set when the SPA (`app.*`) and API
+   * (`api.*`) live on different subdomains of the same registrable domain
+   * so Better Auth session cookies carry `Domain=.contractor-ops.com;
+   * SameSite=None; Secure`.
+   *
+   * Leaving unset preserves the legacy same-origin posture
+   * (`Domain` omitted, `SameSite=Lax`) so the Next.js app keeps working
+   * during the migration grace period.
+   */
+  AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
+  AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).optional(),
 });
 
 export type AuthEnv = z.infer<typeof authEnvSchema>;
@@ -78,6 +91,10 @@ export type ResolvedAuthEnv = {
   resendApiKey: string | undefined;
   /** From address used for all Better Auth transactional emails. */
   emailFrom: string;
+  /** Cookie Domain attribute (e.g. `.contractor-ops.com`). Undefined → omit Domain. */
+  cookieDomain: string | undefined;
+  /** SameSite cookie attribute. Defaults to `'lax'` (legacy same-origin posture). */
+  cookieSameSite: 'lax' | 'none' | 'strict';
 };
 
 function assertProviderPair(
@@ -175,6 +192,20 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
     'MICROSOFT',
   );
 
+  // Cross-subdomain cookies require SameSite=None + Secure. Reject configs
+  // that would issue browser-ignored cookies (Chrome/Firefox refuse
+  // SameSite=None without Secure) — better to fail fast at boot than to
+  // sign users out silently in production.
+  const cookieSameSite = data.AUTH_COOKIE_SAME_SITE ?? 'lax';
+  if (cookieSameSite === 'none' && !isProduction && !data.AUTH_COOKIE_DOMAIN) {
+    // SameSite=None in dev without Secure (we toggle Secure on isProduction
+    // in config.ts) is a noisy footgun. Surface it loudly.
+    throw new Error(
+      '[@contractor-ops/auth] AUTH_COOKIE_SAME_SITE=none requires AUTH_COOKIE_DOMAIN to be set ' +
+        '(implies cross-subdomain Secure cookies; reject dev configs that would issue Lax-equivalent cookies).',
+    );
+  }
+
   return {
     nodeEnv,
     isDevelopment,
@@ -186,6 +217,8 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
     microsoft,
     resendApiKey: data.RESEND_API_KEY,
     emailFrom: data.EMAIL_FROM,
+    cookieDomain: data.AUTH_COOKIE_DOMAIN,
+    cookieSameSite,
   };
 }
 
