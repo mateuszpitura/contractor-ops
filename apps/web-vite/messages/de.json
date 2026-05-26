@@ -2936,6 +2936,7 @@
     "lastAdminCannotDeactivate": "Der letzte Administrator kann nicht deaktiviert werden. Weisen Sie zunächst einen anderen Administrator zu.",
     "permissionDenied": "Sie haben keine Berechtigung, diese Aktion auszuführen.",
     "unknownError": "Ein unerwarteter Fehler ist aufgetreten. Versuchen Sie es erneut.",
+    "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "contractorNotFound": "Auftragnehmer nicht gefunden.",
     "contractorHasUnpaidInvoices": "Auftragnehmer mit offenen Rechnungen kann nicht archiviert werden. Klären Sie zunächst alle ausstehenden Zahlungen.",
     "contractorHasActiveWorkflows": "Auftragnehmer mit aktiven Workflows kann nicht archiviert werden. Schließen Sie Workflows zunächst ab oder brechen Sie sie ab.",

@@ -1,0 +1,28 @@
+// Reject raw string-literal `{ message: '...' }` arguments on Zod schema
+// methods (`.min`, `.max`, `.refine`, `.regex`, ...) inside the web-vite tree.
+// Phase 2 sweep replaces these with translation keys (e.g. 'validation.required')
+// resolved at form-render time via `zod-issues-to-keys.ts`.
+//
+// Phase 1: severity is `warn`. Phase 3 flip raises to `error`.
+//
+// Allowed:
+//   - z.string().min(1, { message: 'validation.required' })   // key literal
+//   - z.string().min(1, { message: tKey(t, 'validation.required') })
+//
+// Rejected:
+//   - z.string().min(1, { message: 'Required' })
+//
+// Note: this pattern fires anywhere a `.min/.max/.refine/.regex` chain
+// passes an object with a `message: 'literal'` field. False positives in
+// non-zod chains are out of scope — Phase 2 sweep migrates them too.
+
+`$receiver.$method($_, { $props })` where {
+  $method <: or { `min`, `max`, `refine`, `regex`, `length`, `email`, `url`, `uuid` },
+  $props <: contains `message: $value`,
+  $value <: or { `"$_"`, `'$_'` },
+  register_diagnostic(
+    span = $value,
+    severity = "warn",
+    message = "Hardcoded Zod message. Use a translation key (e.g. 'validation.required') — goals/i18n-system-messages."
+  )
+}

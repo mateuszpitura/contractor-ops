@@ -8,6 +8,33 @@
  * via regex and look up translations automatically.
  */
 
+import * as ApiErrors from './errors.js';
+
+/**
+ * Set of all camelCase error values exported from this module. Built lazily on
+ * first call so adding a new constant requires no manual registration. Used by
+ * `init.ts` `errorFormatter` to decide whether a `TRPCError.message` should be
+ * surfaced verbatim as `shape.data.errorKey` or replaced with `'unknownError'`.
+ */
+let knownValues: Set<string> | undefined;
+
+function buildKnownValues(): Set<string> {
+  const set = new Set<string>();
+  // Self-import: this read is lazy (called from `isKnownApiErrorValue`, never
+  // during module evaluation), so the namespace object is fully populated by
+  // the time the loop runs.
+  for (const [, value] of Object.entries(ApiErrors as Record<string, unknown>)) {
+    if (typeof value === 'string') set.add(value);
+  }
+  return set;
+}
+
+export function isKnownApiErrorValue(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  if (!knownValues) knownValues = buildKnownValues();
+  return knownValues.has(value);
+}
+
 // ─── Generic ─────────────────────────────────────────────────────
 export const UNAUTHORIZED = 'unauthorized';
 export const FORBIDDEN = 'forbidden';

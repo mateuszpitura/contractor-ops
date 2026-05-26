@@ -1,5 +1,10 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+  "plugins": [
+    "./tools/biome-plugins/no-untranslated-toast.grit",
+    "./tools/biome-plugins/no-untranslated-trpc-error.grit",
+    "./tools/biome-plugins/no-untranslated-zod-message.grit"
+  ],
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "css": {
     "parser": {

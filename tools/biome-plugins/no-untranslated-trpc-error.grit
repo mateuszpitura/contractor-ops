@@ -1,0 +1,22 @@
+// Reject raw string-literal `message` values on `new TRPCError({ message: '...' })`
+// throws inside `packages/api/src/**`. Replace the literal with an import
+// from `packages/api/src/errors.ts` so every error has a translation anchor.
+//
+// Phase 1: severity is `warn`. Phase 3 flip raises to `error`.
+//
+// Allowed forms:
+//   - new TRPCError({ message: E.CONTRACTOR_NOT_FOUND })
+//   - new TRPCError({ message: APPROVAL_STEP_NOT_FOUND })
+//
+// Rejected:
+//   - new TRPCError({ message: 'Contractor not found' })
+
+`new TRPCError({ $properties })` where {
+  $properties <: contains `message: $value`,
+  $value <: or { `"$_"`, `'$_'` },
+  register_diagnostic(
+    span = $value,
+    severity = "warn",
+    message = "Hardcoded TRPCError message. Import a constant from packages/api/src/errors.ts — goals/i18n-system-messages."
+  )
+}

@@ -2936,6 +2936,7 @@
     "lastAdminCannotDeactivate": "Nie można dezaktywować ostatniego administratora. Najpierw wyznacz innego administratora.",
     "permissionDenied": "Nie masz uprawnień do wykonania tej akcji.",
     "unknownError": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie.",
+    "generic": "Coś poszło nie tak. Spróbuj ponownie.",
     "contractorNotFound": "Nie znaleziono kontrahenta.",
     "contractorHasUnpaidInvoices": "Nie można zarchiwizować kontrahenta z nieopłaconymi fakturami. Najpierw rozlicz wszystkie zaległe płatności.",
     "contractorHasActiveWorkflows": "Nie można zarchiwizować kontrahenta z aktywnymi workflow. Najpierw dokończ lub anuluj workflow.",

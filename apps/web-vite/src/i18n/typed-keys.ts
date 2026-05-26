@@ -6,7 +6,16 @@
  * the new tree so this version ships just that surface. The full
  * generic helpers (SubNamespacesOf / LeavesUnder / tDyn) lift in a
  * follow-up alongside the components that use them.
+ *
+ * `TranslationKey` is re-exported from the codegen output so consumers
+ * can refer to the branded union without depending on the generated
+ * file path directly. Phase 3 of the i18n-system-messages goal narrows
+ * the helper signatures below from `string` → `TranslationKey`; until
+ * then, the union is informational and the helpers stay permissive so
+ * the codemod-era call sites keep compiling.
  */
+
+export type { TranslationKey } from '../generated/i18n/keys';
 
 // biome-ignore lint/suspicious/noExplicitAny: contract mirrors the next-intl shape exactly
 export type LooseTranslator = (key: any, values?: any) => string;

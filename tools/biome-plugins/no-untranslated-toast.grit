@@ -1,0 +1,25 @@
+// Reject raw string-literal arguments to `toast.success | error | info | warning`
+// from `sonner`. Wrap the value in `t(...)`, `tKey(...)`, or pass a
+// `TranslationKey` literal so the displayed text always flows through i18n.
+//
+// Phase 1: severity is `warn`. Phase 3 flip raises to `error`.
+//
+// Allowed forms (not flagged):
+//   - toast.success(t('Foo.bar'))
+//   - toast.error(tKey(t, key))
+//   - toast.info(translatedString)             // identifier reference
+//   - toast.warning(`Hello ${name}`)           // template literal
+//
+// Rejected:
+//   - toast.success('Saved')
+//   - toast.error("Failed to save")
+
+`toast.$method($arg)` where {
+  $method <: or { `success`, `error`, `info`, `warning` },
+  $arg <: or { `"$_"`, `'$_'` },
+  register_diagnostic(
+    span = $arg,
+    severity = "warn",
+    message = "Hardcoded sonner toast text. Wrap in t(...) / tKey(...) or pass a TranslationKey literal — goals/i18n-system-messages."
+  )
+}

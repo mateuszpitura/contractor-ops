@@ -2936,6 +2936,7 @@
     "lastAdminCannotDeactivate": "Cannot deactivate the last administrator. Assign another admin first.",
     "permissionDenied": "You do not have permission to perform this action.",
     "unknownError": "An unexpected error occurred. Please try again.",
+    "generic": "Something went wrong. Please try again.",
     "contractorNotFound": "Contractor not found.",
     "contractorHasUnpaidInvoices": "Cannot archive contractor with unpaid invoices. Resolve all pending payments first.",
     "contractorHasActiveWorkflows": "Cannot archive contractor with active workflows. Complete or cancel workflows first.",

@@ -1,9 +1,14 @@
 #!/usr/bin/env tsx
 /**
- * Generate TypeScript types for next-intl messages from the canonical
+ * Generate TypeScript types for i18next messages from the canonical
  * `apps/web-vite/messages/en.json`. Output is deterministic — re-running with
  * an unchanged source produces a byte-identical file so turbo caches it
  * cleanly.
+ *
+ * Two artifacts:
+ *   - `messages.d.ts` — full `Messages` namespace tree (legacy compat).
+ *   - `keys.d.ts`     — branded `TranslationKey` union of every leaf dotted
+ *                       path; goal/i18n-system-messages depends on it.
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -20,7 +25,8 @@ type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..');
 const SOURCE = resolve(REPO_ROOT, 'apps/web-vite/messages/en.json');
-const OUTPUT = resolve(REPO_ROOT, 'apps/web-vite/src/generated/i18n/messages.d.ts');
+const OUTPUT_MESSAGES = resolve(REPO_ROOT, 'apps/web-vite/src/generated/i18n/messages.d.ts');
+const OUTPUT_KEYS = resolve(REPO_ROOT, 'apps/web-vite/src/generated/i18n/keys.d.ts');
 
 function isObject(value: JsonValue): value is { [key: string]: JsonValue } {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -47,17 +53,65 @@ function emit(value: JsonValue, indent: number): string {
   return `{\n${lines.join('\n')}\n${pad}}`;
 }
 
+/**
+ * Walk an object tree and yield every dotted path that resolves to a leaf
+ * string value. Sorted output keeps the emitted union deterministic.
+ */
+function collectLeafKeys(value: JsonValue, prefix: string, out: string[]): void {
+  if (typeof value === 'string') {
+    out.push(prefix);
+    return;
+  }
+  if (!isObject(value)) return;
+  const keys = Object.keys(value).sort();
+  for (const key of keys) {
+    const next = prefix ? `${prefix}.${key}` : key;
+    collectLeafKeys(value[key], next, out);
+  }
+}
+
+function buildKeysFile(data: JsonValue): string {
+  const leaves: string[] = [];
+  collectLeafKeys(data, '', leaves);
+  if (leaves.length === 0) {
+    throw new Error('No leaf string keys found in en.json — bundle structure changed?');
+  }
+  const union = leaves
+    .map(k => `  | '${k.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`)
+    .join('\n');
+  return `${HEADER}
+declare const translationKeyBrand: unique symbol;
+
+/**
+ * Branded union of every dotted leaf path in apps/web-vite/messages/en.json.
+ * A plain \`string\` is NOT assignable to \`TranslationKey\`; callers must
+ * either pass a literal that matches the union, or go through a key helper
+ * (\`t(...)\`, \`tKey(...)\`) that hands back the branded type.
+ */
+export type TranslationKey = (
+${union}
+) & { readonly [translationKeyBrand]?: never };
+`;
+}
+
 function main(): void {
   const raw = readFileSync(SOURCE, 'utf8');
   const data = JSON.parse(raw) as JsonValue;
   if (!isObject(data)) {
     throw new Error(`Expected ${SOURCE} to be a JSON object`);
   }
+
+  // 1) Messages tree (legacy compat).
   const body = emit(data, 0);
-  const output = `${HEADER}\nexport type Messages = ${body};\n`;
-  mkdirSync(dirname(OUTPUT), { recursive: true });
-  writeFileSync(OUTPUT, output, 'utf8');
-  process.stdout.write(`Wrote ${OUTPUT}\n`);
+  const messagesOutput = `${HEADER}\nexport type Messages = ${body};\n`;
+  mkdirSync(dirname(OUTPUT_MESSAGES), { recursive: true });
+  writeFileSync(OUTPUT_MESSAGES, messagesOutput, 'utf8');
+  process.stdout.write(`Wrote ${OUTPUT_MESSAGES}\n`);
+
+  // 2) Branded TranslationKey union.
+  const keysOutput = buildKeysFile(data);
+  writeFileSync(OUTPUT_KEYS, keysOutput, 'utf8');
+  process.stdout.write(`Wrote ${OUTPUT_KEYS}\n`);
 }
 
 main();
