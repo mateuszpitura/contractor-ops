@@ -17,16 +17,9 @@ interface StepReviewContainerProps {
   }) => void;
 }
 
-/**
- * Decision rule annotation — mutation-host container.
- *
- * Hook owns the create + lock-and-export tRPC mutations, debounced
- * react-query state, and the `isLocking` pending guard. The view is a
- * single render path: there is no loading/error/empty variant because
- * the data the hook needs (selected invoice ids) is provided by the
- * parent dialog. `isLocking` is local action state, not a data-load
- * branch. Kept as a passthrough — no decision belongs here.
- */
+// Decision: mutation host — usePaymentRunStepReview owns create +
+// lock-and-export mutations and the isLocking guard. selectedInvoiceIds
+// forwarded by NewPaymentRunDialogContainer; no variant flag.
 export function StepReviewContainer(props: StepReviewContainerProps) {
   const review = usePaymentRunStepReview({
     selectedInvoiceIds: props.selectedInvoiceIds,
