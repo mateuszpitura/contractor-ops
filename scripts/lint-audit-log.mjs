@@ -19,7 +19,7 @@
 // downstream call, not direct writes — they are excluded via the test path
 // allowlist below.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

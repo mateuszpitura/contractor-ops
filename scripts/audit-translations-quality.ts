@@ -45,14 +45,14 @@ const DUMP_DIR = resolve(process.cwd(), '.planning/translations');
 interface LocaleSet {
   app: string;
   dir: string;
-  locales: ReadonlyArray<string>;
+  locales: readonly string[];
   baseLocale: string;
 }
 
-const LOCALE_SETS: ReadonlyArray<LocaleSet> = [
+const LOCALE_SETS: readonly LocaleSet[] = [
   {
     app: 'apps/web',
-    dir: 'apps/web/messages',
+    dir: 'apps/web-vite/messages',
     locales: ['en', 'pl', 'de', 'ar'],
     baseLocale: 'en',
   },
@@ -239,7 +239,7 @@ function auditLocale(
 
 function printSection(
   label: string,
-  items: ReadonlyArray<unknown>,
+  items: readonly unknown[],
   render: (item: any, i: number) => string,
 ): void {
   if (items.length === 0) {

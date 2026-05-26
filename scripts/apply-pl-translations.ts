@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * One-shot script: merges the curated Polish translation map below into
- * apps/web/messages/pl.json at the correct nested paths, creating
+ * apps/web-vite/messages/pl.json at the correct nested paths, creating
  * intermediate objects as needed and preserving existing entries.
  *
  * Source of truth for the keys: .planning/translations/apps_web-pl-missing.json
@@ -23,11 +23,11 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const PL_PATH = resolve(process.cwd(), 'apps/web/messages/pl.json');
+const PL_PATH = resolve(process.cwd(), 'apps/web-vite/messages/pl.json');
 
 /**
  * Curated Polish translations for the 193 missing keys.
- * Key format = dotted path into apps/web/messages/en.json.
+ * Key format = dotted path into apps/web-vite/messages/en.json.
  */
 const PL_TRANSLATIONS: Record<string, string> = {
   // ─── Payments.bacs ──────────────────────────────────────────────────────────

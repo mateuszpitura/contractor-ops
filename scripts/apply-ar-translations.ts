@@ -2,7 +2,7 @@
 /**
  * One-shot Arabic translation backfill.
  *
- * Reads apps/web/messages/ar.json, sets each dotted-path key to its
+ * Reads apps/web-vite/messages/ar.json, sets each dotted-path key to its
  * authored Arabic translation, and writes back with 2-space indent.
  *
  * Authored against en.json snapshot 2026-05-06; missing-key set from
@@ -20,7 +20,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const AR_PATH = resolve(process.cwd(), 'apps/web/messages/ar.json');
+const AR_PATH = resolve(process.cwd(), 'apps/web-vite/messages/ar.json');
 
 // All 295 keys in dotted-path → Arabic value form.
 // Each translation hand-authored. Comments mark sections.

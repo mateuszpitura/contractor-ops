@@ -16,7 +16,7 @@ import { glob } from 'tinyglobby';
 
 const SCRIPT_DIR = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..');
-const SRC_GLOBS = ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'];
+const SRC_GLOBS = ['apps/web-vite/src/**/*.ts', 'apps/web-vite/src/**/*.tsx'];
 const TDYN_IMPORT = "import { tDyn } from '@/i18n/typed-keys';";
 
 function ensureTDynImport(src: string): string {
@@ -151,22 +151,34 @@ function findCallSites(src: string): Match[] {
   // Look for `<id>(<backtick-literal>` patterns. Skip when literal has
   // no `${…}` (those don't fail tsc post-augmentation).
   const idRegex = /(?<![A-Za-z0-9_$])([A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*`/g;
-  let m: RegExpExecArray | null;
-  while ((m = idRegex.exec(src)) !== null) {
+  let m: RegExpExecArray | null = idRegex.exec(src);
+  while (m !== null) {
     const fnName = m[1]!;
-    if (fnName === 'tDyn') continue;
+    if (fnName === 'tDyn') {
+      m = idRegex.exec(src);
+      continue;
+    }
     const fnStart = m.index;
     // Find the opening backtick — we matched up through the backtick.
     const tickIdx = m.index + m[0].length - 1;
     const closeTick = findClosingBacktick(src, tickIdx);
-    if (closeTick === -1) continue;
+    if (closeTick === -1) {
+      m = idRegex.exec(src);
+      continue;
+    }
     // Require at least one `${` in the body.
     const body = src.slice(tickIdx + 1, closeTick);
-    if (!body.includes('${')) continue;
+    if (!body.includes('${')) {
+      m = idRegex.exec(src);
+      continue;
+    }
     // After closing tick, expect optional whitespace then `)` or `,`.
     let i = closeTick + 1;
     while (i < src.length && /\s/.test(src[i]!)) i++;
-    if (src[i] !== ')' && src[i] !== ',') continue;
+    if (src[i] !== ')' && src[i] !== ',') {
+      m = idRegex.exec(src);
+      continue;
+    }
     matches.push({
       fnName,
       fnStart,
@@ -175,6 +187,7 @@ function findCallSites(src: string): Match[] {
       argEnd: i,
       trailing: src[i]!,
     });
+    m = idRegex.exec(src);
   }
   return matches;
 }
@@ -231,7 +244,11 @@ async function main(): Promise<void> {
   const files = await glob(SRC_GLOBS, { cwd: REPO_ROOT, absolute: true });
   files.sort();
   let totalApplied = 0;
-  const reports: { path: string; applied: number; unchanged: { prefix: string; literal: string }[] }[] = [];
+  const reports: {
+    path: string;
+    applied: number;
+    unchanged: { prefix: string; literal: string }[];
+  }[] = [];
   for (const file of files) {
     if (file.endsWith('/typed-keys.ts')) continue;
     if (file.endsWith('/migrate-i18n-casts.ts')) continue;
@@ -244,7 +261,7 @@ async function main(): Promise<void> {
     }
   }
   process.stdout.write(`Converted ${totalApplied} dynamic-key sites.\n`);
-  const stuck = reports.filter((r) => r.unchanged.length > 0);
+  const stuck = reports.filter(r => r.unchanged.length > 0);
   if (stuck.length > 0) {
     process.stdout.write(`\nMid-template literals left for manual review:\n`);
     for (const r of stuck) {

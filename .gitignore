@@ -51,3 +51,9 @@ Thumbs.db
 
 # Claude Code agent scratch worktrees — never commit
 .claude/worktrees/
+.claude/hooks/.state/
+.dev-logs/
+
+# QA walk local runs (screenshots, manifests)
+goals/qa-walk-and-fix/findings/**
+!goals/qa-walk-and-fix/findings/.gitkeep

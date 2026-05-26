@@ -26,7 +26,7 @@
 --     pending-purge rows are kept so audit trails / forensic inspection
 --     stay intact.
 --   - The cron `purgeExpiredOAuthChallenges` runs daily anyway (see
---     apps/web/src/app/api/cron/data-purge/route.ts, commit 3d412c41)
+--     apps/web-vite/src/app/api/cron/data-purge/route.ts, commit 3d412c41)
 --     so worst case this script is redundant.
 --
 -- Usage (example for Neon):

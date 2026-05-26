@@ -1,0 +1,12 @@
+# Same as .cursorignore — indexing-only exclusions.
+# AI can still read these paths when explicitly referenced.
+
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+docs
+.planning
+load-tests
+goals/qa-walk-and-fix/findings
+packages/db/src/generated

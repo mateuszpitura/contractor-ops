@@ -23,14 +23,14 @@ import { resolve } from 'node:path';
 interface LocaleSet {
   app: string;
   dir: string;
-  locales: ReadonlyArray<string>;
+  locales: readonly string[];
   baseLocale: string;
 }
 
-const LOCALE_SETS: ReadonlyArray<LocaleSet> = [
+const LOCALE_SETS: readonly LocaleSet[] = [
   {
     app: 'apps/web',
-    dir: 'apps/web/messages',
+    dir: 'apps/web-vite/messages',
     locales: ['en', 'pl', 'de', 'ar'],
     baseLocale: 'en',
   },

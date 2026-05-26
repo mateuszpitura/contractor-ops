@@ -35,7 +35,7 @@
 // - `scripts/lint-audit-log.mjs` (B.2.c) — `auditLog.create` outside the
 //   `writeAuditLog` helper.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -158,7 +158,7 @@ for (const file of allFiles) {
 
 if (violations.length > 0) {
   console.error(
-    "lint-idempotency: hand-rolled idempotency-key composition detected outside the canonical helper.",
+    'lint-idempotency: hand-rolled idempotency-key composition detected outside the canonical helper.',
   );
   console.error(
     'Use `deriveIdempotencyKey({ orgId, operation, businessKey })` from `@contractor-ops/integrations`',

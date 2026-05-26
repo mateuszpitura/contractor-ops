@@ -42,7 +42,10 @@ function runTsc(): string {
 function parseStringToNamespacedErrors(out: string): ErrorLoc[] {
   const errors: ErrorLoc[] = [];
   for (const line of out.split('\n')) {
-    const match = /^src\/(.+)\((\d+),(\d+)\): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NamespacedMessageKeys/.exec(line);
+    const match =
+      /^src\/(.+)\((\d+),(\d+)\): error TS2345: Argument of type 'string' is not assignable to parameter of type 'NamespacedMessageKeys/.exec(
+        line,
+      );
     if (!match) continue;
     errors.push({
       file: resolve(WEB_ROOT, 'src', match[1]!),
@@ -89,18 +92,18 @@ function rewriteCall(line: string, col: number): { next: string; changed: boolea
 }
 
 function ensureTKeyImport(src: string): string {
-  if (src.includes('tKey,') || /import \{[^}]*\btKey\b[^}]*\} from '@\/i18n\/typed-keys'/.test(src)) {
+  if (
+    src.includes('tKey,') ||
+    /import \{[^}]*\btKey\b[^}]*\} from '@\/i18n\/typed-keys'/.test(src)
+  ) {
     return src;
   }
   if (/from '@\/i18n\/typed-keys'/.test(src)) {
-    return src.replace(
-      /import \{ ([^}]+) \} from '@\/i18n\/typed-keys';/,
-      (_, names: string) => {
-        const set = new Set(names.split(',').map((n) => n.trim()));
-        set.add('tKey');
-        return `import { ${Array.from(set).sort().join(', ')} } from '@/i18n/typed-keys';`;
-      },
-    );
+    return src.replace(/import \{ ([^}]+) \} from '@\/i18n\/typed-keys';/, (_, names: string) => {
+      const set = new Set(names.split(',').map(n => n.trim()));
+      set.add('tKey');
+      return `import { ${Array.from(set).sort().join(', ')} } from '@/i18n/typed-keys';`;
+    });
   }
   // No prior import — place after the last top-level import statement.
   const len = src.length;
@@ -194,7 +197,9 @@ function main(): void {
       totalFiles++;
     }
   }
-  process.stdout.write(`Wrapped ${totalLines} pass-through calls in tKey across ${totalFiles} files.\n`);
+  process.stdout.write(
+    `Wrapped ${totalLines} pass-through calls in tKey across ${totalFiles} files.\n`,
+  );
 }
 
 main();

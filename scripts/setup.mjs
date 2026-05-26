@@ -5,9 +5,9 @@
 // versions against package.json `engines`, and prints next steps. Safe to
 // re-run.
 
-import { readFileSync, copyFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { copyFileSync, existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');

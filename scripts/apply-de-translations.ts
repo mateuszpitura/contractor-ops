@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * One-shot script: merges the curated German translation map below into
- * apps/web/messages/de.json at the correct nested paths, replacing the
+ * apps/web-vite/messages/de.json at the correct nested paths, replacing the
  * English copy-pasted scaffolds and preserving the existing structure.
  *
  * Source of truth for the keys: .planning/translations/apps_web-de-untranslated.json
@@ -34,7 +34,7 @@ import { TRANSLATIONS_PART4 } from './apply-de-translations.part4.js';
 import { TRANSLATIONS_PART5 } from './apply-de-translations.part5.js';
 import { TRANSLATIONS_PART6 } from './apply-de-translations.part6.js';
 
-const DE_PATH = resolve(process.cwd(), 'apps/web/messages/de.json');
+const DE_PATH = resolve(process.cwd(), 'apps/web-vite/messages/de.json');
 
 const ALL_TRANSLATIONS: Record<string, string> = {
   ...TRANSLATIONS_PART1,
@@ -71,4 +71,4 @@ for (const [key, value] of Object.entries(ALL_TRANSLATIONS)) {
 writeFileSync(DE_PATH, JSON.stringify(data, null, 2) + '\n', 'utf-8');
 
 // eslint-disable-next-line no-console
-console.log(`Applied ${applied} German translations to apps/web/messages/de.json`);
+console.log(`Applied ${applied} German translations to apps/web-vite/messages/de.json`);

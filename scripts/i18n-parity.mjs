@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // Phase 70 D-04 — i18n:parity CLI entrypoint.
 //
-// Walks apps/web/messages/{en,de,pl,ar}.json and asserts every key in
+// Walks apps/web-vite/messages/{en,de,pl,ar}.json and asserts every key in
 // en.json exists in each peer locale. Pre-existing drift is tolerated via
 // .i18n-parity-baseline.json (committed); only NEW drift fails CI.
 // --update-baseline regenerates the baseline (manual local action).
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const Dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(Dirname, '..');
-const MESSAGES_DIR = resolve(ROOT, 'apps/web/messages');
+const MESSAGES_DIR = resolve(ROOT, 'apps/web-vite/messages');
 const BASELINE_PATH = resolve(ROOT, '.i18n-parity-baseline.json');
 
 const { runI18nParity } = await import('../packages/lint-guards/src/i18n-parity/run-guard.ts');

@@ -7,7 +7,7 @@
  * audit-translations-quality.ts checks value quality (placeholders, leakage,
  *                              empties)
  *
- * THIS script closes the loop: it parses every .ts/.tsx file under apps/web/src
+ * THIS script closes the loop: it parses every .ts/.tsx file under apps/web-vite/src
  * for `useTranslations()` / `getTranslations()` bindings and `t(…)` call
  * sites, resolves every reference to a full dotted path, and reports any
  * path that is referenced in code but missing from any locale file. It also
@@ -728,7 +728,7 @@ function auditHardcodedStrings(): HardcodedFinding[] {
 
 // ─── output ───────────────────────────────────────────────────────────────────
 
-function printSection<T>(label: string, items: ReadonlyArray<T>, render: (x: T) => string): void {
+function printSection<T>(label: string, items: readonly T[], render: (x: T) => string): void {
   if (items.length === 0) {
     console.log(`  ✓ ${label}: 0`);
     return;

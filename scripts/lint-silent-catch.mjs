@@ -55,7 +55,7 @@
 // - `scripts/lint-idempotency.mjs` (B.4.b) — hand-rolled idempotency keys.
 // - `scripts/lint-audit-log.mjs` (B.2.c) — `auditLog.create` outside helper.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -64,16 +64,12 @@ const repoRoot = resolve(Dirname, '..');
 
 const scanRoots = [
   resolve(repoRoot, 'packages/api/src'),
-  resolve(repoRoot, 'apps/web/src'),
+  resolve(repoRoot, 'apps/web-vite/src'),
   resolve(repoRoot, 'apps/landing/src'),
   resolve(repoRoot, 'apps/public-api/src'),
 ];
 
-const allowPathPatterns = [
-  /\/__tests__\//,
-  /\.(test|spec)\.[tj]sx?$/,
-  /\.d\.ts$/,
-];
+const allowPathPatterns = [/\/__tests__\//, /\.(test|spec)\.[tj]sx?$/, /\.d\.ts$/];
 
 function isPathAllowed(relPath) {
   return allowPathPatterns.some(pattern => pattern.test(relPath));
@@ -129,10 +125,12 @@ function hasSafeSwallowAnnotation(lines, lineIdx) {
     // previous line, so it still counts as a comment line for the purpose
     // of continuing the scan.
     if (
-      !trimmed.startsWith('//') &&
-      !trimmed.startsWith('*') &&
-      !trimmed.startsWith('/*') &&
-      !trimmed.endsWith('*/')
+      !(
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('*') ||
+        trimmed.startsWith('/*') ||
+        trimmed.endsWith('*/')
+      )
     ) {
       return false;
     }
@@ -223,9 +221,7 @@ function extractBraceBody(source, openBraceOffset) {
  * any *real* statement remains.
  */
 function stripComments(body) {
-  return body
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/[^\n]*/g, '');
+  return body.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
 }
 
 /**
@@ -262,19 +258,28 @@ for (const file of allFiles) {
   const lines = source.split('\n');
 
   // -- Empty / comment-only catch bodies ------------------------------------
-  let match;
   catchRegex.lastIndex = 0;
-  while ((match = catchRegex.exec(source)) !== null) {
+  let match = catchRegex.exec(source);
+  while (match !== null) {
     const catchKeywordOffset = match.index;
     const openBraceOffset = match.index + match[0].length - 1;
     const body = extractBraceBody(source, openBraceOffset);
-    if (body === null) continue;
+    if (body === null) {
+      match = catchRegex.exec(source);
+      continue;
+    }
 
     const stripped = stripComments(body).trim();
-    if (stripped.length > 0) continue; // real statement present -- not silent
+    if (stripped.length > 0) {
+      match = catchRegex.exec(source);
+      continue; // real statement present -- not silent
+    }
 
     const catchLineIdx = offsetToLine(source, catchKeywordOffset) - 1;
-    if (hasSafeSwallowAnnotation(lines, catchLineIdx)) continue;
+    if (hasSafeSwallowAnnotation(lines, catchLineIdx)) {
+      match = catchRegex.exec(source);
+      continue;
+    }
 
     // Bonus safety net: even though the body is empty after stripping,
     // a `logger.` / `console.` token inside a comment shouldn't satisfy
@@ -282,17 +287,23 @@ for (const file of allFiles) {
     violations.push(
       `${rel}:${catchLineIdx + 1}: empty catch block; add logger.error(...) call, rethrow, or annotate with "// safe-swallow: <reason>" directly above the catch keyword.`,
     );
+    match = catchRegex.exec(source);
   }
 
   // -- Silent promise-tail `.catch(() => {})` patterns ----------------------
   promiseSilentCatchRegex.lastIndex = 0;
-  while ((match = promiseSilentCatchRegex.exec(source)) !== null) {
-    const offset = match.index;
+  let promiseMatch = promiseSilentCatchRegex.exec(source);
+  while (promiseMatch !== null) {
+    const offset = promiseMatch.index;
     const lineIdx = offsetToLine(source, offset) - 1;
-    if (hasSafeSwallowAnnotation(lines, lineIdx)) continue;
+    if (hasSafeSwallowAnnotation(lines, lineIdx)) {
+      promiseMatch = promiseSilentCatchRegex.exec(source);
+      continue;
+    }
     violations.push(
       `${rel}:${lineIdx + 1}: silent .catch(() => {}) / .catch(() => undefined); log the error or annotate with "// safe-swallow: <reason>" directly above the .catch line.`,
     );
+    promiseMatch = promiseSilentCatchRegex.exec(source);
   }
 }
 

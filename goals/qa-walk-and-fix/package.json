@@ -6,6 +6,8 @@
   "scripts": {
     "walk": "dotenv -e ../../.env -- tsx walk.ts",
     "routes": "tsx routes.ts --print",
+    "surfaces": "tsx routes.ts --print-surfaces",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@types/node": "^24.12.2",
     "dotenv-cli": "^11.0.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.4"
   }
 }

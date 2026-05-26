@@ -2,7 +2,9 @@
 
 ## Tooling (per CLAUDE.md)
 
-- The walk MAY combine `agent-browser` (the project-standard browser automation: `open` → `snapshot -i` → `click @e1` / `fill @e2 "…"`), the existing Playwright projects, and the Playwright MCP server — whichever fits the situation best. `agent-browser` is preferred for interactive exploration + screenshotting; Playwright (with or without the MCP) is preferred for repeatable, parallelised, multi-viewport screenshot capture and for re-running the walk in CI.
+- **Automated matrix:** `goals/qa-walk-and-fix/walk.ts` (Playwright headless) drives every route × locale × theme × viewport × registered surface. Output: flat `findings/<run-id>/<locale>/*.png`, `manifest.json`, `SUMMARY.md`, `REPORT.md`.
+- **Manual triage:** `agent-browser` (`open` → `snapshot -i` → `click @e1`) is for inspecting findings after a walk — not for running the full matrix.
+- The existing Playwright a11y + functional projects remain CI guardrails alongside `pnpm qa:walk`.
 - Code discovery during the loop uses `semble search` first, falling back to grep only for exhaustive literal scans (per memory rule).
 - Library / API documentation lookups go through `ctx7` (Context7 MCP), not stale knowledge.
 - The existing Playwright a11y + functional projects (`playwright.functional.config.ts`, `playwright.a11y.config.ts`) keep running as CI guardrails; a new `playwright.qa.config.ts` may be added if it helps drive the loop, but it is not required.
@@ -25,7 +27,7 @@
   - `agent-browser open` to the URL, with the storage state for the chosen role.
   - `agent-browser snapshot -i` to get interactive refs, then exercises every primary action (CTA, table row, tab, dialog open/close, dropdown, form submit, search field, filter chip, pagination, theme toggle, locale switch, command palette ⌘K).
   - Capture of: console errors, unhandled rejections, network 4xx (other than expected auth bounces) and any 5xx, asset 404s, React hydration warnings, axe-core violations.
-  - One **final success screenshot** at viewports 375×812, 768×1024, 1440×900 in light AND dark themes, stored under `goals/qa-walk-and-fix/findings/<iso-date>/screenshots/<app>/<route>/<locale>/<theme>/<viewport>.png`.
+  - One **final success screenshot** per surface at viewports mobile / tablet / desktop in light AND dark themes, stored under `goals/qa-walk-and-fix/findings/<run-id>/<locale>/{index}-{routeId}-{viewport}-{theme}[-{variant}].png` (see `manifest.json`).
   - The screenshots are the deliverable artifact: when the goal is done, every view / subview / page / modal / dialog / dropdown / popover / sheet has a captured frame the human can scroll through to confirm parity.
 
 ## Modals, sheets, dropdowns
@@ -116,7 +118,7 @@
 - Each iteration produces a dated REPORT in `goals/qa-walk-and-fix/findings/<iso-date>/REPORT.md` with cluster summaries, per-route sheets, and a JSON index of screenshots.
 - Findings are clustered, then fixed in priority order: blocker → high → medium → low.
 - After each batch of fixes, the walk re-runs and a new REPORT is written.
-- The goal is **done** only when the latest REPORT contains zero findings, and every walked view / subview / modal has a final-success screenshot under the latest `findings/<iso-date>/screenshots/` tree.
+- The goal is **done** only when the latest REPORT contains zero findings, `manifest.coverage.missing === 0`, and every registered surface has a success PNG under `findings/<run-id>/<locale>/` (indexed in `manifest.json` + `SUMMARY.md`).
 - Every fix lands as an atomic commit whose message names the cluster.
 - Repo-wide gates stay green between iterations: `pnpm -r typecheck`, `pnpm -r build`, `pnpm -r test`, plus the existing Playwright a11y + functional configs.
 

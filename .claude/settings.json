@@ -16,9 +16,59 @@
             "command": "bash .claude/hooks/gsd-session-state.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/inject-core-values.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/inject-standards-subagent.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/inject-core-values-reminder.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" .claude/hooks/ui-workflow-prompt.js",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Read|Bash|Skill|Skills|Semble|CallMcpTool",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" .claude/hooks/ui-workflow-track.js",
+            "timeout": 5
+          }
+        ]
+      },
       {
         "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task",
         "hooks": [
@@ -51,6 +101,26 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Grep|Glob|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" .claude/hooks/ui-workflow-guard.js",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/mateusz.pitura/.nvm/versions/node/v24.14.1/bin/node\" .claude/hooks/read-before-edit-guard.js",
+            "timeout": 5
+          }
+        ]
+      },
       {
         "matcher": "Write|Edit",
         "hooks": [
@@ -98,6 +168,7 @@
     "command": "node .claude/hooks/gsd-statusline.js"
   },
   "enabledPlugins": {
-    "plannotator@plannotator": true
+    "plannotator@plannotator": true,
+    "frontend-design@claude-plugins-official": true
   }
 }

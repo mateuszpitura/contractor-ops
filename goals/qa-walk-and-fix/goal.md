@@ -1,6 +1,8 @@
 # Goal — QA walk-and-fix across `apps/web`, `apps/landing`, `apps/cms`
 
-Walk every view in every state across all three apps using `agent-browser` + Playwright (+ MCP) on top of a deterministic seed, then fix everything I find — visuals, layout, console / network noise, a11y, i18n, RTL, dark theme, internal-API integration, unified component usage — until the latest walk report contains zero findings and every view / subview / modal has a captured success screenshot for human review.
+Walk every view in every state across all three apps using the **Playwright orchestrator** (`goals/qa-walk-and-fix/walk.ts`) on top of a deterministic seed, then fix everything found — visuals, layout, console / network noise, a11y, i18n, RTL, dark theme, internal-API integration, unified component usage — until the latest walk report contains zero findings and every registered surface has a captured success screenshot for human review.
+
+**Manual triage:** use `agent-browser` (or IDE browser) only to inspect findings/screenshots after a walk — not to drive the automated matrix.
 
 ## Shared understanding
 
@@ -13,7 +15,7 @@ See [`plan.md`](./plan.md) for the ordered eleven-step plan (seed audit → seed
 ## Done condition
 
 - Latest `goals/qa-walk-and-fix/findings/<iso-date>/REPORT.md` has `Findings: 0` across blocker / high / medium / low severities for every walked route × state × locale × theme × viewport.
-- Every walked view / subview / page / modal / dialog / dropdown / popover / sheet has a captured **success** screenshot under `goals/qa-walk-and-fix/findings/<iso-date>/screenshots/`, indexed by `SUMMARY.md` so a human can scroll through and approve the walk.
+- Every walked view / subview / page / modal / dialog / dropdown / popover / sheet has a captured **success** screenshot under `goals/qa-walk-and-fix/findings/<run-id>/<locale>/*.png`, indexed by `manifest.json` and `SUMMARY.md` so a human can scroll through and approve the walk.
 - Chaos pass passes (`pnpm qa:walk --chaos`) with no remaining findings.
 - Public-API parity check passes (`pnpm qa:walk --public-api`).
 - Repo gates green: `pnpm -r typecheck`, `pnpm -r build`, `pnpm -r test`, `pnpm i18n:parity`, existing Playwright `functional` + `a11y` projects.

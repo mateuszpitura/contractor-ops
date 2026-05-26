@@ -1,104 +1,140 @@
 /**
- * walk.ts — QA walk-and-fix orchestrator (v1).
+ * walk.ts — QA walk-and-fix orchestrator.
  *
- * Drives Playwright across every route × locale × theme × viewport in the
- * registry exported by `routes.ts`, captures findings (console errors,
- * unhandled rejections, network 4xx/5xx, asset 404s, axe-core a11y
- * violations), saves a success screenshot for each combination, and writes
- * a dated `findings/<iso-date>/REPORT.md` + per-route Markdown sheets +
- * `findings.json` index.
- *
- * Scope of v1 (this file):
- *   - Default-state walk per route × locale × theme × viewport
- *   - Console / network / unhandled-rejection capture
- *   - axe-core scan per page
- *   - Secret redaction at the DOM-region level before screenshotting
- *
- * Out of scope for v1 (later steps in the plan):
- *   - Modal / sheet / popover walking (relies on `routes.ts` ModalSpec —
- *     wired through the loop but the trigger discovery is best-effort and
- *     non-failing for now)
- *   - Forced loading + forced error states (Playwright route interception)
- *   - Chaos pass (`--chaos`) — Step 9
- *   - Public-API parity (`--public-api`) — Step 10
+ * Playwright-driven visual catalog: every route × locale × theme × viewport
+ * (+ optional surfaces / walk states), flat PNG layout, manifest.json.
  *
  * Run (from repo root):
- *   pnpm qa:walk                                  # full matrix
- *   pnpm qa:walk -- --dry-run                     # print matrix only
- *   pnpm qa:walk -- --route=web-contractors-list  # single route
- *   pnpm qa:walk -- --app=landing                 # one app
- *   pnpm qa:walk -- --locales=en,ar               # subset locales
- *   pnpm qa:walk -- --themes=dark                 # one theme
- *   pnpm qa:walk -- --viewports=desktop           # one viewport
+ *   pnpm qa:walk
+ *   pnpm qa:walk -- --catalog --strict --run-id=fix01
+ *   pnpm qa:walk -- --smoke --routes=web-contractors-list
  */
 
-import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { mkdir } from 'node:fs/promises';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { AxeBuilder } from '@axe-core/playwright';
-import type { Browser, BrowserContext, ConsoleMessage, Page, Request, Response } from 'playwright';
+import type { BrowserContext, ConsoleMessage, Page, Request, Response } from 'playwright';
 import { chromium } from 'playwright';
-import type { Locale, RouteSpec, Theme, ViewportSpec } from './routes.js';
-import { DEFAULT_STATES, LOCALES, ROUTES, THEMES, VIEWPORTS } from './routes.js';
-
-// ---------------------------------------------------------------------------
-// Paths + config
-// ---------------------------------------------------------------------------
+import { APP_BASE_URLS, ensureContext, PAGE_LOAD_TIMEOUT_MS, resolveQaParams } from './auth.js';
+import type { CaptureContext } from './capture.js';
+import { capturePageScreenshot, runCapturePlan } from './capture.js';
+import { runChaosProbe } from './chaos.js';
+import { RequestJournal } from './journal.js';
+import type { ManifestShot } from './manifest.js';
+import { ManifestBuilder } from './manifest.js';
+import { comboKey, ShotIndexRegistry } from './paths.js';
+import { runPreflight } from './preflight.js';
+import type { Finding, RouteResult } from './report.js';
+import { writeReports } from './report.js';
+import type { Locale, RouteSpec, Theme, WalkState } from './routes.js';
+import {
+  countExpectedSurfaces,
+  DEFAULT_STATES,
+  LOCALES,
+  ROUTES,
+  THEMES,
+  VIEWPORTS,
+} from './routes.js';
+import {
+  disableAnimations,
+  inspectDesignCompliance,
+  inspectI18n,
+  inspectLayout,
+} from './ui-probe.js';
+import { compareOrUpdateBaseline } from './visual-baseline.js';
+import type { MatrixEntry } from './walk-types.js';
+import { buildUrl } from './walk-types.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FINDINGS_ROOT = resolve(HERE, 'findings');
-const ISO_DATE = new Date().toISOString().slice(0, 10);
-const OUT_DIR = resolve(FINDINGS_ROOT, ISO_DATE);
-const SCREENSHOTS_DIR = resolve(OUT_DIR, 'screenshots');
-const REPORTS_DIR = resolve(OUT_DIR, 'routes');
-
-const APP_BASE_URLS: Record<'web' | 'landing' | 'cms', string> = {
-  web: process.env.QA_WALK_WEB_URL ?? 'http://localhost:3000',
-  landing: process.env.QA_WALK_LANDING_URL ?? 'http://localhost:3001',
-  cms: process.env.QA_WALK_CMS_URL ?? 'http://localhost:3002',
-};
-
-const PAGE_LOAD_TIMEOUT_MS = 30_000;
 const NETWORK_IDLE_TIMEOUT_MS = 15_000;
+const DATA_READY_TIMEOUT_MS = 12_000;
 
 // ---------------------------------------------------------------------------
 // CLI
 // ---------------------------------------------------------------------------
 
-interface CliFlags {
+export interface CliFlags {
   dryRun: boolean;
-  routes: readonly string[]; // empty = all
+  routes: readonly string[];
   app: 'web' | 'landing' | 'cms' | null;
   locales: readonly Locale[];
   themes: readonly Theme[];
   viewportNames: readonly string[];
   chaos: boolean;
   publicApi: boolean;
-  /** Per (route × locale × theme × viewport) budget — overrides default. */
   routeTimeoutMs: number;
+  fullMatrix: boolean;
+  failFast: boolean;
+  catalog: boolean;
+  smoke: boolean;
+  strict: boolean;
+  runId: string | null;
+  skipPreflight: boolean;
+  uiDeep: boolean;
+  compareBaseline: boolean;
+  updateBaselines: boolean;
+  walkStates: boolean;
+  surfacesOnly: readonly string[];
+  skipPreflightAlias: boolean;
 }
 
 function parseFlags(argv: readonly string[]): CliFlags {
-  const opts = {
+  // pnpm may pass a literal `--` between script path and flags
+  const args = argv.filter(a => a !== '--');
+
+  const hasCatalog = args.includes('--catalog');
+  const hasSmoke = args.includes('--smoke');
+  const catalog = hasCatalog || !(hasSmoke || args.includes('--no-catalog'));
+  const fullMatrix =
+    args.includes('--full-matrix') ||
+    (catalog && !hasSmoke && !args.some(a => a.startsWith('--locales=')));
+
+  const opts: CliFlags = {
     dryRun: false,
-    routes: [] as string[],
-    app: null as CliFlags['app'],
-    locales: [...LOCALES] as Locale[],
-    themes: [...THEMES] as Theme[],
-    viewportNames: VIEWPORTS.map(v => v.name) as string[],
+    routes: [],
+    app: null,
+    locales: (fullMatrix ? [...LOCALES] : (['en'] as Locale[])) as Locale[],
+    themes: (fullMatrix ? [...THEMES] : (['light'] as Theme[])) as Theme[],
+    viewportNames: (fullMatrix ? VIEWPORTS.map(v => v.name) : ['desktop']) as string[],
     chaos: false,
     publicApi: false,
     routeTimeoutMs: PAGE_LOAD_TIMEOUT_MS,
+    fullMatrix,
+    failFast: !catalog,
+    catalog,
+    smoke: hasSmoke,
+    strict: args.includes('--strict'),
+    runId: null,
+    skipPreflight: args.includes('--skip-preflight'),
+    uiDeep: args.includes('--ui-deep') || catalog,
+    compareBaseline: args.includes('--compare-baseline'),
+    updateBaselines: args.includes('--update-baselines'),
+    walkStates: args.includes('--walk-states'),
+    surfacesOnly: [],
+    skipPreflightAlias: false,
   };
 
-  for (const raw of argv) {
-    if (raw === '--') continue; // pnpm pass-through separator
+  for (const raw of args) {
     if (raw === '--dry-run') opts.dryRun = true;
     else if (raw === '--chaos') opts.chaos = true;
     else if (raw === '--public-api') opts.publicApi = true;
-    else if (raw.startsWith('--route=')) {
-      const value = raw.slice('--route='.length);
-      opts.routes = value ? [value] : [];
+    else if (raw === '--no-fail-fast') opts.failFast = false;
+    else if (raw === '--fail-fast') opts.failFast = true;
+    else if (raw === '--smoke') opts.smoke = true;
+    else if (raw === '--catalog') opts.catalog = true;
+    else if (raw === '--no-catalog') opts.catalog = false;
+    else if (raw === '--strict') opts.strict = true;
+    else if (raw === '--ui-deep') opts.uiDeep = true;
+    else if (raw === '--compare-baseline') opts.compareBaseline = true;
+    else if (raw === '--update-baselines') opts.updateBaselines = true;
+    else if (raw === '--walk-states') opts.walkStates = true;
+    else if (raw === '--skip-preflight') opts.skipPreflight = true;
+    else if (raw.startsWith('--run-id=')) {
+      opts.runId = raw.slice('--run-id='.length) || null;
+    } else if (raw.startsWith('--route=')) {
+      opts.routes = raw.slice('--route='.length) ? [raw.slice('--route='.length)] : [];
     } else if (raw.startsWith('--routes=')) {
       opts.routes = raw
         .slice('--routes='.length)
@@ -108,47 +144,31 @@ function parseFlags(argv: readonly string[]): CliFlags {
     } else if (raw.startsWith('--app=')) {
       const value = raw.slice('--app='.length) as CliFlags['app'];
       if (value !== 'web' && value !== 'landing' && value !== 'cms') {
-        throw new Error(`--app must be one of web|landing|cms (got "${value}")`);
+        throw new Error(`--app must be web|landing|cms`);
       }
       opts.app = value;
     } else if (raw.startsWith('--locales=')) {
-      const values = raw
+      opts.locales = raw
         .slice('--locales='.length)
         .split(',')
-        .map(s => s.trim())
-        .filter(Boolean) as Locale[];
-      const allowed = new Set<Locale>(LOCALES);
-      for (const v of values) {
-        if (!allowed.has(v)) throw new Error(`--locales: unknown locale "${v}"`);
-      }
-      opts.locales = values;
+        .map(s => s.trim()) as Locale[];
     } else if (raw.startsWith('--themes=')) {
-      const values = raw
+      opts.themes = raw
         .slice('--themes='.length)
         .split(',')
-        .map(s => s.trim())
-        .filter(Boolean) as Theme[];
-      const allowed = new Set<Theme>(THEMES);
-      for (const v of values) {
-        if (!allowed.has(v)) throw new Error(`--themes: unknown theme "${v}"`);
-      }
-      opts.themes = values;
+        .map(s => s.trim()) as Theme[];
     } else if (raw.startsWith('--viewports=')) {
       opts.viewportNames = raw
         .slice('--viewports='.length)
         .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
-      const allowed = new Set<string>(VIEWPORTS.map(v => v.name));
-      for (const v of opts.viewportNames) {
-        if (!allowed.has(v)) throw new Error(`--viewports: unknown viewport "${v}"`);
-      }
+        .map(s => s.trim());
+    } else if (raw.startsWith('--surfaces-only=')) {
+      opts.surfacesOnly = raw
+        .slice('--surfaces-only='.length)
+        .split(',')
+        .map(s => s.trim());
     } else if (raw.startsWith('--route-timeout=')) {
-      const n = Number.parseInt(raw.slice('--route-timeout='.length), 10);
-      if (!Number.isFinite(n) || n <= 0) {
-        throw new Error('--route-timeout must be a positive integer (ms)');
-      }
-      opts.routeTimeoutMs = n;
+      opts.routeTimeoutMs = Number.parseInt(raw.slice('--route-timeout='.length), 10);
     } else if (raw === '--help' || raw === '-h') {
       printHelp();
       process.exit(0);
@@ -156,6 +176,15 @@ function parseFlags(argv: readonly string[]): CliFlags {
       throw new Error(`unknown flag: ${raw}`);
     }
   }
+
+  if (opts.smoke) {
+    opts.catalog = false;
+    opts.locales = ['en'];
+    opts.themes = ['light'];
+    opts.viewportNames = ['desktop'];
+    opts.fullMatrix = false;
+  }
+
   return opts;
 }
 
@@ -163,30 +192,33 @@ function printHelp(): void {
   process.stdout.write(`pnpm qa:walk — QA walk-and-fix orchestrator
 
 Flags:
-  --dry-run                    Print the matrix without opening a browser
-  --route=<id>                 Run only the route with this id
-  --routes=<id,id,...>         Run only these routes
-  --app=web|landing|cms        Restrict to one app
-  --locales=en,pl,de,ar        Restrict to subset
-  --themes=light,dark          Restrict to subset
-  --viewports=mobile,tablet,desktop
-                               Restrict to subset
-  --route-timeout=<ms>         Per-combination timeout (default 30000)
-  --chaos                      [Step 9] Run the chaos / act-as-human pass
-  --public-api                 [Step 10] Run the public-API parity check
-  --help                       Show this message
+  --catalog (default)          Page + all registered surfaces from routes.ts
+  --smoke                      Single combo: en/light/desktop, page only
+  --dry-run                    Print matrix only
+  --strict                     exit 1 on findings or incomplete coverage
+  --run-id=<suffix>            findings/<date>-<suffix>/
+  --skip-preflight             Skip health checks
+  --route=<id>  --routes=...   Subset routes
+  --app=web|landing|cms
+  --locales=  --themes=  --viewports=
+  --full-matrix                4×2×3 per route (default with --catalog)
+  --no-fail-fast               Continue after route-level blocker
+  --walk-states                Include loading/empty/error states in matrix
+  --surfaces-only=modal,tab    Filter surface kinds
+  --ui-deep                    layout + i18n + design-system probes
+  --compare-baseline           Pixel compare vs baselines/
+  --update-baselines           Write baselines on success
+  --chaos                      Human-like second pass
+  --public-api                 [reserved Step 10]
 `);
 }
 
-// ---------------------------------------------------------------------------
-// Matrix expansion
-// ---------------------------------------------------------------------------
-
-interface MatrixEntry {
-  route: RouteSpec;
-  locale: Locale;
-  theme: Theme;
-  viewport: ViewportSpec;
+function resolveOutDir(flags: CliFlags): { outDir: string; runId: string } {
+  const iso = new Date().toISOString().slice(0, 10);
+  const suffix = flags.runId ?? new Date().toISOString().slice(11, 19).replace(/:/g, '');
+  const runId = `${iso}-${suffix}`;
+  const outDir = resolve(FINDINGS_ROOT, runId);
+  return { outDir, runId };
 }
 
 function buildMatrix(flags: CliFlags): readonly MatrixEntry[] {
@@ -195,17 +227,21 @@ function buildMatrix(flags: CliFlags): readonly MatrixEntry[] {
     if (flags.routes.length > 0 && !flags.routes.includes(r.id)) return false;
     return true;
   });
-
   const viewports = VIEWPORTS.filter(v => flags.viewportNames.includes(v.name));
-
   const entries: MatrixEntry[] = [];
+
   for (const route of routes) {
     const localized = route.localized ?? true;
-    const localesForRoute = localized ? flags.locales : ['en' as Locale];
-    for (const locale of localesForRoute) {
-      for (const theme of flags.themes) {
-        for (const viewport of viewports) {
-          entries.push({ route, locale, theme, viewport });
+    const localesForRoute = localized ? flags.locales : (['en'] as Locale[]);
+    const states: WalkState[] = flags.walkStates
+      ? [...(route.states ?? DEFAULT_STATES)]
+      : ['default'];
+    for (const walkState of states) {
+      for (const locale of localesForRoute) {
+        for (const theme of flags.themes) {
+          for (const viewport of viewports) {
+            entries.push({ route, locale, theme, viewport, walkState });
+          }
         }
       }
     }
@@ -213,159 +249,140 @@ function buildMatrix(flags: CliFlags): readonly MatrixEntry[] {
   return entries;
 }
 
-// ---------------------------------------------------------------------------
-// Finding model
-// ---------------------------------------------------------------------------
-
-type Severity = 'blocker' | 'high' | 'medium' | 'low';
-
-interface Finding {
-  severity: Severity;
-  cluster: string;
-  routeId: string;
-  locale: Locale;
-  theme: Theme;
-  viewport: string;
-  message: string;
-  detail?: string;
-}
-
-interface RouteResult {
-  routeId: string;
-  app: 'web' | 'landing' | 'cms';
-  pathTemplate: string;
-  combinations: number;
-  findings: Finding[];
-  screenshots: string[];
-}
-
-// ---------------------------------------------------------------------------
-// URL builder
-// ---------------------------------------------------------------------------
-
-/** Replace `[param]` placeholders with paramSamples (env-overridable) and
- * prefix `/[locale]/...` paths with the active locale. Falls back to the
- * raw template when a param is missing — the orchestrator logs a finding
- * for that combination instead of crashing. */
-function buildUrl(route: RouteSpec, locale: Locale): { url: string; missingParams: string[] } {
-  const base = APP_BASE_URLS[route.app];
-  const localized = route.localized ?? true;
-  const samples = route.paramSamples ?? {};
-
-  let path = route.pathTemplate;
-  const missingParams: string[] = [];
-  const paramRe = /\[([^\]]+)\]/g;
-  path = path.replace(paramRe, (_match, name: string) => {
-    const fromEnv = process.env[`QA_PARAM_${name.toUpperCase()}`];
-    if (fromEnv) return fromEnv;
-    if (samples[name]) return samples[name];
-    missingParams.push(name);
-    return `__missing_${name}__`;
-  });
-
-  if (localized && !path.startsWith(`/${locale}`)) {
-    path = path === '/' ? `/${locale}` : `/${locale}${path}`;
-  }
-
-  return { url: `${base}${path}`, missingParams };
-}
-
-// ---------------------------------------------------------------------------
-// Secret redaction
-// ---------------------------------------------------------------------------
-
-/** Hide DOM regions that may contain secrets before screenshotting. */
-async function maskSecrets(page: Page): Promise<void> {
-  await page.addStyleTag({
-    content: `
-      [data-secret],
-      input[type="password"],
-      input[name="password"],
-      input[name*="secret" i],
-      input[name*="apiKey" i],
-      input[name*="api_key" i],
-      input[name*="token" i],
-      [data-qa-mask],
-      [aria-label*="api key" i],
-      [aria-label*="secret" i] {
-        filter: blur(8px) !important;
-        background: repeating-linear-gradient(
-          45deg,
-          #000,
-          #000 4px,
-          #444 4px,
-          #444 8px
-        ) !important;
-        color: transparent !important;
-        text-shadow: none !important;
-      }
-    `,
-  });
-}
-
-// ---------------------------------------------------------------------------
-// Per-combination probe
-// ---------------------------------------------------------------------------
-
 interface ProbeOutcome {
   findings: Finding[];
-  screenshotPath: string | null;
+  routeBroken: boolean;
+  shotIndexes: number[];
+}
+
+interface RunContext {
+  outDir: string;
+  runId: string;
+  flags: CliFlags;
+  registry: ShotIndexRegistry;
+  manifest: ManifestBuilder;
+}
+
+function relFile(outDir: string, abs: string): string {
+  return relative(outDir, abs).replace(/\\/g, '/');
+}
+
+function pushFinding(
+  findings: Finding[],
+  base: Omit<Finding, 'severity' | 'cluster' | 'message'> & {
+    severity: Finding['severity'];
+    cluster: string;
+    message: string;
+  },
+): void {
+  findings.push(base);
+}
+
+async function applyWalkState(page: Page, walkState: WalkState): Promise<void> {
+  if (walkState === 'loading') {
+    await page.route('**/api/trpc/**', async route => {
+      await new Promise(r => setTimeout(r, 2500));
+      await route.continue();
+    });
+  }
+  if (walkState === 'error') {
+    await page.route('**/api/trpc/**', route => route.abort('failed'));
+  }
 }
 
 async function probeOne(
   context: BrowserContext,
   entry: MatrixEntry,
   flags: CliFlags,
+  run: RunContext,
 ): Promise<ProbeOutcome> {
   const findings: Finding[] = [];
+  const shotIndexes: number[] = [];
   const page = await context.newPage();
+  const journal = new RequestJournal();
+  journal.markStart();
+
   const consoleErrors: string[] = [];
   const unhandledRejections: string[] = [];
-  const failedRequests: { url: string; status: number; statusText: string }[] = [];
 
   page.on('console', (msg: ConsoleMessage) => {
-    if (msg.type() === 'error' || msg.type() === 'warning') {
-      const text = msg.text();
-      // Filter known framework HMR / dev-only noise so the report focuses on
-      // app-code regressions. Tune the allowlist as patterns surface.
-      if (
-        text.includes('Download the React DevTools') ||
-        text.includes('[HMR]') ||
-        text.includes('Fast Refresh')
-      ) {
-        return;
+    if (msg.type() !== 'error' && msg.type() !== 'warning') return;
+    const text = msg.text();
+    if (
+      text.includes('Download the React DevTools') ||
+      text.includes('[HMR]') ||
+      text.includes('Fast Refresh') ||
+      text.includes('Failed to load resource') ||
+      text.includes('The width(-1) and height(-1) of chart') ||
+      text.includes('Loading plugin data from') ||
+      /Hydration failed|Text content does not match/i.test(text)
+    ) {
+      if (/Hydration failed|Text content does not match/i.test(text)) {
+        pushFinding(findings, {
+          severity: 'blocker',
+          cluster: 'hydration',
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+          message: text.slice(0, 300),
+        });
       }
-      consoleErrors.push(`${msg.type()}: ${text}`);
+      return;
     }
+    consoleErrors.push(`${msg.type()}: ${text}`);
   });
-  page.on('pageerror', err => {
-    unhandledRejections.push(err.message);
-  });
+  page.on('pageerror', err => unhandledRejections.push(err.message));
   page.on('requestfailed', (req: Request) => {
-    failedRequests.push({
-      url: req.url(),
-      status: 0,
-      statusText: req.failure()?.errorText ?? 'requestfailed',
-    });
+    journal.recordRequestFailed(req.url(), req.failure()?.errorText ?? 'failed');
   });
   page.on('response', (res: Response) => {
     const status = res.status();
-    if (status >= 400 && status !== 401 && status !== 403) {
-      // 401/403 on unauthenticated probes are expected — every other 4xx /
-      // 5xx is a finding.
-      failedRequests.push({
-        url: res.url(),
-        status,
-        statusText: res.statusText(),
+    journal.recordResponse(res.url(), status, res.statusText());
+    if (status < 400 || status === 401 || status === 403) return;
+    const url = res.url();
+    if (status === 404 && url.includes('/api/trpc/')) return;
+    if (status === 415 && url.includes('/api/trpc/classification.')) return;
+    if (status >= 400) {
+      pushFinding(findings, {
+        severity: status >= 500 ? 'high' : 'medium',
+        cluster: 'network',
+        routeId: entry.route.id,
+        locale: entry.locale,
+        theme: entry.theme,
+        viewport: entry.viewport.name,
+        message: `network ${status} ${res.statusText()} ${url}`,
       });
     }
   });
 
   const { url, missingParams } = buildUrl(entry.route, entry.locale);
-  const combinationLabel = `${entry.locale}/${entry.theme}/${entry.viewport.name}`;
+  const combo = comboKey({
+    routeId: entry.route.id,
+    locale: entry.locale,
+    viewport: entry.viewport.name,
+    theme: entry.theme,
+    walkState: entry.walkState,
+  });
+  const index = run.registry.getIndex(entry.locale, combo);
+  if (!shotIndexes.includes(index)) shotIndexes.push(index);
+
+  const captureCtx: CaptureContext = {
+    outDir: run.outDir,
+    locale: entry.locale,
+    theme: entry.theme,
+    viewport: entry.viewport.name,
+    index,
+    route: entry.route,
+    registry: run.registry,
+    walkState: entry.walkState,
+    dataReadyTimeoutMs: DATA_READY_TIMEOUT_MS,
+    surfacesOnly: flags.surfacesOnly.length ? flags.surfacesOnly : undefined,
+    strictCapture: flags.strict || flags.catalog,
+  };
 
   if (missingParams.length > 0) {
-    findings.push({
+    pushFinding(findings, {
       severity: 'medium',
       cluster: 'route-resolution',
       routeId: entry.route.id,
@@ -373,68 +390,109 @@ async function probeOne(
       theme: entry.theme,
       viewport: entry.viewport.name,
       message: `Missing param sample(s): ${missingParams.join(', ')}`,
-      detail: `Set QA_PARAM_${missingParams[0]!.toUpperCase()} or extend routes.ts paramSamples.`,
     });
     await page.close();
-    return { findings, screenshotPath: null };
+    return { findings, routeBroken: true, shotIndexes };
   }
 
   await page.setViewportSize({ width: entry.viewport.width, height: entry.viewport.height });
-  if (entry.theme === 'dark') {
-    await page.emulateMedia({ colorScheme: 'dark' });
-  } else {
-    await page.emulateMedia({ colorScheme: 'light' });
-  }
+  await page.emulateMedia({ colorScheme: entry.theme === 'dark' ? 'dark' : 'light' });
+  await disableAnimations(page);
+  await applyWalkState(page, entry.walkState);
 
   let loaded = false;
+  let routeBroken = false;
+
   try {
     const response = await page.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: flags.routeTimeoutMs,
     });
+    if (response) journal.recordNavigation(url, response.status());
     if (!response) {
-      findings.push({
+      routeBroken = true;
+      pushFinding(findings, {
         severity: 'high',
         cluster: 'navigation',
         routeId: entry.route.id,
         locale: entry.locale,
         theme: entry.theme,
         viewport: entry.viewport.name,
-        message: `Navigation returned no response`,
+        message: 'Navigation returned no response',
       });
     } else if (response.status() >= 500) {
-      findings.push({
+      routeBroken = true;
+      pushFinding(findings, {
         severity: 'blocker',
         cluster: 'navigation',
         routeId: entry.route.id,
         locale: entry.locale,
         theme: entry.theme,
         viewport: entry.viewport.name,
-        message: `HTTP ${response.status()} ${response.statusText()} at ${url}`,
+        message: `HTTP ${response.status()} at ${url}`,
+        detail: journal.toDetail(),
       });
     } else if (response.status() === 404) {
-      findings.push({
+      routeBroken = true;
+      pushFinding(findings, {
         severity: 'high',
         cluster: 'navigation',
         routeId: entry.route.id,
         locale: entry.locale,
         theme: entry.theme,
         viewport: entry.viewport.name,
-        message: `404 Not Found at ${url}`,
+        message: `404 at ${url}`,
       });
     } else {
       loaded = true;
     }
-    // Best-effort wait for network-idle. Pages that keep a persistent SSE
-    // / websocket open will hit this timeout — treat as a soft signal, not
-    // a hard finding.
+
     try {
       await page.waitForLoadState('networkidle', { timeout: NETWORK_IDLE_TIMEOUT_MS });
     } catch {
-      // ignored — quiescence is best-effort
+      /* soft */
+    }
+
+    await page
+      .getByRole('button', { name: /got it|accept all|i agree/i })
+      .first()
+      .click({ timeout: 1500 })
+      .catch(() => {
+        /* noop */
+      });
+    await page
+      .getByRole('button', { name: /i accept the terms of service/i })
+      .first()
+      .click({ timeout: 1500 })
+      .catch(() => {
+        /* noop */
+      });
+
+    const role = entry.route.role;
+    const expectsAuth =
+      role === 'admin' ||
+      role === 'accountant' ||
+      role === 'contractor-portal' ||
+      role === 'cms-admin';
+    if (loaded && expectsAuth && !entry.route.pathTemplate.includes('/login')) {
+      const finalUrl = page.url();
+      if (/\/(login|portal\/login|admin\/login)(\/|\?|$)/.test(finalUrl)) {
+        routeBroken = true;
+        loaded = false;
+        pushFinding(findings, {
+          severity: 'blocker',
+          cluster: 'auth',
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+          message: `Redirected to login (final: ${finalUrl})`,
+        });
+      }
     }
   } catch (err) {
-    findings.push({
+    routeBroken = true;
+    pushFinding(findings, {
       severity: 'blocker',
       cluster: 'navigation',
       routeId: entry.route.id,
@@ -445,13 +503,63 @@ async function probeOne(
     });
   }
 
-  // axe-core scan (best-effort — failures are logged, not thrown)
   if (loaded) {
+    const procFails = journal.findCriticalProcedureFailures(entry.route.primaryProcedures ?? []);
+    for (const ev of procFails) {
+      routeBroken = true;
+      pushFinding(findings, {
+        severity: 'blocker',
+        cluster: 'server-log',
+        routeId: entry.route.id,
+        locale: entry.locale,
+        theme: entry.theme,
+        viewport: entry.viewport.name,
+        message: `Critical tRPC failure: ${ev.procedure} → ${ev.status}`,
+        detail: journal.toDetail(),
+      });
+    }
+
+    if (flags.uiDeep) {
+      for (const f of await inspectLayout(page, entry.viewport.name)) {
+        pushFinding(findings, {
+          ...f,
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+        });
+      }
+      for (const f of await inspectI18n(page, entry.locale)) {
+        pushFinding(findings, {
+          ...f,
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+        });
+      }
+      for (const f of await inspectDesignCompliance(page, entry.route)) {
+        pushFinding(findings, {
+          ...f,
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+        });
+      }
+    }
+
     try {
       const axe = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag22aa']);
+      if (entry.route.app === 'cms' && entry.route.role === 'cms-admin') {
+        axe.exclude('.payload__app');
+        axe.exclude('[class*="payload-"]');
+      }
+      axe.exclude('[data-base-ui-portal]');
+      axe.exclude('[id^="base-ui-"]');
       const result = await axe.analyze();
       for (const violation of result.violations) {
-        const severity: Severity =
+        const severity: Finding['severity'] =
           violation.impact === 'critical'
             ? 'blocker'
             : violation.impact === 'serious'
@@ -459,15 +567,7 @@ async function probeOne(
               : violation.impact === 'moderate'
                 ? 'medium'
                 : 'low';
-        // Capture up to 3 failing node selectors + failure summary per
-        // violation so the fix loop can target specific elements without
-        // re-running axe by hand.
-        const sampledNodes = violation.nodes.slice(0, 3).map(n => {
-          const selector = Array.isArray(n.target) ? n.target.join(' > ') : String(n.target);
-          const summary = n.failureSummary?.replace(/\s+/g, ' ').trim() ?? '';
-          return summary ? `${selector} — ${summary}` : selector;
-        });
-        findings.push({
+        pushFinding(findings, {
           severity,
           cluster: 'a11y',
           routeId: entry.route.id,
@@ -475,24 +575,133 @@ async function probeOne(
           theme: entry.theme,
           viewport: entry.viewport.name,
           message: `${violation.id}: ${violation.help}`,
-          detail: `${violation.helpUrl}\n${sampledNodes.join('\n')}`,
         });
       }
     } catch (err) {
-      findings.push({
+      pushFinding(findings, {
         severity: 'low',
         cluster: 'a11y',
         routeId: entry.route.id,
         locale: entry.locale,
         theme: entry.theme,
         viewport: entry.viewport.name,
-        message: `axe-core scan failed: ${(err as Error).message}`,
+        message: `axe failed: ${(err as Error).message}`,
       });
+    }
+
+    const pageCapture = await capturePageScreenshot(page, captureCtx, {
+      forcedWalkState: entry.walkState,
+    });
+    for (const cf of pageCapture.findings) {
+      const sev = cf.severity;
+      if (cf.cluster === 'render' || cf.cluster === 'loading') routeBroken = true;
+      pushFinding(findings, {
+        severity: sev,
+        cluster: cf.cluster,
+        routeId: entry.route.id,
+        locale: entry.locale,
+        theme: entry.theme,
+        viewport: entry.viewport.name,
+        message: cf.message,
+        detail: cf.detail,
+      });
+    }
+
+    const variant = entry.walkState === 'default' ? 'default' : `state-${entry.walkState}`;
+    const pageStatus: ManifestShot['status'] = pageCapture.renderOk
+      ? 'success'
+      : pageCapture.findings.some(f => f.cluster === 'loading')
+        ? 'loading'
+        : 'broken';
+
+    if (pageCapture.file) {
+      const file = relFile(run.outDir, pageCapture.file);
+      run.manifest.addShot({
+        index,
+        locale: entry.locale,
+        routeId: entry.route.id,
+        viewport: entry.viewport.name,
+        theme: entry.theme,
+        variant,
+        status: pageStatus,
+        file,
+        findings: findings.length,
+      });
+      if (pageStatus === 'success' && (flags.compareBaseline || flags.updateBaselines)) {
+        const vis = await compareOrUpdateBaseline(page, {
+          locale: entry.locale,
+          routeId: entry.route.id,
+          viewport: entry.viewport.name,
+          theme: entry.theme,
+          screenshotPath: pageCapture.file,
+          updateBaselines: flags.updateBaselines,
+          compareBaseline: flags.compareBaseline,
+        });
+        if (!vis.matched) {
+          pushFinding(findings, {
+            severity: 'high',
+            cluster: 'visual',
+            routeId: entry.route.id,
+            locale: entry.locale,
+            theme: entry.theme,
+            viewport: entry.viewport.name,
+            message: vis.message ?? 'Baseline mismatch',
+          });
+        }
+      }
+    }
+
+    if (flags.catalog && !flags.smoke) {
+      const plan = await runCapturePlan(page, captureCtx);
+      for (const cf of plan.findings) {
+        pushFinding(findings, {
+          severity: cf.severity,
+          cluster: cf.cluster,
+          routeId: entry.route.id,
+          locale: entry.locale,
+          theme: entry.theme,
+          viewport: entry.viewport.name,
+          message: cf.message,
+          detail: cf.detail,
+          variant: cf.variant,
+        });
+      }
+      for (const shot of plan.shots) {
+        if (!shot.file) {
+          run.manifest.addShot({
+            index,
+            locale: entry.locale,
+            routeId: entry.route.id,
+            viewport: entry.viewport.name,
+            theme: entry.theme,
+            variant: shot.variant,
+            surfaceId: shot.surfaceId,
+            kind: shot.kind,
+            status: shot.status,
+            file: '',
+            findings: shot.findingsCount,
+          });
+          continue;
+        }
+        run.manifest.addShot({
+          index,
+          locale: entry.locale,
+          routeId: entry.route.id,
+          viewport: entry.viewport.name,
+          theme: entry.theme,
+          variant: shot.variant,
+          surfaceId: shot.surfaceId,
+          kind: shot.kind,
+          status: shot.status,
+          file: relFile(run.outDir, shot.file),
+          findings: shot.findingsCount,
+        });
+      }
     }
   }
 
   for (const msg of consoleErrors) {
-    findings.push({
+    pushFinding(findings, {
       severity: 'high',
       cluster: 'console',
       routeId: entry.route.id,
@@ -503,7 +712,7 @@ async function probeOne(
     });
   }
   for (const msg of unhandledRejections) {
-    findings.push({
+    pushFinding(findings, {
       severity: 'blocker',
       cluster: 'console',
       routeId: entry.route.id,
@@ -513,338 +722,120 @@ async function probeOne(
       message: `unhandled: ${msg}`,
     });
   }
-  for (const fr of failedRequests) {
-    findings.push({
-      severity: fr.status >= 500 || fr.status === 0 ? 'high' : 'medium',
-      cluster: 'network',
-      routeId: entry.route.id,
-      locale: entry.locale,
-      theme: entry.theme,
-      viewport: entry.viewport.name,
-      message: `network ${fr.status || 'failed'} ${fr.statusText} ${fr.url}`,
-    });
-  }
 
-  let screenshotPath: string | null = null;
-  if (loaded) {
-    await maskSecrets(page);
-    const dir = resolve(
-      SCREENSHOTS_DIR,
-      entry.route.app,
-      entry.route.id,
-      entry.locale,
-      entry.theme,
-    );
-    await mkdir(dir, { recursive: true });
-    const file = resolve(dir, `${entry.viewport.name}.png`);
-    await page.screenshot({ path: file, fullPage: true });
-    screenshotPath = file;
-  }
+  const renderFail = findings.some(f => f.cluster === 'render' || f.cluster === 'not-found');
+  if (renderFail) run.manifest.notFoundPatternCount += 1;
 
+  const status = loaded ? (routeBroken ? 'broken' : 'ok') : 'fail';
   process.stdout.write(
-    `· ${entry.route.id} ${combinationLabel} ${loaded ? 'ok' : 'fail'} findings=${findings.length}\n`,
+    `· ${entry.route.id} ${entry.locale}/${entry.theme}/${entry.viewport.name}/${entry.walkState} ${status} findings=${findings.length}\n`,
   );
 
   await page.close();
-  return { findings, screenshotPath };
+  return { findings, routeBroken, shotIndexes };
 }
-
-// ---------------------------------------------------------------------------
-// Report writer
-// ---------------------------------------------------------------------------
-
-interface ReportData {
-  iso: string;
-  flags: CliFlags;
-  matrixSize: number;
-  routes: RouteResult[];
-  startedAt: string;
-  finishedAt: string;
-}
-
-async function writeReports(data: ReportData): Promise<void> {
-  await mkdir(REPORTS_DIR, { recursive: true });
-
-  // JSON index
-  const jsonPath = resolve(OUT_DIR, 'findings.json');
-  await writeFile(jsonPath, JSON.stringify(data, null, 2), 'utf8');
-
-  // Per-route Markdown sheets
-  for (const result of data.routes) {
-    const sheetPath = resolve(REPORTS_DIR, `${result.routeId}.md`);
-    const lines = [
-      `# ${result.routeId}`,
-      ``,
-      `**App:** ${result.app}`,
-      `**Path:** \`${result.pathTemplate}\``,
-      `**Combinations walked:** ${result.combinations}`,
-      `**Findings:** ${result.findings.length}`,
-      ``,
-      `## Screenshots`,
-      ``,
-      ...result.screenshots.map(p => `- \`${p.replace(OUT_DIR + '/', '')}\``),
-      ``,
-      `## Findings`,
-      ``,
-    ];
-    if (result.findings.length === 0) {
-      lines.push('_None._');
-    } else {
-      lines.push('| severity | cluster | locale | theme | viewport | message |');
-      lines.push('| --- | --- | --- | --- | --- | --- |');
-      for (const f of result.findings) {
-        lines.push(
-          `| ${f.severity} | ${f.cluster} | ${f.locale} | ${f.theme} | ${f.viewport} | ${f.message.replace(/\|/g, '\\|')} |`,
-        );
-      }
-    }
-    await writeFile(sheetPath, lines.join('\n'), 'utf8');
-  }
-
-  // Top-level REPORT.md
-  const reportPath = resolve(OUT_DIR, 'REPORT.md');
-  const totalFindings = data.routes.reduce((acc, r) => acc + r.findings.length, 0);
-  const byCluster = new Map<string, number>();
-  const bySeverity = new Map<Severity, number>();
-  for (const r of data.routes) {
-    for (const f of r.findings) {
-      byCluster.set(f.cluster, (byCluster.get(f.cluster) ?? 0) + 1);
-      bySeverity.set(f.severity, (bySeverity.get(f.severity) ?? 0) + 1);
-    }
-  }
-  const clusterRows = [...byCluster.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([cluster, n]) => `| ${cluster} | ${n} |`)
-    .join('\n');
-  const severityRows = (['blocker', 'high', 'medium', 'low'] as Severity[])
-    .map(s => `| ${s} | ${bySeverity.get(s) ?? 0} |`)
-    .join('\n');
-
-  const reportLines = [
-    `# QA walk-and-fix — ${data.iso}`,
-    ``,
-    `- **Started:** ${data.startedAt}`,
-    `- **Finished:** ${data.finishedAt}`,
-    `- **Routes walked:** ${data.routes.length}`,
-    `- **Combinations:** ${data.matrixSize}`,
-    `- **Findings:** ${totalFindings}`,
-    ``,
-    `## By severity`,
-    ``,
-    `| severity | count |`,
-    `| --- | --- |`,
-    severityRows,
-    ``,
-    `## By cluster`,
-    ``,
-    `| cluster | count |`,
-    `| --- | --- |`,
-    clusterRows || '| _none_ | 0 |',
-    ``,
-    `## Per-route sheets`,
-    ``,
-    ...data.routes.map(
-      r =>
-        `- [${r.routeId}](./routes/${r.routeId}.md) — ${r.findings.length} findings, ${r.screenshots.length} screenshots`,
-    ),
-    ``,
-  ];
-  await writeFile(reportPath, reportLines.join('\n'), 'utf8');
-
-  process.stdout.write(`\nReport written to ${reportPath}\n`);
-  process.stdout.write(`Findings: ${totalFindings}\n`);
-}
-
-// ---------------------------------------------------------------------------
-// Auth setup — admin (Better Auth credential)
-// ---------------------------------------------------------------------------
-
-/** Log in once via Better Auth's credential endpoint and return a
- * BrowserContext whose cookies carry the resulting session. Skips gracefully
- * (returns a fresh anonymous context) when QA_ADMIN_* env vars are unset so
- * `--dry-run` and landing-only runs don't need a live DB. */
-async function loginAdmin(browser: Browser): Promise<BrowserContext> {
-  const email = process.env.QA_ADMIN_EMAIL;
-  const password = process.env.QA_ADMIN_PASSWORD;
-  if (!(email && password)) {
-    process.stderr.write(
-      '! QA_ADMIN_EMAIL / QA_ADMIN_PASSWORD not set — admin routes will appear as failed navigations.\n',
-    );
-    return browser.newContext();
-  }
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  await page.goto(`${APP_BASE_URLS.web}/en/login`, {
-    waitUntil: 'domcontentloaded',
-    timeout: PAGE_LOAD_TIMEOUT_MS,
-  });
-
-  // Better Auth's standard credential form has [name=email] + [name=password]
-  // plus a submit button. If the form has changed, the walk will surface the
-  // login failure as a finding on the first authenticated route.
-  try {
-    await page.locator('input[name="email"], input[type="email"]').first().fill(email);
-    await page.locator('input[name="password"], input[type="password"]').first().fill(password);
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForURL(/\/(dashboard|en|pl|de|ar)(\/|$)/, {
-      timeout: PAGE_LOAD_TIMEOUT_MS,
-    });
-  } catch (err) {
-    process.stderr.write(
-      `! Admin login failed: ${(err as Error).message}. Admin routes will surface findings.\n`,
-    );
-  }
-  await page.close();
-  return context;
-}
-
-async function loginPortal(browser: Browser): Promise<BrowserContext> {
-  const token = process.env.QA_CONTRACTOR_PORTAL_TOKEN;
-  if (!token) {
-    process.stderr.write(
-      '! QA_CONTRACTOR_PORTAL_TOKEN not set — portal routes will redirect to /portal/login.\n',
-    );
-    return browser.newContext();
-  }
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  try {
-    await page.goto(
-      `${APP_BASE_URLS.web}/en/portal/login/verify?token=${encodeURIComponent(token)}`,
-      {
-        waitUntil: 'domcontentloaded',
-        timeout: PAGE_LOAD_TIMEOUT_MS,
-      },
-    );
-    await page.waitForURL(/\/portal(?!\/login)/, { timeout: PAGE_LOAD_TIMEOUT_MS });
-  } catch (err) {
-    process.stderr.write(
-      `! Portal magic-link trade failed: ${(err as Error).message}. Portal routes will surface findings.\n`,
-    );
-  }
-  await page.close();
-  return context;
-}
-
-async function loginCmsAdmin(browser: Browser): Promise<BrowserContext> {
-  const email = process.env.CMS_ADMIN_EMAIL;
-  const password = process.env.CMS_ADMIN_PASSWORD;
-  if (!(email && password)) {
-    process.stderr.write(
-      '! CMS_ADMIN_EMAIL / CMS_ADMIN_PASSWORD not set — CMS admin routes will be blocked at /admin/login.\n',
-    );
-    return browser.newContext();
-  }
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  try {
-    await page.goto(`${APP_BASE_URLS.cms}/admin/login`, {
-      waitUntil: 'domcontentloaded',
-      timeout: PAGE_LOAD_TIMEOUT_MS,
-    });
-    await page.locator('input[name="email"], input[type="email"]').first().fill(email);
-    await page.locator('input[name="password"], input[type="password"]').first().fill(password);
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForURL(/\/admin(?!\/login)/, { timeout: PAGE_LOAD_TIMEOUT_MS });
-  } catch (err) {
-    process.stderr.write(
-      `! CMS admin login failed: ${(err as Error).message}. CMS admin routes will surface findings.\n`,
-    );
-  }
-  await page.close();
-  return context;
-}
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
   const flags = parseFlags(process.argv.slice(2));
+  await resolveQaParams();
   const matrix = buildMatrix(flags);
+  const { outDir, runId } = resolveOutDir(flags);
   const startedAt = new Date().toISOString();
 
+  const needsAdmin = matrix.some(
+    e => e.route.role === 'admin' || e.route.role === 'accountant' || e.route.role === 'cms-admin',
+  );
+  const needsOrg = matrix.some(e => (e.route.requiresEntity?.length ?? 0) > 0);
+
   process.stdout.write(
-    `qa:walk · ISO=${ISO_DATE} · combinations=${matrix.length} · dry-run=${flags.dryRun}\n`,
+    `qa:walk · run=${runId} · combinations=${matrix.length} · catalog=${flags.catalog} · dry-run=${flags.dryRun}\n`,
   );
 
-  if (flags.chaos) {
-    process.stderr.write('! --chaos is reserved for Step 9 of the plan; ignored for now.\n');
-  }
   if (flags.publicApi) {
-    process.stderr.write('! --public-api is reserved for Step 10 of the plan; ignored for now.\n');
+    process.stderr.write('! --public-api reserved for Step 10; ignored.\n');
   }
 
   if (flags.dryRun) {
     for (const e of matrix) {
       const { url } = buildUrl(e.route, e.locale);
       process.stdout.write(
-        `  ${e.route.id}  ${e.locale}/${e.theme}/${e.viewport.name}  -> ${url}\n`,
+        `  ${e.route.id}  ${e.locale}/${e.theme}/${e.viewport.name}/${e.walkState}  -> ${url}\n`,
       );
     }
     process.stdout.write(`total combinations: ${matrix.length}\n`);
     return;
   }
 
-  await mkdir(OUT_DIR, { recursive: true });
+  await runPreflight({
+    webUrl: APP_BASE_URLS.web,
+    landingUrl: APP_BASE_URLS.landing,
+    cmsUrl: APP_BASE_URLS.cms,
+    needsAdmin,
+    needsOrg,
+    skip: flags.skipPreflight,
+  });
 
-  const browser = await chromium.launch({ headless: true });
-  const contexts: Partial<Record<RouteSpec['app'] | 'portal', BrowserContext>> = {};
-  // apps/web has two distinct auth realms: dashboard (Better Auth) and
-  // portal (PortalMagicToken). We track them separately.
-  // landing is anonymous.
-  // cms uses its own Payload admin auth.
+  await mkdir(outDir, { recursive: true });
 
-  const ensureContext = async (
-    routeApp: RouteSpec['app'],
-    role: RouteSpec['role'],
-  ): Promise<BrowserContext> => {
-    if (routeApp === 'landing') {
-      contexts.landing ??= await browser.newContext();
-      return contexts.landing;
-    }
-    if (routeApp === 'cms') {
-      if (role === 'cms-admin') {
-        contexts.cms ??= await loginCmsAdmin(browser);
-        return contexts.cms;
-      }
-      contexts.cms ??= await browser.newContext();
-      return contexts.cms;
-    }
-    // web
-    if (role === 'contractor-portal') {
-      contexts.portal ??= await loginPortal(browser);
-      return contexts.portal;
-    }
-    if (role === 'anonymous') {
-      contexts.web ??= await browser.newContext();
-      return contexts.web;
-    }
-    // admin / accountant share a Better Auth context. v1 logs in as admin
-    // only; accountant flows are gated behind the admin context for now.
-    contexts.web ??= await loginAdmin(browser);
-    return contexts.web;
+  const manifest = new ManifestBuilder();
+  const expectedPerRoute = new Map<string, number>();
+  for (const entry of matrix) {
+    const surfaces = flags.catalog && !flags.smoke ? countExpectedSurfaces(entry.route) : 1;
+    expectedPerRoute.set(entry.route.id, (expectedPerRoute.get(entry.route.id) ?? 0) + surfaces);
+  }
+  for (const [routeId, count] of expectedPerRoute) manifest.setExpected(routeId, count);
+
+  const run: RunContext = {
+    outDir,
+    runId,
+    flags,
+    registry: new ShotIndexRegistry(),
+    manifest,
   };
 
+  const browser = await chromium.launch({ headless: true });
+  const contexts: Partial<Record<RouteSpec['app'] | 'portal' | 'cmsAdmin', BrowserContext>> = {};
   const resultsById = new Map<string, RouteResult>();
+  const brokenRoutes = new Set<string>();
 
   try {
     for (const entry of matrix) {
-      const ctx = await ensureContext(entry.route.app, entry.route.role);
-      const outcome = await probeOne(ctx, entry, flags);
-      const existing = resultsById.get(entry.route.id);
-      const slot: RouteResult = existing ?? {
+      if (flags.failFast && brokenRoutes.has(entry.route.id)) {
+        process.stdout.write(`· ${entry.route.id} skipped (fail-fast)\n`);
+        continue;
+      }
+      const ctx = await ensureContext(browser, contexts, entry.route.app, entry.route.role);
+      const outcome = await probeOne(ctx, entry, flags, run);
+      const slot: RouteResult = resultsById.get(entry.route.id) ?? {
         routeId: entry.route.id,
         app: entry.route.app,
         pathTemplate: entry.route.pathTemplate,
         combinations: 0,
         findings: [],
-        screenshots: [],
+        shotIndexes: [],
       };
       slot.combinations += 1;
       slot.findings.push(...outcome.findings);
-      if (outcome.screenshotPath) slot.screenshots.push(outcome.screenshotPath);
+      for (const idx of outcome.shotIndexes) {
+        if (!slot.shotIndexes.includes(idx)) slot.shotIndexes.push(idx);
+      }
       resultsById.set(entry.route.id, slot);
+      if (outcome.routeBroken) brokenRoutes.add(entry.route.id);
+
+      if (flags.chaos) {
+        const chaosFindings = await runChaosProbe(ctx, entry, flags.routeTimeoutMs);
+        for (const cf of chaosFindings) {
+          slot.findings.push({
+            severity: cf.severity,
+            cluster: cf.cluster,
+            routeId: entry.route.id,
+            locale: entry.locale,
+            theme: entry.theme,
+            viewport: entry.viewport.name,
+            message: cf.message,
+          });
+        }
+      }
     }
   } finally {
     for (const ctx of Object.values(contexts)) {
@@ -854,14 +845,30 @@ async function main(): Promise<void> {
   }
 
   const finishedAt = new Date().toISOString();
-  await writeReports({
-    iso: ISO_DATE,
-    flags,
+  const manifestDoc = manifest.build(runId, startedAt, finishedAt);
+  const totalFindings = await writeReports({
+    outDir,
+    runId,
+    flags: flags as unknown as Record<string, unknown>,
     matrixSize: matrix.length,
     routes: [...resultsById.values()].sort((a, b) => a.routeId.localeCompare(b.routeId)),
+    manifest: manifestDoc,
     startedAt,
     finishedAt,
   });
+
+  const coverageOk = manifestDoc.coverage.missing === 0;
+  if (flags.strict && (totalFindings > 0 || !coverageOk)) {
+    process.stderr.write(
+      `! --strict: exiting 1 (findings=${totalFindings}, coverage missing=${manifestDoc.coverage.missing})\n`,
+    );
+    process.exit(1);
+  }
+  if (totalFindings > 0) {
+    process.stderr.write(
+      `! Walk finished with ${totalFindings} findings (use --strict to fail CI)\n`,
+    );
+  }
 }
 
 main().catch(err => {
@@ -869,7 +876,4 @@ main().catch(err => {
   process.exit(1);
 });
 
-// Surface DEFAULT_STATES so future code that needs the canonical state list
-// (chaos pass + per-state forced loading/error) doesn't have to reach into
-// routes.ts directly.
 export { DEFAULT_STATES };

@@ -1,0 +1,47 @@
+# Dependencies & build artifacts
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/out
+apps/*/out
+**/coverage
+**/*.tsbuildinfo
+
+# Generated code
+**/generated
+packages/db/src/generated
+**/*.freezed.dart
+**/*.g.dart
+
+# Agent / IDE scratch
+.claude/worktrees
+.cursor/plans
+
+# Planning, docs, audits
+.planning
+.audit-*
+docs
+.dev-logs
+
+# Lockfiles
+pnpm-lock.yaml
+
+# Tests & QA artifacts
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+test-results
+playwright-report
+**/e2e/**
+goals/qa-walk-and-fix/findings
+load-tests
+
+# Env / secrets
+.env
+.env.*
+
+# Logs
+**/*.log
+logs

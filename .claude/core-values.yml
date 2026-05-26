@@ -1,0 +1,87 @@
+# Binding floor standards — injected via hooks + .cursor/rules (pnpm standards:gen).
+# Full contract: ./CLAUDE.md
+
+motto: "Quality over speed — production-grade, not on-the-knee. Read CLAUDE.md. Never guess on git or boundaries."
+
+sections:
+  - name: Git Safety
+    values:
+      - "NEVER run git stash or any stash variant without explicit user approval for THIS operation."
+      - "NEVER run git checkout --, git restore, or git reset --hard on files not created this turn unless user authorized."
+      - "Need stash/checkout/reset to test: STOP and ask first — describe what and why."
+      - "When tree state is unclear: use read-only diagnosis (git status, git diff, git show) before any mutation."
+
+  - name: Monorepo & Environment
+    values:
+      - "Package change in packages/*: check downstream apps/* imports and run filtered typecheck when touching shared code."
+      - "New env var: add to .env.example and validate in the package env schema (never raw process.env in app code)."
+
+  - name: Dependencies & supply chain
+    values:
+      - "Repo enforces minimumReleaseAge 7 days (pnpm-workspace.yaml + .npmrc) — never bypass with @latest, --latest, or minimumReleaseAge overrides unless user explicitly approves supply-chain risk."
+      - "Adding or upgrading deps: prefer versions published at least 7 days ago; if pnpm blocks a fresh publish, pin an older version — do not force-install day-zero releases."
+      - "Always run pnpm audit after dependency changes; run pnpm security:scan before finishing dep work or when asked (includes audit + secret scan)."
+      - "Double-check new packages: correct package name (typosquatting), maintainer/repository, and why the dep is needed — supply-chain malware often ships in fresh or lookalike packages."
+
+  - name: Multi-tenant & API
+    values:
+      - "Tenant scope from session/context — NEVER trust organizationId or tenant ids from client input alone."
+      - "Sensitive mutations: write audit trail via writeAuditLog (packages/api/src/services/audit-writer.ts) following existing routers."
+      - "tRPC procedures: Zod input schemas; no unsafe as casts on external or webhook payloads."
+
+  - name: Tools & Workflow
+    values:
+      - "Code discovery: use semble search before grep; use semble find-related for related code."
+      - "If semble is not on PATH: uvx --from \"semble[mcp]\" semble"
+      - "Web automation: use agent-browser (open, snapshot -i, interact by refs, re-snapshot after changes)."
+      - "Library docs: use context7 MCP/CLI for current APIs — not training-data assumptions."
+      - "MUST Read a file with the Read tool before the first Edit or Write to that path this session — runtime rejects unread edits; never retry Edit without Read."
+      - "Prefer Edit over Write for existing files (Write replaces the whole file)."
+      - "NEVER use sed, awk, or one-off Python/TypeScript replace scripts for codebase edits — they often corrupt formatting, imports, and partial matches. Use the Edit tool per file; bulk renames only via project codemods (jscodeshift, turbo) when appropriate."
+      - "Scripted replace only as last resort: trivial change, user-approved, and you verify with typecheck/lint after — never default choice."
+      - "Minimal diff only — no new files or docs unless the user asked; parallelize independent tool calls."
+      - "Do not guess paths or URLs — use Read, Glob, or semble search to verify."
+
+  - name: Validation & Security
+    values:
+      - "Schema-validate all external inputs, forms, API payloads, env vars, and critical boundaries."
+      - "NEVER trust client input — server-side validation is authoritative."
+      - "No exposed secrets, least-privilege access, prefer RLS and database-level protections."
+
+  - name: Quality over speed
+    values:
+      - "Quality > time — deliver production-grade code, not rushed on-the-knee implementations to close the task faster."
+      - "Never trade away tests, types, validation, a11y, security, or error states for speed — fix root cause, verify before done."
+      - "If proper work does not fit scope: narrow the slice, state trade-offs, or ask — do not ship demo-quality shortcuts."
+
+  - name: Quality & Delivery
+    values:
+      - "Production-grade, not demo-grade — no placeholders, TODOs, or incomplete implementations left behind."
+      - "Comments: self-explanatory code needs none. Comment only non-obvious intent, invariants, or unusual tricks — never narrate what the code already says."
+      - "No comment spam — do not add dozens of line-by-line comments on short functions; prefer clearer names and structure."
+      - "Strong typing, no unsafe shortcuts; match existing patterns before inventing new ones."
+      - "No console.* in application source — use structured logging (@contractor-ops/logger)."
+      - "No silent failures — make errors debuggable with proper logging and handling."
+
+  - name: UI & Accessibility
+    values:
+      - "All UI work: use the frontend-design skill/plugin."
+      - "WCAG and a11y are core requirements: keyboard nav, focus states, semantic HTML, contrast."
+      - "Ship loading, empty, and error states for every user-facing flow — not happy-path only."
+
+  - name: Feature flags
+    values:
+      - "Use @contractor-ops/feature-flags (evaluate, useFlag, Feature) — declare keys in packages/feature-flags/src/registry.ts."
+      - "Never call Unleash SDK directly from apps; jurisdiction and defaults live in code registry."
+
+  - name: Repo context
+    values:
+      - "This workspace is contractor-ops only — not other repos or products."
+      - "Claude memory / prior-session facts may be wrong or cross-repo — CLAUDE.md and .planning/PROJECT.md override for stack, counts, people, and process."
+      - "Verify project numbers in-tree (e.g. packages/api/src/root.ts) — do not cite stale session memory (foreign emails, old router counts, test handoffs)."
+
+  - name: Communication
+    values:
+      - "Session start: activate caveman mode (full) — same as /caveman. Persist every response until stop caveman or normal mode."
+      - "Caveman rules injected via SessionStart; read .claude/skills/caveman/SKILL.md if unsure."
+      - "Code blocks, commits, and PR text stay normal unless user asks for caveman-commit/review."

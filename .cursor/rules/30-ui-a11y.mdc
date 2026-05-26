@@ -1,0 +1,14 @@
+---
+description: UI quality and accessibility for web and design system packages
+globs: "{apps/web/**,packages/ui/**}"
+alwaysApply: false
+---
+
+# UI & Accessibility
+
+**Claude Code `[ui]` / `[ui-strict]`:** Read frontend-design skill → semble search → then Grep/analysis → then edits. Hooks enforce steps 1–2 before discovery tools. No prefix = unrestricted debug.
+
+- Use the `frontend-design` skill/plugin for all UI work.
+- Ship production-grade interfaces: clear hierarchy, responsive layout, consistent with the design system.
+- WCAG is mandatory: keyboard navigation, visible focus, semantic HTML, screen-reader-friendly labels, sufficient contrast.
+- Avoid generic or low-effort UI patterns.

@@ -1,0 +1,14 @@
+---
+description: Code search, browser automation, and library docs workflow
+globs: "**/*.{ts,tsx,js,mjs}"
+alwaysApply: false
+---
+
+# Tools & Workflow
+
+- Find code by behavior or symbol: `semble search` first; use grep only for exhaustive literal matches.
+- Related code: `semble find-related <file> <line> [path]`
+- Fallback if semble missing: `uvx --from "semble[mcp]" semble`
+- Web QA/automation: `agent-browser` — open URL, `snapshot -i`, interact via refs, re-snapshot after navigation.
+- Library APIs and patterns: context7 MCP/CLI — verify current docs before implementing.
+- **web-vite UI:** `Page → Container → Component`; tRPC only in `components/{domain}/hooks/` or `src/hooks/`. Run `pnpm check:web-vite-data-layer` before merge. See [`apps/web-vite/ARCHITECTURE.md`](../../apps/web-vite/ARCHITECTURE.md).

@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * One-shot migration to remove `as Parameters<typeof t>[0]` casts across
- * `apps/web/src/`. Run after the next-intl `AppConfig.Messages`
+ * `apps/web-vite/src/`. Run after the next-intl `AppConfig.Messages`
  * augmentation is in place — the cast is no longer needed because the
  * augmented `t` is already strictly typed.
  *
@@ -34,7 +34,7 @@ type FileEdit = {
 
 const SCRIPT_DIR = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..');
-const SRC_GLOBS = ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'];
+const SRC_GLOBS = ['apps/web-vite/src/**/*.ts', 'apps/web-vite/src/**/*.tsx'];
 const TDYN_IMPORT = "import { tDyn } from '@/i18n/typed-keys';";
 
 const CAST = 'as Parameters<typeof t>[0]';
@@ -50,7 +50,7 @@ function findAll(haystack: string, needle: string): number[] {
   }
 }
 
-function matchingParenStart(src: string, closeIdx: number): number | null {
+function _matchingParenStart(src: string, closeIdx: number): number | null {
   let depth = 1;
   for (let i = closeIdx - 1; i >= 0; i--) {
     const ch = src[i];
@@ -104,7 +104,7 @@ function transformCast(src: string, castIdx: number): TransformResult {
     let back = argEnd;
     while (back > 0) {
       const ch = src[back - 1]!;
-      if (/[A-Za-z0-9_$.\]\[?]/.test(ch)) back--;
+      if (/[A-Za-z0-9_$.\][?]/.test(ch)) back--;
       else if (ch === ')') {
         // function call() result — bail to manual review
         return {
@@ -125,21 +125,19 @@ function transformCast(src: string, castIdx: number): TransformResult {
   // followed by `)` or `,` (means more args follow — leave them, just drop cast).
   // Confirm the `(` we want.
   const lookahead = src.slice(castIdx + CAST.length, castIdx + CAST.length + 64);
-  const afterMatch = /^\s*([\),])/.exec(lookahead);
+  const afterMatch = /^\s*([),])/.exec(lookahead);
   if (!afterMatch) {
     return { next: src, applied: false, unchanged: src.slice(argStart, castIdx + CAST.length) };
   }
   // Build replacement based on arg shape.
-  let replacement: string;
+  let _replacement: string;
   if (argLastChar === '`') {
     // Template literal — handle subNs.${expr} pattern.
     const literal = arg;
     // Body without backticks.
     const body = literal.slice(1, -1);
     // Single dynamic interpolation at the end?
-    const m = /^([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*)\.\$\{([\s\S]+)\}$/.exec(
-      body,
-    );
+    const m = /^([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)*)\.\$\{([\s\S]+)\}$/.exec(body);
     if (m) {
       const prefix = m[1]!;
       const expr = m[2]!;
@@ -178,7 +176,7 @@ function findEnclosingTCall(
   if (src[i] !== '(') return null;
   // Walk back over an identifier.
   let j = i - 1;
-  while (j >= 0 && /[A-Za-z0-9_$.\]\[]/.test(src[j]!)) j--;
+  while (j >= 0 && /[A-Za-z0-9_$.\][]/.test(src[j]!)) j--;
   const fnName = src.slice(j + 1, i);
   // We expect the function name to end with `t` or `.something`. Accept
   // any callable identifier — tDyn requires a translator, but callers
@@ -263,7 +261,7 @@ function processFile(path: string): FileEdit {
   let src = original;
   let applied = 0;
   const unchanged: string[] = [];
-  let needsTDyn = false;
+  let _needsTDyn = false;
   while (true) {
     const offsets = findAll(src, CAST);
     if (offsets.length === 0) break;
@@ -271,8 +269,8 @@ function processFile(path: string): FileEdit {
     for (const offset of offsets) {
       const result = transformCast(src, offset);
       if (result.applied) {
-        if (result.next.includes('tDyn(') && !src.includes('tDyn(')) needsTDyn = true;
-        if (result.next.match(/\btDyn\(/) && !original.match(/\btDyn\(/)) needsTDyn = true;
+        if (result.next.includes('tDyn(') && !src.includes('tDyn(')) _needsTDyn = true;
+        if (result.next.match(/\btDyn\(/) && !original.match(/\btDyn\(/)) _needsTDyn = true;
         src = result.next;
         applied++;
         progressed = true;
@@ -308,7 +306,7 @@ async function main(): Promise<void> {
   }
   process.stdout.write(`Matched ${matchedFiles} files containing the cast.\n`);
   process.stdout.write(`Migrated ${totalApplied} cast sites across ${reports.length} files.\n`);
-  const stuck = reports.filter((r) => r.unchanged.length > 0);
+  const stuck = reports.filter(r => r.unchanged.length > 0);
   if (stuck.length > 0) {
     process.stdout.write(`\nManual review required (${stuck.length} files):\n`);
     for (const r of stuck) {

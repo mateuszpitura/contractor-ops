@@ -48,7 +48,9 @@ try {
   try {
     registry = (await import(srcRegistryJson, { with: { type: 'json' } })).default;
   } catch {
-    process.stderr.write(`Legal gate: failed to load signoff registry — ${error?.message ?? error}\n`);
+    process.stderr.write(
+      `Legal gate: failed to load signoff registry — ${error?.message ?? error}\n`,
+    );
     process.exit(2);
   }
 }
@@ -63,7 +65,7 @@ if (pending.length > 0) {
     '╚══════════════════════════════════════════════════════════════╝',
     '',
     'The following disclaimer keys have status PENDING:',
-    ...pending.map((k) => `  - ${k}`),
+    ...pending.map(k => `  - ${k}`),
     '',
     'To unblock: submit a PR updating signoff-registry.json to set',
     'each key to APPROVED with approvedBy + approvedAt + approverRole.',

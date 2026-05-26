@@ -37,7 +37,10 @@ function runTsc(): string {
 function parseLeafErrors(out: string): ErrorLoc[] {
   const errors: ErrorLoc[] = [];
   for (const line of out.split('\n')) {
-    const match = /^src\/(.+)\((\d+),(\d+)\): error TS2345: Argument of type 'string' is not assignable/.exec(line);
+    const match =
+      /^src\/(.+)\((\d+),(\d+)\): error TS2345: Argument of type 'string' is not assignable/.exec(
+        line,
+      );
     if (!match) continue;
     // Only collect entries whose right-hand side is a union (narrow leaf),
     // not `NamespacedMessageKeys` (those are pass-through wrappers).
@@ -79,17 +82,17 @@ function ensureLooseImport(file: string): boolean {
   if (src.includes(newImport)) return false;
   let next = src;
   if (src.includes("import { tDyn } from '@/i18n/typed-keys';")) {
+    next = src.replace("import { tDyn } from '@/i18n/typed-keys';", newImport);
+  } else if (src.includes('import { tDyn } from')) {
     next = src.replace(
-      "import { tDyn } from '@/i18n/typed-keys';",
-      newImport,
+      /import \{ tDyn \} from '([^']+)';/,
+      "import { tDyn, tDynLoose } from '$1';",
     );
-  } else if (src.includes("import { tDyn } from")) {
-    next = src.replace(/import \{ tDyn \} from '([^']+)';/, "import { tDyn, tDynLoose } from '$1';");
   } else if (src.includes("from '@/i18n/typed-keys'")) {
     next = src.replace(
       /import \{ ([^}]+) \} from '@\/i18n\/typed-keys';/,
       (_match, names: string) => {
-        const set = new Set(names.split(',').map((n) => n.trim()));
+        const set = new Set(names.split(',').map(n => n.trim()));
         set.add('tDynLoose');
         return `import { ${Array.from(set).sort().join(', ')} } from '@/i18n/typed-keys';`;
       },

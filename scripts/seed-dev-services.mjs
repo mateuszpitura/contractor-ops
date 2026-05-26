@@ -22,12 +22,11 @@
  *   INFISICAL_URL          http://localhost:8090
  */
 
-import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '..');
+const _root = resolve(here, '..');
 
 const UNLEASH_URL = (process.env.UNLEASH_URL ?? 'http://localhost:4242').replace(/\/$/, '');
 const UNLEASH_USERNAME = process.env.UNLEASH_ADMIN_USERNAME ?? 'admin';
@@ -90,8 +89,7 @@ const FLAGS = [
   },
   {
     key: 'killswitch.ai-invoice-parser',
-    description:
-      'Emergency disable for AI invoice parsing (Claude Vision). killWhenUnknown=true.',
+    description: 'Emergency disable for AI invoice parsing (Claude Vision). killWhenUnknown=true.',
     type: 'kill-switch',
     enabledByDefault: true,
   },
@@ -143,33 +141,27 @@ async function unleashLogin() {
 }
 
 async function unleashListFlags(cookie) {
-  const res = await fetch(
-    `${UNLEASH_URL}/api/admin/projects/${UNLEASH_PROJECT}/features`,
-    { headers: { cookie } },
-  );
+  const res = await fetch(`${UNLEASH_URL}/api/admin/projects/${UNLEASH_PROJECT}/features`, {
+    headers: { cookie },
+  });
   if (!res.ok) {
-    throw new Error(
-      `Unleash listFlags failed: ${res.status} ${await res.text().catch(() => '')}`,
-    );
+    throw new Error(`Unleash listFlags failed: ${res.status} ${await res.text().catch(() => '')}`);
   }
   const body = await res.json();
   return new Set((body.features ?? []).map(f => f.name));
 }
 
 async function unleashCreateFlag(cookie, flag) {
-  const res = await fetch(
-    `${UNLEASH_URL}/api/admin/projects/${UNLEASH_PROJECT}/features`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', cookie },
-      body: JSON.stringify({
-        name: flag.key,
-        description: flag.description,
-        type: flag.type === 'kill-switch' ? 'kill-switch' : 'release',
-        impressionData: false,
-      }),
-    },
-  );
+  const res = await fetch(`${UNLEASH_URL}/api/admin/projects/${UNLEASH_PROJECT}/features`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({
+      name: flag.key,
+      description: flag.description,
+      type: flag.type === 'kill-switch' ? 'kill-switch' : 'release',
+      impressionData: false,
+    }),
+  });
   if (!res.ok) {
     throw new Error(
       `Unleash createFlag(${flag.key}) failed: ${res.status} ${await res.text().catch(() => '')}`,
@@ -249,7 +241,9 @@ async function main() {
     cookie = await unleashLogin();
     ok('logged in as admin');
   } catch (e) {
-    err(`Unleash login failed — is the container running? (docker compose --profile unleash up -d)`);
+    err(
+      `Unleash login failed — is the container running? (docker compose --profile unleash up -d)`,
+    );
     err(String(e.message ?? e));
     process.exit(1);
   }

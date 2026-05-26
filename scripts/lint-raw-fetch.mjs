@@ -28,7 +28,7 @@
 // - Lines whose previous non-blank line contains `raw-fetch-OK`.
 // - Lines that are themselves comments (`//`, `*`).
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -94,8 +94,7 @@ for (const file of allFiles) {
     if (!rawFetchRegex.test(line)) continue;
     // Allow `fetchWithTimeout(`, `fetchJsonWithTimeout(`, etc. via the
     // identifier-char rule above; an additional explicit guard for safety.
-    if (/\bfetchWithTimeout\s*\(/.test(line) || /\bfetchJsonWithTimeout\s*\(/.test(line))
-      continue;
+    if (/\bfetchWithTimeout\s*\(/.test(line) || /\bfetchJsonWithTimeout\s*\(/.test(line)) continue;
 
     // Look back through the preceding lines for a raw-fetch-OK annotation.
     // We tolerate a small window because real call sites are often nested
@@ -113,12 +112,14 @@ for (const file of allFiles) {
       // line that is not a comment / parameter / opening bracket). This keeps
       // the window tight while allowing for multi-line call expressions.
       if (
-        !prev.startsWith('//') &&
-        !prev.startsWith('*') &&
-        !prev.startsWith('/*') &&
-        !prev.endsWith(',') &&
-        !prev.endsWith('(') &&
-        !prev.endsWith('{')
+        !(
+          prev.startsWith('//') ||
+          prev.startsWith('*') ||
+          prev.startsWith('/*') ||
+          prev.endsWith(',') ||
+          prev.endsWith('(') ||
+          prev.endsWith('{')
+        )
       ) {
         break;
       }

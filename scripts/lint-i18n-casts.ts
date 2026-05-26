@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 /**
  * Regression guard for the i18n typed-keys cleanup. Blocks reintroduction
- * of the forbidden cast patterns under `apps/web/src/`:
+ * of the forbidden cast patterns under `apps/web-vite/src/`:
  *
  *   • `as Parameters<typeof <translator>>[0]`
  *   • `as keyof IntlMessages`
@@ -21,7 +21,7 @@ type Hit = { file: string; line: number; col: number; pattern: string };
 
 const SCRIPT_DIR = fileURLToPath(new URL('.', import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, '..');
-const SRC_GLOBS = ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'];
+const SRC_GLOBS = ['apps/web-vite/src/**/*.ts', 'apps/web-vite/src/**/*.tsx'];
 
 const PATTERNS: Array<{ name: string; regex: RegExp }> = [
   {
@@ -66,8 +66,8 @@ async function main(): Promise<void> {
     const src = readFileSync(file, 'utf8');
     for (const pattern of PATTERNS) {
       pattern.regex.lastIndex = 0;
-      let match: RegExpExecArray | null;
-      while ((match = pattern.regex.exec(src)) !== null) {
+      let match: RegExpExecArray | null = pattern.regex.exec(src);
+      while (match !== null) {
         const { line, col } = offsetToLineCol(src, match.index);
         hits.push({
           file: file.slice(REPO_ROOT.length + 1),
@@ -75,6 +75,7 @@ async function main(): Promise<void> {
           col,
           pattern: pattern.name,
         });
+        match = pattern.regex.exec(src);
       }
     }
   }

@@ -1,0 +1,39 @@
+==========================================
+FINAL CI GATE — Wave 4
+Date: 2026-05-25T19:13:32Z
+==========================================
+
+1) check:data-layer
+> node ../../scripts/check-web-vite-data-layer.mjs
+
+check:web-vite-data-layer — OK
+
+2) check:page-shells
+> node ../../scripts/check-web-vite-page-shells.mjs
+
+check:web-vite-page-shells — OK
+
+3) check:web-vite-presentational
+> node scripts/check-web-vite-presentational.mjs
+
+check:web-vite-presentational — OK
+
+4) typecheck (web-vite, --force to bypass turbo cache)
+Cached:    0 cached, 17 total
+  Time:    1m0.258s 
+
+ WARNING  no output files found for task @contractor-ops/feature-flags#build. Please check your `outputs` key in `turbo.json`
+ WARNING  no output files found for task @contractor-ops/offboarding-templates#build. Please check your `outputs` key in `turbo.json`
+   exit=0
+
+5) test (vitest, web-vite)
+ Test Files  587 passed | 42 skipped (629)
+      Tests  3977 passed (3977)
+   exit=0 (just ran)
+
+6) rg useTRPC outside hooks/providers — real call-sites only
+   real call-sites:        0
+
+==========================================
+RESULT: all gates passed
+==========================================

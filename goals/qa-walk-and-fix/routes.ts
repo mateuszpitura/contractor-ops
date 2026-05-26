@@ -47,6 +47,31 @@ export interface ModalSpec {
   notes?: string;
 }
 
+/** One surface to open and photograph (page is implicit default). */
+export interface SurfaceSpec {
+  id: string;
+  kind: 'modal' | 'tab' | 'sheet' | 'dropdown' | 'popover' | 'panel';
+  /**
+   * How to open the surface (Playwright hints, EN labels from `en.json`):
+   * - Plain text → `getByRole(button|tab, { name })` (e.g. `Add contractor`)
+   * - `keyboard:Meta+K` — command palette
+   * - `tab:<query>` — `?tab=` navigation (e.g. `tab:invoices` on contractor profile)
+   * - `menu:<label>` — kebab → menuitem (e.g. `menu:Archive`); `menu:open` = menu only
+   * - `popover:<label>` — popover trigger (e.g. `popover:Filters`)
+   * - `icon:column-toggle` — table column visibility (SlidersHorizontal icon)
+   * - `row:<n>:<label>` — nth table row → button (e.g. `row:0:Approve`)
+   * - `profile:<label>` — button in profile header action bar (avoids sidebar dupes)
+   * - `after-tab:<tab>:<label>` — `?tab=` then button inside tabpanel (e.g. workflows CTA)
+   */
+  trigger: string;
+  notes?: string;
+}
+
+export interface PrimaryProcedure {
+  name: string;
+  critical?: boolean;
+}
+
 /** Param-name → sample-value resolver hint. The orchestrator replaces
  * `[name]` placeholders in `pathTemplate` with values from this map at
  * runtime; missing keys are filled by querying the seeded DB. */
@@ -77,9 +102,51 @@ export interface RouteSpec {
   states?: readonly WalkState[];
   /** Modal triggers to exercise from the parent route. */
   modals?: readonly ModalSpec[];
+  /** Unified surface registry (modals migrate here over time). */
+  surfaces?: readonly SurfaceSpec[];
+  /** Tab surfaces grouped separately for readability. */
+  tabs?: readonly SurfaceSpec[];
+  /** tRPC procedures whose 5xx/NOT_FOUND invalidate success screenshot. */
+  primaryProcedures?: readonly PrimaryProcedure[];
+  /** Max ms to wait for data before loading gate (override global). */
+  dataReadyTimeoutMs?: number;
+  /** DOM expectations for ui-probe. */
+  uiExpect?: {
+    requiredSelectors?: readonly string[];
+    forbiddenSelectors?: readonly string[];
+    maxHorizontalOverflowPx?: number;
+  };
   /** Free-text notes — surface gotchas (e.g. "requires an open invoice in
    * RECEIVED state"). */
   notes?: string;
+}
+
+/** Merge modals, surfaces, and tabs into a single capture list. */
+export function expandSurfaces(route: RouteSpec): SurfaceSpec[] {
+  const out: SurfaceSpec[] = [];
+  const push = (s: SurfaceSpec) => {
+    if (!out.some(x => x.kind === s.kind && x.id === s.id)) out.push(s);
+  };
+  for (const m of route.surfaces ?? []) push(m);
+  for (const t of route.tabs ?? []) push(t);
+  for (const m of route.modals ?? []) {
+    const kind: SurfaceSpec['kind'] =
+      m.id.includes('tab') || m.trigger.toLowerCase().includes('tab')
+        ? 'tab'
+        : m.id.includes('sheet') || m.trigger.toLowerCase().includes('sheet')
+          ? 'sheet'
+          : m.id.includes('dropdown') || m.trigger.toLowerCase().includes('dropdown')
+            ? 'dropdown'
+            : m.id.includes('popover') || m.trigger.toLowerCase().includes('popover')
+              ? 'popover'
+              : 'modal';
+    push({ id: m.id, kind, trigger: m.trigger, notes: m.notes });
+  }
+  return out;
+}
+
+export function countExpectedSurfaces(route: RouteSpec): number {
+  return 1 + expandSurfaces(route).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -93,11 +160,11 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/',
     role: 'admin',
     requiresEntity: ['Organization'],
-    modals: [
-      { id: 'command-palette', trigger: 'Cmd+K / Ctrl+K' },
-      { id: 'notifications-popover', trigger: 'Bell icon in top bar' },
-      { id: 'user-menu', trigger: 'Avatar dropdown' },
+    surfaces: [
+      { id: 'command-palette', kind: 'modal', trigger: 'keyboard:Meta+K' },
+      { id: 'notifications-popover', kind: 'popover', trigger: 'popover:Notifications' },
     ],
+    notes: 'User menu lives in sidebar footer — not on dashboard home top bar.',
   },
   {
     id: 'web-contractors-list',
@@ -105,15 +172,10 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/contractors',
     role: 'admin',
     requiresEntity: ['Contractor'],
-    modals: [
-      { id: 'new-contractor-wizard', trigger: '"New contractor" CTA' },
-      { id: 'filter-sheet', trigger: '"Filters" button' },
-      { id: 'column-picker', trigger: 'Column picker dropdown in table header' },
-      {
-        id: 'bulk-action-bar',
-        trigger: 'Select multiple rows',
-        notes: 'Surfaces a sticky action bar with bulk-archive / bulk-tag',
-      },
+    surfaces: [
+      { id: 'new-contractor-wizard', kind: 'modal', trigger: 'Add contractor' },
+      { id: 'filter-popover', kind: 'popover', trigger: 'popover:Filters' },
+      { id: 'column-picker', kind: 'dropdown', trigger: 'icon:column-toggle' },
     ],
   },
   {
@@ -123,15 +185,24 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     role: 'admin',
     requiresEntity: ['Contractor'],
     paramSamples: { id: 'qa-contractor-id' },
-    modals: [
-      { id: 'edit-contractor', trigger: 'Edit button' },
-      { id: 'archive-confirm', trigger: 'Archive contractor action' },
-      { id: 'tag-picker', trigger: 'Tag editor in header' },
-      { id: 'classification-tab', trigger: 'Classification tab' },
-      { id: 'invoices-tab', trigger: 'Invoices tab' },
-      { id: 'payments-tab', trigger: 'Payments tab' },
-      { id: 'documents-tab', trigger: 'Documents tab' },
+    primaryProcedures: [{ name: 'contractor.getById', critical: true }],
+    dataReadyTimeoutMs: 18_000,
+    surfaces: [
+      {
+        id: 'edit-contractor',
+        kind: 'modal',
+        trigger: 'Edit contractor',
+        notes: 'Toast only — no dialog yet',
+      },
+      { id: 'add-contract-wizard', kind: 'modal', trigger: 'Add contract' },
+      { id: 'contracts', kind: 'tab', trigger: 'tab:contracts' },
+      { id: 'documents', kind: 'tab', trigger: 'tab:documents' },
+      { id: 'invoices', kind: 'tab', trigger: 'tab:invoices' },
+      { id: 'payments', kind: 'tab', trigger: 'tab:payments' },
+      { id: 'workflows', kind: 'tab', trigger: 'tab:workflows' },
     ],
+    notes:
+      'Optional surfaces (state-dependent): profile:Start workflow or after-tab:workflows:Start workflow (TemplatePicker); menu:Archive when ENDED; menu:Mark as inactive mutates without dialog.',
   },
   {
     id: 'web-contractor-classification',
@@ -175,10 +246,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/contracts',
     role: 'admin',
     requiresEntity: ['Contract'],
-    modals: [
-      { id: 'new-contract', trigger: '"New contract" CTA' },
-      { id: 'amendment-wizard', trigger: 'Row action: "Amend"' },
-    ],
+    surfaces: [{ id: 'new-contract', kind: 'modal', trigger: 'New contract' }],
   },
   {
     id: 'web-contract-detail',
@@ -187,10 +255,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     role: 'admin',
     requiresEntity: ['Contract'],
     paramSamples: { id: 'qa-contract-id' },
-    modals: [
-      { id: 'esign-envelope', trigger: '"Send for signature" CTA' },
-      { id: 'rate-period-editor', trigger: 'Rate-period row edit' },
-    ],
+    surfaces: [{ id: 'esign-envelope', kind: 'modal', trigger: 'Send for Signature' }],
   },
   {
     id: 'web-invoices-list',
@@ -198,10 +263,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/invoices',
     role: 'admin',
     requiresEntity: ['Invoice'],
-    modals: [
-      { id: 'new-invoice', trigger: '"New invoice" CTA' },
-      { id: 'invoice-status-filter', trigger: 'Status filter chip' },
-    ],
+    surfaces: [{ id: 'new-invoice', kind: 'modal', trigger: 'New invoice' }],
   },
   {
     id: 'web-invoice-detail',
@@ -210,11 +272,16 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     role: 'admin',
     requiresEntity: ['Invoice'],
     paramSamples: { id: 'qa-invoice-id' },
-    modals: [
-      { id: 'reject-invoice', trigger: '"Reject" CTA' },
-      { id: 'approve-invoice', trigger: '"Approve" CTA' },
-      { id: 'schedule-payment', trigger: '"Schedule payment" CTA' },
-      { id: 'pdf-preview', trigger: 'Document thumbnail' },
+    dataReadyTimeoutMs: 15_000,
+    surfaces: [
+      {
+        id: 'submit-for-approval',
+        kind: 'modal',
+        trigger: 'Submit for approval',
+        notes: 'Visible when invoice status allows submission',
+      },
+      { id: 'reject-invoice', kind: 'modal', trigger: 'Reject', notes: 'APPROVAL_PENDING only' },
+      { id: 'approve-invoice', kind: 'modal', trigger: 'Approve', notes: 'APPROVAL_PENDING only' },
     ],
   },
   {
@@ -238,7 +305,14 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/approvals',
     role: 'admin',
     requiresEntity: ['ApprovalFlow'],
-    modals: [{ id: 'approval-decision', trigger: 'Row CTA: Approve / Reject' }],
+    surfaces: [
+      {
+        id: 'approval-side-panel',
+        kind: 'panel',
+        trigger: 'row:0:Approve',
+        notes: 'First pending row in queue',
+      },
+    ],
   },
   {
     id: 'web-classification',
@@ -259,10 +333,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/equipment',
     role: 'admin',
     requiresEntity: ['Equipment'],
-    modals: [
-      { id: 'new-equipment', trigger: '"Add equipment" CTA' },
-      { id: 'assign-equipment', trigger: 'Row action: Assign' },
-    ],
+    surfaces: [{ id: 'new-equipment', kind: 'modal', trigger: 'Add equipment' }],
   },
   {
     id: 'web-equipment-detail',
@@ -271,7 +342,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     role: 'admin',
     requiresEntity: ['Equipment'],
     paramSamples: { id: 'qa-equipment-id' },
-    modals: [{ id: 'return-request', trigger: '"Request return" CTA' }],
+    surfaces: [{ id: 'return-request', kind: 'modal', trigger: 'Request return' }],
   },
   {
     id: 'web-payments',
@@ -279,10 +350,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/payments',
     role: 'admin',
     requiresEntity: ['PaymentRun'],
-    modals: [
-      { id: 'new-payment-run', trigger: '"New payment run" wizard' },
-      { id: 'payment-run-detail-sheet', trigger: 'Row click' },
-    ],
+    surfaces: [{ id: 'new-payment-run', kind: 'modal', trigger: 'New payment run' }],
   },
   {
     id: 'web-workflows-list',
@@ -290,7 +358,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/workflows',
     role: 'admin',
     requiresEntity: ['WorkflowRun'],
-    modals: [{ id: 'new-workflow-run', trigger: '"Start workflow" CTA' }],
+    surfaces: [{ id: 'new-workflow-run', kind: 'modal', trigger: 'Start workflow' }],
   },
   {
     id: 'web-workflow-detail',
@@ -419,7 +487,7 @@ const WEB_DASHBOARD_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/settings/members',
     role: 'admin',
     requiresEntity: ['Member'],
-    modals: [{ id: 'invite-member', trigger: '"Invite" CTA' }],
+    surfaces: [{ id: 'invite-member', kind: 'modal', trigger: 'Invite member' }],
   },
   {
     id: 'web-settings-integrations-zatca',
@@ -453,7 +521,7 @@ const WEB_AUTH_ROUTES: readonly RouteSpec[] = [
     pathTemplate: '/login',
     role: 'anonymous',
     states: ['default', 'mobile', 'rtl', 'focus', 'dark', 'error'],
-    modals: [{ id: 'forgot-password', trigger: '"Forgot password?" link' }],
+    surfaces: [{ id: 'forgot-password', kind: 'modal', trigger: 'Forgot password?' }],
   },
   {
     id: 'web-register',
@@ -543,7 +611,7 @@ const WEB_PORTAL_ROUTES: readonly RouteSpec[] = [
     app: 'web',
     pathTemplate: '/portal/invoices/submit',
     role: 'contractor-portal',
-    modals: [{ id: 'attach-document', trigger: 'File-drop area' }],
+    notes: 'Submit flow — no separate attach modal trigger',
   },
   {
     id: 'portal-invoice-submit-success',
@@ -584,10 +652,7 @@ const WEB_PORTAL_ROUTES: readonly RouteSpec[] = [
     app: 'web',
     pathTemplate: '/portal/settings',
     role: 'contractor-portal',
-    modals: [
-      { id: 'change-bank', trigger: '"Edit bank details" CTA' },
-      { id: 'notification-prefs', trigger: 'Notification preferences toggle group' },
-    ],
+    surfaces: [{ id: 'change-bank', kind: 'modal', trigger: 'Edit bank details' }],
   },
 ];
 
@@ -654,14 +719,14 @@ const LANDING_ROUTES: readonly RouteSpec[] = [
     app: 'landing',
     pathTemplate: '/solutions/[role]',
     role: 'anonymous',
-    paramSamples: { role: 'contractor' },
+    paramSamples: { role: 'general-contractor' },
   },
   {
     id: 'landing-compare-competitor',
     app: 'landing',
     pathTemplate: '/compare/[competitor]',
     role: 'anonymous',
-    paramSamples: { competitor: 'rippling' },
+    paramSamples: { competitor: 'spreadsheet' },
   },
   {
     id: 'landing-blog-index',
@@ -675,7 +740,10 @@ const LANDING_ROUTES: readonly RouteSpec[] = [
     app: 'landing',
     pathTemplate: '/blog/[slug]',
     role: 'anonymous',
-    paramSamples: { slug: 'classification-checklist' },
+    // Seeded CMS post slug. Walk's resolveQaParams() prefers QA_PARAM_SLUG
+    // env override; otherwise the walk hits `/blog/observability-budget` —
+    // a real published post in the QA Payload seed (apps/cms/scripts/seed-qa.ts).
+    paramSamples: { slug: 'observability-budget' },
     requiresEntity: ['cms:Post'],
   },
   {
@@ -683,7 +751,7 @@ const LANDING_ROUTES: readonly RouteSpec[] = [
     app: 'landing',
     pathTemplate: '/blog/author/[handle]',
     role: 'anonymous',
-    paramSamples: { handle: 'amelia-stone' },
+    paramSamples: { handle: 'rashid-osman' },
     requiresEntity: ['cms:Author'],
   },
   {
@@ -691,7 +759,7 @@ const LANDING_ROUTES: readonly RouteSpec[] = [
     app: 'landing',
     pathTemplate: '/blog/tag/[tag]',
     role: 'anonymous',
-    paramSamples: { tag: 'compliance' },
+    paramSamples: { tag: 'observability' },
     requiresEntity: ['cms:Post'],
   },
 ];
@@ -905,8 +973,31 @@ function printRegistry(): void {
   process.stdout.write(`total modal surfaces: ${totalModals}\n`);
 }
 
+function printSurfaces(): void {
+  let totalSurfaces = 0;
+  let totalExpected = 0;
+  process.stdout.write('routeId  surfaces  (1 page + N surfaces)\n');
+  process.stdout.write(`${'-'.repeat(60)}\n`);
+  for (const r of ROUTES) {
+    const n = expandSurfaces(r).length;
+    totalSurfaces += n;
+    totalExpected += countExpectedSurfaces(r);
+    if (n > 0) {
+      process.stdout.write(`${r.id.padEnd(40)} ${String(n).padStart(3)}\n`);
+    }
+  }
+  process.stdout.write(`${'-'.repeat(60)}\n`);
+  process.stdout.write(
+    `routes: ${ROUTES.length} · registered surfaces: ${totalSurfaces} · expected PNGs per combo (page+surfaces): ${totalExpected}\n`,
+  );
+  process.stdout.write(
+    `full matrix multiplier: locales=4 × themes=2 × viewports=3 = 24 · rough total PNGs: ${totalExpected * 24}\n`,
+  );
+}
+
 // Only emit the table when called via `tsx routes.ts --print`. Avoids
 // printing whenever `walk.ts` imports the module.
-if (process.argv[1] && process.argv[1].endsWith('routes.ts') && process.argv.includes('--print')) {
-  printRegistry();
+if (process.argv[1]?.endsWith('routes.ts')) {
+  if (process.argv.includes('--print-surfaces')) printSurfaces();
+  else if (process.argv.includes('--print')) printRegistry();
 }

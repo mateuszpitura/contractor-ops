@@ -57,6 +57,22 @@ Seed data comes from the existing `packages/db/scripts/seed-dev.ts` runner (reus
 - Files: `goals/qa-walk-and-fix/walk.ts`, `playwright.qa.config.ts` (new, at repo root or `apps/web/`), root `package.json` (`qa:walk` script).
 - Verification: `pnpm qa:walk --dry-run` prints the matrix of route × state × locale × theme × viewport without opening a browser; `pnpm qa:walk --route=/contractors` runs only that route end-to-end and writes a single-route REPORT.
 
+## Step 6b — Deep UI verification (extends walk.ts)
+
+**Status:** implemented in modular orchestrator (`walk.ts` + `ui-probe.ts`, `capture.ts`, `paths.ts`, `manifest.ts`, `preflight.ts`, `auth.ts`, `report.ts`, `chaos.ts`, `visual-baseline.ts`).
+
+- **6b-0a** — Flat screenshot layout: `findings/<run-id>/<locale>/{index}-{routeId}-{viewport}-{theme}[-{variant}].png` + canonical `manifest.json` (no nested `screenshots/app/...`).
+- **6b-0b** — Loading gate (`inspectLoadingState`), `RequestJournal` + tRPC correlation (`primaryProcedures` on routes), `galleryAudit` in REPORT; clusters `loading`, `server-log`, `hydration`.
+- **6b-A** — `ui-probe.ts`: `inspectLayout`, `inspectI18n`, `inspectDesignCompliance` (enabled with `--ui-deep` / default `--catalog`).
+- **6b-B** — Capture engine: every `SurfaceSpec` / `ModalSpec` / `tabs` in `routes.ts` → separate PNG (`--catalog`); `pnpm qa:walk:surfaces` prints expected shot count.
+- **6b-C** — `WalkState` matrix via `--walk-states` (loading/error via route interception); `--full-matrix` default in catalog mode.
+- **6b-D** — `baselines/<locale>/` + `--compare-baseline` / `--update-baselines`.
+- **6b-E** — `--chaos` human pass; per-dialog axe in capture plan.
+
+**CLI:** `--catalog` (default), `--smoke`, `--strict`, `--run-id=`, `--skip-preflight`, `--no-fail-fast` (default in catalog).
+
+**Verification:** `pnpm qa:walk -- --smoke --run-id=pr1 --strict --routes=web-contractors-list` → flat `en/*.png` + manifest; `pnpm qa:walk -- --catalog --routes=web-contractor-detail --locales=en --viewports=desktop --themes=light` → `*-tab-*` and `*-modal-*` files.
+
 ## Step 7 — First walk
 
 - Run `pnpm qa:walk` against the freshly seeded DB.

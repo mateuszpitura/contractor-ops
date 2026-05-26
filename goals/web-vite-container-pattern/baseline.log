@@ -1,0 +1,20 @@
+=== check:data-layer ===
+
+> @contractor-ops/web-vite@0.0.0 check:data-layer /Users/mateusz.pitura/Repos/projects/contractor-ops/apps/web-vite
+> node ../../scripts/check-web-vite-data-layer.mjs
+
+check:web-vite-data-layer — OK
+
+=== check:page-shells ===
+
+> @contractor-ops/web-vite@0.0.0 check:page-shells /Users/mateusz.pitura/Repos/projects/contractor-ops/apps/web-vite
+> node ../../scripts/check-web-vite-page-shells.mjs
+
+check:web-vite-page-shells — OK
+
+=== check:web-vite-presentational ===
+
+> contractor-ops@ check:web-vite-presentational /Users/mateusz.pitura/Repos/projects/contractor-ops
+> node scripts/check-web-vite-presentational.mjs
+
+check:web-vite-presentational — OK

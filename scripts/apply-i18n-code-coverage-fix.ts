@@ -872,7 +872,7 @@ const ROOT = resolve(process.cwd());
 
 let applied = 0;
 for (const locale of LOCALES) {
-  const path = resolve(ROOT, `apps/web/messages/${locale}.json`);
+  const path = resolve(ROOT, `apps/web-vite/messages/${locale}.json`);
   const data = JSON.parse(readFileSync(path, 'utf-8')) as Record<string, unknown>;
   let perLocale = 0;
   for (const [key, values] of Object.entries(TRANSLATIONS)) {

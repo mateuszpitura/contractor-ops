@@ -1,0 +1,24 @@
+==========================================
+FINAL GATE — post UX-chrome fixes (R12)
+Date: 2026-05-26T09:09:12Z
+==========================================
+
+1) check:data-layer
+
+check:web-vite-data-layer — OK
+
+2) check:page-shells
+
+check:web-vite-page-shells — OK
+
+3) check:web-vite-presentational
+
+check:web-vite-presentational — OK
+
+4) tsc (direct, bypass turbo+ui-build rot)
+  errors: 0
+
+5) vitest full
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 605 passed | 24 skipped (630)
+      Tests  2 failed | 4205 passed | 1 skipped (4208)

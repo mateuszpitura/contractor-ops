@@ -1,0 +1,11 @@
+---
+description: Hard stops for destructive git operations
+alwaysApply: true
+---
+
+# Git Safety (hard stops)
+
+- NEVER run `git stash`, `git stash --keep-index`, `git stash --include-untracked`, or any stash variant without explicit user approval for THIS specific operation.
+- NEVER run `git checkout --`, `git restore`, or `git reset --hard` on files not created this turn unless the user explicitly authorized THIS operation.
+- If you need stash/checkout/reset to test or diagnose: STOP, ask first, describe what and why.
+- When uncertain about tree state: prefer read-only commands (`git status`, `git diff`, `git show`) — never "clean up" the index, stash list, or tree without direct instruction.

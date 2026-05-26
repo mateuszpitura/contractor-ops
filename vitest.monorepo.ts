@@ -6,7 +6,6 @@
  * - `groupOrder` → lower values run earlier (stable ordering across packages)
  */
 export const vitestProject = {
-  web: { name: 'web', groupOrder: 0 },
   api: { name: 'api', groupOrder: 1 },
   auth: { name: 'auth', groupOrder: 2 },
   db: { name: 'db', groupOrder: 3 },
@@ -20,4 +19,7 @@ export const vitestProject = {
   secrets: { name: 'secrets', groupOrder: 11 },
   publicApi: { name: 'public-api', groupOrder: 12 },
   billing: { name: 'billing', groupOrder: 13 },
+  apiServer: { name: 'api-server', groupOrder: 14 },
+  cronWorker: { name: 'cron-worker', groupOrder: 15 },
+  webVite: { name: 'web-vite', groupOrder: 16 },
 } as const;

@@ -2,7 +2,7 @@
 /**
  * v2 Arabic translation backfill.
  *
- * Reads apps/web/messages/ar.json and replaces 1,895 English-leaked
+ * Reads apps/web-vite/messages/ar.json and replaces 1,895 English-leaked
  * keys with hand-authored Arabic translations (formal MSA, GCC
  * business register). Reference: en.json snapshot 2026-05-06;
  * untranslated set from .planning/translations/apps_web-ar-untranslated.json.
@@ -2195,7 +2195,7 @@ function setDeep(obj: Record<string, unknown>, path: string, value: string): voi
   (cur as Record<string, unknown>)[parts[parts.length - 1]] = value;
 }
 
-const arPath = resolve(process.cwd(), 'apps/web/messages/ar.json');
+const arPath = resolve(process.cwd(), 'apps/web-vite/messages/ar.json');
 const data = JSON.parse(readFileSync(arPath, 'utf-8')) as Record<string, unknown>;
 let applied = 0;
 for (const [key, value] of Object.entries(TRANSLATIONS)) {
@@ -2203,4 +2203,4 @@ for (const [key, value] of Object.entries(TRANSLATIONS)) {
   applied++;
 }
 writeFileSync(arPath, JSON.stringify(data, null, 2) + '\n');
-console.log(`Applied ${applied} Arabic translations to apps/web/messages/ar.json`);
+console.log(`Applied ${applied} Arabic translations to apps/web-vite/messages/ar.json`);

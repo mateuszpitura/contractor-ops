@@ -1,0 +1,30 @@
+
+> @contractor-ops/landing@0.0.0 build /Users/mateusz.pitura/Repos/projects/contractor-ops/apps/landing
+> dotenv -e ../../.env -- next build --webpack
+
+▲ Next.js 16.2.6 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.3s
+  Running TypeScript ...
+  Finished TypeScript in 1710ms ...
+  Collecting page data using 13 workers ...
+  Generating static pages using 13 workers (0/95) ...
+{"level":"warn","time":"2026-05-26T07:44:10.313Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-rss","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"en","msg":"CMS unreachable, emitting empty RSS"}
+{"level":"warn","time":"2026-05-26T07:44:10.315Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-rss","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"pl","msg":"CMS unreachable, emitting empty RSS"}
+{"level":"warn","time":"2026-05-26T07:44:10.316Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-rss","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"de","msg":"CMS unreachable, emitting empty RSS"}
+{"level":"warn","time":"2026-05-26T07:44:10.316Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-rss","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"ar","msg":"CMS unreachable, emitting empty RSS"}
+{"level":"warn","time":"2026-05-26T07:44:10.318Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-index","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"ar","msg":"CMS unreachable, falling back to empty blog index"}
+{"level":"warn","time":"2026-05-26T07:44:10.318Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-index","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"locale":"ar-SA","msg":"CMS unreachable, falling back to empty blog index"}
+{"level":"warn","time":"2026-05-26T07:44:10.320Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-tag","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"tag":"placeholder","locale":"en","msg":"CMS unreachable for tag archive"}
+Error occurred prerendering page "/en-GB/compare/generic". Read more: https://nextjs.org/docs/messages/prerender-error
+TypeError: Cannot read properties of undefined (reading 'label')
+    at o (.next/server/app/[locale]/compare/[competitor]/page.js:1:6011) {
+  digest: '4145346431'
+}
+Export encountered an error on /[locale]/compare/[competitor]/page: /en-GB/compare/generic, exiting the build.
+{"level":"warn","time":"2026-05-26T07:44:10.348Z","pid":21448,"hostname":"MacBook-Pro-Mateusz.local","service":"landing-blog-tag","err":{"type":"TypeError","message":"fetch failed: ","stack":"TypeError: fetch failed\ncaused by: AggregateError: \n    at internalConnectMultiple (node:net:1193:18)\n    at afterConnectMultiple (node:net:1783:7)"},"tag":"placeholder","locale":"en-GB","msg":"CMS unreachable for tag archive"}
+⨯ Next.js build worker exited with code: 1 and signal: null
+/Users/mateusz.pitura/Repos/projects/contractor-ops/apps/landing:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @contractor-ops/landing@0.0.0 build: `dotenv -e ../../.env -- next build --webpack`
+Exit status 1

@@ -30,7 +30,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const PL_PATH = resolve(process.cwd(), 'apps/web/messages/pl.json');
+const PL_PATH = resolve(process.cwd(), 'apps/web-vite/messages/pl.json');
 
 /**
  * Dotted-path → Polish value map (or English where intentional, e.g. brands).
