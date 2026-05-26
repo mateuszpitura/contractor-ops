@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -46,6 +47,7 @@ export function usePeppolConnect(options?: {
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   return useMutation(
     trpc.peppol.connect.mutationOptions({
@@ -53,7 +55,7 @@ export function usePeppolConnect(options?: {
         queryClient.invalidateQueries({
           queryKey: trpc.peppol.getStatus.queryKey(),
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
         options?.onSuccess?.();
       },
       onError: error => {

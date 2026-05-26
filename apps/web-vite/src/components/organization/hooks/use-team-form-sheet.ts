@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 interface UseTeamFormSheetOptions {
@@ -11,11 +12,12 @@ interface UseTeamFormSheetOptions {
 export function useTeamFormSheet({ onOpenChange, onCreated }: UseTeamFormSheetOptions) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const createMutation = useMutation(
     trpc.organizationDefinitions.team.create.mutationOptions({
       onSuccess: created => {
-        toast.success('Team created');
+        toast.success(toasts.teamCreated());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.team.list.queryKey(),
         });
@@ -29,7 +31,7 @@ export function useTeamFormSheet({ onOpenChange, onCreated }: UseTeamFormSheetOp
   const updateMutation = useMutation(
     trpc.organizationDefinitions.team.update.mutationOptions({
       onSuccess: () => {
-        toast.success('Team updated');
+        toast.success(toasts.teamUpdated());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.team.list.queryKey(),
         });
@@ -42,7 +44,7 @@ export function useTeamFormSheet({ onOpenChange, onCreated }: UseTeamFormSheetOp
   const archiveMutation = useMutation(
     trpc.organizationDefinitions.team.archive.mutationOptions({
       onSuccess: () => {
-        toast.success('Team archived');
+        toast.success(toasts.teamArchived());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.team.list.queryKey(),
         });

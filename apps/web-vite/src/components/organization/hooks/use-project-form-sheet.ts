@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 interface UseProjectFormSheetOptions {
@@ -11,6 +12,7 @@ interface UseProjectFormSheetOptions {
 export function useProjectFormSheet({ onOpenChange, onCreated }: UseProjectFormSheetOptions) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const teamsQuery = useQuery(
     trpc.organizationDefinitions.team.list.queryOptions({ status: 'ACTIVE', limit: 200 }),
@@ -19,7 +21,7 @@ export function useProjectFormSheet({ onOpenChange, onCreated }: UseProjectFormS
   const createMutation = useMutation(
     trpc.organizationDefinitions.project.create.mutationOptions({
       onSuccess: created => {
-        toast.success('Project created');
+        toast.success(toasts.projectCreated());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.project.list.queryKey(),
         });
@@ -33,7 +35,7 @@ export function useProjectFormSheet({ onOpenChange, onCreated }: UseProjectFormS
   const updateMutation = useMutation(
     trpc.organizationDefinitions.project.update.mutationOptions({
       onSuccess: () => {
-        toast.success('Project updated');
+        toast.success(toasts.projectUpdated());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.project.list.queryKey(),
         });
@@ -46,7 +48,7 @@ export function useProjectFormSheet({ onOpenChange, onCreated }: UseProjectFormS
   const archiveMutation = useMutation(
     trpc.organizationDefinitions.project.archive.mutationOptions({
       onSuccess: () => {
-        toast.success('Project archived');
+        toast.success(toasts.projectArchived());
         void queryClient.invalidateQueries({
           queryKey: trpc.organizationDefinitions.project.list.queryKey(),
         });

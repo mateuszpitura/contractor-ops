@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import type { LeitwegIdEditInitial } from '../leitweg-id-create-dialog.js';
@@ -11,6 +12,7 @@ export function useLeitwegIdRow(row: LeitwegIdRowData) {
   const trpc = useTRPC();
   const tErrors = useTranslations('EInvoice.Errors');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
@@ -18,7 +20,7 @@ export function useLeitwegIdRow(row: LeitwegIdRowData) {
     trpc.leitwegId.setDefault.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: trpc.leitwegId.list.queryKey() });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: (err: { message?: string }) => {
         toast.error(err.message || tErrors('Generic'));

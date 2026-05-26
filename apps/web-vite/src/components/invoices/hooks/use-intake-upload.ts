@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -43,6 +44,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [localError, setLocalError] = useState<IntakeUploadLocalErrorKind | null>(null);
@@ -51,7 +53,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
     trpc.invoiceIntake.upload.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
     }),

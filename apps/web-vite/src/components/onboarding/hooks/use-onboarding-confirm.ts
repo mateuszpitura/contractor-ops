@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { PersonSelection, ProjectSelection } from '../import-wizard.js';
 
@@ -36,12 +37,13 @@ export function useOnboardingConfirm(
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const startImportMutation = useMutation({
     ...trpc.onboardingImport.startImport.mutationOptions(),
     onSuccess: data => {
       onJobIdChange(data.jobId);
-      toast.success('Done.');
+      toast.success(toasts.done());
       void queryClient.invalidateQueries(trpc.onboardingImport.pathFilter());
     },
     onError: err => toast.error(err.message),

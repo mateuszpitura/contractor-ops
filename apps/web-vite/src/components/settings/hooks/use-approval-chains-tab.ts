@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ChainData } from '../chain-editor-dialog.js';
@@ -11,6 +12,7 @@ export function useApprovalChainsTab() {
   const t = useTranslations('Settings');
   const tAria = useTranslations('Common.aria');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingChain, setEditingChain] = useState<ChainData | null>(null);
@@ -25,7 +27,7 @@ export function useApprovalChainsTab() {
         queryClient.invalidateQueries({
           queryKey: trpc.approval.listChains.queryKey(),
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: () => {
         toast.error(t('approvals.toasts.saveFailed'));

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { validateBankStatementFile } from '../../../lib/file-validation.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -19,6 +20,7 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
   const t = useTranslations('Payments');
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState<'upload' | 'parsing' | 'results' | 'error'>('upload');
@@ -38,7 +40,7 @@ export function useBankStatementImport(options: { runId: string; onClose: () => 
         }
         setSelectedMatches(matchedIndices);
         setStep('results');
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
       onError: err => {

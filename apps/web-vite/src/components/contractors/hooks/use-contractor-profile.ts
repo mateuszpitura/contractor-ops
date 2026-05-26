@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -11,6 +12,7 @@ export function useContractorProfileActions(contractorId: string, stage: string)
   const queryClient = useQueryClient();
   const t = useTranslations('ContractorProfile');
   const tToast = useTranslations('ContractorProfile.toast');
+  const toasts = useCommonToasts();
 
   const contractorPrefixKey = ['contractor'] as const;
 
@@ -18,7 +20,7 @@ export function useContractorProfileActions(contractorId: string, stage: string)
     trpc.contractor.updateLifecycleStage.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),
@@ -33,7 +35,7 @@ export function useContractorProfileActions(contractorId: string, stage: string)
     trpc.contractor.archive.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.contractor.pathFilter());
       },
     }),

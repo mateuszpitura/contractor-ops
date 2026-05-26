@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from '../../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import type { AutosaveStatus } from '../wizard/classification-autosave-indicator.js';
@@ -19,6 +20,7 @@ export function useClassificationWizardMutations(
   const queryClient = useQueryClient();
   const router = useRouter();
   const tError = useTranslations('Classification.error');
+  const toasts = useCommonToasts();
 
   const expectedUpdatedAtRef = useRef<number>(initialUpdatedAt);
 
@@ -35,7 +37,7 @@ export function useClassificationWizardMutations(
         expectedUpdatedAtRef.current = updatedAt;
         setLastSavedAt(updatedAt);
         setAutosaveStatus('saved');
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
@@ -56,7 +58,7 @@ export function useClassificationWizardMutations(
         router.push(
           `/contractors/${contractorId}/engagements/${contractorAssignmentId}/classification/${result.id}`,
         );
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => {
         toast.error(tError('submitFailed'), {

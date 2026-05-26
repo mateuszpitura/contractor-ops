@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { NotificationData } from '../notification-item.js';
@@ -37,6 +38,7 @@ export function useNotificationCenter() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const toasts = useCommonToasts();
 
   const [typeFilter, setTypeFilter] = useQueryState('type', parseAsString.withDefault('all'));
   const [unreadOnly, setUnreadOnly] = useQueryState('unread', parseAsString.withDefault(''));
@@ -79,7 +81,7 @@ export function useNotificationCenter() {
         void queryClient.invalidateQueries({
           queryKey: [['notification']],
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),

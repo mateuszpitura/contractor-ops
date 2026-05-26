@@ -91,7 +91,8 @@ const reminderRuleFormSchema = z
       return true;
     },
     {
-      message: 'Offset must be a positive number',
+      // biome-ignore lint/plugin/no-untranslated-zod-message: key resolved client-side via zod-issues-to-keys
+      message: 'Common.validationOffsetMustBePositive',
       path: ['offsetDays'],
     },
   );

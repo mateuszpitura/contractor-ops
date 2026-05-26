@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -15,6 +16,7 @@ export function useCalendarTaskConfig(taskTemplateId: string) {
   const t = useTranslations('CalendarSettings');
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const configQuery = useQuery(trpc.calendar.getTaskConfig.queryOptions({ taskTemplateId }));
   const config = configQuery.data as CalendarTaskConfigType | undefined;
@@ -25,7 +27,7 @@ export function useCalendarTaskConfig(taskTemplateId: string) {
         queryClient.invalidateQueries({
           queryKey: trpc.calendar.getTaskConfig.queryKey({ taskTemplateId }),
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),

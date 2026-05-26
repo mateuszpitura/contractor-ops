@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -17,6 +18,7 @@ export function useAdminBrandingSection() {
   const t = useTranslations('Settings.branding');
   const tSettings = useTranslations('Settings');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [brandColor, setBrandColor] = useState<string>(DEFAULT_BRAND_COLOR);
@@ -46,7 +48,7 @@ export function useAdminBrandingSection() {
     trpc.settings.getLogoUploadUrl.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.settings.pathFilter());
       },
     }),

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useDocumentHistoryList(engagementId: string) {
@@ -35,6 +36,7 @@ export function useDocumentHistoryList(engagementId: string) {
 export function useGenerateDrvBundle(classificationAssessmentId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const mutation = useMutation(
     trpc.classificationDocument.generateDrvDefenseBundle.mutationOptions({
@@ -42,7 +44,7 @@ export function useGenerateDrvBundle(classificationAssessmentId: string) {
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => {
         toast.error(err.message);
@@ -61,11 +63,12 @@ export function useGenerateDrvBundle(classificationAssessmentId: string) {
 export function useGenerateSds(classificationAssessmentId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const approveSdsMutation = useMutation(
     trpc.classification.approveSds.mutationOptions({
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
@@ -80,7 +83,7 @@ export function useGenerateSds(classificationAssessmentId: string) {
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => {
         toast.error(err.message);

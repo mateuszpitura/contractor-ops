@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -19,6 +20,7 @@ export function useClassificationWizardEntry(engagementId: string) {
   const trpc = useTRPC();
   const t = useTranslations('Classification');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [showDriftRecovery, setShowDriftRecovery] = useState(false);
 
   const draftQuery = useQuery({
@@ -35,7 +37,7 @@ export function useClassificationWizardEntry(engagementId: string) {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),
@@ -48,7 +50,7 @@ export function useClassificationWizardEntry(engagementId: string) {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),

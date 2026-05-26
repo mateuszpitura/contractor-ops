@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { tKey } from '../../../i18n/typed-keys.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { InvoiceTabData } from '../einvoice-tab/types.js';
@@ -20,6 +21,7 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
   const tErr = useTranslations('EInvoice.Errors');
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDownloadXmlPending, setIsDownloadXmlPending] = useState(false);
   const [isDownloadReportPending, setIsDownloadReportPending] = useState(false);
@@ -68,7 +70,7 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
       onSuccess: _result => {
         setErrorMessage(null);
         invalidateAll();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.einvoice.pathFilter());
       },
       onError: err => {
@@ -83,7 +85,7 @@ export function useEinvoiceTab(data: InvoiceTabData | undefined, invoiceId: stri
       onSuccess: () => {
         setErrorMessage(null);
         invalidateAll();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.einvoice.pathFilter());
       },
       onError: err => {

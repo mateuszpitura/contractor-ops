@@ -19,6 +19,7 @@ import {
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import type { useProjectFormSheet } from '../hooks/use-project-form-sheet.js';
 
 export interface ProjectRow {
@@ -53,6 +54,7 @@ export function ProjectFormSheet({
   formSheet,
 }: ProjectFormSheetProps) {
   const isEdit = Boolean(project);
+  const toasts = useCommonToasts();
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -84,7 +86,7 @@ export function ProjectFormSheet({
     const currencyInput = budgetCurrency.trim().toUpperCase() || undefined;
 
     if (budgetMinorNum != null && (Number.isNaN(budgetMinorNum) || budgetMinorNum <= 0)) {
-      toast.error('Budget must be a positive integer (in minor units)');
+      toast.error(toasts.budgetMustBePositive());
       return;
     }
 

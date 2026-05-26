@@ -4,6 +4,7 @@ import { TRPCClientError } from '@trpc/client';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ExtractedInvoiceData } from '../../ocr/ocr-review-panel.js';
@@ -27,6 +28,7 @@ export function useInvoiceUpload(
   const queryClient = useQueryClient();
   const trpc = useTRPC();
   const t = useTranslations('Invoices.upload');
+  const toasts = useCommonToasts();
 
   const [files, setFiles] = useState<UploadingFile[]>([]);
   const [creditExhausted, setCreditExhausted] = useState(false);
@@ -40,7 +42,7 @@ export function useInvoiceUpload(
     trpc.document.requestUpload.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
@@ -50,7 +52,7 @@ export function useInvoiceUpload(
     trpc.document.confirmUpload.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.document.pathFilter());
       },
     }),
@@ -60,7 +62,7 @@ export function useInvoiceUpload(
     trpc.invoice.create.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),
@@ -70,7 +72,7 @@ export function useInvoiceUpload(
     trpc.ocr.trigger.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),
@@ -80,7 +82,7 @@ export function useInvoiceUpload(
     trpc.ocr.retrigger.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.ocr.pathFilter());
       },
     }),

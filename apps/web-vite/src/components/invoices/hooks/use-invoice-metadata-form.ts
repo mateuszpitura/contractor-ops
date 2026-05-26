@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -48,6 +49,7 @@ export function useInvoiceMetadataForm(invoiceId: string, onSubmittedForMatching
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Invoices');
+  const toasts = useCommonToasts();
 
   const invoiceQueryKey = trpc.invoice.getById.queryKey({ id: invoiceId });
 
@@ -55,7 +57,7 @@ export function useInvoiceMetadataForm(invoiceId: string, onSubmittedForMatching
     trpc.invoice.update.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),
@@ -70,7 +72,7 @@ export function useInvoiceMetadataForm(invoiceId: string, onSubmittedForMatching
     trpc.invoice.submitForMatching.mutationOptions({
       onSuccess: () => {
         onSubmittedForMatching?.();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
       onError: err => toast.error(err.message),
@@ -86,7 +88,7 @@ export function useInvoiceMetadataForm(invoiceId: string, onSubmittedForMatching
     trpc.invoice.voidInvoice.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoice.pathFilter());
       },
     }),

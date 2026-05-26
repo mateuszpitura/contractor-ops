@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { tKey } from '../../../i18n/typed-keys.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ContractAction } from '../actions.js';
@@ -18,6 +19,7 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
   const router = useRouter();
   const t = useTranslations('ContractDetail');
   const trpc = useTRPC();
+  const toasts = useCommonToasts();
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -28,7 +30,7 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
     trpc.contract.transitionStatus.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),
@@ -44,7 +46,7 @@ export function useContractDetailHeader(contractId: string, contractStatus: stri
     trpc.contract.transitionStatus.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { AuditLogEntry } from '../audit-log-table.js';
@@ -31,6 +32,7 @@ export function useAuditLogTab() {
   const tAria = useTranslations('Common.aria');
   const tEmpty = useTranslations('EmptyStates.auditLog');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const [search, setSearch] = useQueryState('auditSearch', parseAsString.withDefault(''));
   const [actorId, setActorId] = useQueryState('actorId', parseAsString.withDefault(''));
@@ -99,7 +101,7 @@ export function useAuditLogTab() {
     trpc.audit.export.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.audit.pathFilter());
       },
     }),

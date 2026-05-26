@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import type { DirectoryUser } from '../directory-preview-table.js';
@@ -18,6 +19,7 @@ export function useDirectoryImportWizard({ open, onOpenChange }: UseDirectoryImp
   const trpc = useTRPC();
   const t = useTranslations('GoogleWorkspace.import');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const [step, setStep] = useState<WizardStep>(1);
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set());
@@ -49,7 +51,7 @@ export function useDirectoryImportWizard({ open, onOpenChange }: UseDirectoryImp
     trpc.googleWorkspace.listUserGroups.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.googleWorkspace.pathFilter());
       },
     }),

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export interface OnboardingProgressFailedItem {
@@ -41,6 +42,7 @@ export function useOnboardingProgress(
   const { jobId } = params;
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const progressQuery = useQuery({
     ...trpc.onboardingImport.getProgress.queryOptions({ jobId }),
@@ -56,7 +58,7 @@ export function useOnboardingProgress(
       void queryClient.invalidateQueries({
         queryKey: trpc.onboardingImport.getProgress.queryKey({ jobId }),
       });
-      toast.success('Done.');
+      toast.success(toasts.done());
     },
     onError: err => toast.error(err.message),
   });

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type {
@@ -20,13 +21,14 @@ export function useImportWizardMutations(
   const trpc = useTRPC();
   const t = useTranslations('Import');
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const parseMutation = useMutation({
     ...trpc.import.parse.mutationOptions(),
     onSuccess: data => {
       const result = data as unknown as ParseResult;
       onParseSuccess(result);
-      toast.success('Done.');
+      toast.success(toasts.done());
       queryClient.invalidateQueries(trpc.import.pathFilter());
     },
     onError: () => {
@@ -39,7 +41,7 @@ export function useImportWizardMutations(
     onSuccess: data => {
       const result = data as unknown as ImportResult;
       onValidateSuccess(result);
-      toast.success('Done.');
+      toast.success(toasts.done());
       queryClient.invalidateQueries(trpc.import.pathFilter());
     },
     onError: () => {
@@ -55,7 +57,7 @@ export function useImportWizardMutations(
       queryClient.invalidateQueries({
         queryKey: [entityType === 'contractor' ? 'contractor' : 'contract'],
       });
-      toast.success('Done.');
+      toast.success(toasts.done());
     },
     onError: () => {
       toast.error(t('importError'));

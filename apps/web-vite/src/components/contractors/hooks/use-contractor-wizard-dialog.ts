@@ -17,7 +17,8 @@ const wizardSchema = z.object({
   taxId: z
     .string()
     .min(1, 'NIP is required')
-    .refine(v => isValidNip(v), { message: 'Invalid NIP number' }),
+    // biome-ignore lint/plugin/no-untranslated-zod-message: key resolved client-side via zod-issues-to-keys
+    .refine(v => isValidNip(v), { message: 'Common.validationInvalidNip' }),
   vatId: z
     .string()
     .transform(v => (v === '' ? undefined : v))
@@ -82,7 +83,8 @@ const stepSchemas = [
     taxId: z
       .string()
       .min(1)
-      .refine(v => isValidNip(v), { message: 'Invalid NIP number' }),
+      // biome-ignore lint/plugin/no-untranslated-zod-message: key resolved client-side via zod-issues-to-keys
+      .refine(v => isValidNip(v), { message: 'Common.validationInvalidNip' }),
     email: z.email(),
   }),
   z.object({

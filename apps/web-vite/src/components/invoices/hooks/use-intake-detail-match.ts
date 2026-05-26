@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -25,6 +26,7 @@ export function useIntakeDetailMatch(
   const trpc = useTRPC();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const candidatesQuery = useQuery(
@@ -48,7 +50,7 @@ export function useIntakeDetailMatch(
         void queryClient.invalidateQueries({
           queryKey: trpc.invoiceIntake.getById.queryKey({ intakeId }),
         });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
     }),

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useRouter } from '../../../i18n/navigation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { IntakeStatus } from '../intake/intake-status-pill.js';
@@ -19,6 +20,7 @@ export function useIntakeDetailActions(
   const trpc = useTRPC();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [rejectError, setRejectError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function useIntakeDetailActions(
         if (converted?.invoiceId) {
           router.push(`/invoices/${converted.invoiceId}`);
         }
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
@@ -53,7 +55,7 @@ export function useIntakeDetailActions(
     trpc.invoiceIntake.confirmMatch.mutationOptions({
       onSuccess: () => {
         invalidateBoth();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
@@ -64,7 +66,7 @@ export function useIntakeDetailActions(
     trpc.invoiceIntake.acknowledgeValidation.mutationOptions({
       onSuccess: () => {
         invalidateBoth();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),
@@ -77,7 +79,7 @@ export function useIntakeDetailActions(
         invalidateBoth();
         setRejectOpen(false);
         setRejectReason('');
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.invoiceIntake.pathFilter());
       },
       onError: err => toast.error(err instanceof Error ? err.message : t('errorGeneric')),

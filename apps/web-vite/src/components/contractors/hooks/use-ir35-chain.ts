@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useIr35ChainPanel(engagementId: string) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const listQuery = useQuery(
     trpc.ir35Chain.listByEngagement.queryOptions({ contractorAssignmentId: engagementId }),
@@ -20,7 +22,7 @@ export function useIr35ChainPanel(engagementId: string) {
     trpc.ir35Chain.markDelivered.mutationOptions({
       onSuccess: () => {
         invalidateList();
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),
@@ -30,7 +32,7 @@ export function useIr35ChainPanel(engagementId: string) {
     trpc.ir35Chain.markAcknowledged.mutationOptions({
       onSuccess: () => {
         invalidateList();
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),
@@ -40,7 +42,7 @@ export function useIr35ChainPanel(engagementId: string) {
     trpc.ir35Chain.removeParticipant.mutationOptions({
       onSuccess: () => {
         invalidateList();
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),
@@ -62,13 +64,14 @@ export function useAddIr35Participant(
 ) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const toasts = useCommonToasts();
 
   const mutation = useMutation(
     trpc.ir35Chain.upsertParticipant.mutationOptions({
       onSuccess: () => {
         onOpenChange(false);
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });
-        toast.success('Done.');
+        toast.success(toasts.done());
       },
       onError: err => toast.error(err.message),
     }),
