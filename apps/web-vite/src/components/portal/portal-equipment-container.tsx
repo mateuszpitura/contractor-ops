@@ -7,6 +7,7 @@ export function PortalEquipmentContainer() {
   const t = useTranslations('Portal.equipment');
   const tReturn = useTranslations('Portal.return');
   const tErrors = useTranslations('Portal.login.errors');
+  const equipmentState = usePortalEquipment();
   const {
     isPending,
     isError,
@@ -22,15 +23,63 @@ export function PortalEquipmentContainer() {
     canReturn,
     returnableItems,
     hasActiveReturn,
-  } = usePortalEquipment();
+  } = equipmentState;
+
+  const errorMessage = tErrors('somethingWentWrong');
+
+  if (isPending) {
+    return (
+      <PortalEquipmentTab
+        t={t}
+        tReturn={tReturn}
+        isPending
+        isError={false}
+        equipment={[]}
+        returnRequest={null}
+        canReturn={false}
+        hasActiveReturn={false}
+        onReturnClick={() => undefined}
+        onViewLabelClick={() => undefined}
+        onCancelReturnClick={() => undefined}
+        cancelDialogOpen={false}
+        onCancelDialogOpenChange={() => undefined}
+        onConfirmCancelReturn={() => undefined}
+        isCancelling={false}
+        errorMessage={errorMessage}
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <PortalEquipmentTab
+        t={t}
+        tReturn={tReturn}
+        isPending={false}
+        isError
+        equipment={[]}
+        returnRequest={null}
+        canReturn={false}
+        hasActiveReturn={false}
+        onReturnClick={() => undefined}
+        onViewLabelClick={() => undefined}
+        onCancelReturnClick={() => undefined}
+        cancelDialogOpen={false}
+        onCancelDialogOpenChange={() => undefined}
+        onConfirmCancelReturn={() => undefined}
+        isCancelling={false}
+        errorMessage={errorMessage}
+      />
+    );
+  }
 
   return (
     <>
       <PortalEquipmentTab
         t={t}
         tReturn={tReturn}
-        isPending={isPending}
-        isError={isError}
+        isPending={false}
+        isError={false}
         equipment={equipment}
         returnRequest={returnRequest}
         canReturn={canReturn}
@@ -42,7 +91,7 @@ export function PortalEquipmentContainer() {
         onCancelDialogOpenChange={setCancelDialogOpen}
         onConfirmCancelReturn={confirmCancelReturn}
         isCancelling={isCancelling}
-        errorMessage={tErrors('somethingWentWrong')}
+        errorMessage={errorMessage}
       />
 
       <PortalReturnFlow

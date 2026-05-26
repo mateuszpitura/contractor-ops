@@ -8,10 +8,19 @@ import {
 export function PortalSettingsContainer() {
   const settings = usePortalSettingsPage();
 
+  if (settings.isPending) {
+    return (
+      <div className="max-w-[640px]">
+        <PortalSettingsHeader />
+        <PortalSettingsSkeleton />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[640px]">
       <PortalSettingsHeader />
-      {settings.isPending ? <PortalSettingsSkeleton /> : <PortalSettingsPage settings={settings} />}
+      <PortalSettingsPage settings={settings} />
     </div>
   );
 }
