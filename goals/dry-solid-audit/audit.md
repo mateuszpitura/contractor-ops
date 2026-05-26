@@ -285,7 +285,17 @@ softDeleteWithAudit({ model, id, organizationId, audit, tx?, sideEffects })
 
 **Risk:** MEDIUM-HIGH — `writeAuditLog` must stay on the same tx and ordering as today. The helper must accept `tx` and pass it through to both `update` and `writeAuditLog`. Any site whose side-effect must run **before** the audit write (rare) is `SKIPPED — bespoke ordering` per Risk #2 in `plan.md`.
 
-**Score:** `EXTRACTED` for sites that fit the helper's signature; per-site `SKIPPED` calls are listed in the Step 7 commit message and back-annotated here.
+**Score (revised during Step 7):** `SKIPPED`. Closer inspection of the targeted routers shows the actual shared logic is one line (`update({ deletedAt: new Date() })`). The remaining 4–5 lines per site (audit-log write + cleanup) are genuinely per-resource:
+
+- `core/contract.ts` deletes a calendar event (fire-and-forget with `.catch` logging).
+- `core/document.ts` deletes the R2 object (try/catch around the SDK) AND then `documentLink.deleteMany` to drop associations.
+- `core/contractor.ts`, `core/user.ts`, `finance/payment.ts`, etc. each have different cleanup paths; some run before the audit log, some after; some inside a `$transaction`, some outside.
+
+A `softDeleteWithAudit({ model, id, organizationId, audit, sideEffects })` helper would either be (a) so generic that callers still have to pass every piece — net zero — or (b) opinionated about transactional boundaries and ordering that we explicitly want to keep visible at the call site.
+
+Per facts.md anti-goals (no abstraction without 2+ real call sites sharing meaningful logic), the cluster is `SKIPPED`. The audit-log + soft-delete + cleanup composition is short, clear, and reviewable inline; the audit log payload (resource type, name, oldValues/newValues) is the core forensic signal and is better kept explicit per call site.
+
+A follow-up may revisit if a future router needs all three behaviours in identical order with no bespoke cleanup.
 
 ---
 
@@ -366,7 +376,7 @@ Plus a Python script (out of TS scope, ignored).
 | E | `findOrThrow` helper | EXTRACTED — 50 sites migrated across 13 routers; ~15 SKIPPED (combined null check, dynamic message, code ≠ NOT_FOUND, findUniqueOrThrow pattern, or `return null` branch) | 5 |
 | F | Service-error mapper | SKIPPED — no cross-file duplication; `mapIntakeErrorToTrpc` already single source for the intake domain. jira-sync services use ad-hoc TRPCError throws, not a shared mapping table. | — |
 | F (sub) | `TRPC_TO_HTTP` relocation | SKIPPED — single source in `apps/public-api/src/lib/error-handler.ts`; `apps/api` does not re-implement it | — |
-| G | `softDeleteWithAudit` | EXTRACTED (per-site, bespoke-ordering sites = SKIPPED) | 7 |
+| G | `softDeleteWithAudit` | SKIPPED — per-site cleanup (R2 delete, doc-link cleanup, calendar event removal, etc.) varies; shared core is one line (`update({ deletedAt })`), audit payload is per-resource | — |
 | H | `QueryStateView` (2 sites) | EXTRACTED | 8 |
 | H (rest) | 18 more `RefreshCw` containers | DEFERRED — out of PR scope | — |
 | I | Slug generation | DEFERRED — cross-package dep cost | — |
