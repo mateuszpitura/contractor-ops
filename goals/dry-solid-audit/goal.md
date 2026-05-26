@@ -12,10 +12,13 @@ See [`plan.md`](./plan.md) for the ordered steps, the cluster catalogue surfaced
 
 ## Done condition
 
-A single PR is open against `main` containing `goals/dry-solid-audit/audit.md` plus the extracted shared modules and every migrated call site, with:
+A single branch is prepared against `main` (named `dry-solid-audit/extract-shared`) containing `goals/dry-solid-audit/audit.md` plus the extracted shared modules and every migrated call site, with:
 
 - `pnpm typecheck` clean across the monorepo (tsc, CI-canonical).
 - `pnpm test` green for every touched package, scoped per package (no unscoped `web-vite` runs).
 - `pnpm lint` and Biome clean.
 - No behaviour change at any call site.
 - Each cluster in `audit.md` marked `EXTRACTED`, `SKIPPED (reason)`, or `DEFERRED (reason)`.
+- `goals/dry-solid-audit/PR-BODY.md` drafted with the PR description, ready for `gh pr create` once a git remote is configured.
+
+Opening the PR itself is deferred to the user because this repository has no git remote configured in the local checkout; `gh pr create --body-file goals/dry-solid-audit/PR-BODY.md` runs once `git remote add origin <url>` + `git push -u origin dry-solid-audit/extract-shared` complete.
