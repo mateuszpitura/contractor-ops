@@ -6,7 +6,7 @@ export function useEngagementDetail(engagementId: string) {
   const trpc = useTRPC();
 
   const latestQuery = useQuery({
-    ...trpc.classification!.getDraft.queryOptions({
+    ...trpc.classification.getDraft.queryOptions({
       contractorAssignmentId: engagementId,
     }),
     enabled: Boolean(engagementId),
@@ -14,7 +14,7 @@ export function useEngagementDetail(engagementId: string) {
   });
 
   const attestationQuery = useQuery({
-    ...trpc.ir35Attestation!.getForEngagement.queryOptions({
+    ...trpc.ir35Attestation.getForEngagement.queryOptions({
       contractorAssignmentId: engagementId,
     }),
     enabled: Boolean(engagementId),

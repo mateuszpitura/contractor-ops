@@ -9,7 +9,7 @@ export function useIr35ChainPanel(engagementId: string) {
   const queryClient = useQueryClient();
 
   const listQuery = useQuery(
-    trpc.ir35Chain!.listByEngagement.queryOptions({ contractorAssignmentId: engagementId }),
+    trpc.ir35Chain.listByEngagement.queryOptions({ contractorAssignmentId: engagementId }),
   );
 
   const invalidateList = useCallback(() => {
@@ -17,7 +17,7 @@ export function useIr35ChainPanel(engagementId: string) {
   }, [queryClient]);
 
   const markDelivered = useMutation(
-    trpc.ir35Chain!.markDelivered.mutationOptions({
+    trpc.ir35Chain.markDelivered.mutationOptions({
       onSuccess: () => {
         invalidateList();
         toast.success('Done.');
@@ -27,7 +27,7 @@ export function useIr35ChainPanel(engagementId: string) {
   );
 
   const markAcknowledged = useMutation(
-    trpc.ir35Chain!.markAcknowledged.mutationOptions({
+    trpc.ir35Chain.markAcknowledged.mutationOptions({
       onSuccess: () => {
         invalidateList();
         toast.success('Done.');
@@ -37,7 +37,7 @@ export function useIr35ChainPanel(engagementId: string) {
   );
 
   const removeParticipant = useMutation(
-    trpc.ir35Chain!.removeParticipant.mutationOptions({
+    trpc.ir35Chain.removeParticipant.mutationOptions({
       onSuccess: () => {
         invalidateList();
         toast.success('Done.');
@@ -64,7 +64,7 @@ export function useAddIr35Participant(
   const queryClient = useQueryClient();
 
   const mutation = useMutation(
-    trpc.ir35Chain!.upsertParticipant.mutationOptions({
+    trpc.ir35Chain.upsertParticipant.mutationOptions({
       onSuccess: () => {
         onOpenChange(false);
         void queryClient.invalidateQueries({ queryKey: [['ir35Chain', 'listByEngagement']] });

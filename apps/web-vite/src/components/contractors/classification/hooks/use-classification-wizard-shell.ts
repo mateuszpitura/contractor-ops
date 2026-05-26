@@ -23,7 +23,7 @@ export function useClassificationWizardMutations(
   const expectedUpdatedAtRef = useRef<number>(initialUpdatedAt);
 
   const saveAnswerMutation = useMutation(
-    trpc.classification!.saveAnswer.mutationOptions({
+    trpc.classification.saveAnswer.mutationOptions({
       onMutate: () => {
         setAutosaveStatus('saving');
       },
@@ -36,7 +36,7 @@ export function useClassificationWizardMutations(
         setLastSavedAt(updatedAt);
         setAutosaveStatus('saved');
         toast.success('Done.');
-        queryClient.invalidateQueries(trpc.classification!.pathFilter());
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         setAutosaveStatus('error');
@@ -48,7 +48,7 @@ export function useClassificationWizardMutations(
   );
 
   const submitMutation = useMutation(
-    trpc.classification!.submit.mutationOptions({
+    trpc.classification.submit.mutationOptions({
       onSuccess: result => {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],

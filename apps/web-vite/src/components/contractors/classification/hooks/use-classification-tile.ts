@@ -6,7 +6,7 @@ export function useClassificationTile(contractorAssignmentId: string) {
   const trpc = useTRPC();
 
   const latestQuery = useQuery({
-    ...trpc.classification!.getLatest.queryOptions({
+    ...trpc.classification.getLatest.queryOptions({
       contractorAssignmentId,
     }),
     retry: false,

@@ -9,14 +9,14 @@ export function useDocumentHistoryList(engagementId: string) {
   const queryClient = useQueryClient();
 
   const listQuery = useQuery(
-    trpc.classificationDocument!.listByEngagement.queryOptions({
+    trpc.classificationDocument.listByEngagement.queryOptions({
       contractorAssignmentId: engagementId,
     }),
   );
 
   const downloadDocument = useCallback(
     async (classificationDocumentId: string): Promise<void> => {
-      const options = trpc.classificationDocument!.getDownloadUrl.queryOptions({
+      const options = trpc.classificationDocument.getDownloadUrl.queryOptions({
         classificationDocumentId,
       });
       const data = await queryClient.fetchQuery(options);
@@ -37,7 +37,7 @@ export function useGenerateDrvBundle(classificationAssessmentId: string) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation(
-    trpc.classificationDocument!.generateDrvDefenseBundle.mutationOptions({
+    trpc.classificationDocument.generateDrvDefenseBundle.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],
@@ -63,10 +63,10 @@ export function useGenerateSds(classificationAssessmentId: string) {
   const queryClient = useQueryClient();
 
   const approveSdsMutation = useMutation(
-    trpc.classification!.approveSds.mutationOptions({
+    trpc.classification.approveSds.mutationOptions({
       onSuccess: () => {
         toast.success('Done.');
-        queryClient.invalidateQueries(trpc.classification!.pathFilter());
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         toast.error(err.message);
@@ -75,7 +75,7 @@ export function useGenerateSds(classificationAssessmentId: string) {
   );
 
   const generateMutation = useMutation(
-    trpc.classificationDocument!.generateSds.mutationOptions({
+    trpc.classificationDocument.generateSds.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
           queryKey: [['classificationDocument', 'listByEngagement']],

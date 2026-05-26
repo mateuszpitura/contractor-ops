@@ -11,11 +11,11 @@ export function useClassificationDisclaimerAck(assessmentId: string, onAcknowled
   const t = useTranslations('Classification');
 
   const ackMutation = useMutation(
-    trpc.classification!.acknowledgeDisclaimer.mutationOptions({
+    trpc.classification.acknowledgeDisclaimer.mutationOptions({
       onSuccess: () => {
         onAcknowledged();
         toast.success('Done.');
-        queryClient.invalidateQueries(trpc.classification!.pathFilter());
+        queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
         toast.error(t('disclaimer.ackFailed'), { description: err.message });

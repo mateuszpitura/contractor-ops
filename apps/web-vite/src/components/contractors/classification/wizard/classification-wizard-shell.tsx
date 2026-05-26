@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 // IMPORTANT: Do NOT import from @contractor-ops/classification/profiles/*/scoring.*
 // Scoring is server-only (Pitfall 2). All outcome computation happens inside
-// `trpc.classification!.submit` on the server.
+// `trpc.classification.submit` on the server.
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
