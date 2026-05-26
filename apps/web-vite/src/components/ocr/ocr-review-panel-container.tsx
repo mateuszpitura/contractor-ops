@@ -18,10 +18,6 @@ interface OcrReviewPanelContainerProps {
   isPortal?: boolean;
 }
 
-// Decision: container drives two hooks (`useOcrExtractionResult` long-poll +
-// `useOcrReviewForm`) and picks the card body variant — `OcrReviewPanelProcessingBody`
-// while the extraction is in-flight, `OcrReviewFormBody` once it completes —
-// before handing both halves to the presentational `OcrReviewPanel` shell.
 export function OcrReviewPanelContainer({
   pdfUrl,
   extractionId,

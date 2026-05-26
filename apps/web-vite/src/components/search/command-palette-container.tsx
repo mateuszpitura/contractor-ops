@@ -6,10 +6,6 @@ import {
 } from './command-palette.js';
 import { useCommandPalette } from './hooks/use-command-palette.js';
 
-// Decision: container picks the palette body variant — loading skeleton while
-// the navigation set is hydrating, the searching body when the user has typed,
-// otherwise the idle body with recents/pinned/quick actions — and forwards the
-// chosen body plus the open-state controls to the presentational shell.
 export function CommandPaletteContainer() {
   const vm = useCommandPalette();
 

@@ -75,9 +75,6 @@ export function StepSelectContainer({
     [formatDate],
   );
 
-  // Decision: variant pick — empty filtered set renders the empty state and
-  // hides the select-all action; otherwise the data table renders with bulk
-  // select wired through.
   let pane: ReactNode;
   let selectAllMatching: { count: number; onClick: () => void } | null;
   if (isEmpty) {
