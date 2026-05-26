@@ -24,9 +24,6 @@ export function InvoiceUploadAreaContainer({
     setShowPdfReview(prev => !prev);
   }, [setShowPdfReview]);
 
-  // Decision: container composes the upload area with an OCR review side-panel
-  // when an extraction session is active and the user has the panel open. The
-  // sibling panel is decided here, not inside the presentational area.
   const ocrReviewPanel =
     upload.showPdfReview && upload.extractionId && upload.pdfUrl ? (
       <OcrReviewPanelContainer

@@ -6,11 +6,8 @@ interface DownloadZugferdPdfButtonContainerProps {
   className?: string;
 }
 
-// Decision: button-level mutation host — the parent invoice detail screen
-// already owns its own loading/empty/error gating, so this container exists
-// only to scope the `einvoice.generateZugferdPdf` mutation (and its `isPending`
-// label flip) inside the invoices folder. No variant pick to lift; the single
-// button is the entire surface.
+// Decision: mutation host — useDownloadZugferdPdf exposes onDownload + isPending
+// consumed inline by the button view. Parent invoice detail owns the loading gate.
 export function DownloadZugferdPdfButtonContainer({
   invoiceId,
   className,

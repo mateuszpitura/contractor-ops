@@ -2,13 +2,6 @@ import { useIntakeDetailValidation } from '../hooks/use-intake-detail-validation
 import { IntakeDetailValidationPane } from './intake-detail-validation-pane.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
 
-// Decision: section always renders the same card shape — the parent
-// `IntakeDetailClient` already owns the intake-level loading/error gate and
-// passes the validation status, issues, and ack timestamp in as props.
-// The hook only supplies the `openReport` async action and its pending
-// flag, so there is no full-view variant to pick. Container exists to keep
-// the `downloadValidationReport` query inside the invoices folder.
-
 interface ValidationIssue {
   severity: 'warning' | 'fatal' | 'info' | string;
   ruleId?: string | null;
@@ -25,6 +18,8 @@ interface IntakeDetailValidationPaneContainerProps {
   className?: string;
 }
 
+// Decision: mutation host — useIntakeDetailValidation exposes openReport +
+// reportLoading; parent IntakeDetailClient owns the intake loading/error gate.
 export function IntakeDetailValidationPaneContainer(
   props: IntakeDetailValidationPaneContainerProps,
 ) {
