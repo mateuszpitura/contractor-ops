@@ -1,9 +1,3 @@
-// Decision: static i18n page composer with language variant pick — selects
-// DE vs EN "software is not legal advice" disclaimer based on i18n.language,
-// then composes page header + 9 body sections + disclaimer + contact section.
-// No hook layer (pure i18n); decision is the locale-keyed disclaimer choice +
-// section composition.
-
 import {
   SOFTWARE_NOT_LEGAL_ADVICE_DE,
   SOFTWARE_NOT_LEGAL_ADVICE_EN,
@@ -24,6 +18,8 @@ const SECTIONS = [
   'governingLaw',
 ] as const;
 
+// Decision: static i18n — renders Legal.terms heading + 9 body sections plus
+// a locale-keyed (DE/EN) disclaimer and contact section.
 export function LegalTermsContainer() {
   const { i18n } = useTranslation();
   const t = useTranslations('Legal.terms');

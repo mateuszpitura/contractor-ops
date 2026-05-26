@@ -1,7 +1,3 @@
-// Decision: route-param-driven variant pick — resolves `jurisdiction` from the
-// route and either renders the 404 fallback or the jurisdiction-scoped privacy
-// notice layout. No hook layer (pure i18n + route param).
-
 import { useParams } from 'react-router-dom';
 
 import { Link } from '../../i18n/navigation.js';

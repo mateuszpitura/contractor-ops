@@ -1,13 +1,10 @@
-// Decision: static i18n 401/403 landing composer — renders the unauthorized
-// page with localized code, heading, body, and home-link CTA. No hook layer
-// (pure i18n + static layout); reachable from route-level redirects when
-// permission gates fail upstream.
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+// Decision: static i18n — renders the 401/403 unauthorized landing with
+// localized code/heading/body and a home-link CTA.
 export function UnauthorizedContainer() {
   const t = useTranslations('Errors.unauthorized');
 

@@ -1,7 +1,3 @@
-// Decision: static i18n page composer — orchestrates page header + 12 body sections
-// from the Legal.privacy namespace into the prose article layout. No hook layer
-// (pure i18n); decision is the section list + heading-body composition.
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 const SECTIONS = [
@@ -19,6 +15,8 @@ const SECTIONS = [
   'contact',
 ] as const;
 
+// Decision: static i18n — renders Legal.privacy heading + 12 body sections
+// from the SECTIONS list. No hook layer beyond useTranslations.
 export function LegalPrivacyContainer() {
   const t = useTranslations('Legal.privacy');
 
