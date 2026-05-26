@@ -12,6 +12,10 @@ interface WorkflowSidePanelContainerProps {
   onClose: () => void;
 }
 
+// Decision: variant pick across (loading, error, success, null) into the shell
+// `body` slot, plus `open` derived from `runId !== null`. The presentational
+// `WorkflowSidePanelShell` stays a single render path that wraps whatever
+// body the container chose; the variant subviews are sibling exports.
 export function WorkflowSidePanelContainer({ runId, onClose }: WorkflowSidePanelContainerProps) {
   const { run, handleRetry, isError, isLoading } = useWorkflowSidePanelRun(runId);
 

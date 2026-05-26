@@ -5,6 +5,11 @@ interface TemplateFormContainerProps {
   templateId?: string;
 }
 
+// Decision: per-action CTA visibility derived from (`isEditing`, `templateStatus`)
+// pair returned by `useTemplateFormSection`. Activate/Delete only when DRAFT,
+// Archive only when ACTIVE, Duplicate + status badge whenever editing. The
+// view is single-render-path per variant — each `show*Cta` flag toggles a
+// presentational sibling, the cross-state pick lives here.
 export function TemplateFormContainer({ templateId }: TemplateFormContainerProps) {
   const form = useTemplateFormSection(templateId);
   const showActivateCta = form.isEditing && form.templateStatus === 'DRAFT';

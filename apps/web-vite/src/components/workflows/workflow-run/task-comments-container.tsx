@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTaskCommentsSection } from '../hooks/use-task-comments-section.js';
 import { TaskCommentsComposer, TaskCommentsList, TaskCommentsSkeleton } from './task-comments.js';
@@ -14,10 +16,17 @@ export function TaskCommentsContainer({ runId, taskRunId }: TaskCommentsContaine
   );
   const t = useTranslations('Workflows');
 
+  let listContent: ReactNode;
+  if (isLoading) {
+    listContent = <TaskCommentsSkeleton />;
+  } else {
+    listContent = <TaskCommentsList comments={comments} />;
+  }
+
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-medium">{t('commentsHeading')}</h4>
-      {isLoading ? <TaskCommentsSkeleton /> : <TaskCommentsList comments={comments} />}
+      {listContent}
       <TaskCommentsComposer
         body={body}
         setBody={setBody}
