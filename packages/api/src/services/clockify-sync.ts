@@ -4,7 +4,11 @@ import type { ClockifyRegion } from '@contractor-ops/integrations/adapters/clock
 import { CLOCKIFY_REGIONS } from '@contractor-ops/integrations/adapters/clockify-adapter';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { TRPCError } from '@trpc/server';
-import { CLOCKIFY_CONNECTION_NOT_FOUND } from '../errors';
+import {
+  CLOCKIFY_CONFIG_INCOMPLETE,
+  CLOCKIFY_CONNECTION_NOT_FOUND,
+  CLOCKIFY_SYNC_FAILED,
+} from '../errors';
 import type { DbClient } from './types';
 
 type PrismaClient = DbClient;
@@ -135,7 +139,7 @@ export async function syncClockifyEntries(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to sync Clockify time entries',
+      message: CLOCKIFY_SYNC_FAILED,
       cause: error,
     });
   }
@@ -159,7 +163,7 @@ async function loadClockifyConnection(prisma: PrismaClient, connectionId: string
   if (connection.status !== 'CONNECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: `Clockify connection is not active (status: ${connection.status})`,
+      message: CLOCKIFY_CONNECTION_NOT_FOUND,
     });
   }
 
@@ -169,7 +173,7 @@ async function loadClockifyConnection(prisma: PrismaClient, connectionId: string
   if (!(config?.workspaceId && config?.userId)) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Clockify connection is missing workspaceId or userId in config',
+      message: CLOCKIFY_CONFIG_INCOMPLETE,
     });
   }
 

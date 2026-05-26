@@ -3,6 +3,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { JiraIssueMetadata, JiraTaskConfig } from '@contractor-ops/validators';
 import { jiraTaskConfigSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors';
 import { lookupJiraTransitionId } from './jira-status-mapping';
 import type { DbClient } from './types';
 
@@ -42,7 +43,7 @@ function buildJiraApiContext(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
+      message: E.JIRA_MISSING_CLOUD_ID,
     });
   }
 
@@ -99,7 +100,7 @@ export async function createJiraIssue(
   if (!taskRun) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Workflow task run not found',
+      message: E.WORKFLOW_TASK_RUN_NOT_FOUND,
     });
   }
 
@@ -135,7 +136,7 @@ export async function createJiraIssue(
   if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'Jira connection is not active',
+      message: E.JIRA_CONNECTION_NOT_ACTIVE,
     });
   }
 
@@ -193,7 +194,7 @@ export async function createJiraIssue(
     if (response.status === 401) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'Jira access token is invalid or expired. Please reconnect your Jira integration.',
+        message: E.JIRA_TOKEN_INVALID,
       });
     }
 
@@ -267,7 +268,7 @@ export async function createJiraIssue(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to create Jira issue',
+      message: E.JIRA_CREATE_FAILED,
       cause: error,
     });
   }
@@ -443,7 +444,7 @@ export async function transitionJiraIssue(
     if (response.status === 401) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'Jira access token is invalid or expired. Please reconnect your Jira integration.',
+        message: E.JIRA_TOKEN_INVALID,
       });
     }
 
@@ -500,7 +501,7 @@ export async function transitionJiraIssue(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to transition Jira issue',
+      message: E.JIRA_TRANSITION_FAILED,
       cause: error,
     });
   }

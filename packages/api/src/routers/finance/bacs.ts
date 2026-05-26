@@ -28,6 +28,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
@@ -186,7 +187,7 @@ async function loadRunWithBacsItems(
   if (!run) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Payment run not found',
+      message: E.PAYMENT_RUN_NOT_FOUND,
     });
   }
 
@@ -279,7 +280,7 @@ export const bacsRouter = router({
       if (!submitter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'BACS submitter not configured',
+          message: E.BACS_SUBMITTER_NOT_CONFIGURED,
         });
       }
 
@@ -315,7 +316,7 @@ export const bacsRouter = router({
       if (!submitter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'BACS submitter not configured',
+          message: E.BACS_SUBMITTER_NOT_CONFIGURED,
         });
       }
 
@@ -592,7 +593,7 @@ export async function getBacsSubmitterMasks(
     log.error({ organizationId }, 'getBacsSubmitterMasks: organization row not found in tenant DB');
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Organization not found',
+      message: E.BILLING_ORGANIZATION_NOT_FOUND,
     });
   }
 

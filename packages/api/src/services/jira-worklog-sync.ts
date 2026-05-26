@@ -3,6 +3,7 @@ import { fetchWithTimeout } from '@contractor-ops/integrations';
 import { decryptCredentials } from '@contractor-ops/integrations/services/credential-service';
 import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors';
 import type { DbClient } from './types';
 
 const log = createLogger({ service: 'jira-worklog-sync' });
@@ -246,7 +247,7 @@ export async function syncJiraWorklogs(
   if (!connection) {
     throw new TRPCError({
       code: 'NOT_FOUND',
-      message: 'Jira connection not found',
+      message: E.JIRA_CONNECTION_NOT_FOUND,
     });
   }
 
@@ -263,7 +264,7 @@ export async function syncJiraWorklogs(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Jira connection is missing cloudId. Please reconnect your Jira integration.',
+      message: E.JIRA_MISSING_CLOUD_ID,
     });
   }
 
@@ -445,7 +446,7 @@ export async function syncJiraWorklogs(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to sync Jira worklogs',
+      message: E.JIRA_WORKLOG_SYNC_FAILED,
       cause: error,
     });
   }

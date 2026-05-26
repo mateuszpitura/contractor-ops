@@ -224,6 +224,62 @@ export const BILLING_NO_ACTIVE_SUBSCRIPTION = 'billingNoActiveSubscription';
 export const BILLING_SUBSCRIPTION_ITEM_UNAVAILABLE = 'billingSubscriptionItemUnavailable';
 export const BILLING_INVALID_TOPUP_PRICE_ID = 'billingInvalidTopupPriceId';
 export const BILLING_NO_SUBSCRIPTION_SUBSCRIBE_FIRST = 'billingNoSubscriptionSubscribeFirst';
+
+// ─── Jira integration ───────────────────────────────────────────
+export const JIRA_MISSING_CLOUD_ID = 'jiraMissingCloudId';
+export const JIRA_CONNECTION_NOT_ACTIVE = 'jiraConnectionNotActive';
+export const JIRA_CONNECTION_NOT_FOUND = 'jiraConnectionNotFound';
+export const JIRA_TOKEN_INVALID = 'jiraTokenInvalid';
+export const JIRA_CREATE_FAILED = 'jiraCreateFailed';
+export const JIRA_TRANSITION_FAILED = 'jiraTransitionFailed';
+export const JIRA_WORKLOG_SYNC_FAILED = 'jiraWorklogSyncFailed';
+export const JIRA_WEBHOOK_PROCESSING_FAILED = 'jiraWebhookProcessingFailed';
+
+// ─── Linear integration ────────────────────────────────────────
+export const LINEAR_NO_DATA = 'linearNoData';
+export const LINEAR_CONNECTION_NOT_ACTIVE = 'linearConnectionNotActive';
+export const LINEAR_CREATE_FAILED = 'linearCreateFailed';
+export const LINEAR_SYNC_FAILED = 'linearSyncFailed';
+export const LINEAR_WEBHOOK_PROCESSING_FAILED = 'linearWebhookProcessingFailed';
+export const LINEAR_WEBHOOK_CREATE_FAILED = 'linearWebhookCreateFailed';
+
+// ─── Workflow ───────────────────────────────────────────────────
+export const WORKFLOW_TASK_RUN_NOT_FOUND = 'workflowTaskRunNotFound';
+
+// ─── Clockify integration ──────────────────────────────────────
+export const CLOCKIFY_SYNC_FAILED = 'clockifySyncFailed';
+export const CLOCKIFY_CONFIG_INCOMPLETE = 'clockifyConfigIncomplete';
+
+// ─── Invoice intake (multi-line) ───────────────────────────────
+export const FILE_TOO_LARGE = 'fileTooLarge';
+export const UNSUPPORTED_MIME = 'unsupportedMime';
+export const CII_XSD_INVALID = 'ciiXsdInvalid';
+export const INVALID_STATE_TRANSITION = 'invalidStateTransition';
+export const VALIDATION_NOT_REQUIRED = 'validationNotRequired';
+export const REASON_TOO_SHORT = 'reasonTooShort';
+export const DUPLICATE_INVOICE_NUMBER = 'duplicateInvoiceNumber';
+export const INTAKE_INTERNAL_ERROR = 'intakeInternalError';
+
+// ─── IR35 chain ────────────────────────────────────────────────
+export const IR35_ENGAGEMENT_NOT_FOUND = 'ir35EngagementNotFound';
+export const IR35_LINKED_CONTRACTOR_NOT_FOUND = 'ir35LinkedContractorNotFound';
+export const IR35_CLIENT_CANNOT_HAVE_LINKED_CONTRACTOR = 'ir35ClientCannotHaveLinkedContractor';
+export const IR35_DUPLICATE_IDS = 'ir35DuplicateIds';
+export const IR35_ORDERED_IDS_MUST_LIST_ALL = 'ir35OrderedIdsMustListAll';
+export const IR35_PARTICIPANT_NOT_FOUND = 'ir35ParticipantNotFound';
+export const IR35_CLIENT_WORKER_CANNOT_BE_REMOVED = 'ir35ClientWorkerCannotBeRemoved';
+
+// ─── Classification (extended) ─────────────────────────────────
+export const CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE = 'classificationOnlyDraftCanRecreate';
+export const CLASSIFICATION_NO_DRIFT_TO_RECOVER = 'classificationNoDriftToRecover';
+export const CLASSIFICATION_ASSESSMENT_NOT_DRAFT = 'classificationAssessmentNotDraft';
+export const CLASSIFICATION_ALREADY_SUBMITTED = 'classificationAlreadySubmitted';
+export const CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE =
+  'classificationOnlyCompletedCanAcknowledge';
+export const CLASSIFICATION_SDS_APPROVAL_IR35_ONLY = 'classificationSdsApprovalIr35Only';
+
+// ─── BACS / Payments (extended) ────────────────────────────────
+export const BACS_SUBMITTER_NOT_CONFIGURED = 'bacsSubmitterNotConfigured';
 export const REAUTH_REQUIRED = 'reauthRequired';
 export const FEATURE_FLAG_UNAVAILABLE = 'featureFlagUnavailable';
 

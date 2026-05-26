@@ -21,7 +21,17 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
-import { INVOICE_NOT_FOUND } from '../../errors';
+import {
+  CII_XSD_INVALID,
+  DUPLICATE_INVOICE_NUMBER,
+  FILE_TOO_LARGE,
+  INTAKE_INTERNAL_ERROR,
+  INVALID_STATE_TRANSITION,
+  INVOICE_NOT_FOUND,
+  REASON_TOO_SHORT,
+  UNSUPPORTED_MIME,
+  VALIDATION_NOT_REQUIRED,
+} from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -113,39 +123,39 @@ function mapIntakeErrorToTrpc(err: unknown): TRPCError {
       case 'FILE_TOO_LARGE':
         return new TRPCError({
           code: 'PAYLOAD_TOO_LARGE',
-          message: 'FILE_TOO_LARGE',
+          message: FILE_TOO_LARGE,
         });
       case 'UNSUPPORTED_MIME':
         return new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'UNSUPPORTED_MIME',
+          message: UNSUPPORTED_MIME,
         });
       case 'CII_XSD_INVALID':
         return new TRPCError({
           code: 'UNPROCESSABLE_CONTENT',
-          message: 'CII_XSD_INVALID',
+          message: CII_XSD_INVALID,
         });
       case 'INVALID_STATE_TRANSITION':
         return new TRPCError({
           code: 'CONFLICT',
-          message: 'INVALID_STATE_TRANSITION',
+          message: INVALID_STATE_TRANSITION,
         });
       case 'NOT_FOUND':
         return new TRPCError({ code: 'NOT_FOUND', message: INVOICE_NOT_FOUND });
       case 'VALIDATION_NOT_REQUIRED':
         return new TRPCError({
           code: 'CONFLICT',
-          message: 'VALIDATION_NOT_REQUIRED',
+          message: VALIDATION_NOT_REQUIRED,
         });
       case 'REASON_TOO_SHORT':
         return new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'REASON_TOO_SHORT',
+          message: REASON_TOO_SHORT,
         });
       case 'DUPLICATE_INVOICE_NUMBER':
         return new TRPCError({
           code: 'CONFLICT',
-          message: 'DUPLICATE_INVOICE_NUMBER',
+          message: DUPLICATE_INVOICE_NUMBER,
         });
     }
   }
@@ -167,7 +177,7 @@ function mapIntakeErrorToTrpc(err: unknown): TRPCError {
 
   return new TRPCError({
     code: 'INTERNAL_SERVER_ERROR',
-    message: 'INTAKE_INTERNAL_ERROR',
+    message: INTAKE_INTERNAL_ERROR,
   });
 }
 

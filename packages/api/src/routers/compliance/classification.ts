@@ -38,7 +38,15 @@ import { createLogger } from '@contractor-ops/logger';
 import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { SDS_APPROVAL_ALREADY_EXISTS } from '../../errors';
+import {
+  CLASSIFICATION_ALREADY_SUBMITTED,
+  CLASSIFICATION_ASSESSMENT_NOT_DRAFT,
+  CLASSIFICATION_NO_DRIFT_TO_RECOVER,
+  CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
+  CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
+  CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
+  SDS_APPROVAL_ALREADY_EXISTS,
+} from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { classificationSaveAnswerRateLimit } from '../../middleware/classification-rate-limit';
@@ -308,13 +316,13 @@ export const classificationRouter = router({
       if (stale.status !== 'draft') {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Only draft assessments can be recreated after drift.',
+          message: CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
         });
       }
       if (stale.ruleSetVersion === profile.ruleSetVersion) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'Draft already matches the current rule-set version — no drift to recover from.',
+          message: CLASSIFICATION_NO_DRIFT_TO_RECOVER,
         });
       }
 
@@ -550,7 +558,7 @@ export const classificationRouter = router({
       if (row.status !== 'draft') {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Assessment is not a draft; answers are frozen after submit.',
+          message: CLASSIFICATION_ASSESSMENT_NOT_DRAFT,
         });
       }
 
@@ -619,7 +627,7 @@ export const classificationRouter = router({
       if (row.status !== 'draft') {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Assessment already submitted; assessments are append-only (D-04).',
+          message: CLASSIFICATION_ALREADY_SUBMITTED,
         });
       }
 
@@ -760,7 +768,7 @@ export const classificationRouter = router({
       if (row.status !== 'completed') {
         throw new TRPCError({
           code: 'CONFLICT',
-          message: 'Only completed assessments can be acknowledged.',
+          message: CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
         });
       }
 
@@ -927,7 +935,7 @@ export const classificationRouter = router({
       if (assessment.countryCode !== 'GB') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'SDS approval is only required for IR35 (GB) assessments',
+          message: CLASSIFICATION_SDS_APPROVAL_IR35_ONLY,
         });
       }
 

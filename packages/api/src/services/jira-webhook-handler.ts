@@ -4,6 +4,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { JiraIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, jiraWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors';
 import { lookupWorkflowStatus } from './jira-status-mapping';
 import type { DbClient } from './types';
 
@@ -44,7 +45,7 @@ function buildJiraApiContext(
   if (!config?.cloudId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
-      message: 'Jira connection is missing cloudId.',
+      message: E.JIRA_MISSING_CLOUD_ID,
     });
   }
 
@@ -308,7 +309,7 @@ export async function processJiraWebhook(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to process Jira webhook',
+      message: E.JIRA_WEBHOOK_PROCESSING_FAILED,
       cause: error,
     });
   }
@@ -341,7 +342,7 @@ export async function registerJiraWebhooks(
   if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'Jira connection is not active',
+      message: E.JIRA_CONNECTION_NOT_ACTIVE,
     });
   }
 

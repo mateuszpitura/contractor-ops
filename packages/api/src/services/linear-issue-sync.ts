@@ -5,6 +5,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import { createLogger } from '@contractor-ops/logger';
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors';
 import { resolveLinearStateId } from './linear-status-mapping';
 import type { DbClient } from './types';
 
@@ -118,7 +119,7 @@ export async function linearGraphQL<T>(
   if (!result.data) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Linear GraphQL returned no data',
+      message: E.LINEAR_NO_DATA,
     });
   }
 
@@ -158,7 +159,7 @@ export async function createLinearIssue(
   if (!connection || connection.status !== 'CONNECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'Linear connection is not active',
+      message: E.LINEAR_CONNECTION_NOT_ACTIVE,
     });
   }
 
@@ -313,7 +314,7 @@ export async function createLinearIssue(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to create Linear issue',
+      message: E.LINEAR_CREATE_FAILED,
       cause: error,
     });
   }
@@ -532,7 +533,7 @@ export async function syncTaskStatusToLinear(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to sync task status to Linear',
+      message: E.LINEAR_SYNC_FAILED,
       cause: error,
     });
   }

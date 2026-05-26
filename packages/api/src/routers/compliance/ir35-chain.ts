@@ -10,6 +10,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
+import * as E from '../../errors';
 import { router } from '../../init';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 
@@ -94,7 +95,7 @@ export const ir35ChainRouter = router({
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Engagement not found.',
+            message: E.IR35_ENGAGEMENT_NOT_FOUND,
           });
         });
 
@@ -146,7 +147,7 @@ export const ir35ChainRouter = router({
         .catch(() => {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Linked contractor not found.',
+            message: E.IR35_LINKED_CONTRACTOR_NOT_FOUND,
           });
         });
     }
@@ -154,7 +155,7 @@ export const ir35ChainRouter = router({
     if (input.role === 'CLIENT' && input.linkedContractorId) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'CLIENT participants cannot have a linkedContractorId.',
+        message: E.IR35_CLIENT_CANNOT_HAVE_LINKED_CONTRACTOR,
       });
     }
 
@@ -204,14 +205,14 @@ export const ir35ChainRouter = router({
       if (orderedSet.size !== input.orderedIds.length) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Duplicate ids in orderedIds.',
+          message: E.IR35_DUPLICATE_IDS,
         });
       }
 
       if (orderedSet.size !== currentIds.size) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'orderedIds must list every participant exactly once.',
+          message: E.IR35_ORDERED_IDS_MUST_LIST_ALL,
         });
       }
 
@@ -273,14 +274,14 @@ export const ir35ChainRouter = router({
       .catch(() => {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Participant not found.',
+          message: E.IR35_PARTICIPANT_NOT_FOUND,
         });
       });
 
     if (row.role === 'CLIENT' || row.role === 'WORKER') {
       throw new TRPCError({
         code: 'BAD_REQUEST',
-        message: 'CLIENT and WORKER rows are auto-populated and cannot be removed.',
+        message: E.IR35_CLIENT_WORKER_CANNOT_BE_REMOVED,
       });
     }
 

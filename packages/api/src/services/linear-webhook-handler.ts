@@ -3,6 +3,7 @@ import { decryptCredentials } from '@contractor-ops/integrations/services/creden
 import type { LinearIssueMetadata } from '@contractor-ops/validators';
 import { getServerEnv, linearWebhookPayloadSchema } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
+import * as E from '../errors';
 import { linearGraphQL } from './linear-issue-sync';
 import { resolveInternalStatus } from './linear-status-mapping';
 import type { DbClient } from './types';
@@ -341,7 +342,7 @@ export async function processLinearWebhook(
     if (error instanceof TRPCError) throw error;
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Failed to process Linear webhook',
+      message: E.LINEAR_WEBHOOK_PROCESSING_FAILED,
       cause: error,
     });
   }
@@ -374,7 +375,7 @@ export async function registerLinearWebhook(
   if (!(connection && ['CONNECTED', 'PENDING_MAPPING'].includes(connection.status))) {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: 'Linear connection is not active',
+      message: E.LINEAR_CONNECTION_NOT_ACTIVE,
     });
   }
 
@@ -410,7 +411,7 @@ export async function registerLinearWebhook(
   if (!result.webhookCreate.success) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message: 'Linear webhookCreate returned success=false',
+      message: E.LINEAR_WEBHOOK_CREATE_FAILED,
     });
   }
 
