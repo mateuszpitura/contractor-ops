@@ -9,13 +9,9 @@ interface TopUpDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Decisive responsibility: this container is the mutation host (top-up
- * checkout) and owns the `selectedBundle` selection state spanning the
- * dialog form. The view has no variant branches (single render path),
- * so per `apps/web-vite/ARCHITECTURE.md` the container earns its file
- * as a state owner + side-effect setup, not a pure passthrough.
- */
+// Decision: mutation host — useTopUpCheckout exposes checkout + isPending; container
+// owns selectedBundle state spanning the dialog form. Open/onOpenChange gated by
+// UsageDashboard; no variant flag.
 export function TopUpDialogContainer({ open, onOpenChange }: TopUpDialogContainerProps) {
   const t = useTranslations('Billing.topUp');
   const [selectedBundle, setSelectedBundle] = useState<string>('10');
