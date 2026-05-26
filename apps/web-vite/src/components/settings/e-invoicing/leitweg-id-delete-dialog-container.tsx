@@ -1,5 +1,3 @@
-// Decision: confirmation dialog rendered conditionally by LeitwegIdListCard via open prop.
-// Container scopes the delete mutation lifecycle per id.
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useLeitwegIdDeleteDialog } from './hooks/use-leitweg-id-delete-dialog.js';
 import { LeitwegIdDeleteDialog } from './leitweg-id-delete-dialog.js';
@@ -11,6 +9,8 @@ interface LeitwegIdDeleteDialogContainerProps {
   value: string;
 }
 
+// Decision: dialog host — open/onOpenChange + target id gated by LeitwegIdListCard;
+// hook scopes the delete mutation lifecycle to dialog mount.
 export function LeitwegIdDeleteDialogContainer({
   open,
   onOpenChange,

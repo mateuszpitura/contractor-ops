@@ -1,6 +1,3 @@
-// Decision: dialog rendered conditionally by ApiKeysTab via open prop. Container seeds initial
-// name/scopes into hook and scopes update mutation lifecycle.
-
 import { EditKeyDialog } from './api-keys-tab.js';
 import { useEditKeyDialog } from './hooks/use-api-keys-tab.js';
 
@@ -12,6 +9,8 @@ interface EditKeyDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: dialog host — open/onOpenChange + initial name/scopes gated by ApiKeysTab;
+// hook scopes the update mutation lifecycle to dialog mount.
 export function EditKeyDialogContainer({
   keyId,
   initialName,

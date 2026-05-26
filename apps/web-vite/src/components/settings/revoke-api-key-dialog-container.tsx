@@ -1,6 +1,3 @@
-// Decision: confirmation dialog rendered conditionally by ApiKeysTab via open prop. Container
-// scopes the revoke mutation lifecycle per target key.
-
 import { RevokeKeyDialog } from './api-keys-tab.js';
 import { useRevokeKeyDialog } from './hooks/use-api-keys-tab.js';
 
@@ -11,6 +8,8 @@ interface RevokeKeyDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: dialog host — open/onOpenChange + target key gated by ApiKeysTab; hook
+// scopes the revoke mutation lifecycle per keyId.
 export function RevokeKeyDialogContainer({
   keyId,
   keyName,

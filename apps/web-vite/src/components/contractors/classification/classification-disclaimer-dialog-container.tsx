@@ -2,9 +2,8 @@ import type { ClassificationDisclaimerDialogProps } from './classification-discl
 import { ClassificationDisclaimerDialogView } from './classification-disclaimer-dialog.js';
 import { useClassificationDisclaimerAck } from './hooks/use-classification-disclaimer.js';
 
-// Decision: render gated externally by parent (engagement-classification-container
-// owns disclaimer-open state). This container's job is to keep the
-// acknowledgeDisclaimer mutation out of the presentational view.
+// Decision: dialog host — open/onAcknowledged gated by
+// engagement-classification-container; acknowledgeDisclaimer mutation isolated.
 export function ClassificationDisclaimerDialogContainer(
   props: ClassificationDisclaimerDialogProps,
 ) {

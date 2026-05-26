@@ -1,5 +1,3 @@
-// Decision: dialog rendered conditionally by KsefProviderSection via open prop. Container scopes
-// the multi-step setup flow hook lifecycle and forwards orgNip context.
 import { useKsefSetupDialog } from './hooks/use-ksef-setup-dialog.js';
 import { KsefSetupDialog } from './ksef-setup-dialog.js';
 
@@ -9,6 +7,8 @@ interface KsefSetupDialogContainerProps {
   orgNip: string | null;
 }
 
+// Decision: dialog host — open/onOpenChange + orgNip gated by KsefProviderSection;
+// hook scopes the multi-step setup flow lifecycle to dialog mount.
 export function KsefSetupDialogContainer({
   open,
   onOpenChange,

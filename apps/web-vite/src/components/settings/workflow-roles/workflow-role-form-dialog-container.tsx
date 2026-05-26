@@ -1,6 +1,3 @@
-// Decision: dialog rendered conditionally by SettingsWorkflowRolesContainer (create) or
-// WorkflowRolesTable (edit) via open prop. Container seeds mode + initial into hook and scopes
-// the create/update mutation lifecycle.
 import { useWorkflowRoleFormDialog } from './hooks/use-workflow-role-form-dialog.js';
 import type { WorkflowRoleFormInput } from './workflow-role-form-dialog.js';
 import { WorkflowRoleFormDialog } from './workflow-role-form-dialog.js';
@@ -12,6 +9,9 @@ interface WorkflowRoleFormDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: dialog host — open/onOpenChange + mode/initial gated by
+// SettingsWorkflowRolesContainer (create) or WorkflowRolesTable (edit); hook scopes the
+// create/update mutation lifecycle to dialog mount.
 export function WorkflowRoleFormDialogContainer({
   mode,
   initial,

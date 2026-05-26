@@ -1,5 +1,3 @@
-// Decision: confirmation dialog rendered conditionally by UsersTable via open prop. Container
-// scopes the deactivate mutation lifecycle per target user.
 import { DeactivateDialog } from './deactivate-dialog.js';
 import { useDeactivateDialog } from './hooks/use-deactivate-dialog.js';
 
@@ -10,6 +8,8 @@ interface DeactivateDialogContainerProps {
   userName: string;
 }
 
+// Decision: dialog host — open/onOpenChange + target user gated by UsersTable; hook
+// scopes the deactivate mutation lifecycle per userId.
 export function DeactivateDialogContainer({
   open,
   onOpenChange,

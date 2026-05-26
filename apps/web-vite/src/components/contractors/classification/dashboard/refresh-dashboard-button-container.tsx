@@ -1,8 +1,9 @@
 import { useClassificationDashboardRefreshButton } from '../hooks/use-classification-dashboard.js';
 import { RefreshDashboardButtonView } from './refresh-dashboard-button.js';
 
-// Decision: render gated externally by parent (dashboard composes unconditionally).
-// This container's job is to keep the queryClient invalidation/timer state out of the view.
+// Decision: mutation host — useClassificationDashboardRefreshButton owns the
+// queryClient invalidation + timer state; ClassificationDashboard composes
+// this button unconditionally.
 export function RefreshDashboardButtonContainer() {
   const refresh = useClassificationDashboardRefreshButton();
   return <RefreshDashboardButtonView {...refresh} />;

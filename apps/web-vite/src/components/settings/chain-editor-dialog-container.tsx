@@ -1,5 +1,3 @@
-// Decision: dialog rendered conditionally by ApprovalChainsTab via open prop. Container scopes
-// hook lifecycle to dialog mount and forwards chainData edit target. View owns form/save branches.
 import type { ChainData } from './chain-editor-dialog.js';
 import { ChainEditorDialog } from './chain-editor-dialog.js';
 import { useChainEditorDialog } from './hooks/use-chain-editor-dialog.js';
@@ -10,6 +8,8 @@ interface ChainEditorDialogContainerProps {
   chainData: ChainData | null;
 }
 
+// Decision: dialog host — open/onOpenChange + chainData edit target gated by
+// ApprovalChainsTab; hook scopes chain editor form + save mutation to dialog mount.
 export function ChainEditorDialogContainer({
   open,
   onOpenChange,

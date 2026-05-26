@@ -1,6 +1,3 @@
-// Decision: sheet rendered conditionally by UsersTable (open prop driven by selected user). Container
-// scopes the per-user consent query (skipped when userId is null) to sheet mount.
-
 import { useUserConsentSheet } from './hooks/use-user-consent-sheet.js';
 import { UserConsentSheet } from './user-consent-sheet.js';
 
@@ -11,6 +8,8 @@ interface UserConsentSheetContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Decision: dialog host — open/onOpenChange + selected userId gated by UsersTable; hook
+// scopes the per-user consent query (skipped when userId is null) to sheet mount.
 export function UserConsentSheetContainer({
   userId,
   userName,
