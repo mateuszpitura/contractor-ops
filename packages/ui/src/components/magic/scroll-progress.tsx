@@ -1,3 +1,5 @@
+'use client';
+
 import type { MotionProps } from 'motion/react';
 import { motion, useScroll } from 'motion/react';
 
