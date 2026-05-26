@@ -1,0 +1,95 @@
+/**
+ * Better Auth mount under /api/auth/**.
+ *
+ * Bridges Better Auth's universal Web fetch handler (`auth.handler(Request)`)
+ * onto Fastify by translating `FastifyRequest → Request` and
+ * `Response → FastifyReply`. Avoids `reply.hijack()` so CORS, helmet,
+ * request-context, and rate-limit hooks keep firing on auth responses.
+ *
+ * Encapsulated as a Fastify plugin so the raw-body content-type parser
+ * (`*\/*` → Buffer) does not leak to sibling routes that expect JSON
+ * parsing.
+ *
+ * Observability wrapper mirrors `apps/web/src/app/api/auth/[...all]/route.ts`:
+ *
+ *   - Per-request `{ method, path, status, durationMs }` Pino log.
+ *   - 5xx auth responses forwarded to Sentry (credential-stuffing /
+ *     OAuth-failure spikes surface as errors, not silent 401s).
+ *   - ALS frame is already bound by `registerRequestContext` at the parent
+ *     scope — every log line emitted by Better Auth + downstream handlers
+ *     inherits `{ requestId }`.
+ */
+
+import { auth } from '@contractor-ops/auth';
+import { createLogger } from '@contractor-ops/logger';
+import type { FastifyInstance, FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import { Sentry } from '../lib/sentry.js';
+import { sendWebResponse, toWebRequest } from '../lib/web-bridge.js';
+
+const log = createLogger({ service: 'auth' });
+
+const AUTH_PREFIX = '/api/auth';
+
+const authPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
+  // Better Auth expects raw bytes / JSON / urlencoded payloads it parses
+  // itself. Override Fastify's default JSON parser so the bridged Web
+  // Request body contains the unparsed buffer.
+  app.removeAllContentTypeParsers();
+  app.addContentTypeParser('*', { parseAs: 'buffer' }, (_req, body, done) => {
+    done(null, body);
+  });
+
+  app.all(`${AUTH_PREFIX}/*`, async (request: FastifyRequest, reply: FastifyReply) => {
+    const start = performance.now();
+    const path = request.url;
+    const method = request.method as
+      | 'GET'
+      | 'POST'
+      | 'PUT'
+      | 'DELETE'
+      | 'PATCH'
+      | 'OPTIONS'
+      | 'HEAD';
+
+    try {
+      const webRequest = toWebRequest(request);
+      const webResponse = await auth.handler(webRequest);
+
+      const durationMs = Math.round(performance.now() - start);
+      const status = webResponse.status;
+
+      if (status >= 500) {
+        log.error({ method, path, status, durationMs }, 'auth request failed');
+        Sentry.captureMessage(`auth ${method} ${path} returned ${status}`, {
+          level: 'error',
+          tags: { 'auth.path': path, 'auth.method': method },
+          extra: { durationMs },
+        });
+      } else if (status >= 400) {
+        log.warn({ method, path, status, durationMs }, 'auth request rejected');
+      } else {
+        log.info({ method, path, status, durationMs }, 'auth request completed');
+      }
+
+      await sendWebResponse(reply, webResponse);
+    } catch (err) {
+      const durationMs = Math.round(performance.now() - start);
+      log.error({ err, method, path, durationMs }, 'auth handler threw');
+      Sentry.captureException(err, {
+        tags: { 'auth.path': path, 'auth.method': method },
+        extra: { durationMs },
+      });
+      throw err;
+    }
+  });
+};
+
+/**
+ * Encapsulated by default (NOT wrapped in fastify-plugin) so the raw-body
+ * content-type parser stays scoped to the /api/auth/** sub-tree and does
+ * not break JSON parsing on sibling routes (tRPC, webhooks, csp-report).
+ */
+export const authPlugin = authPluginImpl;
+
+// toWebRequest + sendWebResponse live in lib/web-bridge.ts and are shared
+// with the tRPC mount (apps/api/src/plugins/trpc.ts).
