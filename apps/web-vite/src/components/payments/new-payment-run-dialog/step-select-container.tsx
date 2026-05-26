@@ -1,4 +1,5 @@
 import type { RowSelectionState } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -74,6 +75,30 @@ export function StepSelectContainer({
     [formatDate],
   );
 
+  // Decision: variant pick — empty filtered set renders the empty state and
+  // hides the select-all action; otherwise the data table renders with bulk
+  // select wired through.
+  let pane: ReactNode;
+  let selectAllMatching: { count: number; onClick: () => void } | null;
+  if (isEmpty) {
+    pane = <StepSelectEmptyState />;
+    selectAllMatching = null;
+  } else {
+    pane = (
+      <StepSelectDataTable
+        data={select.filteredInvoices}
+        columns={columns}
+        isLoading={select.isLoading}
+        rowSelection={rowSelection}
+        onRowSelectionChange={select.handleRowSelectionChange}
+      />
+    );
+    selectAllMatching = {
+      count: selectableMatchingIds.length,
+      onClick: handleSelectAllMatching,
+    };
+  }
+
   return (
     <StepSelect
       filters={{
@@ -96,20 +121,8 @@ export function StepSelectContainer({
         onNext,
       }}
       formatDateRange={formatDateRange}
-      selectAllMatching={
-        isEmpty ? null : { count: selectableMatchingIds.length, onClick: handleSelectAllMatching }
-      }>
-      {isEmpty ? (
-        <StepSelectEmptyState />
-      ) : (
-        <StepSelectDataTable
-          data={select.filteredInvoices}
-          columns={columns}
-          isLoading={select.isLoading}
-          rowSelection={rowSelection}
-          onRowSelectionChange={select.handleRowSelectionChange}
-        />
-      )}
+      selectAllMatching={selectAllMatching}>
+      {pane}
     </StepSelect>
   );
 }
