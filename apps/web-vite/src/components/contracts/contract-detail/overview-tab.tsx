@@ -8,6 +8,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Check, Pencil, X } from 'lucide-react';
 
+import type { ReactNode } from 'react';
+
 import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -15,34 +17,37 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { formatDate } from '../../../lib/format-date.js';
 import type { useExpiryRemindersEditor } from '../hooks/use-expiry-reminders-editor.js';
 
-type OverviewTabProps = {
-  contract: {
+type OverviewContract = {
+  id: string;
+  title: string | null;
+  type: string;
+  status: string;
+  startDate: string | Date | null;
+  endDate: string | Date | null;
+  noticePeriodDays: number | null;
+  autoRenewal: boolean;
+  renewalTerms: string | null;
+  currency: string;
+  billingModel: string | null;
+  rateType: string | null;
+  rateValueMinor: number | null;
+  retainerAmountMinor: number | null;
+  paymentTermsDays: number | null;
+  invoiceCycle: string | null;
+  notes: string | null;
+  metadataJson: unknown;
+  contractor: {
     id: string;
-    title: string | null;
-    type: string;
+    legalName: string;
+    displayName: string;
     status: string;
-    startDate: string | Date | null;
-    endDate: string | Date | null;
-    noticePeriodDays: number | null;
-    autoRenewal: boolean;
-    renewalTerms: string | null;
-    currency: string;
-    billingModel: string | null;
-    rateType: string | null;
-    rateValueMinor: number | null;
-    retainerAmountMinor: number | null;
-    paymentTermsDays: number | null;
-    invoiceCycle: string | null;
-    notes: string | null;
-    metadataJson: unknown;
-    contractor: {
-      id: string;
-      legalName: string;
-      displayName: string;
-      status: string;
-    } | null;
-  };
+  } | null;
+};
+
+type OverviewTabProps = {
+  contract: OverviewContract;
   reminders: ReturnType<typeof useExpiryRemindersEditor>;
+  remindersEditor?: ReactNode;
 };
 
 function formatCurrency(minor: number, currency: string): string {
@@ -134,7 +139,12 @@ export function ExpiryRemindersEditing({
   );
 }
 
-function ExpiryRemindersEditor({
+/**
+ * Backward-compat wrapper retained for tests that still exercise the
+ * branch-in-view shape. New container code branches directly via
+ * `ExpiryRemindersDisplay` / `ExpiryRemindersEditing` siblings.
+ */
+export function ExpiryRemindersEditor({
   currentReminders,
   reminders,
 }: {
@@ -187,7 +197,7 @@ export function extractReminderDaysBefore(metadataJson: unknown): number[] {
   return (metadata.reminderDaysBefore as number[]) ?? [];
 }
 
-export function OverviewTab({ contract, reminders }: OverviewTabProps) {
+export function OverviewTab({ contract, reminders, remindersEditor }: OverviewTabProps) {
   const t = useTranslations('ContractDetail.overview');
   const tEnum = useTranslations('Contracts');
   const tContractor = useTranslations('Contractors');
@@ -197,6 +207,12 @@ export function OverviewTab({ contract, reminders }: OverviewTabProps) {
   const daysRemaining = contract.endDate ? getDaysRemaining(contract.endDate) : null;
   const daysColor = getDaysRemainingColor(daysRemaining);
   const noticeDeadline = getNoticeDeadline(contract.endDate, contract.noticePeriodDays);
+
+  // Back-compat: legacy callers without `remindersEditor` (e.g. older tests)
+  // fall back to the wrapper that does the in-view variant pick.
+  const remindersSlot = remindersEditor ?? (
+    <ExpiryRemindersEditor currentReminders={reminderDaysBefore} reminders={reminders} />
+  );
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
@@ -297,7 +313,7 @@ export function OverviewTab({ contract, reminders }: OverviewTabProps) {
           )}
           <div className="flex flex-col gap-0.5">
             <span className="text-xs text-muted-foreground">{t('reminders.label')}</span>
-            <ExpiryRemindersEditor currentReminders={reminderDaysBefore} reminders={reminders} />
+            {remindersSlot}
           </div>
         </CardContent>
       </Card>

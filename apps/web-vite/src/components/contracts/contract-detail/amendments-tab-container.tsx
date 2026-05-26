@@ -33,15 +33,23 @@ export function AmendmentsTabContainer({ contract }: AmendmentsTabContainerProps
   const tab = useContractAmendmentsTab();
   const addDialog = useAddAmendmentDialog(contract.id, tab.dialogOpen, tab.setDialogOpen);
   const amendments = sortAmendmentsNewestFirst(contract.amendments ?? []);
-  const isEmpty = amendments.length === 0;
+
+  if (amendments.length === 0) {
+    return (
+      <>
+        <AmendmentsTabEmpty tab={tab} />
+        <AddAmendmentDialog
+          open={tab.dialogOpen}
+          onOpenChange={tab.setDialogOpen}
+          addDialog={addDialog}
+        />
+      </>
+    );
+  }
 
   return (
     <>
-      {isEmpty ? (
-        <AmendmentsTabEmpty tab={tab} />
-      ) : (
-        <AmendmentsTabTimeline contract={contract} amendments={amendments} tab={tab} />
-      )}
+      <AmendmentsTabTimeline contract={contract} amendments={amendments} tab={tab} />
       <AddAmendmentDialog
         open={tab.dialogOpen}
         onOpenChange={tab.setDialogOpen}
