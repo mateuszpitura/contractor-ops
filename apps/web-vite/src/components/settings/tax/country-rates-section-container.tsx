@@ -1,10 +1,9 @@
-// Decision: tax section mounted by SettingsTaxContainer (already gates `canView` permission via
-// Navigate). View internally branches on isLoading + rate-row state — kept in view for test
-// compatibility. Container is the hook ownership boundary.
-
 import { CountryRatesSection } from './country-rates-section.js';
 import { useCountryRatesSection } from './hooks/use-country-rates-section.js';
 
+// Decision: data-table host — rates section mounted by SettingsTaxContainer (already
+// gates `canView` via Navigate); view delegates loading + per-row state variants to
+// the rates table shell.
 export function CountryRatesSectionContainer() {
   const section = useCountryRatesSection();
   return <CountryRatesSection {...section} />;

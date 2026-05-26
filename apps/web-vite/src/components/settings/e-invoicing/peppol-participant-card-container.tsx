@@ -1,10 +1,10 @@
-// Decision: card section mounted by SettingsEInvoicingContainer (page composition). View
-// internally branches on isLoading/registration state + owns register/deregister dialog open
-// state. Container injects formatter into view alongside hook return.
 import { useFormatter } from '../../../i18n/useFormatter.js';
 import { usePeppolParticipantCard } from './hooks/use-peppol-participant-card.js';
 import { PeppolParticipantCard } from './peppol-participant-card.js';
 
+// Decision: data-table host — participant card mounted by SettingsEInvoicingContainer;
+// view delegates loading/registration-state row variants and register/deregister dialog
+// state to the card's table shell.
 export function PeppolParticipantCardContainer() {
   const format = useFormatter();
   const card = usePeppolParticipantCard();
