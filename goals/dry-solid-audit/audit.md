@@ -148,13 +148,20 @@ A new dep `@contractor-ops/shared` was added to `apps/web-vite/package.json` to 
 | `apps/web-vite/src/components/contractors/classification/drv-clearance/drv-clearance-row.tsx:51–77` | inline |
 | `apps/web-vite/src/components/billing/billing-date-card.tsx` | inline |
 
-**Extraction target:**
-- `packages/shared/src/datetime.ts` — framework-agnostic `formatDate`, `formatDateTime`, `formatRelative`.
-- `packages/shared/src/locale-lists.ts` — `getMonths(locale)`, `getCountries(locale)` via `Intl.DisplayNames`.
-- Keep `useFormatter` / `useDateFormatter` in `apps/web-vite/src/i18n/` as **thin React adapters** that call the shared helpers (single locale-resolution source: the active i18n context).
+**Findings during Step 3 (revised decision)**: closer inspection of the 8 inline sites revealed that each uses a different Intl pattern — they share shape (`new Intl.X(locale, opts).format(...)`) but not logic. Specifically:
 
-**Risk:** MEDIUM — every component currently makes its own locale decision; centralisation must preserve the same per-site behaviour. The React adapter must not change which locale wins (component-prop > i18n context > browser default).
-**Score:** `EXTRACTED` (planned as Step 3).
+- `Intl.RelativeTimeFormat` calls in `generation-section.tsx`, `classification-autosave-indicator.tsx`, and `drv-clearance-row.tsx` each split time into different bands (second/minute/hour vs second/minute/hour/day vs pre-computed days only) and use different sign conventions for the delta. A shared helper would have to expose every threshold as an argument — effectively just passing the function body, with no DRY win.
+- `Intl.DateTimeFormat({ dateStyle: 'medium' })` appears only in `drv-clearance-row.tsx` (single site).
+- `Intl.DisplayNames` for currency + region names appears only in `use-org-settings-form.ts` (single site).
+- `Intl.DateTimeFormat` for month names appears only in `use-org-settings-form.ts` (single site).
+- `Intl.DateTimeFormat({ month: 'short', day: 'numeric', year: 'numeric' })` with hardcoded `'en-US'` in `time-source-badge.tsx` (single site).
+- `Intl.DateTimeFormat(undefined, ...)`, `Intl.DateTimeFormat(locale, ...)`, and `Intl.DateTimeFormat(i18n.language, ...)` each appear in single sites.
+
+The `format-date.ts` and `format-relative-date.ts` lib modules already centralise the broader formatting needs for web-vite and have callers; nothing outside `apps/web-vite` consumes them, so promoting them to `@contractor-ops/shared` is move-the-file churn with no DRY win today.
+
+**Score (revised):** `SKIPPED — per-site Intl patterns vary too much; no 2+ site logic overlap to extract. Anti-goal: no premature generalisation.`
+
+A future PR may revisit if a second app starts needing the same date utilities, or if a unified relative-time band convention is agreed across the affected sites.
 
 ---
 
@@ -348,7 +355,7 @@ Plus a Python script (out of TS scope, ignored).
 | B | Money formatters — Group X (style:currency, 2/2) | EXTRACTED — 7 sites → shared `formatMinorAsCurrency` | 2 |
 | B | Money formatters — Group Z (manual suffix) | EXTRACTED — 17 sites → existing `apps/web-vite/src/lib/format-currency.ts` | 2 |
 | B (sub) | Money formatters — Group Y (varying fraction digits) | SKIPPED — per-site options vary; abstraction would hide intent | — |
-| C | Date/time formatters | EXTRACTED | 3 |
+| C | Date/time formatters | SKIPPED — per-site Intl patterns vary; no 2+ site logic overlap | — |
 | D | Adopt `useResourceMutation` | EXTRACTED | 4 |
 | E | `findOrThrow` helper | EXTRACTED | 5 |
 | F | Service-error mapper | EXTRACTED | 6 |
