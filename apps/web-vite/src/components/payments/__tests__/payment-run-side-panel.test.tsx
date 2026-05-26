@@ -120,14 +120,16 @@ function renderPanel(
 }
 
 describe('PaymentRunSidePanelSkeleton', () => {
-  it('renders skeleton rows when open', () => {
+  it('renders sheet chrome and skeleton rows when open', () => {
     render(<PaymentRunSidePanelSkeleton open onOpenChange={vi.fn()} />);
-    expect(document.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
+    // SheetHeader/SheetTitle chrome preserved (sr-only label so layout slot is stable)
+    expect(document.querySelector('[data-slot="sheet-title"]')).not.toBeNull();
+    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it('renders nothing when closed', () => {
     render(<PaymentRunSidePanelSkeleton open={false} onOpenChange={vi.fn()} />);
-    expect(document.querySelectorAll('.animate-pulse').length).toBe(0);
+    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBe(0);
   });
 });
 

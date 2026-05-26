@@ -18,6 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
 
 import type { TranslateFn } from '../../i18n/useTranslations.js';
@@ -41,12 +42,34 @@ export function PaymentRunSidePanelSkeleton({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] p-0">
-        <div className="p-6 space-y-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-            <div key={`skel-${i}`} className="h-4 bg-muted animate-pulse rounded w-full" />
-          ))}
-        </div>
+        <ScrollArea className="h-full">
+          <div className="p-6 space-y-6">
+            <SheetHeader className="space-y-3">
+              <SheetTitle className="sr-only">Loading payment run</SheetTitle>
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+            </SheetHeader>
+            <Separator />
+            <div className="grid grid-cols-2 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <div key={`payment-run-detail-skel-${i}`} className="space-y-1">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              ))}
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <Skeleton key={`payment-run-item-skel-${i}`} className="h-12 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );
