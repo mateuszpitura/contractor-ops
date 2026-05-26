@@ -8,8 +8,8 @@ interface StepCompanyContainerProps {
   form: UseFormReturn<WizardFormValues>;
 }
 
-// Decision: render gated externally by parent (wizard-dialog step navigation).
-// Container's job is to keep the company-lookup mutation out of the view.
+// Decision: mutation host — useContractorCompanyLookup exposes the lookup
+// mutation + isLookupLoading; WizardDialog step navigation gates rendering.
 export function StepCompanyContainer({ form }: StepCompanyContainerProps) {
   const { lookup, isLookupLoading } = useContractorCompanyLookup();
   return <StepCompanyView form={form} lookup={lookup} isLookupLoading={isLookupLoading} />;

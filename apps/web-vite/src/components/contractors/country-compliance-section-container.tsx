@@ -12,10 +12,6 @@ interface CountryComplianceSectionContainerProps {
   contractorId: string;
 }
 
-/**
- * Decisive: variant pick — loading spinner card, null when the org has no
- * country-fields config, otherwise the section view with its data props.
- */
 export function CountryComplianceSectionContainer({
   contractorId,
 }: CountryComplianceSectionContainerProps) {

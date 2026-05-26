@@ -9,11 +9,6 @@ type TabPaymentsContainerProps = {
   contractorId: string;
 };
 
-/**
- * Decisive: composition + variant pick — when a billing profile exists, mounts
- * the skonto sub-container above the payments table; otherwise only the
- * payments view renders. The view never owns the skonto branch.
- */
 export function TabPaymentsContainer({ contractorId }: TabPaymentsContainerProps) {
   const payments = useContractorTabPayments(contractorId);
   const billingSkonto = useContractorBillingSkontoSection(contractorId);

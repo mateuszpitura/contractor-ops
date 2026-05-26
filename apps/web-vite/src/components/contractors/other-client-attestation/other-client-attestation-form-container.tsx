@@ -2,9 +2,8 @@ import { useOtherClientAttestation } from '../hooks/use-other-client-attestation
 import type { OtherClientAttestationFormProps } from './other-client-attestation-form.js';
 import { OtherClientAttestationFormView } from './other-client-attestation-form.js';
 
-// Decision: render gated externally by parent (engagement detail mounts the
-// form only for DE engagements). Container's job is to keep the attestation
-// upsert mutation out of the view.
+// Decision: form host — view owns react-hook-form; useOtherClientAttestation
+// supplies the upsert mutation. Engagement detail mounts this only for DE.
 export function OtherClientAttestationFormContainer(props: OtherClientAttestationFormProps) {
   const attestation = useOtherClientAttestation(props.engagementId);
   return <OtherClientAttestationFormView {...props} {...attestation} />;

@@ -2,9 +2,9 @@ import { useParams } from 'react-router-dom';
 
 import { ClassificationAssessmentListContainer } from './classification/classification-assessment-list-container.js';
 
-// Decision: resolve `contractorId` from the route param + wrap the assessment
-// list in the section layout. This satisfies the route-param-resolution
-// criterion from ARCHITECTURE.md.
+// Decision: route-param resolution — extracts :id from useParams() and
+// forwards as contractorId to ClassificationAssessmentListContainer inside
+// the section layout wrapper.
 export function ContractorClassificationContainer() {
   const params = useParams<{ id: string }>();
   const contractorId = params.id ?? '';

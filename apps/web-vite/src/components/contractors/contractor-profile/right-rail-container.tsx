@@ -6,8 +6,9 @@ type RightRailContainerProps = {
   contractor: RightRailContractor;
 };
 
-// Decision: render gated externally by parent (contractor-detail-container).
-// Container's job is to keep the notes-save mutation + dirty-state out of view.
+// Decision: mutation host — useContractorNotes owns the notes-save mutation
+// plus dirty-state; contractor-detail-container mounts this when contractor
+// is loaded.
 export function RightRailContainer({ contractor }: RightRailContainerProps) {
   const notesState = useContractorNotes(contractor.id, contractor.notes);
   return <RightRailView contractor={contractor} {...notesState} />;

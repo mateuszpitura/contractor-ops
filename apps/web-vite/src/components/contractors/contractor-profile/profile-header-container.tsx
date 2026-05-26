@@ -6,9 +6,9 @@ type ProfileHeaderContainerProps = {
   contractor: ProfileHeaderContractor;
 };
 
-// Decision: render gated externally by parent (contractor-detail-container —
-// rendered only when contractor is loaded). Container's job is to keep
-// lifecycle/archive mutations and stage-cast logic out of the view.
+// Decision: mutation host — useContractorProfileActions exposes lifecycle +
+// archive handlers; contractor-detail-container mounts this only after the
+// contractor query resolves.
 export function ProfileHeaderContainer({ contractor }: ProfileHeaderContainerProps) {
   const stage = contractor.lifecycleStage as
     | 'DRAFT'
