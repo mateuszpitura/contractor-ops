@@ -10,15 +10,9 @@ type DropZoneProps = {
   documentType?: string;
 };
 
-/**
- * Decision rule (apps/web-vite/ARCHITECTURE.md): this container is the
- * mandatory tRPC/mutation boundary for the upload flow — `useDocumentDropZone`
- * owns the `requestUpload` + `confirmUpload` mutations and the in-flight
- * `files[]` state. The view renders the same drop target regardless of
- * upload progress (per-file rows are list rendering, not a section-level
- * variant pick), so no isLoading/isEmpty/isError lift applies. Kept as a
- * thin mutation host per the audit's annotation-only criterion.
- */
+// Decision: mutation host — useDocumentDropZone owns requestUpload/confirmUpload
+// mutations + in-flight files[] state. Mounted by tab-documents, contract
+// documents-tab, and task-attachments; per-file rows are list rendering, not a variant.
 export function DropZone({
   onFilesAccepted,
   onFileRejected,
