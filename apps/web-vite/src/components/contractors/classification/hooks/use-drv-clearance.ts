@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../../hooks/use-resource-mutation.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 
 type Outcome = 'PENDING' | 'SELBSTANDIG' | 'ABHANGIG' | 'WITHDRAWN';
@@ -23,34 +23,23 @@ export function useDrvClearanceList(engagementId: string) {
 
 export function useDrvClearanceFormMutations(onClose: () => void) {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const invalidateList = useCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: [['statusfeststellungsverfahren', 'listByEngagement']],
-    });
-  }, [queryClient]);
-
-  const createMutation = useMutation(
-    trpc.statusfeststellungsverfahren?.create.mutationOptions({
-      onSuccess: () => {
-        invalidateList();
-        onClose();
-        toast.success('Done.');
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const createMutation = useResourceMutation(
+    trpc.statusfeststellungsverfahren?.create.mutationOptions(),
+    {
+      invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
+      successMessage: 'Done.',
+      onClose,
+    },
   );
 
-  const updateMutation = useMutation(
-    trpc.statusfeststellungsverfahren?.update.mutationOptions({
-      onSuccess: () => {
-        invalidateList();
-        onClose();
-        toast.success('Done.');
-      },
-      onError: err => toast.error(err.message),
-    }),
+  const updateMutation = useResourceMutation(
+    trpc.statusfeststellungsverfahren?.update.mutationOptions(),
+    {
+      invalidate: [[['statusfeststellungsverfahren', 'listByEngagement']]],
+      successMessage: 'Done.',
+      onClose,
+    },
   );
 
   return { createMutation, updateMutation } as const;
@@ -60,14 +49,15 @@ export function useDrvDecisionLetterUpload(classificationAssessmentId: string | 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const uploadMutation = useMutation(
+  const uploadMutation = useResourceMutation(
     trpc.classificationDocument?.uploadDrvDecisionLetter.mutationOptions({
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.classificationDocument?.pathFilter());
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      successMessage: 'Done.',
+    },
   );
 
   const upload = useCallback(

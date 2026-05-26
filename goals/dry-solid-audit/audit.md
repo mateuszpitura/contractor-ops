@@ -356,7 +356,7 @@ Plus a Python script (out of TS scope, ignored).
 | B | Money formatters — Group Z (manual suffix) | EXTRACTED — 17 sites → existing `apps/web-vite/src/lib/format-currency.ts` | 2 |
 | B (sub) | Money formatters — Group Y (varying fraction digits) | SKIPPED — per-site options vary; abstraction would hide intent | — |
 | C | Date/time formatters | SKIPPED — per-site Intl patterns vary; no 2+ site logic overlap | — |
-| D | Adopt `useResourceMutation` | EXTRACTED | 4 |
+| D | Adopt `useResourceMutation` | EXTRACTED — 21 mutations migrated, 4 SKIPPED (toast-option `{description}` or multi-side-effect onSuccess/onError) | 4 |
 | E | `findOrThrow` helper | EXTRACTED | 5 |
 | F | Service-error mapper | EXTRACTED | 6 |
 | F (sub) | `TRPC_TO_HTTP` relocation | SKIPPED — no duplication today | — |

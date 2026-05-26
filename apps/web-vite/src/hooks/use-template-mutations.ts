@@ -5,12 +5,13 @@
  *   - `@/i18n/typed-keys`     → `../i18n/typed-keys.js`
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import type { LooseTranslator } from '../i18n/typed-keys.js';
 import { useTRPC } from '../providers/trpc-provider.js';
+import { useResourceMutation } from './use-resource-mutation.js';
 
 export function useTemplateMutations(t: LooseTranslator): {
   activate: (id: string) => void;
@@ -26,34 +27,31 @@ export function useTemplateMutations(t: LooseTranslator): {
     void queryClient.invalidateQueries({ queryKey: [['workflow', 'listTemplates']] });
   }, [queryClient]);
 
-  const updateMutation = useMutation(
+  const updateMutation = useResourceMutation(
     trpc.workflow.updateTemplate.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
+    { successMessage: 'Done.' },
   );
 
-  const deleteMutation = useMutation(
+  const deleteMutation = useResourceMutation(
     trpc.workflow.deleteTemplate.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
+    { successMessage: 'Done.' },
   );
 
-  const duplicateMutation = useMutation(
+  const duplicateMutation = useResourceMutation(
     trpc.workflow.duplicateTemplate.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
+    { successMessage: 'Done.' },
   );
 
   const activate = useCallback(

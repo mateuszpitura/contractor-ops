@@ -6,11 +6,10 @@
  * Otherwise unchanged.
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 
 import { useTRPC } from '../providers/trpc-provider.js';
+import { useResourceMutation } from './use-resource-mutation.js';
 
 export function useApprovalActions(
   stepId: string,
@@ -23,62 +22,57 @@ export function useApprovalActions(
   isPending: boolean;
 } {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: [['approval', 'listPending']] });
-  }, [queryClient]);
-
-  const approveMutation = useMutation(
+  const approveMutation = useResourceMutation(
     trpc.approval.approve.mutationOptions({
       onSuccess: () => {
-        toast.success('Approved');
-        invalidate();
         onSuccess();
       },
-      onError: () => {
-        toast.error('Failed to approve');
-      },
     }),
+    {
+      invalidate: [[['approval', 'listPending']]],
+      successMessage: 'Approved',
+      errorMessage: 'Failed to approve',
+    },
   );
 
-  const rejectMutation = useMutation(
+  const rejectMutation = useResourceMutation(
     trpc.approval.reject.mutationOptions({
       onSuccess: () => {
-        toast.success('Rejected');
-        invalidate();
         onSuccess();
       },
-      onError: () => {
-        toast.error('Failed to reject');
-      },
     }),
+    {
+      invalidate: [[['approval', 'listPending']]],
+      successMessage: 'Rejected',
+      errorMessage: 'Failed to reject',
+    },
   );
 
-  const clarifyMutation = useMutation(
+  const clarifyMutation = useResourceMutation(
     trpc.approval.requestClarification.mutationOptions({
       onSuccess: () => {
-        toast.success('Clarification requested');
-        invalidate();
         onSuccess();
       },
-      onError: () => {
-        toast.error('Failed to request clarification');
-      },
     }),
+    {
+      invalidate: [[['approval', 'listPending']]],
+      successMessage: 'Clarification requested',
+      errorMessage: 'Failed to request clarification',
+    },
   );
 
-  const delegateMutation = useMutation(
+  const delegateMutation = useResourceMutation(
     trpc.approval.delegate.mutationOptions({
       onSuccess: () => {
-        toast.success('Delegated');
-        invalidate();
         onSuccess();
       },
-      onError: () => {
-        toast.error('Failed to delegate');
-      },
     }),
+    {
+      invalidate: [[['approval', 'listPending']]],
+      successMessage: 'Delegated',
+      errorMessage: 'Failed to delegate',
+    },
   );
 
   const approve = useCallback(() => {

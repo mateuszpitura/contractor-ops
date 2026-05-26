@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { useCallback, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
@@ -42,7 +43,6 @@ export function useWorkflowTemplateForm(
 ) {
   const t = useTranslations('Workflows');
   const router = useRouter();
-  const queryClient = useQueryClient();
   const trpc = useTRPC();
   const isEditing = !!templateId;
 
@@ -50,52 +50,54 @@ export function useWorkflowTemplateForm(
     trpc.workflow.getTemplate.queryOptions({ id: templateId ?? '' }, { enabled: isEditing }),
   );
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.workflow.createTemplate.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastTemplateSaved'));
-        queryClient.invalidateQueries({ queryKey: ['workflow'] });
         router.push('/workflows');
       },
-      onError: () => {
-        toast.error(t('errorSaveTemplate'));
-      },
     }),
+    {
+      invalidate: [['workflow']],
+      successMessage: t('toastTemplateSaved'),
+      errorMessage: t('errorSaveTemplate'),
+    },
   );
 
-  const updateMutation = useMutation(
+  const updateMutation = useResourceMutation(
     trpc.workflow.updateTemplate.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastTemplateSaved'));
-        queryClient.invalidateQueries({ queryKey: ['workflow'] });
         options?.onUpdateSuccess?.();
       },
-      onError: () => {
-        toast.error(t('errorSaveTemplate'));
-      },
     }),
+    {
+      invalidate: [['workflow']],
+      successMessage: t('toastTemplateSaved'),
+      errorMessage: t('errorSaveTemplate'),
+    },
   );
 
-  const deleteMutation = useMutation(
+  const deleteMutation = useResourceMutation(
     trpc.workflow.deleteTemplate.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastTemplateDeleted'));
-        queryClient.invalidateQueries({ queryKey: ['workflow'] });
         router.push('/workflows');
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [['workflow']],
+      successMessage: t('toastTemplateDeleted'),
+    },
   );
 
-  const duplicateMutation = useMutation(
+  const duplicateMutation = useResourceMutation(
     trpc.workflow.duplicateTemplate.mutationOptions({
       onSuccess: data => {
-        toast.success(t('toastTemplateDuplicated'));
-        queryClient.invalidateQueries({ queryKey: ['workflow'] });
         router.push(`/workflows/templates/${(data as Record<string, unknown>).id}`);
       },
-      onError: err => toast.error(err.message),
     }),
+    {
+      invalidate: [['workflow']],
+      successMessage: t('toastTemplateDuplicated'),
+    },
   );
 
   return {
@@ -140,14 +142,13 @@ export function useWorkflowSeedStarterTemplates() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.seedStarterTemplates.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
+    { successMessage: 'Done.' },
   );
 }
 
@@ -178,14 +179,13 @@ export function useWorkflowStartRun() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.startRun.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.workflow.pathFilter());
       },
     }),
+    { successMessage: 'Done.' },
   );
 }
 
@@ -201,21 +201,18 @@ export function useWorkflowRunPermissions() {
 export function useWorkflowCancelRun(runId: string, options?: { onSuccess?: () => void }) {
   const t = useTranslations('Workflows');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.cancelRun.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastWorkflowCancelled'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.workflow.getRun.queryKey({ id: runId }),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('errors.failedToLoadWorkflowDetail'));
-      },
     }),
+    {
+      invalidate: [trpc.workflow.getRun.queryKey({ id: runId })],
+      successMessage: t('toastWorkflowCancelled'),
+      errorMessage: t('errors.failedToLoadWorkflowDetail'),
+    },
   );
 }
 
@@ -246,21 +243,18 @@ export function useWorkflowOverrideBlockingTask(
 export function useWorkflowSkipTask(runId: string, options?: { onSuccess?: () => void }) {
   const t = useTranslations('Workflows');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.skipTask.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastTaskSkipped'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.workflow.getRun.queryKey({ id: runId }),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('errors.failedToCompleteTask'));
-      },
     }),
+    {
+      invalidate: [trpc.workflow.getRun.queryKey({ id: runId })],
+      successMessage: t('toastTaskSkipped'),
+      errorMessage: t('errors.failedToCompleteTask'),
+    },
   );
 }
 
@@ -297,21 +291,18 @@ export function useWorkflowReassignTask(
 export function useWorkflowCompleteTask(runId: string, options?: { onSuccess?: () => void }) {
   const t = useTranslations('Workflows');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  return useMutation(
+  return useResourceMutation(
     trpc.workflow.completeTask.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toastTaskCompleted'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.workflow.getRun.queryKey({ id: runId }),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('errors.failedToCompleteTask'));
-      },
     }),
+    {
+      invalidate: [trpc.workflow.getRun.queryKey({ id: runId })],
+      successMessage: t('toastTaskCompleted'),
+      errorMessage: t('errors.failedToCompleteTask'),
+    },
   );
 }
 
@@ -327,22 +318,16 @@ export function useWorkflowTaskComments(runId: string, taskRunId: string) {
     }),
   );
 
-  const addCommentMutation = useMutation(
-    trpc.workflow.addComment.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('toastCommentPosted'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.workflow.listComments.queryKey({
-            workflowRunId: runId,
-            workflowTaskRunId: taskRunId,
-          }),
-        });
-      },
-      onError: () => {
-        toast.error(t('errors.failedToPostComment'));
-      },
-    }),
-  );
+  const addCommentMutation = useResourceMutation(trpc.workflow.addComment.mutationOptions({}), {
+    invalidate: [
+      trpc.workflow.listComments.queryKey({
+        workflowRunId: runId,
+        workflowTaskRunId: taskRunId,
+      }),
+    ],
+    successMessage: t('toastCommentPosted'),
+    errorMessage: t('errors.failedToPostComment'),
+  });
 
   return { commentsQuery, addCommentMutation } as const;
 }

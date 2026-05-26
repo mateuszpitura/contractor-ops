@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function usePaymentRunStepReview(options: {
@@ -50,24 +50,26 @@ export function usePaymentRunStepReview(options: {
   const hasPLN = currencies.includes('PLN');
   const hasEUR = currencies.includes('EUR');
 
-  const createMutation = useMutation(
+  const createMutation = useResourceMutation(
     trpc.payment.create.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
     }),
+    {
+      successMessage: 'Done.',
+    },
   );
 
-  const lockAndExportMutation = useMutation(
+  const lockAndExportMutation = useResourceMutation(
     trpc.payment.lockAndExport.mutationOptions({
-      onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
         queryClient.invalidateQueries(trpc.payment.pathFilter());
       },
     }),
+    {
+      successMessage: 'Done.',
+    },
   );
 
   const handleLockAndExport = useCallback(async () => {

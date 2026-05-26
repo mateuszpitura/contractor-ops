@@ -1,31 +1,23 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { toast } from 'sonner';
-
+import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useEquipmentRetire(options?: { onSuccess?: () => void }) {
   const t = useTranslations('Equipment');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation(
+  const mutation = useResourceMutation(
     trpc.equipment.retire.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toast.retired'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.list.queryKey(),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('error.actionFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.equipment.getById.queryKey(), trpc.equipment.list.queryKey()],
+      successMessage: t('toast.retired'),
+      errorMessage: t('error.actionFailed'),
+    },
   );
 
   const retire = useCallback((id: string) => mutation.mutate({ id }), [mutation]);
@@ -36,24 +28,18 @@ export function useEquipmentRetire(options?: { onSuccess?: () => void }) {
 export function useEquipmentUnassign(options?: { onSuccess?: () => void }) {
   const t = useTranslations('Equipment');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation(
+  const mutation = useResourceMutation(
     trpc.equipment.unassign.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toast.unassigned'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.list.queryKey(),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('error.actionFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.equipment.getById.queryKey(), trpc.equipment.list.queryKey()],
+      successMessage: t('toast.unassigned'),
+      errorMessage: t('error.actionFailed'),
+    },
   );
 
   const unassign = useCallback(
@@ -67,41 +53,21 @@ export function useEquipmentUnassign(options?: { onSuccess?: () => void }) {
 export function useEquipmentReturnApproval() {
   const t = useTranslations('Equipment.return');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const approveMutation = useMutation(
-    trpc.equipment.approveReturnRequest.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('approvedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.listReturnRequests.queryKey(),
-        });
-      },
-      onError: () => {
-        toast.error(t('actionFailed'));
-      },
-    }),
+  const approveMutation = useResourceMutation(
+    trpc.equipment.approveReturnRequest.mutationOptions(),
+    {
+      invalidate: [trpc.equipment.getById.queryKey(), trpc.equipment.listReturnRequests.queryKey()],
+      successMessage: t('approvedToast'),
+      errorMessage: t('actionFailed'),
+    },
   );
 
-  const rejectMutation = useMutation(
-    trpc.equipment.rejectReturnRequest.mutationOptions({
-      onSuccess: () => {
-        toast.success(t('rejectedToast'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.listReturnRequests.queryKey(),
-        });
-      },
-      onError: () => {
-        toast.error(t('actionFailed'));
-      },
-    }),
-  );
+  const rejectMutation = useResourceMutation(trpc.equipment.rejectReturnRequest.mutationOptions(), {
+    invalidate: [trpc.equipment.getById.queryKey(), trpc.equipment.listReturnRequests.queryKey()],
+    successMessage: t('rejectedToast'),
+    errorMessage: t('actionFailed'),
+  });
 
   return { approveMutation, rejectMutation } as const;
 }
@@ -109,21 +75,18 @@ export function useEquipmentReturnApproval() {
 export function useEquipmentShipmentEvent(options?: { onSuccess?: () => void }) {
   const t = useTranslations('Equipment');
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation(
+  const mutation = useResourceMutation(
     trpc.equipment.addShipmentEvent.mutationOptions({
       onSuccess: () => {
-        toast.success(t('toast.statusUpdated'));
-        queryClient.invalidateQueries({
-          queryKey: trpc.equipment.getById.queryKey(),
-        });
         options?.onSuccess?.();
       },
-      onError: () => {
-        toast.error(t('error.actionFailed'));
-      },
     }),
+    {
+      invalidate: [trpc.equipment.getById.queryKey()],
+      successMessage: t('toast.statusUpdated'),
+      errorMessage: t('error.actionFailed'),
+    },
   );
 
   return { mutation, isPending: mutation.isPending } as const;
