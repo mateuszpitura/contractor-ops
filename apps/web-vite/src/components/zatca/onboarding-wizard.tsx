@@ -13,13 +13,27 @@ import { ProductionCertificate } from './production-certificate-container.js';
 import { Stepper } from './stepper.js';
 import { TaxDetailsForm } from './tax-details-form-container.js';
 
+const ONBOARDING_STEP_COUNT = 5;
+
 export function OnboardingWizardSkeleton() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="space-y-4 border-b">
         <Skeleton className="h-6 w-60" />
+        <div className="flex items-center gap-2 md:gap-0">
+          {Array.from({ length: ONBOARDING_STEP_COUNT }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <div key={`onboarding-step-skel-${i}`} className="flex items-center gap-2 md:flex-1">
+              <Skeleton className="size-8 shrink-0 rounded-full" />
+              <Skeleton className="h-4 w-20" />
+              {i < ONBOARDING_STEP_COUNT - 1 && (
+                <Skeleton className="hidden h-px w-full min-w-4 md:block md:flex-1 md:mx-2" />
+              )}
+            </div>
+          ))}
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-40 w-full" />
       </CardContent>

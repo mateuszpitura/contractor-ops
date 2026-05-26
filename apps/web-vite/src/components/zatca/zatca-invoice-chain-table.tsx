@@ -62,13 +62,56 @@ type HookResult = ReturnType<typeof useZatcaInvoiceChainTable>;
 export function ZatcaInvoiceChainTableSkeleton() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-8 w-24" />
       </CardHeader>
-      <CardContent className="space-y-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
+      <CardContent className="pt-0">
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">
+                  <Skeleton className="h-4 w-10" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-20" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-20" />
+                </TableHead>
+                <TableHead>
+                  <Skeleton className="h-4 w-16" />
+                </TableHead>
+                <TableHead className="text-end">
+                  <Skeleton className="ms-auto h-4 w-16" />
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 3 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+                <TableRow key={`zatca-chain-skel-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-10" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <Skeleton className="ms-auto h-8 w-24" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
