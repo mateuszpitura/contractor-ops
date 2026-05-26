@@ -6,10 +6,9 @@ interface LinearStatusMappingDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Decisive passthrough: dialog host. Hook returns no top-level isLoading/
-// isError flag. Per-row spinners and conditional table render based on
-// `selectedTeamId` are dialog-internal interaction state, not a container
-// variant pick.
+// Decision: dialog host — open/onOpenChange gated by LinearProviderSection.
+// Per-row spinners and selectedTeamId table guards are dialog-internal
+// interaction state, not a container variant.
 export function LinearStatusMappingDialog(props: LinearStatusMappingDialogProps) {
   const viewProps = useLinearStatusMappingDialog(props);
   return <LinearStatusMappingDialogView {...viewProps} />;

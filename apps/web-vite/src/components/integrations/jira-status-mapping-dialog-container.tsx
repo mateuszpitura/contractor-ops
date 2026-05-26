@@ -7,10 +7,9 @@ interface JiraStatusMappingDialogProps {
   connectionId: string;
 }
 
-// Decisive passthrough: dialog host. Hook returns no top-level isLoading/
-// isError flag. Per-select spinners and table-render guards on
-// `selectedProjectId` are dialog-internal interaction state, not a
-// container-level variant pick.
+// Decision: dialog host — open/onOpenChange gated by JiraProviderSection.
+// Per-select spinners and selectedProjectId table guards are dialog-internal
+// interaction state, not a container variant.
 export function JiraStatusMappingDialog(props: JiraStatusMappingDialogProps) {
   const viewProps = useJiraStatusMappingDialog(props);
   return <JiraStatusMappingDialogView {...viewProps} />;

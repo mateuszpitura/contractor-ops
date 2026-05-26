@@ -8,10 +8,9 @@ interface TeamsFallbackApproverDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Decisive passthrough: dialog host bound to a mutation. Hook owns
-// `selectedUserId` state + save/clear handlers; there is no loading/empty/
-// error variant to lift — save button just disables on `setFallbackMutation
-// .isPending`, which is inline mutation-pending UI, not a container variant.
+// Decision: dialog host — open/onOpenChange gated by TeamsProviderSection.
+// Hook owns selectedUserId + save/clear handlers; save button disables on
+// isPending inline (no container variant).
 export function TeamsFallbackApproverDialog(props: TeamsFallbackApproverDialogProps) {
   const viewProps = useTeamsFallbackApproverDialog(props);
   return <TeamsFallbackApproverDialogView {...viewProps} />;

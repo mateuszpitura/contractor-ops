@@ -7,11 +7,9 @@ interface AttachDocDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Decisive passthrough: this is a dialog host. The hook exposes no top-level
-// loading/empty/error variant — `searchQuery.isLoading` only fires after the
-// user types and is rendered inline as a skeleton row inside the result list,
-// which is a single render path tied to user input. No container-level pick
-// to lift.
+// Decision: dialog host — open/onOpenChange gated by DocLinksSection.
+// Search-query loading renders as an inline skeleton row tied to user input,
+// not a container variant.
 export function AttachDocDialog(props: AttachDocDialogProps) {
   const hookProps = useAttachDocDialog(props);
   return <AttachDocDialogView {...hookProps} {...props} />;
