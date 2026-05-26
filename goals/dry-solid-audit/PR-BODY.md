@@ -53,7 +53,11 @@ Full evidence per cluster: see `goals/dry-solid-audit/audit.md`.
 
 ## Pre-existing baseline fix (bundled to unblock typecheck)
 
-13 files in `apps/web-vite/src/components/contractors/{classification,hooks}/` swapped defensive `trpc.X?.foo` for `trpc.X!.foo` — same runtime behaviour, clears 35 TS errors that blocked `pnpm typecheck`. Long-term proper fix: make the classification namespaces non-optional at the AppRouter type level (i.e. always spread, gate behaviour via procedure body). Commit `ea833053` documents the follow-up.
+35 TS errors in `apps/web-vite/src/components/contractors/{classification,hooks}/` blocked `pnpm typecheck`. Root cause: `packages/api/src/root.ts` registered the eight classification namespaces via `...(CLASSIFICATION_ENABLED ? {...} : {})`, which let TS infer every namespace as `T | undefined` on the `AppRouter` type.
+
+Proper fix (commit `9de08eaa`): lifted the classification routers into a typed const + cast the disabled branch (`{} as typeof classificationRouters`). Type now includes every namespace unconditionally; runtime remains identical (empty object when flag off — `METHOD_NOT_FOUND` at the tRPC layer, `classificationProcedure` middleware as defense-in-depth per D-06).
+
+13 contractor hook + wizard files had 41 transitional `trpc.X!.foo` non-null assertions from the prior unblock commit (`ea833053`); commit `9de08eaa` drops those assertions back to plain `trpc.X.foo` now that the type carries the namespaces unconditionally.
 
 ## Verification
 
@@ -78,7 +82,10 @@ One commit per cluster, in order:
 7. `efa8d533` Step 6 — SKIP (service-error mapper)
 8. `fd10c2b2` Step 7 — SKIP (softDeleteWithAudit)
 9. `7f81a3f7` Step 8 — SKIP (QueryStateView)
-10. `ea833053` Step 9 — typecheck baseline fix
+10. `ea833053` Step 9 — typecheck baseline fix (transitional `!` assertions)
+11. `0d6b0087` Step 10 — PR body draft
+12. `e01424d1` Step 10 — goal Done condition reworded
+13. `9de08eaa` Follow-up — hoist classification routers, drop `!` band-aids
 
 ## Out of scope / explicitly NOT touched
 
@@ -92,5 +99,4 @@ One commit per cluster, in order:
 
 - Converge the 7 "extra-row" cursor-pagination sites onto the bug-free `paginateByLastKept` convention.
 - Promote `apps/web-vite/src/hooks/use-resource-mutation.ts` into `packages/ui` once its web-vite-flavoured imports are decoupled.
-- Replace `trpc.X!` non-null assertions in the contractors area with a proper AppRouter type fix (make classification namespaces non-optional).
 - Revisit Clusters C / F / G / H if a second app starts needing the same patterns or the runtime threshold conventions converge across sites.
