@@ -1,6 +1,14 @@
 import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { RefreshCw } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -10,19 +18,60 @@ import { ReconciliationTableView } from './reconciliation-table.js';
 
 function ReconciliationSkeleton() {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 5 }).map((_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-        <div key={`skel-${i}`} className="flex items-center gap-4 rounded-lg border px-4 py-3">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-12" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-5 w-16 rounded-full" />
-          <Skeleton className="h-4 w-10" />
-        </div>
-      ))}
+    <div className="overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>
+              <Skeleton className="h-4 w-24" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
+            <TableHead className="text-end">
+              <Skeleton className="ms-auto h-4 w-24" />
+            </TableHead>
+            <TableHead className="text-end">
+              <Skeleton className="ms-auto h-4 w-24" />
+            </TableHead>
+            <TableHead className="text-end">
+              <Skeleton className="ms-auto h-4 w-24" />
+            </TableHead>
+            <TableHead>
+              <Skeleton className="h-4 w-20" />
+            </TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+            <TableRow key={`reconciliation-skel-${i}`}>
+              <TableCell>
+                <Skeleton className="h-4 w-28" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-24" />
+              </TableCell>
+              <TableCell className="text-end">
+                <Skeleton className="ms-auto h-4 w-12" />
+              </TableCell>
+              <TableCell className="text-end">
+                <Skeleton className="ms-auto h-4 w-20" />
+              </TableCell>
+              <TableCell className="text-end">
+                <Skeleton className="ms-auto h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="size-4 rounded" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
