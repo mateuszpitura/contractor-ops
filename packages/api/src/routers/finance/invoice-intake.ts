@@ -22,6 +22,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
@@ -270,17 +271,10 @@ export const invoiceIntakeRouter = router({
       )({
         where,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input),
       })) as Array<{ id: string }>;
 
-      let nextCursor: string | undefined;
-      if (rows.length > input.limit) {
-        const next = rows.pop();
-        nextCursor = next?.id;
-      }
-
-      return { items: rows, nextCursor };
+      return paginateByExtraRowUndefined(rows, input);
     }),
 
   /**

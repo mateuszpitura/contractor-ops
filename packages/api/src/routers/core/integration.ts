@@ -17,6 +17,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -371,11 +372,10 @@ export const integrationRouter = router({
       return { items: [], nextCursor: null };
     }
 
-    const items = await ctx.db.integrationSyncLog.findMany({
+    const rows = await ctx.db.integrationSyncLog.findMany({
       where: { integrationConnectionId: connection.id },
       orderBy: { startedAt: 'desc' },
-      take: input.limit + 1,
-      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+      ...cursorClause(input, 10),
       select: {
         id: true,
         syncType: true,
@@ -387,13 +387,7 @@ export const integrationRouter = router({
       },
     });
 
-    let nextCursor: string | null = null;
-    if (items.length > input.limit) {
-      const lastItem = items.pop();
-      nextCursor = lastItem?.id ?? null;
-    }
-
-    return { items, nextCursor };
+    return paginateByExtraRow(rows, input, 10);
   }),
 
   /**
@@ -401,14 +395,13 @@ export const integrationRouter = router({
    * Cursor-based pagination for the detail sheet.
    */
   getWebhookLog: tenantProcedure.input(getWebhookLogSchema).query(async ({ ctx, input }) => {
-    const items = await ctx.db.webhookDelivery.findMany({
+    const rows = await ctx.db.webhookDelivery.findMany({
       where: {
         organizationId: ctx.organizationId,
         provider: input.provider.toUpperCase() as 'SLACK',
       },
       orderBy: { receivedAt: 'desc' },
-      take: input.limit + 1,
-      ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+      ...cursorClause(input, 10),
       select: {
         id: true,
         eventType: true,
@@ -419,12 +412,6 @@ export const integrationRouter = router({
       },
     });
 
-    let nextCursor: string | null = null;
-    if (items.length > input.limit) {
-      const lastItem = items.pop();
-      nextCursor = lastItem?.id ?? null;
-    }
-
-    return { items, nextCursor };
+    return paginateByExtraRow(rows, input, 10);
   }),
 });

@@ -10,10 +10,10 @@ import * as ApiErrors from '../errors';
  */
 describe('errors.ts vs i18n Errors namespace', () => {
   const root = join(dirname(fileURLToPath(import.meta.url)), '../../../../');
-  const en = JSON.parse(readFileSync(join(root, 'apps/web/messages/en.json'), 'utf8')) as {
+  const en = JSON.parse(readFileSync(join(root, 'apps/web-vite/messages/en.json'), 'utf8')) as {
     Errors: Record<string, unknown>;
   };
-  const pl = JSON.parse(readFileSync(join(root, 'apps/web/messages/pl.json'), 'utf8')) as {
+  const pl = JSON.parse(readFileSync(join(root, 'apps/web-vite/messages/pl.json'), 'utf8')) as {
     Errors: Record<string, unknown>;
   };
 

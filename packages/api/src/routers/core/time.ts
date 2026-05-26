@@ -10,6 +10,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import {
@@ -86,10 +87,9 @@ export const timeRouter = router({
         if (input.to) where.weekStartDate.lte = new Date(input.to);
       }
 
-      const timesheets = await ctx.db.timesheet.findMany({
+      const rows = await ctx.db.timesheet.findMany({
         where,
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input, 20),
         orderBy: { weekStartDate: 'desc' },
         include: {
           contractor: {
@@ -105,13 +105,7 @@ export const timeRouter = router({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (timesheets.length > input.limit) {
-        const extra = timesheets.pop();
-        nextCursor = extra?.id;
-      }
-
-      return { items: timesheets, nextCursor };
+      return paginateByExtraRowUndefined(rows, input, 20);
     }),
 
   /**
@@ -410,10 +404,9 @@ export const timeRouter = router({
         if (input.to) invoiceWhere.issueDate.lte = new Date(input.to);
       }
 
-      const invoices = await ctx.db.invoice.findMany({
+      const rawInvoices = await ctx.db.invoice.findMany({
         where: invoiceWhere,
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input, 20),
         orderBy: { issueDate: 'desc' },
         include: {
           contractor: {
@@ -430,11 +423,7 @@ export const timeRouter = router({
         },
       });
 
-      let nextCursor: string | undefined;
-      if (invoices.length > input.limit) {
-        const extra = invoices.pop();
-        nextCursor = extra?.id;
-      }
+      const { items: invoices, nextCursor } = paginateByExtraRowUndefined(rawInvoices, input, 20);
 
       // Compute reconciliation for each invoice
       const items = await Promise.all(

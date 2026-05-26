@@ -9,6 +9,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 
@@ -45,9 +46,6 @@ export const reassessmentTriggerRouter = router({
     const rows = await ctx.db.reassessmentTrigger.findMany({
       where: input.status ? { status: input.status } : undefined,
       orderBy: [{ triggeredAt: 'desc' }, { id: 'asc' }],
-      take: input.limit + 1,
-      cursor: input.cursor ? { id: input.cursor } : undefined,
-      skip: input.cursor ? 1 : 0,
       include: {
         contractorAssignment: {
           select: {
@@ -57,14 +55,10 @@ export const reassessmentTriggerRouter = router({
           },
         },
       },
+      ...cursorClause(input, 50),
     });
 
-    let nextCursor: string | null = null;
-    if (rows.length > input.limit) {
-      const next = rows.pop();
-      nextCursor = next?.id ?? null;
-    }
-    return { items: rows, nextCursor };
+    return paginateByExtraRow(rows, input, 50);
   }),
 
   listByEngagement: contractorReadProcedure

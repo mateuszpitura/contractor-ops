@@ -2,6 +2,7 @@ import type { Prisma } from '@contractor-ops/db';
 import type { AuditLog, EntityType } from '@contractor-ops/db/generated/prisma/client';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { requireTier } from '../../middleware/tier';
@@ -146,18 +147,20 @@ export const auditRouter = router({
 
       // F-DB-11: cursor mode — keyset on (id) ordered by createdAt.
       if (input.cursor) {
-        const items = await ctx.db.auditLog.findMany({
+        const helperInput = { cursor: input.cursor, limit: input.pageSize };
+        const rows = await ctx.db.auditLog.findMany({
           where,
-          take: input.pageSize + 1,
-          cursor: { id: input.cursor },
-          skip: 1,
+          ...cursorClause(helperInput, input.pageSize),
           orderBy: { createdAt: input.sortOrder },
         });
-        const hasMore = items.length > input.pageSize;
-        const trimmed = hasMore ? items.slice(0, input.pageSize) : items;
+        const { items: trimmed, nextCursor } = paginateByLastKeptUndefined(
+          rows,
+          helperInput,
+          input.pageSize,
+        );
         return {
           items: await enrichResourceNames(ctx.db, trimmed),
-          nextCursor: hasMore ? trimmed[trimmed.length - 1]?.id : undefined,
+          nextCursor,
           // No total in cursor mode — caller relies on nextCursor.
           total: null,
           page: null,

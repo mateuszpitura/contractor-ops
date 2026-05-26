@@ -17,6 +17,7 @@ import * as E from '../../errors';
 const log = createLogger({ service: 'peppol-router' });
 
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { buildStorecoveAdapterForOrg } from '../../services/peppol-adapter-factory';
@@ -390,17 +391,11 @@ export const peppolRouter = router({
       const transmissions = await ctx.db.peppolTransmission.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input),
       });
 
-      let nextCursor: string | undefined;
-      if (transmissions.length > input.limit) {
-        const next = transmissions.pop();
-        nextCursor = next?.id;
-      }
-
-      return { transmissions, nextCursor };
+      const { items, nextCursor } = paginateByExtraRowUndefined(transmissions, input);
+      return { transmissions: items, nextCursor };
     }),
 
   /**

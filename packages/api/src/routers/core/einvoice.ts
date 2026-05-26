@@ -14,6 +14,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import type { FinalizeResult, R2Service } from '../../services/einvoice-finalize';
@@ -912,19 +913,14 @@ export const einvoiceRouter = router({
           break;
       }
 
-      const rows = (await (ctx.db.invoice.findMany as (args: unknown) => Promise<unknown>)({
+      const rawRows = (await (ctx.db.invoice.findMany as (args: unknown) => Promise<unknown>)({
         where,
         include: { eInvoiceLifecycle: true },
         orderBy: { createdAt: 'desc' },
-        take: input.limit + 1,
-        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        ...cursorClause(input, 50),
       })) as Array<{ id: string }>;
 
-      let nextCursor: string | undefined;
-      if (rows.length > input.limit) {
-        const next = rows.pop();
-        nextCursor = next?.id;
-      }
+      const { items: rows, nextCursor } = paginateByExtraRowUndefined(rawRows, input, 50);
 
       return { rows, nextCursor };
     }),

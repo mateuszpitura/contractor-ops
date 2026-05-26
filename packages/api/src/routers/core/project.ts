@@ -15,6 +15,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKept } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -33,8 +34,6 @@ export const projectRouter = router({
       const source = input?.source;
       const teamId = input?.teamId;
       const search = input?.search;
-      const cursor = input?.cursor;
-      const limit = input?.limit ?? 50;
 
       const rows = await ctx.db.project.findMany({
         where: {
@@ -51,8 +50,7 @@ export const projectRouter = router({
             : {}),
         },
         orderBy: [{ updatedAt: 'desc' }, { id: 'asc' }],
-        take: limit + 1,
-        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+        ...cursorClause(input),
         select: {
           id: true,
           name: true,
@@ -69,11 +67,7 @@ export const projectRouter = router({
         },
       });
 
-      const hasMore = rows.length > limit;
-      return {
-        items: hasMore ? rows.slice(0, limit) : rows,
-        nextCursor: hasMore ? rows[limit - 1]?.id : null,
-      };
+      return paginateByLastKept(rows, input);
     }),
 
   get: tenantProcedure

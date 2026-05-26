@@ -9,6 +9,7 @@
 import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
 import { z } from 'zod';
 import { router } from '../../init';
+import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import {
@@ -139,11 +140,9 @@ export const zatcaRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const items = await ctx.db.zatcaInvoiceChain.findMany({
+      const rows = await ctx.db.zatcaInvoiceChain.findMany({
         where: { organizationId: ctx.organizationId },
         orderBy: { icv: 'desc' },
-        take: input.limit + 1,
-        ...(input.cursor && { cursor: { id: input.cursor }, skip: 1 }),
         select: {
           id: true,
           icv: true,
@@ -153,15 +152,11 @@ export const zatcaRouter = router({
           submittedAt: true,
           createdAt: true,
         },
+        ...cursorClause(input, 20),
       });
 
-      const hasMore = items.length > input.limit;
-      const entries = hasMore ? items.slice(0, input.limit) : items;
-
-      return {
-        entries,
-        nextCursor: hasMore ? entries[entries.length - 1]?.id : undefined,
-      };
+      const { items: entries, nextCursor } = paginateByLastKeptUndefined(rows, input, 20);
+      return { entries, nextCursor };
     }),
 
   /**
