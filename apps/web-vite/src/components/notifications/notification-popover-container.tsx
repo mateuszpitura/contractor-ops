@@ -1,11 +1,3 @@
-/**
- * Top-bar notification popover. Decisive container: picks the popover body
- * variant (loading skeletons, empty state, or notification list) from flags
- * returned by `useNotificationPopover`. The presentational
- * `NotificationPopoverShell` only renders the bell trigger and popover
- * chrome — body is injected via children so the view stays single-path.
- */
-
 import { useNotificationPopover } from './hooks/use-notification-popover.js';
 import { NotificationPopoverShell } from './notification-popover.js';
 import { NotificationPopoverEmpty } from './notification-popover-empty.js';
