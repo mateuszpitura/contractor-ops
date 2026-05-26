@@ -8,17 +8,9 @@ interface CostCenterFormSheetContainerProps {
   onCreated?: (cc: { id: string; name: string }) => void;
 }
 
-/**
- * Decision: passthrough is intentional here.
- *
- * Create/edit/archive sheet for cost centers — mutation host. The hook
- * exposes only mutations + `isSubmitting`; no top-level loading/empty/
- * error variant at the sheet scope. The view owns form state (name,
- * code) and the create-vs-edit branch is purely prop-driven UX, not a
- * container-level variant. With no variant pick, no permission gate,
- * and no sub-container composition, the container's only job is to
- * bridge mutations to the form view.
- */
+// Decision: form host — view owns form state (name, code); useCostCenterFormSheet
+// supplies create/edit/archive mutations + isSubmitting. Open/onOpenChange gated
+// by OrganizationCostCentersContainer; no variant flag.
 export function CostCenterFormSheetContainer(props: CostCenterFormSheetContainerProps) {
   const formSheet = useCostCenterFormSheet({
     onOpenChange: props.onOpenChange,

@@ -8,17 +8,9 @@ interface ProjectFormSheetContainerProps {
   onCreated?: (project: { id: string; name: string }) => void;
 }
 
-/**
- * Decision: passthrough is intentional here.
- *
- * Create/edit/archive sheet for projects — mutation host. The hook
- * exposes mutations, `isSubmitting`, and the `teams` list for the
- * team-picker select. There is no sheet-level loading/empty/error
- * variant; the teams query loading state is rendered inline as an
- * empty `<select>` (sub-resource UX, not a container variant). The
- * view owns form state and the create-vs-edit branch is prop-driven.
- * No variant pick, no permission gate, no composition — passthrough.
- */
+// Decision: form host — view owns form state; useProjectFormSheet supplies
+// create/edit/archive mutations + teams list for the picker. Open/onOpenChange
+// gated by OrganizationProjectsContainer.
 export function ProjectFormSheetContainer(props: ProjectFormSheetContainerProps) {
   const formSheet = useProjectFormSheet({
     onOpenChange: props.onOpenChange,
