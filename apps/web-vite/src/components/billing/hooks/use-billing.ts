@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { TierId } from '../plan-comparison-grid.js';
@@ -47,6 +48,7 @@ export function useBillingCheckout(onPlanSelected?: () => void) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Billing.billingTab');
+  const toasts = useCommonToasts();
 
   return useMutation({
     ...trpc.billing.createCheckoutSession.mutationOptions(),
@@ -54,7 +56,7 @@ export function useBillingCheckout(onPlanSelected?: () => void) {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
       }
-      toast.success('Done.');
+      toast.success(toasts.done());
       queryClient.invalidateQueries(trpc.billing.pathFilter());
       onPlanSelected?.();
     },
@@ -68,6 +70,7 @@ export function useBillingPortal() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Billing.billingTab');
+  const toasts = useCommonToasts();
 
   return useMutation({
     ...trpc.billing.createPortalSession.mutationOptions(),
@@ -75,7 +78,7 @@ export function useBillingPortal() {
       if (data.url) {
         window.location.href = data.url;
       }
-      toast.success('Done.');
+      toast.success(toasts.done());
       queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
     onError() {
@@ -88,6 +91,7 @@ export function useTopUpCheckout() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Billing.topUp');
+  const toasts = useCommonToasts();
 
   const mutation = useMutation({
     ...trpc.billing.createTopUpCheckout.mutationOptions(),
@@ -95,7 +99,7 @@ export function useTopUpCheckout() {
       if (data.sessionUrl) {
         window.location.href = data.sessionUrl;
       }
-      toast.success('Done.');
+      toast.success(toasts.done());
       queryClient.invalidateQueries(trpc.billing.pathFilter());
     },
     onError() {

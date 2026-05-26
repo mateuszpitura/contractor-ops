@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
+import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
@@ -17,12 +18,13 @@ export function useContractBulkActions(count: number): ContractBulkActionsHandle
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const tc = useTranslations('Contracts');
+  const toasts = useCommonToasts();
 
   const bulkTerminateMutation = useResourceMutation(
     trpc.contract.bulkTransition.mutationOptions({
       onError: err => toast.error(err.message),
       onSuccess: () => {
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.contract.pathFilter());
       },
     }),

@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 import { useFlag } from '../../../layout/feature-flag-context.js';
@@ -65,6 +66,7 @@ export function useClassificationDashboardCsvExport(market: 'GB' | 'DE') {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Classification.polish.dashboard');
+  const toasts = useCommonToasts();
 
   const mutation = useMutation(
     trpc.classificationDashboard.exportMarketCsv.mutationOptions({
@@ -76,7 +78,7 @@ export function useClassificationDashboardCsvExport(market: 'GB' | 'DE') {
           anchor.click();
           anchor.remove();
         }
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.classificationDashboard.pathFilter());
       },
       onError: () => {

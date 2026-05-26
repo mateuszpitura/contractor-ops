@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 
+import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
 
@@ -9,12 +10,13 @@ export function useClassificationDisclaimerAck(assessmentId: string, onAcknowled
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const t = useTranslations('Classification');
+  const toasts = useCommonToasts();
 
   const ackMutation = useMutation(
     trpc.classification.acknowledgeDisclaimer.mutationOptions({
       onSuccess: () => {
         onAcknowledged();
-        toast.success('Done.');
+        toast.success(toasts.done());
         queryClient.invalidateQueries(trpc.classification.pathFilter());
       },
       onError: err => {
