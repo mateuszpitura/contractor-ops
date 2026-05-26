@@ -627,7 +627,7 @@ export const contractRouter = router({
       if (contract.status !== 'DRAFT') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Only draft contracts can be deleted. Use status transitions instead.',
+          message: E.CONTRACT_ONLY_DRAFT_CAN_BE_DELETED,
         });
       }
 

@@ -3,6 +3,7 @@ import { fetchPricingPlans, MARKETS } from '@contractor-ops/billing';
 import { getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import { adminProcedure } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -132,7 +133,7 @@ export const billingRouter = router({
       if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.priceId)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Invalid subscription price ID',
+          message: E.BILLING_INVALID_SUBSCRIPTION_PRICE_ID,
         });
       }
 
@@ -144,7 +145,7 @@ export const billingRouter = router({
       if (!org) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Organization not found',
+          message: E.BILLING_ORGANIZATION_NOT_FOUND,
         });
       }
 
@@ -208,7 +209,7 @@ export const billingRouter = router({
       if (!KNOWN_SUBSCRIPTION_PRICE_IDS.has(input.newPriceId)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Invalid subscription price ID',
+          message: E.BILLING_INVALID_SUBSCRIPTION_PRICE_ID,
         });
       }
 
@@ -217,14 +218,14 @@ export const billingRouter = router({
       if (!sub) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'No active subscription found',
+          message: E.BILLING_NO_ACTIVE_SUBSCRIPTION,
         });
       }
 
       if (!sub.stripeSubscriptionItemId) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'Subscription item ID not available',
+          message: E.BILLING_SUBSCRIPTION_ITEM_UNAVAILABLE,
         });
       }
 
@@ -246,7 +247,7 @@ export const billingRouter = router({
     if (!sub) {
       throw new TRPCError({
         code: 'NOT_FOUND',
-        message: 'No active subscription found',
+        message: E.BILLING_NO_ACTIVE_SUBSCRIPTION,
       });
     }
 
@@ -286,7 +287,7 @@ export const billingRouter = router({
       if (!KNOWN_TOPUP_PRICE_IDS.has(input.priceId)) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Invalid top-up price ID',
+          message: E.BILLING_INVALID_TOPUP_PRICE_ID,
         });
       }
 
@@ -295,7 +296,7 @@ export const billingRouter = router({
       if (!sub) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'No active subscription found. Subscribe to a plan first.',
+          message: E.BILLING_NO_SUBSCRIPTION_SUBSCRIBE_FIRST,
         });
       }
 

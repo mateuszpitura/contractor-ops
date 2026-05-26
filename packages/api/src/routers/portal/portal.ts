@@ -392,7 +392,7 @@ export const portalRouter = router({
       if (input.contractorId === ctx.contractorId && input.organizationId === ctx.organizationId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'PORTAL_ALREADY_ACTIVE_ORG',
+          message: E.PORTAL_ALREADY_ACTIVE_ORG,
         });
       }
 
@@ -1464,7 +1464,7 @@ export const portalRouter = router({
       if (assignments.length === 0) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'NO_EQUIPMENT_ASSIGNED',
+          message: E.NO_EQUIPMENT_ASSIGNED,
         });
       }
 
@@ -1482,7 +1482,7 @@ export const portalRouter = router({
       if (existingReturn) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'RETURN_ALREADY_PENDING',
+          message: E.RETURN_ALREADY_PENDING,
         });
       }
 
@@ -1570,14 +1570,14 @@ export const portalRouter = router({
       if (!returnRequest) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'RETURN_REQUEST_NOT_FOUND',
+          message: E.RETURN_REQUEST_NOT_FOUND,
         });
       }
 
       if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'RETURN_CANNOT_CANCEL',
+          message: E.RETURN_CANNOT_CANCEL,
         });
       }
 
@@ -1640,14 +1640,14 @@ export const portalRouter = router({
       if (!returnRequest) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'RETURN_REQUEST_NOT_FOUND',
+          message: E.RETURN_REQUEST_NOT_FOUND,
         });
       }
 
       if (returnRequest.status !== 'SHIPMENT_CREATED' || !returnRequest.shipmentId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'RETURN_LABEL_NOT_AVAILABLE',
+          message: E.RETURN_LABEL_NOT_AVAILABLE,
         });
       }
 
@@ -1661,7 +1661,7 @@ export const portalRouter = router({
       if (!shipment || shipment.carrier !== 'InPost' || !shipment.externalId) {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'SHIPMENT_NO_INPOST_LABEL',
+          message: E.SHIPMENT_NO_INPOST_LABEL,
         });
       }
 

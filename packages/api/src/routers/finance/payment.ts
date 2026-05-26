@@ -498,7 +498,7 @@ export const paymentRouter = router({
         if (hit.kind === 'PENDING') {
           throw new TRPCError({
             code: 'CONFLICT',
-            message: 'Payment run creation in progress',
+            message: E.PAYMENT_RUN_CREATION_IN_PROGRESS,
           });
         }
         if (hit.kind === 'HIT') {
@@ -579,7 +579,7 @@ export const paymentRouter = router({
         ) {
           throw new TRPCError({
             code: 'CONFLICT',
-            message: 'Payment run number collision; retry to allocate a new number.',
+            message: E.PAYMENT_RUN_NUMBER_COLLISION,
           });
         }
         throw err;
@@ -1118,7 +1118,7 @@ export const paymentRouter = router({
       if (run.status !== 'EXPORTED') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
-          message: 'Bank statement can only be imported for exported payment runs',
+          message: E.PAYMENT_BANK_STATEMENT_EXPORTED_ONLY,
         });
       }
 
@@ -1375,7 +1375,7 @@ export const paymentRouter = router({
       if (!item?.invoice) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Payment run item not found',
+          message: E.PAYMENT_RUN_ITEM_NOT_FOUND,
         });
       }
 
@@ -1413,7 +1413,7 @@ export const paymentRouter = router({
       if (!eligibility.eligible) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'Invoice not eligible for Skonto discount',
+          message: E.PAYMENT_INVOICE_NOT_SKONTO_ELIGIBLE,
         });
       }
 
@@ -1423,7 +1423,7 @@ export const paymentRouter = router({
       if (!(skontoTermRecord && effectiveTerm)) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'No Skonto term record found',
+          message: E.PAYMENT_NO_SKONTO_TERM,
         });
       }
 
@@ -1486,7 +1486,7 @@ export const paymentRouter = router({
       if (!run) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Payment run not found',
+          message: E.PAYMENT_RUN_NOT_FOUND,
         });
       }
 

@@ -13,6 +13,7 @@ import {
 } from '@contractor-ops/einvoice';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByExtraRowUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -302,7 +303,7 @@ export const einvoiceRouter = router({
       if (!invoice) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'EINVOICE_INVOICE_NOT_FOUND',
+          message: E.EINVOICE_INVOICE_NOT_FOUND,
         });
       }
 
@@ -342,7 +343,7 @@ export const einvoiceRouter = router({
         if (err instanceof ZugferdLevelUnsupportedForOutput) {
           throw new TRPCError({
             code: 'UNPROCESSABLE_CONTENT',
-            message: 'ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT',
+            message: E.ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT,
           });
         }
         logger.error(
@@ -355,7 +356,7 @@ export const einvoiceRouter = router({
         );
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'ZUGFERD_WRAPPING_FAILED',
+          message: E.ZUGFERD_WRAPPING_FAILED,
         });
       }
 
@@ -522,7 +523,7 @@ export const einvoiceRouter = router({
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
+          message: E.EINVOICE_LIFECYCLE_NOT_FOUND,
         });
       }
 
@@ -599,7 +600,7 @@ export const einvoiceRouter = router({
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'EINVOICE_XML_NOT_FOUND',
+          message: E.EINVOICE_XML_NOT_FOUND,
         });
       }
       const { signedUrl, expiresInSeconds } = await signExistingDownload(lifecycle.xmlKey, 300);
@@ -623,7 +624,7 @@ export const einvoiceRouter = router({
       if (!lifecycle?.validationReportFullKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'EINVOICE_REPORT_NOT_FOUND',
+          message: E.EINVOICE_REPORT_NOT_FOUND,
         });
       }
       const { signedUrl, expiresInSeconds } = await signExistingDownload(
@@ -669,7 +670,7 @@ export const einvoiceRouter = router({
       if (!invoice?.eInvoiceLifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
+          message: E.EINVOICE_LIFECYCLE_NOT_FOUND,
         });
       }
       const lifecycle = invoice.eInvoiceLifecycle;
@@ -678,7 +679,7 @@ export const einvoiceRouter = router({
       if (lifecycle.validationStatus !== 'VALID' && lifecycle.validationStatus !== 'WARNINGS') {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'KOSIT_VALIDATION_FAILED',
+          message: E.KOSIT_VALIDATION_FAILED,
         });
       }
 
@@ -711,7 +712,7 @@ export const einvoiceRouter = router({
       if (!adapter) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
-          message: 'PEPPOL_NOT_CONNECTED',
+          message: E.PEPPOL_NOT_CONNECTED,
         });
       }
 
@@ -747,7 +748,7 @@ export const einvoiceRouter = router({
         if (err instanceof IllegalFsmTransitionError) {
           throw new TRPCError({
             code: 'PRECONDITION_FAILED',
-            message: 'EINVOICE_TRANSMISSION_IN_PROGRESS',
+            message: E.EINVOICE_TRANSMISSION_IN_PROGRESS,
           });
         }
         throw err;
@@ -814,7 +815,7 @@ export const einvoiceRouter = router({
         });
         throw new TRPCError({
           code: 'BAD_GATEWAY',
-          message: 'STORECOVE_TRANSMISSION_FAILED',
+          message: E.STORECOVE_TRANSMISSION_FAILED,
         });
       }
 
@@ -839,7 +840,7 @@ export const einvoiceRouter = router({
         });
         throw new TRPCError({
           code: 'BAD_GATEWAY',
-          message: 'STORECOVE_TRANSMISSION_FAILED',
+          message: E.STORECOVE_TRANSMISSION_FAILED,
         });
       }
 

@@ -64,6 +64,7 @@ export const COMPANY_LOOKUP_FAILED = 'companyLookupFailed';
 export const CONTRACT_NOT_FOUND = 'contractNotFound';
 export const CONTRACT_END_DATE_BEFORE_START = 'contractEndDateBeforeStart';
 export const CONTRACT_INVALID_TRANSITION = 'contractInvalidTransition';
+export const CONTRACT_ONLY_DRAFT_CAN_BE_DELETED = 'contractOnlyDraftCanBeDeleted';
 
 // ─── Invoice ─────────────────────────────────────────────────────
 export const INVOICE_AMOUNT_MISMATCH = 'invoiceAmountMismatch';
@@ -185,6 +186,44 @@ export const R2_UPLOAD_FAILED = 'r2UploadFailed';
 export const DPA_NOT_AVAILABLE = 'dpaNotAvailable';
 export const SCC_NOT_REQUIRED = 'sccNotRequired';
 export const INVALID_TOS_VERSION_FORMAT = 'invalidTosVersionFormat';
+
+// ─── E-Invoice ──────────────────────────────────────────────────
+export const EINVOICE_INVOICE_NOT_FOUND = 'einvoiceInvoiceNotFound';
+export const EINVOICE_LIFECYCLE_NOT_FOUND = 'einvoiceLifecycleNotFound';
+export const EINVOICE_XML_NOT_FOUND = 'einvoiceXmlNotFound';
+export const EINVOICE_REPORT_NOT_FOUND = 'einvoiceReportNotFound';
+export const EINVOICE_TRANSMISSION_IN_PROGRESS = 'einvoiceTransmissionInProgress';
+export const ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT = 'zugferdLevelUnsupportedForOutput';
+export const ZUGFERD_WRAPPING_FAILED = 'zugferdWrappingFailed';
+export const KOSIT_VALIDATION_FAILED = 'kositValidationFailed';
+export const PEPPOL_NOT_CONNECTED = 'peppolNotConnected';
+export const STORECOVE_TRANSMISSION_FAILED = 'storecoveTransmissionFailed';
+
+// ─── Portal (extended) ──────────────────────────────────────────
+export const PORTAL_ALREADY_ACTIVE_ORG = 'portalAlreadyActiveOrg';
+
+// ─── Equipment returns ─────────────────────────────────────────
+export const NO_EQUIPMENT_ASSIGNED = 'noEquipmentAssigned';
+export const RETURN_ALREADY_PENDING = 'returnAlreadyPending';
+export const RETURN_REQUEST_NOT_FOUND = 'returnRequestNotFound';
+export const RETURN_CANNOT_CANCEL = 'returnCannotCancel';
+export const RETURN_LABEL_NOT_AVAILABLE = 'returnLabelNotAvailable';
+export const SHIPMENT_NO_INPOST_LABEL = 'shipmentNoInpostLabel';
+
+// ─── Payment (extended) ─────────────────────────────────────────
+export const PAYMENT_RUN_CREATION_IN_PROGRESS = 'paymentRunCreationInProgress';
+export const PAYMENT_RUN_NUMBER_COLLISION = 'paymentRunNumberCollision';
+export const PAYMENT_BANK_STATEMENT_EXPORTED_ONLY = 'paymentBankStatementExportedOnly';
+export const PAYMENT_INVOICE_NOT_SKONTO_ELIGIBLE = 'paymentInvoiceNotSkontoEligible';
+export const PAYMENT_NO_SKONTO_TERM = 'paymentNoSkontoTerm';
+
+// ─── Billing / Subscriptions ────────────────────────────────────
+export const BILLING_INVALID_SUBSCRIPTION_PRICE_ID = 'billingInvalidSubscriptionPriceId';
+export const BILLING_ORGANIZATION_NOT_FOUND = 'billingOrganizationNotFound';
+export const BILLING_NO_ACTIVE_SUBSCRIPTION = 'billingNoActiveSubscription';
+export const BILLING_SUBSCRIPTION_ITEM_UNAVAILABLE = 'billingSubscriptionItemUnavailable';
+export const BILLING_INVALID_TOPUP_PRICE_ID = 'billingInvalidTopupPriceId';
+export const BILLING_NO_SUBSCRIPTION_SUBSCRIBE_FIRST = 'billingNoSubscriptionSubscribeFirst';
 export const REAUTH_REQUIRED = 'reauthRequired';
 export const FEATURE_FLAG_UNAVAILABLE = 'featureFlagUnavailable';
 
