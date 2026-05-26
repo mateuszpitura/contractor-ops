@@ -14,6 +14,7 @@ import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
+import { formatAmount } from '../../lib/format-currency.js';
 import { formatDate } from '../../lib/format-date.js';
 import type { ContractRow } from './contract-table/columns.js';
 
@@ -54,10 +55,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
 
   const rateDisplay =
     typeof contract.rateValueMinor === 'number'
-      ? new Intl.NumberFormat('pl-PL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(contract.rateValueMinor / 100)
+      ? formatAmount(contract.rateValueMinor, contract.currency, 'pl-PL')
       : null;
 
   const endDate = contract.endDate ? new Date(contract.endDate) : null;
@@ -106,11 +104,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                   label={t('columns.endDate')}
                   value={contract.endDate ? formatDate(contract.endDate) : null}
                 />
-                <DetailItem
-                  label={t('columns.rate')}
-                  value={rateDisplay ? `${rateDisplay} ${contract.currency}` : null}
-                  mono
-                />
+                <DetailItem label={t('columns.rate')} value={rateDisplay} mono />
                 <DetailItem label={t('columns.currency')} value={contract.currency} />
                 <DetailItem
                   label={t('columns.billingCycle')}

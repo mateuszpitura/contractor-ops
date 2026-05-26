@@ -5,10 +5,12 @@
  *   - @/components/time/deviation-flag → ./deviation-flag
  */
 
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Clock } from 'lucide-react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/format-currency.js';
 import { DeviationFlag } from './deviation-flag.js';
 
 interface TimeReconciliation {
@@ -29,12 +31,7 @@ interface ReconciliationCardProps {
 }
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+  return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');
 }
 
 function formatHours(minutes: number): string {
@@ -43,10 +40,7 @@ function formatHours(minutes: number): string {
 }
 
 function formatRate(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+  return formatMinorUnitsLib(minor, null, 'pl-PL');
 }
 
 function getBorderColor(deviationPercent: number, thresholdPercent: number): string {

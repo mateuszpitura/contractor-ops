@@ -20,6 +20,7 @@ import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 import type { EInvoiceComplianceStatus } from './einvoice-compliance-cell.js';
 import { EInvoiceComplianceCell } from './einvoice-compliance-cell.js';
 import { KsefSourceBadge } from './ksef-source-badge.js';
@@ -88,13 +89,6 @@ const matchStatusLabels: Record<string, string> = {
   UNMATCHED: 'unmatched',
   MANUALLY_CONFIRMED: 'manualMatch',
 };
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
 
@@ -210,7 +204,7 @@ export function getColumns(
       header: () => <span className="text-end block">{t('columns.netAmount')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
-          {formatMinorUnits(row.original.subtotalMinor)}
+          {formatMinorUnits(row.original.subtotalMinor, null, 'pl-PL')}
         </span>
       ),
     },
@@ -219,7 +213,7 @@ export function getColumns(
       header: () => <span className="text-end block">{t('columns.grossAmount')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
-          {formatMinorUnits(row.original.totalMinor)}
+          {formatMinorUnits(row.original.totalMinor, null, 'pl-PL')}
         </span>
       ),
     },
@@ -306,7 +300,7 @@ export function getColumns(
         }
         return (
           <span className="font-mono text-sm tabular-nums text-end block text-amber-700 dark:text-amber-400">
-            {formatMinorUnits(amount)}
+            {formatMinorUnits(amount, null, 'pl-PL')}
           </span>
         );
       },

@@ -14,6 +14,7 @@ import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
+import { formatAmount } from '../../lib/format-currency.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
 import { ComplianceHealthBadge } from './compliance-health-badge.js';
 import type { ContractorRow } from './contractor-table/columns.js';
@@ -58,12 +59,7 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
   const rateMinor = typeof custom?.rateValueMinor === 'number' ? custom.rateValueMinor : null;
 
   const rateDisplay =
-    rateMinor === null
-      ? null
-      : new Intl.NumberFormat('pl-PL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(rateMinor / 100);
+    rateMinor === null ? null : formatAmount(rateMinor, contractor.currency, 'pl-PL');
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -101,11 +97,7 @@ export function ContractorSidePanel({ contractor, open, onOpenChange }: Contract
                 />
                 <DetailItem label={tCommon('emailLabel')} value={contractor.email} />
                 <DetailItem label={t('columns.billingModel')} value={billingModel} />
-                <DetailItem
-                  label={t('columns.rate')}
-                  value={rateDisplay ? `${rateDisplay} ${contractor.currency}` : null}
-                  mono
-                />
+                <DetailItem label={t('columns.rate')} value={rateDisplay} mono />
                 <DetailItem label={t('columns.owner')} value={contractor.owner?.name} />
                 <DetailItem label={t('columns.teamProject')} value={contractor.primaryTeam?.name} />
               </div>

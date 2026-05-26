@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
+import { formatAmount as formatAmountLib } from '../../../lib/format-currency.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export type ContractorTabPaymentRow = {
@@ -61,11 +62,7 @@ export function useContractorTabPayments(contractorId: string) {
   const totalPaidCurrency = allItems[0]?.currency ?? 'PLN';
 
   const formatAmount = useCallback(
-    (minor: number, currency: string) =>
-      `${new Intl.NumberFormat('pl-PL', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }).format(minor / 100)} ${currency}`,
+    (minor: number, currency: string) => formatAmountLib(minor, currency, 'pl-PL'),
     [],
   );
 

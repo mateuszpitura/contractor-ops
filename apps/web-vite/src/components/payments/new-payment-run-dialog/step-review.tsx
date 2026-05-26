@@ -22,14 +22,8 @@ import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2 } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 import type { usePaymentRunStepReview } from '../hooks/use-payment-run-step-review.js';
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 interface StepReviewProps {
   selectedInvoiceIds: string[];
@@ -118,7 +112,7 @@ export function StepReview({
                   {curr} &mdash; {group.invoices.length} {t('step2.invoices')}
                 </span>
                 <span className="text-[20px] font-semibold tabular-nums">
-                  {formatMinorUnits(group.totalMinor)} {curr}
+                  {formatMinorUnits(group.totalMinor, null, 'pl-PL')} {curr}
                 </span>
               </div>
               <div className="space-y-1">
@@ -127,7 +121,7 @@ export function StepReview({
                     <span className="font-medium">{inv.invoiceNumber}</span>
                     <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
                     <span className="font-mono tabular-nums">
-                      {formatMinorUnits(inv.amountToPayMinor)}
+                      {formatMinorUnits(inv.amountToPayMinor, null, 'pl-PL')}
                     </span>
                   </div>
                 ))}
@@ -148,7 +142,7 @@ export function StepReview({
         <div className="text-end">
           {currencies.map(curr => (
             <p key={curr} className="text-[20px] font-semibold tabular-nums">
-              {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0)} {curr}
+              {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0, null, 'pl-PL')} {curr}
             </p>
           ))}
         </div>

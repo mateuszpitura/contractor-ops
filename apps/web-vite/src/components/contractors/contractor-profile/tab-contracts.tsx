@@ -22,6 +22,7 @@ import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { formatAmount } from '../../../lib/format-currency.js';
 import { ContractWizardDialogContainer } from '../../contracts/contract-wizard/wizard-dialog-container.js';
 import { DataTableBody } from '../../shared/data-table-body.js';
 import type {
@@ -151,13 +152,9 @@ export function TabContractsView({
           const minor = row.original.rateValueMinor;
           if (typeof minor !== 'number')
             return <span className="text-muted-foreground">&mdash;</span>;
-          const formatted = new Intl.NumberFormat('pl-PL', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(minor / 100);
           return (
             <span className="font-mono text-sm tabular-nums">
-              {formatted} {row.original.currency}
+              {formatAmount(minor, row.original.currency, 'pl-PL')}
             </span>
           );
         },

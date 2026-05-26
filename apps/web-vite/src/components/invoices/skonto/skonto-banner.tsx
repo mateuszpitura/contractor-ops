@@ -4,18 +4,14 @@
  *   - Data layer → `hooks/use-skonto-banner.ts` + `skonto-banner-container.tsx`
  */
 
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2 } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 function formatEUR(minorAmount: number): string {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minorAmount / 100);
+  return formatMinorAsCurrency(minorAmount, 'EUR', 'de-DE');
 }
 
 interface SkontoBannerData {

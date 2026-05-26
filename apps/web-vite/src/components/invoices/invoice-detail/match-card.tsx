@@ -33,6 +33,7 @@ import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import { formatAmount } from '../../../lib/format-currency.js';
 import { canViewSensitivePii, maskTaxId } from '../../../lib/mask-pii.js';
 import type { useInvoiceManualMatch } from '../hooks/use-invoice-manual-match.js';
 
@@ -79,17 +80,6 @@ type MatchCardProps = {
     matchResults: MatchResult[];
   };
 };
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 // ---------------------------------------------------------------------------
 // Confidence indicator config
@@ -216,13 +206,13 @@ export function MatchCard({ invoice }: MatchCardProps) {
             <div className="flex justify-between text-[13px]">
               <span className="text-muted-foreground">{t('match.expected')}</span>
               <span className="font-mono">
-                {formatMinorUnits(latestResult.expectedAmountMinor)} {invoice.currency}
+                {formatAmount(latestResult.expectedAmountMinor, invoice.currency, 'pl-PL')}
               </span>
             </div>
             <div className="flex justify-between text-[13px]">
               <span className="text-muted-foreground">{t('match.actual')}</span>
               <span className="font-mono">
-                {formatMinorUnits(invoice.totalMinor)} {invoice.currency}
+                {formatAmount(invoice.totalMinor, invoice.currency, 'pl-PL')}
               </span>
             </div>
             <div className="flex justify-between text-[13px]">

@@ -100,16 +100,30 @@ Inline `Intl.NumberFormat(...).format(minor / 100)` (verified hits):
 
 Plus `apps/web-vite/src/components/portal/invoice-submit-form.tsx:274,278,360,595` — raw `/ 100` math without `Intl.NumberFormat` (input pre-fill, label string); needs a non-formatting `minorToDecimal` companion helper or stays inline if it's domain conversion, not display formatting.
 
-**Existing partial home:** `packages/shared/src/money.ts` — already exports `formatMoney`, `minorToDecimalStr`.
+**Existing partial home:** `packages/shared/src/money.ts` — already exports `formatMoney`, `minorToDecimalStr`. The web-vite-only file `apps/web-vite/src/lib/format-currency.ts` already exports a non-style-currency variant (`formatMinorUnits(minor, currency?, locale)` and `formatAmount(minor, currency, locale)`) consumed by 8 web-vite components.
 
-**Extraction target:** extend `packages/shared/src/money.ts` with:
-- `formatMinorUnits(minor, currency, locale)` — display formatter wrapping `Intl.NumberFormat`.
-- `formatPriceMinor(...)` — wrapper used by `apps/landing` `pricing-types.ts` and `hero.tsx`.
+**Sub-grouping discovered during Step 2 (the inline sites fall into three groups, not one)**:
 
-Then shrink `apps/web-vite/src/lib/format-currency.ts` to a re-export of the shared helpers, and migrate every inline `Intl.NumberFormat(...).format(... / 100)` to call them.
+- **Group X — exact match (7 sites):** `Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minor / 100)`. Fits a single shared helper exactly.
+- **Group Y — varying fraction digits (9 sites):** `style: 'currency'` with `0/2`, `0/0`, or default fraction digits per site. Per-site intent varies; abstracting forces an options-bag that hides intent.
+- **Group Z — manual " currency" suffix (17 sites):** no `style: 'currency'`; format with 2/2 fraction digits then append the ISO code as a string. These are LOCAL re-implementations of the helper already at `apps/web-vite/src/lib/format-currency.ts:7–25` — the DRY win is adopting the existing lib helper, not creating new shared code.
 
-**Risk:** MEDIUM — silent locale drift today (`pl-PL` hard-coded in one place, `undefined` locale in another); the extraction must preserve the per-site locale **as it exists today**, not unify to a single default. Where the call has no explicit locale, pass `undefined` through to `Intl.NumberFormat`.
-**Score:** `EXTRACTED` (planned as Step 2).
+**Extraction targets (revised)**:
+
+- Add `formatMinorAsCurrency(amount, currency, locale?, fractionDigits = 2)` to `packages/shared/src/money.ts` and export from the barrel — wraps the Group-X pattern (`Intl.NumberFormat({ style: 'currency', ... })`).
+- Migrate **Group X** (7 sites) to `formatMinorAsCurrency`.
+- Migrate **Group Z** (17 sites) to `formatMinorUnits`/`formatAmount` from `apps/web-vite/src/lib/format-currency.ts`. Local helpers are deleted (or kept as thin one-line wrappers when call sites are dense in the same file). Each migrated call passes the original locale literal explicitly (lib default is `'en'`, but every Group-Z site hardcodes `'pl-PL'`).
+- **Group Y** stays inline — flagged as `SKIPPED (per-site options too varied to abstract without hiding intent)`. Captures 6 portal/* files, 2 intake/* files, `apps/landing/src/components/hero.tsx`, `apps/landing/src/lib/pricing-types.ts`, and `apps/web-vite/src/components/portal/invoice-submit-form.tsx`.
+- `apps/web-vite/src/components/time/reconciliation-spot-check.tsx` (Group Z but uses `Intl.NumberFormat(undefined, ...)`) is SKIPPED — adopting the lib helper would force the locale to `'en'`, changing behaviour.
+
+**Risk:** MEDIUM — silent locale drift today (`pl-PL` hard-coded in many sites, `undefined` locale in others). The extraction preserves the per-site locale by passing it explicitly to the helper.
+
+**Score:**
+- Group X (7 sites) — `EXTRACTED` ✓
+- Group Z (17 sites) — `EXTRACTED` (adopts existing lib helper) ✓
+- Group Y + reconciliation-spot-check — `SKIPPED — per-site options vary / `undefined` locale incompatible`
+
+A new dep `@contractor-ops/shared` was added to `apps/web-vite/package.json` to support Group X. The lockfile is updated.
 
 ---
 
@@ -331,7 +345,9 @@ Plus a Python script (out of TS scope, ignored).
 | ID | Cluster | Score | Step |
 |----|---------|-------|------|
 | A | Cursor pagination | EXTRACTED | 1 |
-| B | Money formatters | EXTRACTED | 2 |
+| B | Money formatters — Group X (style:currency, 2/2) | EXTRACTED — 7 sites → shared `formatMinorAsCurrency` | 2 |
+| B | Money formatters — Group Z (manual suffix) | EXTRACTED — 17 sites → existing `apps/web-vite/src/lib/format-currency.ts` | 2 |
+| B (sub) | Money formatters — Group Y (varying fraction digits) | SKIPPED — per-site options vary; abstraction would hide intent | — |
 | C | Date/time formatters | EXTRACTED | 3 |
 | D | Adopt `useResourceMutation` | EXTRACTED | 4 |
 | E | `findOrThrow` helper | EXTRACTED | 5 |

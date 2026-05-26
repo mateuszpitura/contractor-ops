@@ -9,6 +9,7 @@ import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import { formatAmount } from '../../../lib/format-currency.js';
 import { ComplianceHealthBadge } from '../compliance-health-badge.js';
 
 // ---------------------------------------------------------------------------
@@ -171,14 +172,9 @@ export function getColumns(t: TranslateFunction): ColumnDef<ContractorRow>[] {
         if (typeof minor !== 'number')
           return <span className="text-muted-foreground">&mdash;</span>;
 
-        const formatted = new Intl.NumberFormat('pl-PL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(minor / 100);
-
         return (
           <span className="font-mono text-sm tabular-nums">
-            {formatted} {row.original.currency}
+            {formatAmount(minor, row.original.currency, 'pl-PL')}
           </span>
         );
       },

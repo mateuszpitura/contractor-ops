@@ -18,6 +18,7 @@
  * the response.
  */
 
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
@@ -60,12 +61,7 @@ interface LateInterestCardProps {
 }
 
 function formatGBP(minorAmount: number, locale: string = 'en-GB'): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'GBP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minorAmount / 100);
+  return formatMinorAsCurrency(minorAmount, 'GBP', locale);
 }
 
 export function LateInterestSkeleton() {

@@ -1,3 +1,4 @@
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { OverdueInvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -12,12 +13,7 @@ import type { OverdueRow, useOverdueInvoicesReport } from './hooks/use-overdue-i
 import { ReportTable } from './report-table.js';
 
 function formatCurrency(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+  return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');
 }
 
 interface OverdueInvoicesReportProps {

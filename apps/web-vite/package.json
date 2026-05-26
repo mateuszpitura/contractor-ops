@@ -29,6 +29,7 @@
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
+    "@contractor-ops/shared": "workspace:*",
     "@contractor-ops/ui": "workspace:*",
     "@contractor-ops/validators": "workspace:*",
     "@dnd-kit/core": "6.3.1",

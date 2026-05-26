@@ -6,6 +6,7 @@ export {
   addMoney,
   allocateMoney,
   currencyOf,
+  formatMinorAsCurrency,
   formatMoney,
   fromMinor,
   minorToDecimalStr,

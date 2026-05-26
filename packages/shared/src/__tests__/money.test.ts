@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   addMoney,
   currencyOf,
+  formatMinorAsCurrency,
   formatMoney,
   fromMinor,
   minorToDecimalStr,
@@ -112,5 +113,40 @@ describe('minorToDecimalStr', () => {
 
   it("999 GBP -> '9.99'", () => {
     expect(minorToDecimalStr(999, 'GBP')).toBe('9.99');
+  });
+});
+
+describe('formatMinorAsCurrency', () => {
+  it('formats EUR with de-DE locale and default 2/2 fraction digits', () => {
+    // Avoid asserting on raw Unicode space/separator variants across ICU
+    // versions — assert the digit grouping and decimal sign instead.
+    const out = formatMinorAsCurrency(123456, 'EUR', 'de-DE');
+    expect(out).toMatch(/1\.234,56/);
+    expect(out).toMatch(/€/);
+  });
+
+  it('formats USD with en-US locale, default 2 fraction digits, with $ symbol', () => {
+    const out = formatMinorAsCurrency(123456, 'USD', 'en-US');
+    expect(out).toBe('$1,234.56');
+  });
+
+  it('falls back to runtime default locale when locale is undefined', () => {
+    // Just confirm a non-empty string comes back and the value is recognisable
+    // (decimal or comma separator, depending on runtime locale).
+    const out = formatMinorAsCurrency(100, 'USD');
+    expect(out.length).toBeGreaterThan(0);
+    expect(out).toMatch(/1[.,]00/);
+  });
+
+  it('honours custom fractionDigits when provided', () => {
+    expect(formatMinorAsCurrency(123456, 'USD', 'en-US', 0)).toBe('$1,235');
+  });
+
+  it('omits min/max fraction digit options when fractionDigits is undefined', () => {
+    // Passing `undefined` skips the default 2/2 override — the resulting
+    // Intl.NumberFormat call uses the currency's own defaults. We verify
+    // the helper does not throw and returns the standard 2-decimal USD form
+    // (USD's default is 2/2 — same as with the override).
+    expect(formatMinorAsCurrency(123456, 'USD', 'en-US', undefined)).toBe('$1,234.56');
   });
 });

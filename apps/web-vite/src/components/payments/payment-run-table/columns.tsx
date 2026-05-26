@@ -9,6 +9,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle2, Download, MoreHorizontal, XCircle } from 'lucide-react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 import { PaymentRunBadge } from '../payment-run-badge.js';
 
 export type PaymentRunRow = {
@@ -23,14 +24,6 @@ export type PaymentRunRow = {
   exportedAt: string | null;
   _count?: { items: number };
 };
-
-function formatMinorUnits(minor: number, currency?: string | null): string {
-  const formatted = new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-  return currency ? `${formatted} ${currency}` : formatted;
-}
 
 type DateFormatter = (value: Date | string | null | undefined) => string;
 type DateTimeFormatter = (value: Date | string | null | undefined) => string;
@@ -121,7 +114,7 @@ export function getColumns(
       header: () => <span className="text-end block">{t('columns.total')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
-          {formatMinorUnits(row.original.totalMinor, row.original.currency)}
+          {formatMinorUnits(row.original.totalMinor, row.original.currency, 'pl-PL')}
         </span>
       ),
     },

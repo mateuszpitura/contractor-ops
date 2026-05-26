@@ -10,13 +10,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 
 interface StepConfirmationProps {
   runNumber: string;
@@ -86,7 +80,7 @@ export function StepConfirmation({
           {invoiceCount} {t('step3.invoices')}
         </p>
         <p className="text-sm text-muted-foreground">
-          {t('step3.total')}: {formatMinorUnits(totalMinor)} {currency}
+          {t('step3.total')}: {formatMinorUnits(totalMinor, null, 'pl-PL')} {currency}
         </p>
         <p className="text-sm text-muted-foreground">
           {t('step3.format')}: {formatLabel}

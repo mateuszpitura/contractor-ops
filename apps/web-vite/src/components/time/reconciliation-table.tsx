@@ -20,6 +20,7 @@ import { ExternalLink } from 'lucide-react';
 
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/format-currency.js';
 import { DeviationFlag } from './deviation-flag.js';
 
 interface ReconciliationItem {
@@ -59,10 +60,7 @@ export interface ReconciliationTableViewProps {
 }
 
 function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+  return formatMinorUnitsLib(minor, null, 'pl-PL');
 }
 
 function formatHours(minutes: number): string {

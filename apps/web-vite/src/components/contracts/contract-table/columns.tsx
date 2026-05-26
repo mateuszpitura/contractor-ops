@@ -13,6 +13,7 @@ import { differenceInDays, isPast } from 'date-fns';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { enumKey } from '../../../lib/enum-key.js';
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 import { formatDate as coreFormatDate } from '../../../lib/format-date.js';
 
 // ---------------------------------------------------------------------------
@@ -198,12 +199,11 @@ export function getColumns(
         if (typeof minor !== 'number')
           return <span className="text-muted-foreground">&mdash;</span>;
 
-        const formatted = new Intl.NumberFormat('pl-PL', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(minor / 100);
-
-        return <span className="font-mono text-sm tabular-nums">{formatted}</span>;
+        return (
+          <span className="font-mono text-sm tabular-nums">
+            {formatMinorUnits(minor, null, 'pl-PL')}
+          </span>
+        );
       },
     },
 

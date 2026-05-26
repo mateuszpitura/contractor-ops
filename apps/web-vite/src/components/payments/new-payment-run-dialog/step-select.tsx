@@ -32,6 +32,7 @@ import { useId } from 'react';
 
 import type { TranslateFn } from '../../../i18n/useTranslations.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { formatAmount } from '../../../lib/format-currency.js';
 import type { ReadyInvoiceRow } from '../invoice-selection-table/columns.js';
 import { InvoiceSelectionDataTable } from '../invoice-selection-table/data-table.js';
 
@@ -158,11 +159,7 @@ export function StepSelect({
               ? footer.selectedInvoiceCountsByCurrency.map(({ currency, count, totalMinor }) => (
                   <span key={currency} className="block">
                     {count} {t('step1.invoicesSelected')} &mdash;{' '}
-                    {new Intl.NumberFormat('pl-PL', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }).format(totalMinor / 100)}{' '}
-                    {currency}
+                    {formatAmount(totalMinor, currency, 'pl-PL')}
                   </span>
                 ))
               : t('step1.noSelection')}

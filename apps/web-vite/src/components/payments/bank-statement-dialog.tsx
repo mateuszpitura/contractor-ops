@@ -20,6 +20,7 @@ import { AlertCircle, Loader2, Upload } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
 
 import type { TranslateFn } from '../../i18n/useTranslations.js';
+import { formatMinorUnits } from '../../lib/format-currency.js';
 import type { BankStatementMatchResult } from './hooks/use-bank-statement-import.js';
 
 interface BankStatementDialogShellProps {
@@ -185,10 +186,7 @@ export function BankStatementResultsStep({
                   ) : null}
                 </TableCell>
                 <TableCell className="font-mono text-xs tabular-nums">
-                  {new Intl.NumberFormat('pl-PL', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  }).format(match.amountMinor / 100)}
+                  {formatMinorUnits(match.amountMinor, null, 'pl-PL')}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">
                   ****{match.iban.slice(-4)}

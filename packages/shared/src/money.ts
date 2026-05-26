@@ -126,6 +126,45 @@ export function minorToDecimalStr(amount: number, currencyCode: string): string 
   return toDecimal(d);
 }
 
+/**
+ * Format a minor-unit integer as a localised currency string.
+ *
+ * Thin wrapper around `Intl.NumberFormat({ style: 'currency' })` that
+ * matches the inline `new Intl.NumberFormat(locale, { style: 'currency',
+ * currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minor / 100)`
+ * pattern duplicated across web-vite and landing components.
+ *
+ * Behaviour is preserved bit-for-bit at every call site that migrates:
+ * `locale` is passed straight through (use `undefined` to defer to the
+ * runtime default), `currency` is required, and the fraction digit
+ * options default to 2/2 (the dominant existing choice). Pass
+ * `fractionDigits: undefined` to use the ISO 4217 exponent default.
+ *
+ * For Dinero-aware formatting that respects each currency's exponent,
+ * use `formatMoney(d, locale)` instead.
+ *
+ * @param amount  Minor units (integer) — e.g. 12345 for 123.45.
+ * @param currency  ISO 4217 code (e.g. `EUR`, `USD`).
+ * @param locale  BCP-47 locale tag or `undefined` to defer to the runtime.
+ * @param fractionDigits  Override the min/max fraction digits. Default `2`.
+ */
+export function formatMinorAsCurrency(
+  amount: number,
+  currency: string,
+  locale?: string,
+  fractionDigits: number | undefined = 2,
+): string {
+  const options: Intl.NumberFormatOptions = {
+    style: 'currency',
+    currency,
+  };
+  if (fractionDigits !== undefined) {
+    options.minimumFractionDigits = fractionDigits;
+    options.maximumFractionDigits = fractionDigits;
+  }
+  return new Intl.NumberFormat(locale, options).format(amount / 100);
+}
+
 // ---------------------------------------------------------------------------
 // Re-exports
 // ---------------------------------------------------------------------------

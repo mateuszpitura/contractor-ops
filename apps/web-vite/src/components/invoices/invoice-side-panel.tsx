@@ -14,6 +14,7 @@ import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
+import { formatMinorUnits } from '../../lib/format-currency.js';
 import { formatDate } from '../../lib/format-date.js';
 import type { InvoiceRow } from './invoice-table/columns.js';
 
@@ -38,13 +39,6 @@ const matchStatusConfig: Record<string, { dotClass: string; labelKey: string }> 
   UNMATCHED: { dotClass: 'bg-muted-foreground', labelKey: 'unmatched' },
   MANUALLY_CONFIRMED: { dotClass: 'bg-blue-500', labelKey: 'manualMatch' },
 };
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 const NON_OVERDUE_STATUSES = new Set(['PAID', 'VOID']);
 
@@ -98,10 +92,14 @@ export function InvoiceSidePanel({ invoice, open, onOpenChange }: InvoiceSidePan
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <DetailItem
                   label={ts('net')}
-                  value={formatMinorUnits(invoice.subtotalMinor)}
+                  value={formatMinorUnits(invoice.subtotalMinor, null, 'pl-PL')}
                   mono
                 />
-                <DetailItem label={ts('gross')} value={formatMinorUnits(invoice.totalMinor)} mono />
+                <DetailItem
+                  label={ts('gross')}
+                  value={formatMinorUnits(invoice.totalMinor, null, 'pl-PL')}
+                  mono
+                />
                 <DetailItem label={t('columns.currency')} value={invoice.currency} />
               </div>
             </div>

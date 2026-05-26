@@ -7,6 +7,7 @@
  *   - @/lib/utils → ../../../lib/utils
  */
 
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 
@@ -15,12 +16,7 @@ import { cn } from '../../../lib/utils.js';
 import type { useSkontoApply } from '../hooks/use-skonto-apply.js';
 
 function formatEUR(minorAmount: number): string {
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minorAmount / 100);
+  return formatMinorAsCurrency(minorAmount, 'EUR', 'de-DE');
 }
 
 interface SkontoApplyCheckboxProps {

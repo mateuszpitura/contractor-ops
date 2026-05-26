@@ -9,6 +9,7 @@ import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
+import { formatMinorUnits } from '../../../lib/format-currency.js';
 
 export type ReadyInvoiceRow = {
   id: string;
@@ -34,13 +35,6 @@ export type ReadyInvoiceRow = {
   } | null;
   _inRunNumber?: string;
 };
-
-function formatMinorUnits(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
-}
 
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
@@ -122,7 +116,7 @@ export function getColumns(
       header: () => <span className="text-end block">{t('selection.amount')}</span>,
       cell: ({ row }) => (
         <span className="font-mono text-sm tabular-nums text-end block">
-          {formatMinorUnits(row.original.amountToPayMinor)}
+          {formatMinorUnits(row.original.amountToPayMinor, null, 'pl-PL')}
         </span>
       ),
     },

@@ -1,3 +1,4 @@
+import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { SectionLabel, SpendReportIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Users } from 'lucide-react';
@@ -11,12 +12,7 @@ import { ReportChart } from './report-chart.js';
 import { ReportTable } from './report-table.js';
 
 function formatCurrency(minor: number): string {
-  return new Intl.NumberFormat('pl-PL', {
-    style: 'currency',
-    currency: 'PLN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(minor / 100);
+  return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');
 }
 
 interface SpendTeamReportProps {
