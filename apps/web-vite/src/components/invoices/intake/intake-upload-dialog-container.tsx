@@ -16,11 +16,23 @@ export function IntakeUploadDialogContainer({
 }: IntakeUploadDialogContainerProps) {
   const upload = useIntakeUpload(onOpenChange);
 
-  const body = upload.localError ? (
-    <IntakeUploadErrorBlock localError={upload.localError} onReset={upload.handleReset} />
-  ) : (
-    <IntakeUploadDropzone upload={upload} />
-  );
+  if (upload.localError) {
+    return (
+      <IntakeUploadDialog
+        open={open}
+        upload={upload}
+        body={
+          <IntakeUploadErrorBlock localError={upload.localError} onReset={upload.handleReset} />
+        }
+      />
+    );
+  }
 
-  return <IntakeUploadDialog open={open} upload={upload} body={body} />;
+  return (
+    <IntakeUploadDialog
+      open={open}
+      upload={upload}
+      body={<IntakeUploadDropzone upload={upload} />}
+    />
+  );
 }

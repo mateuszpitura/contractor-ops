@@ -7,6 +7,10 @@ type SigningProgressBarContainerProps = {
   envelope: Parameters<typeof SigningProgressBar>[0]['envelope'];
 };
 
+// Decision: composes 3 sibling views (progress bar + audit trail + void dialog) and
+// owns the dialog open/close state for both audit and void flows. The hook returns
+// imperative handlers, not a variant flag, so there is no isLoading/isError branch
+// to lift; the value-add of this container is the multi-child composition.
 export function SigningProgressBarContainer({ envelope }: SigningProgressBarContainerProps) {
   const panel = useSigningProgressBarPanel(envelope.id);
 

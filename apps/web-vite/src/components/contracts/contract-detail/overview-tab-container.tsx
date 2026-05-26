@@ -14,22 +14,34 @@ export function OverviewTabContainer({ contract }: OverviewTabContainerProps) {
   const reminderDaysBefore = extractReminderDaysBefore(contract.metadataJson);
   const reminders = useExpiryRemindersEditor(contract.id, reminderDaysBefore);
 
-  const remindersEditor = reminders.editing ? (
-    <ExpiryRemindersEditing
-      remindersText={reminders.reminders}
-      setReminders={reminders.setReminders}
-      handleSave={reminders.handleSave}
-      handleCancel={reminders.handleCancel}
-      isPending={reminders.isPending}
-    />
-  ) : (
-    <ExpiryRemindersDisplay
-      currentReminders={reminderDaysBefore}
-      onStartEditing={reminders.startEditing}
-    />
-  );
+  if (reminders.editing) {
+    return (
+      <OverviewTab
+        contract={contract}
+        reminders={reminders}
+        remindersEditor={
+          <ExpiryRemindersEditing
+            remindersText={reminders.reminders}
+            setReminders={reminders.setReminders}
+            handleSave={reminders.handleSave}
+            handleCancel={reminders.handleCancel}
+            isPending={reminders.isPending}
+          />
+        }
+      />
+    );
+  }
 
   return (
-    <OverviewTab contract={contract} reminders={reminders} remindersEditor={remindersEditor} />
+    <OverviewTab
+      contract={contract}
+      reminders={reminders}
+      remindersEditor={
+        <ExpiryRemindersDisplay
+          currentReminders={reminderDaysBefore}
+          onStartEditing={reminders.startEditing}
+        />
+      }
+    />
   );
 }
