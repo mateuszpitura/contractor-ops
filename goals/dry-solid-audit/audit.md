@@ -247,7 +247,13 @@ Tenant scoping continues to come from `ctx.db` (callers pass `{ where: { id, org
 2. **Skips** the `TRPC_TO_HTTP` relocation — there is no duplication to fix. Marked `SKIPPED (no duplication found — single source already in apps/public-api)` within the audit for that sub-task.
 
 **Risk:** LOW — error mapping is pure data; the helper is a `Record<ServiceCode, TRPCError['code']>` lookup with a fallback.
-**Score:** `EXTRACTED` (service-error mapper, Step 6) + `SKIPPED` (TRPC_TO_HTTP relocation, no duplication).
+**Score (revised during Step 6):** `SKIPPED` — closer inspection during execution showed:
+
+- `mapIntakeErrorToTrpc` is the ONLY `switch (err.code) → TRPCError` mapper in `packages/api`. The 2 inner switches (intake-service vs einvoice-parser codes) sit inside the same function in the same file. That is not cross-file duplication — it's two related lookups in one mapper, and the codes themselves are domain-specific (intake-only). Extracting them to a generic `mapServiceError` would force a `Record<string, TRPCErrorCode>` lookup table per caller, which is essentially the same data with one extra layer of indirection.
+- `jira-issue-sync.ts` and `jira-worklog-sync.ts` use ad-hoc `throw new TRPCError({...})` per branch with bespoke message strings — they do not share a switch-based mapping with `invoice-intake.ts`.
+- `TRPC_TO_HTTP` confirmed as single-source in `apps/public-api/src/lib/error-handler.ts`. `apps/api` does NOT re-implement the mapping (it routes errors through `@trpc/server` directly).
+
+Per facts.md anti-goals (no abstraction without 2+ real call sites), the cluster is `SKIPPED`. A follow-up may revisit if a second service starts mapping similar string-code errors to `TRPCError`.
 
 ---
 
@@ -358,8 +364,8 @@ Plus a Python script (out of TS scope, ignored).
 | C | Date/time formatters | SKIPPED — per-site Intl patterns vary; no 2+ site logic overlap | — |
 | D | Adopt `useResourceMutation` | EXTRACTED — 21 mutations migrated, 4 SKIPPED (toast-option `{description}` or multi-side-effect onSuccess/onError) | 4 |
 | E | `findOrThrow` helper | EXTRACTED — 50 sites migrated across 13 routers; ~15 SKIPPED (combined null check, dynamic message, code ≠ NOT_FOUND, findUniqueOrThrow pattern, or `return null` branch) | 5 |
-| F | Service-error mapper | EXTRACTED | 6 |
-| F (sub) | `TRPC_TO_HTTP` relocation | SKIPPED — no duplication today | — |
+| F | Service-error mapper | SKIPPED — no cross-file duplication; `mapIntakeErrorToTrpc` already single source for the intake domain. jira-sync services use ad-hoc TRPCError throws, not a shared mapping table. | — |
+| F (sub) | `TRPC_TO_HTTP` relocation | SKIPPED — single source in `apps/public-api/src/lib/error-handler.ts`; `apps/api` does not re-implement it | — |
 | G | `softDeleteWithAudit` | EXTRACTED (per-site, bespoke-ordering sites = SKIPPED) | 7 |
 | H | `QueryStateView` (2 sites) | EXTRACTED | 8 |
 | H (rest) | 18 more `RefreshCw` containers | DEFERRED — out of PR scope | — |
