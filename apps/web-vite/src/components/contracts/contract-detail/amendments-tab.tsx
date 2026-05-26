@@ -1,4 +1,13 @@
 import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
+import {
+  Timeline,
+  TimelineContent,
+  TimelineHeader,
+  TimelineIndicator,
+  TimelineItem,
+  TimelineSeparator,
+  TimelineTitle,
+} from '@contractor-ops/ui/components/reui/timeline';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
@@ -136,65 +145,50 @@ export function AddAmendmentDialog({
   );
 }
 
-function TimelineNode({
-  amendment,
-  isFirst,
-  isLast,
-}: {
-  amendment: Amendment;
-  isFirst: boolean;
-  isLast: boolean;
-}) {
+function TimelineNode({ amendment, step }: { amendment: Amendment; step: number }) {
   const t = useTranslations('ContractDetail.amendments');
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="relative flex gap-4">
-      <div className="flex flex-col items-center">
-        <div
-          className={`shrink-0 rounded-full ${
-            isFirst ? 'size-3 bg-primary' : 'size-2 bg-muted-foreground/40'
-          }`}
-        />
-        {!isLast && <div className="mt-1 w-0.5 flex-1 bg-border" />}
-      </div>
-
-      <div className="min-w-0 flex-1 pb-6">
-        <button
-          type="button"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-2 text-start">
-          {expanded ? (
-            <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-          )}
-          <div>
-            <p className="text-sm font-medium">
-              {amendment.title}
-              <span className="ms-2 text-xs text-muted-foreground">
-                {amendment.amendmentNumber}
-              </span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t('effective', {
-                date: formatDate(amendment.effectiveDate),
-              })}
-            </p>
-          </div>
-        </button>
+    <TimelineItem step={step} className="group/timeline-item flex gap-4 pb-6">
+      <TimelineIndicator className="size-3 bg-primary group-data-[state=inactive]/timeline-item:bg-muted-foreground/40" />
+      <TimelineSeparator className="bg-border" />
+      <div className="min-w-0 flex-1">
+        <TimelineHeader>
+          <button
+            type="button"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-2 text-start">
+            {expanded ? (
+              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+            )}
+            <div>
+              <TimelineTitle className="text-sm font-medium">
+                {amendment.title}
+                <span className="ms-2 text-xs text-muted-foreground">
+                  {amendment.amendmentNumber}
+                </span>
+              </TimelineTitle>
+              <p className="text-xs text-muted-foreground">
+                {t('effective', { date: formatDate(amendment.effectiveDate) })}
+              </p>
+            </div>
+          </button>
+        </TimelineHeader>
 
         {!!expanded && (
-          <div className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
+          <TimelineContent className="mt-3 ms-5 space-y-2 rounded-md border bg-muted/50 p-3">
             {!!amendment.description && <p className="text-sm">{amendment.description}</p>}
             <p className="text-xs text-muted-foreground">
               {t('created', { date: formatDate(amendment.createdAt) })}
             </p>
-          </div>
+          </TimelineContent>
         )}
       </div>
-    </div>
+    </TimelineItem>
   );
 }
 
@@ -257,22 +251,20 @@ export function AmendmentsTabTimeline({
   return (
     <div className="space-y-6">
       <AmendmentsTabHeader openDialog={tab.openDialog} />
-      <div className="ms-1">
+      <Timeline orientation="vertical" value={amendments.length} className="ms-1">
         {amendments.map((amendment, i) => (
-          <TimelineNode key={amendment.id} amendment={amendment} isFirst={i === 0} isLast={false} />
+          <TimelineNode key={amendment.id} amendment={amendment} step={i + 1} />
         ))}
-        <div className="relative flex gap-4">
-          <div className="flex flex-col items-center">
-            <div className="size-2 shrink-0 rounded-full bg-muted-foreground/30" />
-          </div>
+        <TimelineItem step={amendments.length + 1} className="flex gap-4">
+          <TimelineIndicator className="size-2 bg-muted-foreground/30" />
           <div className="min-w-0 flex-1 pb-2">
             <p className="text-sm text-muted-foreground">{t('originalContract')}</p>
             {!!contract.startDate && (
               <p className="text-xs text-muted-foreground/70">{formatDate(contract.startDate)}</p>
             )}
           </div>
-        </div>
-      </div>
+        </TimelineItem>
+      </Timeline>
     </div>
   );
 }

@@ -7,14 +7,6 @@ import {
 } from './classification-engine/classification-engine-panel.js';
 import { useAdminClassificationEngine } from './hooks/use-admin-classification-engine.js';
 
-/**
- * Decision: composition + variant pick.
- *
- * Composes four sibling sections (header, two status cards, optional
- * override banner, disclaimer registry table) and gates the override
- * banner on `isOverridden`. View files own no internal layout-level
- * branching.
- */
 export function AdminClassificationEngineContainer() {
   const { flagEnabled, pendingCount, totalCount, isOverridden, rows } =
     useAdminClassificationEngine();

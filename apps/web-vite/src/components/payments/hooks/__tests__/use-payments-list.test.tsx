@@ -22,7 +22,7 @@ const trpcProxy = createTRPCProxy();
 
 const onOpenSidePanel = vi.fn();
 
-function mockHandlers(items: Array<Record<string, unknown>> = [], nextCursor?: string) {
+function mockHandlers(items: Record<string, unknown>[] = [], nextCursor?: string) {
   setTRPCMock({
     'payment.list': () => ({ items, nextCursor }),
     'payment.activityDates': () => [],

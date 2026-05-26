@@ -30,7 +30,7 @@ function buildSignersFromParties(parties: ContractParty[]): Signer[] {
 }
 
 export function useSendForSignatureDialog(
-  open: boolean,
+  _open: boolean,
   onOpenChange: (open: boolean) => void,
   contractId: string | undefined,
   documentId: string,

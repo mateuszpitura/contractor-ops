@@ -33,7 +33,6 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { FileText, GripVertical, Loader2, Plus, Send } from 'lucide-react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -70,14 +69,7 @@ function SortableSignerRow({ signer, index: _index }: { signer: Signer; index: n
   const initials = getAvatarInitials(signer.name, signer.email);
 
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-      }}
-      className="flex items-center gap-3 rounded-lg border bg-card p-3">
+    <div ref={setNodeRef} className="flex items-center gap-3 rounded-lg border bg-card p-3">
       <button
         type="button"
         className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground"

@@ -1,0 +1,118 @@
+/**
+ * Approval queue actions hook. Step 11 codemod port from
+ * apps/web/src/hooks/use-approval-actions.ts:
+ *   - `@/trpc/init`  → `../providers/trpc-provider.js#useTRPC`
+ *
+ * Otherwise unchanged.
+ */
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { toast } from 'sonner';
+
+import { useTRPC } from '../providers/trpc-provider.js';
+
+export function useApprovalActions(
+  stepId: string,
+  onSuccess: () => void,
+): {
+  approve: () => void;
+  reject: (comment: string) => void;
+  delegate: (userId: string, comment: string) => void;
+  requestClarification: (comment: string) => void;
+  isPending: boolean;
+} {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const invalidate = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: [['approval', 'listPending']] });
+  }, [queryClient]);
+
+  const approveMutation = useMutation(
+    trpc.approval.approve.mutationOptions({
+      onSuccess: () => {
+        toast.success('Approved');
+        invalidate();
+        onSuccess();
+      },
+      onError: () => {
+        toast.error('Failed to approve');
+      },
+    }),
+  );
+
+  const rejectMutation = useMutation(
+    trpc.approval.reject.mutationOptions({
+      onSuccess: () => {
+        toast.success('Rejected');
+        invalidate();
+        onSuccess();
+      },
+      onError: () => {
+        toast.error('Failed to reject');
+      },
+    }),
+  );
+
+  const clarifyMutation = useMutation(
+    trpc.approval.requestClarification.mutationOptions({
+      onSuccess: () => {
+        toast.success('Clarification requested');
+        invalidate();
+        onSuccess();
+      },
+      onError: () => {
+        toast.error('Failed to request clarification');
+      },
+    }),
+  );
+
+  const delegateMutation = useMutation(
+    trpc.approval.delegate.mutationOptions({
+      onSuccess: () => {
+        toast.success('Delegated');
+        invalidate();
+        onSuccess();
+      },
+      onError: () => {
+        toast.error('Failed to delegate');
+      },
+    }),
+  );
+
+  const approve = useCallback(() => {
+    approveMutation.mutate({ stepId } as Parameters<typeof approveMutation.mutate>[0]);
+  }, [approveMutation, stepId]);
+
+  const reject = useCallback(
+    (comment: string) => {
+      rejectMutation.mutate({ stepId, comment } as Parameters<typeof rejectMutation.mutate>[0]);
+    },
+    [rejectMutation, stepId],
+  );
+
+  const delegate = useCallback(
+    (userId: string, comment: string) => {
+      delegateMutation.mutate({ stepId, delegateToUserId: userId, comment } as Parameters<
+        typeof delegateMutation.mutate
+      >[0]);
+    },
+    [delegateMutation, stepId],
+  );
+
+  const requestClarification = useCallback(
+    (comment: string) => {
+      clarifyMutation.mutate({ stepId, comment } as Parameters<typeof clarifyMutation.mutate>[0]);
+    },
+    [clarifyMutation, stepId],
+  );
+
+  const isPending =
+    approveMutation.isPending ||
+    rejectMutation.isPending ||
+    clarifyMutation.isPending ||
+    delegateMutation.isPending;
+
+  return { approve, reject, delegate, requestClarification, isPending };
+}

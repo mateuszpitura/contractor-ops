@@ -7,15 +7,9 @@ import {
 } from './hooks/use-portal-invoice-submit.js';
 import { InvoiceSubmitForm } from './invoice-submit-form.js';
 
-/**
- * Decision: mutation/form host composing 3 hooks (upload+OCR, contracts,
- * submission). The form is a long-lived `react-hook-form` instance that must
- * remain mounted across every state (idle, contracts loading, uploading,
- * OCR processing, submitting) — pulling `isLoading` out would unmount the
- * form and discard input. Contract picker shows its own inline pulse while
- * `contractsQuery.isLoading`; that is intentional and not a variant pick.
- * No isEmpty/isError viewmodel branches exist at this layer.
- */
+// Decision: form host — composes 3 hooks (upload+OCR, contracts, submission)
+// into a long-lived react-hook-form mounted across every state. Lifting
+// isLoading would unmount the form and discard input; no variant flag.
 export function InvoiceSubmitFormContainer() {
   const t = useTranslations('Portal.submitInvoice');
   const router = useRouter();

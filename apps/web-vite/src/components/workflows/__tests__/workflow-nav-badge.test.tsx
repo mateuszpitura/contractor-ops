@@ -1,13 +1,36 @@
 /**
- * PORTED STUB — apps/web/src/components/workflows/__tests__/workflow-nav-badge.test.tsx migrated as a deferred skip-stub.
+ * Ported from apps/web/src/components/workflows/__tests__/workflow-nav-badge.test.tsx.
  *
- * Bulk-port attempted but failed: web-vite component diverged (different
- * prop signature, missing dep, container/component split shape change).
- * Harness ready: apps/web-vite/src/test/{test-utils,setup}.ts.
+ * Web-vite split: WorkflowNavBadge takes `{ count }` (produced by the
+ * `useWorkflowNavBadge` hook).
  */
 
-import { describe } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { WorkflowNavBadge } from '../workflow-nav-badge.js';
+import { findByText, mount } from './_render.js';
 
-describe.skip('[DEFERRED] workflow-nav-badge', () => {
-  // Body intentionally empty — unskip + adapt per file when next touched.
+afterEach(() => {
+  document.body.innerHTML = '';
+});
+
+describe('WorkflowNavBadge (web-vite)', () => {
+  it('renders nothing when count is 0', async () => {
+    const { container } = await mount(<WorkflowNavBadge count={0} />);
+    expect(container.textContent ?? '').toBe('');
+  });
+
+  it('renders the literal count between 1 and 9', async () => {
+    await mount(<WorkflowNavBadge count={5} />);
+    expect(findByText(document.body, '5')).not.toBeNull();
+  });
+
+  it('caps display at "9+" for counts greater than 9', async () => {
+    await mount(<WorkflowNavBadge count={42} />);
+    expect(findByText(document.body, '9+')).not.toBeNull();
+  });
+
+  it('marks the badge with role="status"', async () => {
+    const { container } = await mount(<WorkflowNavBadge count={3} />);
+    expect(container.querySelector('[role="status"]')).not.toBeNull();
+  });
 });

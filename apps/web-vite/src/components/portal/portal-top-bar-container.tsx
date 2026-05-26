@@ -8,12 +8,9 @@ interface PortalTopBarContainerProps {
   contractorEmail: string;
 }
 
-/**
- * Decision: mutation/effect host. `usePortalTopBar` returns the pathname,
- * org-switcher viewmodel, mobile-menu state, and logout handler. The bar is
- * always visible (no isLoading/isError/isEmpty branch); active-nav highlight
- * lives in the presentational layer. Single render path by design.
- */
+// Decision: side-effect setup — usePortalTopBar exposes pathname, org-switcher
+// viewmodel, mobile-menu state, and logout handler consumed inline by the bar.
+// Always-visible single render path; no variant flag.
 export function PortalTopBarContainer(props: PortalTopBarContainerProps) {
   const bar = usePortalTopBar();
   return <PortalTopBar {...props} bar={bar} />;

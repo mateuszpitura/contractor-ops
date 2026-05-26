@@ -1,4 +1,13 @@
 import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperNav,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from '@contractor-ops/ui/components/reui/stepper';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -15,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
-import { AlertTriangle, Check, Loader2, Sparkles } from 'lucide-react';
+import { AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 import { z } from 'zod';
 
 import type { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
@@ -52,40 +61,19 @@ type Wizard = ReturnType<typeof useContractWizardDialog>;
 
 export function StepIndicator({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
-    <div className="flex items-center justify-center gap-0 px-4 py-3">
-      {steps.map((label, index) => {
-        const isCompleted = index < currentStep;
-        const isCurrent = index === currentStep;
-
-        return (
-          <div key={label} className="flex items-center">
-            {index > 0 && (
-              <div
-                className={`mx-2 h-px w-8 ${index <= currentStep ? 'bg-primary' : 'bg-border'}`}
-              />
-            )}
-            <div className="flex items-center gap-2">
-              <div
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
-                  isCompleted
-                    ? 'bg-primary text-primary-foreground'
-                    : isCurrent
-                      ? 'border-2 border-primary text-primary'
-                      : 'border border-border text-muted-foreground'
-                }`}>
-                {isCompleted ? <Check className="h-3.5 w-3.5" /> : index + 1}
-              </div>
-              <span
-                className={`text-[13px] ${
-                  isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'
-                }`}>
-                {label}
-              </span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <Stepper value={currentStep + 1} className="px-4 py-3">
+      <StepperNav className="justify-center">
+        {steps.map((label, index) => (
+          <StepperItem key={label} step={index + 1} className="not-last:flex-1 items-center">
+            <StepperTrigger className="gap-2">
+              <StepperIndicator className="size-7 text-xs">{index + 1}</StepperIndicator>
+              <StepperTitle className="text-[13px]">{label}</StepperTitle>
+            </StepperTrigger>
+            {index < steps.length - 1 && <StepperSeparator className="mx-2 h-px w-8" />}
+          </StepperItem>
+        ))}
+      </StepperNav>
+    </Stepper>
   );
 }
 

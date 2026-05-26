@@ -10,12 +10,9 @@ interface PortalMobileMenuContainerProps {
   contractorEmail: string;
 }
 
-/**
- * Decision: mutation/effect host. `usePortalMobileMenu` returns navigation +
- * logout callbacks and an `orgSwitcher` viewmodel — no `isPending`/`isError`/
- * `isEmpty` flags to branch on. Sheet visibility is owned by the parent via
- * the `open` prop. Single render path; no variant pick possible at this layer.
- */
+// Decision: dialog host — open/onOpenChange gated by PortalTopBarContainer;
+// usePortalMobileMenu supplies nav + logout callbacks and orgSwitcher viewmodel.
+// No variant flag at this layer.
 export function PortalMobileMenuContainer(props: PortalMobileMenuContainerProps) {
   const menu = usePortalMobileMenu(props.onOpenChange);
   return <PortalMobileMenu {...props} menu={menu} />;

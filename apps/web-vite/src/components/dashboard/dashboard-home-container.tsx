@@ -1,0 +1,82 @@
+import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { CheckCircle, Clock, FileText, Users, Wallet } from 'lucide-react';
+import { useTranslations } from '../../i18n/useTranslations.js';
+import { UsageKpiCard } from '../billing/usage-kpi-card.js';
+import { AnimateIn } from '../shared/animate-in.js';
+import { DashboardGreeting } from './dashboard-greeting.js';
+import { useDashboardHome } from './hooks/use-dashboard-home.js';
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <Skeleton className="h-16 w-96 rounded-lg" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function DashboardHomeContainer() {
+  const t = useTranslations('Dashboard');
+  const { isPending, error, kpis } = useDashboardHome();
+
+  if (isPending) {
+    return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <main aria-labelledby="dashboard-heading">
+        <p role="alert" className="text-destructive">
+          {t('errorLoading')}: {String(error)}
+        </p>
+      </main>
+    );
+  }
+
+  return (
+    <main aria-labelledby="dashboard-heading" className="flex flex-col gap-8">
+      <AnimateIn delay={0}>
+        <DashboardGreeting />
+      </AnimateIn>
+
+      {kpis ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <UsageKpiCard
+            icon={<Users className="h-4 w-4" />}
+            label={t('kpi.activeContractors')}
+            value={kpis.activeContractors.value}
+          />
+          <UsageKpiCard
+            icon={<CheckCircle className="h-4 w-4" />}
+            label={t('kpi.pendingApprovals')}
+            value={kpis.pendingApprovals.value}
+          />
+          <UsageKpiCard
+            icon={<Wallet className="h-4 w-4" />}
+            label={t('kpi.readyToPay')}
+            value={(kpis.readyToPayTotal.valueMinor / 100).toLocaleString(undefined, {
+              style: 'currency',
+              currency: 'EUR',
+            })}
+          />
+          <UsageKpiCard
+            icon={<FileText className="h-4 w-4" />}
+            label={t('kpi.expiringContracts')}
+            value={kpis.expiringContracts.value}
+          />
+          <UsageKpiCard
+            icon={<Clock className="h-4 w-4" />}
+            label={t('kpi.openTasks')}
+            value={kpis.openTasks.value}
+          />
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{t('loading')}</p>
+      )}
+    </main>
+  );
+}

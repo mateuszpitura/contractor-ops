@@ -78,7 +78,7 @@ function makePanel(overrides: Partial<LoadedPanel> = {}): LoadedPanel {
     status: 'DRAFT',
     safeRunId: 'run-1',
     isLoading: false,
-    detectedFormatCounts: [] as Array<[string, number]>,
+    detectedFormatCounts: [] as [string, number][],
     showFormatHint: false,
     confirmMarkAll: false,
     handleMarkAllPaid: vi.fn(),

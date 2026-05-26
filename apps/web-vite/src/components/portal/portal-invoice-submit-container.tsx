@@ -5,10 +5,9 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { InvoiceSubmitFormContainer } from './invoice-submit-form-container.js';
 
-// Decision: page-level composition — wraps InvoiceSubmitFormContainer with a back
-// link + heading + width constraint. No hook layer beyond i18n; the form
-// container owns its own variant decisions. Container exists so the page-shells
-// gate has a single `*-container` import to compose.
+// Decision: composition — wraps InvoiceSubmitFormContainer with back-link +
+// heading + width constraint. Page-level chrome for the portal invoice submit
+// flow; only useTranslations beyond layout.
 export function PortalInvoiceSubmitContainer() {
   const t = useTranslations('Portal');
 

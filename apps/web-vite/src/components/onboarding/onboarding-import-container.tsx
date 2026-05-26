@@ -1,7 +1,15 @@
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperNav,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from '@contractor-ops/ui/components/reui/stepper';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import type { FetchProjectsOutput, MergedPerson } from '@contractor-ops/validators';
-import { Check } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -22,52 +30,21 @@ function WizardStepIndicator({
   const tAria = useTranslations('Common.aria');
 
   return (
-    <nav className="flex items-center gap-6" aria-label={tAria('wizardProgress')}>
-      {steps.map(({ step, label }, index) => {
-        const isCurrent = step === currentStep;
-        const isCompleted = step < currentStep;
-
-        return (
-          <div
-            key={step}
-            className="flex items-center gap-2"
-            aria-current={isCurrent ? 'step' : undefined}>
-            {index > 0 && (
-              <div
-                className={`hidden h-px w-8 sm:block ${isCompleted ? 'bg-primary' : 'bg-border'}`}
-                aria-hidden="true"
-              />
+    <Stepper value={currentStep} aria-label={tAria('wizardProgress')}>
+      <StepperNav className="gap-6">
+        {steps.map(({ step, label }, index) => (
+          <StepperItem key={step} step={step} className="items-center">
+            <StepperTrigger className="gap-1.5">
+              <StepperIndicator className="size-6 text-xs">{step}</StepperIndicator>
+              <StepperTitle className="hidden text-sm sm:inline">{label}</StepperTitle>
+            </StepperTrigger>
+            {index < steps.length - 1 && (
+              <StepperSeparator className="mx-2 hidden h-px w-8 sm:block" />
             )}
-            <div className="flex items-center gap-1.5">
-              {isCompleted ? (
-                <div className="flex size-6 items-center justify-center rounded-full bg-primary">
-                  <Check className="size-3.5 text-primary-foreground" aria-hidden="true" />
-                </div>
-              ) : (
-                <div
-                  className={`flex size-6 items-center justify-center rounded-full text-xs font-medium ${
-                    isCurrent
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  }`}>
-                  {step}
-                </div>
-              )}
-              <span
-                className={`hidden text-sm sm:inline ${
-                  isCurrent
-                    ? 'font-medium text-foreground'
-                    : isCompleted
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
-                }`}>
-                {label}
-              </span>
-            </div>
-          </div>
-        );
-      })}
-    </nav>
+          </StepperItem>
+        ))}
+      </StepperNav>
+    </Stepper>
   );
 }
 

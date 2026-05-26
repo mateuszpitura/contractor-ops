@@ -1,13 +1,99 @@
 /**
- * PORTED STUB — apps/web/src/components/payments/__tests__/wht-certificate-preview-dialog.test.tsx migrated as a deferred skip-stub.
+ * Ported from apps/web/src/components/payments/__tests__/wht-certificate-preview-dialog.test.tsx.
  *
- * Bulk-port attempted but failed: web-vite component diverged (different
- * prop signature, missing dep, container/component split shape change).
- * Harness ready: apps/web-vite/src/test/{test-utils,setup}.ts.
+ * Web-vite uses the real EN bundle, so legacy key-as-text assertions are
+ * swapped for translated copy. `usePermissions` reaches into the Better
+ * Auth session — we stub it to `admin` so PII is shown for the tax-id
+ * assertion.
  */
 
-import { describe } from 'vitest';
+vi.mock('@/hooks/use-permissions', () => ({
+  usePermissions: () => ({ role: 'admin', can: () => true, isPlatformAdmin: false }),
+}));
 
-describe.skip('[DEFERRED] wht-certificate-preview-dialog', () => {
-  // Body intentionally empty — unskip + adapt per file when next touched.
+import { render, screen, setup } from '@/test/test-utils';
+
+import { WhtCertificatePreviewDialog } from '../wht-certificate-preview-dialog';
+
+const certificate = {
+  certificateNumber: 'WHT-2026-001',
+  orgName: 'Acme Corp',
+  contractorName: 'John Doe',
+  contractorTaxId: 'TX-12345',
+  contractorCountry: 'DE',
+  paymentDate: '2026-04-01',
+  currency: 'EUR',
+  grossAmountMinor: 100000,
+  whtRate: 15,
+  whtAmountMinor: 15000,
+  netAmountMinor: 85000,
+  treatyApplied: true,
+  treatyReference: 'DE-SA DTA Art. 12',
+};
+
+describe('WhtCertificatePreviewDialog', () => {
+  it('renders nothing when certificate is null', () => {
+    const { container } = render(
+      <WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={null} />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('renders dialog title and certificate number', () => {
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={certificate} />);
+    expect(screen.getByText('WHT Certificate Preview')).toBeInTheDocument();
+    expect(screen.getByText(/WHT-2026-001/)).toBeInTheDocument();
+  });
+
+  it('renders organization and contractor info', () => {
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={certificate} />);
+    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    expect(screen.getByText('John Doe')).toBeInTheDocument();
+    expect(screen.getByText('TX-12345')).toBeInTheDocument();
+  });
+
+  it('renders the WHT rate percentage', () => {
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={certificate} />);
+    expect(screen.getByText('15%')).toBeInTheDocument();
+  });
+
+  it('renders treaty reference when applied', () => {
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={certificate} />);
+    expect(screen.getByText(/DE-SA DTA Art\. 12/)).toBeInTheDocument();
+  });
+
+  it('hides treaty reference when not applied', () => {
+    const noTreaty = { ...certificate, treatyApplied: false, treatyReference: null };
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={noTreaty} />);
+    expect(screen.queryByText(/Treaty:/)).not.toBeInTheDocument();
+  });
+
+  it('renders Close and Download PDF buttons', () => {
+    render(<WhtCertificatePreviewDialog open onClose={vi.fn()} certificate={certificate} />);
+    expect(screen.getByRole('button', { name: /^Close$/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
+  });
+
+  it('calls onClose when Close button is clicked', async () => {
+    const onClose = vi.fn();
+    const { user } = setup(
+      <WhtCertificatePreviewDialog open onClose={onClose} certificate={certificate} />,
+    );
+    await user.click(screen.getByRole('button', { name: /^Close$/ }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('calls onDownload when Download PDF button is clicked', async () => {
+    const onDownload = vi.fn();
+    const { user } = setup(
+      <WhtCertificatePreviewDialog
+        open
+        onClose={vi.fn()}
+        certificate={certificate}
+        onDownload={onDownload}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /download pdf/i }));
+    expect(onDownload).toHaveBeenCalled();
+  });
 });

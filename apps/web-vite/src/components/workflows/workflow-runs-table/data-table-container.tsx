@@ -8,12 +8,9 @@ interface WorkflowRunsDataTableContainerProps {
   parentLoading?: boolean;
 }
 
-// Decision: composes the hook's table state with the parent's `parentLoading`
-// flag (from `WorkflowRunsTableContainer` / `WorkflowsPage`) to derive three
-// view-driving flags: `tableLoading` (table body spinner), `toolbarDisabled`
-// (toolbar gating during initial load), and `showPaginationFooter` (suppress
-// pagination chrome until rows exist). Cross-boundary state lives here so
-// the table view stays presentational.
+// Decision: data-table host — useWorkflowRunsDataTable supplies table state;
+// container composes parent's parentLoading prop into tableLoading,
+// toolbarDisabled, and showPaginationFooter flags consumed inline by the view.
 export function WorkflowRunsDataTableContainer({
   onRowClick,
   onStartWorkflow,

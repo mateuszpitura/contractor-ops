@@ -1,13 +1,6 @@
 import { useBoeRatePollerStatus } from '../hooks/use-admin-boe-rate.js';
 import { PollerStatusStripActive, PollerStatusStripEmpty } from './poller-status-strip.js';
 
-/**
- * Decision: variant pick on poller hook flags.
- *
- * Renders nothing while the list query is loading (entries undefined),
- * the empty pill when there are no BOE_API entries, otherwise the
- * active poll-success pill. The view layer is single-render-path.
- */
 export function PollerStatusStripContainer() {
   const { entries, apiEntries, latestApiEntry, rateChanged } = useBoeRatePollerStatus();
 

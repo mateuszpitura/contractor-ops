@@ -30,8 +30,7 @@ export function useLinearTaskIssueChip(taskRunId: string) {
   const chip: LinearTaskIssueChipModel | null =
     connected &&
     link &&
-    metadata &&
-    metadata.identifier &&
+    metadata?.identifier &&
     metadata.title &&
     metadata.status &&
     metadata.statusType

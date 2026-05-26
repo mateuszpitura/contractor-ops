@@ -2,11 +2,6 @@ import { useTeamsChannelMappingCard } from './hooks/use-teams-channel-mapping-ca
 import type { ChannelMappingVariant } from './teams-channel-mapping-card.js';
 import { TeamsChannelMappingCardView } from './teams-channel-mapping-card.js';
 
-/**
- * Decisive: variant pick — collapses `(isChannelError | isLoadingChannels |
- * selectedTeamId && empty | list)` flag matrix into a single `variant` string
- * passed to the presentational view.
- */
 export function TeamsChannelMappingCard() {
   const { isLoadingChannels, isChannelError, selectedTeamId, channels, ...rest } =
     useTeamsChannelMappingCard();

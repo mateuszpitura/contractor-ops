@@ -1,0 +1,135 @@
+/**
+ * React Router v7 data router.
+ *
+ * Public routes (auth, legal, portal) sit directly under `/:locale`.
+ * Staff dashboard routes render inside {@link DashboardShell} (Step 10 batch 2).
+ */
+
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
+import type { ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
+import { createBrowserRouter, Outlet, redirect } from 'react-router-dom';
+import { applyLocale } from './i18n/index.js';
+import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/messages.js';
+import { requireAuth } from './lib/require-auth.js';
+import { lazyShellWithChildRoutes } from './router/lazy-shell-loader.js';
+
+const DashboardShell = lazy(() =>
+  import('./components/layout/dashboard-shell-container.js').then(m => ({
+    default: m.DashboardShellContainer,
+  })),
+);
+const PortalShell = lazy(() =>
+  import('./components/layout/portal-shell-container.js').then(m => ({
+    default: m.PortalShellContainer,
+  })),
+);
+
+const LoginPage = lazy(() => import('./pages/auth/login.js'));
+const RegisterPage = lazy(() => import('./pages/auth/register.js'));
+const VerifyEmailPage = lazy(() => import('./pages/auth/verify-email.js'));
+const InvitePage = lazy(() => import('./pages/auth/invite.js'));
+const BreachNotificationPage = lazy(() => import('./pages/legal/breach-notification.js'));
+const PrivacyPage = lazy(() => import('./pages/legal/privacy.js'));
+const SubProcessorsPage = lazy(() => import('./pages/legal/sub-processors.js'));
+const TermsPage = lazy(() => import('./pages/legal/terms.js'));
+const PrivacyJurisdictionPage = lazy(() => import('./pages/legal/privacy-jurisdiction.js'));
+const PortalLoginPage = lazy(() => import('./pages/portal/login.js'));
+const PortalLoginVerifyPage = lazy(() => import('./pages/portal/login-verify.js'));
+const PortalInvoiceSubmitSuccessPage = lazy(
+  () => import('./pages/portal/invoice-submit-success.js'),
+);
+
+function page(element: ReactNode) {
+  return <Suspense fallback={null}>{element}</Suspense>;
+}
+
+/**
+ * Root layout — hosts the NuqsAdapter so nuqs hooks (useQueryState,
+ * useQueryStates) can subscribe to React Router's URL state. Adapter
+ * must live inside RouterProvider's context, hence as a layout route
+ * wrapping every child route.
+ */
+function RootLayout() {
+  return (
+    <NuqsAdapter>
+      <Outlet />
+    </NuqsAdapter>
+  );
+}
+
+export const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/',
+        loader: () => redirect(`/${DEFAULT_LOCALE}`),
+      },
+      {
+        path: '/:locale',
+        loader: async ({ params }) => {
+          if (!isSupportedLocale(params.locale)) return redirect(`/${DEFAULT_LOCALE}`);
+          await applyLocale(params.locale);
+          return null;
+        },
+        children: [
+          // Auth (no dashboard shell)
+          { path: 'login', element: page(<LoginPage />) },
+          { path: 'register', element: page(<RegisterPage />) },
+          { path: 'verify-email', element: page(<VerifyEmailPage />) },
+          { path: 'invite/:token', element: page(<InvitePage />) },
+          // Legal (public)
+          { path: 'legal/breach-notification', element: page(<BreachNotificationPage />) },
+          { path: 'legal/privacy', element: page(<PrivacyPage />) },
+          { path: 'legal/sub-processors', element: page(<SubProcessorsPage />) },
+          { path: 'legal/terms', element: page(<TermsPage />) },
+          { path: 'legal/privacy/:jurisdiction', element: page(<PrivacyJurisdictionPage />) },
+          // Portal — public routes (no auth shell)
+          { path: 'portal/login', element: page(<PortalLoginPage />) },
+          { path: 'portal/login/verify', element: page(<PortalLoginVerifyPage />) },
+          {
+            path: 'portal/invoices/submit/success',
+            element: page(<PortalInvoiceSubmitSuccessPage />),
+          },
+          // Portal — authenticated shell (parity with Next `(portal)/layout.tsx`)
+          {
+            lazy: lazyShellWithChildRoutes(async () => {
+              const { portalRoutes } = await import('./router/portal-routes.js');
+              const { requirePortalAuth } = await import('./lib/require-portal-auth.js');
+              return {
+                Component: () => page(<PortalShell />),
+                loader: ({ params }) => requirePortalAuth(params.locale),
+                children: portalRoutes,
+              };
+            }),
+          },
+          // Staff dashboard (sidebar + top bar) — shell + route table load on first visit.
+          {
+            lazy: lazyShellWithChildRoutes(async () => {
+              const { dashboardRoutes } = await import('./router/dashboard-routes.js');
+              return {
+                Component: () => page(<DashboardShell />),
+                loader: ({ params }) => requireAuth(params.locale),
+                children: dashboardRoutes,
+              };
+            }),
+          },
+        ],
+      },
+      {
+        path: '*',
+        element: <NotFound />,
+      },
+    ],
+  },
+]);
+
+function NotFound() {
+  return (
+    <main>
+      <h1>404</h1>
+      <p>Route not found.</p>
+    </main>
+  );
+}

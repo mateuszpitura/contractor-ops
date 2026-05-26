@@ -22,7 +22,7 @@ export function useClassificationWizardEntry(engagementId: string) {
   const [showDriftRecovery, setShowDriftRecovery] = useState(false);
 
   const draftQuery = useQuery({
-    ...trpc.classification!.getDraft.queryOptions({
+    ...trpc.classification?.getDraft.queryOptions({
       contractorAssignmentId: engagementId,
     }),
     enabled: Boolean(engagementId) && !showDriftRecovery,
@@ -30,7 +30,7 @@ export function useClassificationWizardEntry(engagementId: string) {
   });
 
   const createDraftMutation = useMutation(
-    trpc.classification!.createDraft.mutationOptions({
+    trpc.classification?.createDraft.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
           queryKey: [['classification', 'getDraft']],
@@ -42,7 +42,7 @@ export function useClassificationWizardEntry(engagementId: string) {
   );
 
   const recreateDraftMutation = useMutation(
-    trpc.classification!.recreateDraftAfterDrift.mutationOptions({
+    trpc.classification?.recreateDraftAfterDrift.mutationOptions({
       onSuccess: () => {
         setShowDriftRecovery(false);
         void queryClient.invalidateQueries({
@@ -140,7 +140,7 @@ export function useClassificationOutcome(assessmentId: string) {
   const [disclaimerDeferred, setDisclaimerDeferred] = useState(false);
 
   const assessmentQuery = useQuery({
-    ...trpc.classification!.getById.queryOptions({ assessmentId }),
+    ...trpc.classification?.getById.queryOptions({ assessmentId }),
     enabled: Boolean(assessmentId),
     retry: false,
   });

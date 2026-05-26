@@ -7,13 +7,9 @@ import { AddBoeRateDialogContainer } from './add-boe-rate-dialog-container.js';
 import { BoeRateTableContainer } from './boe-rate-table-container.js';
 import { PollerStatusStripContainer } from './poller-status-strip-container.js';
 
-/**
- * Decision: composition + dialog-state owner.
- *
- * Composes three section containers (poller status strip, rate table,
- * add-rate dialog) and owns the open-state of the add-rate dialog —
- * which spans the page-level "Add rate" button and the modal sibling.
- */
+// Decision: composition — composes PollerStatusStripContainer, BoeRateTable
+// Container, and AddBoeRateDialogContainer; owns add-dialog open-state spanning
+// the page-level "Add rate" button and the modal sibling.
 export function AdminBoeRateContainer() {
   const t = useTranslations('Admin.BoeRate');
   const [addDialogOpen, setAddDialogOpen] = useState(false);

@@ -7,11 +7,6 @@ import {
   TemplatePickerListSkeleton,
 } from './template-picker-dialog.js';
 
-// Decision: three-way variant pick for the dialog body (loading skeleton, empty
-// state, or the populated list) computed from the picker hook's `isLoading`
-// flag and `templates.length`. The chosen subtree is injected into the
-// presentational `TemplatePicker` shell via the `listContent` slot, so the
-// shell stays a single render path.
 export function TemplatePickerContainer(props: TemplatePickerParams) {
   const picker = useTemplatePicker(props);
 

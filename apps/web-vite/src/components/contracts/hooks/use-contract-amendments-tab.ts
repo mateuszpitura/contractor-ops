@@ -7,7 +7,7 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 
 export function useAddAmendmentDialog(
   contractId: string,
-  open: boolean,
+  _open: boolean,
   onOpenChange: (open: boolean) => void,
 ) {
   const t = useTranslations('ContractDetail.amendments');

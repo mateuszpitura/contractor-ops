@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 
 import { BillingOverlayContainer } from '../billing/billing-overlay-container.js';
 import { SearchProvider } from '../search/search-provider.js';
+import { CommandPaletteContainer } from '../shared/command-palette-container.js';
 import { AppFooter } from './app-footer.js';
 import { BreadcrumbProvider } from './breadcrumb-context.js';
 import { CookieConsentBannerContainer } from './cookie-consent-banner-container.js';
@@ -52,6 +53,7 @@ export function DashboardShell({
                   <AppFooter />
                 </SidebarInset>
               </IntensityRouter>
+              <CommandPaletteContainer />
               <CookieConsentBannerContainer />
             </SidebarProvider>
           </SearchProvider>

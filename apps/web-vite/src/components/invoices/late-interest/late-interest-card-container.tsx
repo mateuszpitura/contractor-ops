@@ -42,7 +42,7 @@ export function LateInterestCardContainer(props: LateInterestCardContainerProps)
   if (!props.isBusinessCustomer) return <LateInterestB2cNotApplicable />;
   if (card.isLoading) return <LateInterestSkeleton />;
   if (card.isError) return null;
-  if (!(card.data && card.data.applicable)) return null;
+  if (!card.data?.applicable) return null;
 
   return (
     <LateInterestCard

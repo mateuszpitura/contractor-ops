@@ -94,7 +94,7 @@ function DetectedFormatHint({
   detectedFormatCounts,
   t,
 }: {
-  detectedFormatCounts: Array<[string, number]>;
+  detectedFormatCounts: [string, number][];
   t: TranslateFn;
 }) {
   if (detectedFormatCounts.length === 0) return null;

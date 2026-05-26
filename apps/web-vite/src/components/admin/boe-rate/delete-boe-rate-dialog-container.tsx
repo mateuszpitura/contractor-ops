@@ -8,15 +8,9 @@ interface DeleteBoeRateDialogContainerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Decision: passthrough is intentional here.
- *
- * Mutation host for the delete-rate confirmation dialog. The hook
- * bundles the delete mutation with its invalidation/toast wiring; the
- * dialog is single-render-path with no loading/error variant to gate.
- * Mount is already conditioned upstream by BoeRateTableContainer
- * (renders only when an entry is selected for deletion).
- */
+// Decision: mutation host — useBoeRateDelete exposes the delete mutation +
+// isPending consumed inline by the confirmation dialog. Mount gated upstream
+// by BoeRateTableContainer via the entry prop.
 export function DeleteBoeRateDialogContainer({
   entry,
   open,

@@ -1,0 +1,274 @@
+import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
+import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@contractor-ops/ui/components/shadcn/popover';
+import { Loader2, Plus, Search, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { tDynLoose } from '../../../i18n/typed-keys.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { enumKey } from '../../../lib/enum-key.js';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface FilterState {
+  type: string[];
+  status: string[];
+}
+
+interface EquipmentToolbarProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+  filters: FilterState;
+  onFiltersChange: (filters: Partial<FilterState>) => void;
+  isSearching?: boolean;
+  /** Disable all interactive controls (initial data load). */
+  disabled?: boolean;
+  onAddEquipment: () => void;
+}
+
+// ---------------------------------------------------------------------------
+// Filter option sets
+// ---------------------------------------------------------------------------
+
+const EQUIPMENT_TYPES = [
+  'LAPTOP',
+  'MONITOR',
+  'PHONE',
+  'HEADSET',
+  'KEYBOARD',
+  'MOUSE',
+  'OTHER',
+] as const;
+
+const EQUIPMENT_STATUSES = [
+  'AVAILABLE',
+  'ASSIGNED',
+  'IN_TRANSIT',
+  'DELIVERED',
+  'RETURN_REQUESTED',
+  'RETURN_IN_TRANSIT',
+  'RETURNED',
+  'RETIRED',
+] as const;
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+/**
+ * Toolbar with search input, filter popover, and add button for equipment table.
+ */
+export function EquipmentToolbar({
+  search,
+  onSearchChange,
+  filters,
+  onFiltersChange,
+  isSearching,
+  disabled: filtersDisabled,
+  onAddEquipment,
+}: EquipmentToolbarProps) {
+  const t = useTranslations('Equipment');
+
+  const [localSearch, setLocalSearch] = useState(search);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    setLocalSearch(search);
+  }, [search]);
+
+  const handleSearchInput = useCallback(
+    (value: string) => {
+      setLocalSearch(value);
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        onSearchChange(value.length >= 2 ? value : '');
+      }, 300);
+    },
+    [onSearchChange],
+  );
+
+  const activeFilterCount = filters.type.length + filters.status.length;
+  const hasActiveFilters = activeFilterCount > 0;
+
+  const clearAllFilters = () => {
+    onFiltersChange({ type: [], status: [] });
+  };
+
+  const toggleFilterValue = (key: keyof FilterState, value: string) => {
+    const current = filters[key];
+    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+    onFiltersChange({ [key]: next });
+  };
+
+  const removeFilter = (key: keyof FilterState, value: string) => {
+    onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={t('list.filters.search')}
+            value={localSearch}
+            disabled={filtersDisabled}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
+            onChange={e => handleSearchInput(e.target.value)}
+            className="h-9 ps-9 pe-8"
+          />
+          {!!isSearching && (
+            <Loader2 className="absolute end-2.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          )}
+        </div>
+
+        <Popover>
+          <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+                {t('list.filters.type')}
+                {filters.type.length > 0 && (
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                    {filters.type.length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+          />
+          <PopoverContent className="w-52 p-0" align="start">
+            <div className="space-y-2 p-4">
+              <h4 className="text-[13px] font-medium text-foreground">{t('list.filters.type')}</h4>
+              <div className="space-y-1">
+                {EQUIPMENT_TYPES.map(type => (
+                  <label
+                    key={type}
+                    htmlFor={`equip-type-${type}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                    <Checkbox
+                      id={`equip-type-${type}`}
+                      checked={filters.type.includes(type)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onCheckedChange={() => toggleFilterValue('type', type)}
+                    />
+                    <span>{tDynLoose(t, 'type', enumKey(type))}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <Popover>
+          <PopoverTrigger
+            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+            render={props => (
+              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+                {t('list.filters.status')}
+                {filters.status.length > 0 && (
+                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+                    {filters.status.length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+          />
+          <PopoverContent className="w-52 p-0" align="start">
+            <div className="space-y-2 p-4">
+              <h4 className="text-[13px] font-medium text-foreground">
+                {t('list.filters.status')}
+              </h4>
+              <div className="space-y-1">
+                {EQUIPMENT_STATUSES.map(status => (
+                  <label
+                    key={status}
+                    htmlFor={`equip-status-${status}`}
+                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+                    <Checkbox
+                      id={`equip-status-${status}`}
+                      checked={filters.status.includes(status)}
+                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+                      onCheckedChange={() => toggleFilterValue('status', status)}
+                    />
+                    <span>{tDynLoose(t, 'status', enumKey(status))}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex-1" />
+
+        <Button size="lg" disabled={filtersDisabled} onClick={onAddEquipment}>
+          <Plus className="h-4 w-4" aria-hidden="true" />
+          {t('addEquipment')}
+        </Button>
+      </div>
+
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filters.type.map(type => (
+            <FilterBadge
+              key={`type-${type}`}
+              label={tDynLoose(t, 'type', enumKey(type))}
+              removeLabel={t('list.filters.removeFilter', {
+                label: tDynLoose(t, 'type', enumKey(type)),
+              })}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('type', type)}
+            />
+          ))}
+          {filters.status.map(status => (
+            <FilterBadge
+              key={`status-${status}`}
+              label={tDynLoose(t, 'status', enumKey(status))}
+              removeLabel={t('list.filters.removeFilter', {
+                label: tDynLoose(t, 'status', enumKey(status)),
+              })}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onRemove={() => removeFilter('status', status)}
+            />
+          ))}
+          <button
+            type="button"
+            className="ms-1 text-xs text-muted-foreground underline hover:text-foreground"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={clearAllFilters}>
+            {t('list.filters.clearAll')}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterBadge({
+  label,
+  removeLabel,
+  onRemove,
+}: {
+  label: string;
+  removeLabel: string;
+  onRemove: () => void;
+}) {
+  return (
+    <Badge variant="secondary" className="gap-1 py-0.5 ps-2 pe-1">
+      <span className="text-xs">{label}</span>
+      <button
+        type="button"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        onClick={onRemove}
+        aria-label={removeLabel}>
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
+  );
+}

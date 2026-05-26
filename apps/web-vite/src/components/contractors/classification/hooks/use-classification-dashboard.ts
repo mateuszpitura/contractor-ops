@@ -9,7 +9,7 @@ import { useFlag } from '../../../layout/feature-flag-context.js';
 
 export function useClassificationDashboardGlobalHeader() {
   const trpc = useTRPC();
-  const header = useQuery(trpc.classificationDashboard!.globalHeader.queryOptions());
+  const header = useQuery(trpc.classificationDashboard?.globalHeader.queryOptions());
 
   return {
     isLoading: header.isPending && !header.data,
@@ -50,14 +50,14 @@ export function useClassificationMarketCard(market: 'GB' | 'DE') {
   const trpc = useTRPC();
 
   const coverage = useQuery(
-    trpc.classificationDashboard!.coverageByMarket.queryOptions({ market }),
+    trpc.classificationDashboard?.coverageByMarket.queryOptions({ market }),
   );
   const riskDistribution = useQuery(
-    trpc.classificationDashboard!.riskDistributionByMarket.queryOptions({ market }),
+    trpc.classificationDashboard?.riskDistributionByMarket.queryOptions({ market }),
   );
-  const overdue = useQuery(trpc.classificationDashboard!.overdueByMarket.queryOptions({ market }));
+  const overdue = useQuery(trpc.classificationDashboard?.overdueByMarket.queryOptions({ market }));
   const activeAlerts = useQuery(
-    trpc.classificationDashboard!.activeAlertsByMarket.queryOptions({ market }),
+    trpc.classificationDashboard?.activeAlertsByMarket.queryOptions({ market }),
   );
 
   return { coverage, riskDistribution, overdue, activeAlerts } as const;
@@ -69,7 +69,7 @@ export function useClassificationDashboardCsvExport(market: 'GB' | 'DE') {
   const t = useTranslations('Classification.polish.dashboard');
 
   const mutation = useMutation(
-    trpc.classificationDashboard!.exportMarketCsv.mutationOptions({
+    trpc.classificationDashboard?.exportMarketCsv.mutationOptions({
       onSuccess: (result: { url: string }) => {
         if (typeof window !== 'undefined') {
           const anchor = document.createElement('a');
@@ -79,7 +79,7 @@ export function useClassificationDashboardCsvExport(market: 'GB' | 'DE') {
           anchor.remove();
         }
         toast.success('Done.');
-        queryClient.invalidateQueries(trpc.classificationDashboard!.pathFilter());
+        queryClient.invalidateQueries(trpc.classificationDashboard?.pathFilter());
       },
       onError: () => {
         toast.error(t('downloadCsv'));

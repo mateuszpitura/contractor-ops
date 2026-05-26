@@ -32,7 +32,7 @@ const baseProps = {
     counts: { safe: 2, warning: 1, critical: 0 },
     totalCompleted: 3,
   }),
-  overdue: makeData<'overdue'>({ count: 0, items: [] as Array<unknown> }),
+  overdue: makeData<'overdue'>({ count: 0, items: [] as unknown[] }),
 };
 
 describe('MarketCardView', () => {

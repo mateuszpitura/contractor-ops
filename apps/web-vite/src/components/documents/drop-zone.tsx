@@ -1,5 +1,5 @@
-import { UploadCloud } from 'lucide-react';
-import { useDropzone } from 'react-dropzone';
+import { FileUpload } from '@contractor-ops/ui/components/origin/file-upload';
+import { useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ACCEPTED_TYPES, MAX_FILE_SIZE } from './drop-zone-constants.js';
@@ -12,6 +12,10 @@ type DropZoneViewProps = ReturnType<typeof useDocumentDropZone> & {
   disabled?: boolean;
 };
 
+const ACCEPT_ATTR = Object.entries(ACCEPTED_TYPES)
+  .flatMap(([mime, exts]) => [mime, ...(exts as readonly string[])])
+  .join(',');
+
 export function DropZoneView({
   files,
   onDrop: uploadDrop,
@@ -21,46 +25,33 @@ export function DropZoneView({
   disabled,
 }: DropZoneViewProps) {
   const t = useTranslations('Documents');
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
 
-  const onDrop = (acceptedFiles: File[], rejectedFiles: unknown[]) => {
-    onFilesAccepted?.(acceptedFiles);
-    if (rejectedFiles.length > 0) {
-      onFileRejected?.(acceptedFiles);
+  const handleChange = (next: File[]) => {
+    const valid = next.filter(f => f.size <= MAX_FILE_SIZE);
+    const rejected = next.filter(f => f.size > MAX_FILE_SIZE);
+    setStagedFiles([]);
+    if (valid.length > 0) {
+      onFilesAccepted?.(valid);
+      uploadDrop(valid);
     }
-    uploadDrop(acceptedFiles);
+    if (rejected.length > 0) {
+      onFileRejected?.(rejected);
+    }
   };
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: ACCEPTED_TYPES,
-    maxSize: MAX_FILE_SIZE,
-    multiple: true,
-    disabled,
-  });
 
   return (
     <div className="space-y-4">
-      <div
-        {...getRootProps()}
-        className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
-          disabled
-            ? 'pointer-events-none opacity-50'
-            : isDragActive
-              ? 'border-primary bg-primary/[0.03]'
-              : 'border-border bg-muted/50 hover:border-muted-foreground/30'
-        }`}>
-        <input {...getInputProps()} />
-        <UploadCloud
-          className={`mb-3 size-8 text-muted-foreground transition-transform ${
-            isDragActive ? 'scale-110 text-primary' : ''
-          }`}
-        />
-        <p className="text-center text-sm text-muted-foreground">
-          {t('dropZone.body')}{' '}
-          <span className="cursor-pointer font-medium text-primary">{t('dropZone.browse')}</span>
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">{t('dropZone.accepted')}</p>
-      </div>
+      <FileUpload
+        files={stagedFiles}
+        onFilesChange={handleChange}
+        accept={ACCEPT_ATTR}
+        maxSizeBytes={MAX_FILE_SIZE}
+        multiple
+        disabled={disabled}
+        label={t('dropZone.body')}
+        description={t('dropZone.accepted')}
+      />
 
       {files.length > 0 && (
         <div className="space-y-2">

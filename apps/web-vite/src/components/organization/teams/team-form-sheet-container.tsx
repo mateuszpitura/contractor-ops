@@ -8,17 +8,9 @@ interface TeamFormSheetContainerProps {
   onCreated?: (team: { id: string; name: string }) => void;
 }
 
-/**
- * Decision: passthrough is intentional here.
- *
- * Create/edit/archive sheet for teams — mutation host. The hook
- * exposes only mutations + `isSubmitting`; no top-level loading/empty/
- * error variant at the sheet scope. The view owns form state and the
- * create-vs-edit branch is purely prop-driven UX, not a container-level
- * variant. No variant pick, no permission gate, no sub-container
- * composition — the container's only job is to bridge mutations to the
- * form view.
- */
+// Decision: form host — view owns form state; useTeamFormSheet supplies
+// create/edit/archive mutations + isSubmitting. Open/onOpenChange gated by
+// parent; no variant flag.
 export function TeamFormSheetContainer(props: TeamFormSheetContainerProps) {
   const formSheet = useTeamFormSheet({
     onOpenChange: props.onOpenChange,

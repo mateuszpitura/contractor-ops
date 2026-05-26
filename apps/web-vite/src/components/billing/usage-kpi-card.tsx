@@ -1,0 +1,30 @@
+/**
+ * Usage KPI card. Lifted from
+ * apps/web/src/components/billing/usage-kpi-card.tsx unchanged (no Next
+ * imports — pure shadcn presentational).
+ */
+
+import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
+import type { ReactNode } from 'react';
+
+interface UsageKpiCardProps {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  subText?: string;
+}
+
+export function UsageKpiCard({ icon, label, value, subText }: UsageKpiCardProps) {
+  return (
+    <Card className="p-4">
+      <CardContent className="flex flex-col gap-1 p-0">
+        <div className="flex items-start justify-between">
+          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-muted-foreground">{icon}</span>
+        </div>
+        <div className="text-2xl font-semibold">{value}</div>
+        {!!subText && <span className="text-xs text-muted-foreground">{subText}</span>}
+      </CardContent>
+    </Card>
+  );
+}

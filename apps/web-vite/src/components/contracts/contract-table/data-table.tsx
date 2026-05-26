@@ -4,6 +4,7 @@ import {
   TableChrome,
   WORKBENCH_DATA_TABLE_CLASS,
 } from '@contractor-ops/ui';
+import { DataGrid } from '@contractor-ops/ui/components/reui/data-grid/data-grid';
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef, VisibilityState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -128,7 +129,12 @@ export function ContractDataTable({
   }, [table]);
 
   return (
-    <div className={WORKBENCH_DATA_TABLE_CLASS}>
+    <DataGrid
+      table={table}
+      recordCount={totalRows}
+      isLoading={isLoading || isRefetching || parentLoading === true}
+      onRowClick={onRowClick}
+      className={WORKBENCH_DATA_TABLE_CLASS}>
       <div className="shrink-0">{toolbar}</div>
 
       <div className="shrink-0">
@@ -215,6 +221,6 @@ export function ContractDataTable({
           />
         </Table>
       </AtelierTableShell>
-    </div>
+    </DataGrid>
   );
 }

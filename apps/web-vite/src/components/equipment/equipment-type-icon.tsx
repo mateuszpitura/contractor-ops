@@ -1,0 +1,41 @@
+/**
+ * Equipment-type icon mapper. Step 11 codemod port from
+ * apps/web/src/components/equipment/equipment-type-icon.tsx:
+ *   - `@/lib/utils` → `../../lib/utils.js`
+ */
+
+import type { LucideIcon } from 'lucide-react';
+import {
+  Box,
+  Headphones,
+  Keyboard,
+  Laptop,
+  Monitor,
+  Mouse,
+  Package,
+  Smartphone,
+} from 'lucide-react';
+
+import { cn } from '../../lib/utils.js';
+
+type EquipmentType = 'LAPTOP' | 'MONITOR' | 'PHONE' | 'HEADSET' | 'KEYBOARD' | 'MOUSE' | 'OTHER';
+
+const TYPE_ICON_MAP: Record<EquipmentType, LucideIcon> = {
+  LAPTOP: Laptop,
+  MONITOR: Monitor,
+  PHONE: Smartphone,
+  HEADSET: Headphones,
+  KEYBOARD: Keyboard,
+  MOUSE: Mouse,
+  OTHER: Package,
+};
+
+interface EquipmentTypeIconProps {
+  type: string;
+  className?: string;
+}
+
+export function EquipmentTypeIcon({ type, className }: EquipmentTypeIconProps) {
+  const Icon = TYPE_ICON_MAP[type as EquipmentType] ?? Box;
+  return <Icon className={cn('h-4 w-4 text-muted-foreground', className)} />;
+}

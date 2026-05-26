@@ -12,7 +12,7 @@ export function useContractDetail(contractId: string) {
   useBreadcrumbOverride(contractId, contract?.title);
 
   const connectionsQuery = useQuery(trpc.esign.listConnections.queryOptions());
-  const esignConnections = (connectionsQuery.data ?? []) as Array<unknown>;
+  const esignConnections = (connectionsQuery.data ?? []) as unknown[];
 
   const envelopesQuery = useQuery(
     trpc.esign.listEnvelopes.queryOptions({ contractId }, { enabled: !!contractId }),

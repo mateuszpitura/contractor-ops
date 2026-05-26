@@ -1,13 +1,58 @@
 /**
- * PORTED STUB — apps/web/src/components/ocr/__tests__/extraction-status-bar.test.tsx migrated as a deferred skip-stub.
- *
- * Bulk-port attempted but failed: web-vite component diverged (different
- * prop signature, missing dep, container/component split shape change).
- * Harness ready: apps/web-vite/src/test/{test-utils,setup}.ts.
+ * Step-10 port. Web-vite test-utils wraps i18next + the shared providers, so
+ * the legacy `motion/react` shim isn't needed — the component renders inline
+ * SVG/CSS animations.
  */
 
-import { describe } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen } from '../../../test/test-utils.js';
+import { ExtractionStatusBar } from '../extraction-status-bar.js';
 
-describe.skip('[DEFERRED] extraction-status-bar', () => {
-  // Body intentionally empty — unskip + adapt per file when next touched.
+describe('ExtractionStatusBar (web-vite)', () => {
+  it('renders nothing for PENDING status', () => {
+    const { container } = render(<ExtractionStatusBar status="PENDING" />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('shows the Processing badge and spinner copy for PROCESSING', () => {
+    render(<ExtractionStatusBar status="PROCESSING" />);
+    expect(screen.getByText('Processing')).toBeInTheDocument();
+    expect(screen.getByText(/Extracting invoice data/)).toBeInTheDocument();
+  });
+
+  it('shows the Extracted badge with the field count for EXTRACTED', () => {
+    render(<ExtractionStatusBar status="EXTRACTED" fieldCount={12} />);
+    expect(screen.getByText('Extracted')).toBeInTheDocument();
+    expect(screen.getByText(/12 fields extracted/)).toBeInTheDocument();
+  });
+
+  it('shows the Partial badge with both counts for PARTIAL', () => {
+    render(<ExtractionStatusBar status="PARTIAL" fieldCount={8} totalFields={12} />);
+    expect(screen.getByText('Partial')).toBeInTheDocument();
+    expect(screen.getByText(/8 of 12 fields/)).toBeInTheDocument();
+  });
+
+  it('shows the default error message for FAILED', () => {
+    render(<ExtractionStatusBar status="FAILED" />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.getByText(/Extraction failed/)).toBeInTheDocument();
+  });
+
+  it('shows a custom error message when provided', () => {
+    render(<ExtractionStatusBar status="FAILED" errorMessage="OCR service unavailable" />);
+    expect(screen.getByText('OCR service unavailable')).toBeInTheDocument();
+  });
+
+  it('shows the Re-run OCR button and invokes onRetry when clicked', () => {
+    const onRetry = vi.fn();
+    render(<ExtractionStatusBar status="FAILED" onRetry={onRetry} />);
+    const retry = screen.getByRole('button', { name: /Re-run OCR/i });
+    retry.click();
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it('omits the retry button when onRetry is not supplied', () => {
+    render(<ExtractionStatusBar status="FAILED" />);
+    expect(screen.queryByRole('button', { name: /Re-run OCR/i })).not.toBeInTheDocument();
+  });
 });

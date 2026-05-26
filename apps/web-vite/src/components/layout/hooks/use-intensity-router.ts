@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { usePathname } from '../../../i18n/navigation.js';
 
-const ATELIER_ROUTES: ReadonlyArray<RegExp> = [/\/?$/, /^\/reports(\/|$)/];
+const ATELIER_ROUTES: readonly RegExp[] = [/\/?$/, /^\/reports(\/|$)/];
 
 export function intensityForPathname(pathname: string): AtelierIntensity {
   for (const route of ATELIER_ROUTES) {

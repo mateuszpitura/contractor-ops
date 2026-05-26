@@ -1,13 +1,82 @@
 /**
- * PORTED STUB — apps/web/src/components/contracts/contract-detail/__tests__/send-for-signature-button.test.tsx migrated as a deferred skip-stub.
+ * Ported from apps/web/src/components/contracts/contract-detail/__tests__/send-for-signature-button.test.tsx.
  *
- * Bulk-port attempted but failed: web-vite component diverged (different
- * prop signature, missing dep, container/component split shape change).
- * Harness ready: apps/web-vite/src/test/{test-utils,setup}.ts.
+ * SendForSignatureButton calls `useSendForSignatureButton` directly (pure
+ * derivation hook — no tRPC) and renders SendForSignatureDialogContainer
+ * (which IS a tRPC consumer). We mock the container to keep this test
+ * scoped to the button surface.
  */
 
-import { describe } from 'vitest';
+import { vi } from 'vitest';
+import { render, screen } from '@/test/test-utils';
 
-describe.skip('[DEFERRED] send-for-signature-button', () => {
-  // Body intentionally empty — unskip + adapt per file when next touched.
+vi.mock('../send-for-signature-dialog-container.js', () => ({
+  SendForSignatureDialogContainer: () => null,
+}));
+
+import { SendForSignatureButton } from '../send-for-signature-button';
+
+describe('SendForSignatureButton', () => {
+  it('returns null for non-DRAFT/ACTIVE statuses', () => {
+    const { container } = render(
+      <SendForSignatureButton
+        contractId="ct1"
+        contractStatus="TERMINATED"
+        hasDocument={true}
+        hasConnectedProvider={true}
+      />,
+    );
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('renders disabled button when no document', () => {
+    render(
+      <SendForSignatureButton
+        contractId="ct1"
+        contractStatus="DRAFT"
+        hasDocument={false}
+        hasConnectedProvider={true}
+      />,
+    );
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+  });
+
+  it('renders disabled button when no provider', () => {
+    render(
+      <SendForSignatureButton
+        contractId="ct1"
+        contractStatus="DRAFT"
+        hasDocument={true}
+        hasConnectedProvider={false}
+      />,
+    );
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+  });
+
+  it('renders enabled button when document and provider available', () => {
+    render(
+      <SendForSignatureButton
+        contractId="ct1"
+        contractStatus="ACTIVE"
+        hasDocument={true}
+        hasConnectedProvider={true}
+      />,
+    );
+    const button = screen.getByRole('button');
+    expect(button).not.toBeDisabled();
+  });
+
+  it('shows button text (Send for Signature)', () => {
+    render(
+      <SendForSignatureButton
+        contractId="ct1"
+        contractStatus="DRAFT"
+        hasDocument={true}
+        hasConnectedProvider={true}
+      />,
+    );
+    expect(screen.getByText('Send for Signature')).toBeInTheDocument();
+  });
 });
