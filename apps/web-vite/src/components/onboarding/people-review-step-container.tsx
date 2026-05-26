@@ -22,7 +22,12 @@ export function PeopleReviewStepContainer(props: PeopleReviewStepContainerProps)
   const section = useOnboardingPeople(props);
 
   if (section.isLoading) {
-    return <PeopleReviewSkeleton />;
+    return (
+      <div className="space-y-6">
+        <PeopleReviewHeader />
+        <PeopleReviewSkeleton />
+      </div>
+    );
   }
 
   if (section.isError) {

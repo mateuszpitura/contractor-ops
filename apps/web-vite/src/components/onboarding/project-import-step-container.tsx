@@ -22,7 +22,12 @@ export function ProjectImportStepContainer(props: ProjectImportStepContainerProp
   const section = useOnboardingProjects(props);
 
   if (section.isLoading) {
-    return <ProjectImportSkeleton />;
+    return (
+      <div className="space-y-6">
+        <ProjectImportHeader />
+        <ProjectImportSkeleton />
+      </div>
+    );
   }
 
   if (section.isError) {
