@@ -1,0 +1,1473 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Shared design system — see packages/ui/src/styles/ */
+@import "@contractor-ops/ui/styles/tokens.css";
+@import "@contractor-ops/ui/styles/glass.css";
+@import "@contractor-ops/ui/styles/motion.css";
+@import "@contractor-ops/ui/styles/status.css";
+@import "@contractor-ops/ui/styles/registry-css.css";
+
+/* Google Fonts — replaces apps/web's next/font wiring.
+ * CSP allow-list (index.html + render.yaml):
+ *   style-src https://fonts.googleapis.com; font-src https://fonts.gstatic.com */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300..900&family=Bricolage+Grotesque:wght@400..800&family=JetBrains+Mono:wght@400..700&family=Noto+Sans+Arabic:wght@300..700&display=swap");
+
+/* Scan shared UI package so Tailwind generates utilities used in its components */
+@source "../../../../packages/ui/src";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Contractor Ops Web-Vite — "Precision Craft" Design System
+ *
+ * Re-uses the canonical Workbench/Atelier CSS that previously lived in
+ * apps/web/src/app/globals.css (removed in 62a97d73 when the Next.js app
+ * was retired in favour of this Vite SPA). Extends the shared design
+ * system (@contractor-ops/ui/styles) with web-specific tokens (popover,
+ * chart palette, sidebar tokens, viz palette) and a slightly elevated
+ * dark-surface family tuned for legibility on dense Workbench-tier
+ * operational pages.
+ *
+ * Typography: Outfit (body) + Bricolage Grotesque (display) + JetBrains Mono (code) + Noto Sans Arabic (RTL)
+ * Primary: Deep Teal. Neutrals: warm graphite slate.
+ */
+
+/* ─── Font Variables ──────────────────────────────────────────────────── */
+
+/* CSS variables consumed by the @theme inline bridge below.
+ * apps/web used next/font to inject these onto <html>; in the Vite SPA we
+ * declare them directly so the same `font-sans`/`font-display`/`font-mono`
+ * Tailwind utilities resolve to the same fonts. */
+:root {
+  --font-sans:
+    "Outfit", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-display: "Bricolage Grotesque", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-arabic: "Noto Sans Arabic", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* RTL fallback — when <html dir="rtl"> (Arabic locale), prefer Noto Sans Arabic. */
+:root[dir="rtl"] {
+  --font-sans: "Noto Sans Arabic", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─── Light Mode — web-specific tokens ────────────────────────────────── */
+
+:root {
+  /* Popover — pure white to lift against warm base */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.165 0.015 260);
+
+  /* Chart — teal progression (light→dark) */
+  --chart-1: oklch(0.72 0.11 178);
+  --chart-2: oklch(0.6 0.13 178);
+  --chart-3: oklch(0.5 0.14 178);
+  --chart-4: oklch(0.42 0.13 178);
+  --chart-5: oklch(0.35 0.11 178);
+
+  /* Sidebar — slightly distinct from main bg */
+  --sidebar: oklch(0.978 0.003 85);
+  --sidebar-foreground: oklch(0.165 0.015 260);
+  --sidebar-primary: oklch(0.44 0.145 178);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.955 0.005 85);
+  --sidebar-accent-foreground: oklch(0.22 0.015 260);
+  --sidebar-border: oklch(0.91 0.004 85);
+  --sidebar-ring: oklch(0.44 0.145 178);
+
+  /* Burnished Amber, muted variant */
+  --accent-warm-muted: oklch(0.72 0.14 65 / 12%);
+
+  /* ── Data Visualization Palette ── */
+  --viz-1: oklch(0.65 0.145 178);
+  --viz-2: oklch(0.72 0.14 65);
+  --viz-3: oklch(0.6 0.18 260);
+  --viz-4: oklch(0.65 0.16 330);
+  --viz-5: oklch(0.6 0.17 150);
+  --viz-6: oklch(0.7 0.12 35);
+  --viz-7: oklch(0.58 0.14 290);
+}
+
+/* ─── Dark Mode — web-specific surface family + tokens ───────────────── */
+
+/*
+ * Workbench/Atelier tunes dark surfaces brighter than landing's Exhibition
+ * tier so dense tables and forms stay legible. The surface family is
+ * overridden here; foreground colors, primary, accent-warm, teal scale,
+ * and elevation shadows come from the shared tokens layer.
+ */
+.dark {
+  --background: oklch(0.155 0.015 260);
+  --card: oklch(0.2 0.015 260);
+  --secondary: oklch(0.26 0.015 260);
+  --muted: oklch(0.26 0.015 260);
+  --accent: oklch(0.26 0.015 260);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+
+  --surface-0: oklch(0.155 0.015 260);
+  --surface-1: oklch(0.2 0.015 260);
+  --surface-2: oklch(0.24 0.015 260);
+  --surface-3: oklch(0.28 0.015 260);
+
+  --popover: oklch(0.2 0.015 260);
+  --popover-foreground: oklch(0.975 0.003 85);
+
+  --chart-1: oklch(0.72 0.11 178);
+  --chart-2: oklch(0.6 0.13 178);
+  --chart-3: oklch(0.5 0.14 178);
+  --chart-4: oklch(0.42 0.13 178);
+  --chart-5: oklch(0.35 0.11 178);
+
+  --sidebar: oklch(0.18 0.015 260);
+  --sidebar-foreground: oklch(0.975 0.003 85);
+  --sidebar-primary: oklch(0.65 0.145 178);
+  --sidebar-primary-foreground: oklch(0.12 0.015 260);
+  --sidebar-accent: oklch(0.26 0.015 260);
+  --sidebar-accent-foreground: oklch(0.975 0.003 85);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.65 0.145 178);
+
+  --accent-warm-muted: oklch(0.8 0.14 65 / 15%);
+
+  --viz-1: oklch(0.65 0.145 178);
+  --viz-2: oklch(0.72 0.14 65);
+  --viz-3: oklch(0.6 0.18 260);
+  --viz-4: oklch(0.65 0.16 330);
+  --viz-5: oklch(0.6 0.17 150);
+  --viz-6: oklch(0.7 0.12 35);
+  --viz-7: oklch(0.58 0.14 290);
+}
+
+/* ─── Tailwind Theme Bridge ───────────────────────────────────────────── */
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  /* Warm accent */
+  --color-accent-warm: var(--accent-warm);
+  --color-accent-warm-foreground: var(--accent-warm-foreground);
+  --color-accent-warm-muted: var(--accent-warm-muted);
+
+  /* Surface hierarchy */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  /* Teal scale */
+  --color-teal-50: var(--teal-50);
+  --color-teal-100: var(--teal-100);
+  --color-teal-200: var(--teal-200);
+  --color-teal-300: var(--teal-300);
+  --color-teal-400: var(--teal-400);
+  --color-teal-500: var(--teal-500);
+  --color-teal-600: var(--teal-600);
+  --color-teal-700: var(--teal-700);
+  --color-teal-800: var(--teal-800);
+  --color-teal-900: var(--teal-900);
+  --color-teal-950: var(--teal-950);
+
+  /* Data visualization */
+  --color-viz-1: var(--viz-1);
+  --color-viz-2: var(--viz-2);
+  --color-viz-3: var(--viz-3);
+  --color-viz-4: var(--viz-4);
+  --color-viz-5: var(--viz-5);
+  --color-viz-6: var(--viz-6);
+  --color-viz-7: var(--viz-7);
+
+  /* Fluid typography — overrides Tailwind defaults with responsive clamp() */
+  --text-xs: clamp(0.6875rem, 0.65rem + 0.1vw, 0.75rem);
+  --text-xs--line-height: 1rem;
+  --text-sm: clamp(0.8125rem, 0.78rem + 0.1vw, 0.875rem);
+  --text-sm--line-height: 1.25rem;
+  --text-base: clamp(0.875rem, 0.84rem + 0.12vw, 0.9375rem);
+  --text-base--line-height: 1.5rem;
+  --text-lg: clamp(1rem, 0.95rem + 0.15vw, 1.125rem);
+  --text-lg--line-height: 1.75rem;
+  --text-xl: clamp(1.125rem, 1.05rem + 0.25vw, 1.375rem);
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: clamp(1.375rem, 1.2rem + 0.5vw, 1.875rem);
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: clamp(1.75rem, 1.5rem + 0.8vw, 2.5rem);
+  --text-3xl--line-height: 2.75rem;
+  --text-hero: clamp(2.5rem, 2rem + 1.5vw, 4rem);
+  --text-hero--line-height: 1.1;
+  --text-hero--letter-spacing: -0.03em;
+  --text-hero--font-weight: 700;
+
+  /* Letter-spacing scale */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+
+  /* Elevation shadows — bridged from :root / .dark */
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ─── Base Layer ──────────────────────────────────────────────────────── */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-size: 14px;
+    line-height: 1.5;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Selection — teal tint */
+  ::selection {
+    background: oklch(0.485 0.145 178 / 18%);
+  }
+
+  .dark ::selection {
+    background: oklch(0.65 0.145 178 / 25%);
+  }
+
+  /* Scrollbar — subtle, refined */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.7 0 0 / 25%);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.5 0 0 / 35%);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 12%);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(1 0 0 / 22%);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.7 0 0 / 25%) transparent;
+  }
+
+  .dark * {
+    scrollbar-color: oklch(1 0 0 / 12%) transparent;
+  }
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────── */
+
+/* Skeleton shimmer — sweeping highlight instead of static pulse */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.8s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    color-mix(in oklch, var(--muted) 50%, var(--background)) 40%,
+    var(--muted) 80%
+  );
+  background-size: 200% 100%;
+}
+
+/* Staggered fade-up entrance for page content */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+/* Stagger delay utilities */
+.delay-0 {
+  animation-delay: 0ms;
+}
+.delay-1 {
+  animation-delay: 60ms;
+}
+.delay-2 {
+  animation-delay: 120ms;
+}
+.delay-3 {
+  animation-delay: 180ms;
+}
+.delay-4 {
+  animation-delay: 240ms;
+}
+.delay-5 {
+  animation-delay: 300ms;
+}
+
+/* Card hover lift — consistent across all interactive cards */
+.card-interactive {
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* ─── Atelier — see @contractor-ops/ui/styles/motion.css ─────────────── */
+
+/*
+ * Atelier keyframes (atelier-in, atelier-hero-glow, atelier-border-breathe,
+ * atelier-shimmer-sweep, atelier-drift-1/2/3, atelier-ring-ping,
+ * atelier-grain-drift) and the matching utility classes (.atelier-enter,
+ * .atelier-shimmer, .atelier-border-glow, .atelier-pulse,
+ * .atelier-hero-glow) live in @contractor-ops/ui/styles/motion.css and
+ * are imported at the top of this file. Below: web-only animation
+ * utilities that aren't part of the shared Atelier system.
+ */
+
+/* Slide in from left — used by web-only ticker components. */
+@keyframes slide-left {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* CSS-only 3D tilt — hover-driven. JS-driven mouse-tracking tilt is
+   provided by the TiltCard component in @contractor-ops/ui. */
+.atelier-tilt {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .atelier-tilt:hover {
+    transform: perspective(800px) rotateX(-1deg) rotateY(1.5deg) translateY(-2px);
+    box-shadow:
+      0 20px 50px oklch(0 0 0 / 12%),
+      0 8px 20px oklch(0 0 0 / 6%);
+  }
+
+  .dark .atelier-tilt:hover {
+    box-shadow:
+      0 20px 50px oklch(0 0 0 / 35%),
+      0 8px 20px oklch(0 0 0 / 20%);
+  }
+}
+
+.card-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px oklch(0 0 0 / 0.06),
+    0 1px 3px oklch(0 0 0 / 0.04);
+}
+
+.dark .card-interactive:hover {
+  box-shadow:
+    0 4px 12px oklch(0 0 0 / 0.2),
+    0 1px 3px oklch(0 0 0 / 0.12);
+}
+
+/* Status dot — tiny colored indicator */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot-success {
+  background-color: var(--success);
+}
+.status-dot-warning {
+  background-color: var(--warning);
+}
+.status-dot-destructive {
+  background-color: var(--destructive);
+}
+.status-dot-info {
+  background-color: var(--info);
+}
+.status-dot-muted {
+  background-color: var(--muted-foreground);
+}
+
+/* ─── Frosted Glass ───────────────────────────────────────────────────── */
+
+/*
+ * Elevated surface — light mode: white with a barely-perceptible teal tint +
+ * strong shadow for depth. Dark mode: frosted glass with backdrop blur.
+ */
+.glass-surface {
+  background: color-mix(in oklch, var(--card) 97%, oklch(0.85 0.06 178));
+  box-shadow:
+    0 8px 30px oklch(0 0 0 / 0.08),
+    0 2px 8px oklch(0 0 0 / 0.04);
+}
+
+.dark .glass-surface {
+  background: color-mix(in oklch, var(--card) 75%, transparent);
+  backdrop-filter: blur(20px) saturate(1.8);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  box-shadow:
+    0 8px 30px oklch(0 0 0 / 0.3),
+    0 2px 8px oklch(0 0 0 / 0.15);
+}
+
+/* ─── Focus Glow ─────────────────────────────────────────────────────── */
+
+/* Distinctive teal glow on focus-visible — replaces default blue ring */
+.focus-glow:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--ring),
+    0 0 12px color-mix(in oklch, var(--ring) 25%, transparent);
+}
+
+/* ─── Search Bar ─────────────────────────────────────────────────────── */
+
+/* Animated search trigger with glow effect on hover */
+.search-trigger {
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+  background: color-mix(in oklch, var(--surface-2) 80%, transparent);
+}
+
+.search-trigger:hover {
+  border-color: color-mix(in oklch, var(--ring) 50%, var(--border));
+  box-shadow: 0 0 12px color-mix(in oklch, var(--ring) 18%, transparent);
+  background: var(--surface-1);
+}
+
+/* ─── Theme Transition ───────────────────────────────────────────────── */
+
+/* Smooth color transitions when switching between light/dark mode */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.15s ease,
+    box-shadow 0.3s ease;
+  transition-delay: 0s;
+}
+
+/* ─── Sidebar Active Indicator ───────────────────────────────────────── */
+
+@keyframes indicator-in {
+  from {
+    opacity: 0;
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    height: 20px;
+  }
+}
+
+/* ─── Sonner Toast Customization ─────────────────────────────────────── */
+
+[data-sonner-toaster] [data-sonner-toast] {
+  font-family: var(--font-sans);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow:
+    0 4px 12px oklch(0 0 0 / 0.08),
+    0 1px 3px oklch(0 0 0 / 0.04);
+}
+
+.dark [data-sonner-toaster] [data-sonner-toast] {
+  box-shadow:
+    0 4px 12px oklch(0 0 0 / 0.25),
+    0 1px 3px oklch(0 0 0 / 0.15);
+}
+
+/* ─── Texture & Atmosphere ───────────────────────────────────────────── */
+
+/* Grain texture animation — adds tactile depth to surfaces */
+@keyframes grain-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-5%, -10%);
+  }
+  30% {
+    transform: translate(7%, -25%);
+  }
+  50% {
+    transform: translate(-15%, 10%);
+  }
+  70% {
+    transform: translate(0%, 15%);
+  }
+  90% {
+    transform: translate(-10%, 10%);
+  }
+}
+
+/* Subtle film grain overlay — use on hero sections and feature panels.
+   Uses ::after so it can coexist with mesh-bg which uses ::before. */
+.grain-overlay {
+  position: relative;
+  isolation: isolate;
+}
+
+.grain-overlay::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.045;
+  pointer-events: none;
+  z-index: -1;
+  animation: grain-drift 8s steps(10) infinite;
+}
+
+.dark .grain-overlay::after {
+  opacity: 0.06;
+}
+
+/* Mesh gradient background — soft ambient color wash */
+.mesh-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mesh-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.88 0.1 178 / 50%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.88 0.12 65 / 35%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.9 0.07 260 / 30%), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dark .mesh-bg::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.22 0.08 178 / 45%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.2 0.06 65 / 30%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.18 0.05 260 / 35%), transparent 70%);
+}
+
+/* Dot grid pattern — structural background for empty states / wells */
+.dot-grid {
+  background-image: radial-gradient(oklch(0.7 0 0 / 12%) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .dot-grid {
+  background-image: radial-gradient(oklch(1 0 0 / 6%) 1px, transparent 1px);
+}
+
+/* ─── Main surface — intensity-aware background ───────────────────── */
+
+/*
+ * The dashboard <main> uses .atelier-main-surface and the IntensityRouter
+ * mirrors the active tier to <body data-intensity="...">. Atelier routes
+ * (dashboard, reports) get the mesh + grain ambient wash; workbench
+ * routes (operational pages) get a calm static surface for legibility.
+ *
+ * Per docs/UI-ATELIER-WORKPLAN.md §3.3, expensive backdrop effects on
+ * dense pages are banned; the static fallback enforces that contract.
+ */
+.atelier-main-surface {
+  background: var(--surface-0);
+}
+
+body[data-intensity="atelier"] .atelier-main-surface,
+body[data-intensity="exhibition"] .atelier-main-surface {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+body[data-intensity="atelier"] .atelier-main-surface::before,
+body[data-intensity="exhibition"] .atelier-main-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.88 0.1 178 / 50%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.88 0.12 65 / 35%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.9 0.07 260 / 30%), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+body[data-intensity="atelier"].dark .atelier-main-surface::before,
+body[data-intensity="exhibition"].dark .atelier-main-surface::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.22 0.08 178 / 45%), transparent 70%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.2 0.06 65 / 30%), transparent 70%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.18 0.05 260 / 35%), transparent 70%);
+}
+
+body[data-intensity="atelier"] .atelier-main-surface::after,
+body[data-intensity="exhibition"] .atelier-main-surface::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.045;
+  pointer-events: none;
+  z-index: -1;
+  animation: atelier-grain-drift 8s steps(10) infinite;
+}
+
+body[data-intensity="atelier"].dark .atelier-main-surface::after,
+body[data-intensity="exhibition"].dark .atelier-main-surface::after {
+  opacity: 0.06;
+}
+
+/* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
+
+/* Decorative gradient glow at top AND bottom of sidebar for depth */
+[data-slot="sidebar-inner"] {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Bottom glow — warm, grounding */
+[data-slot="sidebar-inner"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--primary) 8%, transparent),
+    color-mix(in oklch, oklch(0.6 0.18 260) 3%, transparent) 60%,
+    transparent
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.dark [data-slot="sidebar-inner"]::after {
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--primary) 14%, transparent),
+    color-mix(in oklch, oklch(0.35 0.18 260) 6%, transparent) 60%,
+    transparent
+  );
+}
+
+/* Top glow — subtle ambient wash */
+[data-slot="sidebar-inner"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklch, oklch(0.72 0.14 65) 4%, transparent),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.dark [data-slot="sidebar-inner"]::before {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklch, oklch(0.5 0.14 65) 6%, transparent),
+    transparent
+  );
+}
+
+/* ─── Sidebar Active Item — Animated Gradient Bar ──────────────────── */
+
+[data-slot="sidebar-menu-button"][data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(to bottom, oklch(0.65 0.145 178), oklch(0.6 0.18 260));
+  box-shadow: 0 0 8px color-mix(in oklch, var(--primary) 40%, transparent);
+  animation: indicator-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Input Focus Glow ─────────────────────────────────────────────── */
+
+[data-slot="input"]:focus-visible {
+  border-color: var(--ring);
+  box-shadow:
+    0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent),
+    0 0 20px color-mix(in oklch, var(--ring) 10%, transparent);
+}
+
+.dark [data-slot="input"]:focus-visible {
+  box-shadow:
+    0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent),
+    0 0 25px color-mix(in oklch, var(--ring) 12%, transparent);
+}
+
+/* ─── Primary Button — Gradient & Shimmer ──────────────────────────── */
+
+[data-slot="button"]:where(:not([class*="variant-"])):not([class*="ghost"]):not(
+  [class*="outline"]
+):not([class*="secondary"]):not([class*="destructive"]):not([class*="link"]) {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button shimmer sweep on hover */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    color-mix(in oklch, white 15%, transparent) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  pointer-events: none;
+  transition: transform 0s;
+}
+
+.btn-shimmer:hover::after {
+  transform: translateX(100%);
+  transition: transform 0.6s ease;
+}
+
+/* ─── Card Top Highlight Line ──────────────────────────────────────── */
+
+.card-highlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-highlight::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--primary) 50%, transparent) 30%,
+    color-mix(in oklch, oklch(0.6 0.18 260) 40%, transparent) 50%,
+    color-mix(in oklch, oklch(0.72 0.14 65) 30%, transparent) 70%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.card-highlight:hover::before {
+  opacity: 1;
+}
+
+/* ─── Onboarding Step Pulse ────────────────────────────────────────── */
+
+@keyframes step-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklch, var(--primary) 0%, transparent);
+  }
+}
+
+.step-current-ring {
+  animation: step-pulse 2.5s ease-in-out infinite;
+}
+
+/* ─── Command Palette Glass ────────────────────────────────────────── */
+
+[data-slot="command"] {
+  background: color-mix(in oklch, var(--popover) 85%, transparent);
+  backdrop-filter: blur(32px) saturate(1.5);
+  -webkit-backdrop-filter: blur(32px) saturate(1.5);
+}
+
+.dark [data-slot="command"] {
+  background: color-mix(in oklch, var(--popover) 70%, transparent);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+}
+
+[data-slot="command-item"][data-selected="true"] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 8%, var(--muted)),
+    var(--muted)
+  );
+}
+
+/* ─── Org Switcher Logo — Animated Gradient ────────────────────────── */
+
+.org-logo-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(0.5 0.145 178),
+    oklch(0.45 0.18 220),
+    oklch(0.5 0.145 178)
+  );
+  background-size: 200% 200%;
+  animation: gradient-flow 6s ease-in-out infinite;
+}
+
+/* ─── Decorative Corner Marks ──────────────────────────────────────── */
+
+.corner-marks {
+  position: relative;
+}
+
+.corner-marks::before,
+.corner-marks::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: color-mix(in oklch, var(--primary) 25%, transparent);
+  pointer-events: none;
+  transition:
+    border-color 0.3s ease,
+    opacity 0.3s ease;
+  opacity: 0;
+}
+
+.corner-marks::before {
+  top: 8px;
+  left: 8px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+  border-color: inherit;
+}
+
+.corner-marks::after {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+  border-color: inherit;
+}
+
+.corner-marks:hover::before,
+.corner-marks:hover::after {
+  opacity: 1;
+  border-color: color-mix(in oklch, var(--primary) 50%, transparent);
+}
+
+/* ─── Badge Glow ───────────────────────────────────────────────────── */
+
+.badge-glow {
+  box-shadow: 0 0 8px color-mix(in oklch, currentColor 20%, transparent);
+}
+
+/* ─── Animated Progress Bar ────────────────────────────────────────── */
+
+[data-slot="progress-indicator"] {
+  background: linear-gradient(
+    90deg,
+    oklch(0.55 0.15 178),
+    oklch(0.6 0.18 260),
+    oklch(0.55 0.15 178)
+  );
+  background-size: 200% 100%;
+  animation: gradient-flow 4s ease-in-out infinite;
+}
+
+/* ─── Scroll Fade ──────────────────────────────────────────────────── */
+
+.scroll-fade-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+/* ─── Information Density ─────────────────────────────────────────────── */
+
+.density-compact {
+  font-size: 13px;
+}
+
+table td,
+table th {
+  padding: 16px;
+  height: 40px;
+}
+
+.density-compact table td,
+.density-compact table th {
+  padding: 8px;
+  height: 32px;
+}
+
+/* ─── Aurora Background — Animated Northern Lights ──────────────────── */
+
+@property --aurora-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@property --aurora-hue {
+  syntax: "<number>";
+  initial-value: 178;
+  inherits: false;
+}
+
+@keyframes aurora-rotate {
+  0% {
+    --aurora-angle: 0deg;
+    --aurora-hue: 178;
+  }
+  25% {
+    --aurora-angle: 90deg;
+    --aurora-hue: 200;
+  }
+  50% {
+    --aurora-angle: 180deg;
+    --aurora-hue: 260;
+  }
+  75% {
+    --aurora-angle: 270deg;
+    --aurora-hue: 150;
+  }
+  100% {
+    --aurora-angle: 360deg;
+    --aurora-hue: 178;
+  }
+}
+
+.aurora-bg {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.aurora-bg::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    conic-gradient(
+      from var(--aurora-angle) at 30% 30%,
+      oklch(0.75 0.18 178 / 40%) 0deg,
+      oklch(0.7 0.15 260 / 30%) 60deg,
+      transparent 120deg,
+      oklch(0.72 0.14 150 / 25%) 180deg,
+      oklch(0.68 0.16 65 / 20%) 240deg,
+      transparent 300deg,
+      oklch(0.75 0.18 178 / 40%) 360deg
+    ),
+    conic-gradient(
+      from calc(var(--aurora-angle) + 120deg) at 70% 70%,
+      oklch(0.65 0.2 200 / 35%) 0deg,
+      transparent 90deg,
+      oklch(0.7 0.15 330 / 20%) 180deg,
+      transparent 270deg,
+      oklch(0.65 0.2 200 / 35%) 360deg
+    );
+  filter: blur(80px);
+  animation: aurora-rotate 20s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dark .aurora-bg::before {
+  background:
+    conic-gradient(
+      from var(--aurora-angle) at 30% 30%,
+      oklch(0.35 0.18 178 / 50%) 0deg,
+      oklch(0.3 0.15 260 / 40%) 60deg,
+      transparent 120deg,
+      oklch(0.32 0.14 150 / 30%) 180deg,
+      oklch(0.3 0.16 65 / 25%) 240deg,
+      transparent 300deg,
+      oklch(0.35 0.18 178 / 50%) 360deg
+    ),
+    conic-gradient(
+      from calc(var(--aurora-angle) + 120deg) at 70% 70%,
+      oklch(0.28 0.2 200 / 45%) 0deg,
+      transparent 90deg,
+      oklch(0.3 0.15 330 / 25%) 180deg,
+      transparent 270deg,
+      oklch(0.28 0.2 200 / 45%) 360deg
+    );
+  filter: blur(100px);
+}
+
+/* ─── Animated Conic Border ─────────────────────────────────────────── */
+
+@property --conic-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes conic-spin {
+  to {
+    --conic-angle: 360deg;
+  }
+}
+
+.conic-border {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.conic-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--conic-angle),
+    oklch(0.65 0.145 178),
+    oklch(0.6 0.18 260),
+    oklch(0.72 0.14 65),
+    oklch(0.6 0.17 150),
+    oklch(0.65 0.16 330),
+    oklch(0.65 0.145 178)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: conic-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+.conic-border::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--conic-angle),
+    oklch(0.65 0.145 178 / 30%),
+    oklch(0.6 0.18 260 / 20%),
+    oklch(0.72 0.14 65 / 15%),
+    oklch(0.6 0.17 150 / 20%),
+    oklch(0.65 0.16 330 / 15%),
+    oklch(0.65 0.145 178 / 30%)
+  );
+  filter: blur(12px);
+  animation: conic-spin 4s linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ─── Neon Glow Card ────────────────────────────────────────────────── */
+
+.neon-card {
+  position: relative;
+  transition:
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neon-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow:
+    0 0 20px color-mix(in oklch, var(--primary) 20%, transparent),
+    0 0 60px color-mix(in oklch, var(--primary) 8%, transparent),
+    0 20px 50px oklch(0 0 0 / 12%);
+}
+
+.dark .neon-card:hover {
+  box-shadow:
+    0 0 25px color-mix(in oklch, var(--primary) 30%, transparent),
+    0 0 80px color-mix(in oklch, var(--primary) 12%, transparent),
+    0 20px 50px oklch(0 0 0 / 40%);
+}
+
+/* ─── Gradient Text ─────────────────────────────────────────────────── */
+
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    oklch(0.65 0.145 178) 0%,
+    oklch(0.6 0.18 260) 40%,
+    oklch(0.72 0.14 65) 70%,
+    oklch(0.65 0.145 178) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-flow 6s ease-in-out infinite;
+}
+
+@keyframes gradient-flow {
+  0%,
+  100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
+}
+
+/* ─── Hero Metric ───────────────────────────────────────────────────── */
+
+.hero-metric {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.hero-metric-glow {
+  text-shadow:
+    0 0 40px color-mix(in oklch, var(--primary) 35%, transparent),
+    0 0 80px color-mix(in oklch, var(--primary) 15%, transparent);
+}
+
+.dark .hero-metric-glow {
+  text-shadow:
+    0 0 50px color-mix(in oklch, var(--primary) 45%, transparent),
+    0 0 100px color-mix(in oklch, var(--primary) 20%, transparent),
+    0 0 150px color-mix(in oklch, var(--primary) 8%, transparent);
+}
+
+/* ─── Iridescent Surface ───────────────────────────────────────────── */
+
+.iridescent {
+  position: relative;
+  overflow: hidden;
+}
+
+.iridescent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    oklch(0.65 0.145 178 / 5%) 0%,
+    oklch(0.6 0.18 260 / 8%) 25%,
+    oklch(0.72 0.14 65 / 5%) 50%,
+    oklch(0.65 0.16 330 / 8%) 75%,
+    oklch(0.65 0.145 178 / 5%) 100%
+  );
+  background-size: 400% 400%;
+  animation: iridescent-shift 8s ease infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+@keyframes iridescent-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+}
+
+/* ─── Accent Line ───────────────────────────────────────────────────── */
+
+.accent-line {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.65 0.145 178) 15%,
+    oklch(0.6 0.18 260) 50%,
+    oklch(0.72 0.14 65) 85%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+.dark .accent-line {
+  opacity: 0.8;
+}
+
+/* ─── Bento Grid ────────────────────────────────────────────────────── */
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bento-span-2 {
+  grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+  .bento-span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* ─── Floating Orbs ─────────────────────────────────────────────────── */
+
+@keyframes float-orb {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  animation: float-orb 12s ease-in-out infinite;
+}
+
+.orb-teal {
+  background: oklch(0.55 0.15 178 / 25%);
+}
+
+.orb-violet {
+  background: oklch(0.5 0.18 280 / 20%);
+  animation-delay: -4s;
+  animation-duration: 15s;
+}
+
+.orb-amber {
+  background: oklch(0.65 0.14 65 / 18%);
+  animation-delay: -8s;
+  animation-duration: 18s;
+}
+
+.dark .orb-teal {
+  background: oklch(0.4 0.18 178 / 35%);
+}
+.dark .orb-violet {
+  background: oklch(0.35 0.22 280 / 30%);
+}
+.dark .orb-amber {
+  background: oklch(0.45 0.16 65 / 25%);
+}
+
+/* ─── Reduced Motion — web-specific overrides ────────────────────────── */
+
+/* Universal *,*::before,*::after rule lives in
+   @contractor-ops/ui/styles/motion.css. Below: opt-out for web's
+   own decorative animations and hover interactions. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none;
+    background: var(--muted);
+  }
+
+  .animate-fade-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-interactive:hover,
+  .neon-card:hover {
+    transform: none;
+  }
+
+  .aurora-bg::before,
+  .conic-border::before,
+  .conic-border::after,
+  .iridescent::after,
+  .orb,
+  .step-current-ring,
+  .org-logo-gradient,
+  [data-slot="progress-indicator"] {
+    animation: none;
+  }
+
+  .gradient-text {
+    animation: none;
+    -webkit-text-fill-color: var(--foreground);
+  }
+
+  .hero-metric-glow {
+    text-shadow: none;
+  }
+
+  .btn-shimmer::after {
+    display: none;
+  }
+}
+
+/* ─── Reduced Transparency — web-specific override ───────────────────── */
+
+/* Reduced-transparency rules for .atelier-glass and .glass-{subtle,medium,heavy}
+   live in @contractor-ops/ui/styles/glass.css. Below: web-only legacy
+   .glass-surface utility (predates the tiered glass system). */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-surface {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--surface-1);
+  }
+}
+
+/* ─── High Contrast — web-specific overrides ─────────────────────────── */
+
+/* Token-level prefers-contrast: more rules (--border, --muted-foreground,
+   --input) live in @contractor-ops/ui/styles/tokens.css. Below: web-only
+   focus-ring strengthening. */
+@media (prefers-contrast: more) {
+  .focus-glow:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--foreground),
+      0 0 16px color-mix(in oklch, var(--ring) 35%, transparent);
+  }
+}

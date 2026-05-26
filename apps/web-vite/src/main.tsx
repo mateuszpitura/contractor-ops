@@ -7,6 +7,8 @@
  *   - Step 9 wraps with <QueryClientProvider> + <TRPCProvider> + <AuthProvider>
  */
 
+import './styles/globals.css';
+
 import { UITranslationsProvider } from '@contractor-ops/ui/i18n';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
