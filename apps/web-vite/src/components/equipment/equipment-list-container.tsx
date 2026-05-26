@@ -97,7 +97,7 @@ export function EquipmentListContainer() {
 
   if (list.isCountError) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-section-gap">
         <AnimateIn delay={0}>
           <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>
@@ -114,7 +114,7 @@ export function EquipmentListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-section-gap">
         <AnimateIn delay={0}>
           <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>

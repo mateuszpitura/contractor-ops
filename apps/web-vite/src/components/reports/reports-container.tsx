@@ -69,7 +69,7 @@ export function ReportsContainer() {
   })();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-section-gap">
       <div className="lg:hidden">
         <ReportSidebar activeReport={report} onSelect={handleReportChange} />
       </div>
@@ -79,7 +79,7 @@ export function ReportsContainer() {
           <ReportSidebar activeReport={report} onSelect={handleReportChange} />
         </div>
 
-        <div className="min-w-0 flex-1 space-y-4">
+        <div className="min-w-0 flex-1 space-y-card-gap">
           <AnimateIn delay={0}>
             <AtelierPageHeader title={t('title')} />
           </AnimateIn>

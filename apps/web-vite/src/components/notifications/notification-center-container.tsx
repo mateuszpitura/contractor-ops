@@ -28,7 +28,7 @@ export function NotificationCenterContainer() {
   const center = useNotificationCenter();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-section-gap">
       <AnimateIn delay={0}>
         <AtelierPageHeader
           title={t('title')}

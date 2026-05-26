@@ -101,7 +101,7 @@ export function EquipmentDetailContainer() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-section-gap">
       <EquipmentDetailHeaderContainer
         equipment={equipment}
         onEdit={handleOpenForm}

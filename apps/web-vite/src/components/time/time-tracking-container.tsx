@@ -89,7 +89,7 @@ export function TimeTrackingContainer() {
   const tProfile = useTranslations('ContractorProfile');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-section-gap">
       <AnimateIn delay={0}>
         <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
@@ -111,7 +111,7 @@ export function TimeTrackingContainer() {
           </TabsList>
 
           <TabsContent value="pending" className="mt-4">
-            <div className="space-y-4">
+            <div className="space-y-card-gap">
               <SectionLabel icon={Clock}>{t('tabs.pendingReviews')}</SectionLabel>
               {pendingQuery.isLoading ? (
                 <LoadingSkeleton />
@@ -146,7 +146,7 @@ export function TimeTrackingContainer() {
           </TabsContent>
 
           <TabsContent value="all" className="mt-4">
-            <div className="space-y-4">
+            <div className="space-y-card-gap">
               <SectionLabel icon={Clock}>{t('tabs.allEntries')}</SectionLabel>
               <div className="flex items-center gap-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
@@ -226,7 +226,7 @@ export function TimeTrackingContainer() {
           </TabsContent>
 
           <TabsContent value="reconciliation" className="mt-4">
-            <div className="space-y-6">
+            <div className="space-y-section-gap">
               <SectionLabel icon={Clock}>{t('tabs.reconciliation')}</SectionLabel>
               <ReconciliationSpotCheck />
               <ReconciliationTable />

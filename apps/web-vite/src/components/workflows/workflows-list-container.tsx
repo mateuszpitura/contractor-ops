@@ -67,7 +67,7 @@ export function WorkflowsListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-section-gap">
         <AnimateIn delay={0}>
           <AtelierPageHeader
             title={t('pageTitle')}

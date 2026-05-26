@@ -262,6 +262,13 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Semantic vertical rhythm — see packages/ui/src/styles/tokens.css for
+   * usage guidance. Exposes `space-y-{stack-tight,card-gap,section-gap}`,
+   * `gap-*`, and `p{,x,y,t,r,b,l}-*` to Tailwind's utility scale. */
+  --spacing-stack-tight: var(--space-stack-tight);
+  --spacing-card-gap: var(--space-card-gap);
+  --spacing-section-gap: var(--space-section-gap);
 }
 
 /* ─── Base Layer ──────────────────────────────────────────────────────── */

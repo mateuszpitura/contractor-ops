@@ -93,6 +93,30 @@
   --duration-atelier-enter: 1s;
   --duration-atelier-shimmer: 1.2s;
   --duration-atelier-breathe: 5s;
+
+  /* ── Semantic Vertical Rhythm ──
+   *
+   * Three named gaps replace ad-hoc `space-y-2/3/4/6` drift across the
+   * dashboard. Values snap to Tailwind's 0.25rem step (= space-2 / space-4 /
+   * space-6) so the rhythm composes with the rest of the spacing scale.
+   *
+   * Reach for these tokens in this order:
+   *   --space-stack-tight  → tightly coupled label + control / heading + body
+   *                          pairs (was `space-y-2`)
+   *   --space-card-gap     → rows inside a card, panel, or single section
+   *                          (was `space-y-3`/`space-y-4`)
+   *   --space-section-gap  → between top-level page sections under a route
+   *                          shell (was `space-y-6`)
+   *
+   * Tailwind exposes them as `space-y-{stack-tight,card-gap,section-gap}`,
+   * `gap-*`, and `p{,x,y,t,r,b,l}-*` via the @theme inline bridge in each
+   * app's globals.css. Raw `space-y-N` utilities remain valid for deep
+   * component internals (table rows, dialog bodies, skeletons) where the
+   * gap is intrinsic to that component, not to page rhythm.
+   */
+  --space-stack-tight: 0.5rem; /* = space-2 */
+  --space-card-gap: 1rem; /* = space-4 */
+  --space-section-gap: 1.5rem; /* = space-6 */
 }
 
 /* ─── Dark Mode (shared overrides) ────────────────────────────────────── */
