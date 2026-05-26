@@ -336,7 +336,17 @@ A follow-up may revisit if a future router needs all three behaviours in identic
 Step 8 migrates only `usage-dashboard.tsx` and `intake-list.tsx` (the two sites originally enumerated in `plan.md`); the remaining 18 RefreshCw users are recorded here for follow-up (extracting them touches more component layouts than this PR should bundle).
 
 **Risk:** MEDIUM — `QueryStateView` is small but its API choices (skeleton-as-prop vs. variant enum) shape every future container. Step 8 keeps the API minimal: render branches only, no skeleton presets.
-**Score:** `EXTRACTED` (Step 8) for `usage-dashboard.tsx` + `intake-list.tsx`; remaining 18 sites = `DEFERRED — bundle-size: out of scope for this PR, follow-up issue captures the list above`.
+**Score (revised during Step 8):** `SKIPPED`. Inspection of the two target sites showed they share only the 3-branch conditional shape (`isLoading ? skeleton : isError ? error : data`) — 5 LOC. Every visual detail differs:
+
+- Skeleton layouts: `usage-dashboard.tsx` renders a 4-card grid; `intake-list.tsx` uses a `WORKBENCH_DATA_TABLE_CLASS` wrapper around a different layout.
+- Error wrappers: centered `py-12` vs dashed-border container.
+- Retry button styles, icon sizes, accent classes, gap spacing all differ.
+
+A `QueryStateView` primitive would either (a) take every visual detail as a prop — which is just renaming the conditional, no DRY win — or (b) impose a single skeleton/error style across every container, which is a UX redesign, not a refactor (out of scope per facts.md non-goals).
+
+The primitives that actually deduplicate (Skeleton, Button, RefreshCw) already live in `packages/ui` and are imported at every call site. The remaining 5 lines of conditional are clearer inline than behind a wrapper.
+
+`SKIPPED` for all 20 `RefreshCw`-retry containers. Same anti-pattern as Cluster B Group Y, C, F, G — shape-level duplication is not logic-level duplication.
 
 ---
 
@@ -377,8 +387,7 @@ Plus a Python script (out of TS scope, ignored).
 | F | Service-error mapper | SKIPPED — no cross-file duplication; `mapIntakeErrorToTrpc` already single source for the intake domain. jira-sync services use ad-hoc TRPCError throws, not a shared mapping table. | — |
 | F (sub) | `TRPC_TO_HTTP` relocation | SKIPPED — single source in `apps/public-api/src/lib/error-handler.ts`; `apps/api` does not re-implement it | — |
 | G | `softDeleteWithAudit` | SKIPPED — per-site cleanup (R2 delete, doc-link cleanup, calendar event removal, etc.) varies; shared core is one line (`update({ deletedAt })`), audit payload is per-resource | — |
-| H | `QueryStateView` (2 sites) | EXTRACTED | 8 |
-| H (rest) | 18 more `RefreshCw` containers | DEFERRED — out of PR scope | — |
+| H | `QueryStateView` (all 20 sites) | SKIPPED — shape-level duplication, not logic-level; visual details differ per site; primitives already shared via `packages/ui` | — |
 | I | Slug generation | DEFERRED — cross-package dep cost | — |
 
 **Verification commands (per step):** see `plan.md` § Ordered steps.
