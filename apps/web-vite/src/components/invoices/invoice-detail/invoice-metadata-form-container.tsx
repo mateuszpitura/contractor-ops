@@ -9,11 +9,9 @@ type InvoiceMetadataFormContainerProps = {
   onSubmittedForMatching?: () => void;
 };
 
-// Decisive composition (ARCHITECTURE rule #5): wires the metadata form to
-// two feature-flagged sidecar containers (late-interest, skonto) and
-// extracts contractor jurisdiction/business-customer signal that drives
-// their applicability. Both sidecar containers in turn render-or-null on
-// their own variant rules.
+// Decision: composition — wires the metadata form with feature-flagged
+// LateInterestCardContainer + SkontoFormSectionContainer sidecars driven by
+// contractor jurisdiction/business-customer signal. Mounted by InvoiceDetailContainer.
 export function InvoiceMetadataFormContainer({
   invoice,
   onSubmittedForMatching,
