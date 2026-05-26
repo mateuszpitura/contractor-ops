@@ -8,11 +8,9 @@ type EquipmentDetailHeaderContainerProps = Pick<
   'equipment' | 'onEdit' | 'onAssign' | 'onCreateShipment'
 >;
 
-// Decisive: mutation host + confirm-dialog state owner. Owns retire/unassign
-// mutation lifecycles plus the two confirmation dialog open-states that must
-// survive a mutation round-trip. View branches on `equipment.status` (a prop
-// from the parent's `useEquipmentDetail`), not on a hook-returned variant
-// flag — no top-level lift applies.
+// Decision: mutation host — owns useEquipmentRetire + useEquipmentUnassign
+// mutations plus the two confirm-dialog open-states; view branches on
+// equipment.status prop forwarded by the parent useEquipmentDetail.
 export function EquipmentDetailHeaderContainer(props: EquipmentDetailHeaderContainerProps) {
   const [retireDialogOpen, setRetireDialogOpen] = useState(false);
   const [unassignDialogOpen, setUnassignDialogOpen] = useState(false);
