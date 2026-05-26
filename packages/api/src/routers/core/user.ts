@@ -3,6 +3,7 @@ import { inviteUserSchema, updateUserRoleSchema } from '@contractor-ops/validato
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { sensitiveActionProcedure } from '../../middleware/sensitive';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -30,17 +31,14 @@ async function guardLastAdmin(
   organizationId: string,
   userId: string,
 ): Promise<{ id: string; role: string }> {
-  const targetMember = await db.member.findFirst({
-    where: { organizationId, userId },
-    select: { id: true, role: true },
-  });
-
-  if (!targetMember) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'MEMBER_NOT_FOUND',
-    });
-  }
+  const targetMember = await findOrThrow(
+    () =>
+      db.member.findFirst({
+        where: { organizationId, userId },
+        select: { id: true, role: true },
+      }),
+    'MEMBER_NOT_FOUND',
+  );
 
   // Non-admin/owner roles can always be deactivated.
   if (targetMember.role !== 'owner' && targetMember.role !== 'admin') {
@@ -342,17 +340,14 @@ export const userRouter = router({
     .use(requirePermission({ member: ['update'] }))
     .input(z.object({ userId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      const targetMember = await ctx.db.member.findFirst({
-        where: { organizationId: ctx.organizationId, userId: input.userId },
-        select: { id: true },
-      });
-
-      if (!targetMember) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'MEMBER_NOT_FOUND',
-        });
-      }
+      const targetMember = await findOrThrow(
+        () =>
+          ctx.db.member.findFirst({
+            where: { organizationId: ctx.organizationId, userId: input.userId },
+            select: { id: true },
+          }),
+        'MEMBER_NOT_FOUND',
+      );
 
       const updated = await ctx.db.member.update({
         where: { id: targetMember.id },

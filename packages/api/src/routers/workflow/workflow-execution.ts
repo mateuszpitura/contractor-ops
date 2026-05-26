@@ -24,6 +24,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -465,36 +466,30 @@ export const workflowExecutionRouter = router({
     .input(startRunSchema)
     .mutation(async ({ ctx, input }) => {
       const run = await ctx.db.$transaction(async tx => {
-        const template = await tx.workflowTemplate.findFirst({
-          where: {
-            id: input.templateId,
-            organizationId: ctx.organizationId,
-            status: 'ACTIVE',
-          },
-          include: { tasks: { orderBy: { sortOrder: 'asc' } } },
-        });
+        const template = await findOrThrow(
+          () =>
+            tx.workflowTemplate.findFirst({
+              where: {
+                id: input.templateId,
+                organizationId: ctx.organizationId,
+                status: 'ACTIVE',
+              },
+              include: { tasks: { orderBy: { sortOrder: 'asc' } } },
+            }),
+          E.WORKFLOW_TEMPLATE_NOT_FOUND,
+        );
 
-        if (!template) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.WORKFLOW_TEMPLATE_NOT_FOUND,
-          });
-        }
-
-        const contractor = await tx.contractor.findFirst({
-          where: {
-            id: input.contractorId,
-            organizationId: ctx.organizationId,
-            deletedAt: null,
-          },
-        });
-
-        if (!contractor) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.CONTRACTOR_NOT_FOUND,
-          });
-        }
+        const contractor = await findOrThrow(
+          () =>
+            tx.contractor.findFirst({
+              where: {
+                id: input.contractorId,
+                organizationId: ctx.organizationId,
+                deletedAt: null,
+              },
+            }),
+          E.CONTRACTOR_NOT_FOUND,
+        );
 
         const contract = input.contractId
           ? await tx.contract.findFirst({
@@ -646,19 +641,16 @@ export const workflowExecutionRouter = router({
     .input(cancelRunSchema)
     .mutation(async ({ ctx, input }) => {
       const run = await ctx.db.$transaction(async tx => {
-        const existing = await tx.workflowRun.findFirst({
-          where: {
-            id: input.runId,
-            organizationId: ctx.organizationId,
-          },
-        });
-
-        if (!existing) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.WORKFLOW_RUN_NOT_FOUND,
-          });
-        }
+        const existing = await findOrThrow(
+          () =>
+            tx.workflowRun.findFirst({
+              where: {
+                id: input.runId,
+                organizationId: ctx.organizationId,
+              },
+            }),
+          E.WORKFLOW_RUN_NOT_FOUND,
+        );
 
         if (existing.status === 'COMPLETED' || existing.status === 'CANCELLED') {
           throw new TRPCError({
@@ -710,38 +702,35 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const run = await ctx.db.workflowRun.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          tasks: { orderBy: { createdAt: 'asc' } },
-          comments: {
-            include: { author: { select: { id: true, name: true, image: true } } },
-            orderBy: { createdAt: 'asc' },
-          },
-          workflowTemplate: { select: { id: true, name: true, type: true } },
-          contractor: {
-            select: {
-              id: true,
-              legalName: true,
-              displayName: true,
-              status: true,
+      const run = await findOrThrow(
+        () =>
+          ctx.db.workflowRun.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
             },
-          },
-          contract: {
-            select: { id: true, title: true, status: true },
-          },
-        },
-      });
-
-      if (!run) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.WORKFLOW_RUN_NOT_FOUND,
-        });
-      }
+            include: {
+              tasks: { orderBy: { createdAt: 'asc' } },
+              comments: {
+                include: { author: { select: { id: true, name: true, image: true } } },
+                orderBy: { createdAt: 'asc' },
+              },
+              workflowTemplate: { select: { id: true, name: true, type: true } },
+              contractor: {
+                select: {
+                  id: true,
+                  legalName: true,
+                  displayName: true,
+                  status: true,
+                },
+              },
+              contract: {
+                select: { id: true, title: true, status: true },
+              },
+            },
+          }),
+        E.WORKFLOW_RUN_NOT_FOUND,
+      );
 
       const now = new Date();
 
@@ -906,22 +895,19 @@ export const workflowExecutionRouter = router({
     .input(taskActionSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
-        const task = await tx.workflowTaskRun.findFirst({
-          where: {
-            id: input.taskRunId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            workflowRun: { select: { id: true, status: true } },
-          },
-        });
-
-        if (!task) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.WORKFLOW_TASK_NOT_FOUND,
-          });
-        }
+        const task = await findOrThrow(
+          () =>
+            tx.workflowTaskRun.findFirst({
+              where: {
+                id: input.taskRunId,
+                organizationId: ctx.organizationId,
+              },
+              include: {
+                workflowRun: { select: { id: true, status: true } },
+              },
+            }),
+          E.WORKFLOW_TASK_NOT_FOUND,
+        );
 
         if (!validateTransition(task.status, 'DONE')) {
           throw new TRPCError({
@@ -964,22 +950,19 @@ export const workflowExecutionRouter = router({
     .input(skipTaskSchema)
     .mutation(async ({ ctx, input }) => {
       const result = await ctx.db.$transaction(async tx => {
-        const task = await tx.workflowTaskRun.findFirst({
-          where: {
-            id: input.taskRunId,
-            organizationId: ctx.organizationId,
-          },
-          include: {
-            workflowRun: { select: { id: true, status: true } },
-          },
-        });
-
-        if (!task) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.WORKFLOW_TASK_NOT_FOUND,
-          });
-        }
+        const task = await findOrThrow(
+          () =>
+            tx.workflowTaskRun.findFirst({
+              where: {
+                id: input.taskRunId,
+                organizationId: ctx.organizationId,
+              },
+              include: {
+                workflowRun: { select: { id: true, status: true } },
+              },
+            }),
+          E.WORKFLOW_TASK_NOT_FOUND,
+        );
 
         if (!validateTransition(task.status, 'SKIPPED')) {
           throw new TRPCError({
@@ -1016,19 +999,16 @@ export const workflowExecutionRouter = router({
     .use(requirePermission({ workflow: ['update'] }))
     .input(reassignTaskSchema)
     .mutation(async ({ ctx, input }) => {
-      const task = await ctx.db.workflowTaskRun.findFirst({
-        where: {
-          id: input.taskRunId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!task) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.WORKFLOW_TASK_NOT_FOUND,
-        });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.workflowTaskRun.findFirst({
+            where: {
+              id: input.taskRunId,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        E.WORKFLOW_TASK_NOT_FOUND,
+      );
 
       const updated = await ctx.db.workflowTaskRun.update({
         where: { id: input.taskRunId },
@@ -1080,19 +1060,16 @@ export const workflowExecutionRouter = router({
     .input(addCommentSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify run belongs to org
-      const run = await ctx.db.workflowRun.findFirst({
-        where: {
-          id: input.workflowRunId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!run) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.WORKFLOW_RUN_NOT_FOUND,
-        });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.workflowRun.findFirst({
+            where: {
+              id: input.workflowRunId,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        E.WORKFLOW_RUN_NOT_FOUND,
+      );
 
       const comment = await ctx.db.workflowComment.create({
         data: {
@@ -1190,13 +1167,14 @@ export const workflowExecutionRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.$transaction(async tx => {
-        const run = await tx.workflowRun.findFirst({
-          where: { id: input.workflowRunId, organizationId: ctx.organizationId },
-          select: { id: true, overrideMetadata: true },
-        });
-        if (!run) {
-          throw new TRPCError({ code: 'NOT_FOUND', message: 'Workflow run not found' });
-        }
+        await findOrThrow(
+          () =>
+            tx.workflowRun.findFirst({
+              where: { id: input.workflowRunId, organizationId: ctx.organizationId },
+              select: { id: true, overrideMetadata: true },
+            }),
+          'Workflow run not found',
+        );
 
         // Find any open IP_VERIFICATION tasks on the run.
         const openIpTasks = await tx.workflowTaskRun.findMany({

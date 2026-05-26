@@ -13,6 +13,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
@@ -285,36 +286,33 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-        include: {
-          contractor: {
-            select: { id: true, legalName: true, displayName: true, status: true },
-          },
-          amendments: {
-            orderBy: { effectiveDate: 'desc' },
-          },
-          internalOwner: {
-            select: { id: true, name: true },
-          },
-          _count: {
-            select: {
-              invoices: true,
+      const contract = await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
             },
-          },
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+            include: {
+              contractor: {
+                select: { id: true, legalName: true, displayName: true, status: true },
+              },
+              amendments: {
+                orderBy: { effectiveDate: 'desc' },
+              },
+              internalOwner: {
+                select: { id: true, name: true },
+              },
+              _count: {
+                select: {
+                  invoices: true,
+                },
+              },
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       // Count linked documents
       const documentCount = await ctx.db.documentLink.count({
@@ -335,20 +333,17 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(z.object({ id: z.string(), data: contractUpdateSchema }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.contract.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!existing) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       const updateData: Record<string, unknown> = { ...input.data };
 
@@ -464,20 +459,17 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(contractStatusTransitionSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+      const contract = await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       const allowedTargets = CONTRACT_TRANSITIONS[contract.status] ?? [];
       if (!allowedTargets.includes(input.targetStatus)) {
@@ -524,20 +516,17 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(amendmentCreateSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.findFirst({
-        where: {
-          id: input.contractId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.contractId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       // Auto-generate amendment number
       const existingCount = await ctx.db.contractAmendment.count({
@@ -587,20 +576,17 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['update'] }))
     .input(contractExpiryReminderSchema)
     .mutation(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.findFirst({
-        where: {
-          id: input.contractId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+      const contract = await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.contractId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       const currentMetadata = (contract.metadataJson as Record<string, unknown>) ?? {};
 
@@ -626,20 +612,17 @@ export const contractRouter = router({
     .use(requirePermission({ contract: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const contract = await ctx.db.contract.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contract) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACT_NOT_FOUND,
-        });
-      }
+      const contract = await findOrThrow(
+        () =>
+          ctx.db.contract.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACT_NOT_FOUND,
+      );
 
       if (contract.status !== 'DRAFT') {
         throw new TRPCError({

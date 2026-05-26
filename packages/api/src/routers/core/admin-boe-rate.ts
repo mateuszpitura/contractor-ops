@@ -7,6 +7,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { invalidateBoeRateCache } from '../../services/boe-rate-cache';
@@ -98,13 +99,13 @@ export const adminBoeRateRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.boEBaseRateHistory.findUnique({
-        where: { id: input.id },
-      });
-
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Rate entry not found' });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.boEBaseRateHistory.findUnique({
+            where: { id: input.id },
+          }),
+        'Rate entry not found',
+      );
 
       const updated = await ctx.db.boEBaseRateHistory.update({
         where: { id: input.id },
@@ -135,13 +136,13 @@ export const adminBoeRateRouter = router({
     .use(requirePermission({ 'admin:boe-rate': ['write'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.boEBaseRateHistory.findUnique({
-        where: { id: input.id },
-      });
-
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Rate entry not found' });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.boEBaseRateHistory.findUnique({
+            where: { id: input.id },
+          }),
+        'Rate entry not found',
+      );
 
       await ctx.db.boEBaseRateHistory.delete({
         where: { id: input.id },

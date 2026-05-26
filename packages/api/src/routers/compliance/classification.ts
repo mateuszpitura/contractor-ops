@@ -39,6 +39,7 @@ import { SDS_APPROVAL_STATEMENT_EN } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { classificationSaveAnswerRateLimit } from '../../middleware/classification-rate-limit';
 import { adminProcedure, requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
@@ -210,14 +211,14 @@ async function resolveAssignmentAndProfile(
   },
   contractorAssignmentId: string,
 ) {
-  const assignment = await db.contractorAssignment.findFirst({
-    where: { id: contractorAssignmentId },
-    select: { id: true, contractorId: true, contractor: { select: { countryCode: true } } },
-  });
-
-  if (!assignment) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: 'errors.contractor.notFound' });
-  }
+  const assignment = await findOrThrow(
+    () =>
+      db.contractorAssignment.findFirst({
+        where: { id: contractorAssignmentId },
+        select: { id: true, contractorId: true, contractor: { select: { countryCode: true } } },
+      }),
+    'errors.contractor.notFound',
+  );
 
   try {
     const profile = getProfileForCountry(assignment.contractor.countryCode);
@@ -865,13 +866,14 @@ export const classificationRouter = router({
   logEscalation: classificationProcedure
     .input(logEscalationInput)
     .mutation(async ({ ctx, input }) => {
-      const assessment = await ctx.db.classificationAssessment.findFirst({
-        where: { id: input.assessmentId },
-        select: { id: true },
-      });
-      if (!assessment) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Assessment not found' });
-      }
+      const assessment = await findOrThrow(
+        () =>
+          ctx.db.classificationAssessment.findFirst({
+            where: { id: input.assessmentId },
+            select: { id: true },
+          }),
+        'Assessment not found',
+      );
 
       const headers = (ctx as { req?: { headers?: { get?: (k: string) => string | null } } }).req
         ?.headers;
@@ -913,13 +915,14 @@ export const classificationRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(approveSdsInput)
     .mutation(async ({ ctx, input }) => {
-      const assessment = await ctx.db.classificationAssessment.findFirst({
-        where: { id: input.assessmentId, status: 'completed' },
-        select: { id: true, countryCode: true },
-      });
-      if (!assessment) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Completed assessment not found' });
-      }
+      const assessment = await findOrThrow(
+        () =>
+          ctx.db.classificationAssessment.findFirst({
+            where: { id: input.assessmentId, status: 'completed' },
+            select: { id: true, countryCode: true },
+          }),
+        'Completed assessment not found',
+      );
       if (assessment.countryCode !== 'GB') {
         throw new TRPCError({
           code: 'BAD_REQUEST',

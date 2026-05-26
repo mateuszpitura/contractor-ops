@@ -18,6 +18,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 import { buildClassificationDocumentKey } from '../../services/classification-document-keys';
@@ -315,13 +316,14 @@ export const classificationDocumentRouter = router({
       }
       const userId = ctx.session.user.id;
 
-      const assessment = await ctx.db.classificationAssessment.findFirst({
-        where: { id: input.classificationAssessmentId },
-        select: { id: true, countryCode: true },
-      });
-      if (!assessment) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Assessment not found' });
-      }
+      const assessment = await findOrThrow(
+        () =>
+          ctx.db.classificationAssessment.findFirst({
+            where: { id: input.classificationAssessmentId },
+            select: { id: true, countryCode: true },
+          }),
+        'Assessment not found',
+      );
       if (assessment.countryCode !== 'DE') {
         throw new TRPCError({
           code: 'BAD_REQUEST',

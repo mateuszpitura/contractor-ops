@@ -11,6 +11,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -31,29 +32,26 @@ export const equipmentReturnsRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(returnRequestApproveSchema)
     .mutation(async ({ ctx, input }) => {
-      const returnRequest = await ctx.db.returnRequest.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          contractor: {
-            select: {
-              id: true,
-              displayName: true,
-              email: true,
-              phone: true,
+      const returnRequest = await findOrThrow(
+        () =>
+          ctx.db.returnRequest.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
             },
-          },
-        },
-      });
-
-      if (!returnRequest) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'RETURN_REQUEST_NOT_FOUND',
-        });
-      }
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  displayName: true,
+                  email: true,
+                  phone: true,
+                },
+              },
+            },
+          }),
+        'RETURN_REQUEST_NOT_FOUND',
+      );
 
       if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({
@@ -219,19 +217,16 @@ export const equipmentReturnsRouter = router({
     .use(requirePermission({ equipment: ['update'] }))
     .input(returnRequestRejectSchema)
     .mutation(async ({ ctx, input }) => {
-      const returnRequest = await ctx.db.returnRequest.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!returnRequest) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'RETURN_REQUEST_NOT_FOUND',
-        });
-      }
+      const returnRequest = await findOrThrow(
+        () =>
+          ctx.db.returnRequest.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        'RETURN_REQUEST_NOT_FOUND',
+      );
 
       if (returnRequest.status !== 'PENDING_APPROVAL') {
         throw new TRPCError({

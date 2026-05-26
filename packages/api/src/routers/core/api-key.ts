@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { PUBLIC_API_SCOPES } from '../../lib/scope-utils';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -131,16 +132,16 @@ export const apiKeyRouter = router({
    * Update an API key's name or scopes.
    */
   update: apiKeyAdminProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.organizationApiKey.findFirst({
-      where: {
-        id: input.id,
-        organizationId: ctx.organizationId,
-      },
-    });
-
-    if (!existing) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'API_KEY_NOT_FOUND' });
-    }
+    const existing = await findOrThrow(
+      () =>
+        ctx.db.organizationApiKey.findFirst({
+          where: {
+            id: input.id,
+            organizationId: ctx.organizationId,
+          },
+        }),
+      'API_KEY_NOT_FOUND',
+    );
 
     if (existing.revokedAt) {
       throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot update a revoked key.' });
@@ -186,16 +187,16 @@ export const apiKeyRouter = router({
   revoke: apiKeyAdminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.organizationApiKey.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!existing) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'API_KEY_NOT_FOUND' });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.organizationApiKey.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        'API_KEY_NOT_FOUND',
+      );
 
       if (existing.revokedAt) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Key is already revoked.' });

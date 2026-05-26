@@ -13,6 +13,7 @@ import { z } from 'zod';
 import * as E from '../../errors';
 import { getHmrcVatClient, getViesClient } from '../../gov-api-clients';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -325,17 +326,18 @@ async function validateContractorVatId(
   ctx: { db: DbClient; organizationId: string; user?: { id: string } | null },
   contractorId: string,
 ) {
-  const contractor = await ctx.db.contractor.findFirst({
-    where: {
-      id: contractorId,
-      organizationId: ctx.organizationId,
-      deletedAt: null,
-    },
-    select: { id: true, countryCode: true, vatId: true },
-  });
-  if (!contractor) {
-    throw new TRPCError({ code: 'NOT_FOUND', message: E.CONTRACTOR_NOT_FOUND });
-  }
+  const contractor = await findOrThrow(
+    () =>
+      ctx.db.contractor.findFirst({
+        where: {
+          id: contractorId,
+          organizationId: ctx.organizationId,
+          deletedAt: null,
+        },
+        select: { id: true, countryCode: true, vatId: true },
+      }),
+    E.CONTRACTOR_NOT_FOUND,
+  );
   if (!contractor.vatId) {
     throw new TRPCError({
       code: 'BAD_REQUEST',
@@ -779,20 +781,17 @@ export const contractorRouter = router({
       } = input;
 
       // Verify contractor belongs to org
-      const existing = await ctx.db.contractor.findFirst({
-        where: {
-          id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!existing) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACTOR_NOT_FOUND,
-        });
-      }
+      const existing = await findOrThrow(
+        () =>
+          ctx.db.contractor.findFirst({
+            where: {
+              id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACTOR_NOT_FOUND,
+      );
 
       const updateData: Prisma.ContractorUpdateInput = {
         ...companyFields,
@@ -854,20 +853,17 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['update'] }))
     .input(contractorLifecycleTransitionSchema)
     .mutation(async ({ ctx, input }) => {
-      const contractor = await ctx.db.contractor.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contractor) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACTOR_NOT_FOUND,
-        });
-      }
+      const contractor = await findOrThrow(
+        () =>
+          ctx.db.contractor.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACTOR_NOT_FOUND,
+      );
 
       const allowedTargets = LEGAL_TRANSITIONS[contractor.lifecycleStage] ?? [];
       if (!allowedTargets.includes(input.stage)) {
@@ -928,20 +924,17 @@ export const contractorRouter = router({
     .use(requirePermission({ contractor: ['delete'] }))
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const contractor = await ctx.db.contractor.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!contractor) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.CONTRACTOR_NOT_FOUND,
-        });
-      }
+      const contractor = await findOrThrow(
+        () =>
+          ctx.db.contractor.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.CONTRACTOR_NOT_FOUND,
+      );
 
       // Block archival if contractor has unpaid invoices
       const unpaidInvoiceCount = await ctx.db.invoice.count({

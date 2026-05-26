@@ -16,6 +16,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import type { TenantScopedDb } from '../../lib/tenant-db';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -442,19 +443,16 @@ export const approvalRouter = router({
     .use(requirePermission({ settings: ['read'] }))
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const chain = await ctx.db.approvalChainConfig.findFirst({
-        where: {
-          id: input.id,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!chain) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.APPROVAL_CHAIN_NOT_FOUND,
-        });
-      }
+      const chain = await findOrThrow(
+        () =>
+          ctx.db.approvalChainConfig.findFirst({
+            where: {
+              id: input.id,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        E.APPROVAL_CHAIN_NOT_FOUND,
+      );
 
       return plain(chain);
     }),
@@ -526,16 +524,13 @@ export const approvalRouter = router({
 
       const updated = await ctx.db.$transaction(async tx => {
         // Verify chain belongs to org
-        const existing = await tx.approvalChainConfig.findFirst({
-          where: { id, organizationId: ctx.organizationId },
-        });
-
-        if (!existing) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_CHAIN_NOT_FOUND,
-          });
-        }
+        await findOrThrow(
+          () =>
+            tx.approvalChainConfig.findFirst({
+              where: { id, organizationId: ctx.organizationId },
+            }),
+          E.APPROVAL_CHAIN_NOT_FOUND,
+        );
 
         // If setting as default, unset existing default
         if (data.isDefault) {
@@ -594,16 +589,13 @@ export const approvalRouter = router({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.$transaction(async tx => {
         // Verify chain belongs to org
-        const existing = await tx.approvalChainConfig.findFirst({
-          where: { id: input.id, organizationId: ctx.organizationId },
-        });
-
-        if (!existing) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.APPROVAL_CHAIN_NOT_FOUND,
-          });
-        }
+        await findOrThrow(
+          () =>
+            tx.approvalChainConfig.findFirst({
+              where: { id: input.id, organizationId: ctx.organizationId },
+            }),
+          E.APPROVAL_CHAIN_NOT_FOUND,
+        );
 
         // Check for active flows referencing this chain
         const activeFlow = await tx.approvalFlow.findFirst({
@@ -1200,20 +1192,17 @@ export const approvalRouter = router({
     .input(z.object({ invoiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const flow = await ctx.db.$transaction(async tx => {
-        const invoice = await tx.invoice.findFirst({
-          where: {
-            id: input.invoiceId,
-            organizationId: ctx.organizationId,
-            deletedAt: null,
-          },
-        });
-
-        if (!invoice) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.INVOICE_NOT_FOUND,
-          });
-        }
+        const invoice = await findOrThrow(
+          () =>
+            tx.invoice.findFirst({
+              where: {
+                id: input.invoiceId,
+                organizationId: ctx.organizationId,
+                deletedAt: null,
+              },
+            }),
+          E.INVOICE_NOT_FOUND,
+        );
 
         // Verify invoice is in a state that allows submission
         const allowedMatchStatuses = ['MATCHED', 'MANUALLY_CONFIRMED'];

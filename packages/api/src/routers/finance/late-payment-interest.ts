@@ -12,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requireFeatureFlag, tenantFlaggedProcedure } from '../../middleware/feature-flag';
 import { requirePermission } from '../../middleware/rbac';
 import { loadBoeRateHistory } from '../../services/boe-rate-cache';
@@ -44,26 +45,26 @@ export const latePaymentInterestRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ invoiceId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const invoice = await ctx.db.invoice.findFirst({
-        where: { id: input.invoiceId, organizationId: ctx.organizationId },
-        include: {
-          contractor: {
-            select: {
-              id: true,
-              countryCode: true,
-              isBusinessCustomer: true,
+      const invoice = await findOrThrow(
+        () =>
+          ctx.db.invoice.findFirst({
+            where: { id: input.invoiceId, organizationId: ctx.organizationId },
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  countryCode: true,
+                  isBusinessCustomer: true,
+                },
+              },
+              payments: true,
+              interestCompensation: true,
+              interestWaivers: true,
+              interestClaims: true,
             },
-          },
-          payments: true,
-          interestCompensation: true,
-          interestWaivers: true,
-          interestClaims: true,
-        },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
-      }
+          }),
+        'Invoice not found',
+      );
 
       // Load BoE rate history (global, not tenant-scoped) via cache.
       const rateHistory = await loadBoeRateHistory(ctx.db);
@@ -284,14 +285,14 @@ export const latePaymentInterestRouter = router({
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: E.UNAUTHORIZED });
 
       // Verify invoice exists and belongs to org
-      const invoice = await ctx.db.invoice.findFirst({
-        where: { id: input.invoiceId, organizationId: ctx.organizationId },
-        select: { id: true },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.invoice.findFirst({
+            where: { id: input.invoiceId, organizationId: ctx.organizationId },
+            select: { id: true },
+          }),
+        'Invoice not found',
+      );
 
       // Check for existing active waiver of same type
       const existingWaiver = await ctx.db.invoiceInterestWaiver.findFirst({
@@ -342,20 +343,17 @@ export const latePaymentInterestRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const waiver = await ctx.db.invoiceInterestWaiver.findFirst({
-        where: {
-          id: input.waiverId,
-          organizationId: ctx.organizationId,
-          revokedAt: null,
-        },
-      });
-
-      if (!waiver) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Active waiver not found',
-        });
-      }
+      const waiver = await findOrThrow(
+        () =>
+          ctx.db.invoiceInterestWaiver.findFirst({
+            where: {
+              id: input.waiverId,
+              organizationId: ctx.organizationId,
+              revokedAt: null,
+            },
+          }),
+        'Active waiver not found',
+      );
 
       await ctx.db.invoiceInterestWaiver.update({
         where: { id: input.waiverId },
@@ -390,29 +388,29 @@ export const latePaymentInterestRouter = router({
       const userId = ctx.user?.id;
       if (!userId) throw new TRPCError({ code: 'UNAUTHORIZED', message: E.UNAUTHORIZED });
 
-      const invoice = await ctx.db.invoice.findFirst({
-        where: { id: input.invoiceId, organizationId: ctx.organizationId },
-        include: {
-          contractor: {
-            select: {
-              id: true,
-              countryCode: true,
-              isBusinessCustomer: true,
+      const invoice = await findOrThrow(
+        () =>
+          ctx.db.invoice.findFirst({
+            where: { id: input.invoiceId, organizationId: ctx.organizationId },
+            include: {
+              contractor: {
+                select: {
+                  id: true,
+                  countryCode: true,
+                  isBusinessCustomer: true,
+                },
+              },
+              organization: {
+                select: { id: true, name: true },
+              },
+              payments: true,
+              interestCompensation: true,
+              interestWaivers: true,
+              interestClaims: { select: { id: true } },
             },
-          },
-          organization: {
-            select: { id: true, name: true },
-          },
-          payments: true,
-          interestCompensation: true,
-          interestWaivers: true,
-          interestClaims: { select: { id: true } },
-        },
-      });
-
-      if (!invoice) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Invoice not found' });
-      }
+          }),
+        'Invoice not found',
+      );
 
       // Duplicate-claim guard: `calculateLateInterest` does not subtract
       // previously claimed amounts, so without this check a caller could
@@ -566,19 +564,19 @@ export const latePaymentInterestRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(z.object({ claimId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const claim = await ctx.db.invoiceInterestClaim.findFirst({
-        where: {
-          id: input.claimId,
-          organizationId: ctx.organizationId,
-        },
-        include: {
-          invoice: { select: { invoiceNumber: true } },
-        },
-      });
-
-      if (!claim) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Claim not found' });
-      }
+      const claim = await findOrThrow(
+        () =>
+          ctx.db.invoiceInterestClaim.findFirst({
+            where: {
+              id: input.claimId,
+              organizationId: ctx.organizationId,
+            },
+            include: {
+              invoice: { select: { invoiceNumber: true } },
+            },
+          }),
+        'Claim not found',
+      );
 
       // PDF is rendered asynchronously by a QStash worker. The client is
       // expected to poll this procedure; we surface the status verbatim so

@@ -18,6 +18,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
 import { writeAuditLog } from '../../services/audit-writer';
@@ -130,15 +131,13 @@ export const statusfeststellungsverfahrenRouter = router({
   }),
 
   update: contractorUpdateProcedure.input(updateInput).mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.statusfeststellungsverfahren.findFirst({
-      where: { id: input.id },
-    });
-    if (!existing) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Statusfeststellungsverfahren record not found.',
-      });
-    }
+    const existing = await findOrThrow(
+      () =>
+        ctx.db.statusfeststellungsverfahren.findFirst({
+          where: { id: input.id },
+        }),
+      'Statusfeststellungsverfahren record not found.',
+    );
 
     // Cross-field validation after merge — reject updates that would leave a
     // SELBSTANDIG/ABHANGIG row without validFrom/validTo.
@@ -184,15 +183,13 @@ export const statusfeststellungsverfahrenRouter = router({
   }),
 
   delete: contractorUpdateProcedure.input(deleteInput).mutation(async ({ ctx, input }) => {
-    const existing = await ctx.db.statusfeststellungsverfahren.findFirst({
-      where: { id: input.id },
-    });
-    if (!existing) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Statusfeststellungsverfahren record not found.',
-      });
-    }
+    const existing = await findOrThrow(
+      () =>
+        ctx.db.statusfeststellungsverfahren.findFirst({
+          where: { id: input.id },
+        }),
+      'Statusfeststellungsverfahren record not found.',
+    );
 
     await ctx.db.statusfeststellungsverfahren.delete({ where: { id: input.id } });
 

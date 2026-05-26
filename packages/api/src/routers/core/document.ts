@@ -12,6 +12,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
 import { uploadRateLimitMiddleware } from '../../middleware/upload-rate-limit';
@@ -252,19 +253,16 @@ export const documentRouter = router({
     .use(requirePermission({ document: ['create'] }))
     .input(documentConfirmUploadSchema)
     .mutation(async ({ ctx, input }) => {
-      const doc = await ctx.db.document.findFirst({
-        where: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-        },
-      });
-
-      if (!doc) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.DOCUMENT_NOT_FOUND,
-        });
-      }
+      const doc = await findOrThrow(
+        () =>
+          ctx.db.document.findFirst({
+            where: {
+              id: input.documentId,
+              organizationId: ctx.organizationId,
+            },
+          }),
+        E.DOCUMENT_NOT_FOUND,
+      );
 
       // Verify object exists in R2
       let headResponse: HeadObjectCommandOutput;
@@ -342,20 +340,17 @@ export const documentRouter = router({
     .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await ctx.db.document.findFirst({
-        where: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!doc) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.DOCUMENT_NOT_FOUND,
-        });
-      }
+      const doc = await findOrThrow(
+        () =>
+          ctx.db.document.findFirst({
+            where: {
+              id: input.documentId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.DOCUMENT_NOT_FOUND,
+      );
 
       // F-SEC-15: block downloads for any non-CLEAN scan status. The uploader
       // may download their own file while the scan is still pending/failed —
@@ -456,21 +451,18 @@ export const documentRouter = router({
 
       const result = await ctx.db.$transaction(async tx => {
         // Find existing document
-        const existing = await tx.document.findFirst({
-          where: {
-            id: input.existingDocumentId,
-            organizationId: ctx.organizationId,
-            deletedAt: null,
-          },
-          include: { links: true },
-        });
-
-        if (!existing) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.DOCUMENT_NOT_FOUND,
-          });
-        }
+        const existing = await findOrThrow(
+          () =>
+            tx.document.findFirst({
+              where: {
+                id: input.existingDocumentId,
+                organizationId: ctx.organizationId,
+                deletedAt: null,
+              },
+              include: { links: true },
+            }),
+          E.DOCUMENT_NOT_FOUND,
+        );
 
         if (existing.status !== 'ACTIVE') {
           throw new TRPCError({
@@ -546,20 +538,17 @@ export const documentRouter = router({
     .use(requirePermission({ document: ['read'] }))
     .input(z.object({ documentId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const doc = await ctx.db.document.findFirst({
-        where: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-        },
-        include: { links: true },
-      });
-
-      if (!doc) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.DOCUMENT_NOT_FOUND,
-        });
-      }
+      const doc = await findOrThrow(
+        () =>
+          ctx.db.document.findFirst({
+            where: {
+              id: input.documentId,
+              organizationId: ctx.organizationId,
+            },
+            include: { links: true },
+          }),
+        E.DOCUMENT_NOT_FOUND,
+      );
 
       if (doc.links.length === 0) {
         return [doc];
@@ -598,20 +587,17 @@ export const documentRouter = router({
     .use(requirePermission({ document: ['delete'] }))
     .input(z.object({ documentId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const doc = await ctx.db.document.findFirst({
-        where: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!doc) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.DOCUMENT_NOT_FOUND,
-        });
-      }
+      const doc = await findOrThrow(
+        () =>
+          ctx.db.document.findFirst({
+            where: {
+              id: input.documentId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.DOCUMENT_NOT_FOUND,
+      );
 
       // Soft-delete the document
       await ctx.db.document.update({
@@ -662,20 +648,17 @@ export const documentRouter = router({
     .input(documentLinkSchema)
     .mutation(async ({ ctx, input }) => {
       // Verify document belongs to org
-      const doc = await ctx.db.document.findFirst({
-        where: {
-          id: input.documentId,
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-        },
-      });
-
-      if (!doc) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: E.DOCUMENT_NOT_FOUND,
-        });
-      }
+      await findOrThrow(
+        () =>
+          ctx.db.document.findFirst({
+            where: {
+              id: input.documentId,
+              organizationId: ctx.organizationId,
+              deletedAt: null,
+            },
+          }),
+        E.DOCUMENT_NOT_FOUND,
+      );
 
       const link = await ctx.db.documentLink.create({
         data: {

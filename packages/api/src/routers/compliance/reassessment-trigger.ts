@@ -9,6 +9,7 @@
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { router } from '../../init';
+import { findOrThrow } from '../../lib/find-or-throw';
 import { cursorClause, paginateByExtraRow } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
 import { classificationProcedure } from '../../middleware/require-classification-flag';
@@ -74,10 +75,10 @@ export const reassessmentTriggerRouter = router({
   acknowledge: contractorUpdateProcedure
     .input(acknowledgeInput)
     .mutation(async ({ ctx, input }) => {
-      const row = await ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } });
-      if (!row) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Reassessment trigger not found.' });
-      }
+      const row = await findOrThrow(
+        () => ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } }),
+        'Reassessment trigger not found.',
+      );
       if (row.status !== 'OPEN') {
         throw new TRPCError({
           code: 'BAD_REQUEST',
@@ -95,10 +96,10 @@ export const reassessmentTriggerRouter = router({
     }),
 
   dismiss: contractorUpdateProcedure.input(dismissInput).mutation(async ({ ctx, input }) => {
-    const row = await ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } });
-    if (!row) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'Reassessment trigger not found.' });
-    }
+    const row = await findOrThrow(
+      () => ctx.db.reassessmentTrigger.findFirst({ where: { id: input.id } }),
+      'Reassessment trigger not found.',
+    );
     if (row.status === 'RESOLVED' || row.status === 'DISMISSED') {
       throw new TRPCError({
         code: 'BAD_REQUEST',
