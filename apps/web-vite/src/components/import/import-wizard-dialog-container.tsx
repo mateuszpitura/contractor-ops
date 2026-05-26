@@ -7,6 +7,10 @@ import { StepMapping } from './step-mapping.js';
 import { StepPreview } from './step-preview.js';
 import { StepUpload } from './step-upload.js';
 
+// Decision: container picks which step body to render based on
+// `wizard.currentStep` (and guards each branch on the matching parse/validate
+// result). The presentational `ImportWizardDialogView` is a pure shell that
+// renders the chosen step inside the dialog chrome.
 export function ImportWizardDialogContainer(props: ImportWizardDialogProps) {
   const wizard = useImportWizardDialog(props);
 
