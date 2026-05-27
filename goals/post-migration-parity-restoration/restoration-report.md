@@ -10,7 +10,7 @@
 
 Restoration enters with the following starting state on the audit branch (head `99584569` and onwards):
 
-- **3 open P0s**: `GAP-LEGAL-CLUSTER-001`, `GAP-SECURITY-001`, `GAP-SECURITY-002`. Each carries an escalation block in `audit-report.md`.
+- **2 open P0s** (was 3; Wave 2 Agent E closed `GAP-SECURITY-002` as accepted with mitigations): `GAP-LEGAL-CLUSTER-001`, `GAP-SECURITY-001`. Each carries an escalation block in `audit-report.md`.
 - **0 open P1s**: every P1 is either `inline-fixed` or `deferred` with named blocker. Restoration carries every deferral forward to `.planning/risk-register.md`.
 - **1 open P2 INFO row**: `GAP-I18N-003` — informational only (positive translation backfill).
 - **19 sibling-UI commits** landed unreviewed during the audit. Reviewed clean in Wave 0 — no new `GAP-SIBLING-NNN` rows surfaced.
@@ -21,7 +21,7 @@ Restoration enters with the following starting state on the audit branch (head `
 |------|-------|--------|-------|
 | **0** | Branch hygiene + sibling review + scaffold | **done** | `.gitignore` extended; 19 sibling commits reviewed clean; `risk-register.md` + this report scaffolded. |
 | **1** | P0 infra surfaces — edge runtime (`GAP-SECURITY-001`) + Redis pub/sub channel (`GAP-LEGAL-CLUSTER-001` foundation) | pending | Foundational. Requires render.yaml decision + Payload local-API client verification. |
-| **2** | P0 code-only fixes — 5 agents in parallel | partial | Agents A (GAP-OBSERVABILITY-012) + B (GAP-TEST-015) + C (GAP-TEST-021) + D (GAP-TEST-026) all already inline-fixed pre-restoration. Agent E (GAP-SECURITY-002 closure + R2 guardrail) outstanding. |
+| **2** | P0 code-only fixes — 5 agents in parallel | **done** | Agents A (GAP-OBSERVABILITY-012) + B (GAP-TEST-015) + C (GAP-TEST-021) + D (GAP-TEST-026) all inline-fixed pre-restoration. Agent E (GAP-SECURITY-002 closure + R2 guardrail) landed this restoration cycle — see `closed-decision` cells below. |
 | **3** | P0 wiring + cutover — legal containers + `legal.getDocument` + revalidate-legal publisher + edge cutover | pending | Depends on Wave 1 + 2. 48h CSP soak gates `GAP-SECURITY-001` close. |
 | **4** | P1 cluster A — security + auth + portal + legal | done (carry-over) | Agents F (GAP-SECURITY-008) + I (GAP-TEST-019) inline-fixed pre-restoration. Agent G (privacy resolver) deferred under `GAP-LEGAL-CLUSTER-001`. Agent H (`GAP-TEST-011 / -016 / -017 / -018`) — TEST-016/017/018 inline-fixed, TEST-011 deferred. |
 | **5** | P1 cluster B — observability + middleware + routes | partial | OBSERVABILITY-003/-006/-009 (partial) inline-fixed; OBSERVABILITY-001/-002/-004/-010/-011 deferred per RISK-OBSERVABILITY-001/-002/-003. MIDDLEWARE-005/-007 inline-fixed. ROUTE-001 inline-fixed. ROUTE-002/-004/-005/-006 deferred per RISK-ROUTE-001..004. |
@@ -70,15 +70,15 @@ Restoration enters with the following starting state on the audit branch (head `
 | MIDDLEWARE | 0 / 0 / 0 | 0 / 2 / 1 (`GAP-MIDDLEWARE-005/-007` inline-fixed; `GAP-MIDDLEWARE-003` → `RISK-MIDDLEWARE-002`) | 0 / 2 / 1 (`GAP-MIDDLEWARE-004` inline-fixed via sibling `a511f9d4`; `GAP-MIDDLEWARE-006` inline-fixed; `GAP-MIDDLEWARE-002` → `RISK-MIDDLEWARE-001`; +1 `GAP-MIDDLEWARE-001` closed-verified-intentional) |
 | I18N | 0 / 0 / 0 | 0 / 0 / 0 | 1 / 2 / 2 (`GAP-I18N-004/-005` inline-fixed; `GAP-I18N-001/-002` → `RISK-I18N-001`; `GAP-I18N-003` is INFO-only) |
 | OBSERVABILITY | **0 / 3 / 0** (`GAP-OBSERVABILITY-007/-008/-012` inline-fixed) | 0 / 2 / 3 (`GAP-OBSERVABILITY-003/-009` inline-fixed; `GAP-OBSERVABILITY-001/-002/-010` → `RISK-OBSERVABILITY-001/-002`) | 0 / 2 / 2 (`GAP-OBSERVABILITY-005/-006` inline-fixed; `GAP-OBSERVABILITY-004/-011` → `RISK-OBSERVABILITY-002/-003`; +1 `GAP-OBSERVABILITY-013` closed-verified-intentional) |
-| SECURITY | **2 / 1 / 0** (`GAP-SECURITY-001/-002` open-escalated → `RISK-SECURITY-001/-002`; `GAP-SECURITY-003` inline-fixed) | 0 / 2 / 0 (`GAP-SECURITY-005/-008` inline-fixed; +1 `GAP-SECURITY-004` closed-verified-intentional) | 0 / 0 / 1 (`GAP-SECURITY-006` → `RISK-MIDDLEWARE-001`; +1 `GAP-SECURITY-007` closed-verified-intentional) |
+| SECURITY | **1 / 1 / 0** (was 2 open; `GAP-SECURITY-002` closed-decision via [`docs/security/csp-r2-wildcard.md`](../../docs/security/csp-r2-wildcard.md). `GAP-SECURITY-001` open-escalated → `RISK-SECURITY-001`; `GAP-SECURITY-003` inline-fixed; +1 closed-decision `GAP-SECURITY-002`) | 0 / 2 / 0 (`GAP-SECURITY-005/-008` inline-fixed; +1 `GAP-SECURITY-004` closed-verified-intentional) | 0 / 0 / 1 (`GAP-SECURITY-006` → `RISK-MIDDLEWARE-001`; +1 `GAP-SECURITY-007` closed-verified-intentional) |
 | TEST | **0 / 3 / 0** (`GAP-TEST-015/-021/-026` inline-fixed) | 0 / 6 / 5 (`GAP-TEST-001/-002/-016/-017/-018/-019` inline-fixed; `GAP-TEST-003/-004/-011/-024/-025` → `RISK-LEGAL-001` + `RISK-TEST-001`) | 0 / 0 / 12 (`GAP-TEST-005..010/-012/-013/-014/-020/-022/-023` → `RISK-TEST-001`) |
-| **Restoration totals** | **3 / 8 / 0** | **0 / 12 / 19** (+1 closed-verified) | **1 / 10 / 21** (+3 closed-verified) |
+| **Restoration totals** | **2 / 8 / 0** (+1 closed-decision via R2 acceptance doc) | **0 / 12 / 19** (+1 closed-verified) | **1 / 10 / 21** (+3 closed-verified) |
 
-**Open after restoration baseline (3 P0 + 1 P2-INFO):**
+**Open after restoration baseline (2 P0 + 1 P2-INFO):**
 
 - `GAP-LEGAL-CLUSTER-001` — Wave 1 + Wave 3 deliverable. Tracked under `RISK-LEGAL-001`.
 - `GAP-SECURITY-001` — Wave 1 + Wave 3 deliverable. Tracked under `RISK-SECURITY-001`.
-- `GAP-SECURITY-002` — Wave 2 Agent E deliverable. Tracked under `RISK-SECURITY-002`.
+- `GAP-SECURITY-002` — **closed-decision** ([`docs/security/csp-r2-wildcard.md`](../../docs/security/csp-r2-wildcard.md)). Wildcard accepted with mitigations: `check:r2-iframe-sandbox` CI guardrail + `frame-ancestors 'none'` + `sandbox="allow-downloads"` on the only R2-fed iframe. Narrowing the wildcard is pending ops env confirmation per audit escalation option (a) / (b); `RISK-SECURITY-002` tracks the residual.
 - `GAP-I18N-003` — INFO-only; positive translation backfill. No action required.
 
 ## Per-row restoration status
@@ -160,7 +160,7 @@ Restoration mirrors each audit row by ID. Status reflects current state on `audi
 | ID | Sev | Audit status | Restoration status | Cross-ref |
 |----|-----|--------------|--------------------|-----------|
 | GAP-SECURITY-001 | P0 | open (escalated) | **open — pending Wave 1 (edge runtime) + Wave 3 (cutover + 48h soak)** | `RISK-SECURITY-001` |
-| GAP-SECURITY-002 | P0 | open (escalated) | **open — pending Wave 2 Agent E (R2 wildcard documented acceptance + CI guardrail)** | `RISK-SECURITY-002` |
+| GAP-SECURITY-002 | P0 | open (escalated) | **closed-decision ([`docs/security/csp-r2-wildcard.md`](../../docs/security/csp-r2-wildcard.md))** — wildcard accepted; CI guardrail `pnpm check:r2-iframe-sandbox` + `frame-ancestors 'none'` + `sandbox="allow-downloads"` on the R2-fed iframe carry the mitigation. Narrowing pending ops env confirmation per audit escalation option (a)/(b). | `RISK-SECURITY-002` |
 | GAP-SECURITY-003 | P0 | inline-fixed (`3198bb51`) | **carried — inline-fixed (`3198bb51`)** | n/a |
 | GAP-SECURITY-004 | P1 → closed | closed (verified intentional) | **carried — closed-verified-intentional** | n/a |
 | GAP-SECURITY-005 | P1 | inline-fixed (`050be4cc`) | **carried — inline-fixed (`050be4cc`)** | n/a |
@@ -201,7 +201,8 @@ Restoration commits land on `audit/post-migration-parity` (or short-lived child 
 
 | Wave | Commit | Subject | Files |
 |------|--------|---------|-------|
-| 0 | (this commit) | docs(restoration): Wave 0 — scaffold restoration-report + risk-register + sibling-UI review | `.gitignore`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/restoration-report.md` |
+| 0 | `52f182a9` | docs(restoration): Wave 0 — scaffold restoration-report + risk-register + sibling-UI review | `.gitignore`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/{goal,facts,plan,restoration-report}.md` |
+| 2E | (this commit) | feat(restoration): GAP-SECURITY-002 closed-decision — R2 wildcard documented acceptance + check:r2-iframe-sandbox CI guardrail | `scripts/check-r2-iframe-sandbox.mjs`, `package.json`, `docs/security/csp-r2-wildcard.md`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/restoration-report.md` |
 
 (Subsequent waves append rows.)
 
