@@ -1312,23 +1312,21 @@ table th {
   }
 }
 
-/* ─── Accent Line ───────────────────────────────────────────────────── */
-
+/* ─── Accent Line ─────────────────────────────────────────────────────
+ *
+ * Subtle single-hue divider under the top bar. Three-color "rainbow"
+ * variant was an unintended drift post-migration; legacy shipped a 1px
+ * teal-only fade-to-transparent at low opacity so it reads as a quiet
+ * boundary rather than a decorative ribbon.
+ */
 .accent-line {
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    oklch(0.65 0.145 178) 15%,
-    oklch(0.6 0.18 260) 50%,
-    oklch(0.72 0.14 65) 85%,
-    transparent 100%
-  );
-  opacity: 0.6;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, oklch(0.65 0.145 178) 50%, transparent 100%);
+  opacity: 0.3;
 }
 
 .dark .accent-line {
-  opacity: 0.8;
+  opacity: 0.45;
 }
 
 /* ─── Bento Grid ────────────────────────────────────────────────────── */
