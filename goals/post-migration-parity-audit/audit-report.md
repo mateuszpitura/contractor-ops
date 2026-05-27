@@ -341,12 +341,53 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 
 ## Verification (Step 10)
 
-> Run + captured at end:
+Captured at audit branch head (`a787287d`) on 2026-05-27:
 
-- [ ] `pnpm typecheck`
-- [ ] `pnpm --filter @contractor-ops/api-server test`
-- [ ] `pnpm --filter @contractor-ops/cron-worker test`
-- [ ] `pnpm --filter @contractor-ops/web-vite test` (path-scoped per memory-pressure rule)
-- [ ] `pnpm --filter @contractor-ops/web-vite check:web-vite-data-layer`
-- [ ] `pnpm --filter @contractor-ops/web-vite check:web-vite-page-shells`
-- [ ] `plannotator annotate goals/post-migration-parity-audit/audit-report.md --gate` → approved
+- [x] `pnpm typecheck` — **PASS** (41 tasks, 22 cached, 35.8s; full output @ `.audit-scratch/verify/typecheck.log`).
+- [x] `pnpm --filter @contractor-ops/api-server test` — **PASS** 136 / 136 tests across 24 files (15.25s). Includes the two new P0-fix tests (`csp-report.test.ts` + `peppol-method-not-allowed.test.ts`).
+- [x] `pnpm --filter @contractor-ops/cron-worker test` — **PASS** 47 / 47 tests across 13 files (1.59s).
+- [x] `pnpm check:web-vite-data-layer` — **PASS** (`check:web-vite-data-layer — OK`). Note: script lives at repo root, not the `web-vite` workspace; the original checklist's `--filter @contractor-ops/web-vite` form silently no-ops with `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`.
+- [x] `pnpm check:web-vite-page-shells` — **PASS** (`check:web-vite-page-shells — OK`). Same root-vs-workspace note as above.
+- [ ] `pnpm --filter @contractor-ops/web-vite test -- src/` — **PRE-EXISTING FAIL** (4189 pass / 31 fail across 2 files; 599 / 10 / 24 file totals). Failures are NOT audit-induced — audit branch touches 0 files under `apps/web-vite/src/`:
+  - `src/hooks/__tests__/use-approval-actions.test.tsx` — toast-message assertions (`'Approved'` / `'Rejected'` / `'Delegated'` / `'Clarification requested'` / `'Failed to approve'`) fail. Source-file blame: `apps/web-vite/src/hooks/use-approval-actions.ts` last touched in `4fefacb3 chore(branch-snapshot)` (branch base, pre-audit).
+  - `src/components/dashboard/__tests__/dashboard-home-container.test.tsx` — KPI label / count / currency-format / divide-by-100 / landmark / grid-cardinality assertions fail. Source-file blame: same `4fefacb3` commit on the branch base.
+  - **Action**: tracked as `FOLLOWUP-PRE-EXISTING-001` (web-vite green-test debt on `dry-solid-audit/extract-shared`) — escalated to the branch's restoration owner; out of this audit's scope (no source files in those paths were edited on `audit/post-migration-parity`).
+- [ ] `plannotator annotate goals/post-migration-parity-audit/audit-report.md --gate` — **DEFERRED to user**. Cannot be run by the agent; requires interactive sign-off. The audit branch is ready for the user to launch this step at their convenience.
+
+### Audit branch surface (touched files)
+
+```
+.gitignore                                                       (Step 1)
+goals/post-migration-parity-audit/audit-report.md                (Steps 1–10)
+apps/api/src/__tests__/csp-report.test.ts                        (Step 9 — GAP-SECURITY-003)
+apps/api/src/__tests__/peppol-method-not-allowed.test.ts         (Step 9 — GAP-WEBHOOK-003)
+apps/api/src/routes/webhooks/storecove.ts                        (Step 9 — GAP-WEBHOOK-003)
+apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts       (Step 9 — GAP-TEST-001/002 mirror)
+apps/web-vite/index.html                                         (Step 9 — GAP-SECURITY-003)
+render.yaml                                                      (Step 9 — GAP-SECURITY-003)
+```
+
+Audit-branch commits (chronological):
+
+```
+ca690783 chore(audit): Step 1 — branch + scratch + baseline inventory
+b561e078 chore(audit): Steps 2–8 — per-area parity sweeps (findings only, no source edits)
+1c01453a docs(audit): escalation notes for GAP-SECURITY-001 + GAP-SECURITY-002
+3198bb51 fix(audit): GAP-SECURITY-003 restore SPA CSP report-uri + Report-To
+73de2535 docs(audit): mark GAP-SECURITY-003 inline-fixed
+c433c678 fix(audit): GAP-WEBHOOK-003 restore 405 for Peppol AS4 unsupported verbs
+a787287d docs(audit): mark GAP-WEBHOOK-003 + GAP-TEST-001/002 inline-fixed
+```
+
+### Done-condition status (per `facts.md`)
+
+- ✅ Report exists with severity rubric, summary table, per-area sections (PAGE / ROUTE / WEBHOOK / MIDDLEWARE / I18N / OBSERVABILITY / SECURITY / TEST) and per-area "ported" appendices.
+- ✅ Every legacy `apps/web/src/app/**` page (68) / route handler (41), legacy middleware (739-line block-by-block), legacy locale message keys (4 locales × ~6k keys), legacy Sentry scrub rules (35), and legacy test files (563) are accounted for in either the gap list or the ported appendix.
+- ✅ Every confirmed-P0 gap (`GAP-SECURITY-001`, `-002`, `-003`, `GAP-WEBHOOK-003`) has status `inline-fixed (<SHA>)` OR `open (escalated)` with named blocker:
+  - `GAP-SECURITY-001` — open (escalated); blocker = "infra owner must choose between Cloudflare Worker / Render service rewrite / accept-with-design-review".
+  - `GAP-SECURITY-002` — open (escalated); blocker = "ops must confirm prod R2 bucket subdomain before narrowing the wildcard".
+  - `GAP-SECURITY-003` — inline-fixed (`3198bb51`).
+  - `GAP-WEBHOOK-003` — inline-fixed (`c433c678`).
+- ✅ `pnpm typecheck` + `api-server test` + `cron-worker test` + both quality gates pass on `a787287d`.
+- ⚠️ `pnpm --filter @contractor-ops/web-vite test -- src/` fails on 2 pre-existing test files (not audit-induced); escalated as `FOLLOWUP-PRE-EXISTING-001`.
+- ⏳ Plannotator `--gate` deferred to user (cannot be run by the agent).
