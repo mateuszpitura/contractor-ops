@@ -202,9 +202,78 @@ Restoration commits land on `audit/post-migration-parity` (or short-lived child 
 | Wave | Commit | Subject | Files |
 |------|--------|---------|-------|
 | 0 | `52f182a9` | docs(restoration): Wave 0 — scaffold restoration-report + risk-register + sibling-UI review | `.gitignore`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/{goal,facts,plan,restoration-report}.md` |
-| 2E | (this commit) | feat(restoration): GAP-SECURITY-002 closed-decision — R2 wildcard documented acceptance + check:r2-iframe-sandbox CI guardrail | `scripts/check-r2-iframe-sandbox.mjs`, `package.json`, `docs/security/csp-r2-wildcard.md`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/restoration-report.md` |
+| 2E | `7e6a7990` | feat(restoration): GAP-SECURITY-002 closed-decision — R2 wildcard documented acceptance + check:r2-iframe-sandbox CI guardrail | `scripts/check-r2-iframe-sandbox.mjs`, `package.json`, `docs/security/csp-r2-wildcard.md`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/restoration-report.md` |
+| 1-prep | (this commit) | docs(restoration): record Wave 1 + Wave 3 architectural blockers (verify-then-act findings) | `goals/post-migration-parity-restoration/restoration-report.md` |
 
 (Subsequent waves append rows.)
+
+## Wave 1 + Wave 3 verify-then-act findings (recorded before any code edit)
+
+Plan.md's open questions resolved by read-only investigation on `audit/post-migration-parity` HEAD. These are **decisions required before Wave 1 or Wave 3 can land code**.
+
+### Finding 1 — `apps/api` uses `@upstash/redis` (HTTP REST), not `ioredis`
+
+Evidence: `apps/api/package.json:38` + `packages/api/package.json:275` declare `@upstash/redis`. Usage sites:
+
+- `apps/api/src/lib/rate-limit-store.ts:77` — `new Redis({ url: opts.redisUrl, token: opts.redisToken })` (Upstash REST).
+- `apps/api/src/routes/health.ts:91` — same Upstash REST handle.
+
+`@upstash/redis` is an HTTP/REST client and **does not support Redis pub/sub**. The Wave 1 plan assumed `ioredis` (native Redis protocol) for the `legal:revalidated` channel. Three options:
+
+| Opt | Mechanism | Cost / blast radius | Notes |
+|-----|-----------|---------------------|-------|
+| (1) | Add a separate `ioredis` client pointed at a Render Redis instance (or Upstash's native Redis — distinct from REST). | New service / new env vars / new dep. | Cleanest "real Redis pub/sub" path. Render Redis is the lowest-friction add. |
+| (2) | Postgres `LISTEN`/`NOTIFY` instead of Redis. | Reuses existing Prisma DB connection. Single-region only; cross-region delivery needs a separate sync. | Less infra, but Neon's primary/replica topology may or may not propagate `NOTIFY` between regions. Needs Neon-feature verification. |
+| (3) | SSE-on-fanout via in-process EventEmitter inside `apps/api`. | Zero infra. Breaks across multiple Fastify instances (Render scales horizontally). | Acceptable only if `apps/api` runs as a single instance. Check `render.yaml` `numInstances` for the api service. |
+
+**Decision required:** infra owner picks (1) / (2) / (3). Recommend (1) (`ioredis` + Render Redis instance) for clarity + future use cases (presence, job queues).
+
+### Finding 2 — No Payload client in `apps/api`; no `CMS_URL` / `PAYLOAD_URL` env
+
+Evidence:
+
+- `grep -n '@payloadcms\|payload' apps/api/src apps/api/package.json` → zero matches.
+- `grep -n 'CMS_URL\|PAYLOAD_URL\|cmsUrl' apps/api/src render.yaml -r` → zero matches.
+- `apps/cms/src/payload.config.ts` exists (Payload runs as a separate Render service per `CLAUDE.md`).
+
+The Wave 3 plan assumed `legal.getDocument` reads from "Payload local API". Payload's local API requires the Payload instance to be importable at runtime from the same Node process — but `apps/api` (Fastify) is a separate service from `apps/cms` (Payload). Two options:
+
+| Opt | Mechanism | Notes |
+|-----|-----------|-------|
+| (a) | Add a Payload **REST client** in `packages/api` that talks to `apps/cms` over HTTP. Requires `CMS_URL` env + service-to-service auth token. | Cleanest separation. Adds one network hop per `legal.getDocument` call. Cache via TanStack Query is already in place on the SPA side. |
+| (b) | Have `apps/api` query the same Postgres schema Payload writes to (collection table reads). | Tightly couples API to Payload's collection schema. Brittle on Payload upgrades. |
+| (c) | Reverse the call-direction: `apps/cms` publishes legal-document snapshots to a Postgres table owned by `packages/api` (`LegalDocumentSnapshot`). `legal.getDocument` reads that. | Decouples consumers from Payload's internal storage. Requires `apps/cms` outbound webhook on publish (which already exists per `apps/api/src/routes/revalidate-legal.ts`). |
+
+**Decision required:** product + infra owner picks (a) / (b) / (c). Recommend (c) — `apps/cms` ships content snapshots into `LegalDocumentSnapshot` rows on publish (re-using the existing HMAC webhook the audit's `GAP-TEST-018` already pinned); `legal.getDocument` reads from there. The Redis pub/sub channel from Finding 1 carries the invalidation signal so the SPA refetches.
+
+### Finding 3 — Better Auth `databaseHooks.user.create.after` hook signature
+
+Evidence: `packages/auth/src/config.ts:239` carries the `databaseHooks` block. Hook signature already accepts a request context per existing audit fixes (`GAP-OBSERVABILITY-012` SHA `3e240ebc` mounted PostHog identify on this hook).
+
+**No blocker** — Better Auth hooks expose request context as expected. PostHog signup capture is already live and uses the same hook surface.
+
+### Finding 4 — `render.yaml` `web-vite` block at line 642 is a Render Static-Site
+
+Evidence: `render.yaml:642` declares `name: web-vite`, `publishPath: ./apps/web-vite/dist`. Static deploy. As the audit's `GAP-SECURITY-001` escalation states, Render Static-Site has **no per-request execution hook**, so per-request CSP nonce minting is structurally impossible against this service.
+
+**Decision required:** infra owner picks between audit escalation options (a) Cloudflare Worker / Render Web Service rewrite — new edge runtime, OR (b) keep static, narrow CSP without nonce + add SRI, OR (c) accept-with-design-review. Recommend (a) via `apps/web-vite-edge` (sibling Fastify on Render) for one fewer cloud dependency.
+
+### Finding 5 — Audit row `GAP-MIDDLEWARE-005` claim about Accept-Language landing point
+
+Already inline-fixed (`271b57d4`). No further action needed; `pickBestLocale()` + `detectBrowserLocale()` cover the requirement.
+
+## What unblocks Wave 1, Wave 3, Wave 9
+
+| Decision | Required from | Affects |
+|----------|---------------|---------|
+| Pub/sub mechanism (Finding 1: ioredis+Redis vs Postgres LISTEN/NOTIFY vs in-process) | infra owner | Wave 1 (`packages/api/src/services/legal-pubsub.ts`), Wave 3 (`/legal/revalidations` SSE route) |
+| Payload-to-API content path (Finding 2: REST client vs DB read vs snapshot table) | product + infra owner | Wave 3 (`legal.getDocument` source) |
+| Edge runtime choice (Finding 4: Cloudflare Worker vs Render Web Service vs accept) | infra owner | Wave 1 (`apps/web-vite-edge/` or `.cloudflare/workers/web-vite-csp/`), Wave 3 (`render.yaml` cutover) |
+| Ops env confirmation (R2 narrowing — see `docs/security/csp-r2-wildcard.md`) | ops owner | Reduces `RISK-SECURITY-002` from "low post-mitigation" to "closed". One-line `render.yaml:684` + `apps/web-vite/index.html:28` edit. |
+| External webhook re-registration (`GAP-ROUTE-004`) | ops owner | Reduces `RISK-ROUTE-001` to "closed". |
+| Product approval for Sentry replay + feedback widget (`GAP-OBSERVABILITY-001 / -002`) | product + privacy review | Reduces `RISK-OBSERVABILITY-001` to "closed". |
+| `SENTRY_AUTH_TOKEN` env wiring (`GAP-OBSERVABILITY-004 / -010`) | ops / deploy owner | Reduces `RISK-OBSERVABILITY-002` to "closed". |
+| Plannotator `--gate` sign-off | user | Wave 9 close. |
 
 ## Verification matrix
 
