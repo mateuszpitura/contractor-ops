@@ -742,6 +742,32 @@ html.theme-transition *::after {
   opacity: 0.06;
 }
 
+/* ─── Workbench scroll model ─────────────────────────────────────────
+ *
+ * Dense operational routes (contractors, invoices, payments, settings…)
+ * pin the SidebarInset to the viewport height and scroll *inside* main
+ * so the WORKBENCH_TABLE_* layout primitives can hand a flex-constrained
+ * height to their data tables. Atelier routes (dashboard, reports) keep
+ * document-level scroll instead because the bento surface has multiple
+ * variable-height sections that look wrong inside a fixed pane.
+ *
+ * The mirror-to-body pattern (set by IntensityRouter via useEffect) means
+ * this rule only attaches in workbench intensity — no JS conditional
+ * className needed in dashboard-shell.tsx.
+ */
+body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
+  height: 100svh;
+  max-height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
 
 /* Decorative gradient glow at top AND bottom of sidebar for depth */
