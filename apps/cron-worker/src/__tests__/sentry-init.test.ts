@@ -1,11 +1,8 @@
 /**
- * Regression test for GAP-OBSERVABILITY-007 — cron-worker Sentry init must
- * wire `beforeSend: scrubSentryEvent` so raw webhook payloads, OAuth
- * tokens, IBANs, and tax IDs never ship unredacted to Sentry.
+ * Pins for the cron-worker Sentry init contract. The init must wire
+ * `beforeSend: scrubSentryEvent` so raw webhook payloads, OAuth tokens,
+ * IBANs, and tax IDs never ship unredacted to Sentry.
  *
- * Mirrors apps/web-vite/src/__tests__/sentry-init.test.ts.
- *
- * Pins:
  *   - `Sentry.init` receives `beforeSend` as a function.
  *   - `beforeSend` is the exact `scrubSentryEvent` reference from the
  *     scrubber module (asserted via vi.mock identity).
@@ -35,7 +32,7 @@ async function loadInit() {
   return import('../lib/sentry.js');
 }
 
-describe('initSentry (cron-worker) — GAP-OBSERVABILITY-007 regression', () => {
+describe('initSentry (cron-worker) — PII scrubber must stay wired', () => {
   const originalDsn = process.env.SENTRY_DSN;
 
   beforeEach(() => {

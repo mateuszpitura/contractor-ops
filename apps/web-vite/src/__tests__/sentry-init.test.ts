@@ -1,15 +1,13 @@
 /**
- * Regression tests for GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 — SPA
- * Sentry init parity with the legacy Next.js client config.
+ * Pins for the browser-side Sentry init contract:
  *
- * Pins:
- *   - `tracePropagationTargets` is set (legacy explicit
- *     `['localhost', /^https?:\/\//]`) so cross-subdomain SPA→API trace
+ *   - `tracePropagationTargets` is set so cross-subdomain SPA→API trace
  *     propagation stitches end-to-end. Removing it silently degrades
  *     observability under load — failing here is the safety net.
- *   - `enabled: DSN && !isDev` (dev hard-disable). Setting a DSN in
- *     `.env.local` must NOT leak local dev traffic into the prod Sentry
- *     project.
+ *   - `enabled: DSN && !isDev` (dev hard-disable). A DSN copied into
+ *     `.env.local` must NOT leak local dev traffic into the prod
+ *     Sentry project.
+ *   - `beforeSend: scrubSentryEvent` (PII redaction).
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -42,7 +40,7 @@ async function loadInit() {
   return import('../sentry.js');
 }
 
-describe('initBrowserSentry — GAP-OBSERVABILITY-003/006 regression', () => {
+describe('initBrowserSentry — browser-side Sentry init contract', () => {
   beforeEach(() => {
     initSpy.mockClear();
   });

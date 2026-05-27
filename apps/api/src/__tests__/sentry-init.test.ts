@@ -1,14 +1,17 @@
 /** @vitest-environment node */
 
 /**
- * Regression test for GAP-OBSERVABILITY-005 — server-side Sentry init must
- * opt into structured log capture (`enableLogs: true`). Removing this
- * option silently drops every `Sentry.logger.*` call without a build error,
- * which is the historic failure mode we are pinning against.
+ * Pins for the server-side Sentry init contract:
  *
- * `beforeSend: scrubSentryEvent` is asserted here as well so a future
- * regression on the PII-scrub wiring fails loudly during typecheck/test
- * rather than after a production leak.
+ *   - `enableLogs: true` so `Sentry.logger.*` flows into the same project
+ *     as exceptions. Removing the option silently drops every log call
+ *     without a build error.
+ *   - `beforeSend: scrubSentryEvent` (PII redaction safety net). Defining
+ *     the scrubber but not passing it as `beforeSend` would silently
+ *     leak passwords / tokens / IBANs on every captured event.
+ *   - `release: process.env.RENDER_GIT_COMMIT` so deploys group by SHA.
+ *   - `initialScope.tags.service === 'api-server'` so multi-service
+ *     events stay filterable.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -36,7 +39,7 @@ async function loadInit() {
   return import('../lib/sentry.js');
 }
 
-describe('initSentry — GAP-OBSERVABILITY-005 + -009 regression', () => {
+describe('initSentry — server-side Sentry init contract', () => {
   const originalRenderCommit = process.env.RENDER_GIT_COMMIT;
 
   beforeEach(() => {
@@ -76,7 +79,7 @@ describe('initSentry — GAP-OBSERVABILITY-005 + -009 regression', () => {
     expect(opts.initialScope?.tags?.service).toBe('api-server');
   });
 
-  it('forwards RENDER_GIT_COMMIT as release tag (GAP-OBSERVABILITY-009)', async () => {
+  it('forwards RENDER_GIT_COMMIT as release tag', async () => {
     process.env.RENDER_GIT_COMMIT = 'deadbeefcafebabe1234567890abcdef12345678';
     const mod = await loadInit();
     mod.initSentry();

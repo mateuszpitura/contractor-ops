@@ -1,14 +1,12 @@
 /**
- * Regression tests for GAP-MIDDLEWARE-004 — restored "already-signed-in
- * user landing on /login bounces to dashboard" behavior.
+ * Pins for `requireAnonymous`:
  *
- * Pins:
- *   - When no session is present, `requireAnonymous` resolves to `null`
- *     (loader chain continues to render the auth page).
+ *   - When no session is present, resolves to `null` (loader chain
+ *     continues to render the auth page).
  *   - When a session is present, throws a `redirect` Response targeting
- *     the locale-aware dashboard root (or `redirectTo` deep-link).
- *   - Locale defaults to `DEFAULT_LOCALE` when the URL `:locale` param is
- *     missing or unsupported — mirrors `requireAuth.ts`.
+ *     the locale-aware dashboard root (or the `redirectTo` deep-link).
+ *   - Locale defaults to `DEFAULT_LOCALE` when the URL `:locale` param
+ *     is missing or unsupported — mirrors `requireAuth.ts`.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,7 +19,7 @@ vi.mock('../../providers/auth-provider.js', () => ({
 
 import { requireAnonymous } from '../require-anonymous.js';
 
-describe('requireAnonymous — GAP-MIDDLEWARE-004 regression', () => {
+describe('requireAnonymous', () => {
   beforeEach(() => {
     getSessionSpy.mockReset();
   });

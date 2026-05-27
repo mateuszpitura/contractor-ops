@@ -2,16 +2,15 @@
  * Sentry `beforeSend` PII scrubber for @contractor-ops/cron-worker.
  *
  * Mirror of `apps/api/src/lib/sentry-scrub.ts` and
- * `apps/web-vite/src/lib/sentry-scrub.ts` — keep the PII_KEYWORDS list and
- * scrubbing strategy in lock-step across runtimes so a sensitive value
- * redacted in one is also redacted in the others. SDK import is
- * `@sentry/node` (same as apps/api).
+ * `apps/web-vite/src/lib/sentry-scrub.ts` — keep the PII_KEYWORDS list
+ * and scrubbing strategy in lock-step across runtimes so a sensitive
+ * value redacted in one is also redacted in the others.
  *
  * Without this scrubber wired into `Sentry.init({ beforeSend })`, cron
  * handlers that capture webhook payloads (Stripe / QStash / Storecove /
  * InPost / KSeF / Peppol), OAuth-token refresh failures, or per-tenant
  * IBAN / tax-id work would ship the raw bodies, headers, cookies, and
- * query strings to Sentry — GAP-OBSERVABILITY-007.
+ * query strings to Sentry verbatim.
  */
 
 import type { ErrorEvent, EventHint } from '@sentry/node';

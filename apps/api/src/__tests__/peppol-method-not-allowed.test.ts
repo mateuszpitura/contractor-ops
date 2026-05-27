@@ -1,14 +1,14 @@
 /** @vitest-environment node */
 
 /**
- * GAP-WEBHOOK-003 — Peppol AS4 (Storecove) unsupported-verb handling.
+ * Peppol AS4 (Storecove) unsupported-verb handling.
  *
- * Legacy Next.js route handlers returned 405 for non-exported HTTP methods.
- * Fastify defaults to 404 for unregistered verbs on a mounted path, which
- * Peppol AS4 partner Access Points may interpret as "endpoint gone" and
- * silently stop retrying. We register explicit 405 handlers carrying the
- * RFC 7231 §6.5.5 `Allow: POST` header for every non-POST verb. POST must
- * remain wired to the real handler (signature/secret guard still runs).
+ * Fastify defaults to 404 for unregistered verbs on a mounted path,
+ * which Peppol AS4 partner Access Points may interpret as "endpoint
+ * gone" and silently stop retrying. Register explicit 405 handlers
+ * carrying the RFC 7231 §6.5.5 `Allow: POST` header for every non-POST
+ * verb. POST must remain wired to the real handler (signature/secret
+ * guard still runs).
  */
 
 import type { FastifyInstance } from 'fastify';

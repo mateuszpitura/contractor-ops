@@ -1,8 +1,6 @@
 /**
- * Sentry init for @contractor-ops/cron-worker.
- *
- * Mirrors apps/api/src/lib/sentry.ts so a single Sentry project can host
- * every backend service distinguished by `tags.service`.
+ * Sentry init for @contractor-ops/cron-worker. A single Sentry project
+ * hosts every backend service distinguished by `tags.service`.
  */
 
 import * as Sentry from '@sentry/node';
@@ -15,10 +13,9 @@ export function initSentry(): void {
   if (initialized) return;
   const env = loadEnv();
   const dsn = env.SENTRY_DSN;
-  // Hard-disable Sentry uploads in `development` even if a DSN is set, so
-  // local runs do not burn the prod project's error quota. Mirror of the
-  // browser + api guards. Override for dev debugging by exporting
-  // `SENTRY_DEV=true`.
+  // Hard-disable uploads in `development` even when a DSN is set so local
+  // runs do not burn the prod project's error quota. Export
+  // `SENTRY_DEV=true` to override.
   const isDev = env.NODE_ENV === 'development';
   const sentryDevOverride = process.env.SENTRY_DEV === 'true';
   const enabled = Boolean(dsn) && (!isDev || sentryDevOverride);
@@ -27,17 +24,16 @@ export function initSentry(): void {
     enabled,
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
-    // Restoration of GAP-OBSERVABILITY-009 — tag every event with the
-    // deploy's git commit (Render exposes `RENDER_GIT_COMMIT` at runtime).
-    // Falls through to `undefined` locally / CI when unset.
+    // Tag events with the deploy's git commit (Render exposes
+    // `RENDER_GIT_COMMIT` at runtime); falls through to `undefined`
+    // locally / CI.
     release: process.env.RENDER_GIT_COMMIT,
     initialScope: { tags: { service: 'cron-worker' } },
-    // GAP-OBSERVABILITY-007: redact PII (passwords, OAuth tokens, IBANs,
-    // tax IDs, etc.) from every event before it leaves the process — see
-    // `sentry-scrub.ts` for the matched key list. Must stay wired;
-    // defining the scrubber but not passing it as `beforeSend` is the
-    // historic failure mode this codebase has hit before (and the exact
-    // gap this comment exists to prevent on cron-worker).
+    // Redact PII (passwords, OAuth tokens, IBANs, tax IDs, etc.) from
+    // every event payload before it leaves the process — see
+    // `sentry-scrub.ts` for the matched key list. Defining the scrubber
+    // but not passing it as `beforeSend` would silently leak PII; keep
+    // it wired.
     beforeSend: scrubSentryEvent,
   });
   initialized = true;

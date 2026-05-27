@@ -15,15 +15,8 @@
  * Reads the Better Auth session via the framework-agnostic client (the
  * same singleton the `<AuthProvider>` exposes). When the session is
  * absent or stale, throws a `redirect` Response React Router catches and
- * navigates to.
- *
- * Restoration of GAP-MIDDLEWARE-007 — the legacy Next.js middleware
- * (`apps/web/src/middleware.ts:446-468` @ 7fce0d83) preserved
- * `?redirectTo=<pathWithoutLocale>` on the unauth bounce so bookmarks
- * and email deep-links survived the round-trip through login. The
- * `useLoginForm` hook already reads + sanitizes the param (see
- * `apps/web-vite/src/components/auth/hooks/use-login-form.ts:21-28,
- * 59,93`); this helper just had to start emitting it.
+ * navigates to. `useLoginForm` sanitizes the `redirectTo` value before
+ * navigating, so percent-encoded query strings round-trip cleanly.
  */
 
 import { redirect } from 'react-router-dom';

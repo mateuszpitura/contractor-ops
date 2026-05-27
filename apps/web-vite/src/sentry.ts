@@ -1,24 +1,21 @@
 /**
- * Browser-side Sentry init for the SPA.
- *
- * Mirrors apps/api/src/lib/sentry.ts so a single Sentry project hosts
- * every service distinguished by `tags.service`. Init is a no-op when
+ * Browser-side Sentry init for the SPA. A single Sentry project hosts
+ * every service, distinguished by `tags.service`. Init is a no-op when
  * `VITE_SENTRY_DSN` is unset — safe in dev / CI / preview deploys
  * without a Sentry project wired.
  *
  * `beforeSend: scrubSentryEvent` redacts PII (passwords, tokens, IBANs,
  * tax IDs, etc. — see `lib/sentry-scrub.ts`) from every event before it
- * leaves the browser. The scrubber must stay wired here; defining it but
- * not passing it as `beforeSend` is the failure mode this comment exists
- * to prevent.
+ * leaves the browser. Defining the scrubber but not passing it as
+ * `beforeSend` would silently leak PII; keep it wired.
  *
  * `tracePropagationTargets` keeps `sentry-trace` / `baggage` headers
  * flowing on cross-subdomain SPA→API requests (app.contractor-ops.com →
- * api.contractor-ops.com) so distributed traces stitch end-to-end. The
- * dev hard-disable (`MODE !== 'development'`) prevents real Sentry
- * traffic from leaving local machines even when a DSN is set in
- * `.env.local` — restoration of GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006
- * from the post-migration parity audit.
+ * api.contractor-ops.com) so distributed traces stitch end-to-end.
+ *
+ * `MODE !== 'development'` is checked in the `enabled` flag so a DSN
+ * picked up from `.env.local` does not leak real dev traffic into the
+ * prod Sentry project.
  */
 
 import * as Sentry from '@sentry/react';

@@ -1,20 +1,21 @@
 /**
- * Regression tests for GAP-SECURITY-003 — SPA CSP reporting pipeline.
+ * Pins for the `/csp-report` ingestion contract.
  *
- * The SPA's CSP (render.yaml + apps/web-vite/index.html) appends
+ * The SPA's CSP (render.yaml + apps/web-vite/index.html) ships
  * `report-uri https://api.contractor-ops.com/csp-report; report-to csp-endpoint`
- * + a sibling `Report-To` header. The browser POSTs violation reports
- * cross-origin with NO Origin / Referer header, so the API must:
+ * plus a sibling `Report-To` header. The browser POSTs violation
+ * reports cross-origin with NO Origin / Referer header, so the API
+ * must:
  *
- *   1. Accept the legacy `application/csp-report` content type.
- *   2. Accept the modern Reporting API v1 `application/reports+json` array.
- *   3. Skip the CSRF-origin guard for `/csp-report` (otherwise the report
- *      POST 403s and on-call loses XSS visibility).
- *   4. Return 204 with an empty body — non-success status triggers browser
- *      retries during a misconfigured CSP rollout.
+ *   1. Accept the `application/csp-report` content type.
+ *   2. Accept the Reporting API v1 `application/reports+json` array.
+ *   3. Skip the CSRF-origin guard for `/csp-report` (otherwise the
+ *      report POST 403s and on-call loses XSS visibility).
+ *   4. Return 204 with an empty body — non-success status triggers
+ *      browser retries during a misconfigured CSP rollout.
  *
  * `utility-routes.test.ts` covers (1) + (2); this file owns (3) + (4)
- * explicitly so a future regression on `csrf-origin.ts:32` (removing the
+ * explicitly so a regression on `csrf-origin.ts:32` (removing the
  * exempt prefix) fails here with an obvious message.
  */
 
@@ -36,8 +37,8 @@ afterAll(async () => {
   __resetEnvForTests();
 });
 
-describe('/csp-report — GAP-SECURITY-003 regression', () => {
-  it('accepts legacy application/csp-report without an Origin header (CSRF guard exempt)', async () => {
+describe('/csp-report ingestion contract', () => {
+  it('accepts the W3C application/csp-report payload without an Origin header (CSRF guard exempt)', async () => {
     const res = await app.inject({
       method: 'POST',
       url: '/csp-report',

@@ -53,11 +53,10 @@ function buildVerifier(): StorecoveAdapter | null {
   });
 }
 
-// RFC 7231 §6.5.5 — Peppol AS4 Access Points (Storecove) interpret a 404 on
-// a previously-known webhook URL as "endpoint gone" and may silently stop
-// retrying deliveries. Restore the legacy Next.js handler's behavior by
-// answering unsupported verbs with an explicit 405 + `Allow: POST` header.
-// Restoration of GAP-WEBHOOK-003 in the post-migration parity audit.
+// Peppol AS4 Access Points (Storecove) interpret a 404 on a known webhook
+// URL as "endpoint gone" and may silently stop retrying deliveries. Answer
+// unsupported verbs with an explicit 405 + `Allow: POST` header per
+// RFC 7231 §6.5.5 so retries continue.
 const METHOD_NOT_ALLOWED_VERBS = ['GET', 'PUT', 'DELETE', 'PATCH'] as const;
 
 export function registerStorecoveWebhookRoute(app: FastifyInstance): void {

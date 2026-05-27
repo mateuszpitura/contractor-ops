@@ -705,14 +705,12 @@ services:
       - path: /*
         name: Strict-Transport-Security
         value: max-age=63072000; includeSubDomains; preload
-      # Cross-Origin-Embedder-Policy: 'credentialless' restores legacy parity
-      # (apps/web/next.config.ts:185-186 @ 7fce0d83). `credentialless` is the
-      # lenient COEP mode that lets cross-origin iframes without CORP headers
-      # still load (DocuSign / Autenti embedded signing, R2 PDF previews,
-      # Cloudflare Turnstile) — strict `require-corp` would break those
-      # embeds. Restoration of GAP-SECURITY-005 from the post-migration
-      # parity audit. If COEP-violation reports appear in /csp-report, narrow
-      # to per-embed CORP headers and consider tightening to `require-corp`.
+      # `credentialless` is the lenient COEP mode that lets cross-origin
+      # iframes without CORP headers still load (DocuSign / Autenti
+      # embedded signing, R2 PDF previews, Cloudflare Turnstile) — strict
+      # `require-corp` would break those embeds. If COEP-violation reports
+      # appear in /csp-report, narrow to per-embed CORP headers and
+      # consider tightening to `require-corp`.
       - path: /*
         name: Cross-Origin-Embedder-Policy
         value: credentialless

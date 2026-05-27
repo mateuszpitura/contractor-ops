@@ -90,10 +90,10 @@ export const router = createBrowserRouter([
         },
         children: [
           // Auth (no dashboard shell) — `requireAnonymous` bounces already-signed-in
-          // users back to the dashboard root (or the deep-link they came from)
-          // per legacy parity. `/invite/:token` deliberately skips the bounce
-          // because invite acceptance is valid for already-signed-in users too
-          // (e.g. accepting a second-org invite). Restoration of GAP-MIDDLEWARE-004.
+          // users back to the dashboard root (or the deep-link they came from).
+          // `/invite/:token` deliberately skips the bounce because invite
+          // acceptance must work for already-signed-in users too (e.g. accepting
+          // a second-org invite).
           {
             path: 'login',
             loader: async ({ params, request }) => {

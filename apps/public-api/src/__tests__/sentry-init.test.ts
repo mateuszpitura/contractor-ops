@@ -1,20 +1,16 @@
 /**
- * Regression test for GAP-OBSERVABILITY-008 — public-API Sentry init must
- * wire `beforeSend: scrubSentryEvent`.
+ * Pins for the public-API Sentry init contract. The init must wire
+ * `beforeSend: scrubSentryEvent` because public-API receives external
+ * API-key consumer payloads (request bodies, headers, auth artifacts) —
+ * without the scrubber every unhandled exception would ship those
+ * verbatim to Sentry.
  *
- * Pins:
  *   - `Sentry.init` is called with `beforeSend` set to a function.
  *   - That function IS the scrubber exported by `lib/sentry-scrub.ts`
- *     (reference compare via mocked module), so silently replacing it with
- *     a stub or noop would fail here.
+ *     (reference compare via mocked module), so silently replacing it
+ *     with a stub or noop would fail here.
  *   - `enabled: false` when `SENTRY_DSN` is unset — preview/dev/CI
  *     deploys without a Sentry project must remain noops.
- *
- * Public-API receives external API-key consumer payloads (request bodies,
- * headers, auth artifacts). Before GAP-OBSERVABILITY-008 the init shipped
- * without a scrubber and that traffic fired to Sentry verbatim — a P0
- * data-leak the parity audit's aggregation layer had absorbed into a
- * falsely-positive appendix sentence. This test is the safety net.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -37,7 +33,7 @@ async function loadInit() {
   return import('../lib/sentry.js');
 }
 
-describe('initSentry — GAP-OBSERVABILITY-008 regression (public-api)', () => {
+describe('initSentry (public-api) — PII scrubber must stay wired', () => {
   const originalDsn = process.env.SENTRY_DSN;
   const originalNodeEnv = process.env.NODE_ENV;
 

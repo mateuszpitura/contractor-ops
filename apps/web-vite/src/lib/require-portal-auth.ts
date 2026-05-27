@@ -6,13 +6,14 @@
  *
  *     {
  *       element: <PortalShell />,
- *       loader: ({ params }) => requirePortalAuth(params.locale),
+ *       loader: ({ params, request }) => requirePortalAuth(params.locale, request),
  *       children: [ ... ],
  *     }
  *
- * Fast-path: absent `portal_session` cookie → redirect without an API round
- * trip. When a cookie exists, validates via `portal.getSession` (same
- * contract as Next.js `(portal)/layout.tsx`).
+ * Fast-path: absent `portal_session` cookie → redirect without an API
+ * round-trip. When a cookie exists, validates via `portal.getSession`.
+ * Deep-links are preserved through `?redirectTo=…` so contractors
+ * resume at their target page after sign-in.
  */
 
 import type { PortalAppRouter } from '@contractor-ops/api';
@@ -77,9 +78,8 @@ function isTransientPortalAuthError(err: unknown): boolean {
 /**
  * Build `/{locale}/portal/login[?redirectTo=…]` so a contractor landing on
  * a deep-link (e.g. `/{locale}/portal/invoices/123`) without a session
- * resumes at that path after a successful portal sign-in. Restoration of
- * GAP-MIDDLEWARE-007 for the portal flow — the staff helper mirror lives
- * in `require-auth.ts`.
+ * resumes at that path after a successful portal sign-in. Mirror of the
+ * staff-side helper in `require-auth.ts`.
  */
 function portalLoginTarget(locale: Locale, request?: Request): string {
   if (!request) return `/${locale}/portal/login`;

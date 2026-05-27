@@ -1,17 +1,17 @@
 /**
  * Sentry `beforeSend` PII scrubber for @contractor-ops/public-api.
  *
- * Mirror of `apps/api/src/lib/sentry-scrub.ts` + `apps/web-vite/src/lib/sentry-scrub.ts`
- * — keep the PII_KEYWORDS list and the scrubbing strategy in sync across all
- * runtimes so a sensitive value redacted in one is also redacted in the
- * others. Public-API receives external API-key consumer payloads (request
- * bodies, headers, auth artifacts) which the audit confirmed were shipping
- * unredacted to Sentry before GAP-OBSERVABILITY-008 wired this scrubber.
+ * Mirror of `apps/api/src/lib/sentry-scrub.ts` and
+ * `apps/web-vite/src/lib/sentry-scrub.ts` — keep the PII_KEYWORDS list
+ * and scrubbing strategy in sync across all runtimes so a sensitive
+ * value redacted in one is also redacted in the others.
  *
- * Without this scrubber wired into `Sentry.init({ beforeSend })`, every
- * uncaught exception ships request bodies (including form POSTs with
- * password / OAuth-token / IBAN / tax-id fields), headers, cookies, and
- * URL query strings verbatim to Sentry.
+ * Public-API receives external API-key consumer payloads (request
+ * bodies, headers, auth artifacts). Without this scrubber wired into
+ * `Sentry.init({ beforeSend })`, every uncaught exception would ship
+ * request bodies (including form POSTs with password / OAuth-token /
+ * IBAN / tax-id fields), headers, cookies, and URL query strings
+ * verbatim to Sentry.
  */
 
 import type { ErrorEvent, EventHint } from '@sentry/node';

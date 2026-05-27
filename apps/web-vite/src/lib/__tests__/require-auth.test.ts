@@ -1,21 +1,16 @@
 /**
- * Regression tests for GAP-MIDDLEWARE-007 — `requireAuth` must preserve
- * the original destination as `?redirectTo=…` on the unauth bounce so
- * deep-links (bookmarks, email-notification links, share URLs) survive
- * the round-trip through the login page.
+ * Pins for `requireAuth`:
  *
- * Pins:
- *   - With a `request` argument carrying `/pl/contractors/123`, the
- *     redirect Response targets `/pl/login?redirectTo=%2Fcontractors%2F123`.
- *   - Query string on the original URL is preserved through the
+ *   - Authenticated session resolves to `null` (loader chain continues).
+ *   - With a `request` carrying `/pl/contractors/123`, the redirect
+ *     targets `/pl/login?redirectTo=%2Fcontractors%2F123`.
+ *   - The query string on the original URL is preserved through the
  *     percent-encoded `redirectTo` value.
  *   - Bouncing from the locale root (`/pl`) emits a bare `/pl/login`
  *     (no clutter — round-tripping `/` adds zero value).
- *   - Bouncing without any `request` argument still works (backward
- *     compat with callers that don't yet pass it through).
- *   - Anonymous-or-missing-locale fallback still routes to
- *     `/{DEFAULT_LOCALE}/login`.
- *   - Authenticated session resolves to `null` (loader chain continues).
+ *   - Bouncing without any `request` argument still works (callers
+ *     that don't yet thread `request` through).
+ *   - Unsupported locale param falls back to `/{DEFAULT_LOCALE}/login`.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -42,7 +37,7 @@ async function expectRedirect(promise: Promise<unknown>): Promise<Response> {
   throw new Error('expected requireAuth to throw a redirect Response');
 }
 
-describe('requireAuth — GAP-MIDDLEWARE-007 regression', () => {
+describe('requireAuth', () => {
   beforeEach(() => {
     getSessionSpy.mockReset();
   });
