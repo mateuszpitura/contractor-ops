@@ -1,12 +1,14 @@
 /**
  * React Router loader helper — assert an authenticated session, otherwise
- * redirect to the locale-aware login.
+ * redirect to the locale-aware login, preserving the original destination
+ * as `?redirectTo=…` so the LoginForm hook can navigate back after a
+ * successful sign-in.
  *
  * Used by every dashboard / admin / portal route's `loader`:
  *
  *     {
  *       path: 'contractors',
- *       loader: ({ params }) => requireAuth(params.locale),
+ *       loader: ({ params, request }) => requireAuth(params.locale, request),
  *       element: <ContractorList />,
  *     }
  *
@@ -14,6 +16,14 @@
  * same singleton the `<AuthProvider>` exposes). When the session is
  * absent or stale, throws a `redirect` Response React Router catches and
  * navigates to.
+ *
+ * Restoration of GAP-MIDDLEWARE-007 — the legacy Next.js middleware
+ * (`apps/web/src/middleware.ts:446-468` @ 7fce0d83) preserved
+ * `?redirectTo=<pathWithoutLocale>` on the unauth bounce so bookmarks
+ * and email deep-links survived the round-trip through login. The
+ * `useLoginForm` hook already reads + sanitizes the param (see
+ * `apps/web-vite/src/components/auth/hooks/use-login-form.ts:21-28,
+ * 59,93`); this helper just had to start emitting it.
  */
 
 import { redirect } from 'react-router-dom';
@@ -21,21 +31,31 @@ import type { Locale } from '../i18n/messages.js';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../i18n/messages.js';
 import { getAuthClient } from '../providers/auth-provider.js';
 
-export interface RequireAuthOptions {
-  /** Path to redirect to on missing session — defaults to `/login`. */
-  redirectTo?: string;
+function stripLocale(pathname: string, locale: Locale): string {
+  return pathname.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/';
 }
 
 export async function requireAuth(
   localeParam: string | undefined,
-  opts: RequireAuthOptions = {},
+  request?: Request,
 ): Promise<null> {
   const locale: Locale = isSupportedLocale(localeParam) ? localeParam : DEFAULT_LOCALE;
   const auth = getAuthClient();
   const session = await auth.getSession();
   if (!session.data?.user) {
-    const target = opts.redirectTo ?? '/login';
-    throw redirect(`/${locale}${target}`);
+    let target = `/${locale}/login`;
+    if (request) {
+      const url = new URL(request.url);
+      const pathWithoutLocale = stripLocale(url.pathname, locale);
+      // Skip the `?redirectTo=` when the user is already on the dashboard
+      // root — round-tripping `/` through login adds no value and would
+      // just clutter the URL bar.
+      if (pathWithoutLocale !== '/') {
+        const dest = `${pathWithoutLocale}${url.search}`;
+        target += `?redirectTo=${encodeURIComponent(dest)}`;
+      }
+    }
+    throw redirect(target);
   }
   return null;
 }

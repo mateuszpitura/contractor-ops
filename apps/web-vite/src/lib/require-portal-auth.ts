@@ -74,11 +74,32 @@ function isTransientPortalAuthError(err: unknown): boolean {
   return false;
 }
 
-export async function requirePortalAuth(localeParam: string | undefined): Promise<null> {
+/**
+ * Build `/{locale}/portal/login[?redirectTo=…]` so a contractor landing on
+ * a deep-link (e.g. `/{locale}/portal/invoices/123`) without a session
+ * resumes at that path after a successful portal sign-in. Restoration of
+ * GAP-MIDDLEWARE-007 for the portal flow — the staff helper mirror lives
+ * in `require-auth.ts`.
+ */
+function portalLoginTarget(locale: Locale, request?: Request): string {
+  if (!request) return `/${locale}/portal/login`;
+  const url = new URL(request.url);
+  const pathWithoutLocale = url.pathname.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/';
+  if (pathWithoutLocale === '/' || pathWithoutLocale === '/portal/login') {
+    return `/${locale}/portal/login`;
+  }
+  const dest = `${pathWithoutLocale}${url.search}`;
+  return `/${locale}/portal/login?redirectTo=${encodeURIComponent(dest)}`;
+}
+
+export async function requirePortalAuth(
+  localeParam: string | undefined,
+  request?: Request,
+): Promise<null> {
   const locale: Locale = isSupportedLocale(localeParam) ? localeParam : DEFAULT_LOCALE;
 
   if (!hasPortalSessionCookie()) {
-    throw redirect(`/${locale}/portal/login`);
+    throw redirect(portalLoginTarget(locale, request));
   }
 
   try {
@@ -89,7 +110,7 @@ export async function requirePortalAuth(localeParam: string | undefined): Promis
       throw err;
     }
     if (isPortalSessionInvalid(err)) {
-      throw redirect(`/${locale}/portal/login`);
+      throw redirect(portalLoginTarget(locale, request));
     }
     throw err;
   }

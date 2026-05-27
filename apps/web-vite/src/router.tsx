@@ -141,14 +141,14 @@ export const router = createBrowserRouter([
           // every page inside it stay code-split via React.lazy + Suspense.
           {
             element: page(<PortalShell />),
-            loader: ({ params }) => requirePortalAuth(params.locale),
+            loader: ({ params, request }) => requirePortalAuth(params.locale, request),
             children: portalRoutes,
           },
           // Staff dashboard (sidebar + top bar) — same eager-children pattern.
           // Bare `/:locale` matches `dashboardRoutes`' `{ index: true }` here.
           {
             element: page(<DashboardShell />),
-            loader: ({ params }) => requireAuth(params.locale),
+            loader: ({ params, request }) => requireAuth(params.locale, request),
             children: dashboardRoutes,
           },
         ],
