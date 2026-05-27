@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { useMemo } from 'react';
@@ -144,7 +143,7 @@ export function ActivityFeed() {
         ) : grouped.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t('activity.empty')}</p>
         ) : (
-          <ScrollArea className="max-h-[400px]">
+          <div className="scroll-fade-bottom max-h-[400px] overflow-y-auto pe-1">
             <div className="flex flex-col gap-4">
               {grouped.map(group => (
                 <div key={group.label}>
@@ -197,7 +196,7 @@ export function ActivityFeed() {
                 </div>
               ))}
             </div>
-          </ScrollArea>
+          </div>
         )}
       </CardContent>
     </Card>
