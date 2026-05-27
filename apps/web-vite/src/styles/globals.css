@@ -755,17 +755,26 @@ html.theme-transition *::after {
  * this rule only attaches in workbench intensity — no JS conditional
  * className needed in dashboard-shell.tsx.
  */
-body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
-  height: 100svh;
-  max-height: 100svh;
-  min-height: 0;
-  overflow: hidden;
-}
+/*
+ * Tall-enough viewport (≥ 600px): pin the shell to the viewport and let
+ * tables scroll internally inside <main>. Anything shorter falls through
+ * to the document-scroll default so the table is not crushed to a
+ * postage stamp — the page scrolls instead, and the table retains a
+ * usable minimum height.
+ */
+@media (min-height: 600px) {
+  body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
+    height: 100svh;
+    max-height: 100svh;
+    min-height: 0;
+    overflow: hidden;
+  }
 
-body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
-  flex: 1 1 0%;
-  min-height: 0;
-  overflow-y: auto;
+  body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow-y: auto;
+  }
 }
 
 /* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
