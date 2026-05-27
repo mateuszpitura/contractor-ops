@@ -37,6 +37,11 @@ export function initSentry(): void {
 
     environment: process.env.NODE_ENV ?? 'development',
 
+    // Restoration of GAP-OBSERVABILITY-009 — tag every event with the
+    // deploy's git commit (Render exposes `RENDER_GIT_COMMIT` at runtime).
+    // Falls through to `undefined` locally / CI when unset.
+    release: process.env.RENDER_GIT_COMMIT,
+
     // Tag the service so a single Sentry project can host both web + API.
     initialScope: { tags: { service: 'public-api' } },
 

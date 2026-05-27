@@ -20,6 +20,10 @@ export function initSentry(): void {
     enabled: Boolean(dsn),
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
+    // Restoration of GAP-OBSERVABILITY-009 — tag every event with the
+    // deploy's git commit (Render exposes `RENDER_GIT_COMMIT` at runtime).
+    // Falls through to `undefined` locally / CI when unset.
+    release: process.env.RENDER_GIT_COMMIT,
     initialScope: { tags: { service: 'cron-worker' } },
     // GAP-OBSERVABILITY-007: redact PII (passwords, OAuth tokens, IBANs,
     // tax IDs, etc.) from every event before it leaves the process — see

@@ -36,13 +36,20 @@ async function loadInit() {
   return import('../lib/sentry.js');
 }
 
-describe('initSentry — GAP-OBSERVABILITY-005 regression', () => {
+describe('initSentry — GAP-OBSERVABILITY-005 + -009 regression', () => {
+  const originalRenderCommit = process.env.RENDER_GIT_COMMIT;
+
   beforeEach(() => {
     initSpy.mockClear();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    if (originalRenderCommit === undefined) {
+      delete process.env.RENDER_GIT_COMMIT;
+    } else {
+      process.env.RENDER_GIT_COMMIT = originalRenderCommit;
+    }
   });
 
   it('passes enableLogs: true so Sentry.logger.* captures flow to Sentry', async () => {
@@ -67,5 +74,21 @@ describe('initSentry — GAP-OBSERVABILITY-005 regression', () => {
       initialScope?: { tags?: Record<string, string> };
     };
     expect(opts.initialScope?.tags?.service).toBe('api-server');
+  });
+
+  it('forwards RENDER_GIT_COMMIT as release tag (GAP-OBSERVABILITY-009)', async () => {
+    process.env.RENDER_GIT_COMMIT = 'deadbeefcafebabe1234567890abcdef12345678';
+    const mod = await loadInit();
+    mod.initSentry();
+    const opts = initSpy.mock.calls[0]?.[0] as { release?: string };
+    expect(opts.release).toBe('deadbeefcafebabe1234567890abcdef12345678');
+  });
+
+  it('leaves release as undefined when RENDER_GIT_COMMIT is unset (local / CI)', async () => {
+    delete process.env.RENDER_GIT_COMMIT;
+    const mod = await loadInit();
+    mod.initSentry();
+    const opts = initSpy.mock.calls[0]?.[0] as { release?: string };
+    expect(opts.release).toBeUndefined();
   });
 });

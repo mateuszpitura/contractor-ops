@@ -29,6 +29,13 @@ export function initSentry(): void {
     enabled: Boolean(dsn),
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
+    // Restoration of GAP-OBSERVABILITY-009 — tag every event with the
+    // deploy's git commit so Sentry's "first seen / regression in next
+    // release" grouping works across deploys. Render exposes the SHA via
+    // `RENDER_GIT_COMMIT` (full 40-char hash) on every build/runtime.
+    // Falls through to `undefined` locally / CI when unset, which Sentry
+    // accepts as "no release tagged".
+    release: process.env.RENDER_GIT_COMMIT,
     // Restoration of GAP-OBSERVABILITY-005 — legacy server config opted
     // into Sentry's structured log capture so server-side `Sentry.logger.*`
     // calls flow into the same project as exceptions. Uses the v10 top-level
