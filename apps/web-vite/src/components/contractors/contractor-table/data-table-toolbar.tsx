@@ -19,7 +19,6 @@ import type { ContractorListToolbarProps } from '../hooks/use-contractor-list.js
 // ---------------------------------------------------------------------------
 
 interface FilterState {
-  status: string[];
   lifecycleStage: string[];
   type: string[];
   owner: string[];
@@ -92,7 +91,6 @@ export function DataTableToolbar({
 
   const clearAllFilters = () => {
     onFiltersChange({
-      status: [],
       lifecycleStage: [],
       type: [],
       owner: [],
@@ -112,9 +110,9 @@ export function DataTableToolbar({
     onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
   };
 
-  // Secondary filters (everything except lifecycleStage which is now the chip bar)
+  // Secondary filters (everything except lifecycleStage which is rendered as
+  // the dedicated dropdown to the left of the Filters popover).
   const secondaryFilterCount =
-    filters.status.length +
     filters.type.length +
     filters.owner.length +
     filters.team.length +

@@ -21,7 +21,7 @@ type State = ReturnType<typeof useContractorFilters>[0];
 type Probe = {
   state: State | null;
   setSearch: (s: string) => void;
-  setStatus: (s: string[]) => void;
+  setLifecycleStage: (s: string[]) => void;
 };
 
 function FiltersProbe({ probe }: { probe: Probe }) {
@@ -30,8 +30,8 @@ function FiltersProbe({ probe }: { probe: Probe }) {
   probe.setSearch = (s: string) => {
     void setState({ search: s });
   };
-  probe.setStatus = (s: string[]) => {
-    void setState({ status: s });
+  probe.setLifecycleStage = (s: string[]) => {
+    void setState({ lifecycleStage: s });
   };
   return null;
 }
@@ -40,7 +40,7 @@ function renderWithAdapter(initialSearchParams: string, hasMemory = false) {
   const probe: Probe = {
     state: null,
     setSearch: () => undefined,
-    setStatus: () => undefined,
+    setLifecycleStage: () => undefined,
   };
   const container = document.createElement('div');
   document.body.appendChild(container);
@@ -83,7 +83,6 @@ describe('useContractorFilters', () => {
     expect(probe.state?.search).toBe('');
     expect(probe.state?.sortBy).toBe('createdAt');
     expect(probe.state?.sortOrder).toBe('desc');
-    expect(probe.state?.status).toEqual([]);
     expect(probe.state?.lifecycleStage).toEqual([]);
     expect(probe.state?.type).toEqual([]);
     expect(probe.state?.owner).toEqual([]);
@@ -104,13 +103,10 @@ describe('useContractorFilters', () => {
     expect(probe.state?.sortOrder).toBe('asc');
   });
 
-  it('hydrates array params (lifecycleStage, status, owner) from comma-separated lists', () => {
-    const { probe, cleanup } = renderWithAdapter(
-      '?lifecycleStage=DRAFT,ACTIVE&status=onboarded&owner=u1,u2',
-    );
+  it('hydrates array params (lifecycleStage, owner) from comma-separated lists', () => {
+    const { probe, cleanup } = renderWithAdapter('?lifecycleStage=DRAFT,ACTIVE&owner=u1,u2');
     cleanups.push(cleanup);
     expect(probe.state?.lifecycleStage).toEqual(['DRAFT', 'ACTIVE']);
-    expect(probe.state?.status).toEqual(['onboarded']);
     expect(probe.state?.owner).toEqual(['u1', 'u2']);
   });
 
@@ -129,12 +125,12 @@ describe('useContractorFilters', () => {
   it('updates array params through setState (hasMemory)', async () => {
     const { probe, cleanup } = renderWithAdapter('', true);
     cleanups.push(cleanup);
-    expect(probe.state?.status).toEqual([]);
+    expect(probe.state?.lifecycleStage).toEqual([]);
 
     await act(async () => {
-      probe.setStatus(['ACTIVE', 'ONBOARDING']);
+      probe.setLifecycleStage(['ACTIVE', 'ONBOARDING']);
     });
 
-    expect(probe.state?.status).toEqual(['ACTIVE', 'ONBOARDING']);
+    expect(probe.state?.lifecycleStage).toEqual(['ACTIVE', 'ONBOARDING']);
   });
 });

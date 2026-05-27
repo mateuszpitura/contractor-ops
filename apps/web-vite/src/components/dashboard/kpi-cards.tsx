@@ -31,7 +31,7 @@ const KPI_CARDS: KpiCardConfig[] = [
   {
     key: 'activeContractors',
     labelKey: 'kpi.activeContractors',
-    href: '/contractors?status=active',
+    href: '/contractors?lifecycleStage=ACTIVE',
   },
   {
     key: 'pendingApprovals',

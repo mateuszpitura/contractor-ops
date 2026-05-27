@@ -16,7 +16,6 @@ export type ContractorUserOption = {
 };
 
 export interface ContractorFilterState {
-  status: string[];
   lifecycleStage: string[];
   type: string[];
   owner: string[];
@@ -38,7 +37,6 @@ export interface ContractorListTableProps {
   };
   onFiltersChange: (
     partial: Partial<{
-      status: string[];
       lifecycleStage: string[];
       type: string[];
       owner: string[];
@@ -181,7 +179,6 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
   const clearFilters = useCallback(() => {
     void setFilters({
       search: '',
-      status: [],
       lifecycleStage: [],
       type: [],
       owner: [],
@@ -198,7 +195,6 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     pageSize: filters.pageSize,
     sortBy: filters.sortBy,
     sortOrder: filters.sortOrder,
-    status: filters.status,
     lifecycleStage: filters.lifecycleStage,
     type: filters.type,
     owner: filters.owner,
@@ -211,7 +207,6 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
     search: filters.search,
     onSearchChange: handleSearchChange,
     filters: {
-      status: filters.status,
       lifecycleStage: filters.lifecycleStage,
       type: filters.type,
       owner: filters.owner,
