@@ -688,15 +688,15 @@ html.theme-transition *::after {
   background: var(--surface-0);
 }
 
-body[data-intensity="atelier"] .atelier-main-surface,
-body[data-intensity="exhibition"] .atelier-main-surface {
+[data-intensity="atelier"] .atelier-main-surface,
+[data-intensity="exhibition"] .atelier-main-surface {
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 
-body[data-intensity="atelier"] .atelier-main-surface::before,
-body[data-intensity="exhibition"] .atelier-main-surface::before {
+[data-intensity="atelier"] .atelier-main-surface::before,
+[data-intensity="exhibition"] .atelier-main-surface::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -708,16 +708,21 @@ body[data-intensity="exhibition"] .atelier-main-surface::before {
   z-index: -1;
 }
 
-body[data-intensity="atelier"].dark .atelier-main-surface::before,
-body[data-intensity="exhibition"].dark .atelier-main-surface::before {
+/*
+ * Dark-mode atelier wash. `.dark` lives on <html> (theme-provider.tsx),
+ * so we anchor with `:is(.dark)` to match any dark ancestor rather than
+ * requiring the class on the same element as `data-intensity`.
+ */
+:is(.dark) [data-intensity="atelier"] .atelier-main-surface::before,
+:is(.dark) [data-intensity="exhibition"] .atelier-main-surface::before {
   background:
-    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.22 0.08 178 / 45%), transparent 70%),
-    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.2 0.06 65 / 30%), transparent 70%),
-    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.18 0.05 260 / 35%), transparent 70%);
+    radial-gradient(ellipse 70% 50% at 10% 20%, oklch(0.22 0.05 178 / 8%), transparent 75%),
+    radial-gradient(ellipse 50% 60% at 85% 75%, oklch(0.2 0.04 65 / 4%), transparent 75%),
+    radial-gradient(ellipse 90% 40% at 50% 95%, oklch(0.18 0.03 260 / 6%), transparent 75%);
 }
 
-body[data-intensity="atelier"] .atelier-main-surface::after,
-body[data-intensity="exhibition"] .atelier-main-surface::after {
+[data-intensity="atelier"] .atelier-main-surface::after,
+[data-intensity="exhibition"] .atelier-main-surface::after {
   content: "";
   position: absolute;
   inset: -50%;
@@ -732,8 +737,8 @@ body[data-intensity="exhibition"] .atelier-main-surface::after {
   animation: atelier-grain-drift 8s steps(10) infinite;
 }
 
-body[data-intensity="atelier"].dark .atelier-main-surface::after,
-body[data-intensity="exhibition"].dark .atelier-main-surface::after {
+:is(.dark) [data-intensity="atelier"] .atelier-main-surface::after,
+:is(.dark) [data-intensity="exhibition"] .atelier-main-surface::after {
   opacity: 0.06;
 }
 
