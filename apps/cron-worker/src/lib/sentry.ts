@@ -15,9 +15,16 @@ export function initSentry(): void {
   if (initialized) return;
   const env = loadEnv();
   const dsn = env.SENTRY_DSN;
+  // Hard-disable Sentry uploads in `development` even if a DSN is set, so
+  // local runs do not burn the prod project's error quota. Mirror of the
+  // browser + api guards. Override for dev debugging by exporting
+  // `SENTRY_DEV=true`.
+  const isDev = env.NODE_ENV === 'development';
+  const sentryDevOverride = process.env.SENTRY_DEV === 'true';
+  const enabled = Boolean(dsn) && (!isDev || sentryDevOverride);
   Sentry.init({
     dsn,
-    enabled: Boolean(dsn),
+    enabled,
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
     // Restoration of GAP-OBSERVABILITY-009 — tag every event with the

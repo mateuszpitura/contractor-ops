@@ -20,13 +20,20 @@ export function initSentry(): void {
   if (initialized) return;
 
   // When unset, init is a no-op and `captureException` becomes a noop too —
-  // safe in dev / CI / preview deploys without a Sentry project.
+  // safe in dev / CI / preview deploys without a Sentry project. We also
+  // hard-disable Sentry uploads in `development` even if a DSN is set in
+  // `.env`, so local runs do not burn the prod project's error quota.
+  // Mirror of the browser-side guard at `apps/web-vite/src/sentry.ts:40`.
+  // Override for dev debugging by exporting `SENTRY_DEV=true`.
   const env = loadEnv();
   const dsn = env.SENTRY_DSN;
+  const isDev = env.NODE_ENV === 'development';
+  const sentryDevOverride = process.env.SENTRY_DEV === 'true';
+  const enabled = Boolean(dsn) && (!isDev || sentryDevOverride);
 
   Sentry.init({
     dsn,
-    enabled: Boolean(dsn),
+    enabled,
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
     // Restoration of GAP-OBSERVABILITY-009 — tag every event with the
