@@ -40,15 +40,26 @@ export function DashboardShell({
                   {skipToContentLabel}
                 </a>
                 <AppSidebar />
-                <SidebarInset className="flex h-svh max-h-svh min-h-0 flex-col overflow-hidden">
+                <SidebarInset>
                   <TopBarContainer />
                   <BillingOverlayContainer />
+                  {/*
+                   * Page scrolls at the document level (`<body>`) — same as
+                   * legacy. The atelier-main-surface ::after grain layer needs
+                   * overflow:hidden on the surface itself (set via CSS), which
+                   * is incompatible with `overflow-y-auto` on the same element,
+                   * so we don't lock the SidebarInset to viewport height +
+                   * scroll inside main. Sticky topbar still works because the
+                   * scrolling ancestor for `sticky top-0` becomes the viewport.
+                   */}
                   <main
                     id="main-content"
-                    className="atelier-main-surface min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-6">
-                    <Outlet />
+                    className="atelier-main-surface flex min-w-0 flex-1 flex-col overflow-x-hidden p-6">
+                    <div className="flex-1 pb-8">
+                      <Outlet />
+                    </div>
+                    <AppFooter />
                   </main>
-                  <AppFooter />
                 </SidebarInset>
               </IntensityRouter>
               <CommandPaletteContainer />
