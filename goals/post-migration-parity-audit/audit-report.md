@@ -63,15 +63,15 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 
 | Area | P0 | P1 | P2 |
 |------|----|----|----|
-| PAGE | **1 / 0 / 0** (GAP-LEGAL-CLUSTER-001 escalated) | 5 / 0 / 0 | 2 / 3 / 0 (GAP-PAGE-006 + GAP-PAGE-007 + GAP-PAGE-008 inline-fixed) |
-| ROUTE | 0 / 0 / 0 | 3 / 0 / 1 (GAP-ROUTE-003 deferred — pre-existing OAuth audit-log follow-up) | 1 / 1 / 0 (GAP-ROUTE-001 inline-fixed) |
+| PAGE | **1 / 0 / 0** (GAP-LEGAL-CLUSTER-001 escalated) | 0 / 0 / 5 (GAP-PAGE-001..005 deferred — rolled up under GAP-LEGAL-CLUSTER-001) | 0 / 3 / 2 (GAP-PAGE-006/-007/-008 inline-fixed; GAP-PAGE-009/-010 deferred — see rows) |
+| ROUTE | 0 / 0 / 0 | 0 / 0 / 4 (GAP-ROUTE-002 / -004 / -005 deferred — escalated ops/Peppol owners; GAP-ROUTE-003 pre-existing follow-up) | 0 / 1 / 1 (GAP-ROUTE-001 inline-fixed; GAP-ROUTE-006 deferred — ops owner) |
 | WEBHOOK | 0 / 1 / 0 (GAP-WEBHOOK-003 escalated → inline-fixed) | 0 / 0 / 1 (GAP-WEBHOOK-001 deferred — F-SEC-06 follow-up) | 0 / 0 / 0 |
 | MIDDLEWARE | 0 / 0 / 0 | 0 / 2 / 1 (GAP-MIDDLEWARE-005 + GAP-MIDDLEWARE-007 inline-fixed; GAP-MIDDLEWARE-003 deferred — product owner confirmation) | 0 / 2 / 1 (GAP-MIDDLEWARE-004 inline-fixed under sibling commit `a511f9d4` — see row note; GAP-MIDDLEWARE-006 inline-fixed; GAP-MIDDLEWARE-002 deferred; +1 closed-verified GAP-MIDDLEWARE-001) |
-| I18N | 0 / 0 / 0 | 0 / 0 / 0 | 3 / 2 / 0 (GAP-I18N-004 + GAP-I18N-005 inline-fixed) |
+| I18N | 0 / 0 / 0 | 0 / 0 / 0 | 1 / 2 / 2 (GAP-I18N-004 + GAP-I18N-005 inline-fixed; GAP-I18N-001 + -002 deferred — 35-call-site refactor; GAP-I18N-003 is INFO-only) |
 | OBSERVABILITY | **1 / 2 / 0** (GAP-OBSERVABILITY-012 PostHog post-signup open — escalated; -007 cron-worker + -008 public-api inline-fixed) | 0 / 2 / 3 (GAP-OBSERVABILITY-003 inline-fixed; GAP-OBSERVABILITY-009 inline-fixed — partial; GAP-OBSERVABILITY-001 + -002 + -010 deferred — see rows) | 0 / 2 / 2 (GAP-OBSERVABILITY-005 + -006 inline-fixed; GAP-OBSERVABILITY-004 + -011 deferred; +1 closed-verified GAP-OBSERVABILITY-013) |
-| SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 0 / 2 / 0 (GAP-SECURITY-005 + GAP-SECURITY-008 inline-fixed; GAP-SECURITY-004 closed-verified-intentional — see row) | 1 / 0 / 0 (GAP-SECURITY-007 closed-verified-intentional — see row) |
+| SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 0 / 2 / 0 (GAP-SECURITY-005 + GAP-SECURITY-008 inline-fixed; GAP-SECURITY-004 closed-verified-intentional — see row) | 0 / 0 / 1 (GAP-SECURITY-006 deferred — mirror of GAP-MIDDLEWARE-002; +1 closed-verified GAP-SECURITY-007) |
 | TEST | **3 / 0 / 0** (GAP-TEST-015 / -021 / -026 promoted to P0 per final-pass calibration — payment idempotency, cross-org IDOR, cross-jurisdiction IDOR) | 9 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 12 / 0 / 0 |
-| **Total** | **7 / 4 / 0** | **17 / 8 / 6** (+1 closed-verified: GAP-SECURITY-004) | **19 / 10 / 3** (+3 closed-verified: GAP-SECURITY-007, GAP-MIDDLEWARE-001, GAP-OBSERVABILITY-013) |
+| **Total** | **7 / 4 / 0** | **9 / 8 / 14** (+1 closed-verified: GAP-SECURITY-004) | **13 / 10 / 9** (+3 closed-verified: GAP-SECURITY-007, GAP-MIDDLEWARE-001, GAP-OBSERVABILITY-013) |
 
 P0 escalation candidates (severity may move to P0 after restoration-agent / legal review):
 
