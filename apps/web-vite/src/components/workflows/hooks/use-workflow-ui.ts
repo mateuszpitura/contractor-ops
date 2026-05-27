@@ -391,7 +391,10 @@ export function useWorkflowRunsTableTemplates() {
   return useQuery(
     trpc.workflow.listTemplates.queryOptions({
       page: 1,
-      pageSize: 100,
+      // Server caps `pageSize` at 50 (packages/validators/src/workflow.ts).
+      // Filter dropdowns should not request more than the server allows;
+      // anything beyond rolls into a future paginated picker.
+      pageSize: 50,
       status: ['ACTIVE', 'DRAFT', 'ARCHIVED'],
     }),
   );

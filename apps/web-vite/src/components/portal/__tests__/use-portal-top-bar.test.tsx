@@ -67,7 +67,10 @@ describe('usePortalTopBar', () => {
     await act(async () => {
       await result.current.handleLogout();
     });
-    expect(globalThis.fetch).toHaveBeenCalledWith('/api/portal/clear-session', { method: 'POST' });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/portal\/clear-session$/),
+      expect.objectContaining({ method: 'POST', credentials: 'include' }),
+    );
     clearTRPCMock();
   });
 });
@@ -98,7 +101,10 @@ describe('usePortalMobileMenu', () => {
       await result.current.handleLogout();
     });
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    expect(globalThis.fetch).toHaveBeenCalledWith('/api/portal/clear-session', { method: 'POST' });
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/\/portal\/clear-session$/),
+      expect.objectContaining({ method: 'POST', credentials: 'include' }),
+    );
     clearTRPCMock();
   });
 });

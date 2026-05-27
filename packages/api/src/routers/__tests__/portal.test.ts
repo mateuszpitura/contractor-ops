@@ -167,7 +167,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({
@@ -362,7 +362,7 @@ describe('portal router — requestMagicLink', () => {
 
     expect(out).toEqual({ success: true });
     expect(mockCreateMagicLinkToken).toHaveBeenCalledWith(EMAIL);
-    // F-SEC-09: baseUrl is server-derived from NEXT_PUBLIC_APP_URL — never
+    // F-SEC-09: baseUrl is server-derived from PUBLIC_APP_URL — never
     // taken from request headers. Assert it's a non-empty absolute URL
     // rather than pinning to a fixture so the test stays portable across
     // local/CI/staging env files.

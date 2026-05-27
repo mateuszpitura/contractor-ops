@@ -34,7 +34,7 @@ const TEST_ENV = {
   // Secret is short to bypass the production guard.
   BETTER_AUTH_SECRET: 'test-secret-test-secret',
   BETTER_AUTH_URL: 'https://api.example.test',
-  NEXT_PUBLIC_APP_URL: 'https://app.example.test',
+  PUBLIC_APP_URL: 'https://app.example.test',
 } as const;
 
 let app: FastifyInstance;

@@ -1,8 +1,6 @@
 /**
  * Async export download endpoint (P2-F · F-SCALE-01).
  *
- * Ported 1:1 from apps/web/src/app/api/exports/[exportId]/download/route.ts:
- *
  *   1. Better Auth session must resolve.
  *   2. Session's `activeOrganizationId` must match `Export.organizationId`
  *      (defense-in-depth on top of Prisma tenant scope).
@@ -97,7 +95,7 @@ export function registerExportsRoute(app: FastifyInstance): void {
 
 // ---------------------------------------------------------------------------
 // /exports/_process — QStash callback for the async export framework
-// (P2-F · F-SCALE-01/02/08). Mirrors apps/web/src/app/api/exports/_process/route.ts.
+// (P2-F · F-SCALE-01/02/08).
 // ---------------------------------------------------------------------------
 
 const processLog = createCronLogger('exports-process');

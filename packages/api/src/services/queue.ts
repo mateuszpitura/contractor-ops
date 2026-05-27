@@ -53,7 +53,7 @@ export interface JobRegistry {
 export type JobName = keyof JobRegistry;
 
 interface JobConfig {
-  /** Path component appended to NEXT_PUBLIC_APP_URL. */
+  /** Path component appended to API_URL (apps/api Fastify host). */
   route: string;
   /** Default QStash retry attempts. Per-call override allowed. */
   retries: number;
@@ -62,25 +62,25 @@ interface JobConfig {
 }
 
 /**
- * Per-job defaults. Values cribbed from the audit's "Queue consumer matrix"
- * (.audit-2026-05-03/04-async.md) so we don't regress existing call-site
- * behaviour while consolidating the shape.
+ * Per-job defaults. Routes match the Fastify handlers registered on
+ * `apps/api` (no `/api/` prefix — see apps/api/src/routes + the webhook
+ * plugin in apps/api/src/routes/webhooks/index.ts).
  */
 const JOB_CONFIG: Record<JobName, JobConfig> = {
-  'webhook.process': { route: '/api/webhooks/_process', retries: 3 },
-  'ocr.process': { route: '/api/ocr/_process', retries: 3, timeout: '60s' },
-  'ksef.sync': { route: '/api/ksef/_sync', retries: 5 },
-  'google-workspace.sync': { route: '/api/google-workspace/_sync', retries: 5 },
-  'peppol.outbound': { route: '/api/peppol/outbound', retries: 5 },
-  'peppol.inbound': { route: '/api/peppol/inbound', retries: 3 },
-  'peppol.poll': { route: '/api/peppol/poll', retries: 3 },
+  'webhook.process': { route: '/webhooks/_process', retries: 3 },
+  'ocr.process': { route: '/ocr/_process', retries: 3, timeout: '60s' },
+  'ksef.sync': { route: '/ksef/_sync', retries: 5 },
+  'google-workspace.sync': { route: '/google-workspace/_sync', retries: 5 },
+  'peppol.outbound': { route: '/peppol/outbound', retries: 5 },
+  'peppol.inbound': { route: '/peppol/inbound', retries: 3 },
+  'peppol.poll': { route: '/peppol/poll', retries: 3 },
   'late-interest.render-claim-pdf': {
-    route: '/api/late-interest/_render-claim-pdf',
+    route: '/late-interest/_render-claim-pdf',
     retries: 3,
     timeout: '60s',
   },
-  'zatca.submit': { route: '/api/zatca/_submit', retries: 3 },
-  'outbox.drain': { route: '/api/outbox/_drain', retries: 3 },
+  'zatca.submit': { route: '/zatca/_submit', retries: 3 },
+  'outbox.drain': { route: '/outbox/_drain', retries: 3 },
 };
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ export async function enqueueJob<TName extends JobName>(
   opts: EnqueueJobOptions = {},
 ): Promise<{ messageId: string }> {
   const config = JOB_CONFIG[name];
-  const url = `${getServerEnv().NEXT_PUBLIC_APP_URL}${config.route}`;
+  const url = `${getServerEnv().API_URL}${config.route}`;
   const retries = opts.retries ?? config.retries;
   const timeout = opts.timeout ?? config.timeout;
 

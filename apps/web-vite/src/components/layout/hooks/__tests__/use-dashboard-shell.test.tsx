@@ -10,10 +10,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const sessionState: { data: unknown; isPending: boolean } = { data: null, isPending: false };
+const mockGetActiveMember = vi.fn<() => Promise<{ data: unknown; error: unknown }>>();
 
 vi.mock('../../../../providers/auth-provider.js', () => ({
   useAuth: () => ({
     useSession: () => sessionState,
+    organization: { getActiveMember: mockGetActiveMember },
   }),
 }));
 
@@ -36,6 +38,10 @@ beforeEach(() => {
   sessionState.data = null;
   sessionState.isPending = false;
   setTRPCMock({});
+  // Default: no active member resolved. Individual tests override before
+  // rendering when they assert on `memberRole`.
+  mockGetActiveMember.mockReset();
+  mockGetActiveMember.mockResolvedValue({ data: null, error: null });
 });
 
 describe('useDashboardShell', () => {
@@ -56,9 +62,12 @@ describe('useDashboardShell', () => {
 
   it('populates activeOrg + flags ToS accepted on success', async () => {
     sessionState.data = {
-      session: { activeOrganizationId: 'org-1' },
-      member: { role: 'admin' },
+      session: { token: 'tok-1', activeOrganizationId: 'org-1' },
     };
+    mockGetActiveMember.mockResolvedValue({
+      data: { id: 'mem-1', role: 'admin' },
+      error: null,
+    });
     setTRPCMock({
       'organization.getCurrent': () => ({
         id: 'org-1',
@@ -70,7 +79,7 @@ describe('useDashboardShell', () => {
     });
     const { result } = renderHookWithProviders(() => useDashboardShell());
     await waitFor(() => expect(result.current.activeOrg?.id).toBe('org-1'));
-    expect(result.current.memberRole).toBe('admin');
+    await waitFor(() => expect(result.current.memberRole).toBe('admin'));
     expect(result.current.needsTosAcceptance).toBe(false);
   });
 

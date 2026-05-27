@@ -47,9 +47,9 @@ export function resolveTierFromPriceId(priceId: string): SubscriptionTier {
 export const TOPUP_PRICE_TO_CREDITS: Record<string, number> = Object.fromEntries(
   (
     [
-      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10, 10],
-      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25, 25],
-      [stripeEnv.NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50, 50],
+      [stripeEnv.STRIPE_PRICE_TOPUP_10, 10],
+      [stripeEnv.STRIPE_PRICE_TOPUP_25, 25],
+      [stripeEnv.STRIPE_PRICE_TOPUP_50, 50],
     ] as const
   ).filter(([key]) => key),
 );

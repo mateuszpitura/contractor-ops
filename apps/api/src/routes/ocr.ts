@@ -1,7 +1,5 @@
 /**
- * OCR processor (`POST /ocr/_process`) port.
- *
- * Mirrors apps/web/src/app/api/ocr/_process/route.ts:
+ * OCR processor (`POST /ocr/_process`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).

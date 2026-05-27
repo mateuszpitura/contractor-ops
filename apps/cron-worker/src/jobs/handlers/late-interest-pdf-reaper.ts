@@ -1,8 +1,6 @@
 /**
  * Late-payment claim PDF reaper.
  *
- * Ported from apps/web/src/app/api/cron/late-interest-pdf-reaper/route.ts.
- *
  * Every 5 minutes, scans for `InvoiceInterestClaim` rows stuck in
  * `pdfStatus = PENDING_RENDER` (or RENDERING > STALE_AFTER_MS):
  *
@@ -10,8 +8,9 @@
  *      flip them to READY without a re-render.
  *   2. RENDERING-stuck rows had a worker win the CAS then crash — revert
  *      to PENDING_RENDER so the next worker can re-claim.
- *   3. Re-publish to QStash with `deduplicationId = late-interest-pdf:{id}`
+ *   3. Re-publish to QStash with `deduplicationId = late-interest-pdf-{id}`
  *      so two reaper ticks within the 24h dedup window collapse to one.
+ *      (QStash rejects deduplicationId values containing ':').
  *
  * Idempotent: rows already flipped to READY/FAILED are excluded by the
  * scan predicate.
@@ -35,7 +34,7 @@ interface ReaperResult {
   requeueFailed: number;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 1:1 port of legacy reaper branching
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: per-row branching (backfill vs RENDERING revert vs re-enqueue) reads top-to-bottom; splitting would obscure the predicate matrix
 async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperResult> {
   const cutoff = new Date(Date.now() - STALE_AFTER_MS);
 
@@ -67,7 +66,7 @@ async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperR
   // Continue posting to the legacy host until cutover (Step 16). The
   // QStash payload only carries the claim id; once `API_URL` ends up on
   // the new Fastify host, this URL flips automatically.
-  const baseUrl = loadEnv().API_URL ?? getServerEnv().NEXT_PUBLIC_APP_URL ?? '';
+  const baseUrl = loadEnv().API_URL ?? getServerEnv().PUBLIC_APP_URL ?? '';
   const qstashUrl = `${baseUrl}/late-interest/_render-claim-pdf`;
 
   for (const row of stuck) {
@@ -97,7 +96,7 @@ async function runReaper(log: Parameters<JobHandler>[0]['log']): Promise<ReaperR
         body: { claimId: row.id, organizationId: row.organizationId },
         retries: 3,
         timeout: '60s',
-        deduplicationId: `late-interest-pdf:${row.id}`,
+        deduplicationId: `late-interest-pdf-${row.id}`,
       });
       requeued += 1;
     } catch (err) {

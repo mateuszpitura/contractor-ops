@@ -1,7 +1,7 @@
 import { TRPCError } from '@trpc/server';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),

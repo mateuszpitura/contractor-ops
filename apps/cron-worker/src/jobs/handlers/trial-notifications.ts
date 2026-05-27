@@ -1,8 +1,6 @@
 /**
  * Trial-end notifications handler.
  *
- * Ported from apps/web/src/app/api/cron/trial-notifications/route.ts.
- *
  * Daily 09:00 UTC sweep — Stripe only fires `trial_will_end` at 3 days
  * before expiry; per D-10 we also want notifications at 7 days and 1 day.
  *
@@ -28,7 +26,7 @@ import type { JobHandler } from '../runner.js';
 const TRIAL_NOTIFICATIONS_LOCK_KEY = 'trial-notifications';
 
 function buildBillingUrl(): string {
-  const base = loadEnv().NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const base = loadEnv().PUBLIC_APP_URL ?? 'http://localhost:3000';
   return `${base}/settings?tab=billing`;
 }
 

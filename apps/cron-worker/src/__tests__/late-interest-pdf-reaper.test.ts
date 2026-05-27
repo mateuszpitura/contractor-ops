@@ -66,7 +66,7 @@ beforeEach(() => {
   mockClaimUpdate.mockResolvedValue({});
   mockClaimUpdateMany.mockResolvedValue({ count: 1 });
   mockPublishJSON.mockResolvedValue({ messageId: 'msg-1' });
-  mockGetServerEnv.mockReturnValue({ NEXT_PUBLIC_APP_URL: 'https://app.test' });
+  mockGetServerEnv.mockReturnValue({ PUBLIC_APP_URL: 'https://app.test' });
 });
 
 describe('lateInterestPdfReaperHandler', () => {
@@ -112,7 +112,7 @@ describe('lateInterestPdfReaperHandler', () => {
     expect(result.ok).toBe(true);
     expect(result.details).toMatchObject({ scanned: 1, requeued: 1, requeueFailed: 0 });
     expect(mockPublishJSON).toHaveBeenCalledWith(
-      expect.objectContaining({ deduplicationId: 'late-interest-pdf:claim-2' }),
+      expect.objectContaining({ deduplicationId: 'late-interest-pdf-claim-2' }),
     );
   });
 

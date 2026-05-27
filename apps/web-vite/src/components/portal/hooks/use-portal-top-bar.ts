@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 
+import { getClientEnv } from '../../../env.js';
 import { usePathname, useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useOrgSwitcher } from './use-org-switcher.js';
@@ -18,7 +19,10 @@ export function usePortalTopBar() {
       await logoutMutation.mutateAsync().catch(() => {
         /* swallowed: clear-session route is the cookie eraser */
       });
-      await fetch('/api/portal/clear-session', { method: 'POST' });
+      await fetch(`${getClientEnv().VITE_API_URL}/portal/clear-session`, {
+        method: 'POST',
+        credentials: 'include',
+      });
     } finally {
       router.push('/portal/login');
     }
@@ -50,7 +54,10 @@ export function usePortalMobileMenu(onOpenChange: (open: boolean) => void) {
   const handleLogout = useCallback(async () => {
     onOpenChange(false);
     try {
-      await fetch('/api/portal/clear-session', { method: 'POST' });
+      await fetch(`${getClientEnv().VITE_API_URL}/portal/clear-session`, {
+        method: 'POST',
+        credentials: 'include',
+      });
     } finally {
       router.push('/portal/login');
     }

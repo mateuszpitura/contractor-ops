@@ -3,11 +3,15 @@
  * apps/web/src/hooks/use-permissions.ts:
  *
  *   - `@/components/layout/dashboard-context#useDashboardContext`
- *       → consume the Better Auth session directly, reading
- *         `session.data.member.role` instead of a server-injected layout
- *         context. The legacy DashboardContext existed solely to ferry
- *         the server-resolved role to client components — in CSR the
- *         session response already carries it.
+ *       → consume the Better Auth org client directly. The legacy
+ *         DashboardContext ferried a server-resolved member role to
+ *         client components; in CSR we resolve it via the Better Auth
+ *         organization plugin's `getActiveMember` endpoint, fetched
+ *         once per active session+org and cached by React Query.
+ *         The original CSR port assumed `session.data.member.role`
+ *         was populated automatically — it is not. Better Auth's
+ *         `/get-session` intentionally omits per-org membership; the
+ *         active member lives behind `/organization/get-active-member`.
  *   - `@/lib/auth-client#authClient`
  *       → `../providers/auth-provider.js#useAuth`.
  *
@@ -16,6 +20,7 @@
  * alongside it.
  */
 
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../providers/auth-provider.js';
 
 const permissions: Record<string, Record<string, string[]>> = {
@@ -122,11 +127,35 @@ export function usePermissions() {
   const auth = useAuth();
   const session = auth.useSession();
 
-  // Better Auth's active-member role lives on the session payload's
-  // `member.role` field once the organization plugin is wired (Step 9).
-  // Fall back to undefined if absent so guards default-deny.
-  const member = (session.data as { member?: { role?: string | null } } | null | undefined)?.member;
-  const role = member?.role ?? undefined;
+  // Better Auth's session payload carries the active organization id but
+  // not the membership row. We fetch the active member separately and
+  // cache by session token + active org so the lookup happens once per
+  // session/org pair and resolves alongside the rest of the dashboard
+  // bootstrap rather than on every protected interaction.
+  const sessionData = session.data as
+    | {
+        session?: { token?: string | null; activeOrganizationId?: string | null } | null;
+      }
+    | null
+    | undefined;
+  const sessionToken = sessionData?.session?.token ?? null;
+  const activeOrgId = sessionData?.session?.activeOrganizationId ?? null;
+
+  const memberQuery = useQuery({
+    queryKey: ['better-auth', 'active-member', sessionToken, activeOrgId],
+    enabled: Boolean(sessionToken && activeOrgId),
+    // Membership role rarely changes mid-session; a long staleTime avoids
+    // redundant network chatter while still letting role updates land on
+    // the next session refresh.
+    staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const result = await auth.organization.getActiveMember();
+      if (result.error) throw new Error(result.error.message ?? 'getActiveMember failed');
+      return (result.data ?? null) as { id: string; role: string } | null;
+    },
+  });
+
+  const role = memberQuery.data?.role ?? undefined;
 
   const platformRole = (session.data?.user as { role?: string | null } | undefined)?.role ?? null;
   const isPlatformAdmin = platformRole === 'admin';
@@ -142,7 +171,7 @@ export function usePermissions() {
     },
     role,
     isPlatformAdmin,
-    isLoading: session.isPending,
+    isLoading: session.isPending || (Boolean(sessionToken && activeOrgId) && memberQuery.isLoading),
     session: session.data,
   };
 }

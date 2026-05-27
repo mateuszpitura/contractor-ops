@@ -1,7 +1,5 @@
 /**
- * Reminders handler.
- *
- * Ported from apps/web/src/app/api/cron/reminders/route.ts. Fans out:
+ * Reminders handler. Fans out:
  *
  *   1. `evaluateReminderRules()` — active `ReminderRule` rows fire on
  *      BEFORE_CONTRACT_END / BEFORE_DUE_DATE / AFTER_DUE_DATE triggers.

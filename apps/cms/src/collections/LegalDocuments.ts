@@ -30,14 +30,14 @@ function buildSignature(body: string, secret: string): string {
 }
 
 async function dispatchWebhook(payload: LegalDocPayload): Promise<void> {
-  // Bypass during the one-shot seed (apps/web is typically offline at that
-  // point — the noisy ECONNREFUSED log is misleading). Set by
-  // scripts/migrate-legal-from-tsx.ts before any payload.create/update call.
+  // Bypass during the one-shot seed when the API is offline (avoids noisy
+  // ECONNREFUSED logs). Set by scripts/migrate-legal-from-tsx.ts before any
+  // payload.create/update call.
   if (process.env.CMS_SUPPRESS_WEBHOOKS === '1') {
     return;
   }
   const env = getCmsEnv();
-  const target = env.WEB_APP_URL;
+  const target = env.API_URL;
   const secret = env.CMS_WEBHOOK_SECRET;
   if (!(target && secret)) {
     return;
@@ -45,7 +45,7 @@ async function dispatchWebhook(payload: LegalDocPayload): Promise<void> {
   const body = JSON.stringify(payload);
   const signature = buildSignature(body, secret);
   try {
-    const response = await fetch(`${target.replace(/\/$/, '')}/api/revalidate-legal`, {
+    const response = await fetch(`${target.replace(/\/$/, '')}/revalidate-legal`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

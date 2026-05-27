@@ -14,7 +14,7 @@ const envSchema = z.object({
 
   /**
    * Base URL of the Fastify API host. Used by the late-interest PDF reaper to
-   * re-publish render jobs to QStash; falls back to NEXT_PUBLIC_APP_URL until
+   * re-publish render jobs to QStash; falls back to PUBLIC_APP_URL until
    * Step 16 cutover.
    */
   API_URL: z.string().url().optional(),
@@ -23,10 +23,14 @@ const envSchema = z.object({
    * Public app URL used to build links in cron-dispatched emails and as the
    * legacy QStash destination prior to the Fastify cutover.
    */
-  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+  PUBLIC_APP_URL: z.string().url().optional(),
 
-  /** Port for the internal health endpoint. Kept off the public network. */
-  CRON_HEALTH_PORT: z.coerce.number().int().positive().default(4100),
+  /**
+   * Port for the internal health endpoint. Kept off the public network.
+   * Default 4101 to avoid collision with apps/public-api (PUBLIC_API_PORT
+   * default 4100) when both run side-by-side under `pnpm dev`.
+   */
+  CRON_HEALTH_PORT: z.coerce.number().int().positive().default(4101),
   CRON_HEALTH_HOST: z.string().default('0.0.0.0'),
 
   /**
@@ -49,7 +53,7 @@ const envSchema = z.object({
   CRON_REMINDERS_SCHEDULE: z.string().default('0 9 * * *'),
 
   /** Observability. */
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

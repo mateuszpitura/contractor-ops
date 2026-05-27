@@ -12,7 +12,7 @@ const { mockSetAttribute, mockGetActiveSpan, mockDebug } = vi.hoisted(() => ({
   mockDebug: vi.fn(),
 }));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/core', () => ({
   getActiveSpan: mockGetActiveSpan,
 }));
 

@@ -75,7 +75,7 @@ function extractPortalToken(headers: Headers): string | null {
  * one-time login link pointing at `https://attacker.example.com/...?token=…`,
  * which the victim then clicks and the attacker captures.
  *
- * The trusted source is the validated server env `NEXT_PUBLIC_APP_URL`. When
+ * The trusted source is the validated server env `PUBLIC_APP_URL`. When
  * a per-org portal subdomain is needed in the future, look it up from the
  * `Organization` table against an explicit allowlist (e.g. `*.PORTAL_BASE_DOMAIN`)
  * — never accept it from request headers.
@@ -84,18 +84,18 @@ function extractPortalToken(headers: Headers): string | null {
  * magic-link delivery path.
  */
 function deriveBaseUrl(): string {
-  return getServerEnv().NEXT_PUBLIC_APP_URL;
+  return getServerEnv().PUBLIC_APP_URL;
 }
 
 /**
  * F-SEC-09: Sign a freshly-issued portal session token so the
- * `/api/portal/set-session` route handler can prove the value originated from
+ * `/portal/set-session` route handler can prove the value originated from
  * `verifyMagicLink` / `selectOrg` rather than a CSRF / session-fixation attempt.
  *
  * Uses HMAC-SHA256 keyed off `BETTER_AUTH_SECRET` with a fixed domain-separator
  * label — no extra env variable needed, no extra DB column. The matching
- * verifier MUST live in `apps/web/src/app/api/portal/set-session/route.ts` and
- * compute the signature identically. Keep both in sync.
+ * verifier lives in `apps/api/src/routes/portal-session.ts` and computes
+ * the signature identically. Keep both in sync.
  *
  * Inputs hashed: `${rawToken}.${expiresAt.toISOString()}` — binding the
  * signature to both the token bytes and the exact expiry the client will set
@@ -238,7 +238,7 @@ export const portalRouter = router({
         });
 
         // F-SEC-09: bind a server-issued HMAC to the (token, expiresAt) pair
-        // so `/api/portal/set-session` can verify the cookie value really came
+        // so `/portal/set-session` can verify the cookie value really came
         // from this mutation (CSRF / session-fixation defence).
         const signature = signPortalSessionToken(session.rawToken, session.expiresAt);
 
@@ -368,7 +368,7 @@ export const portalRouter = router({
    * Issue a new portal session for a different (contractorId, organizationId)
    * pair belonging to the same authenticated email. Returns the same
    * `{rawToken, expiresAt, signature}` envelope as `selectOrg` so the client
-   * can hand it to `/api/portal/set-session`.
+   * can hand it to `/portal/set-session`.
    *
    * Security:
    * - Validates ownership against the target org's regional DB (cross-region

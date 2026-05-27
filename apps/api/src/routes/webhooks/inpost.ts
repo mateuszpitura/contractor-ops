@@ -1,7 +1,5 @@
 /**
- * InPost ShipX webhook port.
- *
- * Ported 1:1 from apps/web/src/app/api/webhooks/inpost/route.ts:
+ * InPost ShipX webhook handler.
  *
  *   1. Read raw body (signature verification needs the original bytes).
  *   2. Look up every org with an InPost courier config row.

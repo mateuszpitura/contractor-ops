@@ -45,7 +45,7 @@ import { getAllPending, getRegistry, isAllApproved } from '../legal/signoff-regi
 import rawRegistry from '../legal/signoff-registry.json' with { type: 'json' };
 import { SignoffRegistrySchema } from '../legal/signoff-registry-schema.js';
 
-const messagesDir = path.resolve(__dirname, '../../../../apps/web/messages');
+const messagesDir = path.resolve(__dirname, '../../../../apps/web-vite/messages');
 const locales = ['en', 'pl', 'ar', 'de'] as const;
 
 function loadMessages(locale: string): Record<string, unknown> | null {

@@ -1,9 +1,6 @@
 /**
  * Classification economic-dependency scan handler.
  *
- * Ported from
- * apps/web/src/app/api/cron/classification-economic-dependency/route.ts.
- *
  * Daily §2 SGB VI early-warning scan run by
  * `runEconomicDependencyScan`. Short-circuits when
  * `module.classification-engine` is off (D-08).

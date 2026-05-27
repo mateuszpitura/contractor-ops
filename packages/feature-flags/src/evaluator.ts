@@ -28,9 +28,9 @@ type GateRegistry = { __contractorOpsClassificationGate?: (() => boolean) | null
 const gateRegistry = globalThis as unknown as GateRegistry;
 
 /**
- * Register a disclaimer-gate callback. Called once at app startup from
- * apps/web/src/lib/feature-flags-init.ts. Returns true when all classification
- * disclaimers are APPROVED, preventing operator enabling before sign-off.
+ * Register a disclaimer-gate callback. Called once at app startup. Returns
+ * true when all classification disclaimers are APPROVED, preventing
+ * operator enabling before sign-off.
  *
  * @param fn - Returns true when all classification disclaimers are APPROVED.
  */

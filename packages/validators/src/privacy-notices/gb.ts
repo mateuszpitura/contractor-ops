@@ -2,7 +2,7 @@
 //
 // Structured per ICO guidance on Article 13 required information. Content is
 // the single source of truth consumed by:
-//   - apps/web/src/app/[locale]/(legal)/privacy/(content)/gb.mdx
+//   - apps/cms (Payload `legal-documents` collection — `jurisdiction=gb` rows)
 //   - packages/pdf (React-PDF GdprPrivacyNoticeTemplate — GB branch)
 //
 // Legal basis: UK GDPR (retained Regulation (EU) 2016/679) + Data Protection

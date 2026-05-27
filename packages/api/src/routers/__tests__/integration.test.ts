@@ -183,7 +183,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({
@@ -260,7 +260,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   resetServerEnvCacheForTesting();
   // Set required env vars (after reset so getServerEnv re-parses process.env)
-  process.env.NEXT_PUBLIC_APP_URL = 'https://app.test.com';
+  process.env.PUBLIC_APP_URL = 'https://app.test.com';
 });
 
 // ===========================================================================

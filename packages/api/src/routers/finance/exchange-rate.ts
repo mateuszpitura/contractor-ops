@@ -13,13 +13,13 @@ export const exchangeRateRouter = router({
    * invoice creation and payment-run preview both call those functions
    * server-side. No FE-facing exchange-rate procedures exist by design.
    *
-   * Consumer: `cron-exchange-rates` (render.yaml, daily 06:00 UTC) hits
-   * `/api/cron/exchange-rates` in apps/web. The route builds a cron-scoped
-   * tRPC caller via `createCallerFactory(appRouter)` + `createCronContext`,
-   * forwards the verified `Authorization: Bearer <CRON_SECRET>` header so
-   * `cronProcedure` middleware accepts the call, and invokes
-   * `caller.exchangeRate.fetchDaily()`. Tagged `orphan-intentional-non-ui`
-   * by the FE↔BE audit's triage step (Signal #1: cronProcedure middleware).
+   * Consumer: `apps/cron-worker/src/jobs/handlers/exchange-rates.ts` runs
+   * daily at 06:00 UTC. The handler builds a cron-scoped tRPC caller via
+   * `createCallerFactory(appRouter)` + `createCronContext`, forwards the
+   * verified `Authorization: Bearer <CRON_SECRET>` header so `cronProcedure`
+   * middleware accepts the call, and invokes `caller.exchangeRate.fetchDaily()`.
+   * Tagged `orphan-intentional-non-ui` by the FE↔BE audit's triage step
+   * (Signal #1: cronProcedure middleware).
    */
   fetchDaily: cronProcedure.mutation(async () => {
     const errors: string[] = [];

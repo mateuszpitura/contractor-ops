@@ -4,22 +4,21 @@ import { createAuthClient } from 'better-auth/react';
 /**
  * Resolve the auth client base URL.
  *
- * `NEXT_PUBLIC_*` vars are inlined at build time, so a missing var ships to
- * the user as a permanently-empty string. We fail fast in non-development to
- * convert that latent misconfiguration into a build/boot-time error.
+ * Build-time inlined vars (Vite `import.meta.env`, Next.js `NEXT_PUBLIC_*`)
+ * bake a missing var as a permanently-empty string. We fail fast in
+ * non-development to convert that latent misconfiguration into a build/boot-time
+ * error.
  *
- * In development we allow the empty-string fallback (Next.js relative-URL
- * same-origin behaviour) since local dev frequently runs on `localhost:3000`
- * without `NEXT_PUBLIC_APP_URL` exported.
+ * In development we allow the empty-string fallback (relative-URL same-origin
+ * behaviour) since local dev frequently runs on `localhost:3000` without
+ * `PUBLIC_APP_URL` exported.
  */
 function resolveClientBaseURL(): string {
-  const url = process.env.NEXT_PUBLIC_APP_URL;
+  const url = process.env.PUBLIC_APP_URL;
   if (url) return url;
-  // `NODE_ENV` is statically replaced by Next.js at build time, so this branch
-  // gets dead-code-eliminated in production builds where the var was set.
   if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
     throw new Error(
-      '[@contractor-ops/auth] NEXT_PUBLIC_APP_URL must be set in non-development builds. ' +
+      '[@contractor-ops/auth] PUBLIC_APP_URL must be set in non-development builds. ' +
         'Set it in your env file before building so the value is inlined into the client bundle.',
     );
   }

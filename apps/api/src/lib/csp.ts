@@ -1,8 +1,6 @@
 /**
  * CSP directive set served by @contractor-ops/api-server.
  *
- * Ported from `apps/web/src/middleware.ts#buildCsp` with API-side adaptations:
- *
  *   - No per-request nonce. The API mostly returns JSON; the rare HTML
  *     responses are error/redirect pages that never execute inline scripts.
  *     `script-src 'none'` is the default — strictly stricter than the SPA's

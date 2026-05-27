@@ -27,9 +27,10 @@ const ENV_SCHEMA = z.object({
   PAYLOAD_SECRET: z.string().default(''),
 
   CMS_PUBLIC_URL: z.string().url().default('http://localhost:3002'),
-  WEB_APP_URL: z
+  /** Fastify API host — target for the legal-doc revalidation webhook. */
+  API_URL: z
     .string()
-    .default('http://localhost:3000')
+    .default('http://localhost:4000')
     .transform(normalizeRenderUrl)
     .pipe(z.string().url()),
 

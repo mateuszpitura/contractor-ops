@@ -3,7 +3,7 @@
 // Validates the registry JSON at module load time (fail-fast on malformed data).
 // Exports helper functions used by:
 //   - packages/feature-flags/src/evaluator.ts (isAllApproved → disclaimer gate D-10)
-//   - apps/web/src/app/admin/feature-flags/classification-engine/page.tsx (status page D-11)
+//   - apps/web-vite admin feature-flags status page (D-11)
 //   - .github/workflows/ci.yml legal-gate-production job (getAllPending D-14)
 
 import type { LockedDisclaimerKey } from './disclaimers.js';

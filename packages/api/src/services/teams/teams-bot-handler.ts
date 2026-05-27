@@ -338,7 +338,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
           currency: invoice.currency,
           approverName: user.userName,
           comment,
-          viewUrl: `${getServerEnv().NEXT_PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
+          viewUrl: `${getServerEnv().PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
         });
 
         // Update the original card in-place. Agents SDK expects an
@@ -543,7 +543,7 @@ export class TeamsBotHandler extends TeamsActivityHandler {
         invoiceNumber: invoice?.invoiceNumber ?? 'N/A',
         amount: ((invoice?.totalMinor ?? 0) / 100).toFixed(2),
         currency: invoice?.currency ?? 'PLN',
-        viewUrl: `${getServerEnv().NEXT_PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
+        viewUrl: `${getServerEnv().PUBLIC_APP_URL}/invoices/${flow.resourceId}`,
       };
     });
   }

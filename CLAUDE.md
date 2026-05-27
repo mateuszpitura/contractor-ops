@@ -22,11 +22,13 @@
 |------|----------------|
 | Product | B2B contractor ops (EU / UK / Gulf); local-only deploy posture; legal sign-off deferred for jurisdiction text — `.planning/PROJECT.md` |
 | Monorepo | pnpm 10 + Turborepo |
-| Web | Next.js 16 (`apps/web`), next-intl (en, de, pl, ar RTL), TanStack Query, tRPC v11 client |
-| Web (Vite) | React + Vite (`apps/web-vite`) — **container + hooks** architecture; see [`apps/web-vite/ARCHITECTURE.md`](apps/web-vite/ARCHITECTURE.md) |
+| Web (Vite) | React + Vite SPA (`apps/web-vite`) — i18next/react-i18next (en, de, pl, ar RTL), TanStack Query, tRPC v11 client, **container + hooks** architecture; see [`apps/web-vite/ARCHITECTURE.md`](apps/web-vite/ARCHITECTURE.md) |
 | CMS | Payload (`apps/cms`, port 3002) — Authors / Categories / Posts |
-| Landing | Next.js (`apps/landing`) |
-| API | tRPC v11 in `packages/api` — staff `appRouter`: **50** namespaces in [`root.ts`](packages/api/src/root.ts); **+up to 7** classification when `module.classification-engine` (or `QA_DEFAULT_ORG_ID`); **portal** separate [`portalAppRouter`](packages/api/src/portal-root.ts) (2) at `/api/trpc/portal` |
+| Landing | Next.js 16 (`apps/landing`) |
+| API server | Fastify + tsx (`apps/api`) — hosts tRPC `/api/trpc/*` for web-vite SPA + portal; uses `@sentry/node` |
+| Public API | Hono (`apps/public-api`) — REST surface for external API-key consumers |
+| Cron worker | Fastify (`apps/cron-worker`) — background jobs, QStash callbacks, webhooks |
+| tRPC | v11 in `packages/api` — staff `appRouter`: **50** namespaces in [`root.ts`](packages/api/src/root.ts); **+up to 7** classification when `module.classification-engine` (or `QA_DEFAULT_ORG_ID`); **portal** separate [`portalAppRouter`](packages/api/src/portal-root.ts) (2) at `/api/trpc/portal` |
 | Auth | Better Auth — [`packages/auth`](packages/auth) |
 | DB | PostgreSQL 17 + Prisma 7 (`prisma-client`); regional `DATABASE_URL_EU` / `_ME` (Neon multi-region in prod) |
 | Flags | Self-hosted Unleash OSS — `@contractor-ops/feature-flags` wrapper only |
@@ -38,7 +40,7 @@
 
 ## UI plugin (`frontend-design`)
 
-- **Rule:** all UI work → read and follow the **`frontend-design`** skill before implementing in `apps/web`, `apps/landing`, `packages/ui`.
+- **Rule:** all UI work → read and follow the **`frontend-design`** skill before implementing in `apps/web-vite`, `apps/landing`, `packages/ui`.
 - **Claude Code UI hooks (opt-in):** **`[ui]`** / **`[ui-strict]`** — (1) `Skill` tool `frontend-design` *lub* `Read` na `SKILL.md`, (2) `semble search`, (3) analiza i edycje. Tracker liczy Skill + Semble native tools, nie tylko Bash/Read. Wyłącz: prompt bez prefiksu lub `/ui-workflow-off`.
 - **Cursor:** same workflow in [`.cursor/rules/30-ui-a11y.mdc`](.cursor/rules/30-ui-a11y.mdc) (no runtime block — verify tool log).
 - **Verify:** turn must show `Read` on `frontend-design/.../SKILL.md` + `semble search` before UI file edits.

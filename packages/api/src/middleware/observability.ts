@@ -1,6 +1,6 @@
 import { createTrpcLogger, generateRequestId, runWithRequestContext } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import type { AnyMiddlewareFunction } from '@trpc/server';
 import type { Context } from '../context';
 
@@ -125,9 +125,9 @@ export const observabilityMiddleware: AnyMiddlewareFunction = async opts => {
         // F-OBS-14: attach user + org to the current Sentry isolation scope
         // so the dashboard's "users affected" and per-org filter both work.
         // Span attributes alone do not power those Sentry features. The
-        // route handler in apps/web/src/app/api/trpc/[trpc]/route.ts wraps
-        // each request with `withIsolationScope`, so these scope mutations
-        // do not leak into other concurrent requests.
+        // tRPC plugin (apps/api/src/plugins/trpc.ts) wraps each request
+        // with `withIsolationScope`, so these scope mutations do not leak
+        // into other concurrent requests.
         const scope = Sentry.getCurrentScope();
         if (userId) {
           scope.setUser({ id: userId });

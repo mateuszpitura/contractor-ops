@@ -4,8 +4,7 @@
  * F-OBS-01: emits a structured log line at request entry and exit
  * (with status, duration, requestId, route, method) and seeds an
  * AsyncLocalStorage context so handlers and the error handler can tag
- * downstream logs / Sentry events with the same requestId. Mirrors the
- * pattern used by `apps/web/src/app/api/trpc/[trpc]/route.ts`.
+ * downstream logs / Sentry events with the same requestId.
  *
  * Must be registered AFTER Hono's built-in `requestId()` middleware so
  * the id (which honours an inbound `X-Request-Id` header up to 255 chars

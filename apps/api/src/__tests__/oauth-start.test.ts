@@ -30,7 +30,7 @@ const {
   // (e.g. stripe-client) read STRIPE_SECRET_KEY at module load. Include a
   // sentinel value so those side-effects don't blow up during test boot.
   mockGetServerEnv: vi.fn<() => Record<string, string>>(() => ({
-    NEXT_PUBLIC_APP_URL: 'https://app.test',
+    PUBLIC_APP_URL: 'https://app.test',
     STRIPE_SECRET_KEY: 'sk_test_placeholder',
   })),
   mockGetServerEnvRecord: vi.fn<() => Record<string, string>>(() => ({
@@ -114,10 +114,10 @@ beforeEach(() => {
   mockGetSession.mockResolvedValue(null);
   mockGetAdapter.mockReturnValue(null);
   mockCreateChallenge.mockResolvedValue(undefined);
-  mockGetServerEnv.mockReturnValue({ NEXT_PUBLIC_APP_URL: 'https://app.test' });
+  mockGetServerEnv.mockReturnValue({ PUBLIC_APP_URL: 'https://app.test' });
   mockGetServerEnvRecord.mockReturnValue({});
   mockGenerateState.mockReturnValue('state-token-1');
-  process.env.NEXT_PUBLIC_APP_URL = 'https://app.test';
+  process.env.PUBLIC_APP_URL = 'https://app.test';
 });
 
 function get(provider: string) {

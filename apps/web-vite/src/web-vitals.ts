@@ -16,6 +16,12 @@ import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import type { ClientEnv } from './env.js';
 
 export function startWebVitals(env: ClientEnv): void {
+  // Vite dev (`pnpm dev`) ships the production CSP meta tag in index.html for
+  // parity with render.yaml — `connect-src` whitelists only the prod API
+  // origin. Beaconing to `http://localhost:4000/web-vitals` would always
+  // violate CSP, and HMR-distorted metrics aren't useful anyway.
+  if (import.meta.env.DEV) return;
+
   const endpoint = `${env.VITE_API_URL}/web-vitals`;
 
   const send = (metric: Metric): void => {

@@ -1,7 +1,7 @@
 /**
  * Sentry `beforeSend` PII scrubber for @contractor-ops/api-server.
  *
- * Server-side mirror of `apps/web-vite/src/lib/sentry-scrub.ts` — keep the
+ * Pair with `apps/web-vite/src/lib/sentry-scrub.ts` — keep the
  * PII_KEYWORDS list and the scrubbing strategy in sync between both files
  * so a sensitive value redacted in one runtime is also redacted in the
  * other. The only difference is the SDK import: `@sentry/node` here vs

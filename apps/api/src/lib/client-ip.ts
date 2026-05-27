@@ -1,9 +1,8 @@
 /**
  * Trusted-proxy client-IP extraction for @contractor-ops/api-server.
  *
- * Ported from `apps/web/src/middleware.ts#extractClientIp` so the new
- * Fastify rate-limiter sees the same address as the legacy Next edge
- * middleware did (F-SEC-17). When the trust list is too permissive a
+ * The Fastify rate-limiter must see the originating client IP, not the
+ * proxy hop's address (F-SEC-17). When the trust list is too permissive a
  * remote attacker can supply their own X-Forwarded-For entry and the
  * rate-limiter sees a fresh IP per request → trivial bypass.
  *

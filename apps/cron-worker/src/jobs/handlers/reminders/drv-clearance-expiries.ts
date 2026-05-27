@@ -1,9 +1,6 @@
 /**
  * DRV § 7a SGB IV clearance expiry detector — Phase 60 · CLASS-09.
  *
- * Ported 1:1 from
- * apps/web/src/app/api/cron/reminders/drv-clearance-expiries.ts.
- *
  * Piggybacks on the reminders cron (NOT a separate cron). Fires
  * notifications 90 / 30 / 7 days before `validTo` on Statusfeststellungs-
  * verfahren rows with `outcome ∈ {SELBSTANDIG, ABHANGIG}`. Day-exact

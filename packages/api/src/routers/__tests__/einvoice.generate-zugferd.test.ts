@@ -205,7 +205,7 @@ vi.mock('../../services/r2', () => ({
   deleteObject: vi.fn(),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const span = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({

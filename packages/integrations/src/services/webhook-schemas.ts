@@ -2,7 +2,7 @@
 // Per-provider webhook payload schemas (F-INT-07)
 // ---------------------------------------------------------------------------
 //
-// The generic webhook ingress route (`/api/webhooks/[provider]`) used to
+// The generic webhook ingress route (`/webhooks/:provider`) used to
 // persist whatever JSON.parse returned (or `{ raw: rawBody.slice(0, 10000) }`
 // on parse failure) directly into `WebhookDelivery.payloadJson`. This left
 // downstream `_process` handlers staring at unknown shapes and forced each

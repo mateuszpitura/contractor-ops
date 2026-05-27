@@ -32,7 +32,6 @@ describe('minimalServerEnv', () => {
     expect(env.BETTER_AUTH_SECRET).toBeDefined();
     expect(env.STRIPE_SECRET_KEY).toMatch(/^sk_/);
     expect(env.STRIPE_WEBHOOK_SECRET).toMatch(/^whsec_/);
-    expect(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY).toMatch(/^pk_/);
   });
 
   it('contains valid 64-char hex strings for encryption keys', () => {

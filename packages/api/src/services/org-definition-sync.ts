@@ -3,8 +3,8 @@
 // ---------------------------------------------------------------------------
 //
 // Shared by:
-//   - the nightly cron at /api/cron/org-definition-sync (one run per
-//     connected integration per 24h);
+//   - the nightly cron at apps/cron-worker/src/jobs/handlers/org-definition-sync.ts
+//     (one run per connected integration per 24h);
 //   - the per-integration "Sync now" tRPC mutation
 //     (`organizationDefinitions.project.sync`);
 //   - the fire-and-forget call from the Jira / Linear OAuth complete-connection

@@ -1,7 +1,6 @@
 /**
- * OAuth start + callback ports.
+ * OAuth start + callback handlers.
  *
- * Mirrors apps/web/src/app/api/oauth/[provider]/{start,callback}/route.ts
  * F-SEC-05 + F-SEC-21 — browser-bound, single-use OAuth state.
  *
  *   /api/oauth/:provider/start  (GET)
@@ -82,10 +81,10 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
   // -----------------------------------------------------------------------
   app.get<{ Params: { provider: string } }>(
     '/api/oauth/:provider/start',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 1:1 port of legacy multi-step OAuth start
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear multi-step state-mint + cookie-set + IdP redirect; splitting fragments the security audit surface
     async (request, reply) => {
       const { provider } = request.params;
-      const appUrlEnv = loadEnv().NEXT_PUBLIC_APP_URL ?? '';
+      const appUrlEnv = loadEnv().PUBLIC_APP_URL ?? '';
       const settingsErrorUrl = `${appUrlEnv}/settings?tab=integrations&${provider}=error`;
       const loginUrl = `${appUrlEnv}/login`;
 
@@ -113,7 +112,7 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
       const env = getServerEnvRecord();
       const clientId = env[oauthConfig.clientIdEnvVar];
       const clientSecret = env[oauthConfig.clientSecretEnvVar];
-      const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+      const appUrl = getServerEnv().PUBLIC_APP_URL;
       const apiUrl = loadEnv().API_URL;
 
       if (!(clientId && clientSecret && appUrl && apiUrl)) {
@@ -155,8 +154,8 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
       const idpUrl = `${oauthConfig.authorizationUrl}?${params.toString()}`;
 
       // `__Host-` prefix mandates Secure + no Domain; Path=/api/oauth
-      // narrows scope. Path stays under `/api/oauth/*` so existing IdP
-      // configurations on the legacy host keep working post-cutover.
+      // narrows the cookie to the OAuth start/callback pair so it never
+      // ships with unrelated requests.
       reply.setCookie(OAUTH_STATE_COOKIE_NAME, state, {
         httpOnly: true,
         secure: true,
@@ -175,10 +174,10 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
   // -----------------------------------------------------------------------
   app.get<{ Params: { provider: string }; Querystring: Record<string, string> }>(
     '/api/oauth/:provider/callback',
-    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 1:1 port of legacy multi-step OAuth callback
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: linear cookie-verify + state-consume + token-exchange + connection-upsert; splitting fragments the security audit surface
     async (request, reply) => {
       const { provider } = request.params;
-      const appUrlEnv = loadEnv().NEXT_PUBLIC_APP_URL ?? '';
+      const appUrlEnv = loadEnv().PUBLIC_APP_URL ?? '';
       const settingsUrl = (status: string) =>
         `${appUrlEnv}/settings?tab=integrations&${provider}=${status}`;
 

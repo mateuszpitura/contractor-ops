@@ -150,7 +150,7 @@ export const ocrRouter = router({
       // Dispatch QStash job
       const qstash = getQStashClient();
       await qstash.publishJSON({
-        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
+        url: `${getServerEnv().API_URL}/ocr/_process`,
         body: {
           extractionId: newExtraction.id,
           organizationId: ctx.organizationId,

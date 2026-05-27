@@ -55,7 +55,7 @@ vi.mock('@contractor-ops/db', () => ({
   },
 }));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/node', () => ({
   getCurrentScope: vi.fn(() => ({
     setUser: vi.fn(),
     setTag: vi.fn(),

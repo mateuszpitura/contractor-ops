@@ -46,7 +46,7 @@ const mockPublishJSONWithContext = vi.mocked(publishJSONWithContext);
 describe('webhook-dispatcher', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://app.test.com');
+    vi.stubEnv('API_URL', 'https://api.test.com');
   });
 
   afterEach(() => {
@@ -200,7 +200,7 @@ describe('webhook-dispatcher', () => {
       // F-INT-11: deliveryId is passed as the QStash dedup id so a
       // re-publish of the same row collapses upstream within the 24h window.
       expect(mockPublishJSONWithContext).toHaveBeenCalledWith({
-        url: 'https://app.test.com/api/webhooks/_process',
+        url: 'https://api.test.com/webhooks/_process',
         body: { deliveryId: 'delivery-123', provider: 'slack' },
         retries: 3,
         deduplicationId: 'delivery-123',

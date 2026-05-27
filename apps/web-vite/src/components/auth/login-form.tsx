@@ -69,6 +69,7 @@ export function LoginForm() {
               <Input
                 id={`${fieldId}-email`}
                 type="email"
+                autoComplete="username"
                 placeholder={t('emailPlaceholder')}
                 disabled={isLoading}
                 aria-invalid={!!errors.email}

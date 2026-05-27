@@ -44,7 +44,7 @@ vi.mock('@contractor-ops/auth', () => ({
   auth: { api: {} },
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),

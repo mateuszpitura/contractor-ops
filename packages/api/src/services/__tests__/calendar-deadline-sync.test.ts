@@ -15,7 +15,7 @@ const { mockCreateCalendarEvent, mockUpdateCalendarEvent } = vi.hoisted(() => ({
 
 vi.mock('@contractor-ops/validators', () => ({
   getServerEnv: vi.fn().mockReturnValue({
-    NEXT_PUBLIC_APP_URL: 'https://app.test',
+    PUBLIC_APP_URL: 'https://app.test',
   }),
 }));
 

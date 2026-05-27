@@ -14,8 +14,8 @@ let warnedMissingKey = false;
  * Callers are expected to no-op in that case — events should never be a
  * hard dependency of the request path.
  *
- * Production environments set the key during boot validation
- * (`apps/web/src/instrumentation.ts`).
+ * Production environments set the key during the boot-time `getServerEnv()`
+ * read in `apps/api/src/index.ts`.
  */
 function getPosthog(): PostHog | null {
   if (client) return client;

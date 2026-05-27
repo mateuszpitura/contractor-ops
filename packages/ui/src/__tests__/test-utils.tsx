@@ -1,9 +1,7 @@
 /**
  * Shared render harness for `@contractor-ops/ui` shadcn primitive tests.
  *
- * Mirrors the surface of `apps/web/src/test/test-utils.tsx` so the ported
- * shadcn tests change ONLY their import path (`@/test/test-utils` →
- * `./test-utils`). API kept intentionally narrow — primitives don't need
+ * API kept intentionally narrow — primitives don't need
  * NextIntlClientProvider or QueryClientProvider; `useUITranslations()`
  * falls back to English defaults when no provider is mounted, so most
  * primitive tests render directly without wrapping.

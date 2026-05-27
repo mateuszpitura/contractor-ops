@@ -7,9 +7,9 @@ import { createContext, useContext } from 'react';
  * UI-package translator surface.
  *
  * Why this exists:
- *   `packages/ui` is consumed by three apps with two different i18n
- *   runtimes — `apps/web` + `apps/landing` use `next-intl`; `apps/web-vite`
- *   uses `i18next`. The shadcn primitives need localized aria-labels and
+ *   `packages/ui` is consumed by apps with two different i18n runtimes —
+ *   `apps/landing` + `apps/cms` use `next-intl`; `apps/web-vite` uses
+ *   `i18next`. The shadcn primitives need localized aria-labels and
  *   visible strings, so the package can not hard-import either runtime.
  *
  * Solution:
@@ -36,8 +36,8 @@ export type UITranslator = (key: string, params?: Record<string, unknown>) => st
 /**
  * English-default fallback for every key the primitives reference. Used when
  * no `<UITranslationsProvider>` is mounted. Kept in sync with the matching
- * keys in `apps/web/messages/en.json` + `apps/web-vite/...` so an unwrapped
- * host still ships sensible labels.
+ * keys in `apps/landing/messages/en.json` + `apps/web-vite/src/i18n/locales/`
+ * so an unwrapped host still ships sensible labels.
  */
 const DEFAULT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   'aria.breadcrumb': 'Breadcrumb',

@@ -14,7 +14,7 @@ vi.mock('../../services/billing-service', () => ({
   getSubscription: mockGetSubscription,
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),

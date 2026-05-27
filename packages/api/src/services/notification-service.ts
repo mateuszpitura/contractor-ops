@@ -57,13 +57,13 @@ const ENTITY_ROUTES: Record<string, string> = {
 };
 
 function buildEntityUrl(entityType: string, entityId: string): string {
-  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const base = getServerEnv().PUBLIC_APP_URL;
   const route = ENTITY_ROUTES[entityType] ?? '';
   return `${base}${route}/${entityId}`;
 }
 
 function buildPreferencesUrl(): string {
-  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const base = getServerEnv().PUBLIC_APP_URL;
   return `${base}/settings?tab=notifications`;
 }
 

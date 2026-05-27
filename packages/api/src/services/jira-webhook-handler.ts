@@ -351,7 +351,7 @@ export async function registerJiraWebhooks(
     connection.credentialsRef,
   );
 
-  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const apiUrl = getServerEnv().API_URL;
 
   // Build JQL filter combining all project keys
   const jqlFilter =
@@ -360,7 +360,7 @@ export async function registerJiraWebhooks(
       : `project IN (${projectKeys.join(', ')})`;
 
   const webhookBody = {
-    url: `${appUrl}/api/webhooks/jira`,
+    url: `${apiUrl}/webhooks/jira`,
     webhooks: [
       {
         jqlFilter,

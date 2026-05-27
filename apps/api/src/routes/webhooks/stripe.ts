@@ -1,7 +1,5 @@
 /**
- * Stripe webhook port.
- *
- * Mirrors apps/web/src/app/api/webhooks/stripe/route.ts step-for-step:
+ * Stripe webhook handler.
  *
  *   1. Read raw body (signature verification needs the original bytes).
  *   2. Verify `stripe-signature` via Stripe SDK.

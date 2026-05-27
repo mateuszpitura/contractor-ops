@@ -10,7 +10,7 @@
  * (`*\/*` → Buffer) does not leak to sibling routes that expect JSON
  * parsing.
  *
- * Observability wrapper mirrors `apps/web/src/app/api/auth/[...all]/route.ts`:
+ * Observability wrapper:
  *
  *   - Per-request `{ method, path, status, durationMs }` Pino log.
  *   - 5xx auth responses forwarded to Sentry (credential-stuffing /

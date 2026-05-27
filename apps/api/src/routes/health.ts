@@ -3,8 +3,7 @@
  *
  *   - `/health` → unauthenticated full probe set; returns 200 once every
  *     configured external dependency is reachable. Used by Render's
- *     healthCheckPath. Same probe semantics as
- *     apps/web/src/app/api/health/route.ts.
+ *     healthCheckPath.
  *   - `/ready` → simple shape-stable 200 for Render's startup gate.
  *
  * Probes (each runs with a 1.5s per-probe soft timeout; the handler caps

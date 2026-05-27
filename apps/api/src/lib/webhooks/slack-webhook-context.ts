@@ -1,12 +1,8 @@
 /**
- * Slack + Resend webhook context helpers — ported 1:1 from
- * apps/web/src/app/api/webhooks/slack-webhook-context.ts.
+ * Slack + Resend webhook context helpers.
  *
- * The originals already used framework-agnostic deps (`@contractor-ops/db`,
- * `@contractor-ops/api/services/cache`) so this port is structural only:
- * no behaviour changes, no signature changes. Cached lookups stay TTL 60 s
- * (F-SCALE-10) keyed identically so the existing Upstash cache namespace
- * survives the cutover without a cold start.
+ * Cached lookups stay TTL 60 s (F-SCALE-10) keyed via the existing Upstash
+ * cache namespace.
  */
 
 import { cached, cacheKey } from '@contractor-ops/api/services/cache';

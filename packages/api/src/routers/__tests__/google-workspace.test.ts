@@ -135,7 +135,7 @@ vi.mock('@contractor-ops/db', () => ({
   getRegionalClient: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({
@@ -257,7 +257,7 @@ const caller = makeCaller();
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.NEXT_PUBLIC_APP_URL = 'https://app.test';
+  process.env.PUBLIC_APP_URL = 'https://app.test';
   mockPrisma.integrationConnection.findFirst.mockReset();
   mockPrisma.integrationConnection.findUnique.mockReset();
   mockPrisma.integrationConnection.update.mockReset();

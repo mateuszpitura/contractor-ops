@@ -1,6 +1,6 @@
 ---
 description: UI quality and accessibility for web and design system packages
-globs: "{apps/web/**,packages/ui/**}"
+globs: "{apps/web-vite/**,apps/landing/**,packages/ui/**}"
 alwaysApply: false
 ---
 

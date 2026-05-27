@@ -5,9 +5,9 @@
  * Public surface:
  *   - {@link requestExport} — called inside a tRPC mutation; persists a
  *     PENDING `Export` row and dispatches a QStash message to
- *     `/api/exports/_process`. Returns `{ exportId }`.
+ *     `/exports/_process`. Returns `{ exportId }`.
  *   - {@link claimExport} — called by the consumer at the top of the
- *     `/api/exports/_process` handler; atomically transitions PENDING →
+ *     `/exports/_process` handler; atomically transitions PENDING →
  *     PROCESSING using `updateMany` so duplicate QStash deliveries can't
  *     double-render.
  *   - {@link markExportComplete} — called by the consumer after the R2
@@ -97,7 +97,7 @@ export async function requestExport(input: RequestExportInput): Promise<RequestE
     ]);
     const env = getServerEnv();
     await getQStashClient().publishJSON({
-      url: `${env.NEXT_PUBLIC_APP_URL}/api/exports/_process`,
+      url: `${env.API_URL}/exports/_process`,
       body: { exportId: row.id, organizationId: input.organizationId },
       retries: 3,
       timeout: '60s',
@@ -118,7 +118,7 @@ export async function requestExport(input: RequestExportInput): Promise<RequestE
 }
 
 // ---------------------------------------------------------------------------
-// Consumer — called from /api/exports/_process
+// Consumer — called from /exports/_process
 // ---------------------------------------------------------------------------
 
 export interface ClaimExportResult {
@@ -283,7 +283,7 @@ export async function runExportHandler(claim: ClaimExportResult): Promise<void> 
           to: user.email,
           exportDisplayName: def.displayName,
           fileName: claim.fileName,
-          downloadPath: `/api/exports/${claim.exportId}/download`,
+          downloadPath: `/exports/${claim.exportId}/download`,
           expiresAtIso: expiresAt.toISOString(),
           rowCount,
         });

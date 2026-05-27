@@ -15,7 +15,8 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: [
-      'apps/web',
+      'apps/api',
+      'apps/cron-worker',
       'apps/public-api',
       'packages/api',
       'packages/auth',
@@ -33,7 +34,8 @@ export default defineConfig({
       reporter: ['text', 'text-summary', 'json-summary', 'html'],
       reportsDirectory: './coverage',
       include: [
-        'apps/web/src/**/*.{ts,tsx}',
+        'apps/api/src/**/*.ts',
+        'apps/cron-worker/src/**/*.ts',
         'apps/public-api/src/**/*.ts',
         'packages/api/src/**/*.ts',
         'packages/auth/src/**/*.ts',
@@ -59,8 +61,6 @@ export default defineConfig({
         '**/__tests__/**',
         '**/*.test.ts',
         '**/*.test.tsx',
-        /** RTL / Vitest harness (not app features) */
-        'apps/web/src/test/**',
       ],
     },
   },

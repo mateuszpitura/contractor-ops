@@ -6,7 +6,7 @@ import {
   saveLinearStatusMappingInputSchema,
   saveLinearTaskConfigInputSchema,
 } from '@contractor-ops/validators';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';

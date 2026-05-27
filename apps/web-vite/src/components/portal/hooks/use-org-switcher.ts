@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { getClientEnv } from '../../../env.js';
 import { localePath, useLocale, useRouter } from '../../../i18n/navigation.js';
 import { usePortalTRPC } from '../../../providers/trpc-provider.js';
 
@@ -39,8 +40,9 @@ export function useOrgSwitcher(): UseOrgSwitcherResult {
     try {
       const session = await switchOrgMutation.mutateAsync(target);
 
-      const response = await fetch('/api/portal/set-session', {
+      const response = await fetch(`${getClientEnv().VITE_API_URL}/portal/set-session`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token: session.rawToken,

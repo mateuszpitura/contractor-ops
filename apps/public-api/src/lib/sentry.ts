@@ -23,10 +23,9 @@ let initialized = false;
 export function initSentry(): void {
   if (initialized) return;
 
-  // Same env name as apps/web for shared DSN configuration. When unset,
-  // Sentry init is a no-op and `captureException` becomes a noop too —
-  // safe in dev / CI / preview deploys without a Sentry project.
-  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+  // When unset, Sentry init is a no-op and `captureException` becomes a noop
+  // too — safe in dev / CI / preview deploys without a Sentry project.
+  const dsn = process.env.SENTRY_DSN;
 
   Sentry.init({
     dsn,

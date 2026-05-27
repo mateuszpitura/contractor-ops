@@ -1,8 +1,7 @@
 /**
  * Token refresh cron handler.
  *
- * Ported from apps/web/src/app/api/cron/token-refresh/route.ts. Calls the
- * `refreshExpiring` service from `@contractor-ops/integrations` which
+ * Calls the `refreshExpiring` service from `@contractor-ops/integrations` which
  * scans every CONNECTED IntegrationConnection whose token will expire
  * within the configured leeway and refreshes them via the per-provider
  * adapter. Failures are aggregated in the return value and a

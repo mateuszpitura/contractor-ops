@@ -1,7 +1,5 @@
 /**
- * Multi-provider webhook dispatcher port.
- *
- * Mirrors apps/web/src/app/api/webhooks/[provider]/route.ts step-for-step.
+ * Multi-provider webhook dispatcher.
  *
  * Provider-agnostic ingress: resolves the adapter by slug, verifies the
  * webhook signature, schema-validates the body, persists a WebhookDelivery

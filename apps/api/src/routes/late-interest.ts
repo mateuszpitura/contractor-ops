@@ -1,6 +1,5 @@
 /**
- * Late-payment claim PDF renderer (`POST /late-interest/_render-claim-pdf`)
- * port. Mirrors apps/web/src/app/api/late-interest/_render-claim-pdf/route.ts.
+ * Late-payment claim PDF renderer (`POST /late-interest/_render-claim-pdf`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Reseed ALS frame (F-OBS-03).

@@ -22,7 +22,7 @@ const { mockSpan, startSpan, captureException, logInfo, logError, distribution, 
     };
   });
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/node', () => ({
   getCurrentScope: vi.fn(() => ({
     setUser: vi.fn(),
     setTag: vi.fn(),

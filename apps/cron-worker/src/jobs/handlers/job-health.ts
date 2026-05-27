@@ -1,8 +1,6 @@
 /**
  * Background job health monitor + webhook reaper.
  *
- * Ported from apps/web/src/app/api/cron/job-health/route.ts.
- *
  * Runs every 5 minutes:
  *   1. Detects stale webhook deliveries (RECEIVED/PROCESSING > 15 min).
  *   2. F-INT-13 / P2-B reaper: bumps `attempts`, re-enqueues to QStash
@@ -25,7 +23,7 @@ const MAX_REAPER_ATTEMPTS = 5;
 const BACKOFF_BASE_SECONDS = 60;
 const BACKOFF_MAX_SECONDS = 60 * 60;
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: 1:1 port of legacy reaper + alerting pipeline
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: reaper + alerting pipeline; splitting would scatter related side-effects
 export const jobHealthHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {

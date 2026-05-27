@@ -200,8 +200,8 @@ export function recordQueueDepth(
  * Wraps a QStash consumer / cron handler with timing + outcome metrics.
  *
  * Use from QStash consumer routes (`_process` / `_sync` / `_drain` etc.)
- * where the route handler already owns its own try/catch and returns a
- * NextResponse — this helper does not interfere with status-code
+ * where the route handler already owns its own try/catch and writes its
+ * own Fastify reply — this helper does not interfere with status-code
  * mapping. It only measures wall-clock and emits a single
  * `job.duration` distribution + `job.runs` counter per call.
  *
@@ -240,7 +240,7 @@ export async function withQueueObservability<T>(jobName: string, fn: () => Promi
 // `qstash-backpressure.ts` owns the per-route Redis semaphore counters.
 // This reader thin-wraps `getAllQueueDepths()` so the cron-monitor barrel
 // stays the single canonical source of "queue observability snapshots"
-// for the job-health route and the /api/health backpressure probe.
+// for the job-health cron and the /health backpressure probe.
 //
 // Returning a typed snapshot (instead of re-exporting the function) lets
 // us emit a `recordQueueDepth` gauge per route in one place — every poll
@@ -273,7 +273,7 @@ export interface QueueDepthSnapshotEntry {
  */
 export async function getQueueDepthSnapshot(): Promise<QueueDepthSnapshotEntry[]> {
   // Lazy-imported to keep the cron-monitor module free of the
-  // qstash-backpressure module's @sentry/nextjs dep on cold-start paths
+  // qstash-backpressure module's @sentry/node dep on cold-start paths
   // that only need duration helpers.
   const { getAllQueueDepths } = await import('./qstash-backpressure');
   const raw = await getAllQueueDepths();

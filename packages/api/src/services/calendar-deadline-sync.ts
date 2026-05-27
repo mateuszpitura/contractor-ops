@@ -9,7 +9,7 @@ import type { CalendarPrismaClient } from './types';
 // ---------------------------------------------------------------------------
 
 function appBaseUrl(): string {
-  return getServerEnv().NEXT_PUBLIC_APP_URL;
+  return getServerEnv().PUBLIC_APP_URL;
 }
 const TITLE_PREFIX = '[Contractor Ops] ';
 

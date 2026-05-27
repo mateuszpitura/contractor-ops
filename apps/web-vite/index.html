@@ -11,15 +11,21 @@
       <meta> tag exists only so `pnpm --filter @contractor-ops/web-vite preview`
       (and any other edgeless serve) loads without CSP violations.
 
-      MUST stay byte-identical to the render.yaml value — same connect-src,
-      same frame-src, same script-src, same worker-src. If you tighten one,
-      tighten the other.
+      MUST stay byte-identical to the render.yaml value for every directive
+      that <meta> CSP supports — same connect-src, same frame-src, same
+      script-src, same worker-src. If you tighten one, tighten the other.
 
-      Directive notes live alongside the render.yaml definition.
+      `frame-ancestors`, `report-uri`, and `sandbox` are intentionally
+      omitted: the CSP spec only honours them when delivered via an HTTP
+      header. Render.yaml ships them on the wire; including them here would
+      produce a browser console warning ("frame-ancestors is ignored when
+      delivered via a <meta> element") with no security benefit.
+
+      Other directive notes live alongside the render.yaml definition.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.sentry-cdn.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://graph.microsoft.com; connect-src 'self' https://*.contractor-ops.com https://*.sentry.io https://*.ingest.sentry.io https://eu.i.posthog.com https://eu-assets.i.posthog.com https://*.r2.cloudflarestorage.com; frame-src 'self' https://*.docusign.net https://*.docusign.com https://*.autenti.com https://*.r2.cloudflarestorage.com https://challenges.cloudflare.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://*.sentry-cdn.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://*.googleusercontent.com https://graph.microsoft.com; connect-src 'self' https://*.contractor-ops.com https://*.sentry.io https://*.ingest.sentry.io https://eu.i.posthog.com https://eu-assets.i.posthog.com https://*.r2.cloudflarestorage.com; frame-src 'self' https://*.docusign.net https://*.docusign.com https://*.autenti.com https://*.r2.cloudflarestorage.com https://challenges.cloudflare.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; object-src 'none'"
     />
     <!--
       Permissions-Policy local-preview fallback. Render's static-site headers
@@ -31,6 +37,15 @@
       http-equiv="Permissions-Policy"
       content="geolocation=(), interest-cohort=(), payment=(), fullscreen=(self), accelerometer=(), gyroscope=(), magnetometer=(), usb=(), midi=(), serial=(), bluetooth=()"
     />
+    <!--
+      Theme bootstrap. Applies `.dark` on <html> synchronously before
+      first paint so React mounts into the correct theme and the user
+      doesn't see a flash of the wrong palette (FOUC). Keep the storage
+      key + resolution logic in sync with `src/providers/theme-provider.tsx`.
+      Served from /public/ so it satisfies the `script-src 'self'` CSP
+      directive (no `'unsafe-inline'` is granted on this page).
+    -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

@@ -87,7 +87,7 @@ vi.mock('@contractor-ops/validators', async importOriginal => {
   return {
     ...actual,
     getServerEnv: vi.fn(() => ({
-      NEXT_PUBLIC_APP_URL: 'https://app.test',
+      PUBLIC_APP_URL: 'https://app.test',
       STRIPE_SECRET_KEY: 'sk_test_placeholder',
     })),
     getServerEnvRecord: vi.fn(() => ({ STRIPE_SECRET_KEY: 'sk_test_placeholder' })),
@@ -112,7 +112,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.NEXT_PUBLIC_APP_URL = 'https://app.test';
+  process.env.PUBLIC_APP_URL = 'https://app.test';
   process.env.JIRA_CLIENT_SECRET = 'csecret';
   mockGetAdapter.mockReturnValue({
     slug: 'jira',

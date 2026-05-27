@@ -15,11 +15,15 @@
 //   - toast.error("Failed to save")
 
 `toast.$method($arg)` where {
-  $method <: or { `success`, `error`, `info`, `warning` },
-  $arg <: or { `"$_"`, `'$_'` },
-  register_diagnostic(
-    span = $arg,
-    severity = "error",
-    message = "Hardcoded sonner toast text. Wrap in t(...) / tKey(...) or pass a TranslationKey literal — goals/i18n-system-messages."
-  )
+  $method <: or {
+    `success`,
+    `error`,
+    `info`,
+    `warning`
+  },
+  $arg <: or {
+    `"$_"`,
+    `'$_'`
+  },
+  register_diagnostic(span=$arg, severity="error", message="Hardcoded sonner toast text. Wrap in t(...) / tKey(...) or pass a TranslationKey literal — goals/i18n-system-messages.")
 }

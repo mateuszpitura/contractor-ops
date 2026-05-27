@@ -5,7 +5,7 @@
 // generatePrivacyNoticePdf used to render the React-PDF tree inline; under
 // burst this allocated ~30-150 MB per request and OOM'd the pod (P2-F ·
 // F-SCALE-02). The mutation now enqueues an async export — the consumer
-// at `/api/exports/_process` renders + uploads + emails a download link.
+// at `/exports/_process` renders + uploads + emails a download link.
 //
 // Security contract (ASVS V4 Access Control, Phase 56 D-09):
 //   - Input schema is `z.object({}).optional()` — the router NEVER accepts a

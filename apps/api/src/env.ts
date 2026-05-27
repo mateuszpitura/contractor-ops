@@ -5,7 +5,7 @@
  * variables so the process refuses to listen with an incomplete config
  * (fail-fast — Render restarts the pod, on-call sees a clear cause in logs).
  *
- * Mirrors the env split documented in plan.md Step 1:
+ * Env split across the workspace:
  *   - Server-side vars live here (apps/api/src/env.ts).
  *   - Client-side vars live in apps/web-vite/src/env.ts under `VITE_*`.
  *   - Cron worker vars live in apps/cron-worker/src/env.ts.
@@ -32,15 +32,14 @@ const envSchema = z.object({
   // Public origins — used to compose CORS allowlist + cookie Domain.
   APP_URL: z.string().url(),
   API_URL: z.string().url(),
-  // Legacy NEXT_PUBLIC_APP_URL — read by the OAuth start/callback ports
-  // to compose error-redirect URLs (Next-era env name preserved so Render
-  // env vars don't need a rename). Same value as APP_URL in practice.
-  NEXT_PUBLIC_APP_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  // Public web frontend URL — read by the OAuth start/callback ports to
+  // compose error-redirect URLs. Same value as APP_URL in production.
+  PUBLIC_APP_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
 
   // Comma-separated CIDR list (or proxy-addr keywords: loopback, linklocal,
-  // uniquelocal) trusted for the X-Forwarded-For walk. Mirrors the env knob
-  // consumed by the legacy apps/web/src/middleware.ts. Misconfiguring this
-  // allows XFF spoofing → rate-limit bypass (F-SEC-17).
+  // uniquelocal) trusted for the X-Forwarded-For walk. Read by
+  // `apps/api/src/plugins/rate-limit.ts`. Misconfiguring this allows XFF
+  // spoofing → rate-limit bypass (F-SEC-17).
   TRUSTED_PROXIES: z.string().default('loopback,linklocal,uniquelocal'),
 
   // Upstash Redis — required in production for rate-limit (fail-closed).
@@ -49,7 +48,7 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 
   // Observability.
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.string().url().optional(),
 
   // Health/ready probes.
   HEALTH_TIMEOUT_MS: z.coerce.number().int().positive().default(5000),

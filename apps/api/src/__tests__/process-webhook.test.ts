@@ -1,8 +1,7 @@
 /** @vitest-environment node */
 
 /**
- * QStash drain (`/webhooks/_process`) tests — ported from
- * apps/web/src/app/api/webhooks/_process/__tests__/route.test.ts.
+ * QStash drain (`/webhooks/_process`) tests.
  *
  * Coverage:
  *   1. Missing `upstash-signature` header → 401, no DB writes.

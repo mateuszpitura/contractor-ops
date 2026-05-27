@@ -1,8 +1,7 @@
 /** @vitest-environment node */
 
 /**
- * Slack webhook context unit tests — ported from
- * apps/web/src/app/api/webhooks/__tests__/slack-webhook-context.test.ts.
+ * Slack webhook context unit tests.
  *
  * Only `extractSlackTeamId` is exercised here (pure function, no IO).
  * `resolveSlackConnectionByTeamId` and `resolveOrgIdBySlug` hit Prisma +

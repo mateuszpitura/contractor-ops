@@ -1,7 +1,5 @@
 /**
- * Peppol poll worker (`POST /peppol/poll`) port.
- *
- * Mirrors apps/web/src/app/api/peppol/poll/route.ts:
+ * Peppol poll worker (`POST /peppol/poll`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).
@@ -164,7 +162,6 @@ export function registerPeppolPollRoute(app: FastifyInstance): void {
 
 // ---------------------------------------------------------------------------
 // /peppol/inbound — QStash callback after Storecove webhook ingest.
-// Mirrors apps/web/src/app/api/peppol/inbound/route.ts.
 // ---------------------------------------------------------------------------
 
 const peppolInboundBodySchema = z.object({
@@ -269,8 +266,7 @@ export function registerPeppolInboundRoute(app: FastifyInstance): void {
 
 // ---------------------------------------------------------------------------
 // /peppol/outbound — QStash callback for outbound invoice transmission.
-// Mirrors apps/web/src/app/api/peppol/outbound/route.ts including
-// F-ASYNC-08 retry classification + F-SCALE-19 backpressure.
+// Includes F-ASYNC-08 retry classification + F-SCALE-19 backpressure.
 // ---------------------------------------------------------------------------
 
 interface ClassifiedError {

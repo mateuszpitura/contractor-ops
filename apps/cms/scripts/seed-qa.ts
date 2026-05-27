@@ -29,8 +29,8 @@ import config from '../src/payload.config';
 const log = pino(getBaseLoggerOptions()).child({ service: 'cms', script: 'seed-qa' });
 
 // Quiet the legal-docs revalidate webhook + post hooks during the seed —
-// the consumer (apps/web) is typically offline when this runs the first
-// time; later tag flips happen on real edits anyway.
+// the API is typically offline when this runs the first time; later tag
+// flips happen on real edits anyway.
 process.env.CMS_SUPPRESS_WEBHOOKS = '1';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';

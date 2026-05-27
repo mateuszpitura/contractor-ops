@@ -45,10 +45,8 @@ export function DashboardShell({
                   <BillingOverlayContainer />
                   <main
                     id="main-content"
-                    className="atelier-main-surface flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto p-6">
-                    <div className="flex min-h-0 flex-1 flex-col">
-                      <Outlet />
-                    </div>
+                    className="atelier-main-surface min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-6">
+                    <Outlet />
                   </main>
                   <AppFooter />
                 </SidebarInset>

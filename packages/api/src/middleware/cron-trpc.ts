@@ -8,8 +8,9 @@ import { t } from '../init';
 const log = createLogger({ service: 'cron-trpc-middleware' });
 
 /**
- * Requires `Authorization: Bearer <CRON_SECRET>` (same contract as /api/cron/* routes).
- * Use for tRPC mutations that should only be triggered by trusted schedulers (Vercel Cron, internal jobs).
+ * Requires `Authorization: Bearer <CRON_SECRET>`.
+ * Use for tRPC mutations triggered only by trusted schedulers
+ * (apps/cron-worker handlers, QStash callbacks).
  */
 const cronTrpcMiddleware = t.middleware(({ ctx, next }) => {
   // Resolve via getServerEnv so the env validator (z.string().min(16)) gates startup.

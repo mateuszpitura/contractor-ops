@@ -4,7 +4,7 @@ vi.mock('@contractor-ops/validators', () => ({
   getServerEnv: () => ({ CRON_SECRET: 'test-cron-secret-value' }),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),

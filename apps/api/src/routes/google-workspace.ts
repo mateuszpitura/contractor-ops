@@ -1,7 +1,5 @@
 /**
- * Google Workspace directory sync (`POST /google-workspace/_sync`) port.
- *
- * Mirrors apps/web/src/app/api/google-workspace/_sync/route.ts:
+ * Google Workspace directory sync (`POST /google-workspace/_sync`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Reseed ALS frame (F-OBS-03).

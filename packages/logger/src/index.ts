@@ -1,7 +1,13 @@
+import { createRequire } from 'node:module';
 import type { DestinationStream, Logger, LoggerOptions } from 'pino';
 import pino from 'pino';
 import { PII_MASK_PATHS } from './pii-mask.js';
 import { getRequestContext } from './request-context.js';
+
+// ESM bridge — `require` is undefined in pure ESM (e.g. apps/api,
+// apps/cron-worker, apps/public-api), which silently disabled the
+// pino-pretty branch below. Bridge it once at module load.
+const requireFromHere = createRequire(import.meta.url);
 
 // ---------------------------------------------------------------------------
 // Environment detection
@@ -123,8 +129,7 @@ function createRootLogger(): Logger {
   // ── Pretty stdout (dev) or plain stdout (prod) ────────────────────
   if (isDev) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pretty = require('pino-pretty') as typeof import('pino-pretty');
+      const pretty = requireFromHere('pino-pretty') as typeof import('pino-pretty');
       streams.push({
         level: baseOptions.level as pino.Level,
         stream: pretty({
@@ -144,8 +149,9 @@ function createRootLogger(): Logger {
   // ── Axiom stream (sync, no worker threads) ────────────────────────
   if (sendToAxiom) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { createAxiomStream } = require('./axiom-stream.js');
+      const { createAxiomStream } = requireFromHere(
+        './axiom-stream.js',
+      ) as typeof import('./axiom-stream.js');
       streams.push({
         level: baseOptions.level as pino.Level,
         stream: createAxiomStream({ dataset: axiomDataset as string, token: axiomToken as string }),

@@ -37,8 +37,6 @@ import { getFlagSignoff, isGatedFlag } from './signoff-registry-flags';
 //
 // Bypass: `FLAG_SIGNOFF_BYPASS=local` skips the exit and emits a warn line
 // instead. LOCAL-ONLY constraint — production must NOT set this.
-//
-// Wiring: `apps/web/src/lib/feature-flags-init.ts` is the canonical caller.
 // ---------------------------------------------------------------------------
 
 /**

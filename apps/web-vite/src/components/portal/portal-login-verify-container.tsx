@@ -4,6 +4,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getClientEnv } from '../../env.js';
 import { useRouter } from '../../i18n/navigation.js';
 import { usePortalLoginVerify } from './hooks/use-portal-login-verify.js';
 import { OrgPicker } from './org-picker.js';
@@ -30,8 +31,9 @@ async function setSessionCookie(
   expiresAt: string,
   signature: string,
 ): Promise<void> {
-  const response = await fetch('/api/portal/set-session', {
+  const response = await fetch(`${getClientEnv().VITE_API_URL}/portal/set-session`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token, expiresAt, signature }),
   });

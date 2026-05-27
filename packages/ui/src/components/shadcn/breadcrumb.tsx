@@ -8,7 +8,7 @@ import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 
 // Localized labels come from `<UITranslationsProvider>` mounted at the host
-// root (next-intl for apps/web + apps/landing, i18next for apps/web-vite).
+// root (next-intl for apps/landing + apps/cms, i18next for apps/web-vite).
 // Per-instance overrides via standard React props (`aria-label` etc.) take
 // precedence so consumers can tighten the label without touching the
 // translation namespace.

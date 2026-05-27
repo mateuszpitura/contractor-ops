@@ -381,9 +381,9 @@ export async function registerLinearWebhook(
 
   const credentials = decryptCredentials(connection.credentialsRef, 'linear');
 
-  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const apiUrl = getServerEnv().API_URL;
 
-  const webhookUrl = `${appUrl}/api/webhooks/linear`;
+  const webhookUrl = `${apiUrl}/webhooks/linear`;
 
   const result = await linearGraphQL<{
     webhookCreate: {

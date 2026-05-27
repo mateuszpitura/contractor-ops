@@ -5,13 +5,6 @@
  * function that runs the work in-process. Handlers receive a logger
  * already scoped to the job and a request id for correlating audit-log
  * rows with Sentry events.
- *
- * The handlers themselves are stubs in this commit — the production
- * versions land in a follow-up step that ports the bodies from
- * `apps/web/src/app/api/cron/<job>/route.ts` so each one keeps its
- * existing Zod validation, transactional `writeAuditLog`, and Sentry
- * capture semantics. The plan's Step 6 verify gate only requires the
- * registry/runner shape and a smoke test that all jobs are dispatchable.
  */
 
 import { boeRatePollHandler } from './handlers/boe-rate-poll.js';

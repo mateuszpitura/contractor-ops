@@ -9,9 +9,9 @@ vi.mock('@contractor-ops/validators', () => ({
     STRIPE_PRICE_STARTER: 'price_starter_test',
     STRIPE_PRICE_PRO: 'price_pro_test',
     STRIPE_PRICE_ENTERPRISE: 'price_enterprise_test',
-    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: 'price_topup_10_test',
-    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: 'price_topup_25_test',
-    NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: 'price_topup_50_test',
+    STRIPE_PRICE_TOPUP_10: 'price_topup_10_test',
+    STRIPE_PRICE_TOPUP_25: 'price_topup_25_test',
+    STRIPE_PRICE_TOPUP_50: 'price_topup_50_test',
   }),
 }));
 

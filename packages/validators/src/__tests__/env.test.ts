@@ -71,30 +71,27 @@ describe('validateServerEnv', () => {
 });
 
 describe('clientEnvSchema', () => {
-  it('applies defaults for empty input', () => {
+  it('parses an empty object (all keys optional)', () => {
     const result = clientEnvSchema.safeParse({});
     expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.NEXT_PUBLIC_APP_URL).toBe('http://localhost:3000');
-    }
   });
 
-  it('rejects invalid NEXT_PUBLIC_APP_URL', () => {
+  it('rejects invalid NEXT_PUBLIC_POSTHOG_HOST', () => {
     const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_APP_URL: 'not a url',
+      NEXT_PUBLIC_POSTHOG_HOST: 'not a url',
     });
     expect(result.success).toBe(false);
   });
 });
 
 describe('validateClientEnv', () => {
-  it('returns defaults when optional keys omitted', () => {
+  it('returns parsed object when empty (all optional)', () => {
     const out = validateClientEnv({});
-    expect(out.NEXT_PUBLIC_APP_URL).toBe('http://localhost:3000');
+    expect(out).toEqual({});
   });
 
   it('throws when validation fails', () => {
-    expect(() => validateClientEnv({ NEXT_PUBLIC_APP_URL: 'bad' })).toThrow(
+    expect(() => validateClientEnv({ NEXT_PUBLIC_POSTHOG_HOST: 'bad' })).toThrow(
       /Client environment validation failed/,
     );
   });
@@ -117,8 +114,8 @@ describe('serverEnvSchema — additional branch coverage', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects invalid NEXT_PUBLIC_APP_URL', () => {
-    const env = { ...minimalValidServerEnv(), NEXT_PUBLIC_APP_URL: 'not-a-url' };
+  it('rejects invalid PUBLIC_APP_URL', () => {
+    const env = { ...minimalValidServerEnv(), PUBLIC_APP_URL: 'not-a-url' };
     const result = serverEnvSchema.safeParse(env);
     expect(result.success).toBe(false);
   });
@@ -177,7 +174,7 @@ describe('serverEnvSchema — additional branch coverage', () => {
   it('accepts optional observability fields', () => {
     const env = {
       ...minimalValidServerEnv(),
-      NEXT_PUBLIC_SENTRY_DSN: 'https://sentry.example.com/123',
+      SENTRY_DSN: 'https://sentry.example.com/123',
       SENTRY_ORG: 'my-org',
       SENTRY_PROJECT: 'my-project',
       SENTRY_AUTH_TOKEN: 'token',
@@ -234,39 +231,10 @@ describe('getServerEnvRecord', () => {
 });
 
 describe('clientEnvSchema — additional branches', () => {
-  it('accepts optional Stripe publishable key', () => {
+  it('accepts optional PostHog key + host', () => {
     const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_123',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects Stripe publishable key without pk_ prefix', () => {
-    const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'bad_key',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts optional Sentry DSN', () => {
-    const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_SENTRY_DSN: 'https://sentry.example.com/123',
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it('rejects invalid Sentry DSN', () => {
-    const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_SENTRY_DSN: 'not-a-url',
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts optional top-up price IDs', () => {
-    const result = clientEnvSchema.safeParse({
-      NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: 'price_abc',
-      NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: 'price_def',
-      NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: 'price_ghi',
+      NEXT_PUBLIC_POSTHOG_KEY: 'phc_test',
+      NEXT_PUBLIC_POSTHOG_HOST: 'https://eu.i.posthog.com',
     });
     expect(result.success).toBe(true);
   });

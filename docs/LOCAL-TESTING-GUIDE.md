@@ -31,9 +31,9 @@ ANTHROPIC_API_KEY, QStash, CRON_SECRET, all `*_ENCRYPTION_KEY`s.
 
 ### 0.3 Configuration drifts to fix before testing 🔧
 
-- [ ] **APP_URL vs BETTER_AUTH_URL mismatch** — `APP_URL=https://bluebird-daring-annually.ngrok-free.app` but `BETTER_AUTH_URL=http://localhost:3000` and `NEXT_PUBLIC_APP_URL=http://localhost:3000`. OAuth `redirect_uri`s and webhook signing will be inconsistent. Pick one:
+- [ ] **APP_URL vs BETTER_AUTH_URL mismatch** — `APP_URL=https://bluebird-daring-annually.ngrok-free.app` but `BETTER_AUTH_URL=http://localhost:3000` and `PUBLIC_APP_URL=http://localhost:3000`. OAuth `redirect_uri`s and webhook signing will be inconsistent. Pick one:
   - **Local-only testing:** set `APP_URL=http://localhost:3000`.
-  - **Integrations testing (Slack, DocuSign, etc. webhooks):** keep ngrok and also set `NEXT_PUBLIC_APP_URL=APP_URL=BETTER_AUTH_URL=https://bluebird-daring-annually.ngrok-free.app`.
+  - **Integrations testing (Slack, DocuSign, etc. webhooks):** keep ngrok and also set `PUBLIC_APP_URL=APP_URL=BETTER_AUTH_URL=https://bluebird-daring-annually.ngrok-free.app`.
 - [ ] **`DATABASE_URL_EU` and `DATABASE_URL_ME` point to the same DB.** Multi-region/data-residency edge cases will silently pass even when broken. Acceptable for happy-path local testing; flag as `[N/A — single DB]` in the multi-region rows below.
 - [ ] **`R2_BUCKET_NAME_EU` / `R2_BUCKET_NAME_ME` not set.** Defaults are `contractor-ops-documents-{eu,me}` — if those buckets don't exist, uploads fail. Either create them in R2 or set both to `R2_BUCKET_NAME=contractor-ops-documents` (your existing bucket).
 
@@ -42,7 +42,7 @@ ANTHROPIC_API_KEY, QStash, CRON_SECRET, all `*_ENCRYPTION_KEY`s.
 | Var | Why set it locally | Default behaviour if unset |
 |---|---|---|
 | `DEV_SMTP_HOST=127.0.0.1` + `DEV_SMTP_PORT=1025` | Captures all transactional email (signup verification, portal magic link, invitations) in Mailpit at `http://localhost:8025` instead of sending real Resend mail. | Real Resend emails fire (uses `RESEND_API_KEY`). |
-| `TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` + `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Test the bot-protection widget on `/register`. | Signup verifier short-circuits to "ok" in dev. |
+| `TURNSTILE_SECRET_KEY` + `VITE_TURNSTILE_SITE_KEY` | Test the bot-protection widget on `/register`. | Signup verifier short-circuits to "ok" in dev. |
 | `PLATFORM_OPERATOR_ORG_ID=<uuid>` | Enables the `/admin/*` shell. Set to your owner-org's UUID. | `/admin/*` is hard-blocked. |
 | `API_KEY_HMAC_SECRET` (`openssl rand -hex 32`) | Required to boot `apps/public-api` (Enterprise REST). | `apps/public-api` won't start. |
 | `UNLEASH_URL_EU/ME` + `UNLEASH_API_TOKEN_EU/ME` | Real feature-flag evaluation. | All flags fall back to code-declared defaults (graceful). |
@@ -186,7 +186,7 @@ Smoke checks before flows:
 | A13 | Open expired invite token → friendly error (not stack trace) | Edge |  |  |
 | A14 | Log out → session cookie cleared, dashboard URLs redirect to login | Happy |  |  |
 | A15 | Try `/dashboard` URL while logged-out → redirects to login with `?redirect=` preserved | Edge |  |  |
-| A16 | Turnstile widget renders on `/register` (only if `NEXT_PUBLIC_TURNSTILE_SITE_KEY` set) | Edge |  |  |
+| A16 | Turnstile widget renders on `/register` (only if `VITE_TURNSTILE_SITE_KEY` set) | Edge |  |  |
 
 ---
 

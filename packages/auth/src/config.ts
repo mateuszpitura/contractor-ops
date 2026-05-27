@@ -110,12 +110,13 @@ export const auth = betterAuth({
   // F-SCALE-20 — Better Auth built-in per-IP rate limiter
   // ---------------------------------------------------------------------
   //
-  // This is the PRIMARY rate-limiting layer for auth endpoints. The edge
-  // middleware (apps/web/src/middleware.ts) intentionally does NOT rate-limit
-  // /api/auth/* — Better Auth's granular per-endpoint caps + per-account
-  // lockout (5 failed → 15min lock) + Turnstile CAPTCHA are strictly
-  // superior to a blanket edge counter that can't distinguish endpoints,
-  // success from failure, or session reads from credential attempts.
+  // This is the PRIMARY rate-limiting layer for auth endpoints. The
+  // Fastify rate-limit plugin (apps/api/src/plugins/rate-limit.ts)
+  // intentionally does NOT rate-limit /api/auth/* — Better Auth's granular
+  // per-endpoint caps + per-account lockout (5 failed → 15min lock) +
+  // Turnstile CAPTCHA are strictly superior to a blanket edge counter that
+  // can't distinguish endpoints, success from failure, or session reads
+  // from credential attempts.
   //
   // Storage: defaults to in-memory (per-pod). For multi-instance
   // deployments, configure `secondary-storage` (Upstash) so rate-limit
@@ -207,10 +208,10 @@ export const auth = betterAuth({
   advanced: {
     defaultCookieAttributes: {
       // Cross-subdomain mode (apps/api ↔ apps/web-vite): env sets sameSite='none'
-      // + Domain='.contractor-ops.com'. Same-origin legacy posture (current
-      // Next app): env omits both → sameSite='lax', Domain unset.
-      // SameSite=None forces Secure=true regardless of env so browsers honour
-      // the cookie (Chrome rejects None+!Secure outright).
+      // + Domain='.contractor-ops.com'. Single-origin dev posture: env omits
+      // both → sameSite='lax', Domain unset. SameSite=None forces Secure=true
+      // regardless of env so browsers honour the cookie (Chrome rejects
+      // None+!Secure outright).
       sameSite: authEnv.cookieSameSite,
       secure: authEnv.isProduction || authEnv.cookieSameSite === 'none',
       // Explicit defence-in-depth — Better Auth defaults httpOnly to true,
@@ -239,9 +240,33 @@ export const auth = betterAuth({
     session: {
       create: {
         before: async session => {
-          const s = session as { activeOrganizationId?: string | null; userId?: string };
+          const s = session as {
+            activeOrganizationId?: string | null;
+            userId?: string;
+            [key: string]: unknown;
+          };
+          // Auto-seed `activeOrganizationId` to the user's first non-disabled
+          // membership when Better Auth would otherwise create the session
+          // without one. Without this seed, every tenant-scoped tRPC
+          // procedure fails with `tenantNoActiveOrganization` immediately
+          // after sign-in until the user manually picks an org via the
+          // switcher — a regression vs. the legacy Next middleware which
+          // chose the first org server-side. Idempotent for users with
+          // exactly one org; users with multiple keep whatever they picked
+          // last because Better Auth only enters this branch when the
+          // value is null/undefined.
+          if (!s.activeOrganizationId && s.userId) {
+            const firstMembership = await prisma.member.findFirst({
+              where: { userId: s.userId, disabledAt: null },
+              orderBy: { createdAt: 'asc' },
+              select: { organizationId: true },
+            });
+            if (firstMembership) {
+              s.activeOrganizationId = firstMembership.organizationId;
+            }
+          }
           await assertActiveMembershipNotDisabled(s.activeOrganizationId, s.userId);
-          return { data: session };
+          return { data: s };
         },
       },
       update: {

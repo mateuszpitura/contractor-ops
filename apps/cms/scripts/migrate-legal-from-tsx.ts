@@ -1,6 +1,5 @@
 // Idempotent backfill of the `legal-documents` collection from the catalog
-// captured in apps/cms/src/lib/legal-content.ts. The catalog is the canonical
-// summary of the previously hand-authored TSX content under apps/web/.../(legal)/.
+// captured in apps/cms/src/lib/legal-content.ts.
 //
 // Re-running the script upserts by (type, jurisdiction) — no duplicates.
 // After the first successful seed, edits flow through the Payload admin UI;
@@ -14,9 +13,9 @@ import config from '../src/payload.config';
 
 const log = pino(getBaseLoggerOptions()).child({ service: 'cms', script: 'migrate-legal' });
 
-// Suppress the afterChange revalidate webhook during the seed — apps/web is
-// typically offline when the operator runs the script the first time and
-// nothing depends on a tag flip until the first end-user edit anyway.
+// Suppress the afterChange revalidate webhook during the seed — the API
+// is typically offline when the operator runs the script the first time
+// and nothing depends on a tag flip until the first end-user edit anyway.
 process.env.CMS_SUPPRESS_WEBHOOKS = '1';
 
 type Outcome = { created: number; updated: number; skipped: number };

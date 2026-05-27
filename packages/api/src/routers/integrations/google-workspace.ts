@@ -11,7 +11,7 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import { createLogger } from '@contractor-ops/logger';
 import type { DirectoryRole } from '@contractor-ops/validators';
 import { directoryImportInputSchema, getServerEnv } from '@contractor-ops/validators';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
@@ -100,7 +100,7 @@ async function ensureSyncCronSchedule(
     const scheduleId = `gw-sync-${organizationId}`;
 
     const schedule = await qstashClient.schedules.create({
-      destination: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
+      destination: `${getServerEnv().API_URL}/google-workspace/_sync`,
       body: JSON.stringify({ organizationId, connectionId }),
       cron: '0 2 * * *', // Daily at 2 AM
       scheduleId,
@@ -396,7 +396,7 @@ export const googleWorkspaceRouter = router({
       // Publish immediate sync job
       const qstashClient = getQStashClient();
       await qstashClient.publishJSON({
-        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/google-workspace/_sync`,
+        url: `${getServerEnv().API_URL}/google-workspace/_sync`,
         body: {
           organizationId: ctx.organizationId,
           connectionId: connection.id,

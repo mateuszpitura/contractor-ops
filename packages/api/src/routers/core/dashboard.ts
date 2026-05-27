@@ -374,9 +374,8 @@ export const dashboardRouter = router({
    *
    * TODO: migrate the 7-8 dashboard widgets to consume this payload from
    * a single `useSuspenseQuery(trpc.dashboard.bootstrap)` call (see
-   * F-SCALE-12). Doing so requires shipping the RSC parallel-fetch
-   * refactor in `apps/web/src/app/[locale]/(dashboard)/page.tsx` and is
-   * scoped under a follow-up commit so this commit stays atomic.
+   * F-SCALE-12). Doing so requires updating the SPA dashboard container in
+   * `apps/web-vite/src/components/dashboard/dashboard-container.tsx`.
    */
   bootstrap: tenantProcedure
     .use(reportRead)

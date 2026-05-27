@@ -9,7 +9,8 @@
 // Uses Upstash Redis (sliding window) when UPSTASH_REDIS_REST_URL +
 // UPSTASH_REDIS_REST_TOKEN are set; otherwise falls back to an in-memory
 // sliding window (dev / single-instance). Mirrors the pattern used by
-// apps/web/src/middleware.ts so deployment behaviour stays consistent.
+// the Fastify rate-limit plugin (apps/api/src/plugins/rate-limit.ts) so
+// deployment behaviour stays consistent.
 //
 // The limit key is `${organizationId}:${assessmentId}` — sharing an
 // assessment across two orgs is not possible (tenantProcedure scopes), so

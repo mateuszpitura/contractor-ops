@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv } from 'vite';
+import Terminal from 'vite-plugin-terminal';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -166,6 +167,11 @@ async function sentryPlugin() {
 export default defineConfig(async ({ mode }) => {
   const analyze = process.env.ANALYZE === '1';
   const sentry = await sentryPlugin();
+  // `loadEnv` reads `.env*` from `repoRoot` regardless of prefix when the
+  // third arg is `''`. We only need `VITE_API_URL` here to widen the
+  // dev-only CSP `connect-src`; the SPA itself reads the same value at
+  // runtime via `getClientEnv()`. Fallback covers fresh checkouts where
+  // `.env` has not yet been populated.
   const env = loadEnv(mode, repoRoot, '');
   const apiUrl = env.VITE_API_URL || 'http://localhost:4000';
 
@@ -174,6 +180,24 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       react(),
       sentry,
+      // Dev-only: mirror browser console.* + uncaught errors into the Vite
+      // terminal so we can observe SPA logs without keeping DevTools open.
+      // `apply: 'serve'` keeps it out of production builds entirely.
+      mode === 'development' && Terminal({ console: 'terminal', output: ['terminal', 'console'] }),
+      // Dev-only CSP relaxation: index.html ships the production CSP for
+      // byte-parity with render.yaml. Locally the SPA needs to reach the API
+      // (`VITE_API_URL`, typically http://localhost:4000) and Vite's HMR
+      // websocket, neither of which the prod policy allows. This plugin
+      // appends those origins to `connect-src` *only* when Vite is serving
+      // (`apply: 'serve'`) — production builds emit the untouched policy.
+      mode === 'development' && {
+        name: 'dev-csp-relax',
+        apply: 'serve',
+        transformIndexHtml(html) {
+          const devConnect = [apiUrl, 'ws://localhost:3000', 'http://localhost:3000'].join(' ');
+          return html.replace(/(connect-src 'self')/, `connect-src 'self' ${devConnect}`);
+        },
+      },
       analyze &&
         visualizer({
           filename: 'dist/stats.html',
@@ -218,16 +242,6 @@ export default defineConfig(async ({ mode }) => {
     server: {
       port: 3000,
       strictPort: true,
-      // Portal session helpers post to same-origin `/api/portal/*` (Next parity).
-      // Fastify serves them at `/portal/*` on apps/api — rewrite strips `/api`.
-      // Auth uses `${VITE_API_URL}/api/auth` directly (auth-provider.tsx).
-      proxy: {
-        '/api/portal': {
-          target: apiUrl,
-          changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, ''),
-        },
-      },
     },
     preview: {
       port: 4173,

@@ -1,10 +1,6 @@
 /**
  * Portal session cookie helpers.
  *
- * Ported 1:1 from:
- *   - apps/web/src/app/api/portal/set-session/route.ts
- *   - apps/web/src/app/api/portal/clear-session/route.ts
- *
  * Both routes are exempt from the CSRF origin guard via the `/portal/`
  * prefix exemption — portal session establishment runs from the magic
  * link verification page which posts here cross-tab on cold load.

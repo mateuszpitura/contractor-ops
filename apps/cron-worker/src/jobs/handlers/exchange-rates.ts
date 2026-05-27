@@ -1,13 +1,12 @@
 /**
  * Exchange-rates cron handler.
  *
- * Ported from apps/web/src/app/api/cron/exchange-rates/route.ts. Daily
- * ECB sync — calls `exchangeRate.fetchDaily` via a cron-scoped tRPC
+ * Daily ECB sync — calls `exchangeRate.fetchDaily` via a cron-scoped tRPC
  * caller. The procedure fans out across `SUPPORTED_REGIONS` and
  * aggregates per-region errors; the handler relays the result and emits
  * `cron.exchange_rates.{stored,errors}` gauges.
  *
- * The legacy route required a CRON_SECRET bearer header so the
+ * `exchangeRate.fetchDaily` requires a CRON_SECRET bearer header so the
  * cronProcedure middleware would accept it. In cron-worker we call the
  * procedure in-process, so we synthesise the same `Authorization:
  * Bearer ${CRON_SECRET}` header that the middleware expects.

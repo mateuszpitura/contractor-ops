@@ -28,7 +28,7 @@ env.HEALTH_TIMEOUT_MS = '1000';
 // Better Auth — minimum surface for the in-memory boot.
 env.BETTER_AUTH_SECRET = env.BETTER_AUTH_SECRET ?? 'test-secret-test-secret';
 env.BETTER_AUTH_URL = env.BETTER_AUTH_URL ?? 'https://api.example.test';
-env.NEXT_PUBLIC_APP_URL = env.NEXT_PUBLIC_APP_URL ?? 'https://app.example.test';
+env.PUBLIC_APP_URL = env.PUBLIC_APP_URL ?? 'https://app.example.test';
 
 // Stripe client is constructed eagerly at module load by
 // `packages/api/src/services/stripe-client.ts`; without a key it throws

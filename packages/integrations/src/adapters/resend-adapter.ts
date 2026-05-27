@@ -36,12 +36,11 @@ function getResendClient(apiKey: string): Resend {
 /**
  * Integration adapter for Resend (email webhook provider).
  *
- * Signature verification matches `apps/web/.../webhooks/resend-inbound/route.ts`
- * (legacy URL) and unified `/api/webhooks/resend`.
- *
- * Inbound processing runs in `apps/web/.../webhooks/_process` via
- * `@contractor-ops/api/services/resend-email-intake` (not in this package, to
- * avoid pulling Prisma/R2 into integrations).
+ * Signature verification runs in the `/webhooks/resend` Fastify ingress
+ * (multi-provider dispatcher); the body then goes to QStash and inbound
+ * processing happens in `/webhooks/_process` via
+ * `@contractor-ops/api/services/resend-email-intake` (not in this package,
+ * to avoid pulling Prisma/R2 into integrations).
  */
 export class ResendAdapter extends BaseAdapter {
   readonly slug = 'resend';

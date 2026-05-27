@@ -82,8 +82,11 @@ export async function logWebhookDelivery(params: {
  * @param provider - The provider slug
  */
 export async function queueWebhookProcessing(deliveryId: string, provider: string): Promise<void> {
+  // Drain endpoint lives on the Fastify API host (apps/api) at
+  // `/webhooks/_process` — Fastify routes mount at the root.
+  const apiUrl = process.env.API_URL ?? '';
   await publishJSONWithContext({
-    url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/_process`,
+    url: `${apiUrl}/webhooks/_process`,
     body: { deliveryId, provider },
     retries: 3,
     deduplicationId: deliveryId,

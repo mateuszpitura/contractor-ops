@@ -42,7 +42,6 @@
     "load:stress": "k6 run -e K6_PROFILE=stress load-tests/api-read.js",
     "load:writes": "k6 run load-tests/api-write.js",
     "load:writes:stress": "k6 run -e K6_PROFILE=stress load-tests/api-write.js",
-    "e2e:perf": "pnpm --filter @contractor-ops/web run e2e:perf",
     "db:generate": "turbo db:generate",
     "db:migrate:dev": "pnpm -F @contractor-ops/db run db:migrate:dev",
     "db:migrate:all": "pnpm -F @contractor-ops/db run db:migrate:all",

@@ -11,7 +11,7 @@
  * affects /api/trpc/** routes; sibling JSON handlers stay on Fastify's
  * default parser.
  *
- * Ported behaviour from `apps/web/src/app/api/trpc/[trpc]/route.ts`:
+ * Behaviour:
  *
  *   - F-SCALE-17 body cap: short-circuit 413 when Content-Length exceeds
  *     `TRPC_MAX_BODY_MB` (default 1 MB). Avoids materializing 10-20 MB

@@ -57,7 +57,7 @@ const STRIPE_STATUS_MAP: Record<string, SubscriptionStatus> = {
 };
 
 function buildBillingUrl(): string {
-  const base = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const base = getServerEnv().PUBLIC_APP_URL;
   return `${base}/settings?tab=billing`;
 }
 

@@ -292,19 +292,19 @@ export const integrationRouter = router({
       const env = getServerEnvRecord();
       const clientId = env[oauthConfig.clientIdEnvVar];
       const clientSecret = env[oauthConfig.clientSecretEnvVar];
-      const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+      const apiUrl = getServerEnv().API_URL;
 
-      if (!(clientId && clientSecret && appUrl)) {
+      if (!(clientId && clientSecret && apiUrl)) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: E.INTEGRATION_NOT_CONFIGURED,
         });
       }
 
-      // Hand the client the local start URL. The browser navigation MUST go
-      // through /api/oauth/{provider}/start so the cookie binding is
-      // established before the IdP round-trip.
-      const url = `${appUrl}/api/oauth/${encodeURIComponent(input.provider)}/start`;
+      // Hand the client the API-host OAuth start URL. The browser navigation
+      // MUST go through /api/oauth/{provider}/start on the API host so the
+      // cookie binding is established before the IdP round-trip.
+      const url = `${apiUrl}/api/oauth/${encodeURIComponent(input.provider)}/start`;
       return { url };
     }),
 

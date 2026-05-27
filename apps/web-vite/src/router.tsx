@@ -9,10 +9,13 @@ import { NuqsAdapter } from 'nuqs/adapters/react-router/v7';
 import type { ReactNode } from 'react';
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet, redirect } from 'react-router-dom';
+import { RouteErrorBoundary } from './components/error/route-error-boundary.js';
 import { applyLocale } from './i18n/index.js';
 import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/messages.js';
 import { requireAuth } from './lib/require-auth.js';
-import { lazyShellWithChildRoutes } from './router/lazy-shell-loader.js';
+import { requirePortalAuth } from './lib/require-portal-auth.js';
+import { dashboardRoutes } from './router/dashboard-routes.js';
+import { portalRoutes } from './router/portal-routes.js';
 
 const DashboardShell = lazy(() =>
   import('./components/layout/dashboard-shell-container.js').then(m => ({
@@ -58,9 +61,21 @@ function RootLayout() {
   );
 }
 
+// React Router v7 warns when an async loader runs without a fallback during
+// initial hydration ("No `HydrateFallback` element provided"). Render the
+// shared spinner so the cold-boot frame matches the shell's loading state.
+function RootHydrateFallback() {
+  return null;
+}
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    HydrateFallback: RootHydrateFallback,
+    // Replace React Router's default ErrorBoundary so thrown loader/component
+    // errors get logged with full context (vite-plugin-terminal serializes
+    // raw Error instances to `{}` — see route-error-boundary.tsx).
+    ErrorBoundary: RouteErrorBoundary,
     children: [
       {
         path: '/',
@@ -92,28 +107,21 @@ export const router = createBrowserRouter([
             path: 'portal/invoices/submit/success',
             element: page(<PortalInvoiceSubmitSuccessPage />),
           },
-          // Portal — authenticated shell (parity with Next `(portal)/layout.tsx`)
+          // Portal — authenticated shell (parity with Next `(portal)/layout.tsx`).
+          // Child route table is registered synchronously so React Router can
+          // resolve nested paths during initial match. The shell component +
+          // every page inside it stay code-split via React.lazy + Suspense.
           {
-            lazy: lazyShellWithChildRoutes(async () => {
-              const { portalRoutes } = await import('./router/portal-routes.js');
-              const { requirePortalAuth } = await import('./lib/require-portal-auth.js');
-              return {
-                Component: () => page(<PortalShell />),
-                loader: ({ params }) => requirePortalAuth(params.locale),
-                children: portalRoutes,
-              };
-            }),
+            element: page(<PortalShell />),
+            loader: ({ params }) => requirePortalAuth(params.locale),
+            children: portalRoutes,
           },
-          // Staff dashboard (sidebar + top bar) — shell + route table load on first visit.
+          // Staff dashboard (sidebar + top bar) — same eager-children pattern.
+          // Bare `/:locale` matches `dashboardRoutes`' `{ index: true }` here.
           {
-            lazy: lazyShellWithChildRoutes(async () => {
-              const { dashboardRoutes } = await import('./router/dashboard-routes.js');
-              return {
-                Component: () => page(<DashboardShell />),
-                loader: ({ params }) => requireAuth(params.locale),
-                children: dashboardRoutes,
-              };
-            }),
+            element: page(<DashboardShell />),
+            loader: ({ params }) => requireAuth(params.locale),
+            children: dashboardRoutes,
           },
         ],
       },

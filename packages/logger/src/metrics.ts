@@ -1,10 +1,15 @@
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/core';
 import { logger } from './index.js';
 
 /**
  * Lightweight metrics helper that records custom metrics as:
  * - Sentry span attributes (visible in traces/dashboards)
  * - Structured log entries (queryable in Axiom)
+ *
+ * Imports from `@sentry/core` (universal) so this module is safe to load
+ * from Node workers (cron-worker, public-api) and the Vite SPA alike,
+ * regardless of which Sentry SDK flavour (`/node`, `/react`, etc.) the
+ * host app pulls in to initialise the client.
  *
  * Sentry v9 removed the `metrics` API. Custom metrics are now best
  * tracked via span attributes + structured logs.

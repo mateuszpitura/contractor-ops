@@ -1,10 +1,7 @@
 /**
- * ZATCA submission worker (`POST /zatca/_submit`) port.
+ * ZATCA submission worker (`POST /zatca/_submit`).
  *
- * Mirrors apps/web/src/app/api/zatca/_submit/route.ts step-for-step:
- *
- *   1. QStash signature verification via the shared `guardQStashRequest`
- *      helper (replaces Next-only `verifySignatureAppRouter`).
+ *   1. QStash signature verification via the shared `guardQStashRequest` helper.
  *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).
  *   3. Wrap with `withQueueObservability('zatca-submit', …)` for the
  *      per-tick duration histogram (F-ASYNC-17).

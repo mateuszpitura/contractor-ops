@@ -1,7 +1,5 @@
 /**
- * KSeF sync worker (`POST /ksef/_sync`) port.
- *
- * Mirrors apps/web/src/app/api/ksef/_sync/route.ts:
+ * KSeF sync worker (`POST /ksef/_sync`).
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Reseed ALS frame from upstream QStash headers (F-OBS-03).

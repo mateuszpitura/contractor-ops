@@ -141,7 +141,7 @@ vi.mock('../../services/r2', () => ({
 }));
 
 // The einvoice router imports from these — satisfy module resolution.
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({

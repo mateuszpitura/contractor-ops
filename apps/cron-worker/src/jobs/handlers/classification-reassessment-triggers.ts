@@ -1,9 +1,6 @@
 /**
  * Classification reassessment-trigger scan handler.
  *
- * Ported from
- * apps/web/src/app/api/cron/classification-reassessment-triggers/route.ts.
- *
  * Daily AuditLog-driven scan that detects material-change events on
  * contractors / engagements and emits ReassessmentTrigger rows.
  * Short-circuits when `module.classification-engine` is off (D-08).

@@ -8,8 +8,8 @@
 //
 // Why polling and not a webhook: BoE does not publish rate-change webhooks.
 // MPC meets ~8x/year so daily polling is cheap and bounded. Cron schedule:
-// daily at 06:00 UTC (set by the cron route in apps/web — see /api/cron/
-// boe-rate-poll/route.ts).
+// daily at 06:00 UTC, owned by
+// apps/cron-worker/src/jobs/handlers/boe-rate-poll.ts.
 //
 // Failure mode: any fetch / parse / DB error returns
 // `{ updated: false, currentRate: null, error }` and logs a warning.

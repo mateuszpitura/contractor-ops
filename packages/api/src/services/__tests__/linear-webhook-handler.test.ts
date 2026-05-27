@@ -194,7 +194,7 @@ describe('processLinearWebhook', () => {
 describe('registerLinearWebhook / deregisterLinearWebhook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.NEXT_PUBLIC_APP_URL = 'https://app.test';
+    process.env.PUBLIC_APP_URL = 'https://app.test';
   });
 
   it('registerLinearWebhook throws when connection is missing or inactive', async () => {

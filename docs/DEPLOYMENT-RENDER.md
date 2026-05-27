@@ -151,7 +151,7 @@ After services exist, open each service → **Environment** tab → fill blanks.
 - `SLACK_TOKEN_ENCRYPTION_KEY` — `openssl rand -hex 32`.
 - `API_KEY_HMAC_SECRET` — Enterprise REST API (`public-api`) HMAC secret for API-key hashes. `openssl rand -hex 32`.
 - `ANTHROPIC_API_KEY`.
-- `CRONITOR_API_KEY`, `AXIOM_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN`.
+- `CRONITOR_API_KEY`, `AXIOM_TOKEN`, `SENTRY_DSN`, `VITE_SENTRY_DSN`.
 - `INFISICAL_*` (if using Infisical secret store; otherwise leave blank — falls back to MemoryStore).
 
 For the `build-secrets` group (build-time only, used in the Docker build):
@@ -165,10 +165,11 @@ For the `build-secrets` group (build-time only, used in the Docker build):
 2. Add the CNAME record shown by Render at your DNS provider.
 3. Render auto-issues a Let's Encrypt cert (~1–2 minutes).
 4. Update `app-shared` env group:
-   - `NEXT_PUBLIC_APP_URL=https://app.contractor-ops.com`
+   - `PUBLIC_APP_URL=https://app.contractor-ops.com`
    - `APP_URL=https://app.contractor-ops.com`
+   - `API_URL=https://api.contractor-ops.com`
    - `BETTER_AUTH_URL=https://app.contractor-ops.com`
-   - `PORTAL_BASE_DOMAIN=portal.contractor-ops.com` (and add wildcard `*.portal.contractor-ops.com` on the `web` service's Custom Domains).
+   - `PORTAL_BASE_DOMAIN=portal.contractor-ops.com` (and add wildcard `*.portal.contractor-ops.com` on the `api` service's Custom Domains).
 5. Repeat for `landing` (e.g. `contractor-ops.com` apex + `www`).
 6. Repeat for `public-api` on a dedicated subdomain: `api.contractor-ops.com`. This service is only used by Enterprise customers via API key — keep it on a separate domain so rate limits, audit logs, and WAF rules are scoped independently of `web`.
 
@@ -237,7 +238,7 @@ BASE_URL=https://app.contractor-ops.com pnpm load:stress
 
 - Per-service logs in Dashboard → service → **Logs**.
 - Aggregate: Axiom dataset `contractor-ops` (configured via `AXIOM_TOKEN`).
-- Errors: Sentry project (configured via `NEXT_PUBLIC_SENTRY_DSN`).
+- Errors: Sentry project (configured via `SENTRY_DSN` for servers, `VITE_SENTRY_DSN` for the SPA).
 
 ### Scale up
 

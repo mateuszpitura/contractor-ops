@@ -4,9 +4,11 @@ Cross-border independent-contractor operations platform: invoicing, contracts,
 tax artefacts, e-signing, integrations — plus a headless CMS for the public
 blog and legal documents.
 
-- **Stack:** pnpm + Turborepo monorepo · Next.js 16 · React 19 · tRPC v11 ·
-  Prisma 7 + Neon Postgres (multi-region) · Better Auth · Payload v3 CMS ·
-  Render (Docker) · Cloudflare R2 · Upstash Redis + QStash · Resend · Stripe.
+- **Stack:** pnpm + Turborepo monorepo · React 19 + Vite SPA · Fastify (API
+  server, cron worker) · Hono (public REST) · Next.js 16 (landing, CMS) ·
+  tRPC v11 · Prisma 7 + Neon Postgres (multi-region) · Better Auth ·
+  Payload v3 CMS · Render (Docker) · Cloudflare R2 · Upstash Redis + QStash ·
+  Resend · Stripe.
 - **Status:** launch-ready, pre-deploy. Production hardening is complete
   (deploy blockers cleared, multi-region migrations wired, observability +
   rate limiting in place) and the platform has **not yet been deployed to
@@ -20,12 +22,14 @@ blog and legal documents.
 
 ```
 apps/
-  web/           — main product (Next.js 16, port 3000, Render web service)
+  web-vite/      — main product SPA (React + Vite, static site on Render)
+  api/           — Fastify tRPC server hosting `/api/trpc/*` for web-vite + portal
+  cron-worker/   — Fastify background worker (cron, QStash callbacks, webhooks)
   public-api/    — Enterprise REST API (Hono + tRPC caller, default port 4100)
-  landing/       — marketing site (Next.js static export, port 3001)
+  landing/       — marketing site (Next.js 16, port 3001)
   cms/           — headless CMS + public blog (Next.js 16 + Payload v3, port 3002)
 packages/
-  api/           — 55 tRPC routers split across 7 domain folders
+  api/           — 50 tRPC routers (staff appRouter) + 2 portal routers
   auth/          — Better Auth wiring + shared session helpers
   db/            — Prisma 7 schema + generated client + replica helpers
   einvoice/      — ZUGFeRD/Peppol/KSeF document generators
@@ -61,8 +65,8 @@ External services to provision (free tiers are fine for local dev):
 
 | Service          | Used by                                | Required |
 | ---------------- | -------------------------------------- | -------- |
-| Neon Postgres    | `apps/web`, `apps/cms` (separate DBs)  | yes      |
-| Cloudflare R2    | `apps/web` documents, `apps/cms` media | optional in dev (local FS fallback) |
+| Neon Postgres    | `apps/api`, `apps/cms` (separate DBs)  | yes      |
+| Cloudflare R2    | `apps/api` documents, `apps/cms` media | optional in dev (local FS fallback) |
 | Upstash Redis    | rate limiting + cache                  | yes (local substitute via SRH — see below) |
 | Upstash QStash   | webhook queue (cron + integrations)    | yes (local substitute via QStash dev server — see below) |
 | Resend           | transactional email                    | optional (Mailpit fallback) |
@@ -153,8 +157,8 @@ QSTASH_CURRENT_SIGNING_KEY=<printed-on-startup>
 QSTASH_NEXT_SIGNING_KEY=<printed-on-startup>
 
 # Required for QStash webhook callbacks — dev server (in container) reaches
-# Next.js (on host) via host.docker.internal:
-NEXT_PUBLIC_APP_URL=http://host.docker.internal:3000
+# the Fastify API (on host) via host.docker.internal:
+API_URL=http://host.docker.internal:4000
 ```
 
 **RedisInsight** (already at `http://localhost:5540`) → Add Database →
@@ -174,7 +178,7 @@ docker compose --profile glitchtip up -d
 #   org:      contractor-ops
 #   project:  contractor-ops (platform: javascript-nextjs)
 # Grab the auto-generated DSN:
-docker compose logs glitchtip-seed | grep NEXT_PUBLIC_SENTRY_DSN
+docker compose logs glitchtip-seed | grep SENTRY_DSN
 # Paste the printed line into .env, then open http://localhost:8000 to log in.
 ```
 
@@ -201,39 +205,62 @@ pnpm dev
 
 Turborepo starts every app that defines `dev`:
 
-| App        | URL                      | Notes |
-| ---------- | ------------------------ | ----- |
-| `apps/web` | http://localhost:3000    | Main product |
-| `apps/landing` | http://localhost:3001 | Marketing |
-| `apps/cms` | http://localhost:3002    | Payload admin + blog (needs CMS DB + migration — see below) |
-| `apps/public-api` | http://localhost:4100 (`PUBLIC_API_PORT`) | Requires `API_KEY_HMAC_SECRET` or the process exits during env validation |
+| App                  | URL                      | Notes |
+| -------------------- | ------------------------ | ----- |
+| `apps/web-vite`      | http://localhost:3000    | Main product SPA |
+| `apps/api`           | http://localhost:4000 (`PORT`) | Fastify tRPC server consumed by web-vite |
+| `apps/cron-worker`   | http://localhost:4101 (`CRON_HEALTH_PORT`) | Background jobs + cron health endpoint |
+| `apps/landing`       | http://localhost:3001    | Marketing |
+| `apps/cms`           | http://localhost:3002    | Payload admin + blog (needs CMS DB + migration — see below) |
+| `apps/public-api`    | http://localhost:4100 (`PUBLIC_API_PORT`) | Requires `API_KEY_HMAC_SECRET` or the process exits during env validation |
 
 - **CMS:** if you skipped Payload setup, `apps/cms` may fail — complete the
   **`apps/cms`** section below first, or run a subset, e.g.
-  `pnpm --filter @contractor-ops/web dev`.
-- **Background work:** Render runs `apps/web/worker-cron.mjs` as a separate
-  worker. `pnpm dev` does **not** start that process — local cron/QStash
-  behaviour differs from production (see **`docs/DEPLOYMENT-RENDER.md`** /
+  `pnpm --filter @contractor-ops/web-vite dev`.
+- **Background work:** Render runs `apps/cron-worker` as a separate service.
+  `pnpm dev` does start it locally; scheduled and queue-driven work behaves
+  similarly to production (see **`docs/DEPLOYMENT-RENDER.md`** /
   **`docs/LOCAL-TESTING-GUIDE.md`**).
 
 ## Per-app setup
 
-### apps/web (main product)
+### apps/web-vite (main product SPA)
 
 ```bash
-pnpm --filter @contractor-ops/web dev          # http://localhost:3000
+pnpm --filter @contractor-ops/web-vite dev     # http://localhost:3000
 ```
 
 Login flow: signup → org create → invite teammates. Better Auth handles
-sessions; OAuth providers (Google, Microsoft) are wired but optional.
+sessions; OAuth providers (Google, Microsoft) are wired but optional. The
+SPA talks to `apps/api` (`/api/trpc/*`) — start both for full functionality.
 
-### apps/landing (marketing static export)
+### apps/api (Fastify tRPC server)
+
+```bash
+pnpm --filter @contractor-ops/api dev          # http://localhost:4000
+```
+
+Hosts the staff + portal tRPC routers (`packages/api`) plus Better Auth
+mounts, OAuth callbacks, CSP / rate-limit plugins, and Sentry/OpenTelemetry
+instrumentation.
+
+### apps/cron-worker (background jobs)
+
+```bash
+pnpm --filter @contractor-ops/cron-worker dev  # health on http://localhost:4101
+```
+
+Runs scheduled jobs (`apps/cron-worker/src/jobs/handlers/*`) and consumes
+QStash callbacks/webhooks. Exposes a lightweight `/health` endpoint for
+Cronitor.
+
+### apps/landing (marketing site)
 
 ```bash
 pnpm --filter @contractor-ops/landing dev      # http://localhost:3001
 ```
 
-Pure static export — no env required to run.
+Next.js 16 marketing site — minimal env required to run.
 
 ### apps/public-api (Enterprise REST)
 
@@ -243,7 +270,7 @@ pnpm --filter @contractor-ops/public-api dev   # default http://localhost:4100
 
 API-key auth. OpenAPI at `/api/v1/docs`. Set **`API_KEY_HMAC_SECRET`** in `.env`.
 Override port with **`PUBLIC_API_PORT`**. Same `DATABASE_URL` + shared app env
-surface as `apps/web` wherever the validators require it.
+surface as `apps/api` wherever the validators require it.
 
 ### apps/cms (headless CMS + blog) — NEW
 
@@ -300,9 +327,10 @@ pnpm --filter @contractor-ops/<pkg> <script>
 
 ## Testing
 
-Automated suites use **Vitest** (packages + `apps/web` / `apps/public-api`), **Playwright**
-(E2E in `apps/web`), and **k6** (API load scripts). Behaviour and env expectations for
-hands-on QA live in **`docs/LOCAL-TESTING-GUIDE.md`**.
+Automated suites use **Vitest** (packages + `apps/api` / `apps/cron-worker` /
+`apps/public-api` / `apps/web-vite`), **Playwright** (E2E in `apps/web-vite`),
+and **k6** (API load scripts). Behaviour and env expectations for hands-on QA
+live in **`docs/LOCAL-TESTING-GUIDE.md`**.
 
 ### Unit & integration tests (Vitest)
 
@@ -312,7 +340,7 @@ pnpm test
 
 # Focus one workspace (repeatable locally)
 pnpm --filter @contractor-ops/<pkg> test
-pnpm --filter @contractor-ops/web run test:watch    # watch mode while editing web code
+pnpm --filter @contractor-ops/web-vite run test:watch    # watch mode while editing SPA code
 ```
 
 The root **`vitest.config.ts`** declares a merged workspace (`vitest.monorepo.ts` lists
@@ -330,29 +358,25 @@ client, harness files, etc. are deliberately out of the denominator). **`pnpm te
 runs **every** workspace that defines **`test`** via Turborepo — including packages whose
 coverage is merged only partially or not through the root config.
 
-### Browser E2E & accessibility (Playwright — `apps/web`)
+### Browser E2E & accessibility (Playwright — `apps/web-vite`)
 
-Install browser binaries once per machine (examples below use Chromium; configs may differ):
+Install browser binaries once per machine (Chromium):
 
 ```bash
-pnpm --filter @contractor-ops/web run e2e:functional:install
-pnpm --filter @contractor-ops/web run e2e:integration:install   # …etc.
+pnpm --filter @contractor-ops/web-vite run e2e:functional:install
 ```
 
-Run suites (typically against a **built** app — CI uses `pnpm build` + `pnpm start`; match
-that or set **`PLAYWRIGHT_BASE_URL`** to your dev server):
+Run the functional suite (typically against a **built** app — CI uses
+`pnpm build` + `pnpm preview`; match that or set **`PLAYWRIGHT_BASE_URL`**
+to your dev server):
 
 ```bash
-pnpm --filter @contractor-ops/web run e2e:functional
-pnpm --filter @contractor-ops/web run e2e:integration
-pnpm --filter @contractor-ops/web run e2e:rtl
-pnpm --filter @contractor-ops/web run e2e:perf
-pnpm --filter @contractor-ops/web run test:a11y         # axe-core gate (subset / project=a11y)
+pnpm --filter @contractor-ops/web-vite run e2e:functional
 ```
 
 Many flows expect **`E2E_EMAIL`** / **`E2E_PASSWORD`** where global setup uses real auth; without
 them some specs skip (same contract as CI on forks). See **`docs/ACCESSIBILITY.md`** for the
-a11y bar and **`docs/PERF-BUDGETS.md`** for perf/bundle budgeting that complements `e2e:perf`.
+a11y bar and **`docs/PERF-BUDGETS.md`** for perf/bundle budgeting.
 
 ### Load tests (k6)
 
@@ -373,8 +397,8 @@ pnpm load:writes                  # `-e K6_PROFILE=stress` for stress variants
 2. **Touching i18n?** Run `pnpm i18n:parity` (and heed `pnpm i18n:code-coverage` — both are CI gates).
 3. **Touching Prisma schema?** Regenerate client (`pnpm db:generate`) and ensure committed generated
    client matches (**`pnpm --filter @contractor-ops/db run db:check-drift`** is enforced in CI).
-4. **E2E / a11y** — reproduce the **`e2e-a11y`** job: build → start production server →
-   `pnpm --filter @contractor-ops/web run test:a11y` with `PLAYWRIGHT_BASE_URL` set (see `.github/workflows/ci.yml`).
+4. **E2E / a11y** — reproduce the **`e2e-a11y`** job: build → start production preview →
+   `pnpm --filter @contractor-ops/web-vite run e2e:functional` with `PLAYWRIGHT_BASE_URL` set (see `.github/workflows/ci.yml`).
 5. **Manual regressions** — follow **`docs/LOCAL-TESTING-GUIDE.md`** for full product flows env-by-env.
 
 ## CI (GitHub Actions)
@@ -384,8 +408,7 @@ Workflows live in **`.github/workflows/`**. Highlights:
 | Workflow | When it runs | What it does |
 | -------- | ------------- | ------------- |
 | **`ci.yml`** | Push to **`main`** + **all PRs** | Lint gate (`lint:ci`), format check, custom repo linters (`check:no-process-env`, `lint:schema`, `lint:logs`), **i18n parity + i18n code coverage** (mandatory), i18n quality audit (advisory), **`pnpm build`**, **`pnpm test`**, Prisma **`db:check-drift`**, informational `pnpm audit`. Uses **`SKIP_ENV_VALIDATION=true`** — app env is not exercised the same way as local dev.
-| **`ci.yml` → `e2e-a11y`** | After the main **`ci`** job succeeds | Builds `apps/web`, starts **`next start`**, runs **`pnpm --filter @contractor-ops/web run test:a11y`** (Playwright + axe-core). Repo secrets **`E2E_EMAIL`** / **`E2E_PASSWORD`** enable deeper coverage when configured.
-| **`ci.yml` → `bundle-size`** | After **`ci`** | **`size-limit`** on the web bundle; budgets in **`apps/web/.size-limit.json`** (process in **`docs/PERF-BUDGETS.md`**).
+| **`ci.yml` → `bundle-size`** | After **`ci`** | **`size-limit`** on the SPA bundle — budgets in **`apps/web-vite/.size-limit.json`**; published numbers in **`docs/PERF-BUDGETS.md`**.
 | **`ci.yml` → `secrets-scan`** | Every PR/push covered by **`ci.yml`** | **Gitleaks** with **`.gitleaks.toml`**.
 | **`ci.yml` → `legal-gate-production`** | Push to **`main`** only | Blocks production if legal disclaimer sign-offs are **`PENDING`** — see **`packages/validators`** signoff registry.
 | **`verapdf.yml`** | PR/push when **`packages/einvoice/**`** changes | Generates ZUGFeRD fixture PDFs and checks **PDF/A-3 B** via **veraPDF** Docker image.
@@ -396,34 +419,36 @@ Workflows live in **`.github/workflows/`**. Highlights:
 
 ## Architecture cheat-sheet
 
-- **Background worker.** The Render **`worker`** service runs `apps/web/worker-cron.mjs`
-  (`dockerCommand` in `render.yaml`). It is **not** started by `pnpm dev`; scheduled
-  and queue-driven work behaves differently locally unless you run that script on purpose.
+- **Background worker.** The Render **`cron-worker`** service runs
+  `apps/cron-worker`. `pnpm dev` starts it locally alongside `apps/api`
+  and `apps/web-vite`.
 - **Multi-region data residency.** EU and ME tenants live on separate Neon
   projects (`DATABASE_URL_EU`, `DATABASE_URL_ME`); `packages/db` routes
   reads/writes by `org.countryCode`. R2 buckets and Unleash flag servers
   also split per region.
-- **Auth.** Better Auth (sessions + OAuth) in `apps/web` and `apps/public-api`.
-  Payload CMS uses its own native auth (no SSO bridge).
+- **Auth.** Better Auth (sessions + OAuth) mounted from `apps/api` and
+  `apps/public-api`. Payload CMS uses its own native auth (no SSO bridge).
 - **Observability.** `@contractor-ops/logger` ships a Pino root with PII
   redaction + Axiom multistream + AsyncLocalStorage request-id mixin.
   `console.*` is forbidden — use `createLogger({ service })` instead.
-- **tRPC.** Two endpoints: main `/api/trpc` and portal `/api/trpc/portal`.
-  55 internal routers under `packages/api/src/routers/` (7 domain folders).
+- **tRPC.** Two endpoints: main `/api/trpc` and portal `/api/trpc/portal`,
+  both served by `apps/api`. 50 staff + 2 portal routers under
+  `packages/api/src/routers/` (split by domain folder).
 - **Feature flags.** Self-hosted Unleash OSS, one deployment per region
   on Render. Tiny typed registry wraps the SDK with jurisdiction
   short-circuit — see `packages/feature-flags/`.
-- **CMS ↔ web webhook.** Editing a `legal-documents` entry in the CMS admin
-  triggers a HMAC-signed POST to `apps/web /api/revalidate-legal` which
-  flips the `legal:<type>:<jurisdiction>` cache tag. apps/web's legal
-  pages fetch from CMS with `next: { tags, revalidate: 60 }`.
+- **CMS ↔ API webhook.** Editing a `legal-documents` entry in the CMS admin
+  triggers a HMAC-signed POST to `apps/api`'s `/api/revalidate-legal` which
+  flips the `legal:<type>:<jurisdiction>` cache tag consumed by web-vite.
 
 ## Deploy
 
 Render Blueprint (`render.yaml`) provisions:
-`web`, `public-api`, `landing`, `cms`, `worker`, `clamav`, `unleash-eu`,
-`unleash-me`, `cloudflared`, 3 cron jobs. Custom domains (app, blog,
-api, marketing) are bound manually in the Render dashboard.
+`web-vite` (static site), `api-server`, `public-api`, `landing`, `cms`,
+`cron-worker`, `clamav`, `unleash-eu`, `unleash-me`, `cloudflared`. Cron
+schedules run in-process inside `cron-worker` (see
+`apps/cron-worker/src/jobs/registry.ts`). Custom domains (app, blog, api,
+marketing) are bound manually in the Render dashboard.
 
 Runbook: **`docs/DEPLOYMENT-RENDER.md`**. Pre-deploy gates:
 **`docs/PRODUCTION-CHECKLIST.md`**.

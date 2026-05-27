@@ -1,7 +1,7 @@
 /**
  * Global per-IP rate limiter for @contractor-ops/api-server.
  *
- * Mirrors the routing matrix from `apps/web/src/middleware.ts`:
+ * Routing matrix:
  *
  *   - /api/auth/*    → exempt (Better Auth owns granular per-endpoint
  *                      limits, account lockout, Turnstile).

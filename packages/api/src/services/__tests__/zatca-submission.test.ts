@@ -100,7 +100,7 @@ vi.mock('@contractor-ops/integrations/services/qstash-client', () => ({
 
 vi.mock('@contractor-ops/validators', () => ({
   getServerEnv: vi.fn().mockReturnValue({
-    NEXT_PUBLIC_APP_URL: 'https://app.test',
+    API_URL: 'https://api.test',
   }),
 }));
 
@@ -366,7 +366,7 @@ describe('queueZatcaSubmission', () => {
     await queueZatcaSubmission('inv_1', 'org_1');
 
     expect(mockQStashPublishJSON).toHaveBeenCalledWith({
-      url: 'https://app.test/api/zatca/_submit',
+      url: 'https://api.test/zatca/_submit',
       body: {
         invoiceId: 'inv_1',
         organizationId: 'org_1',

@@ -51,7 +51,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn(), histogram: vi.fn() },
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = {
     setStatus: vi.fn(),
     setAttribute: vi.fn(),

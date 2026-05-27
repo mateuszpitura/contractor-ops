@@ -94,12 +94,12 @@ export const classificationDocumentRouter = router({
    * completed + outcome.kind === 'IR35' + SdsApproval present) and
    * confirms the assessment exists in the caller's tenant. The actual
    * React-PDF render + R2 upload happens in the QStash consumer at
-   * `/api/exports/_process` to keep the request path bounded — the prior
+   * `/exports/_process` to keep the request path bounded — the prior
    * synchronous render allocated 30-150 MB per request and OOM'd the pod
    * under burst.
    *
    * Returns `{ exportId, status: 'PENDING' }` immediately. The client
-   * polls `/api/exports/:exportId/download` (or waits for the
+   * polls `/exports/:exportId/download` (or waits for the
    * "your export is ready" email).
    */
   generateSds: classificationProcedure

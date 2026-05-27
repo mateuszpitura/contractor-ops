@@ -17,12 +17,20 @@
 // non-zod chains are out of scope — Phase 2 sweep migrates them too.
 
 `$receiver.$method($_, { $props })` where {
-  $method <: or { `min`, `max`, `refine`, `regex`, `length`, `email`, `url`, `uuid` },
+  $method <: or {
+    `min`,
+    `max`,
+    `refine`,
+    `regex`,
+    `length`,
+    `email`,
+    `url`,
+    `uuid`
+  },
   $props <: contains `message: $value`,
-  $value <: or { `"$_"`, `'$_'` },
-  register_diagnostic(
-    span = $value,
-    severity = "error",
-    message = "Hardcoded Zod message. Use a translation key (e.g. 'validation.required') — goals/i18n-system-messages."
-  )
+  $value <: or {
+    `"$_"`,
+    `'$_'`
+  },
+  register_diagnostic(span=$value, severity="error", message="Hardcoded Zod message. Use a translation key (e.g. 'validation.required') — goals/i18n-system-messages.")
 }

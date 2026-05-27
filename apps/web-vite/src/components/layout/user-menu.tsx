@@ -4,14 +4,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { SidebarMenuButton, useSidebar } from '@contractor-ops/ui/components/shadcn/sidebar';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { ChevronsUpDown, LogOut, Settings } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Monitor, Moon, Settings, Sun } from 'lucide-react';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import type { Theme } from '../../providers/theme-provider.js';
+import { useTheme } from '../../providers/theme-provider.js';
 
 interface UserMenuProps {
   user: {
@@ -39,6 +46,7 @@ export function UserMenuSkeleton() {
 export function UserMenu({ user, displayName, initials, onSignOut }: UserMenuProps) {
   const t = useTranslations('Common');
   const { isMobile } = useSidebar();
+  const { theme, setTheme } = useTheme();
 
   return (
     <DropdownMenu>
@@ -81,6 +89,34 @@ export function UserMenu({ user, displayName, initials, onSignOut }: UserMenuPro
           <Settings className="size-4" />
           {t('settings')}
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="cursor-pointer">
+            {theme === 'dark' ? (
+              <Moon className="size-4" />
+            ) : theme === 'light' ? (
+              <Sun className="size-4" />
+            ) : (
+              <Monitor className="size-4" />
+            )}
+            {t('appearance')}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <DropdownMenuRadioGroup value={theme} onValueChange={value => setTheme(value as Theme)}>
+              <DropdownMenuRadioItem value="light" className="cursor-pointer">
+                <Sun className="size-4" />
+                {t('appearanceLight')}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark" className="cursor-pointer">
+                <Moon className="size-4" />
+                {t('appearanceDark')}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="system" className="cursor-pointer">
+                <Monitor className="size-4" />
+                {t('appearanceSystem')}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={onSignOut} className="cursor-pointer">
           <LogOut className="size-4" />

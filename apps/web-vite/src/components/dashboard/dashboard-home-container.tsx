@@ -3,8 +3,13 @@ import { CheckCircle, Clock, FileText, Users, Wallet } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { UsageKpiCard } from '../billing/usage-kpi-card.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { ActivityFeed } from './activity-feed.js';
+import { ApprovalQueueWidget } from './approval-queue-widget.js';
 import { DashboardGreeting } from './dashboard-greeting.js';
+import { DeadlinesWidget } from './deadlines-widget.js';
 import { useDashboardHome } from './hooks/use-dashboard-home.js';
+import { SpendChart } from './spend-chart.js';
+import { TaxObligationsWidget } from './tax-obligations-widget.js';
 
 function DashboardSkeleton() {
   return (
@@ -77,6 +82,28 @@ export function DashboardHomeContainer() {
       ) : (
         <p className="text-sm text-muted-foreground">{t('loading')}</p>
       )}
+
+      <AnimateIn delay={2}>
+        <SpendChart />
+      </AnimateIn>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AnimateIn delay={3}>
+          <ApprovalQueueWidget />
+        </AnimateIn>
+        <AnimateIn delay={4}>
+          <DeadlinesWidget />
+        </AnimateIn>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <AnimateIn delay={5}>
+          <TaxObligationsWidget />
+        </AnimateIn>
+        <AnimateIn delay={5}>
+          <ActivityFeed />
+        </AnimateIn>
+      </div>
     </main>
   );
 }

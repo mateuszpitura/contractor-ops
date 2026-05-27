@@ -1,8 +1,6 @@
 /**
  * Bank of England base-rate poll handler.
  *
- * Ported from apps/web/src/app/api/cron/boe-rate-poll/route.ts.
- *
  *   1. Feature-flag short-circuit on `payments.late-interest-enabled`.
  *      When off, the rate history is irrelevant because no caller of
  *      `calculateLateInterest` is wired up.

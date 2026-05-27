@@ -47,7 +47,7 @@ function parseDateRange(input: { dateFrom: string; dateTo: string }): {
  *   1. Mutation returns `{ exportId, status: 'PENDING' }` immediately.
  *   2. Client either polls `export.status(exportId)` (future) or waits for
  *      the "your export is ready" email (current — link in email points
- *      at `/api/exports/:exportId/download`).
+ *      at `/exports/:exportId/download`).
  *   3. Email + dashboard download link redirect to a freshly-signed R2
  *      URL each time so the original link survives the 7-day retention.
  *
@@ -651,7 +651,7 @@ export const reportRouter = router({
   //   - returns `{ exportId, status: 'PENDING' }` immediately so the
   //     request handler is bounded.
   //
-  // The client polls `/api/exports/:exportId/download` (or waits for the
+  // The client polls `/exports/:exportId/download` (or waits for the
   // "your export is ready" email) — the previous synchronous CSV path
   // would OOM the request pod for orgs with >50k invoices.
   // =========================================================================

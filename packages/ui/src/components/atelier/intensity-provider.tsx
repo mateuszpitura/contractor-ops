@@ -32,7 +32,7 @@ export function AtelierIntensityProvider({
 
 /**
  * Reads the current intensity tier from context. Defaults to 'atelier'
- * when no provider is mounted (most pages on apps/web).
+ * when no provider is mounted.
  *
  * Components consult this to self-downgrade — Sparkline drops its
  * pulse dot in workbench, TiltCard becomes static in workbench, etc.

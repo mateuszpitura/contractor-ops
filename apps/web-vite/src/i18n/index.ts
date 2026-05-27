@@ -50,13 +50,43 @@ async function registerLocaleBundle(locale: Locale): Promise<void> {
   i18next.addResourceBundle(locale, 'translation', bundle, true, true);
 }
 
+/**
+ * Wrap the `console` methods i18next reaches for so the unconditional Locize
+ * promo banner ("🌐 i18next is made possible by our own product, Locize…")
+ * never reaches DevTools. i18next has no opt-out in its public API and
+ * has shipped the banner via different methods across versions (`log`
+ * in v23, `info` in v24+). Wrapping both covers either path. The wrapper
+ * is removed once init resolves so it adds zero runtime overhead after.
+ */
+function silenceLocizeBanner(): () => void {
+  const methods = ['log', 'info'] as const;
+  // biome-ignore lint/suspicious/noConsole: deliberately wraps `console.log`/`info` to strip i18next's Locize promo banner; originals are restored once init resolves
+  const originals: Partial<Record<(typeof methods)[number], typeof console.log>> = {};
+  for (const m of methods) {
+    // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
+    originals[m] = console[m];
+    // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
+    console[m] = (...args: unknown[]) => {
+      if (typeof args[0] === 'string' && args[0].includes('i18next is made possible')) return;
+      originals[m]?.apply(console, args);
+    };
+  }
+  return () => {
+    for (const m of methods) {
+      // biome-ignore lint/suspicious/noConsole: see silenceLocizeBanner header
+      if (originals[m]) console[m] = originals[m]!;
+    }
+  };
+}
+
 export function initI18n(): typeof i18next {
   if (bootstrapped) return i18next;
 
   const detector = new LanguageDetector();
   detector.addDetector(urlPathDetector);
 
-  void i18next
+  const restoreConsoleLog = silenceLocizeBanner();
+  const initPromise = i18next
     .use(ICU)
     .use(detector)
     .use(initReactI18next)
@@ -83,6 +113,7 @@ export function initI18n(): typeof i18next {
       },
       returnNull: false,
     });
+  initPromise.finally(restoreConsoleLog);
 
   bootstrapped = true;
   return i18next;

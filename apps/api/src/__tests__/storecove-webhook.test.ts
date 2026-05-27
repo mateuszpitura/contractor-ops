@@ -1,9 +1,7 @@
 /** @vitest-environment node */
 
 /**
- * Storecove webhook handler tests — ported from
- * apps/web/src/app/api/webhooks/storecove/__tests__/route.test.ts to the
- * Fastify mount in apps/api.
+ * Storecove webhook handler tests.
  *
  * Coverage:
  *   1. Valid signature + success event → lifecycle DELIVERED + DELIVERY_ACK.

@@ -1,8 +1,6 @@
 /**
  * Date + dedup helpers shared across the reminders handler and its
  * sub-jobs (currently only `drv-clearance-expiries`).
- *
- * Ported 1:1 from apps/web/src/app/api/cron/reminders/reminders-shared.ts.
  */
 
 import { prisma } from '@contractor-ops/db';

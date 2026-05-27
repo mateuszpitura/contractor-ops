@@ -29,21 +29,21 @@
  *   - Each rejection emits a `metrics.increment('backpressure.rejected', 1, { route })`.
  *   - The shared probe `getQueueDepth(routeKey)` reads the same key and is
  *     consumed by `cron-monitor.getQueueDepthSnapshot()` (P2-A) and the
- *     `/api/health` backpressure probe.
+ *     `/health` backpressure probe.
  *   - When the rejection rate sustained over 5 minutes exceeds 10/min for
  *     a route, we emit a Sentry message so on-call sees the pressure.
  *
  * Wiring: see callers in
- *   - `apps/web/src/app/api/exports/_process/route.ts`         (5 concurrent)
- *   - `apps/web/src/app/api/ocr/_process/route.ts`             (10 concurrent)
- *   - `apps/web/src/app/api/peppol/outbound/route.ts`          (3 concurrent)
- *   - `apps/web/src/app/api/late-interest/_render-claim-pdf/route.ts` (5)
+ *   - `apps/api/src/routes/exports.ts`         (5 concurrent)
+ *   - `apps/api/src/routes/ocr.ts`             (10 concurrent)
+ *   - `apps/api/src/routes/peppol.ts` (outbound, 3 concurrent)
+ *   - `apps/api/src/routes/late-interest.ts`   (5 concurrent)
  */
 
 import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { getServerEnv } from '@contractor-ops/validators';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import { Redis } from '@upstash/redis';
 
 const log = createLogger({ service: 'qstash-backpressure' });
@@ -167,13 +167,13 @@ return n
 /**
  * Wraps a QStash consumer's inner work with a fleet-wide concurrency cap.
  *
- * Usage from a route:
+ * Usage from a Fastify route:
  * ```ts
  * try {
  *   return await withBackpressure('ocr-process', 10, () => doWork(req));
  * } catch (err) {
  *   if (isBackpressureRejected(err)) {
- *     return new NextResponse(null, { status: 429, headers: { 'Retry-After': '5' } });
+ *     return reply.header('Retry-After', '5').code(429).send();
  *   }
  *   throw err;
  * }

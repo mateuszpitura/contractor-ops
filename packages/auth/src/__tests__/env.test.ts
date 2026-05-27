@@ -43,7 +43,7 @@ describe('loadAuthEnv', () => {
       loadAuthEnv({
         NODE_ENV: 'production',
         BETTER_AUTH_URL: 'https://app.example.com',
-        NEXT_PUBLIC_APP_URL: 'https://app.example.com',
+        PUBLIC_APP_URL: 'https://app.example.com',
       } as NodeJS.ProcessEnv),
     ).toThrow(/BETTER_AUTH_SECRET is required in production/);
   });
@@ -69,9 +69,9 @@ describe('loadAuthEnv', () => {
     ]);
   });
 
-  it('falls back to NEXT_PUBLIC_APP_URL when BETTER_AUTH_URL is missing', () => {
+  it('falls back to PUBLIC_APP_URL when BETTER_AUTH_URL is missing', () => {
     const env = loadAuthEnv(
-      minimalDevEnv({ NEXT_PUBLIC_APP_URL: 'https://app.example.com' }) as NodeJS.ProcessEnv,
+      minimalDevEnv({ PUBLIC_APP_URL: 'https://app.example.com' }) as NodeJS.ProcessEnv,
     );
     expect(env.baseURL).toBe('https://app.example.com');
     expect(env.trustedOrigins).toEqual(['https://app.example.com']);

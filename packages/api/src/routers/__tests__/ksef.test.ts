@@ -74,7 +74,7 @@ vi.mock('@contractor-ops/db', () => ({
   createTenantClientFrom: vi.fn(() => mockPrisma),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({
@@ -324,7 +324,7 @@ describe('ksefRouter', () => {
   });
 
   it('connect creates IntegrationConnection when credentials verify', async () => {
-    process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000';
+    process.env.PUBLIC_APP_URL = 'http://localhost:3000';
     mockPrisma.organization.findUniqueOrThrow.mockResolvedValue({
       settingsJson: { taxId: '1234567890' },
     });
@@ -366,7 +366,7 @@ describe('ksefRouter', () => {
 
   it('triggerSync publishes one-off QStash job when connected', async () => {
     const { resetServerEnvCacheForTesting } = await import('@contractor-ops/validators');
-    process.env.NEXT_PUBLIC_APP_URL = 'http://app.example';
+    process.env.API_URL = 'http://api.example';
     resetServerEnvCacheForTesting();
     mockPrisma.integrationConnection.findFirst.mockResolvedValue({
       id: 'conn-ksef-sync',
@@ -376,7 +376,7 @@ describe('ksefRouter', () => {
     await caller.triggerSync();
 
     expect(mockPublishJSON).toHaveBeenCalledWith({
-      url: 'http://app.example/api/ksef/_sync',
+      url: 'http://api.example/ksef/_sync',
       body: {
         organizationId: ORG_ID,
         connectionId: 'conn-ksef-sync',

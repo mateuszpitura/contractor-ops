@@ -167,7 +167,7 @@ export const billingRouter = router({
       });
       const quantity = Math.max(1, contractorCount);
 
-      const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+      const baseUrl = getServerEnv().PUBLIC_APP_URL;
 
       const session = await createCheckoutSession({
         organizationId: ctx.organizationId,
@@ -251,7 +251,7 @@ export const billingRouter = router({
       });
     }
 
-    const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+    const baseUrl = getServerEnv().PUBLIC_APP_URL;
 
     const portal = await createPortalSession({
       stripeCustomerId: sub.stripeCustomerId,
@@ -300,7 +300,7 @@ export const billingRouter = router({
         });
       }
 
-      const baseUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+      const baseUrl = getServerEnv().PUBLIC_APP_URL;
 
       const topup = await createTopUpCheckoutSession({
         organizationId: ctx.organizationId,

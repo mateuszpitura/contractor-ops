@@ -4,7 +4,7 @@ import { encryptCredentials } from '@contractor-ops/integrations';
 import { getQStashClient } from '@contractor-ops/integrations/services/qstash-client';
 import { createLogger } from '@contractor-ops/logger';
 import { getServerEnv } from '@contractor-ops/validators';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -146,7 +146,7 @@ export const ksefRouter = router({
       try {
         const qstash = getQStashClient();
         const schedule = await qstash.schedules.create({
-          destination: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
+          destination: `${getServerEnv().API_URL}/ksef/_sync`,
           cron: '0 * * * *',
           body: JSON.stringify({
             organizationId: ctx.organizationId,
@@ -308,7 +308,7 @@ export const ksefRouter = router({
 
       const qstash = getQStashClient();
       await qstash.publishJSON({
-        url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ksef/_sync`,
+        url: `${getServerEnv().API_URL}/ksef/_sync`,
         body: {
           organizationId: ctx.organizationId,
           connectionId: connection.id,

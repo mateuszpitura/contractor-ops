@@ -134,7 +134,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), histogram: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/node', () => ({
   startSpan: vi.fn((_o, fn) => fn({ setStatus: vi.fn(), setAttribute: vi.fn() })),
   captureException: vi.fn(),
   setUser: vi.fn(),

@@ -1,10 +1,10 @@
 // packages/api/src/services/late-payment-claim-pdf.ts
 //
 // Worker-side rendering of the Late Payment Claim PDF. Invoked from the
-// QStash callback route (apps/web/src/app/api/late-interest/_render-claim-pdf)
-// so the tRPC `latePaymentInterest.claim` mutation can return immediately
-// without blocking the request on several seconds of React-PDF rendering +
-// R2 upload latency.
+// QStash callback route (apps/api/src/routes/late-interest.ts) so the
+// tRPC `latePaymentInterest.claim` mutation can return immediately without
+// blocking the request on several seconds of React-PDF rendering + R2
+// upload latency.
 //
 // Contract:
 //   - Input: a claimId belonging to an InvoiceInterestClaim row with

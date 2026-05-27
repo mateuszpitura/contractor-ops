@@ -16,8 +16,9 @@
  * - Logging uses the project Pino logger — never `console.*` (per CLAUDE.md).
  * - Templates are intentionally plain-HTML strings (no React Email runtime
  *   dependency) so the auth package stays lean. The wording is English-only
- *   for now; the broader app i18n surface lives in `apps/web/messages/*` and
- *   is not consumed by Better Auth lifecycle handlers.
+ *   for now; the broader app i18n surface (SPA `apps/web-vite/src/i18n/`,
+ *   landing `apps/landing/messages/`) is not consumed by Better Auth
+ *   lifecycle handlers.
  */
 
 import { createHash } from 'node:crypto';

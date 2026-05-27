@@ -1,9 +1,9 @@
 /**
  * Shared Resend inbound email (email.received) processing.
  *
- * Used by:
- * - `apps/web/.../webhooks/resend-inbound/route.ts` (legacy URL)
- * - `apps/web/.../webhooks/_process/route.ts` (unified `/api/webhooks/resend` + QStash)
+ * Invoked by the unified `/webhooks/_process` QStash drain
+ * (apps/api/src/routes/webhooks/process.ts) after the
+ * `/webhooks/resend` ingress queues the delivery for async handling.
  */
 
 import { randomUUID } from 'node:crypto';

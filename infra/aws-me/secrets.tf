@@ -4,8 +4,8 @@
 # HMRC, etc.).
 #
 # The task definition injects the entire JSON as the APP_SECRETS env var;
-# a small bootstrap in apps/web/src/env.ts parses it and maps keys to
-# process.env (matching the existing .env schema). Alternative: reference
+# a small bootstrap (see packages/validators/src/env.ts) parses it and maps
+# keys to process.env (matching the existing .env schema). Alternative: reference
 # each secret individually in the task definition's `secrets` array —
 # cleaner but produces one Secrets Manager secret per key (~30 secrets =
 # $12/mo at $0.40 per secret). JSON blob keeps it at one secret.
@@ -69,7 +69,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets_bootstrap" {
     UPSTASH_REDIS_REST_TOKEN = "TODO_replace_after_first_apply"
 
     # Observability
-    NEXT_PUBLIC_SENTRY_DSN = var.sentry_dsn
+    SENTRY_DSN = var.sentry_dsn
     AXIOM_TOKEN            = "TODO_replace_after_first_apply"
     CRONITOR_API_KEY       = "TODO_replace_after_first_apply"
 

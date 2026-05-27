@@ -1,8 +1,7 @@
 /** @vitest-environment node */
 
 /**
- * Multi-provider webhook dispatcher tests — ported from
- * apps/web/src/app/api/webhooks/[provider]/__tests__/route.test.ts.
+ * Multi-provider webhook dispatcher tests.
  *
  * Coverage:
  *   1. Unknown provider → 404, no DB write.

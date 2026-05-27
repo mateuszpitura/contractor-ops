@@ -310,10 +310,10 @@ export async function queueZatcaSubmission(
   organizationId: string,
 ): Promise<void> {
   const qstash = getQStashClient();
-  const appUrl = getServerEnv().NEXT_PUBLIC_APP_URL;
+  const apiUrl = getServerEnv().API_URL;
 
   await qstash.publishJSON({
-    url: `${appUrl}/api/zatca/_submit`,
+    url: `${apiUrl}/zatca/_submit`,
     body: {
       invoiceId,
       organizationId,

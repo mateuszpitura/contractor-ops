@@ -10,8 +10,12 @@ const optionalUrl = z.url().optional();
 
 const coreSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
+  /** Public origin of the SPA / Next landing host — browser-visible URLs. */
+  PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
+  /** OAuth redirect host (DocuSign, Linear, Jira) — separate from APP/API in prod. */
   APP_URL: z.url().default('http://localhost:3000'),
+  /** Fastify API host (apps/api). QStash + external-provider webhook targets. */
+  API_URL: z.url().default('http://localhost:4000'),
 });
 
 // ── Database ────────────────────────────────────────────────────────────────
@@ -45,19 +49,12 @@ const authSchema = z.object({
 const stripeSchema = z.object({
   STRIPE_SECRET_KEY: z.string().startsWith('sk_', 'Must start with sk_'),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_', 'Must start with whsec_'),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_', 'Must start with pk_'),
   STRIPE_PRICE_STARTER: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
   STRIPE_PRICE_PRO: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
   STRIPE_PRICE_ENTERPRISE: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z
-    .string()
-    .startsWith('price_', 'Must be a valid Stripe price ID'),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z
-    .string()
-    .startsWith('price_', 'Must be a valid Stripe price ID'),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z
-    .string()
-    .startsWith('price_', 'Must be a valid Stripe price ID'),
+  STRIPE_PRICE_TOPUP_10: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
+  STRIPE_PRICE_TOPUP_25: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
+  STRIPE_PRICE_TOPUP_50: z.string().startsWith('price_', 'Must be a valid Stripe price ID'),
 });
 
 // ── Email (Resend) ──────────────────────────────────────────────────────────
@@ -110,7 +107,6 @@ const slackSchema = z.object({
   SLACK_CLIENT_ID: z.string().min(1, 'SLACK_CLIENT_ID is required'),
   SLACK_CLIENT_SECRET: z.string().min(1, 'SLACK_CLIENT_SECRET is required'),
   SLACK_SIGNING_SECRET: z.string().min(1, 'SLACK_SIGNING_SECRET is required'),
-  SLACK_REDIRECT_URI: optionalUrl,
 });
 
 // ── Jira ────────────────────────────────────────────────────────────────────
@@ -184,12 +180,8 @@ const bankEncryptionSchema = z.object({
 // when both vars are unset (and logs a Sentry warning if NODE_ENV=production).
 
 const turnstileSchema = z.object({
-  /** Site key used by the client widget; safe to expose. */
-  TURNSTILE_SITE_KEY: z.string().min(1).optional(),
-  /** Server-side verification secret. NEVER expose. */
+  /** Server-side verification secret. NEVER expose. SPA reads VITE_TURNSTILE_SITE_KEY. */
   TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
-  /** Mirror of TURNSTILE_SITE_KEY for client bundles (NEXT_PUBLIC_ prefix). */
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
 });
 
 // ── Trusted reverse proxy CIDRs (F-SEC-17) ─────────────────────────────────
@@ -245,7 +237,7 @@ const platformOperatorSchema = z.object({
 // ── Observability ──────────────────────────────────────────────────────────
 
 const observabilitySchema = z.object({
-  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
+  SENTRY_DSN: z.url().optional(),
   SENTRY_ORG: z.string().optional(),
   SENTRY_PROJECT: z.string().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
@@ -297,7 +289,7 @@ const oauthAliasSchema = z.object({
 // The `posthog-node` client fires identified events (signup_completed,
 // first_contractor_added, paid_converted, …) from server-side hooks. Keys
 // are optional because dev / preview builds run without analytics; in
-// production the start-up validation in `apps/web/src/instrumentation.ts`
+// production the boot-time `getServerEnv()` read in `apps/api/src/index.ts`
 // asserts the key is present.
 
 const posthogServerSchema = z.object({
@@ -341,14 +333,6 @@ export const serverEnvSchema = coreSchema
 // ── Client env (NEXT_PUBLIC_ only) ──────────────────────────────────────────
 
 export const clientEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.url().default('http://localhost:3000'),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_').optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10: z.string().startsWith('price_').optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25: z.string().startsWith('price_').optional(),
-  NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50: z.string().startsWith('price_').optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.url().optional(),
-  // F-SEC-22 — Turnstile site key for the signup widget. Public, safe to expose.
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_POSTHOG_HOST: z.url().optional(),
 });

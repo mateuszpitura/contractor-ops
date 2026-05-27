@@ -1,8 +1,9 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # ECR repositories for the 3 container images deployed to ME.
 #
-# Images are built once in CI (main Dockerfiles at apps/web/Dockerfile and
-# apps/public-api/Dockerfile) and pushed to ECR in this account. A lifecycle
+# Images are built once in CI (Dockerfiles at apps/api/Dockerfile,
+# apps/cron-worker/Dockerfile, apps/public-api/Dockerfile) and pushed to ECR
+# in this account. A lifecycle
 # policy keeps the last 20 images — enough to roll back through ~2 weeks of
 # deploys without unbounded storage cost.
 #

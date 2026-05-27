@@ -4,9 +4,8 @@
  * Receives one metric per beacon from the SPA's
  * `src/web-vitals.ts#startWebVitals` reporter. Emits a structured Pino
  * log per metric; logs stream to Axiom via the existing pipeline. No
- * separate vendor SDK is required — the Phase-1 PostHog forwarder
- * (apps/web's prior implementation) is preserved by the same log →
- * Axiom → PostHog pipe.
+ * separate vendor SDK is required — the log → Axiom → PostHog pipe
+ * delivers per-metric events for product analytics.
  *
  * Always returns 204 so a failed parse cannot trigger a browser retry.
  *

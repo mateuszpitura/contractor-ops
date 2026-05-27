@@ -157,7 +157,7 @@ locals {
     { name = "R2_BUCKET_NAME_ME", value = aws_s3_bucket.documents.id },
     { name = "SENTRY_ENVIRONMENT", value = "me-${var.environment}" },
     { name = "APP_URL", value = "https://${var.app_subdomain}.${var.domain_name}" },
-    { name = "NEXT_PUBLIC_APP_URL", value = "https://${var.app_subdomain}.${var.domain_name}" },
+    { name = "PUBLIC_APP_URL", value = "https://${var.app_subdomain}.${var.domain_name}" },
     { name = "BETTER_AUTH_URL", value = "https://${var.app_subdomain}.${var.domain_name}" },
     { name = "UNLEASH_APP_NAME", value = "contractor-ops" },
     { name = "UNLEASH_ENVIRONMENT", value = "production" },
@@ -196,7 +196,7 @@ locals {
     "QSTASH_TOKEN",
     "QSTASH_CURRENT_SIGNING_KEY",
     "QSTASH_NEXT_SIGNING_KEY",
-    "NEXT_PUBLIC_SENTRY_DSN",
+    "SENTRY_DSN",
     "AXIOM_TOKEN",
     "CRONITOR_API_KEY",
     "UNLEASH_URL_ME",
@@ -241,14 +241,14 @@ resource "aws_ecs_task_definition" "web" {
   task_role_arn            = aws_iam_role.ecs_task.arn
 
   container_definitions = jsonencode([{
-    name      = "web"
+    name      = "api"
     image     = "${aws_ecr_repository.this[var.ecr_repo_web].repository_url}:${var.image_tag}"
     essential = true
-    command   = ["node", "apps/web/server.js"]
+    command   = ["node", "apps/api/dist/index.js"]
 
     portMappings = [{
-      containerPort = 3000
-      hostPort      = 3000
+      containerPort = 4000
+      hostPort      = 4000
       protocol      = "tcp"
     }]
 
@@ -260,12 +260,12 @@ resource "aws_ecs_task_definition" "web" {
       options = {
         awslogs-group         = aws_cloudwatch_log_group.web.name
         awslogs-region        = var.region
-        awslogs-stream-prefix = "web"
+        awslogs-stream-prefix = "api"
       }
     }
 
     healthCheck = {
-      command     = ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      command     = ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/health || exit 1"]
       interval    = 30
       timeout     = 10
       retries     = 3
@@ -322,7 +322,7 @@ resource "aws_ecs_task_definition" "worker" {
     name      = "worker"
     image     = "${aws_ecr_repository.this[var.ecr_repo_worker].repository_url}:${var.image_tag}"
     essential = true
-    command   = ["node", "apps/web/worker-cron.mjs"]
+    command   = ["node", "apps/cron-worker/dist/index.js"]
 
     environment = local.common_env
     secrets     = local.common_secrets

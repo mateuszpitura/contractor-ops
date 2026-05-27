@@ -20,7 +20,7 @@ export interface SendExportReadyEmailParams {
   to: string;
   exportDisplayName: string;
   fileName: string;
-  /** Path to the in-app download route, e.g. `/api/exports/abc/download`. */
+  /** Path to the in-app download route, e.g. `/exports/abc/download`. */
   downloadPath: string;
   expiresAtIso: string;
   rowCount?: number | null;
@@ -28,7 +28,7 @@ export interface SendExportReadyEmailParams {
 
 /**
  * Send the "your export is ready" notification. Builds the absolute
- * download URL from `NEXT_PUBLIC_APP_URL` so the link works in the
+ * download URL from `PUBLIC_APP_URL` so the link works in the
  * recipient's browser regardless of which Render region produced it.
  *
  * Errors are caught + logged at warn level — failing to email a download
@@ -37,7 +37,7 @@ export interface SendExportReadyEmailParams {
  */
 export async function sendExportReadyEmail(params: SendExportReadyEmailParams): Promise<void> {
   const env = getServerEnv();
-  const appUrl = env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
+  const appUrl = env.PUBLIC_APP_URL.replace(/\/$/, '');
   const downloadUrl = `${appUrl}${params.downloadPath}`;
 
   const props: ExportReadyEmailProps = {

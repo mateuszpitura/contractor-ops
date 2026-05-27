@@ -1,13 +1,13 @@
 /**
- * PORTED STUB — apps/web/src/components/legal/__tests__/gdpr-privacy-notice-template.test.tsx migrated as deferred skip-stub.
- *
- * REASON: matching component not present in apps/web-vite — feature was not
- * ported during the web → web-vite migration. Decide per case: port the
- * component (then unskip + adapt this test) or delete both as dead code.
+ * OBSOLETE STUB — the GDPR privacy-notice React-PDF template lives in
+ * `packages/api/src/pdf-templates/gdpr-privacy-notice.tsx`
+ * (server-side rendered into a Buffer + uploaded to R2 with a 5-minute
+ * signed-URL TTL). It is not part of the SPA bundle, so this
+ * client-test stub has no target to exercise.
  */
 
 import { describe } from 'vitest';
 
-describe.skip('[DEFERRED — component missing] gdpr-privacy-notice-template', () => {
+describe.skip('[OBSOLETE — component is server-side in packages/api]', () => {
   // noop
 });

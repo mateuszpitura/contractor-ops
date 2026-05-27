@@ -261,7 +261,7 @@ vi.mock('../../services/bank-statement', () => ({
   matchStatementToRun: vi.fn(() => []),
 }));
 
-vi.mock('@sentry/nextjs', () => {
+vi.mock('@sentry/node', () => {
   const mockSpan = { setStatus: vi.fn(), setAttribute: vi.fn(), end: vi.fn() };
   return {
     getCurrentScope: vi.fn(() => ({

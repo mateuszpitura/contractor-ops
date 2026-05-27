@@ -29,10 +29,10 @@ const authEnvSchema = z.object({
 
   /**
    * Canonical base URL of the auth server. Used for `baseURL` and to seed
-   * `trustedOrigins`. Falls back to `NEXT_PUBLIC_APP_URL` when missing.
+   * `trustedOrigins`. Falls back to `PUBLIC_APP_URL` when missing.
    */
   BETTER_AUTH_URL: z.url().optional(),
-  NEXT_PUBLIC_APP_URL: z.url().optional(),
+  PUBLIC_APP_URL: z.url().optional(),
 
   /**
    * Optional comma-separated list of additional trusted origins (e.g. preview
@@ -127,7 +127,7 @@ function parseTrustedOrigins(raw: string | undefined): string[] {
  * Throws on:
  * - Partial OAuth provider configuration.
  * - Missing `BETTER_AUTH_SECRET` in non-development.
- * - Malformed URLs (`BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`, `AUTH_TRUSTED_ORIGINS`).
+ * - Malformed URLs (`BETTER_AUTH_URL`, `PUBLIC_APP_URL`, `AUTH_TRUSTED_ORIGINS`).
  *
  * Returns a normalized object the rest of the package can consume safely.
  */
@@ -163,8 +163,8 @@ export function loadAuthEnv(env: NodeJS.ProcessEnv = process.env): ResolvedAuthE
     );
   }
 
-  // Resolve baseURL: prefer BETTER_AUTH_URL, fall back to NEXT_PUBLIC_APP_URL.
-  const baseURL = data.BETTER_AUTH_URL ?? data.NEXT_PUBLIC_APP_URL;
+  // Resolve baseURL: prefer BETTER_AUTH_URL, fall back to PUBLIC_APP_URL.
+  const baseURL = data.BETTER_AUTH_URL ?? data.PUBLIC_APP_URL;
 
   const extraOrigins = parseTrustedOrigins(data.AUTH_TRUSTED_ORIGINS);
   for (const origin of extraOrigins) {

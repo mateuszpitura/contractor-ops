@@ -1,8 +1,6 @@
 /**
  * Data retention purge handler.
  *
- * Ported from apps/web/src/app/api/cron/data-purge/route.ts.
- *
  * Daily 03:00 UTC sweep: permanently deletes soft-deleted records older
  * than RETENTION_DAYS plus the associated R2 files for purged documents.
  *

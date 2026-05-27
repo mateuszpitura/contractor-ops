@@ -1,12 +1,9 @@
 /**
  * QStash signature verification helper for Fastify routes.
  *
- * The legacy `apps/web/src/app/api/**\/route.ts` files wrap their POST
- * handler with `verifySignatureAppRouter` from `@upstash/qstash/nextjs`
- * — Next-specific. Fastify ports use the framework-agnostic `Receiver`
- * from `@upstash/qstash` exposed through this helper.
+ * Wraps the framework-agnostic `Receiver` from `@upstash/qstash`.
  *
- * Three routes need it: `/webhooks/_process`, `/zatca/_submit`,
+ * Multiple routes need it: `/webhooks/_process`, `/zatca/_submit`,
  * `/peppol/poll` (and any further QStash-driven endpoint). Each shares:
  *
  *   - Reject missing/empty `upstash-signature` with 401.

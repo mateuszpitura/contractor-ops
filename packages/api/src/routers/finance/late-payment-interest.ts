@@ -465,11 +465,11 @@ export const latePaymentInterestRouter = router({
 
       // Create claim record synchronously with pdfStatus=PENDING_RENDER.
       // The actual PDF render + R2 upload runs in a QStash worker (see
-      // apps/web/src/app/api/late-interest/_render-claim-pdf). This keeps
-      // the mutation latency bounded — React-PDF + R2 upload can take
-      // several seconds on non-trivial claims, which pushed the request
-      // against the 30s tRPC timeout. Clients poll `downloadClaim` or
-      // watch `pdfStatus` on `getForInvoice`.
+      // apps/api/src/routes/late-interest.ts). This keeps the mutation
+      // latency bounded — React-PDF + R2 upload can take several seconds
+      // on non-trivial claims, which pushed the request against the 30s
+      // tRPC timeout. Clients poll `downloadClaim` or watch `pdfStatus`
+      // on `getForInvoice`.
       let secondaryInvoiceId: string | null = null;
 
       if (input.issueAsSecondaryInvoice) {
@@ -522,14 +522,14 @@ export const latePaymentInterestRouter = router({
           import('@contractor-ops/validators'),
         ]);
         await getQStashClient().publishJSON({
-          url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/late-interest/_render-claim-pdf`,
+          url: `${getServerEnv().API_URL}/late-interest/_render-claim-pdf`,
           body: { claimId: claim.id, organizationId: ctx.organizationId },
           retries: 3,
           timeout: '60s',
           // F-ASYNC-15 idempotency: stable per-claim QStash dedup id so the
           // tRPC retry, the reaper re-enqueue, and the original delivery
           // can't all produce separate QStash messages.
-          deduplicationId: `late-interest-pdf:${claim.id}`,
+          deduplicationId: `late-interest-pdf-${claim.id}`,
         });
       } catch (err) {
         log.error(

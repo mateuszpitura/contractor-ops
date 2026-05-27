@@ -63,7 +63,7 @@
 
 import { prismaRaw } from '@contractor-ops/db';
 import { createLogger } from '@contractor-ops/logger';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import type { OutboxEventType } from './handlers';
 import { dispatchOutboxEvent } from './handlers';
 

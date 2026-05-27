@@ -62,7 +62,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: vi.fn(), distribution: vi.fn() },
 }));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/node', () => ({
   getCurrentScope: vi.fn(() => ({
     setUser: vi.fn(),
     setTag: vi.fn(),
@@ -104,7 +104,7 @@ import {
 describe('ocr-extraction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://app.test');
+    vi.stubEnv('API_URL', 'https://api.test');
     mockCheckCredit.mockResolvedValue({
       allowed: true,
       remaining: 50,
@@ -172,7 +172,7 @@ describe('ocr-extraction', () => {
       expect(mockGetQStashClient).toHaveBeenCalled();
       expect(mockPublishJSON).toHaveBeenCalledWith(
         expect.objectContaining({
-          url: 'https://app.test/api/ocr/_process',
+          url: 'https://api.test/ocr/_process',
           body: {
             extractionId: 'ext-new',
             organizationId: 'org-1',

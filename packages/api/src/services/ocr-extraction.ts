@@ -7,7 +7,7 @@ import { createLogger } from '@contractor-ops/logger';
 import { metrics } from '@contractor-ops/logger/metrics';
 import type { BillingCreditDenialReason } from '@contractor-ops/validators';
 import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from '@sentry/node';
 import { checkAndDeductCredit } from './credit-service';
 import { createPresignedDownloadUrl } from './r2';
 
@@ -52,7 +52,7 @@ export async function triggerOcrExtraction(params: {
 
   const qstash = getQStashClient();
   await qstash.publishJSON({
-    url: `${getServerEnv().NEXT_PUBLIC_APP_URL}/api/ocr/_process`,
+    url: `${getServerEnv().API_URL}/ocr/_process`,
     body: {
       extractionId: extraction.id,
       organizationId: params.organizationId,

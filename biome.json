@@ -154,34 +154,15 @@
       "plugins": ["./tools/biome-plugins/no-untranslated-trpc-error.grit"]
     },
     {
-      "includes": ["apps/web/src/app/globals.css"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noDescendingSpecificity": "off"
-          }
-        }
-      }
-    },
-    {
       "includes": [
         "packages/*/src/index.ts",
         "packages/*/src/*/index.ts",
         "packages/*/src/*/*/index.ts",
         "packages/test-utils/src/msw/*/index.ts",
         "apps/landing/src/i18n/index.ts",
-        "apps/web/src/test/test-utils.tsx",
-        "apps/web/src/lib/auth-client.ts",
-        "apps/web/src/app/layout.tsx",
-        "apps/web/src/components/integrations/jira-logo.tsx",
-        "apps/web/src/components/integrations/linear-logo.tsx",
-        "apps/web/src/components/integrations/provider-icons.tsx",
         "packages/api/src/routers/workflow/workflow.ts",
         "packages/api/src/routers/**/index.ts",
-        "packages/validators/src/zatca.ts",
-        "apps/web/src/components/contractors/classification-documents/index.ts",
-        "apps/web/src/components/contractors/ir35-chain/index.ts",
-        "apps/web/src/components/contractors/other-client-attestation/index.ts"
+        "packages/validators/src/zatca.ts"
       ],
       "linter": {
         "rules": {

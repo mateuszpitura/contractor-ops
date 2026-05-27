@@ -17,9 +17,9 @@ import { SlackAdapter } from './slack-adapter.js';
 //
 //   1. ESSENTIAL (eager, sync): Slack + Resend + KSeF + the Claude Vision
 //      OCR adapter. These power the webhook-ingress path
-//      (`/api/webhooks/[provider]`), the email-intake / Resend processing
-//      path, and the daily KSeF poller — all of which must work on the
-//      very first request after a cold start without an extra await. Their
+//      (`/webhooks/:provider`), the email-intake / Resend processing path,
+//      and the daily KSeF poller — all of which must work on the very
+//      first request after a cold start without an extra await. Their
 //      modules are small (a few hundred lines + node:crypto) so the cost
 //      to module-eval them is negligible.
 //

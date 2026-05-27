@@ -1,11 +1,8 @@
 /**
- * QStash drain (`POST /webhooks/_process`) port.
- *
- * Mirrors apps/web/src/app/api/webhooks/_process/route.ts:
+ * QStash drain (`POST /webhooks/_process`).
  *
  *   1. Verify QStash signature via the framework-agnostic `Receiver` from
- *      `@upstash/qstash`. Legacy used `verifySignatureAppRouter` (Next
- *      AppRouter wrapper around the same Receiver primitive).
+ *      `@upstash/qstash`.
  *   2. Reseed the ALS request-context frame from upstream QStash headers
  *      (F-OBS-03) so logger correlation IDs follow the job through every
  *      side-effect.

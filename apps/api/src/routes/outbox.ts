@@ -1,7 +1,5 @@
 /**
- * Outbox drain (`POST /outbox/_drain`) port.
- *
- * Mirrors apps/web/src/app/api/outbox/_drain/route.ts (P2-A · F-ASYNC-03).
+ * Outbox drain (`POST /outbox/_drain`) — P2-A · F-ASYNC-03.
  *
  *   1. QStash signature verification via `guardQStashRequest`.
  *   2. Wrap the whole tick with `withQueueObservability('outbox-drain', …)`

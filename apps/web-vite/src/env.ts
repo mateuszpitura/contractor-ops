@@ -54,7 +54,13 @@ let cached: ClientEnv | undefined;
 
 export function getClientEnv(): ClientEnv {
   if (cached) return cached;
-  const parsed = envSchema.safeParse(import.meta.env);
+  // Vite forwards unset `.env` keys as empty strings, but optional Zod fields
+  // expect `undefined`. Coerce so a blank line in `.env` is treated as "not set"
+  // instead of failing `.url()` / `.min(1)` checks.
+  const raw = Object.fromEntries(
+    Object.entries(import.meta.env).map(([k, v]) => [k, v === '' ? undefined : v]),
+  );
+  const parsed = envSchema.safeParse(raw);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map(i => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)

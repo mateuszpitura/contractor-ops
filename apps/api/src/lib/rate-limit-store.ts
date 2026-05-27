@@ -1,7 +1,7 @@
 /**
  * Rate-limit primitives shared by every plugin/route that throttles a path.
  *
- * Backend selection mirrors `apps/web/src/middleware.ts`:
+ * Backend selection:
  *
  *   - Upstash sliding-window (`@upstash/ratelimit`) when both env vars are
  *     set. Single-tenant deployments without Redis still get protection via

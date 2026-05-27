@@ -4,8 +4,9 @@
 //
 // Fires early-warning notifications when a German contractor's platform
 // billing share crosses §2 SGB VI thresholds (70% warning, 83.33% critical)
-// over a rolling 12-month window. Runs from /api/cron/classification-economic-
-// dependency once per day (0 2 * * * UTC).
+// over a rolling 12-month window. Runs from
+// apps/cron-worker/src/jobs/handlers/classification-economic-dependency.ts
+// once per day (0 2 * * * UTC).
 //
 // Legal thresholds (locked — see 60-RESEARCH.md §DRV thresholds):
 //   - 70.00% → warning band (early indicator of arbeitnehmerähnliche

@@ -1,14 +1,10 @@
 // Initial backfill content for the `legal-documents` collection.
 //
-// Source of truth was previously `apps/web/src/app/[locale]/(legal)/legal/**`:
-// - privacy/(content)/{eu,de,gb}/page.tsx — full hand-authored content
-// - terms/page.tsx, sub-processors/page.tsx, breach-notification/page.tsx —
-//   rendered from next-intl `Legal.*` JSON in apps/web/messages/.
-//
-// This catalog captures a faithful summary of each notice so the migration
-// script seeds Payload with non-empty, well-structured bodies. Editors then
-// extend / localise each entry via the Payload admin UI. Once a doc lives
-// in CMS, this catalog is no longer authoritative — only the initial seed.
+// One-time backfill catalog: structured summaries for each legal notice so
+// the migration script seeds Payload with non-empty, well-formed bodies.
+// Editors then extend / localise each entry via the Payload admin UI. Once
+// a doc lives in CMS, this catalog is no longer authoritative — only the
+// initial seed.
 
 import type { LegalDocument } from '../payload-types';
 import { a, b, doc, h1, h2, p, ul } from './lexical';

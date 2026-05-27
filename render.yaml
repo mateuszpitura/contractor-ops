@@ -44,9 +44,11 @@ envVarGroups:
       - key: DATA_HOSTING_REGION
         value: EU
       # Public app URLs — set after custom domain is bound in Render dashboard
-      - key: NEXT_PUBLIC_APP_URL
+      - key: PUBLIC_APP_URL
         sync: false
       - key: APP_URL
+        sync: false
+      - key: API_URL
         sync: false
       - key: BETTER_AUTH_URL
         sync: false
@@ -111,8 +113,6 @@ envVarGroups:
       # Stripe
       - key: STRIPE_SECRET_KEY
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-        sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
       - key: STRIPE_PRICE_STARTER
@@ -121,21 +121,26 @@ envVarGroups:
         sync: false
       - key: STRIPE_PRICE_ENTERPRISE
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_10
+      - key: STRIPE_PRICE_TOPUP_10
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_25
+      - key: STRIPE_PRICE_TOPUP_25
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PRICE_TOPUP_50
+      - key: STRIPE_PRICE_TOPUP_50
         sync: false
-      # Plan-tier Stripe Price IDs surfaced in the billing UI
-      # (plan-comparison-grid.tsx). NEXT_PUBLIC_* are inlined at build time —
-      # set them in the Render dashboard before the first build of each
-      # environment or the UI will render with empty checkout URLs.
-      - key: NEXT_PUBLIC_STRIPE_PRICE_STARTER
+      # Vite SPA Stripe Price IDs — inlined at build time by Vite via
+      # `import.meta.env`. Set in Render dashboard BEFORE the first build
+      # of each environment or checkout URLs ship empty.
+      - key: VITE_STRIPE_PRICE_STARTER
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PRICE_PRO
+      - key: VITE_STRIPE_PRICE_PRO
         sync: false
-      - key: NEXT_PUBLIC_STRIPE_PRICE_ENTERPRISE
+      - key: VITE_STRIPE_PRICE_ENTERPRISE
+        sync: false
+      - key: VITE_STRIPE_PRICE_TOPUP_10
+        sync: false
+      - key: VITE_STRIPE_PRICE_TOPUP_25
+        sync: false
+      - key: VITE_STRIPE_PRICE_TOPUP_50
         sync: false
       # Encryption (AES-256-GCM)
       - key: BANK_ACCOUNT_ENCRYPTION_KEY
@@ -168,7 +173,7 @@ envVarGroups:
       - key: INFISICAL_ENVIRONMENT
         value: production
       # Observability
-      - key: NEXT_PUBLIC_SENTRY_DSN
+      - key: SENTRY_DSN
         sync: false
       - key: AXIOM_TOKEN
         sync: false
@@ -257,16 +262,16 @@ envVarGroups:
         sync: false
       # Cloudflare Turnstile signup bot protection
       # (packages/auth/src/turnstile.ts). Fails closed in production when
-      # TURNSTILE_SECRET_KEY is missing. NEXT_PUBLIC_TURNSTILE_SITE_KEY is
-      # inlined at build time.
+      # TURNSTILE_SECRET_KEY is missing. VITE_TURNSTILE_SITE_KEY is the
+      # public site key inlined into the SPA bundle at build time.
       - key: TURNSTILE_SECRET_KEY
         sync: false
-      - key: NEXT_PUBLIC_TURNSTILE_SITE_KEY
+      - key: VITE_TURNSTILE_SITE_KEY
         sync: false
       # Comma-separated CIDR list (or proxy-addr keywords: loopback,
       # linklocal, uniquelocal) the rate-limit middleware trusts when
-      # walking X-Forwarded-For (apps/web/src/middleware.ts). Render
-      # default: "loopback,linklocal,uniquelocal". When fronted by
+      # walking X-Forwarded-For (apps/api/src/plugins/rate-limit.ts).
+      # Render default: "loopback,linklocal,uniquelocal". When fronted by
       # Cloudflare, switch to Cloudflare's published IP ranges.
       - key: TRUSTED_PROXIES
         sync: false
@@ -330,13 +335,9 @@ services:
       # Public origin (canonical URLs, OG image refs)
       - key: CMS_PUBLIC_URL
         sync: false
-      # apps/web origin used to receive afterChange revalidation webhook.
-      # The legacy `web` service is gone post-migration; the SPA
-      # (web-vite) is static and has no revalidate endpoint. Set this env
-      # var per environment via the Render dashboard if/when a
-      # revalidation target is reintroduced (e.g. the blog frontend on
-      # `landing`).
-      - key: WEB_APP_URL
+      # Fastify API origin — apps/cms posts the legal-doc revalidation
+      # webhook to POST {API_URL}/revalidate-legal.
+      - key: API_URL
         sync: false
 
   # ── Static Site: marketing landing page ─────────────────────────────────

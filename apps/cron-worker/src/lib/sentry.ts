@@ -13,7 +13,7 @@ let initialized = false;
 export function initSentry(): void {
   if (initialized) return;
   const env = loadEnv();
-  const dsn = env.NEXT_PUBLIC_SENTRY_DSN;
+  const dsn = env.SENTRY_DSN;
   Sentry.init({
     dsn,
     enabled: Boolean(dsn),

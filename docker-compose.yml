@@ -333,8 +333,8 @@ services:
   # ── QStash dev server — Upstash QStash substitute for local dev ────────────
   # Prints stable dev creds on startup (token + signing keys).
   # .env.local: QSTASH_URL=http://localhost:8089
-  # NEXT_PUBLIC_APP_URL must be reachable from this container — use
-  # http://host.docker.internal:3000 when Next.js runs on the host.
+  # API_URL must be reachable from this container — use
+  # http://host.docker.internal:4000 when the Fastify API runs on the host.
   qstash-dev:
     profiles: [dev-tooling]
     image: public.ecr.aws/upstash/qstash:2.37.18
@@ -385,14 +385,14 @@ services:
       - unleash
 
   # ── GlitchTip — lightweight self-hosted Sentry alternative ────────────────
-  # Sentry-protocol compatible. @sentry/nextjs sends events without code
-  # changes when NEXT_PUBLIC_SENTRY_DSN points at the local DSN printed by
-  # GlitchTip on first project creation.
+  # Sentry-protocol compatible. @sentry/node + @sentry/react send events
+  # without code changes when SENTRY_DSN (server) / VITE_SENTRY_DSN (SPA)
+  # points at the local DSN printed by GlitchTip on first project creation.
   #
   # Bootstrap (first run):
   #   1. docker compose --profile glitchtip up -d
   #   2. Open http://localhost:8000 — register the FIRST user (becomes admin).
-  #   3. Create an org + project → copy the DSN to NEXT_PUBLIC_SENTRY_DSN.
+  #   3. Create an org + project → copy the DSN to SENTRY_DSN / VITE_SENTRY_DSN.
   glitchtip-redis:
     profiles: [glitchtip]
     image: redis:8.6.3-alpine
@@ -468,7 +468,7 @@ services:
   # One-shot sidecar: runs after migrations, idempotent on rerun.
   # Reads docker/glitchtip/seed.py via the Django shell. Prints the project
   # DSN — grep the logs to pick it up:
-  #   docker compose logs glitchtip-seed | grep NEXT_PUBLIC_SENTRY_DSN
+  #   docker compose logs glitchtip-seed | grep SENTRY_DSN
   glitchtip-seed:
     profiles: [glitchtip]
     image: glitchtip/glitchtip:latest
@@ -540,7 +540,7 @@ services:
     profiles: [worker]
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
+      dockerfile: apps/cron-worker/Dockerfile
     container_name: contractor-ops-worker
     restart: unless-stopped
     env_file: .env

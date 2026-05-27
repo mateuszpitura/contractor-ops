@@ -1,7 +1,6 @@
 /**
  * Org-definition sync cron handler.
  *
- * Ported from apps/web/src/app/api/cron/org-definition-sync/route.ts.
  * Fans out across every CONNECTED Jira / Linear integration and upserts
  * Project rows + ProjectExternalLinks. The service itself rate-limits to
  * "skip connections that synced within the last 24h" — the cron tick

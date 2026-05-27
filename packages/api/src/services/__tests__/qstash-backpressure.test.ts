@@ -102,7 +102,7 @@ vi.mock('@contractor-ops/logger/metrics', () => ({
   metrics: { increment: mockMetricsIncrement },
 }));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock('@sentry/node', () => ({
   captureMessage: mockCaptureMessage,
 }));
 
@@ -497,7 +497,7 @@ describe('withBackpressure: no Redis configured', () => {
     vi.doMock('@contractor-ops/logger/metrics', () => ({
       metrics: { increment: vi.fn() },
     }));
-    vi.doMock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
+    vi.doMock('@sentry/node', () => ({ captureMessage: vi.fn() }));
     vi.doMock('@upstash/redis', () => {
       class MockRedis {
         eval = vi.fn();
@@ -522,7 +522,7 @@ describe('withBackpressure: no Redis configured', () => {
     vi.doUnmock('@contractor-ops/validators');
     vi.doUnmock('@contractor-ops/logger');
     vi.doUnmock('@contractor-ops/logger/metrics');
-    vi.doUnmock('@sentry/nextjs');
+    vi.doUnmock('@sentry/node');
     vi.doUnmock('@upstash/redis');
   });
 });

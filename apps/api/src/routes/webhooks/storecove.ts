@@ -1,7 +1,5 @@
 /**
- * Storecove (Peppol BIS) webhook port.
- *
- * Mirrors apps/web/src/app/api/webhooks/storecove/route.ts step-for-step:
+ * Storecove (Peppol BIS) webhook handler.
  *
  *   1. Read raw body (HMAC verification needs the original bytes).
  *   2. Construct a `StorecoveAdapter` seeded with the global
