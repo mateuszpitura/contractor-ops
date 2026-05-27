@@ -57,19 +57,19 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 |------|----|----|----|
 | PAGE | 0 / 0 / 0 | 5 / 0 / 0 | 3 / 0 / 0 |
 | ROUTE | 0 / 0 / 0 | 1 / 0 / 0 | 1 / 0 / 0 |
-| WEBHOOK | 0 / 0 / 0 | 1 / 0 / 0 | 0 / 0 / 0 |
+| WEBHOOK | 0 / 1 / 0 (GAP-WEBHOOK-003 escalated → inline-fixed) | 0 / 0 / 0 | 0 / 0 / 0 |
 | MIDDLEWARE | 0 / 0 / 0 | 2 / 0 / 0 | 3 / 0 / 0 |
 | I18N | 0 / 0 / 0 | 0 / 0 / 0 | 5 / 0 / 0 |
 | OBSERVABILITY | 0 / 0 / 0 | 3 / 0 / 0 | 3 / 0 / 0 |
 | SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 2 / 0 / 0 | 1 / 0 / 0 |
-| TEST | 0 / 0 / 0 | 2 / 0 / 0 | 7 / 0 / 0 |
-| **Total** | **3 / 0 / 0** | **16 / 0 / 0** | **23 / 0 / 0** |
+| TEST | 0 / 0 / 0 | 0 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 7 / 0 / 0 |
+| **Total** | **2 / 2 / 0** | **13 / 2 / 0** | **23 / 0 / 0** |
 
 P0 escalation candidates (severity may move to P0 after restoration-agent / legal review):
 
 - `GAP-PAGE-002` — privacy index drops session-based jurisdiction redirect (GDPR Art. 13 implication if GB/DE/KSA tenants live).
 - `GAP-ROUTE-002` — `/api/teams/messages` SDK swap (`botbuilder` → `@microsoft/agents-hosting`) — runtime parity unverified.
-- `GAP-WEBHOOK-003` — Peppol AS4 `GET`/`PUT` returns `404` (Fastify default) instead of legacy `405` — RFC 7231 violation; partner Access Points may interpret 404 as deployment loss.
+- ~~`GAP-WEBHOOK-003`~~ — escalated to P0 and inline-fixed (commit `c433c678`); see WEBHOOK row.
 
 ---
 
@@ -140,7 +140,7 @@ Better Auth uses a Fastify catch-all `app.all('/api/auth/*', …)` in `apps/api/
 | ID | Legacy path | New path or MISSING | Sev | Evidence | Status | Remediation |
 |----|-------------|---------------------|-----|----------|--------|-------------|
 | GAP-WEBHOOK-001 | `apps/web/src/app/api/webhooks/inpost/route.ts` non-prod fallback | `apps/api/src/routes/webhooks/inpost.ts` | P1 (pre-existing) | Both legacy and new keep an unsigned-payload fallback gated by `NODE_ENV !== 'production'`. If `NODE_ENV` is mis-set on preview/staging pods, attacker can forge `DELIVERED` events. Tracked elsewhere as F-SEC-06. | open | Remove the unsigned fallback unconditionally OR pin the env-check to a `STRICT_INPOST_SIGNATURE` boolean. |
-| GAP-WEBHOOK-003 | `apps/web/src/app/api/webhooks/peppol/**/route.ts` (AS4) | `apps/api/src/routes/webhooks/peppol.ts` | P1 (P0 candidate) | Fastify default returns `404` for unregistered HTTP verbs on a mounted path; legacy returned explicit `405 Method Not Allowed`. Peppol AS4 partner Access Points may interpret 404 as "endpoint gone" → silently stop retries. Test drift recorded at `apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts:115-128`. | open | Register a `405` handler for the AS4 webhook path with explicit `Allow: POST` header (RFC 7231 compliance). |
+| GAP-WEBHOOK-003 | `apps/web/src/app/api/webhooks/storecove/route.ts` (Peppol AS4 access point) | `apps/api/src/routes/webhooks/storecove.ts` | **P0** (escalated — regulatory webhook break) | Fastify default returns `404` for unregistered HTTP verbs on a mounted path; legacy returned explicit `405 Method Not Allowed`. Peppol AS4 partner Access Points may interpret 404 as "endpoint gone" → silently stop retries. Test drift recorded at `apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts:115-129`. | **inline-fixed** (`c433c678`) | Explicit 405 handler registered for GET/PUT/DELETE/PATCH on `/webhooks/storecove` with `Allow: POST` header (RFC 7231 §6.5.5). Mirrored e2e assertions flipped back from 404 → 405. New vitest: `apps/api/src/__tests__/peppol-method-not-allowed.test.ts`. |
 
 ### Ported appendix
 
@@ -306,8 +306,8 @@ Zero key losses across ~24k shared-key comparisons. Zero ICU shape regressions.
 
 | ID | Sev | Surface | Drift |
 |----|-----|---------|-------|
-| GAP-TEST-001 | P1 | Webhook (Peppol AS4) | `GET returns 405` → `toBe(404)`. Mirrors GAP-WEBHOOK-003. Partner Access Points may interpret 404 as deployment loss → silent retry stop. |
-| GAP-TEST-002 | P1 | Webhook (Peppol AS4) | `PUT returns 405` → `toBe(404)`. Same as GAP-TEST-001. |
+| GAP-TEST-001 | P1 → **inline-fixed** (`c433c678`) | Webhook (Peppol AS4) | `GET returns 405` → `toBe(404)`. Mirrors GAP-WEBHOOK-003. Partner Access Points may interpret 404 as deployment loss → silent retry stop. Restored: e2e assertion flipped back to `toBe(405)` + `Allow: POST` header assertion added; vitest coverage at `apps/api/src/__tests__/peppol-method-not-allowed.test.ts`. |
+| GAP-TEST-002 | P1 → **inline-fixed** (`c433c678`) | Webhook (Peppol AS4) | `PUT returns 405` → `toBe(404)`. Same as GAP-TEST-001. Restored alongside GAP-WEBHOOK-003. |
 | GAP-TEST-003 | P1 (P0 candidate) | Legal/compliance | `shows jurisdiction options (EU/UK/Gulf switcher)` → `has prose content sections`. Jurisdiction display no longer asserted on `/legal/*`. Mirrors GAP-PAGE-002. |
 | GAP-TEST-004 | P1 | A11y (settings) | `settings tabs are keyboard navigable` removed. WCAG 2.1.1 mandatory per CLAUDE.md. |
 | GAP-TEST-005 | P2 | URL state (contractors) | `search filters table via URL` → `search retains typed value`. URL-state assertion swapped for DOM-value-only; bookmarkability regression invisible. |
@@ -335,6 +335,7 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 | Gap | Commit | Subject | Verification | Test |
 |-----|--------|---------|--------------|------|
 | GAP-SECURITY-003 | `3198bb51` | fix(audit): GAP-SECURITY-003 restore SPA CSP report-uri + Report-To | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/csp-report.test.ts` | `apps/api/src/__tests__/csp-report.test.ts` |
+| GAP-WEBHOOK-003 (+ GAP-TEST-001/002 mirror) | `c433c678` | fix(audit): GAP-WEBHOOK-003 restore 405 for Peppol AS4 unsupported verbs | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/peppol-method-not-allowed.test.ts` (5/5 pass) | `apps/api/src/__tests__/peppol-method-not-allowed.test.ts` + e2e `apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts:115-129` |
 
 ---
 
