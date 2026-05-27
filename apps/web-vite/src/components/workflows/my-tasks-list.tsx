@@ -40,7 +40,7 @@ export function MyTasksListSkeleton() {
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <Card key={`skel-${i}`} className="flex items-center gap-4 p-4">
+          <Card key={`skel-${i}`} className="flex flex-row items-center gap-4 p-4">
             <Skeleton className="h-5 w-5 rounded-full shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-48" />
@@ -117,7 +117,7 @@ export function MyTasksListBody({ tasks, overdueOnly, setOverdueOnly }: MyTasksL
           return (
             <Link key={task.id} href={`/workflows/${task.workflowRun.id}`} className="block">
               <Card
-                className={`flex items-center gap-4 p-4 transition-colors hover:bg-accent/50 ${
+                className={`flex flex-row items-center gap-4 p-4 transition-colors hover:bg-accent/50 ${
                   task.isOverdue ? 'bg-destructive/[0.03]' : ''
                 }`}>
                 <StatusIcon className={`h-5 w-5 shrink-0 ${statusConfig.className}`} />
