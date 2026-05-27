@@ -57,3 +57,6 @@ Thumbs.db
 # QA walk local runs (screenshots, manifests)
 goals/qa-walk-and-fix/findings/**
 !goals/qa-walk-and-fix/findings/.gitkeep
+
+# Post-migration parity audit scratch — never commit
+.audit-scratch/
