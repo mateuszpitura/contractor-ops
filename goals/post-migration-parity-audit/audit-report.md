@@ -59,11 +59,11 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 | ROUTE | 0 / 0 / 0 | 1 / 0 / 0 | 1 / 0 / 0 |
 | WEBHOOK | 0 / 1 / 0 (GAP-WEBHOOK-003 escalated → inline-fixed) | 0 / 0 / 0 | 0 / 0 / 0 |
 | MIDDLEWARE | 0 / 0 / 0 | 2 / 0 / 0 | 3 / 0 / 0 |
-| I18N | 0 / 0 / 0 | 0 / 0 / 0 | 5 / 0 / 0 |
-| OBSERVABILITY | 0 / 0 / 0 | 3 / 0 / 0 | 3 / 0 / 0 |
+| I18N | 0 / 0 / 0 | 0 / 0 / 0 | 4 / 1 / 0 (GAP-I18N-004 inline-fixed) |
+| OBSERVABILITY | 0 / 0 / 0 | 2 / 1 / 0 (GAP-OBSERVABILITY-003 inline-fixed) | 2 / 1 / 0 (GAP-OBSERVABILITY-006 inline-fixed) |
 | SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 2 / 0 / 0 | 1 / 0 / 0 |
 | TEST | 0 / 0 / 0 | 0 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 7 / 0 / 0 |
-| **Total** | **2 / 2 / 0** | **13 / 2 / 0** | **23 / 0 / 0** |
+| **Total** | **2 / 2 / 0** | **12 / 3 / 0** | **21 / 2 / 0** |
 
 P0 escalation candidates (severity may move to P0 after restoration-agent / legal review):
 
@@ -336,6 +336,8 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 |-----|--------|---------|--------------|------|
 | GAP-SECURITY-003 | `3198bb51` | fix(audit): GAP-SECURITY-003 restore SPA CSP report-uri + Report-To | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/csp-report.test.ts` | `apps/api/src/__tests__/csp-report.test.ts` |
 | GAP-WEBHOOK-003 (+ GAP-TEST-001/002 mirror) | `c433c678` | fix(audit): GAP-WEBHOOK-003 restore 405 for Peppol AS4 unsupported verbs | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/peppol-method-not-allowed.test.ts` (5/5 pass) | `apps/api/src/__tests__/peppol-method-not-allowed.test.ts` + e2e `apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts:115-129` |
+| GAP-I18N-004 | `eaa60c5c` | fix(audit): GAP-I18N-004 vite chunk-name regex matches web-vite/messages | `pnpm typecheck --filter=@contractor-ops/web-vite` + both web-vite quality gates | n/a (build-time config; chunk-naming verified by typecheck + gates) |
+| GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 | `6092d0e9` | fix(audit): GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 restore Sentry trace propagation + dev hard-disable | `cd apps/web-vite && pnpm exec vitest run src/__tests__/sentry-init.test.ts` (4/4 pass) | `apps/web-vite/src/__tests__/sentry-init.test.ts` |
 
 ---
 
@@ -364,6 +366,9 @@ apps/api/src/__tests__/peppol-method-not-allowed.test.ts         (Step 9 — GAP
 apps/api/src/routes/webhooks/storecove.ts                        (Step 9 — GAP-WEBHOOK-003)
 apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts       (Step 9 — GAP-TEST-001/002 mirror)
 apps/web-vite/index.html                                         (Step 9 — GAP-SECURITY-003)
+apps/web-vite/src/__tests__/sentry-init.test.ts                  (Step 9 — GAP-OBSERVABILITY-003/006)
+apps/web-vite/src/sentry.ts                                      (Step 9 — GAP-OBSERVABILITY-003/006)
+apps/web-vite/vite.config.mjs                                    (Step 9 — GAP-I18N-004)
 render.yaml                                                      (Step 9 — GAP-SECURITY-003)
 ```
 
@@ -377,6 +382,9 @@ b561e078 chore(audit): Steps 2–8 — per-area parity sweeps (findings only, no
 73de2535 docs(audit): mark GAP-SECURITY-003 inline-fixed
 c433c678 fix(audit): GAP-WEBHOOK-003 restore 405 for Peppol AS4 unsupported verbs
 a787287d docs(audit): mark GAP-WEBHOOK-003 + GAP-TEST-001/002 inline-fixed
+4c1864b1 docs(audit): Step 10 — verification + done-condition status
+eaa60c5c fix(audit): GAP-I18N-004 vite chunk-name regex matches web-vite/messages
+6092d0e9 fix(audit): GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 restore Sentry trace propagation + dev hard-disable
 ```
 
 ### Done-condition status (per `facts.md`)
