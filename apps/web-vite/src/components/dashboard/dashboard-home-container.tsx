@@ -1,4 +1,3 @@
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle, Clock, FileText, Users, Wallet } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { UsageKpiCard } from '../billing/usage-kpi-card.js';
@@ -6,23 +5,11 @@ import { AnimateIn } from '../shared/animate-in.js';
 import { ActivityFeed } from './activity-feed.js';
 import { ApprovalQueueWidget } from './approval-queue-widget.js';
 import { DashboardGreeting } from './dashboard-greeting.js';
+import { DashboardSkeleton } from './dashboard-skeleton.js';
 import { DeadlinesWidget } from './deadlines-widget.js';
 import { useDashboardHome } from './hooks/use-dashboard-home.js';
 import { SpendChart } from './spend-chart.js';
 import { TaxObligationsWidget } from './tax-obligations-widget.js';
-
-function DashboardSkeleton() {
-  return (
-    <div className="flex flex-col gap-8">
-      <Skeleton className="h-16 w-96 rounded-lg" />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={`skel-${i}`} className="h-[120px] rounded-2xl" />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function DashboardHomeContainer() {
   const t = useTranslations('Dashboard');
