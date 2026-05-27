@@ -29,6 +29,11 @@ export function initSentry(): void {
     enabled: Boolean(dsn),
     tracesSampleRate: env.NODE_ENV === 'development' ? 1.0 : 0.1,
     environment: env.NODE_ENV,
+    // Restoration of GAP-OBSERVABILITY-005 — legacy server config opted
+    // into Sentry's structured log capture so server-side `Sentry.logger.*`
+    // calls flow into the same project as exceptions. Uses the v10 top-level
+    // option (the `_experiments.enableLogs` variant is deprecated).
+    enableLogs: true,
     initialScope: { tags: { service: 'api-server' } },
     // Redact PII (passwords, OAuth tokens, IBANs, tax IDs, etc.) from
     // every event payload before it leaves the process — see

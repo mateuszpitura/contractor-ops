@@ -1,18 +1,72 @@
-import { CheckCircle, Clock, FileText, Users, Wallet } from 'lucide-react';
+import { DashboardIllustration } from '@contractor-ops/ui';
+import { Button } from '@contractor-ops/ui/components/shadcn/button';
+
+import { usePermissions } from '../../hooks/use-permissions.js';
+import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { UsageKpiCard } from '../billing/usage-kpi-card.js';
+import { EInvoiceComplianceWidget } from '../einvoice/compliance-widget-container.js';
+import { useFlag } from '../layout/feature-flag-context.js';
+import { OnboardingChecklist } from '../onboarding/onboarding-checklist.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { ActivityFeed } from './activity-feed.js';
 import { ApprovalQueueWidget } from './approval-queue-widget.js';
 import { DashboardGreeting } from './dashboard-greeting.js';
 import { DashboardSkeleton } from './dashboard-skeleton.js';
 import { DeadlinesWidget } from './deadlines-widget.js';
+import { HeroSpendMetric } from './hero-spend-metric.js';
 import { useDashboardHome } from './hooks/use-dashboard-home.js';
+import { KpiCards } from './kpi-cards.js';
+import { OverdueReceivablesTile } from './overdue-receivables-tile.js';
 import { SpendChart } from './spend-chart.js';
 import { TaxObligationsWidget } from './tax-obligations-widget.js';
 
+/**
+ * Empty state rendered when every KPI is zero — fresh org that hasn't
+ * onboarded a contractor yet. Mirrors the legacy `DashboardEmptyState`
+ * (commit 62a97d73): centered illustration + heading + body + CTA inside
+ * a dot-grid card with corner-mark accents.
+ */
+function DashboardEmptyState() {
+  const t = useTranslations('Dashboard.emptyState');
+
+  return (
+    <div className="dot-grid corner-marks flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-border/40 text-center">
+      <div className="flex flex-col items-center px-6 py-16">
+        <DashboardIllustration className="h-28 w-28" />
+        <h2 className="mt-6 font-display text-2xl font-semibold tracking-tight">{t('heading')}</h2>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('body')}</p>
+        <Button render={<Link href="/contractors?action=new" />} className="mt-8">
+          {t('cta')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Dashboard bento — restored to legacy parity after the Next.js → Vite
+ * migration dropped the rich layout in favour of a 5-cell `UsageKpiCard`
+ * row. Layout contract (locked in §8 of `docs/UI-ATELIER-WORKPLAN.md`):
+ *
+ *   - DashboardGreeting
+ *   - HeroSpendMetric (full-width, `report:read` only)
+ *   - KpiCards (bento with hero-span-2)
+ *   - Two-column grid (items-start):
+ *       Left:  SpendChart (report:read) · DeadlinesWidget
+ *       Right: OnboardingChecklist · ApprovalQueueWidget ·
+ *              OverdueReceivablesTile (lateInterest flag) · ActivityFeed ·
+ *              EInvoiceComplianceWidget ·
+ *              TaxObligationsWidget (classification flag)
+ *
+ * The bootstrap query lives in `useDashboardHome` so all KPI math is one
+ * round trip; per-widget queries reuse the shared Redis cache slots.
+ */
 export function DashboardHomeContainer() {
   const t = useTranslations('Dashboard');
+  const { can } = usePermissions();
+  const hasReportAccess = can('report', ['read']);
+  const lateInterestEnabled = useFlag('payments.late-interest-enabled');
+  const classificationEnabled = useFlag('module.classification-engine');
   const { isPending, error, kpis } = useDashboardHome();
 
   if (isPending) {
@@ -29,67 +83,68 @@ export function DashboardHomeContainer() {
     );
   }
 
+  const isEmpty =
+    kpis &&
+    kpis.activeContractors.value === 0 &&
+    kpis.pendingApprovals.value === 0 &&
+    kpis.readyToPayTotal.valueMinor === 0 &&
+    kpis.expiringContracts.value === 0 &&
+    kpis.openTasks.value === 0;
+
+  if (isEmpty) {
+    return (
+      <main aria-labelledby="dashboard-heading">
+        <DashboardEmptyState />
+      </main>
+    );
+  }
+
   return (
     <main aria-labelledby="dashboard-heading" className="flex flex-col gap-8">
       <AnimateIn delay={0}>
         <DashboardGreeting />
       </AnimateIn>
 
-      {kpis ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          <UsageKpiCard
-            icon={<Users className="h-4 w-4" />}
-            label={t('kpi.activeContractors')}
-            value={kpis.activeContractors.value}
-          />
-          <UsageKpiCard
-            icon={<CheckCircle className="h-4 w-4" />}
-            label={t('kpi.pendingApprovals')}
-            value={kpis.pendingApprovals.value}
-          />
-          <UsageKpiCard
-            icon={<Wallet className="h-4 w-4" />}
-            label={t('kpi.readyToPay')}
-            value={(kpis.readyToPayTotal.valueMinor / 100).toLocaleString(undefined, {
-              style: 'currency',
-              currency: 'EUR',
-            })}
-          />
-          <UsageKpiCard
-            icon={<FileText className="h-4 w-4" />}
-            label={t('kpi.expiringContracts')}
-            value={kpis.expiringContracts.value}
-          />
-          <UsageKpiCard
-            icon={<Clock className="h-4 w-4" />}
-            label={t('kpi.openTasks')}
-            value={kpis.openTasks.value}
-          />
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">{t('loading')}</p>
+      {hasReportAccess && (
+        <AnimateIn delay={1}>
+          <HeroSpendMetric />
+        </AnimateIn>
       )}
 
       <AnimateIn delay={2}>
-        <SpendChart />
+        <KpiCards />
       </AnimateIn>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <AnimateIn delay={3}>
-          <ApprovalQueueWidget />
-        </AnimateIn>
-        <AnimateIn delay={4}>
-          <DeadlinesWidget />
-        </AnimateIn>
-      </div>
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+          {hasReportAccess && (
+            <AnimateIn delay={3}>
+              <SpendChart />
+            </AnimateIn>
+          )}
+          <AnimateIn delay={4}>
+            <DeadlinesWidget />
+          </AnimateIn>
+        </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <AnimateIn delay={5}>
-          <TaxObligationsWidget />
-        </AnimateIn>
-        <AnimateIn delay={5}>
-          <ActivityFeed />
-        </AnimateIn>
+        <div className="flex flex-col gap-6">
+          <OnboardingChecklist />
+          <AnimateIn delay={3}>
+            <ApprovalQueueWidget />
+          </AnimateIn>
+          <OverdueReceivablesTile featureEnabled={lateInterestEnabled} />
+          <AnimateIn delay={4}>
+            <ActivityFeed />
+          </AnimateIn>
+          <AnimateIn delay={5}>
+            <EInvoiceComplianceWidget />
+          </AnimateIn>
+          {classificationEnabled && (
+            <AnimateIn delay={5}>
+              <TaxObligationsWidget />
+            </AnimateIn>
+          )}
+        </div>
       </div>
     </main>
   );
