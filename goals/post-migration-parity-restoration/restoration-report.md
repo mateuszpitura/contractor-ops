@@ -1,0 +1,227 @@
+# Post-migration parity restoration report
+
+> Mirrors `goals/post-migration-parity-audit/audit-report.md` row-for-row with restoration status applied. Goal: every audit row reflects one of `inline-fixed (<SHA>)`, `closed-decision (<doc-ref>)`, `closed-verified-intentional`, or `deferred (<rationale + risk-register-ref>)`. No row sits `open` without an explicit deferral rationale.
+>
+> **Branch:** `audit/post-migration-parity` — restoration work continues on this branch (or short-lived `audit/restoration-<wave-N>` children fast-forward merged).
+> **Risk register:** [`.planning/risk-register.md`](../../.planning/risk-register.md).
+> **Done condition:** see [`goal.md`](goal.md). User signs off via `plannotator annotate restoration-report.md --gate` after Wave 9 verification passes.
+
+## Restoration baseline
+
+Restoration enters with the following starting state on the audit branch (head `99584569` and onwards):
+
+- **3 open P0s**: `GAP-LEGAL-CLUSTER-001`, `GAP-SECURITY-001`, `GAP-SECURITY-002`. Each carries an escalation block in `audit-report.md`.
+- **0 open P1s**: every P1 is either `inline-fixed` or `deferred` with named blocker. Restoration carries every deferral forward to `.planning/risk-register.md`.
+- **1 open P2 INFO row**: `GAP-I18N-003` — informational only (positive translation backfill).
+- **19 sibling-UI commits** landed unreviewed during the audit. Reviewed clean in Wave 0 — no new `GAP-SIBLING-NNN` rows surfaced.
+
+## Wave progress
+
+| Wave | Scope | Status | Notes |
+|------|-------|--------|-------|
+| **0** | Branch hygiene + sibling review + scaffold | **done** | `.gitignore` extended; 19 sibling commits reviewed clean; `risk-register.md` + this report scaffolded. |
+| **1** | P0 infra surfaces — edge runtime (`GAP-SECURITY-001`) + Redis pub/sub channel (`GAP-LEGAL-CLUSTER-001` foundation) | pending | Foundational. Requires render.yaml decision + Payload local-API client verification. |
+| **2** | P0 code-only fixes — 5 agents in parallel | partial | Agents A (GAP-OBSERVABILITY-012) + B (GAP-TEST-015) + C (GAP-TEST-021) + D (GAP-TEST-026) all already inline-fixed pre-restoration. Agent E (GAP-SECURITY-002 closure + R2 guardrail) outstanding. |
+| **3** | P0 wiring + cutover — legal containers + `legal.getDocument` + revalidate-legal publisher + edge cutover | pending | Depends on Wave 1 + 2. 48h CSP soak gates `GAP-SECURITY-001` close. |
+| **4** | P1 cluster A — security + auth + portal + legal | done (carry-over) | Agents F (GAP-SECURITY-008) + I (GAP-TEST-019) inline-fixed pre-restoration. Agent G (privacy resolver) deferred under `GAP-LEGAL-CLUSTER-001`. Agent H (`GAP-TEST-011 / -016 / -017 / -018`) — TEST-016/017/018 inline-fixed, TEST-011 deferred. |
+| **5** | P1 cluster B — observability + middleware + routes | partial | OBSERVABILITY-003/-006/-009 (partial) inline-fixed; OBSERVABILITY-001/-002/-004/-010/-011 deferred per RISK-OBSERVABILITY-001/-002/-003. MIDDLEWARE-005/-007 inline-fixed. ROUTE-001 inline-fixed. ROUTE-002/-004/-005/-006 deferred per RISK-ROUTE-001..004. |
+| **6** | P1 cluster C — UX | partial | MIDDLEWARE-005 (Accept-Language) + PAGE-006/-007 (admin URL back-compat) + PAGE-008 (intake 404 vs unauth) inline-fixed. I18N-001/-002 deferred per RISK-I18N-001. |
+| **7** | P2 cluster | partial | I18N-004/-005 + OBSERVABILITY-005/-006 + MIDDLEWARE-004/-006 + SECURITY-005 inline-fixed; SECURITY-007 + MIDDLEWARE-001 + OBSERVABILITY-013 closed-verified-intentional. Remaining ~15 test-coverage rows deferred per RISK-TEST-001. |
+| **8** | Pre-existing test fixes (`FOLLOWUP-PRE-EXISTING-001`) | deferred | Two web-vite test files; both verified pre-existing in audit. Deferred per RISK-TEST-002 to `dry-solid-audit/extract-shared` restoration owner. |
+| **9** | Final verification + plannotator --gate | pending | Run all gates + plannotator sign-off. Blocked on Waves 1-3 outstanding work. |
+
+## Sibling-UI commit review (Wave 0)
+
+19 sibling-agent commits landed on the audit branch (`audit/post-migration-parity ^4fefacb3` minus `audit:` / `docs(audit):` commits). Each reviewed against audit severity rubric: **auth break / payment break / data loss / regulatory webhook break / a11y regression / i18n key loss / Sentry scrub regression**.
+
+| # | SHA | Subject | Surface | Rubric verdict |
+|---|-----|---------|---------|----------------|
+| 1 | `e95e4e75` | swap startup spinner for bento skeleton + restore AtelierBackground | `apps/web-vite/src/components/dashboard/*` | **clean** — UI skeleton parity restoration; a11y unchanged. |
+| 2 | `daed398b` | restore subtle single-hue accent-line under top bar | `apps/web-vite` CSS only | **clean** — visual restoration verified against `7fce0d83:globals.css` baseline. |
+| 3 | `eb6be3df` | restore dark-mode atelier gradient — post-migration parity | `apps/web-vite` CSS + `IntensityRouter` body-mirror side-effect | **clean** — selector cascade fix; behaviour matches legacy. |
+| 4 | `5d3fa5ce` | restore document-level scroll on dashboard shell | `apps/web-vite` CSS + `SidebarInset` defaults | **clean** — document-level scroll matches legacy shell. |
+| 5 | `5d436ece` | use native overflow on Activity Feed | `apps/web-vite/src/components/dashboard/*` | **clean** — Radix ScrollArea → native `overflow-y-auto` fixes clipped scroll path; a11y-positive. |
+| 6 | `e6ec821d` | force flex-row on my-tasks task rows | `apps/web-vite/src/components/workflows/my-tasks-list.tsx` | **clean** — tailwind-merge collision fix. |
+| 7 | `cca0ffc2` | intensity-aware scroll model (workbench locks viewport) | `apps/web-vite` CSS attribute selector | **clean** — corrects collateral from `5d3fa5ce`. Stacks with `fb3385fb` + `d309ea4e` + `0a350079` to fully restore workbench scroll contract. |
+| 8 | `6a76470a` | restore public/flags + public/logos static assets | `apps/web-vite/public/{flags,logos}/*.svg` × 17 | **clean** — byte-for-byte restore from `7fce0d83`. CSP unchanged. |
+| 9 | `b5f09833` | solid background on shadcn Input (light + dark) | `packages/ui/src/components/shadcn/input.tsx` | **clean** — read-as-disabled regression on atelier surfaces fixed. |
+| 10 | `4c83feb8` | hard-disable Sentry uploads in development (api+cron-worker+public-api) | `apps/{api,cron-worker,public-api}/src/lib/sentry.ts` | **clean** — mirrors browser-side guard (`apps/web-vite/src/sentry.ts:40`). Production (`NODE_ENV=production`) unaffected. Override `SENTRY_DEV=true` for plumbing debug. **No Sentry scrub regression**: scrub wiring (`beforeSend: scrubSentryEvent`) preserved on every runtime per `GAP-OBSERVABILITY-007 / -008` fixes. |
+| 11 | `eb51c97a` | restore Edit name dialog + density toggle (user-menu) | `apps/web-vite/src/components/layout/user-menu*` | **clean** — restores two legacy features (Better Auth `updateUser({ name })` + density Zustand store wiring). No auth / data scope change. |
+| 12 | `a511f9d4` | accept PUBLIC_APP_URL alongside APP_URL on CSRF origin guard | `apps/api/src/server.ts` + `apps/web-vite/src/lib/{require-anonymous.ts,router.tsx}` | **clean** — mirrors existing CORS allowlist; production no-op when `PUBLIC_APP_URL == APP_URL`. Functional code for `GAP-MIDDLEWARE-004` (`require-anonymous`) rolled in via lint-staged race — documented in audit-report.md. |
+| 13 | `53ecaa1e` | scrub migration breadcrumbs from source comments | 20 files (comment-only) | **clean** — pure comment edits, no behaviour change. Aligns with `feedback_no_legacy_comments` memory rule. Verified by `pnpm typecheck` + scoped tests on the touched runtimes. |
+| 14 | `fb3385fb` | anchor `ATELIER_ROUTES` regex so workbench routes do not all match | `apps/web-vite/src/lib/intensity*` | **clean** — fixes regex anchor (`/\/?$/` → `/^\/?$/`); restores intended workbench-vs-atelier intensity routing. |
+| 15 | `2113555f` | render pinned settings tabs under the system group | `apps/web-vite/src/hooks/use-{settings-tab-pins,nav-items}.ts` + sidebar | **clean** — restores legacy user-pins feature; consumes existing tRPC `user.pins.list` query. |
+| 16 | `d309ea4e` | wrap workbench scroll model in `@media (min-height: 600px)` | `apps/web-vite` CSS | **clean** — short-viewport fallback prevents table-as-postage-stamp regression. |
+| 17 | `0a350079` | make main content wrapper a flex column | `apps/web-vite/src/components/layout/*` | **clean** — fixes flex chain hop; workbench tables now scroll internally. |
+| 18 | `c8a0ff0a` | open contractor wizard + invoice upload in place on top-bar | `apps/web-vite/src/components/layout/top-bar*` | **clean** — UX consistency (matches existing contract-wizard surface); no auth / data change. |
+| 19 | `a56d97f1` | drop dead `status` filter + retarget Active KPI link + space pagination footer | `apps/web-vite/src/components/contractors/*` | **clean** — drops orphan URL param + retargets KPI link to actual `lifecycleStage` field; positive correctness fix. |
+
+**New gaps surfaced by sibling review:** none. All 19 commits scoped to UI polish, asset restoration, CSS layout fixes, or internal helper restoration. None touched auth middleware, payment routing, data layer, regulatory webhooks, accessibility, i18n keys, or the Sentry scrub pipeline.
+
+## Summary table (mirror of audit-report.md)
+
+> Cells = `open / inline-fixed / deferred` counts as inherited from `audit-report.md` summary. Restoration deltas annotated inline.
+
+| Area | P0 | P1 | P2 |
+|------|----|----|----|
+| PAGE | **1 / 0 / 0** (`GAP-LEGAL-CLUSTER-001` open-escalated) | 0 / 0 / 5 (`GAP-PAGE-001..005` deferred — rolled up under `GAP-LEGAL-CLUSTER-001`) | 0 / 3 / 2 (`GAP-PAGE-006/-007/-008` inline-fixed; `GAP-PAGE-009/-010` deferred → `RISK-LEGAL-001` + `RISK-MIDDLEWARE-002`) |
+| ROUTE | 0 / 0 / 0 | 0 / 0 / 4 (`GAP-ROUTE-002/-004/-005` deferred → `RISK-ROUTE-001/-002/-003`; `GAP-ROUTE-003` → `RISK-ROUTE-005`) | 0 / 1 / 1 (`GAP-ROUTE-001` inline-fixed; `GAP-ROUTE-006` → `RISK-ROUTE-004`) |
+| WEBHOOK | 0 / 1 / 0 (`GAP-WEBHOOK-003` escalated → inline-fixed) | 0 / 0 / 1 (`GAP-WEBHOOK-001` → `RISK-WEBHOOK-001`) | 0 / 0 / 0 |
+| MIDDLEWARE | 0 / 0 / 0 | 0 / 2 / 1 (`GAP-MIDDLEWARE-005/-007` inline-fixed; `GAP-MIDDLEWARE-003` → `RISK-MIDDLEWARE-002`) | 0 / 2 / 1 (`GAP-MIDDLEWARE-004` inline-fixed via sibling `a511f9d4`; `GAP-MIDDLEWARE-006` inline-fixed; `GAP-MIDDLEWARE-002` → `RISK-MIDDLEWARE-001`; +1 `GAP-MIDDLEWARE-001` closed-verified-intentional) |
+| I18N | 0 / 0 / 0 | 0 / 0 / 0 | 1 / 2 / 2 (`GAP-I18N-004/-005` inline-fixed; `GAP-I18N-001/-002` → `RISK-I18N-001`; `GAP-I18N-003` is INFO-only) |
+| OBSERVABILITY | **0 / 3 / 0** (`GAP-OBSERVABILITY-007/-008/-012` inline-fixed) | 0 / 2 / 3 (`GAP-OBSERVABILITY-003/-009` inline-fixed; `GAP-OBSERVABILITY-001/-002/-010` → `RISK-OBSERVABILITY-001/-002`) | 0 / 2 / 2 (`GAP-OBSERVABILITY-005/-006` inline-fixed; `GAP-OBSERVABILITY-004/-011` → `RISK-OBSERVABILITY-002/-003`; +1 `GAP-OBSERVABILITY-013` closed-verified-intentional) |
+| SECURITY | **2 / 1 / 0** (`GAP-SECURITY-001/-002` open-escalated → `RISK-SECURITY-001/-002`; `GAP-SECURITY-003` inline-fixed) | 0 / 2 / 0 (`GAP-SECURITY-005/-008` inline-fixed; +1 `GAP-SECURITY-004` closed-verified-intentional) | 0 / 0 / 1 (`GAP-SECURITY-006` → `RISK-MIDDLEWARE-001`; +1 `GAP-SECURITY-007` closed-verified-intentional) |
+| TEST | **0 / 3 / 0** (`GAP-TEST-015/-021/-026` inline-fixed) | 0 / 6 / 5 (`GAP-TEST-001/-002/-016/-017/-018/-019` inline-fixed; `GAP-TEST-003/-004/-011/-024/-025` → `RISK-LEGAL-001` + `RISK-TEST-001`) | 0 / 0 / 12 (`GAP-TEST-005..010/-012/-013/-014/-020/-022/-023` → `RISK-TEST-001`) |
+| **Restoration totals** | **3 / 8 / 0** | **0 / 12 / 19** (+1 closed-verified) | **1 / 10 / 21** (+3 closed-verified) |
+
+**Open after restoration baseline (3 P0 + 1 P2-INFO):**
+
+- `GAP-LEGAL-CLUSTER-001` — Wave 1 + Wave 3 deliverable. Tracked under `RISK-LEGAL-001`.
+- `GAP-SECURITY-001` — Wave 1 + Wave 3 deliverable. Tracked under `RISK-SECURITY-001`.
+- `GAP-SECURITY-002` — Wave 2 Agent E deliverable. Tracked under `RISK-SECURITY-002`.
+- `GAP-I18N-003` — INFO-only; positive translation backfill. No action required.
+
+## Per-row restoration status
+
+Restoration mirrors each audit row by ID. Status reflects current state on `audit/post-migration-parity` HEAD. For full evidence + remediation text per row, see the source row in `goals/post-migration-parity-audit/audit-report.md`.
+
+### PAGE parity (11 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-LEGAL-CLUSTER-001 | P0 | open (escalated) | **open — pending Wave 1 + Wave 3** | `RISK-LEGAL-001` |
+| GAP-PAGE-001..005 | P1 | deferred (rolled up) | **deferred — rolled up under `GAP-LEGAL-CLUSTER-001`** | `RISK-LEGAL-001` |
+| GAP-PAGE-006 | P2 | inline-fixed (`50e9a259`) | **carried — inline-fixed (`50e9a259`)** | n/a |
+| GAP-PAGE-007 | P2 | inline-fixed (`50e9a259`) | **carried — inline-fixed (`50e9a259`)** | n/a |
+| GAP-PAGE-008 | P2 | inline-fixed (`dd7cafc4`) | **carried — inline-fixed (`dd7cafc4`)** | n/a |
+| GAP-PAGE-009 | P2 | deferred (paired with `GAP-LEGAL-CLUSTER-001`) | **deferred — paired with `GAP-LEGAL-CLUSTER-001`** | `RISK-LEGAL-001` |
+| GAP-PAGE-010 | P2 | deferred (paired with `GAP-MIDDLEWARE-003`) | **deferred — paired with `GAP-MIDDLEWARE-003`** | `RISK-MIDDLEWARE-002` |
+
+### ROUTE parity (7 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-ROUTE-001 | P2 | inline-fixed (`808b9fcd`) | **carried — inline-fixed (`808b9fcd`)** | n/a |
+| GAP-ROUTE-002 | P1 (P0 candidate) | deferred (runtime smoke owner) | **deferred — runtime smoke owner** | `RISK-ROUTE-002` |
+| GAP-ROUTE-003 | P1 (pre-existing) | deferred (pre-existing follow-up) | **deferred — pre-existing follow-up** | `RISK-ROUTE-005` |
+| GAP-ROUTE-004 | P1 | deferred (escalated — ops owner) | **deferred — escalated, ops owner** | `RISK-ROUTE-001` |
+| GAP-ROUTE-005 | P1 | deferred (escalated — peppol service owner) | **deferred — escalated, peppol service owner** | `RISK-ROUTE-003` |
+| GAP-ROUTE-006 | P2 | deferred (escalated — ops owner) | **deferred — escalated, ops owner** | `RISK-ROUTE-004` |
+
+### WEBHOOK parity (2 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-WEBHOOK-001 | P1 (pre-existing) | deferred (F-SEC-06 follow-up) | **deferred — F-SEC-06 follow-up** | `RISK-WEBHOOK-001` |
+| GAP-WEBHOOK-003 | P0 (escalated) | inline-fixed (`c433c678`) | **carried — inline-fixed (`c433c678`)** | n/a |
+
+### MIDDLEWARE parity (7 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-MIDDLEWARE-001 | P2 → closed | closed (accepted as design) | **carried — closed-verified-intentional** | n/a |
+| GAP-MIDDLEWARE-002 | P2 | deferred (operational) | **deferred — operational** | `RISK-MIDDLEWARE-001` |
+| GAP-MIDDLEWARE-003 | P1 | deferred (escalated — product confirmation) | **deferred — product owner confirmation** | `RISK-MIDDLEWARE-002` |
+| GAP-MIDDLEWARE-004 | P2 | inline-fixed (`a511f9d4`) | **carried — inline-fixed (`a511f9d4` via sibling lint-staged race)** | n/a |
+| GAP-MIDDLEWARE-005 | P1 | inline-fixed (`271b57d4`) | **carried — inline-fixed (`271b57d4`)** | n/a |
+| GAP-MIDDLEWARE-006 | P2 | inline-fixed (`b2489369`) | **carried — inline-fixed (`b2489369`)** | n/a |
+| GAP-MIDDLEWARE-007 | P1 | inline-fixed (`ac1f158b`) | **carried — inline-fixed (`ac1f158b`)** | n/a |
+
+### I18N parity (5 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-I18N-001 | P2 (P1 on invoice/payment) | deferred (35-call-site refactor) | **deferred — 35-call-site refactor scheduled to next i18n design-review window** | `RISK-I18N-001` |
+| GAP-I18N-002 | P2 | deferred (paired with GAP-I18N-001) | **deferred — paired with `GAP-I18N-001`** | `RISK-I18N-001` |
+| GAP-I18N-003 | INFO / P3 | n/a (positive change) | **carried — INFO-only, no action** | n/a |
+| GAP-I18N-004 | P3 | inline-fixed (`eaa60c5c`) | **carried — inline-fixed (`eaa60c5c`)** | n/a |
+| GAP-I18N-005 | P3 | inline-fixed (`5eb95e3e`) | **carried — inline-fixed (`5eb95e3e`)** | n/a |
+
+### OBSERVABILITY parity (13 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-OBSERVABILITY-001 | P1 | deferred (product approval) | **deferred — product + privacy review** | `RISK-OBSERVABILITY-001` |
+| GAP-OBSERVABILITY-002 | P1 | deferred (product approval) | **deferred — product + privacy review** | `RISK-OBSERVABILITY-001` |
+| GAP-OBSERVABILITY-003 | P1 | inline-fixed (`6092d0e9`) | **carried — inline-fixed (`6092d0e9`)** | n/a |
+| GAP-OBSERVABILITY-004 | P2 | deferred (deploy pipeline) | **deferred — deploy pipeline (`SENTRY_AUTH_TOKEN` env wiring)** | `RISK-OBSERVABILITY-002` |
+| GAP-OBSERVABILITY-005 | P2 | inline-fixed (`1a3c3f19`) | **carried — inline-fixed (`1a3c3f19`)** | n/a |
+| GAP-OBSERVABILITY-006 | P2 | inline-fixed (`6092d0e9`) | **carried — inline-fixed (`6092d0e9`)** | n/a |
+| GAP-OBSERVABILITY-007 | P0 | inline-fixed (`5cb42d21`) | **carried — inline-fixed (`5cb42d21`)** | n/a |
+| GAP-OBSERVABILITY-008 | P0 | inline-fixed (`f4f4961d`) | **carried — inline-fixed (`f4f4961d`)** | n/a |
+| GAP-OBSERVABILITY-009 | P1 | inline-fixed partial (`7a283b21`) | **carried — inline-fixed partial; build-pipeline follow-up deferred** | `RISK-OBSERVABILITY-002` |
+| GAP-OBSERVABILITY-010 | P1 | deferred (deploy pipeline) | **deferred — deploy pipeline (Node service source-map upload)** | `RISK-OBSERVABILITY-002` |
+| GAP-OBSERVABILITY-011 | P2 | deferred (multi-file Fastify proxy) | **deferred — `/monitoring` Fastify tunnel route** | `RISK-OBSERVABILITY-003` |
+| GAP-OBSERVABILITY-012 | P0 | inline-fixed (`3e240ebc`) | **carried — inline-fixed (`3e240ebc`)** | n/a |
+| GAP-OBSERVABILITY-013 | P2 | closed (verified intentional) | **carried — closed-verified-intentional** | n/a |
+
+### SECURITY parity (8 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-SECURITY-001 | P0 | open (escalated) | **open — pending Wave 1 (edge runtime) + Wave 3 (cutover + 48h soak)** | `RISK-SECURITY-001` |
+| GAP-SECURITY-002 | P0 | open (escalated) | **open — pending Wave 2 Agent E (R2 wildcard documented acceptance + CI guardrail)** | `RISK-SECURITY-002` |
+| GAP-SECURITY-003 | P0 | inline-fixed (`3198bb51`) | **carried — inline-fixed (`3198bb51`)** | n/a |
+| GAP-SECURITY-004 | P1 → closed | closed (verified intentional) | **carried — closed-verified-intentional** | n/a |
+| GAP-SECURITY-005 | P1 | inline-fixed (`050be4cc`) | **carried — inline-fixed (`050be4cc`)** | n/a |
+| GAP-SECURITY-006 | P2 | deferred (operational) | **deferred — mirror of `GAP-MIDDLEWARE-002`** | `RISK-MIDDLEWARE-001` |
+| GAP-SECURITY-007 | P2 → closed | closed (verified intentional) | **carried — closed-verified-intentional** | n/a |
+| GAP-SECURITY-008 | P1 | inline-fixed (`70846fea`) | **carried — inline-fixed (`70846fea`)** | n/a |
+
+### TEST coverage parity (26 rows)
+
+| ID | Sev | Audit status | Restoration status | Cross-ref |
+|----|-----|--------------|--------------------|-----------|
+| GAP-TEST-001 | P1 | inline-fixed (`c433c678`) | **carried — inline-fixed (`c433c678`)** | n/a |
+| GAP-TEST-002 | P1 | inline-fixed (`c433c678`) | **carried — inline-fixed (`c433c678`)** | n/a |
+| GAP-TEST-003 | P1 (P0 candidate) | deferred (under cluster) | **deferred — under `GAP-LEGAL-CLUSTER-001`** | `RISK-LEGAL-001` |
+| GAP-TEST-004 | P1 | deferred (test-coverage follow-up) | **deferred — a11y test surface follow-up** | `RISK-TEST-001` |
+| GAP-TEST-005..010 | P2 | deferred (test-coverage follow-up) | **deferred — assertion-drift + URL-state + invoices filter + responsive UX + dashboard empty-state follow-up** | `RISK-TEST-001` |
+| GAP-TEST-011 | P1 | deferred (test-coverage follow-up — auth unit) | **deferred — `use-login-form.test.tsx` extension** | `RISK-TEST-001` |
+| GAP-TEST-012 | P2 | deferred (test-coverage follow-up) | **deferred — `useRegisterForm` Zod tests** | `RISK-TEST-001` |
+| GAP-TEST-013 | P2 | deferred (test-coverage follow-up) | **deferred — invite-accept UX defaults** | `RISK-TEST-001` |
+| GAP-TEST-014 | P2 | deferred (test-coverage follow-up) | **deferred — Microsoft social provider + dual-disable** | `RISK-TEST-001` |
+| GAP-TEST-015 | P0 | inline-fixed (`f75c18a6`) | **carried — inline-fixed (`f75c18a6`)** | n/a |
+| GAP-TEST-016 | P1 | inline-fixed (`1d4aa43c`) | **carried — inline-fixed (`1d4aa43c`)** | n/a |
+| GAP-TEST-017 | P1 | inline-fixed (`1d4aa43c`) | **carried — inline-fixed (`1d4aa43c`)** | n/a |
+| GAP-TEST-018 | P1 | inline-fixed (`c767b561`) | **carried — inline-fixed (`c767b561`)** | n/a |
+| GAP-TEST-019 | P1 | inline-fixed (`b44fc5de`) | **carried — inline-fixed (`b44fc5de`)** | n/a |
+| GAP-TEST-020 | P2 | deferred (test-coverage follow-up) | **deferred — EXTENDED-profile banner + pane composition** | `RISK-TEST-001` |
+| GAP-TEST-021 | P0 | inline-fixed (`59173034`) | **carried — inline-fixed (`59173034`)** | n/a |
+| GAP-TEST-022 | P2 | deferred (test-coverage follow-up) | **deferred — `einvoice.import-enabled` flag-gate** | `RISK-TEST-001` |
+| GAP-TEST-023 | P2 | deferred (test-coverage follow-up) | **deferred — classification source-static-check** | `RISK-TEST-001` |
+| GAP-TEST-024 | P1 | deferred (under cluster) | **deferred — under `GAP-LEGAL-CLUSTER-001`** | `RISK-LEGAL-001` |
+| GAP-TEST-025 | P1 | deferred (under cluster) | **deferred — under `GAP-LEGAL-CLUSTER-001`** | `RISK-LEGAL-001` |
+| GAP-TEST-026 | P0 | inline-fixed (`140e865b`) | **carried — inline-fixed (`140e865b`)** | n/a |
+| FOLLOWUP-PRE-EXISTING-001 | n/a | verified pre-existing | **deferred — owned by `dry-solid-audit/extract-shared` restoration** | `RISK-TEST-002` |
+
+## Restoration log
+
+Restoration commits land on `audit/post-migration-parity` (or short-lived child branches fast-forward merged) with subjects `fix(restoration): GAP-<AREA>-<NNN> <one-line>` for code fixes or `docs(restoration): <one-line>` for report / risk-register updates.
+
+| Wave | Commit | Subject | Files |
+|------|--------|---------|-------|
+| 0 | (this commit) | docs(restoration): Wave 0 — scaffold restoration-report + risk-register + sibling-UI review | `.gitignore`, `.planning/risk-register.md`, `goals/post-migration-parity-restoration/restoration-report.md` |
+
+(Subsequent waves append rows.)
+
+## Verification matrix
+
+Final verification gates (run on restoration branch head before Wave 9 plannotator gate):
+
+| Gate | Command | Owner-wave |
+|------|---------|------------|
+| Typecheck | `pnpm typecheck` | Wave 9 |
+| API server tests | `pnpm --filter @contractor-ops/api-server test` | Wave 9 |
+| Cron worker tests | `pnpm --filter @contractor-ops/cron-worker test` | Wave 9 |
+| Public API tests | `pnpm --filter @contractor-ops/public-api test` | Wave 9 |
+| Auth package tests | `pnpm --filter @contractor-ops/auth test` | Wave 9 |
+| Web-vite tests (path-scoped) | `pnpm --filter @contractor-ops/web-vite test -- src/` | Wave 9 (gated on `FOLLOWUP-PRE-EXISTING-001` resolution per `RISK-TEST-002`) |
+| Web-vite data-layer guard | `pnpm check:web-vite-data-layer` | Wave 9 |
+| Web-vite page-shell guard | `pnpm check:web-vite-page-shells` | Wave 9 |
+| **R2 iframe sandbox guard (new)** | `pnpm check:r2-iframe-sandbox` | Wave 2 Agent E |
+| Dependency audit | `pnpm audit` | Wave 9 |
+| Security scan | `pnpm security:scan` | Wave 9 |
+| Playwright e2e | `apps/web-vite/e2e/` full run | Wave 9 |
+| CSP 48h soak | `/csp-report` endpoint logs zero violations against the legitimate bundle | Wave 3 (post-cutover) |
+| Final sign-off | `plannotator annotate goals/post-migration-parity-restoration/restoration-report.md --gate` | Wave 9 (user) |

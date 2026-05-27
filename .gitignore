@@ -60,3 +60,4 @@ goals/qa-walk-and-fix/findings/**
 
 # Post-migration parity audit scratch — never commit
 .audit-scratch/
+.restoration-scratch/
