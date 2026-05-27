@@ -65,7 +65,13 @@ export async function buildServer({
   await registerRateLimit(app, env);
   // CSRF origin guard runs as preHandler; exempts /webhooks/** + /health.
   // Better Auth's own CSRF token check is defense-in-depth alongside this.
-  registerCsrfOriginGuard(app, { allowedOrigins: [env.APP_URL] });
+  // Mirror the CORS plugin: accept APP_URL plus PUBLIC_APP_URL (dev =
+  // localhost:3000 alongside the ngrok APP_URL tunnel) so local SPA
+  // mutations are not blocked at the origin guard. The CORS allowlist
+  // already does the same — keep the two surfaces in lockstep.
+  registerCsrfOriginGuard(app, {
+    allowedOrigins: [env.APP_URL, ...(env.PUBLIC_APP_URL ? [env.PUBLIC_APP_URL] : [])],
+  });
   registerSentryHooks(app);
 
   // Browsers send CSP violation reports under non-standard Content-Type

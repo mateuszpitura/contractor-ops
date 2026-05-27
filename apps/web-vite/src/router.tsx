@@ -89,10 +89,38 @@ export const router = createBrowserRouter([
           return null;
         },
         children: [
-          // Auth (no dashboard shell)
-          { path: 'login', element: page(<LoginPage />) },
-          { path: 'register', element: page(<RegisterPage />) },
-          { path: 'verify-email', element: page(<VerifyEmailPage />) },
+          // Auth (no dashboard shell) — `requireAnonymous` bounces already-signed-in
+          // users back to the dashboard root (or the deep-link they came from)
+          // per legacy parity. `/invite/:token` deliberately skips the bounce
+          // because invite acceptance is valid for already-signed-in users too
+          // (e.g. accepting a second-org invite). Restoration of GAP-MIDDLEWARE-004.
+          {
+            path: 'login',
+            loader: async ({ params, request }) => {
+              const { requireAnonymous } = await import('./lib/require-anonymous.js');
+              const redirectTo = new URL(request.url).searchParams.get('redirectTo');
+              return requireAnonymous(params.locale, { redirectTo });
+            },
+            element: page(<LoginPage />),
+          },
+          {
+            path: 'register',
+            loader: async ({ params, request }) => {
+              const { requireAnonymous } = await import('./lib/require-anonymous.js');
+              const redirectTo = new URL(request.url).searchParams.get('redirectTo');
+              return requireAnonymous(params.locale, { redirectTo });
+            },
+            element: page(<RegisterPage />),
+          },
+          {
+            path: 'verify-email',
+            loader: async ({ params, request }) => {
+              const { requireAnonymous } = await import('./lib/require-anonymous.js');
+              const redirectTo = new URL(request.url).searchParams.get('redirectTo');
+              return requireAnonymous(params.locale, { redirectTo });
+            },
+            element: page(<VerifyEmailPage />),
+          },
           { path: 'invite/:token', element: page(<InvitePage />) },
           // Legal (public)
           { path: 'legal/breach-notification', element: page(<BreachNotificationPage />) },
