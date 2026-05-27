@@ -122,13 +122,13 @@ const VENDOR_RULES = [
 
 /** One async chunk per locale JSON — matches dynamic import() in messages.ts. */
 function messageChunkName(id) {
-  const match = id.match(/web\/messages\/([a-z]{2})\.json/);
+  const match = id.match(/web-vite\/messages\/([a-z]{2})\.json/);
   return match ? `vendor-messages-${match[1]}` : 'vendor-messages';
 }
 
 /** Resolve a module id to a vendor chunk name, or `undefined` for app code. */
 function vendorChunker(id) {
-  if (id.includes('web/messages/')) return messageChunkName(id);
+  if (id.includes('web-vite/messages/')) return messageChunkName(id);
 
   const isLocalMonorepo = id.includes('@contractor-ops/');
   if (!(id.includes('node_modules') || isLocalMonorepo)) return;
