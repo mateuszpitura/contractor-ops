@@ -55,7 +55,17 @@ export function DashboardShell({
                   <main
                     id="main-content"
                     className="atelier-main-surface flex min-w-0 flex-1 flex-col overflow-x-hidden p-6">
-                    <div className="flex-1 pb-8">
+                    {/*
+                     * Wrapper participates in the flex chain so workbench list
+                     * pages can hand a constrained height to AtelierTableShell:
+                     * main (flex-col) → this div (flex-col + min-h-0) → page
+                     * container with `flex min-h-0 flex-1`. Without min-h-0
+                     * here the flex chain breaks at this hop and tables expand
+                     * to natural row count instead of scrolling internally.
+                     * Atelier routes do not depend on the constraint — their
+                     * children stack at natural height inside the document.
+                     */}
+                    <div className="flex min-h-0 flex-1 flex-col pb-8">
                       <Outlet />
                     </div>
                     <AppFooter />
