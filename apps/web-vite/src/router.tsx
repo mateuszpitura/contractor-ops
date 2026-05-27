@@ -81,6 +81,18 @@ export const router = createBrowserRouter([
         path: '/',
         loader: () => redirect(`/${DEFAULT_LOCALE}`),
       },
+      // Back-compat redirects for the unlocalized `/admin/*` URLs operators
+      // bookmarked before the locale-prefix rollout. `feature-flags/` was
+      // dropped from the URL shape so `/admin/feature-flags/classification-engine`
+      // resolves to `/{locale}/admin/classification-engine`.
+      {
+        path: '/admin/*',
+        loader: ({ params }) => {
+          const rest = (params['*'] ?? '').replace(/^feature-flags\//, '');
+          const suffix = rest ? `/${rest}` : '';
+          return redirect(`/${DEFAULT_LOCALE}/admin${suffix}`);
+        },
+      },
       {
         path: '/:locale',
         loader: async ({ params }) => {
