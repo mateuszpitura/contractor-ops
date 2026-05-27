@@ -15,6 +15,7 @@ export interface UserMenuView {
   displayName: string | null;
   initials: string;
   handleSignOut: () => Promise<void>;
+  handleSaveName: (name: string) => Promise<{ ok: true } | { ok: false; error: unknown }>;
 }
 
 function readLocaleFromPath(): string {
@@ -43,6 +44,23 @@ export function useUserMenu(): UserMenuView {
     if (error) toast.error(t('signOutFailed'));
   }, [auth, t]);
 
+  const handleSaveName = useCallback(
+    async (name: string): Promise<{ ok: true } | { ok: false; error: unknown }> => {
+      const trimmed = name.trim();
+      if (!trimmed || trimmed === user?.name) return { ok: true };
+      try {
+        await auth.updateUser({ name: trimmed });
+        await session.refetch?.();
+        toast.success(t('nameUpdated'));
+        return { ok: true };
+      } catch (error) {
+        toast.error(t('nameUpdateFailed'));
+        return { ok: false, error };
+      }
+    },
+    [auth, session, t, user?.name],
+  );
+
   return {
     isPending: session.isPending,
     user: user
@@ -55,5 +73,6 @@ export function useUserMenu(): UserMenuView {
     displayName,
     initials,
     handleSignOut,
+    handleSaveName,
   };
 }

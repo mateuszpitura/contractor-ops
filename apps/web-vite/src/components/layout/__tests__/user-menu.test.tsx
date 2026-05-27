@@ -93,7 +93,13 @@ describe('UserMenu (web-vite)', () => {
   it('renders the display name and email', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
+        <UserMenu
+          user={baseUser}
+          displayName="Alice Smith"
+          initials="AS"
+          onSignOut={vi.fn()}
+          onSaveName={vi.fn(async () => ({ ok: true as const }))}
+        />,
       ),
     );
     expect(container.textContent).toContain('Alice Smith');
@@ -103,7 +109,13 @@ describe('UserMenu (web-vite)', () => {
   it('renders the avatar fallback initials', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
+        <UserMenu
+          user={baseUser}
+          displayName="Alice Smith"
+          initials="AS"
+          onSignOut={vi.fn()}
+          onSaveName={vi.fn(async () => ({ ok: true as const }))}
+        />,
       ),
     );
     expect(container.textContent).toContain('AS');
@@ -117,6 +129,7 @@ describe('UserMenu (web-vite)', () => {
           displayName="Alice Smith"
           initials="AS"
           onSignOut={vi.fn()}
+          onSaveName={vi.fn(async () => ({ ok: true as const }))}
         />,
       ),
     );
@@ -131,7 +144,13 @@ describe('UserMenu (web-vite)', () => {
   it('renders a settings link', async () => {
     const { container } = await mount(
       withRouter(
-        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={vi.fn()} />,
+        <UserMenu
+          user={baseUser}
+          displayName="Alice Smith"
+          initials="AS"
+          onSignOut={vi.fn()}
+          onSaveName={vi.fn(async () => ({ ok: true as const }))}
+        />,
       ),
     );
     const settingsLink = Array.from(container.querySelectorAll('a')).find(a =>
@@ -145,7 +164,13 @@ describe('UserMenu (web-vite)', () => {
     const onSignOut = vi.fn();
     const { container } = await mount(
       withRouter(
-        <UserMenu user={baseUser} displayName="Alice Smith" initials="AS" onSignOut={onSignOut} />,
+        <UserMenu
+          user={baseUser}
+          displayName="Alice Smith"
+          initials="AS"
+          onSignOut={onSignOut}
+          onSaveName={vi.fn(async () => ({ ok: true as const }))}
+        />,
       ),
     );
     const signOut = findButton(container, /sign out/i);
