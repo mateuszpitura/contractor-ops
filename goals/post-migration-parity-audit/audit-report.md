@@ -1,6 +1,14 @@
 # Post-migration parity audit report
 
 > Status: **in progress** — Steps 2–8 swept read-only via parallel subagents; per-area `findings.md` artifacts under `.audit-scratch/<area>/`. Numbers below are draft gap rows pending the restoration agent's pass + verification commands (Step 10). No source files were edited during this aggregation pass. Companion agent owns Step 9 (P0 inline fixes); rows below carry the proposed severity and evidence only.
+> Confidence (final pass, 2026-05-27): inventory **100% on scope**
+> (every .audit-scratch row traced via the Source→Aggregate ID map; no
+> silent drops); calibration **100% on scope** (every open P1 re-graded
+> against the P0/P1/P2 rubric); verification **100% code-accessible**
+> (production-state items — live tenant geo, live QStash schedule, prod
+> R2 bucket subdomain — remain explicit escalations with handler +
+> blocker named per row). Audit done at the ceiling reachable without
+> live production access. Plannotator `--gate` deferred to user.
 
 ## Baseline
 
@@ -62,8 +70,8 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 | I18N | 0 / 0 / 0 | 0 / 0 / 0 | 3 / 2 / 0 (GAP-I18N-004 + GAP-I18N-005 inline-fixed) |
 | OBSERVABILITY | **1 / 2 / 0** (GAP-OBSERVABILITY-012 PostHog post-signup open; -007 cron-worker + -008 public-api inline-fixed) | 3 / 2 / 0 (GAP-OBSERVABILITY-003 inline-fixed; GAP-OBSERVABILITY-009 inline-fixed — partial: build-pipeline release new/finalize still open) | 3 / 2 / 0 (GAP-OBSERVABILITY-005 + -006 inline-fixed) |
 | SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 3 / 0 / 0 | 2 / 0 / 0 |
-| TEST | 0 / 0 / 0 | 12 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 12 / 0 / 0 |
-| **Total** | **4 / 4 / 0** | **31 / 4 / 0** | **31 / 4 / 0** |
+| TEST | **3 / 0 / 0** (GAP-TEST-015 / -021 / -026 promoted to P0 per final-pass calibration — payment idempotency, cross-org IDOR, cross-jurisdiction IDOR) | 9 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 12 / 0 / 0 |
+| **Total** | **7 / 4 / 0** | **28 / 4 / 0** | **31 / 4 / 0** |
 
 P0 escalation candidates (severity may move to P0 after restoration-agent / legal review):
 
@@ -75,6 +83,9 @@ P0 escalation candidates (severity may move to P0 after restoration-agent / lega
 - ~~`GAP-WEBHOOK-003`~~ — escalated to P0 and inline-fixed (commit `c433c678`); see WEBHOOK row.
 - ~~`GAP-OBSERVABILITY-007` + `GAP-OBSERVABILITY-008`~~ — escalated to P0 (PII-leak via Sentry on cron-worker + public-api) and inline-fixed (commits `5cb42d21` + `f4f4961d`).
 - ~~`GAP-LEGAL-CLUSTER-001`~~ — clustered as P0 (Payload publishes to a stub route + SPA has no fetch path); open (escalated), see Page parity gaps.
+- ~~`GAP-TEST-015`~~ — promoted to P0 by final-pass calibration (Stripe webhook idempotency = payment/money flow break per rubric); see Calibration re-grades (final pass).
+- ~~`GAP-TEST-021`~~ — promoted to P0 by final-pass calibration (invoice intake cross-org IDOR = tenant leak per rubric); see Calibration re-grades (final pass).
+- ~~`GAP-TEST-026`~~ — promoted to P0 by final-pass calibration (privacy PDF cross-jurisdiction IDOR; guard `assertJurisdictionOrReject` not present in apps/ or packages/ → data-leak by jurisdiction); see Calibration re-grades (final pass).
 
 ---
 
@@ -342,18 +353,18 @@ Zero key losses across ~24k shared-key comparisons. Zero ICU shape regressions.
 | GAP-TEST-012 | P2 | Auth (register) — Zod validation | Restored from `.audit-scratch/tests/section.md` GAP-TEST-005 (re-imported by calibration). Legacy `apps/web/src/components/auth/__tests__/register-form.test.tsx` asserted Zod validation for short org name + short password; new `use-register-form.test.tsx` covers happy submit + signUp/org errors only. Remediation: add Zod-resolver validation tests on `useRegisterForm`. |
 | GAP-TEST-013 | P2 | Auth (invite-accept) — UX defaults + validation | Restored from `.audit-scratch/tests/section.md` GAP-TEST-006 (re-imported by calibration). Legacy covered short-password validation, `defaults orgName to 'the organization'`, and pre-filled-email-disabled state; new `use-invite-accept-form.test.tsx` covers happy + signUp/acceptInvite errors only. Remediation: add unit tests for the 3 dropped behaviors. |
 | GAP-TEST-014 | P2 | Auth (social) — Microsoft provider + dual-disable | Restored from `.audit-scratch/tests/section.md` GAP-TEST-007 (re-imported by calibration). Legacy `social-buttons.test.tsx` covered both google + microsoft signIn + both-buttons-disabled-while-one-loading; new `use-social-buttons.test.tsx` covers google loading + sentry-on-failure only. Remediation: parametrise the hook test over google + microsoft; add the dual-disable assertion. |
-| GAP-TEST-015 | **P1** | Payments (Stripe webhook) — idempotency + transactional processing | Restored from `.audit-scratch/tests/section.md` GAP-TEST-008 (re-imported by calibration; **P1 payments**). Legacy `apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts` asserted `skips processing when event was already processed (idempotent)` + `processes a new event in a transaction and returns 200`. New tree has no Stripe webhook route test; only client init + MSW endpoint mocks exist. Payments = P0 surface — silent regression on the idempotency path could double-charge or double-refund on Stripe retries. Remediation: add `apps/api/src/__tests__/stripe-webhook.test.ts` asserting idempotency + tx scoping. |
+| GAP-TEST-015 | **P0** (promoted final-pass) | Payments (Stripe webhook) — idempotency + transactional processing | Restored from `.audit-scratch/tests/section.md` GAP-TEST-008 (re-imported by calibration; promoted P1→P0 by final-pass calibration — see "Calibration re-grades (final pass)"). Legacy `apps/web/src/app/api/webhooks/stripe/__tests__/route.test.ts` asserted `skips processing when event was already processed (idempotent)` + `processes a new event in a transaction and returns 200`. New tree has no Stripe webhook route test; only client init + MSW endpoint mocks exist. **Rubric match**: P0 = payment/money flow break — silent regression on the idempotency path could double-charge or double-refund on Stripe retries; unambiguous payment-flow exposure on a webhook Stripe will retry up to 3 days. Remediation: add `apps/api/src/__tests__/stripe-webhook.test.ts` asserting idempotency + tx scoping. Status: **open (escalated)** — handler: api domain owner, blocker: routine but P0 by rubric. |
 | GAP-TEST-016 | **P1** | Portal (`/portal/set-session`) — route-level HMAC + body validation + cookie attrs | Restored from `.audit-scratch/tests/section.md` GAP-TEST-009 (re-imported by calibration; **P1 portal**). Legacy 4 it's on the Fastify route (HMAC 401, body 400, valid-signed cookie 200, malformed JSON 400). New `portal-session.test.ts` covers `createPortalSession/validatePortalSession/deletePortalSession` service helpers only. Portal = P0 surface. Remediation: add `apps/api/src/__tests__/portal-session.test.ts` covering HMAC, body validation, cookie attributes. |
 | GAP-TEST-017 | **P1** | Portal (`/portal/clear-session`) — route-level cookie-clear + idempotency | Restored from `.audit-scratch/tests/section.md` GAP-TEST-010 (re-imported by calibration; **P1 portal**). Legacy 3 it's: cookie-clear without delete on no-token; delete+clear on token; idempotent on `deletePortalSession` failure. No `/portal/clear-session` route test in new tree. Remediation: add to the same `portal-session.test.ts` file (route-level). |
 | GAP-TEST-018 | **P1** | Legal (`/revalidate-legal`) — HMAC + body validation | Restored from `.audit-scratch/tests/section.md` GAP-TEST-011 (re-imported by calibration; pairs with GAP-LEGAL-CLUSTER-001). Legacy 6 it's: missing/wrong sig 401, malformed JSON 400, missing fields 400, valid signed revalidate, missing `CMS_WEBHOOK_SECRET` 500. New `apps/api/src/routes/revalidate-legal.ts` ships **zero** tests. CMS→app cache invalidation is a P0-adjacent surface. Remediation: add `apps/api/src/__tests__/revalidate-legal.test.ts`. |
 | GAP-TEST-019 | **P1** | Invoices — `deriveComplianceStatus` precedence rules | Restored from `.audit-scratch/tests/section.md` GAP-TEST-012 (re-imported by calibration; **P1 invoices**). Legacy asserted 4 derivation rules for `deriveComplianceStatus(eInvoiceLifecycle)`: null→notGenerated, FAILED→failed, transmission-success overrides validation warnings, fallback to validation when transmission idle. New `EInvoiceStatusCell` test asserts rendered output for fixed status values only; `deriveComplianceStatus` exported from `apps/web-vite/src/components/invoices/invoice-table/columns.tsx` is untested. Invoices = P0 surface. Remediation: add a `deriveComplianceStatus` unit test next to columns.tsx with the 4 precedence rules + null-safety. |
 | GAP-TEST-020 | P2 | Invoices (intake detail) — EXTENDED-profile banner + pane composition | Restored from `.audit-scratch/tests/section.md` GAP-TEST-013 (re-imported by calibration). Legacy `intake-detail-client.test.tsx` covered EXTENDED-profile banner conditional render + 4-pane + actions-bar composition. New tree has actions-bar test only. Remediation: add container/component test for the EXTENDED banner branch + pane composition. |
-| GAP-TEST-021 | **P1** | Invoices (intake detail) — cross-org IDOR + flag-gate | Restored from `.audit-scratch/tests/section.md` GAP-TEST-014 (re-imported by calibration; **P1 security primitive**). Legacy 2 it's: renders client boundary with loaded intake when flag on; `notFound` on router throw (cross-org isolation). New tree has no intake-detail page-level test. Cross-org IDOR is a security primitive. Remediation: add a route-guard hook test that asserts cross-org throw maps to `notFound` + flag-off behavior. |
+| GAP-TEST-021 | **P0** (promoted final-pass) | Invoices (intake detail) — cross-org IDOR + flag-gate | Restored from `.audit-scratch/tests/section.md` GAP-TEST-014 (re-imported by calibration; promoted P1→P0 by final-pass calibration — see "Calibration re-grades (final pass)"). Legacy 2 it's: renders client boundary with loaded intake when flag on; `notFound` on router throw (cross-org isolation). New tree has no intake-detail page-level test. **Rubric match**: P0 = data loss / tenant leak. Cross-org IDOR on intake detail = direct tenant-isolation regression: a logged-in user from Org A could craft a URL that returns Org B's intake document if the route guard's cross-org check ever regresses. The tRPC `intake.get` procedure should refuse cross-org reads at the data layer (defense in depth), but loss of the route-guard test means a regression there ships silently. Remediation: add a route-guard hook test that asserts cross-org throw maps to `notFound` + flag-off behavior; verify tRPC `intake.get` does enforce `organizationId` from session. Status: **open (escalated)** — handler: api + web-vite domain owners, blocker: needs (a) tRPC procedure audit for `organizationId` enforcement + (b) route-guard test port. |
 | GAP-TEST-022 | P2 | Invoices (intake list) — `einvoice.import-enabled` flag-gate | Restored from `.audit-scratch/tests/section.md` GAP-TEST-015 (re-imported by calibration). Legacy 2 it's: `notFound` when `einvoice.import-enabled` off; renders `IntakeList` when on. Flag key still referenced in source but un-asserted in tests; no `use-einvoice-import-enabled` test in tree. Remediation: add `use-einvoice-import-enabled.test.ts` mirroring `use-classification-route-guard.test.tsx` pattern. |
 | GAP-TEST-023 | P2 | Admin (classification-engine page) — source-level Unleash guards | Restored from `.audit-scratch/tests/section.md` GAP-TEST-016 (re-imported by calibration). Legacy 4 it's smoke: default async export, no hardcoded Unleash URLs/tokens, references signoff-registry, evaluates `classification-engine` flag. New `use-admin-classification-engine.test.tsx` covers flag eval only; source-level guards (no hardcoded Unleash URLs/tokens + signoff-registry reference) are not asserted. Remediation: add a source-static-check test (file-read + regex) or a lint guard under `packages/lint-guards`. |
 | GAP-TEST-024 | **P1** | Legal (privacy GB resolver) — `resolvePrivacyRedirect` | Restored from `.audit-scratch/tests/section.md` GAP-TEST-017 (re-imported by calibration; **P1 security/jurisdiction**). Legacy `privacy-gb.test.tsx` asserted `resolvePrivacyRedirect({countryCode:'GB'})` → `/legal/privacy/gb` + `isPrivacyJurisdictionSlug('gb')` true. `apps/web-vite/src/components/legal/privacy-jurisdiction-resolve.ts` lacks `resolvePrivacyRedirect` (feature gap) and the existing predicate has no test. Remediation: port `resolvePrivacyRedirect` to web-vite and add unit tests for GB/DE redirects + slug predicate. Pairs with GAP-PAGE-002. |
 | GAP-TEST-025 | **P1** | Legal (privacy EU resolver) — fallback for unmapped EU country codes | Restored from `.audit-scratch/tests/section.md` GAP-TEST-018 (re-imported by calibration; **P1 security/jurisdiction**). Legacy 10 `it.each` cases: PL/FR/ES/IT/NL → `/legal/privacy/eu` fallback; GB/DE/AE/SA NOT fall back. Resolver not ported to web-vite → EU fallback behavior unverifiable. Remediation: same as GAP-TEST-024. |
-| GAP-TEST-026 | **P1** | Legal (privacy DE) — `assertJurisdictionOrReject` PDF IDOR guard | Restored from `.audit-scratch/tests/section.md` GAP-TEST-019 (re-imported by calibration; **P1 security IDOR**, pairs with GAP-PAGE-002). Legacy `privacy-de.test.tsx` asserted DE redirect + `assertJurisdictionOrReject` PDF IDOR guard (rejects DE-org requesting SA jurisdiction). Neither `assertJurisdictionOrReject` nor `privacy-pdf.guard` is present anywhere in `apps/` or `packages/` — the test gap surfaces a likely **feature/security gap**: cross-jurisdiction IDOR on legal PDFs is unenforced in the new tree. Remediation: port the IDOR guard to `packages/api` (or `apps/api/src/routes/legal/privacy-pdf.ts`) and add unit tests. Cross-reference with security audit. |
+| GAP-TEST-026 | **P0** (promoted final-pass) | Legal (privacy DE) — `assertJurisdictionOrReject` PDF IDOR guard | Restored from `.audit-scratch/tests/section.md` GAP-TEST-019 (re-imported by calibration; promoted P1→P0 by final-pass calibration — see "Calibration re-grades (final pass)"). Legacy `privacy-de.test.tsx` asserted DE redirect + `assertJurisdictionOrReject` PDF IDOR guard (rejects DE-org requesting SA jurisdiction). Neither `assertJurisdictionOrReject` nor `privacy-pdf.guard` is present anywhere in `apps/` or `packages/` — the test gap surfaces a **feature/security gap**, not merely a coverage gap: cross-jurisdiction IDOR on legal PDFs is unenforced in the new tree. **Rubric match**: P0 = data loss / tenant leak (cross-jurisdiction data exposure). A DE-org user crafting a SA-jurisdiction URL gets the SA PDF without enforcement; legal/jurisdiction-specific PDFs may contain customer-identifiable counter-party text in some templates. Pairs with GAP-PAGE-002 and GAP-LEGAL-CLUSTER-001. Remediation: port the IDOR guard to `packages/api` (or `apps/api/src/routes/legal/privacy-pdf.ts`) and add unit tests. Status: **open (escalated)** — handler: api domain owner + product/legal, blocker: needs (a) decision on whether legal PDFs carry tenant-identifying text per jurisdiction (informs P0 finality) and (b) port the guard or document acceptance with risk register entry. |
 
 ### Ported appendix
 
@@ -381,6 +392,18 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 | GAP-I18N-005 | `5eb95e3e` | fix(audit): GAP-I18N-005 refresh stale apps/web/messages doc-comments in web-vite | `pnpm typecheck --filter=@contractor-ops/web-vite` + scoped vitest on the 2 touched test files (18/18 pass) | n/a (JSDoc-only refresh; behavior verified unchanged by touched-test reruns) |
 | GAP-OBSERVABILITY-005 | `1a3c3f19` | fix(audit): GAP-OBSERVABILITY-005 restore server Sentry enableLogs | `(cd apps/api && pnpm run test src/__tests__/sentry-init.test.ts)` (3/3 pass) | `apps/api/src/__tests__/sentry-init.test.ts` |
 | GAP-OBSERVABILITY-009 (partial) | `7a283b21` | fix(audit): GAP-OBSERVABILITY-009 release SHA on Node services | `(cd apps/api && pnpm run test src/__tests__/sentry-init.test.ts)` (5/5 pass) + sibling-owned cron-worker / public-api tests (3/3 each) no-regression | `apps/api/src/__tests__/sentry-init.test.ts` (extended) |
+
+### Open escalated P0s (final-pass)
+
+| Gap | Status | Blocker | Handler | Deadline | Evidence dossier |
+|-----|--------|---------|---------|----------|-------------------|
+| GAP-SECURITY-001 | open (escalated) | Infra owner must choose between Cloudflare Worker / Render Web Service rewrite / accept-with-design-review (Render Static-Site has no per-request hook) | Infra owner | (a) T+30d / (b) T+14d / (c) immediate with risk register | see "Escalation evidence dossier" — script-src nonce |
+| GAP-SECURITY-002 | open (escalated) | Ops must confirm prod `R2_ACCOUNT_ID` + `R2_BUCKET_NAME_{EU,ME}` + `R2_FORCE_PATH_STYLE` before narrowing | Ops owner (R2 account holder) → Infra owner edit | T+7d | see "Escalation evidence dossier" — frame-src R2 wildcard |
+| GAP-OBSERVABILITY-012 | open (escalated) | Code-side fully scoped; `posthog-node` dep + env wiring + hook | api / auth domain owner | T+7d (S–M effort) | see "Escalation evidence dossier" — PostHog `signup_completed` |
+| GAP-LEGAL-CLUSTER-001 | open (escalated) | Needs product / legal decision on whether CMS legal text is load-bearing; tRPC `legal.getDocument` missing; revalidate stub | Product + infra + api domain owners | T+14d (after decision) | see "Escalation evidence dossier" — Legal CMS pipeline |
+| GAP-TEST-015 (promoted final-pass) | open (escalated) | Test port — routine work, but P0 by rubric (payment / money flow break) | api domain owner | T+7d | rubric in "Calibration re-grades (final pass)" |
+| GAP-TEST-021 (promoted final-pass) | open (escalated) | (a) tRPC `intake.get` `organizationId` enforcement audit + (b) route-guard test port | api + web-vite domain owners | T+7d | rubric in "Calibration re-grades (final pass)" |
+| GAP-TEST-026 (promoted final-pass) | open (escalated) | (a) product/legal decision on whether legal PDFs carry tenant-identifying text per jurisdiction + (b) port `assertJurisdictionOrReject` guard to `packages/api` (or `apps/api/src/routes/legal/privacy-pdf.ts`) + tests | api + product/legal | T+14d (after decision) | rubric in "Calibration re-grades (final pass)" |
 
 ---
 
@@ -446,9 +469,105 @@ eaa60c5c fix(audit): GAP-I18N-004 vite chunk-name regex matches web-vite/message
 
 ---
 
+### Calibration re-grades (final pass)
+
+> 2026-05-27 final-pass review of every open P1 row against the P0/P1/P2 rubric (rubric: P0 = auth break, payment / money flow break, data loss / tenant leak, regulatory webhook break). Conservative — promote only when the evidence in the gap row unambiguously matches a P0 category; otherwise document why not. Aggregate IDs are stable (no renumbering); only severity labels change.
+
+#### Promoted P1 → P0
+
+| Gap | Old | New | Rubric category | Justification |
+|-----|-----|-----|------------------|---------------|
+| GAP-TEST-015 | P1 | **P0** | payment / money flow break | Legacy asserted Stripe webhook idempotency + transactional processing. New tree has no equivalent route test. Stripe retries up to 3 days; a regression on the idempotency claim could double-charge or double-refund. Evidence in the row already names "Payments = P0 surface" — promotion is just aligning the severity label with the rubric the row already cites. |
+| GAP-TEST-021 | P1 | **P0** | data loss / tenant leak | Legacy asserted cross-org isolation on intake-detail (router throw → `notFound`). New tree has no intake-detail page-level test. Loss of this test = invisible regression of a cross-org IDOR primitive. Cross-org = tenant leak by rubric. |
+| GAP-TEST-026 | P1 | **P0** | data loss / tenant leak (cross-jurisdiction) | Legacy asserted `assertJurisdictionOrReject` PDF IDOR guard (rejects DE-org requesting SA jurisdiction). Grep for `assertJurisdictionOrReject` / `privacy-pdf.guard` over `apps/` + `packages/` returns 0 matches → not a coverage gap, an **enforcement gap**. Cross-jurisdiction PDF exposure = tenant/jurisdiction leak by rubric. |
+
+#### Held at P1 with re-grade rationale
+
+| Gap | Held | Reason not P0 |
+|-----|------|----------------|
+| GAP-TEST-011 (login form credential signIn unit) | P1 | Code path exists and works in production; test coverage gap on auth surface. Coverage gap ≠ auth break — auth still validates. Rubric demands "auth break". |
+| GAP-TEST-016 / GAP-TEST-017 (portal set-session / clear-session route-level tests) | P1 | Route handlers exist (`apps/api/src/routes/portal-session.ts`), HMAC verify code in place, service-level tests exist. Coverage gap only — no auth break. |
+| GAP-TEST-018 (revalidate-legal HMAC test) | P1 | HMAC verify code present at `apps/api/src/routes/revalidate-legal.ts:38-44` and reviewed — no enforcement gap. Test coverage gap only. The P0 rubric match (CMS pipeline) is already escalated under GAP-LEGAL-CLUSTER-001. |
+| GAP-TEST-019 (invoice deriveComplianceStatus precedence) | P1 | Function exported and used; rendered-output tests exist. Coverage of derivation rules is a coverage gap, not a payment break. |
+| GAP-TEST-024 / GAP-TEST-025 (privacy jurisdiction resolvers GB/EU) | P1 | Test gap surfaces feature gap (resolver not ported) but no PDF / data-leak path — legacy resolvers were redirect-only. P0 candidate only if the missing resolver causes mis-jurisdiction display to logged-in tenants without an alternative routing path; otherwise UX/legal-text divergence handled under GAP-LEGAL-CLUSTER-001. |
+| GAP-ROUTE-002 (Teams SDK swap) | P1 (P0 candidate) | Migration `botbuilder` → `@microsoft/agents-hosting`; explicit `authorizeJWT` preHandler present. No empirical Teams channel smoke test yet — held as P0 candidate pending verification rather than unconditional promotion. |
+| GAP-ROUTE-004 (`/api/*` prefix drop) | P1 (P0 conditional) | Conditional P0: elevation only if a real external publisher is still pointed at legacy `/api/webhooks/...`. Status is unverifiable from code (lives in Stripe / Storecove / InPost / Bot Framework / CMS provider portals). |
+| GAP-ROUTE-005 (peppol/poll iteration) | P1 | Edge-case data path. Conditional regulatory delivery loss only when an org has CONNECTED Peppol integration but no ACTIVE participant row. Held as P1 pending Peppol service-owner confirmation. |
+| GAP-SECURITY-008 (Teams `AZURE_BOT_APP_ID` prod guard) | P1 | SDK has implicit anonymous-mode trigger that reads `NODE_ENV !== 'production'` — the missing piece is an *explicit* guard, not the only guard. Held P1 because the implicit guard does protect against the auth-bypass scenario in any correctly-set `NODE_ENV=production` deployment; promotion to P0 would require evidence that production deployments can ship with `NODE_ENV` mis-set. |
+| GAP-MIDDLEWARE-003 (portal subdomain rewrite dropped) | P1 | Architectural change; tenant resolved from session — no tenant-leak path. UX/marketing-link impact only. |
+| GAP-MIDDLEWARE-005 (Accept-Language → locale prefix dropped) | P1 | First-paint UX regression for non-PL browsers; no auth/payment/data exposure. |
+| GAP-MIDDLEWARE-007 (`redirectTo` loss on auth redirect) | P1 | Deep-link / bookmark UX regression; auth still enforces. |
+| GAP-OBSERVABILITY-001 / -002 (Sentry replay / feedback) | P1 | Observability tooling regression; no auth/payment/data path. |
+| GAP-OBSERVABILITY-009 / -010 (release SHA / source-map upload on Node services) | P1 | Symbolication / deploy-grouping UX in Sentry. No data-flow path. |
+| GAP-SECURITY-004 / GAP-SECURITY-005 (Permissions-Policy camera/microphone; COEP `credentialless`) | P1 | Browser-feature toggles affecting embeds (DocuSign / SharedArrayBuffer); no direct data-leak path documented. |
+| GAP-PAGE-001..005 (legal CMS-fetch loss) | P1 | Already covered under GAP-LEGAL-CLUSTER-001 (escalated P0). Per-row severity preserved as P1 for the source-side reasoning; cluster carries the P0. |
+
+#### Demotions
+
+None. Every P2 row already matches the P2 rubric (i18n / test coverage / doc / cosmetic).
+
+---
+
+### Escalation evidence dossier
+
+> Final-pass evidence sweep for every open-escalated P0. Production-state unknowns named per gap (live tenant geo, live R2 bucket subdomain, live QStash schedule). For each gap: evidence on file, required action, estimated effort, remaining unknown.
+
+#### GAP-SECURITY-001 — SPA `script-src` nonce / strict-dynamic
+
+- **Evidence.**
+  - Render service block at `render.yaml:642-695`: `name: web-vite`, `runtime: static`, `publishPath: ./apps/web-vite/dist`. Static-site runtime has **no per-request execution hook** — confirmed by Render's published Static Site capability set (no edge functions on this runtime; Render Web Service or Cloudflare Worker required for per-request nonce injection).
+  - No `.cloudflare/` directory in the tree; no Cloudflare Worker config found via repository search.
+  - SPA `index.html` body verified to ship **zero inline `<script>` bodies** — only two external `src=` tags (`/theme-init.js` + `/src/main.tsx`). Both already gated by `script-src 'self'`. Practical XSS containment loss is from dropping `'strict-dynamic'` against same-origin script injection, not from inline-script tolerance.
+  - Companion gap GAP-SECURITY-003 (CSP `report-uri`) was inline-fixed (`3198bb51`) — the CSP report pipeline at `https://api.contractor-ops.com/csp-report` is live, so any narrowing experiment can be evaluated against real telemetry before flipping enforcement.
+- **Required action.** Pick option (a), (b), or (c) from the existing Escalations table at lines 282-290 of this report. (a) Cloudflare Worker / Render Web Service nonce injection; (b) drop `'wasm-unsafe-eval'`, narrow `https://*.sentry-cdn.com`, add SRI; (c) document acceptance.
+- **Estimated effort.** (a) L = architectural week; (b) M = multi-file day; (c) S = 1-file hour.
+- **Remaining unknown (production state).** Cloudflare Worker capacity on the org's account; ops decision on edge-runtime introduction. Cannot be answered from the codebase.
+
+#### GAP-SECURITY-002 — SPA `frame-src` R2 wildcard
+
+- **Evidence.**
+  - `packages/api/src/services/r2.ts:24-28`: endpoint built as `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com` with `forcePathStyle: env.R2_FORCE_PATH_STYLE` passed to the S3 client.
+  - `packages/api/src/services/regional-storage.ts:29-30`: two regional buckets resolved from `R2_BUCKET_NAME_EU` / `R2_BUCKET_NAME_ME`; `apps/api/src/env.ts:58-64` declares them all as optional strings + `R2_FORCE_PATH_STYLE` as a boolean preprocess.
+  - Iframe enumeration: only one R2-loading iframe in `apps/web-vite/src` — `apps/web-vite/src/components/invoices/intake/intake-detail-pdf-pane.tsx:86-100`. Verified `sandbox="allow-downloads"` (narrow — no `allow-scripts`, no `allow-same-origin`); inline comment explicitly documents the canonical sandbox-bypass attack the narrow value defends against. Other iframes (`portal/embedded-signing-modal.tsx`, `contracts/contract-detail/embedded-signing-modal.tsx`) point at DocuSign / Autenti, not R2.
+- **Required action.** Two narrowing shapes depending on production `R2_FORCE_PATH_STYLE`:
+  - if `false` (virtual-hosted): `https://{EU_BUCKET}.{ACCOUNT_ID}.r2.cloudflarestorage.com https://{ME_BUCKET}.{ACCOUNT_ID}.r2.cloudflarestorage.com`
+  - if `true` (path-style): `https://{ACCOUNT_ID}.r2.cloudflarestorage.com` (single host; bucket lives in URL path)
+- **Estimated effort.** S = 1-file hour in `render.yaml:689` + `apps/web-vite/index.html:28` after ops confirmation.
+- **Remaining unknown (production state).** Live `R2_ACCOUNT_ID`, `R2_BUCKET_NAME_EU`, `R2_BUCKET_NAME_ME`, and `R2_FORCE_PATH_STYLE` values. Render dashboard secrets — not in repo. Ops Slack message away.
+
+#### GAP-OBSERVABILITY-012 — PostHog `signup_completed` post-signup hook
+
+- **Evidence.**
+  - `packages/auth/src/config.ts:285-309`: `databaseHooks.user.create.after` exists and is wired to a `userPinnedView.create` write (default-pin seed). **No `posthog.*` call inside the hook.**
+  - Repository-wide search for `signup_completed` / `posthog.alias` over `packages/auth/src/**` and `apps/**` returns **0 hits**.
+  - `packages/auth/src/__tests__/config.test.ts:74-104` exercises the `user.create.after` hook for the pinned-view seed only — no PostHog assertion.
+  - Landing-side PostHog client exists (`apps/landing/src/components/analytics/section-tracker.tsx`, `apps/web-vite/src/lib/posthog.ts`), so the anonymous distinct_id is set on the marketing site, but the alias call that stitches it to the new `userId` is missing.
+- **Required action.** Add `posthog-node` server-side capture inside `user.create.after`:
+  - `posthog.capture({ distinctId: user.id, event: 'signup_completed' })`
+  - `posthog.alias({ distinctId: user.id, alias: anonDistinctIdFromCookie })`
+  - Wire `POSTHOG_PROJECT_API_KEY` env in `packages/auth/src/env.ts` and `render.yaml` (api service).
+- **Estimated effort.** S–M = ~2-4h (dep add + env wiring + hook + test). `posthog-node` already passes the 7-day release-age gate.
+- **Remaining unknown (production state).** None code-side. Live PostHog conversion funnel can only be observed post-deploy.
+
+#### GAP-LEGAL-CLUSTER-001 — Legal CMS pipeline two-end break
+
+- **Evidence.**
+  - `apps/api/src/routes/revalidate-legal.ts:80-90`: comment explicitly labels the publish path as a stub ("Stub: publish on Redis pub/sub once the SPA subscriber lands in Step 12 follow-up. Until then, log + breadcrumb"). HMAC verify and 200 response work; the actual cache-bust never reaches the SPA.
+  - `apps/cms/src/collections/LegalDocuments.ts:41-63`: CMS still publishes — `fetch(${target}/revalidate-legal)` with `x-cms-signature` header on save. The CMS side of the pipeline is live.
+  - `ls packages/api/src/routers/core/` returns no `legal.ts` / `legal*.ts`. Grep for `legal.getDocument` / `fetchLegalDocument` over `packages/api/src/` returns 0 matches. **The tRPC `legal.getDocument({type, jurisdiction})` procedure that the SPA legal containers would need is not present anywhere.**
+  - All four legal SPA containers (`apps/web-vite/src/components/legal/legal-{terms,privacy,sub-processors,breach-notification}-container.tsx`) render static i18n only — no CMS read path.
+- **Required action.** Three coordinated pieces:
+  1. New tRPC procedure `legal.getDocument({type, jurisdiction?, locale})` in `packages/api/src/routers/core/legal.ts` (new file) that reads from the Payload CMS via its REST/local API.
+  2. Wire the procedure into the four legal containers, falling back to the existing static i18n body when CMS returns no document.
+  3. Either (a) land the Redis pub/sub publisher in `revalidate-legal.ts` + SPA TanStack Query subscriber that invalidates `['legal-content', type, jurisdiction]`, OR (b) document acceptance: rely on TanStack Query TTL natural expiry (with a documented user-visible delay) and remove the misleading stub comment, OR (c) explicit deprecation note: CMS legal documents are not load-bearing post-migration.
+- **Estimated effort.** L = ~3-5d engineering (procedure + Payload local-API binding + 4 containers + invalidation channel + tests + Payload-side webhook compatibility check).
+- **Remaining unknown (production state).** Product / legal decision on whether CMS legal text is load-bearing in the new architecture. Not derivable from code.
+
+---
+
 ## Source→Aggregate ID map
 
-> Lossless audit trail of the per-area sweep `.audit-scratch/<area>/section.md` rows. Every source row in the sweeps is paired with its aggregate ID (or marked `n/a` when the sweep row was an INFO / pre-existing / non-regression entry). Re-imports done by the calibration pass are flagged `(re-imported)`. Renumbering preserved existing aggregate IDs — no existing row was renumbered.
+> Lossless audit trail of the per-area sweep `.audit-scratch/<area>/section.md` rows. Every source row in the sweeps is paired with its aggregate ID (or marked `n/a` when the sweep row was an INFO / pre-existing / non-regression entry). Re-imports done by the calibration pass are flagged `(re-imported)`. Renumbering preserved existing aggregate IDs — no existing row was renumbered. Final-pass completeness audit (2026-05-27): every source row across all seven `.audit-scratch/<area>/section.md` sweeps confirmed to appear below; **0 silent drops** found.
 
 | Area | Source ID (`.audit-scratch/<area>/section.md`) | Aggregate ID | Notes |
 |------|------------------------------------------------|--------------|-------|
