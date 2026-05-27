@@ -392,10 +392,11 @@ Captured at audit branch head (`a787287d`) on 2026-05-27:
 - [x] `pnpm --filter @contractor-ops/cron-worker test` — **PASS** 47 / 47 tests across 13 files (1.59s).
 - [x] `pnpm check:web-vite-data-layer` — **PASS** (`check:web-vite-data-layer — OK`). Note: script lives at repo root, not the `web-vite` workspace; the original checklist's `--filter @contractor-ops/web-vite` form silently no-ops with `ERR_PNPM_RECURSIVE_RUN_NO_SCRIPT`.
 - [x] `pnpm check:web-vite-page-shells` — **PASS** (`check:web-vite-page-shells — OK`). Same root-vs-workspace note as above.
-- [ ] `pnpm --filter @contractor-ops/web-vite test -- src/` — **PRE-EXISTING FAIL** (4189 pass / 31 fail across 2 files; 599 / 10 / 24 file totals). Failures are NOT audit-induced — audit branch touches 0 files under `apps/web-vite/src/`:
-  - `src/hooks/__tests__/use-approval-actions.test.tsx` — toast-message assertions (`'Approved'` / `'Rejected'` / `'Delegated'` / `'Clarification requested'` / `'Failed to approve'`) fail. Source-file blame: `apps/web-vite/src/hooks/use-approval-actions.ts` last touched in `4fefacb3 chore(branch-snapshot)` (branch base, pre-audit).
-  - `src/components/dashboard/__tests__/dashboard-home-container.test.tsx` — KPI label / count / currency-format / divide-by-100 / landmark / grid-cardinality assertions fail. Source-file blame: same `4fefacb3` commit on the branch base.
-  - **Action**: tracked as `FOLLOWUP-PRE-EXISTING-001` (web-vite green-test debt on `dry-solid-audit/extract-shared`) — escalated to the branch's restoration owner; out of this audit's scope (no source files in those paths were edited on `audit/post-migration-parity`).
+- [x] `pnpm --filter @contractor-ops/web-vite test -- src/` — **PRE-EXISTING FAIL (verified pre-existing via worktree comparison)**. 4189 pass / 31 fail across 2 files at audit-branch HEAD; same failure profile at branch base `4fefacb36d67fd877fe831ffdcab078f59393d6a`:
+  - `src/hooks/__tests__/use-approval-actions.test.tsx` — **5 fail / 1 pass on BOTH branches**, identical failing test names (`approve`, `reject`, `delegate`, `requestClarification`, `emits error toast`). Audit branch never touched `apps/web-vite/src/hooks/use-approval-actions.ts` or its test.
+  - `src/components/dashboard/__tests__/dashboard-home-container.test.tsx` — **suite-level Vite import-resolution failure on BOTH branches; 0 tests collected on either**. On base the missing import is `@contractor-ops/ui/components/shadcn/skeleton`; on HEAD it is `@contractor-ops/ui` barrel export `DashboardIllustration` (because `e95e4e75` rewrote the imports). Net category is identical: the suite has never run on `dry-solid-audit/extract-shared`. `e95e4e75` did NOT regress a passing test — it changed which broken import fails first.
+  - **Verification method**: isolated worktree at `4fefacb3`, ran each test file with direct vitest invocation, compared failure counts and names against audit-branch HEAD.
+  - **Action**: `FOLLOWUP-PRE-EXISTING-001` confirmed; escalated to `dry-solid-audit/extract-shared` restoration owner. Out of this audit's scope.
 - [ ] `plannotator annotate goals/post-migration-parity-audit/audit-report.md --gate` — **DEFERRED to user**. Cannot be run by the agent; requires interactive sign-off. The audit branch is ready for the user to launch this step at their convenience.
 
 ### Audit branch surface (touched files)
@@ -439,7 +440,7 @@ eaa60c5c fix(audit): GAP-I18N-004 vite chunk-name regex matches web-vite/message
   - `GAP-SECURITY-003` — inline-fixed (`3198bb51`).
   - `GAP-WEBHOOK-003` — inline-fixed (`c433c678`).
 - ✅ `pnpm typecheck` + `api-server test` + `cron-worker test` + both quality gates pass on `a787287d`.
-- ⚠️ `pnpm --filter @contractor-ops/web-vite test -- src/` fails on 2 pre-existing test files (not audit-induced); escalated as `FOLLOWUP-PRE-EXISTING-001`.
+- ✅ `pnpm --filter @contractor-ops/web-vite test -- src/` fails on 2 test files (4189/4220 pass) but **verified pre-existing via worktree comparison** against branch base `4fefacb3` (identical failure profile on base — see Verification block). Escalated as `FOLLOWUP-PRE-EXISTING-001`; not in audit scope.
 - ⏳ Plannotator `--gate` deferred to user (cannot be run by the agent).
 
 ---
