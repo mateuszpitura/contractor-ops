@@ -5,6 +5,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@contractor-ops/ui/components/shadcn/sidebar';
+import { Pin } from 'lucide-react';
 
 import { WorkflowNavBadgeContainer } from '../../components/workflows/workflow-nav-badge-container.js';
 import { Link } from '../../i18n/navigation.js';
@@ -37,6 +38,24 @@ export function NavItems({ groups }: NavItemsProps) {
                   <span>{item.label}</span>
                 </SidebarMenuButton>
                 {item.showWorkflowBadge ? <WorkflowNavBadgeContainer /> : null}
+              </SidebarMenuItem>
+            ))}
+            {group.pinnedTabs.map(tab => (
+              <SidebarMenuItem
+                key={`pinned:${tab.key}`}
+                data-pinned-tab="true"
+                className="relative">
+                <SidebarMenuButton
+                  render={<Link href={tab.href} aria-current={tab.isActive ? 'page' : undefined} />}
+                  isActive={tab.isActive}
+                  tooltip={tab.label}>
+                  <tab.icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                  <Pin
+                    aria-hidden="true"
+                    className="ms-auto h-2.5 w-2.5 rotate-45 text-muted-foreground/50 group-data-[collapsible=icon]:hidden"
+                  />
+                </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>

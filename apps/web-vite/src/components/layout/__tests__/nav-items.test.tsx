@@ -77,6 +77,7 @@ const sampleGroups: NavItemsGroupView[] = [
         showWorkflowBadge: false,
       },
     ],
+    pinnedTabs: [],
   },
   {
     key: 'operations',
@@ -99,6 +100,7 @@ const sampleGroups: NavItemsGroupView[] = [
         showWorkflowBadge: true,
       },
     ],
+    pinnedTabs: [],
   },
   {
     key: 'system',
@@ -113,6 +115,7 @@ const sampleGroups: NavItemsGroupView[] = [
         showWorkflowBadge: false,
       },
     ],
+    pinnedTabs: [],
   },
 ];
 

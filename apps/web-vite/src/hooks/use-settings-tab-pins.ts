@@ -27,12 +27,17 @@ export function useSettingsTabPins() {
   const queryKey = trpc.user.pins.list.queryKey({ kind: PIN_KIND });
   const query = useQuery(queryOpts);
 
-  const pinnedKeys = useMemo(() => {
+  const { pinnedKeys, pinnedOrder } = useMemo(() => {
     const set = new Set<SettingsTabKey>();
+    const order: SettingsTabKey[] = [];
     for (const pin of query.data ?? []) {
-      if (pin.kind === PIN_KIND) set.add(pin.key as SettingsTabKey);
+      if (pin.kind !== PIN_KIND) continue;
+      const key = pin.key as SettingsTabKey;
+      if (set.has(key)) continue;
+      set.add(key);
+      order.push(key);
     }
-    return set;
+    return { pinnedKeys: set, pinnedOrder: order };
   }, [query.data]);
 
   const mutation = useMutation(
@@ -70,6 +75,7 @@ export function useSettingsTabPins() {
 
   return {
     pinnedKeys,
+    pinnedOrder,
     isPinned,
     toggle,
     isPending: mutation.isPending,
