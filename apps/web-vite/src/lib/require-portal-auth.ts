@@ -43,9 +43,25 @@ function getPortalTrpcClient() {
   return portalClient;
 }
 
-function hasPortalSessionCookie(): boolean {
+/**
+ * Cheap cookie-shape guard. The `portal_session` cookie carries a signed,
+ * URL-safe base64 token; an empty or obviously-malformed value can
+ * satisfy a naive `startsWith` check but is clearly not a real session.
+ * Reject those at the edge to skip the tRPC `portal.getSession` round-trip
+ * and bounce straight to portal login. The authoritative validation
+ * still runs in the tRPC `portalSessionFromCookie` resolver — this guard
+ * is never the sole gate.
+ */
+export function hasPortalSessionCookie(): boolean {
   if (typeof document === 'undefined') return false;
-  return document.cookie.split(';').some(part => part.trim().startsWith('portal_session='));
+  const entry = document.cookie
+    .split(';')
+    .map(part => part.trim())
+    .find(part => part.startsWith('portal_session='));
+  if (!entry) return false;
+  const value = entry.slice('portal_session='.length);
+  if (value.length < 20) return false;
+  return /^[A-Za-z0-9._\-~+/=]+$/.test(value);
 }
 
 function isPortalSessionInvalid(err: unknown): boolean {
