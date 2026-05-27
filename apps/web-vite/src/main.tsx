@@ -18,6 +18,7 @@ import { getClientEnv } from './env.js';
 import { initI18n } from './i18n/index.js';
 import { useTranslations } from './i18n/useTranslations.js';
 import { initPostHog } from './lib/posthog.js';
+import { PostHogIdentitySync } from './lib/posthog-identity-sync.js';
 import { AuthProvider } from './providers/auth-provider.js';
 import { ThemeProvider } from './providers/theme-provider.js';
 import { TRPCProvider } from './providers/trpc-provider.js';
@@ -58,6 +59,7 @@ createRoot(rootEl).render(
     <ThemeProvider>
       <UITranslationsBridge>
         <AuthProvider>
+          <PostHogIdentitySync />
           <TRPCProvider>
             <RouterProvider router={router} />
             <Toaster richColors closeButton position="top-right" />

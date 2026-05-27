@@ -36,6 +36,11 @@
       "import": "./src/services/portal-session.ts",
       "default": "./src/services/portal-session.ts"
     },
+    "./services/posthog": {
+      "types": "./src/services/posthog.ts",
+      "import": "./src/services/posthog.ts",
+      "default": "./src/services/posthog.ts"
+    },
     "./services/r2": {
       "types": "./src/services/r2.ts",
       "import": "./src/services/r2.ts",
