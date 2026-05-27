@@ -17,6 +17,7 @@
  */
 
 import * as Sentry from '@sentry/node';
+import { scrubSentryEvent } from './sentry-scrub.js';
 
 let initialized = false;
 
@@ -38,6 +39,14 @@ export function initSentry(): void {
 
     // Tag the service so a single Sentry project can host both web + API.
     initialScope: { tags: { service: 'public-api' } },
+
+    // Redact PII (passwords, OAuth tokens, IBANs, tax IDs, etc.) from
+    // every event payload before it leaves the process — see
+    // `sentry-scrub.ts` for the matched key list. Public-API receives
+    // external API-key consumer payloads, so defining the scrubber but
+    // not passing it as `beforeSend` is the historic failure mode that
+    // GAP-OBSERVABILITY-008 surfaced; must stay wired.
+    beforeSend: scrubSentryEvent,
   });
 
   initialized = true;
