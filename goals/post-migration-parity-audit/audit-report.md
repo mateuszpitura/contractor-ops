@@ -60,10 +60,10 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 | WEBHOOK | 0 / 1 / 0 (GAP-WEBHOOK-003 escalated → inline-fixed) | 0 / 0 / 0 | 0 / 0 / 0 |
 | MIDDLEWARE | 0 / 0 / 0 | 2 / 0 / 0 | 3 / 0 / 0 |
 | I18N | 0 / 0 / 0 | 0 / 0 / 0 | 4 / 1 / 0 (GAP-I18N-004 inline-fixed) |
-| OBSERVABILITY | 0 / 0 / 0 | 2 / 1 / 0 (GAP-OBSERVABILITY-003 inline-fixed) | 2 / 1 / 0 (GAP-OBSERVABILITY-006 inline-fixed) |
+| OBSERVABILITY | 0 / 1 / 0 (GAP-OBSERVABILITY-007 inline-fixed) | 2 / 1 / 0 (GAP-OBSERVABILITY-003 inline-fixed) | 2 / 1 / 0 (GAP-OBSERVABILITY-006 inline-fixed) |
 | SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 2 / 0 / 0 | 1 / 0 / 0 |
 | TEST | 0 / 0 / 0 | 0 / 2 / 0 (GAP-TEST-001/002 inline-fixed under GAP-WEBHOOK-003) | 7 / 0 / 0 |
-| **Total** | **2 / 2 / 0** | **12 / 3 / 0** | **21 / 2 / 0** |
+| **Total** | **2 / 3 / 0** | **12 / 3 / 0** | **21 / 2 / 0** |
 
 P0 escalation candidates (severity may move to P0 after restoration-agent / legal review):
 
@@ -223,10 +223,11 @@ Zero key losses across ~24k shared-key comparisons. Zero ICU shape regressions.
 | GAP-OBSERVABILITY-004 | Sentry source-map upload | `apps/web-vite/vite.config.mjs` | P2 | `withSentryConfig` (sourcemap upload, release, tunnelRoute) absent on web-vite. Build secrets are wired in `render.yaml` but plugin not invoked. | open | Confirm `@sentry/vite-plugin` is configured; if not, wire it up and verify upload runs on Render builds. |
 | GAP-OBSERVABILITY-005 | Sentry server logs | `apps/api/src/lib/sentry.ts` | P2 | `_experiments.enableLogs` dropped on server. | open | Re-enable if structured Sentry log capture was being used. |
 | GAP-OBSERVABILITY-006 | Sentry dev disable | `apps/web-vite/src/sentry.ts` | P2 | Client hard-disable (`enabled: DSN && !isDev`) dropped — Sentry may now fire from local dev. | **inline-fixed** (`6092d0e9`) | Restored `enabled: Boolean(VITE_SENTRY_DSN) && import.meta.env.MODE !== 'development'` so a DSN in `.env.local` cannot leak local dev traffic into the prod Sentry project. Pinned by `apps/web-vite/src/__tests__/sentry-init.test.ts` (enabled=false when DSN unset; enabled=true when DSN set in vitest MODE=test). |
+| GAP-OBSERVABILITY-007 | Sentry scrub missing on cron-worker | `apps/cron-worker/src/lib/sentry.ts:17-23` | **P0** | `Sentry.init({...})` shipped without `beforeSend`, so cron handlers that capture Stripe / QStash / Storecove / InPost / KSeF / Peppol webhook payloads, OAuth-token refresh failures, or per-tenant IBAN / tax-id work would ship raw bodies, headers, cookies, and query strings to Sentry unredacted. Calibration agent verified the omission against `apps/api/src/lib/sentry.ts:38` (correct wire-up) — the audit's earlier "scrub wired on every Sentry.init" appendix sentence (line ~229) was factually false for the cron-worker runtime. | **inline-fixed** (`5cb42d21`) | Backported `sentry-scrub.ts` as a per-runtime copy (matches the apps/api + apps/web-vite convention — no shared `packages/observability` exists) and added `beforeSend: scrubSentryEvent` to `Sentry.init({...})` in `apps/cron-worker/src/lib/sentry.ts`. DSN gating (`enabled: Boolean(dsn)`) and all other init fields preserved. Pinned by `apps/cron-worker/src/__tests__/sentry-init.test.ts` (3/3) — asserts `beforeSend` is a function, asserts identity equality against the mocked scrubber (catches "defined but forgot to wire" regressions), asserts `enabled: false` when DSN unset. |
 
 ### Sentry scrub appendix
 
-`PII_KEYWORDS` list = byte-for-byte port (26 → 26 + 26 entries). All nine scrub branches preserved (`user.email`, `user.ip_address → {{auto}}`, `request.{data,query_string,headers,cookies}`, `extra`, `contexts`, `tags`, `breadcrumbs[].data`), `MAX_DEPTH = 6`, `maskEmail()` unchanged. `beforeSend: scrubSentryEvent` wired on every `Sentry.init` (`apps/api/src/lib/sentry.ts:38`, `apps/web-vite/src/sentry.ts:31`). No `beforeSendTransaction` in legacy → no parity gap.
+`PII_KEYWORDS` list = byte-for-byte port (26 → 26 + 26 + 26 entries across apps/api, apps/web-vite, apps/cron-worker). All nine scrub branches preserved (`user.email`, `user.ip_address → {{auto}}`, `request.{data,query_string,headers,cookies}`, `extra`, `contexts`, `tags`, `breadcrumbs[].data`), `MAX_DEPTH = 6`, `maskEmail()` unchanged. `beforeSend: scrubSentryEvent` wired on the **backend Fastify API** (`apps/api/src/lib/sentry.ts:38`), the **SPA** (`apps/web-vite/src/sentry.ts:31`), and — post GAP-OBSERVABILITY-007 inline fix — the **cron-worker** (`apps/cron-worker/src/lib/sentry.ts`). `apps/public-api` is the remaining runtime without the wire-up (tracked separately). No `beforeSendTransaction` in legacy → no parity gap.
 
 ### Web-vitals appendix
 
@@ -338,6 +339,7 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 | GAP-WEBHOOK-003 (+ GAP-TEST-001/002 mirror) | `c433c678` | fix(audit): GAP-WEBHOOK-003 restore 405 for Peppol AS4 unsupported verbs | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/peppol-method-not-allowed.test.ts` (5/5 pass) | `apps/api/src/__tests__/peppol-method-not-allowed.test.ts` + e2e `apps/web-vite/e2e/integration/peppol-inbound-smoke.spec.ts:115-129` |
 | GAP-I18N-004 | `eaa60c5c` | fix(audit): GAP-I18N-004 vite chunk-name regex matches web-vite/messages | `pnpm typecheck --filter=@contractor-ops/web-vite` + both web-vite quality gates | n/a (build-time config; chunk-naming verified by typecheck + gates) |
 | GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 | `6092d0e9` | fix(audit): GAP-OBSERVABILITY-003 + GAP-OBSERVABILITY-006 restore Sentry trace propagation + dev hard-disable | `cd apps/web-vite && pnpm exec vitest run src/__tests__/sentry-init.test.ts` (4/4 pass) | `apps/web-vite/src/__tests__/sentry-init.test.ts` |
+| GAP-OBSERVABILITY-007 | `5cb42d21` | fix(audit): GAP-OBSERVABILITY-001 wire scrubSentryEvent on cron-worker Sentry init | `pnpm --filter @contractor-ops/cron-worker exec vitest run src/__tests__/sentry-init.test.ts` (3/3 pass) | `apps/cron-worker/src/__tests__/sentry-init.test.ts` |
 
 ---
 
