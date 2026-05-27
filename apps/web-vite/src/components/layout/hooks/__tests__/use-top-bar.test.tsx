@@ -3,21 +3,10 @@
  *   - loading: query pending → hasContractors=false
  *   - empty: total=0 → hasContractors=false
  *   - success: total>0 → hasContractors=true
- *   - navigate callbacks push to the correct routes
+ *   - openContractorWizard / openInvoiceUpload flip local dialog state
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
-const routerPush = vi.fn();
-
-vi.mock('../../../../providers/trpc-provider.js', () => ({
-  useTRPC: () => trpcProxy,
-  usePortalTRPC: () => trpcProxy,
-}));
-
-vi.mock('../../../../i18n/navigation.js', () => ({
-  useRouter: () => ({ push: routerPush }),
-}));
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   act,
@@ -30,8 +19,15 @@ import { useTopBar } from '../use-top-bar.js';
 
 const trpcProxy = createTRPCProxy();
 
+// Module-level mocks rely on imports above resolving first.
+import { vi } from 'vitest';
+
+vi.mock('../../../../providers/trpc-provider.js', () => ({
+  useTRPC: () => trpcProxy,
+  usePortalTRPC: () => trpcProxy,
+}));
+
 beforeEach(() => {
-  routerPush.mockReset();
   setTRPCMock({});
 });
 
@@ -60,17 +56,19 @@ describe('useTopBar', () => {
     await waitFor(() => expect(result.current.hasContractors).toBe(true));
   });
 
-  it('navigateToNewContractor pushes /contractors?action=new', () => {
+  it('openContractorWizard flips contractorWizardOpen to true', () => {
     setTRPCMock({ 'contractor.list': () => ({ items: [], total: 0 }) });
     const { result } = renderHookWithProviders(() => useTopBar());
-    act(() => result.current.navigateToNewContractor());
-    expect(routerPush).toHaveBeenCalledWith('/contractors?action=new');
+    expect(result.current.contractorWizardOpen).toBe(false);
+    act(() => result.current.openContractorWizard());
+    expect(result.current.contractorWizardOpen).toBe(true);
   });
 
-  it('navigateToUploadInvoice pushes /invoices?action=upload', () => {
+  it('openInvoiceUpload flips invoiceUploadOpen to true', () => {
     setTRPCMock({ 'contractor.list': () => ({ items: [], total: 0 }) });
     const { result } = renderHookWithProviders(() => useTopBar());
-    act(() => result.current.navigateToUploadInvoice());
-    expect(routerPush).toHaveBeenCalledWith('/invoices?action=upload');
+    expect(result.current.invoiceUploadOpen).toBe(false);
+    act(() => result.current.openInvoiceUpload());
+    expect(result.current.invoiceUploadOpen).toBe(true);
   });
 });

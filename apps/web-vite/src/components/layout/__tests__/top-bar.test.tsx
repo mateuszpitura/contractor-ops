@@ -40,6 +40,16 @@ vi.mock('../../contracts/contract-wizard/wizard-dialog-container.js', () => ({
     open ? <div data-testid="contract-wizard">wizard</div> : null,
 }));
 
+vi.mock('../../contractors/contractor-wizard/wizard-dialog-container.js', () => ({
+  WizardDialogContainer: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="contractor-wizard">contractor-wizard</div> : null,
+}));
+
+vi.mock('../../invoices/intake/intake-upload-dialog-container.js', () => ({
+  IntakeUploadDialogContainer: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="invoice-upload">invoice-upload</div> : null,
+}));
+
 vi.mock('../../notifications/notification-popover-container.js', () => ({
   NotificationPopoverContainer: () => <div data-testid="notification-popover" />,
 }));
@@ -69,12 +79,16 @@ function withRouter(node: React.ReactElement) {
 
 const baseProps = {
   hasContractors: true,
-  navigateToNewContractor: vi.fn(),
-  navigateToUploadInvoice: vi.fn(),
+  onOpenContractorWizard: vi.fn(),
+  onOpenInvoiceUpload: vi.fn(),
   segments: [] as BreadcrumbSegmentView[],
   contractWizardOpen: false,
   onContractWizardOpenChange: vi.fn(),
   onOpenContractWizard: vi.fn(),
+  contractorWizardOpen: false,
+  onContractorWizardOpenChange: vi.fn(),
+  invoiceUploadOpen: false,
+  onInvoiceUploadOpenChange: vi.fn(),
   onOpenSearch: vi.fn(),
 };
 
@@ -104,17 +118,17 @@ describe('TopBar (web-vite)', () => {
     expect(container.querySelector('[data-testid="command-palette"]')).not.toBeNull();
   });
 
-  it('invokes navigateToNewContractor when the add-contractor button is clicked', async () => {
-    const navigateToNewContractor = vi.fn();
+  it('invokes onOpenContractorWizard when the add-contractor button is clicked', async () => {
+    const onOpenContractorWizard = vi.fn();
     const { container } = await mount(
-      withRouter(<TopBar {...baseProps} navigateToNewContractor={navigateToNewContractor} />),
+      withRouter(<TopBar {...baseProps} onOpenContractorWizard={onOpenContractorWizard} />),
     );
     const btn = Array.from(container.querySelectorAll('button')).find(b =>
       (b.textContent ?? '').includes('Add contractor'),
     );
     expect(btn).toBeDefined();
     await click(btn as HTMLButtonElement);
-    expect(navigateToNewContractor).toHaveBeenCalledTimes(1);
+    expect(onOpenContractorWizard).toHaveBeenCalledTimes(1);
   });
 
   it('marks contract and upload buttons aria-disabled when there are no contractors', async () => {

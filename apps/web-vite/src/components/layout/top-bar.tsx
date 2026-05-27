@@ -18,30 +18,40 @@ import { FilePlus, Search, Upload, UserPlus } from 'lucide-react';
 import { Fragment } from 'react';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { WizardDialogContainer as ContractorWizardDialogContainer } from '../contractors/contractor-wizard/wizard-dialog-container.js';
 import { ContractWizardDialogContainer } from '../contracts/contract-wizard/wizard-dialog-container.js';
+import { IntakeUploadDialogContainer } from '../invoices/intake/intake-upload-dialog-container.js';
 import { NotificationPopoverContainer } from '../notifications/notification-popover-container.js';
 import { CommandPaletteContainer } from '../search/command-palette-container.js';
 import type { BreadcrumbSegmentView } from './hooks/use-top-bar-breadcrumbs.js';
 
 interface TopBarProps {
   hasContractors: boolean;
-  navigateToNewContractor: () => void;
-  navigateToUploadInvoice: () => void;
+  onOpenContractorWizard: () => void;
+  onOpenInvoiceUpload: () => void;
   segments: BreadcrumbSegmentView[];
   contractWizardOpen: boolean;
   onContractWizardOpenChange: (open: boolean) => void;
   onOpenContractWizard: () => void;
+  contractorWizardOpen: boolean;
+  onContractorWizardOpenChange: (open: boolean) => void;
+  invoiceUploadOpen: boolean;
+  onInvoiceUploadOpenChange: (open: boolean) => void;
   onOpenSearch: () => void;
 }
 
 export function TopBar({
   hasContractors,
-  navigateToNewContractor,
-  navigateToUploadInvoice,
+  onOpenContractorWizard,
+  onOpenInvoiceUpload,
   segments,
   contractWizardOpen,
   onContractWizardOpenChange,
   onOpenContractWizard,
+  contractorWizardOpen,
+  onContractorWizardOpenChange,
+  invoiceUploadOpen,
+  onInvoiceUploadOpenChange,
   onOpenSearch,
 }: TopBarProps) {
   const t = useTranslations('TopBar');
@@ -91,7 +101,7 @@ export function TopBar({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={navigateToNewContractor}
+                  onClick={onOpenContractorWizard}
                 />
               }>
               <UserPlus className="h-4 w-4" />
@@ -127,7 +137,7 @@ export function TopBar({
                   size="icon"
                   className={hasContractors ? 'h-8 w-8' : 'h-8 w-8 cursor-not-allowed opacity-50'}
                   aria-disabled={!hasContractors || undefined}
-                  onClick={hasContractors ? navigateToUploadInvoice : undefined}
+                  onClick={hasContractors ? onOpenInvoiceUpload : undefined}
                 />
               }>
               <Upload className="h-4 w-4" />
@@ -172,6 +182,14 @@ export function TopBar({
       <ContractWizardDialogContainer
         open={contractWizardOpen}
         onOpenChange={onContractWizardOpenChange}
+      />
+      <ContractorWizardDialogContainer
+        open={contractorWizardOpen}
+        onOpenChange={onContractorWizardOpenChange}
+      />
+      <IntakeUploadDialogContainer
+        open={invoiceUploadOpen}
+        onOpenChange={onInvoiceUploadOpenChange}
       />
       <CommandPaletteContainer />
     </>
