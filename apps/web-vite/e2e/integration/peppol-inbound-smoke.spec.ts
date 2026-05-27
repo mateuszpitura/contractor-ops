@@ -17,11 +17,12 @@ import { expect, test } from '@playwright/test';
 //     returns 401 "Invalid signature"
 // Either way the signature guard is proven to be in the request path.
 //
-// Unlike the legacy Next handler (which exposed a 405 for non-POST verbs
-// via an explicit handler), Fastify returns 404 by default for methods
-// that aren't registered. The route only registers `POST`, so GET/PUT
-// surface as 404 here — that still proves the path is mounted (vs. a
-// 5xx crash) while remaining accurate to the new stack.
+// Per RFC 7231 §6.5.5, unsupported verbs on a registered webhook URL
+// return 405 Method Not Allowed with an `Allow: POST` header. The Fastify
+// route explicitly registers GET/PUT/DELETE/PATCH → 405 handlers so that
+// Peppol AS4 partner Access Points do not interpret a 404 as "endpoint
+// gone" and silently stop retries. See GAP-WEBHOOK-003 in the
+// post-migration parity audit.
 // ---------------------------------------------------------------------------
 
 const API_BASE = process.env.E2E_API_URL ?? 'http://localhost:4000';
@@ -110,22 +111,24 @@ test.describe('Peppol inbound (Storecove webhook) smoke', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 5. GET — not registered (Fastify default: 404)
+  // 5. GET — explicit 405 + `Allow: POST` (GAP-WEBHOOK-003 restoration)
   // -------------------------------------------------------------------------
-  test('GET returns 404 (only POST is registered on the Fastify route)', async ({ request }) => {
+  test('GET returns 405 with Allow: POST header (RFC 7231 §6.5.5)', async ({ request }) => {
     const res = await request.get(ENDPOINT);
-    expect(res.status()).toBe(404);
+    expect(res.status()).toBe(405);
+    expect(res.headers().allow?.toLowerCase()).toBe('post');
   });
 
   // -------------------------------------------------------------------------
-  // 6. PUT — not registered (Fastify default: 404)
+  // 6. PUT — explicit 405 + `Allow: POST` (GAP-WEBHOOK-003 restoration)
   // -------------------------------------------------------------------------
-  test('PUT returns 404 (only POST is registered on the Fastify route)', async ({ request }) => {
+  test('PUT returns 405 with Allow: POST header (RFC 7231 §6.5.5)', async ({ request }) => {
     const res = await request.put(ENDPOINT, {
       data: REALISTIC_BODY,
       headers: { 'content-type': 'application/json' },
     });
-    expect(res.status()).toBe(404);
+    expect(res.status()).toBe(405);
+    expect(res.headers().allow?.toLowerCase()).toBe('post');
   });
 
   // -------------------------------------------------------------------------
