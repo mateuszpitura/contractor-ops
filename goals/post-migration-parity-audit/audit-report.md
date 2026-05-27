@@ -61,7 +61,7 @@ Row fields (mandatory): `ID | area | legacy path | new path (or MISSING) | sever
 | MIDDLEWARE | 0 / 0 / 0 | 2 / 0 / 0 | 3 / 0 / 0 |
 | I18N | 0 / 0 / 0 | 0 / 0 / 0 | 5 / 0 / 0 |
 | OBSERVABILITY | 0 / 0 / 0 | 3 / 0 / 0 | 3 / 0 / 0 |
-| SECURITY | **3 / 0 / 0** (2 escalated — see GAP-SECURITY-001, -002) | 2 / 0 / 0 | 1 / 0 / 0 |
+| SECURITY | **2 / 1 / 0** (2 escalated — see GAP-SECURITY-001, -002; -003 inline-fixed) | 2 / 0 / 0 | 1 / 0 / 0 |
 | TEST | 0 / 0 / 0 | 2 / 0 / 0 | 7 / 0 / 0 |
 | **Total** | **3 / 0 / 0** | **16 / 0 / 0** | **23 / 0 / 0** |
 
@@ -244,7 +244,7 @@ Zero key losses across ~24k shared-key comparisons. Zero ICU shape regressions.
 |----|---------|----------|-----|----------|--------|-------------|
 | GAP-SECURITY-001 | SPA CSP `script-src` | `render.yaml:684` + `apps/web-vite/index.html:28` | **P0** | New `script-src 'self' 'wasm-unsafe-eval' https://*.sentry-cdn.com https://challenges.cloudflare.com` replaces legacy `'self' 'nonce-${nonce}' 'strict-dynamic' …`. Loses XSS containment — any same-origin script injection executes unconditionally. Legacy: `apps/web/src/middleware.ts:610-625` (`buildCsp`, verified at `git show 7fce0d83:apps/web/src/middleware.ts`). | **open (escalated)** | See `#### GAP-SECURITY-001 — script-src nonce` under **Escalations** below. Blocker: Render Static-Site has no per-request hook — choosing between Cloudflare Worker, Render web service rewrite, or accept-with-design-review is an infra-owner decision, not an audit-window edit. |
 | GAP-SECURITY-002 | SPA CSP `frame-src` | `render.yaml:684` | **P0** | Legacy: 3 hosts (`*.docusign.com`, `*.docusign.net`, `apps-d.docusign.com`). New: 6 hosts (adds `*.autenti.com`, `*.r2.cloudflarestorage.com`, `challenges.cloudflare.com`). `*.r2.cloudflarestorage.com` wildcard in `frame-src` is unusually broad; mitigated by `frame-ancestors 'none'` (same line). Intake-detail PDF iframe verified `sandbox="allow-downloads"` at `apps/web-vite/src/components/invoices/intake/intake-detail-pdf-pane.tsx:86-100` (narrow). | **open (escalated)** | See `#### GAP-SECURITY-002 — frame-src R2 wildcard` under **Escalations** below. Blocker: narrowing the wildcard requires ops to confirm prod R2 account id + per-region bucket subdomain shape (`{bucket}.{accountId}.r2.cloudflarestorage.com` virtual-hosted vs `{accountId}.r2.cloudflarestorage.com` path-style). |
-| GAP-SECURITY-003 | SPA CSP reporting | `render.yaml:684` + `apps/web-vite/index.html:28` | **P0** | Legacy CSP body had `report-uri /api/csp-report; report-to csp-endpoint` (`middleware.ts:622-623`) + `Report-To` group via `next.config.ts:122`. New SPA ships zero `report-uri` / `report-to` / `Report-To`. Meta-tag CSPs cannot emit reports. SPA = highest XSS surface; loss of report pipeline = silent regressions invisible to on-call. API CSP retains `/csp-report` endpoint (`apps/api/src/routes/csp-report.ts`). | open | Append `; report-uri https://api.contractor-ops.com/csp-report; report-to csp-endpoint` to SPA CSP `value:` in `render.yaml:684` and add a `Report-To` header entry. `/csp-report` already CSRF-exempt at `apps/api/src/plugins/csrf-origin.ts:32`. Static `<meta>` cannot deliver `report-to` — that must live in the HTTP header. |
+| GAP-SECURITY-003 | SPA CSP reporting | `render.yaml:684` + `apps/web-vite/index.html:28` | **P0** | Legacy CSP body had `report-uri /api/csp-report; report-to csp-endpoint` (`middleware.ts:622-623`) + `Report-To` group via `next.config.ts:122`. New SPA ships zero `report-uri` / `report-to` / `Report-To`. Meta-tag CSPs cannot emit reports. SPA = highest XSS surface; loss of report pipeline = silent regressions invisible to on-call. API CSP retains `/csp-report` endpoint (`apps/api/src/routes/csp-report.ts`). | **inline-fixed** (`3198bb51`) | Appended `report-uri https://api.contractor-ops.com/csp-report; report-to csp-endpoint` to SPA CSP `value:` in `render.yaml:684` + added sibling `Report-To` header carrying the group definition; meta CSP in `apps/web-vite/index.html:28` mirrors the directives for parity (knowing static `<meta>` cannot deliver `Report-To` — the HTTP header does). `/csp-report` was already CSRF-exempt at `apps/api/src/plugins/csrf-origin.ts:32`. Regression test: `apps/api/src/__tests__/csp-report.test.ts`. |
 | GAP-SECURITY-004 | SPA Permissions-Policy | `render.yaml` (SPA headers) | P1 | Camera / microphone access dropped from `Permissions-Policy`. DocuSign embed needs camera/mic for ID verification flows. | open | Add `camera=(self https://*.docusign.com)`, `microphone=(self https://*.docusign.com)` if ID verification is in scope. |
 | GAP-SECURITY-005 | SPA COEP `credentialless` | `render.yaml` (SPA headers) | P1 | Legacy SPA emitted `Cross-Origin-Embedder-Policy: credentialless`. Dropped on new SPA. | open | Re-add COEP if cross-origin isolation was being relied on (e.g. SharedArrayBuffer features). Otherwise accept. |
 | GAP-SECURITY-006 | LOAD_TEST_BYPASS | (dropped) | P2 | k6 staging hatch removed. Operational, not security. | open | See GAP-MIDDLEWARE-002. |
@@ -332,7 +332,9 @@ Legacy 521 unit tests vs new 675 web-vite unit tests — file-count net positive
 
 > Per inline-fix: `GAP-<AREA>-<NNN>` | commit SHA | subject | verification command | test added.
 
-_No P0 fixes landed yet. Restoration agent owns Step 9; fixes will be appended here as they commit on `audit/post-migration-parity`._
+| Gap | Commit | Subject | Verification | Test |
+|-----|--------|---------|--------------|------|
+| GAP-SECURITY-003 | `3198bb51` | fix(audit): GAP-SECURITY-003 restore SPA CSP report-uri + Report-To | `pnpm --filter @contractor-ops/api-server test -- src/__tests__/csp-report.test.ts` | `apps/api/src/__tests__/csp-report.test.ts` |
 
 ---
 
