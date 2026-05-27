@@ -1,8 +1,5 @@
 /**
- * Step-10 port. EN strings sourced from
- * `apps/web/messages/en.json#OcrReview.lineItems`; the legacy
- * `motion/react` shim isn't needed since the SPA renders CSS animations
- * directly.
+ * EN strings sourced from `apps/web-vite/messages/en.json#OcrReview.lineItems`.
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

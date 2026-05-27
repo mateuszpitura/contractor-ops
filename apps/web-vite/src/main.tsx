@@ -28,10 +28,8 @@ import { startWebVitals } from './web-vitals.js';
 /**
  * Bridge `@contractor-ops/ui`'s shadcn primitives onto the SPA's i18next
  * bundle. The primitives receive a `(key) => string` translator scoped to
- * the `Common` namespace — keys like `aria.breadcrumb` resolve against the
- * same flat bundle apps/web reads via next-intl, so a label edit in
- * apps/web/messages/en.json shows up identically in both apps without
- * duplicating the dictionary.
+ * the `Common` namespace — keys like `aria.breadcrumb` resolve against
+ * `apps/web-vite/messages/{locale}.json`.
  */
 function UITranslationsBridge({ children }: { children: React.ReactNode }) {
   const t = useTranslations('Common');

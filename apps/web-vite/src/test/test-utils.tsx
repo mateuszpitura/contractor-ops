@@ -15,11 +15,11 @@
  *     so components calling `useRouter` / `useParams` from the SPA's
  *     `i18n/navigation` shim resolve cleanly.
  *   - `I18nextProvider` via the SPA's own `initI18n()` + applyLocale, so
- *     `useTranslations('Namespace')` resolves against the real
- *     `apps/web/messages/*.json` bundle.
+ *     `useTranslations('Namespace')` resolves against
+ *     `apps/web-vite/messages/*.json`.
  *   - `<UITranslationsProvider t={t}>` so shadcn primitives consumed by
  *     the rendered tree resolve their aria-labels via the shared
- *     `Common.*` namespace (matches what `apps/web` does at runtime).
+ *     `Common.*` namespace.
  *
  * Locale defaults to `'en'`. Override via `render(ui, { locale: 'pl' })`
  * to exercise locale-specific behaviour.

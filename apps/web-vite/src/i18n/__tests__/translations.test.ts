@@ -1,9 +1,7 @@
 /**
- * Smoke tests for the Step 8 i18n compat layer.
+ * i18n smoke tests:
  *
- * Asserts the contract the Step 11 codemod sweep relies on:
- *
- *   1. ICU strings from the existing apps/web/messages/ JSON files render
+ *   1. ICU strings from `apps/web-vite/messages/{locale}.json` render
  *      against each supported locale without "missing key" errors.
  *   2. `applyLocale('ar')` flips `<html dir>` to `rtl`.
  *   3. `i18next.language` matches the URL `:locale` segment after the

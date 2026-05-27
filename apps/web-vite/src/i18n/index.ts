@@ -1,11 +1,10 @@
 /**
- * i18next bootstrap with ICU formatter — the SPA equivalent of the
- * legacy next-intl init.
+ * i18next bootstrap with ICU formatter.
  *
  * Message bundles are loaded on demand via {@link loadLocaleMessages} and
- * registered per locale by {@link applyLocale}. i18next-icu is wired so
- * the existing ICU MessageFormat strings in apps/web/messages/{locale}.json
- * keep working unchanged (plural forms, date/number format, selectordinal, ...).
+ * registered per locale by {@link applyLocale}. i18next-icu handles the
+ * ICU MessageFormat strings in `apps/web-vite/messages/{locale}.json`
+ * (plural forms, date/number format, selectordinal, ...).
  *
  * Language detection priority (highest first):
  *   1. URL `:locale` path segment — the SPA's source of truth.

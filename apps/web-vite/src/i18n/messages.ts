@@ -1,16 +1,7 @@
 /**
- * Translation message bundles.
- *
- * Sourced from the legacy app's `apps/web/messages/{locale}.json` files
- * by relative import so the original files remain the single source of
- * truth during the migration grace period. After Step 18 (legacy delete)
- * the messages are `git mv`d into `apps/web-vite/messages/` and the
- * import path here flips to './messages/{locale}.json' — single-line
- * change, no content drift.
- *
- * Locale JSON is loaded on demand via dynamic `import()` in
+ * Translation message bundles, loaded on demand via dynamic `import()` in
  * {@link loadLocaleMessages} so only the active locale (plus fallback)
- * ships in the initial bundle — not all four message files at once.
+ * ships in the initial bundle. Source: `apps/web-vite/messages/{locale}.json`.
  */
 
 import type en from '../../messages/en.json';
