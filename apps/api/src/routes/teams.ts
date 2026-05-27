@@ -46,8 +46,18 @@ const log = createWebhookLogger('teams-bot');
 
 let adapter: CloudAdapter | null = null;
 
-function getAuthConfig(): AuthConfiguration {
+export function getAuthConfig(): AuthConfiguration {
   const env = loadEnv();
+  // Hard guard against an anonymous-mode prod boot. `authorizeJWT` falls
+  // through to anonymous when `clientId` is empty and `NODE_ENV !==
+  // 'production'`; relying on the SDK's `NODE_ENV` read is too implicit
+  // for a webhook that accepts unauthenticated payloads when this check
+  // is missing.
+  if (env.NODE_ENV === 'production' && !(env.AZURE_BOT_APP_ID && env.AZURE_BOT_APP_SECRET)) {
+    throw new Error(
+      'AZURE_BOT_APP_ID and AZURE_BOT_APP_SECRET are required in production to authenticate Microsoft Teams Bot Framework requests.',
+    );
+  }
   return {
     clientId: env.AZURE_BOT_APP_ID ?? '',
     clientSecret: env.AZURE_BOT_APP_SECRET ?? '',
