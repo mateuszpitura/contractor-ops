@@ -11,7 +11,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet, redirect } from 'react-router-dom';
 import { RouteErrorBoundary } from './components/error/route-error-boundary.js';
 import { applyLocale } from './i18n/index.js';
-import { DEFAULT_LOCALE, isSupportedLocale } from './i18n/messages.js';
+import { DEFAULT_LOCALE, detectBrowserLocale, isSupportedLocale } from './i18n/messages.js';
 import { requireAuth } from './lib/require-auth.js';
 import { requirePortalAuth } from './lib/require-portal-auth.js';
 import { dashboardRoutes } from './router/dashboard-routes.js';
@@ -79,7 +79,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        loader: () => redirect(`/${DEFAULT_LOCALE}`),
+        // Honour the browser's Accept-Language preference list on the
+        // unlocalized root visit instead of always dropping the user on
+        // `DEFAULT_LOCALE`. Non-PL browsers now see their preferred
+        // locale on first paint.
+        loader: () => redirect(`/${detectBrowserLocale()}`),
       },
       // Back-compat redirects for the unlocalized `/admin/*` URLs operators
       // bookmarked before the locale-prefix rollout. `feature-flags/` was
@@ -90,13 +94,13 @@ export const router = createBrowserRouter([
         loader: ({ params }) => {
           const rest = (params['*'] ?? '').replace(/^feature-flags\//, '');
           const suffix = rest ? `/${rest}` : '';
-          return redirect(`/${DEFAULT_LOCALE}/admin${suffix}`);
+          return redirect(`/${detectBrowserLocale()}/admin${suffix}`);
         },
       },
       {
         path: '/:locale',
         loader: async ({ params }) => {
-          if (!isSupportedLocale(params.locale)) return redirect(`/${DEFAULT_LOCALE}`);
+          if (!isSupportedLocale(params.locale)) return redirect(`/${detectBrowserLocale()}`);
           await applyLocale(params.locale);
           return null;
         },

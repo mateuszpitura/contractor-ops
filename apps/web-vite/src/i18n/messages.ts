@@ -30,6 +30,36 @@ export function isSupportedLocale(value: string | undefined): value is Locale {
   return typeof value === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
 
+/**
+ * Resolve the best-matching supported locale for a browser-language tag
+ * preference list. Each entry is normalised to its 2-letter language part
+ * (`en-US` → `en`), then matched against `SUPPORTED_LOCALES` in order.
+ * Falls back to `DEFAULT_LOCALE` when nothing matches.
+ */
+export function pickBestLocale(preferences: readonly string[]): Locale {
+  for (const raw of preferences) {
+    const tag = raw.split(/[-_]/)[0]?.toLowerCase();
+    if (tag && isSupportedLocale(tag)) return tag;
+  }
+  return DEFAULT_LOCALE;
+}
+
+/**
+ * Browser-side wrapper around `pickBestLocale` that reads
+ * `navigator.languages` (with `navigator.language` as a fallback) so the
+ * unlocalized root route lands the user on their preferred locale.
+ */
+export function detectBrowserLocale(): Locale {
+  if (typeof navigator === 'undefined') return DEFAULT_LOCALE;
+  const prefs =
+    Array.isArray(navigator.languages) && navigator.languages.length > 0
+      ? navigator.languages
+      : navigator.language
+        ? [navigator.language]
+        : [];
+  return pickBestLocale(prefs);
+}
+
 const localeLoaders: Record<Locale, () => Promise<{ default: Record<string, unknown> }>> = {
   en: () => import('../../messages/en.json'),
   pl: () => import('../../messages/pl.json'),
