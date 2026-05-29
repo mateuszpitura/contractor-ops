@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { usePortalPendingSignaturesView } from './hooks/use-portal-pending-signatures-view.js';
 import {
   PendingSignaturesError,
@@ -18,12 +20,14 @@ export function PortalPendingSignaturesContainer() {
 
 export function PortalSignaturesContainer() {
   const view = usePortalPendingSignaturesView();
+  const { refetch } = view.pendingQuery;
+  const handleRetry = useCallback(() => void refetch(), [refetch]);
 
   return (
     <div className="space-y-6">
       <PortalSignaturesPageHeader />
       {view.pendingQuery.isError ? (
-        <PendingSignaturesError onRetry={() => void view.pendingQuery.refetch()} />
+        <PendingSignaturesError onRetry={handleRetry} />
       ) : view.pendingQuery.isPending ? (
         <PendingSignaturesSkeleton />
       ) : (

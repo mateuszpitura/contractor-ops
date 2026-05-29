@@ -4,7 +4,8 @@ import {
   CollapsibleTrigger,
 } from '@contractor-ops/ui/components/shadcn/collapsible';
 import { ChevronDown, Clock } from 'lucide-react';
-import { useState } from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
@@ -33,6 +34,22 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
     ([, value]) => value !== undefined && value !== null,
   );
 
+  const viewSubmittedLabel = t('viewSubmitted');
+  const renderTrigger = useCallback(
+    (props: ComponentPropsWithoutRef<'button'>) => (
+      <button
+        {...props}
+        type="button"
+        className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300">
+        <ChevronDown
+          className={`h-4 w-4 transition-transform duration-200 ${detailsOpen ? 'rotate-180' : ''}`}
+        />
+        {viewSubmittedLabel}
+      </button>
+    ),
+    [detailsOpen, viewSubmittedLabel],
+  );
+
   return (
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
       <div className="flex items-start gap-3">
@@ -45,21 +62,7 @@ export function PendingChangeBanner({ pendingChangeRequest }: PendingChangeBanne
 
           {changeEntries.length > 0 && (
             <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-              <CollapsibleTrigger
-                render={props => (
-                  <button
-                    {...props}
-                    type="button"
-                    className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300">
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${
-                        detailsOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                    {t('viewSubmitted')}
-                  </button>
-                )}
-              />
+              <CollapsibleTrigger render={renderTrigger} />
               <CollapsibleContent>
                 <div className="mt-3 space-y-2">
                   {changeEntries.map(([key, value]) => (

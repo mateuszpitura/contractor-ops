@@ -1,6 +1,5 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   AtelierTableShell,
   DocumentsIllustration,
   SectionLabel,
@@ -17,10 +16,12 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Download } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { usePortalDocuments } from './hooks/use-portal-documents.js';
 
 function formatDocType(type: string): string {
@@ -28,6 +29,49 @@ function formatDocType(type: string): string {
     .replace(/_/g, ' ')
     .toLowerCase()
     .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+interface DocumentRowProps {
+  name: string;
+  sizeLabel: string;
+  typeLabel: string;
+  dateLabel: string;
+  downloadUrl: string;
+  downloadLabel: string;
+}
+
+function DocumentRow({
+  name,
+  sizeLabel,
+  typeLabel,
+  dateLabel,
+  downloadUrl,
+  downloadLabel,
+}: DocumentRowProps) {
+  const handleDownload = useCallback(
+    () => window.open(downloadUrl, '_blank', 'noopener,noreferrer'),
+    [downloadUrl],
+  );
+  return (
+    <TableRow>
+      <TableCell>
+        <div>
+          <p className="text-sm font-medium">{name}</p>
+          <p className="text-[13px] text-muted-foreground">{sizeLabel}</p>
+        </div>
+      </TableCell>
+      <TableCell>
+        <Badge variant="secondary">{typeLabel}</Badge>
+      </TableCell>
+      <TableCell className="text-sm">{dateLabel}</TableCell>
+      <TableCell className="text-end">
+        <Button variant="outline" size="sm" onClick={handleDownload}>
+          <Download className="me-1 h-4 w-4" />
+          {downloadLabel}
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
 }
 
 export function PortalDocumentsContainer() {
@@ -44,7 +88,7 @@ export function PortalDocumentsContainer() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('documents.title')} />
+        <WorkbenchPageHeader title={t('documents.title')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
@@ -99,33 +143,15 @@ export function PortalDocumentsContainer() {
                 </TableHeader>
                 <TableBody>
                   {documents.map(doc => (
-                    <TableRow key={doc.id}>
-                      <TableCell>
-                        <div>
-                          <p className="text-sm font-medium">{doc.name}</p>
-                          <p className="text-[13px] text-muted-foreground">
-                            {formatFileSize(doc.sizeBytes)}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {formatDocType(doc.type ?? t('documents.documentFallback'))}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">{formatDate(doc.addedAt)}</TableCell>
-                      <TableCell className="text-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            window.open(doc.downloadUrl, '_blank', 'noopener,noreferrer')
-                          }>
-                          <Download className="me-1 h-4 w-4" />
-                          {t('documents.download')}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                    <DocumentRow
+                      key={doc.id}
+                      name={doc.name}
+                      sizeLabel={formatFileSize(doc.sizeBytes)}
+                      typeLabel={formatDocType(doc.type ?? t('documents.documentFallback'))}
+                      dateLabel={formatDate(doc.addedAt)}
+                      downloadUrl={doc.downloadUrl}
+                      downloadLabel={t('documents.download')}
+                    />
                   ))}
                 </TableBody>
               </Table>

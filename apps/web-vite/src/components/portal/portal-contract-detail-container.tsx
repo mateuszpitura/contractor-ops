@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { ArrowLeft, Download } from 'lucide-react';
+import { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { Link } from '../../i18n/navigation.js';
@@ -52,6 +53,42 @@ function DetailField({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-[13px] text-muted-foreground">{label}</p>
       <p className="text-sm font-medium">{value}</p>
+    </div>
+  );
+}
+
+interface ContractDocumentRowProps {
+  name: string;
+  typeLabel: string;
+  sizeLabel: string;
+  downloadUrl: string;
+  downloadLabel: string;
+}
+
+function ContractDocumentRow({
+  name,
+  typeLabel,
+  sizeLabel,
+  downloadUrl,
+  downloadLabel,
+}: ContractDocumentRowProps) {
+  const handleDownload = useCallback(
+    () => window.open(downloadUrl, '_blank', 'noopener,noreferrer'),
+    [downloadUrl],
+  );
+  return (
+    <div className="flex items-center justify-between rounded-lg border p-3">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{name}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <Badge variant="secondary">{typeLabel}</Badge>
+          <span className="text-[13px] text-muted-foreground">{sizeLabel}</span>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" onClick={handleDownload}>
+        <Download className="me-1 h-4 w-4" />
+        {downloadLabel}
+      </Button>
     </div>
   );
 }
@@ -246,26 +283,14 @@ export function PortalContractDetailContainer() {
         {contract.documents && contract.documents.length > 0 ? (
           <div className="mt-4 space-y-2">
             {contract.documents.map(doc => (
-              <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{doc.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="secondary">
-                      {formatContractType(doc.type ?? t('contracts.documentFallback'))}
-                    </Badge>
-                    <span className="text-[13px] text-muted-foreground">
-                      {formatFileSize(doc.sizeBytes)}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(doc.downloadUrl, '_blank', 'noopener,noreferrer')}>
-                  <Download className="me-1 h-4 w-4" />
-                  {t('documents.download')}
-                </Button>
-              </div>
+              <ContractDocumentRow
+                key={doc.id}
+                name={doc.name}
+                typeLabel={formatContractType(doc.type ?? t('contracts.documentFallback'))}
+                sizeLabel={formatFileSize(doc.sizeBytes)}
+                downloadUrl={doc.downloadUrl}
+                downloadLabel={t('documents.download')}
+              />
             ))}
           </div>
         ) : (
