@@ -94,6 +94,7 @@ vi.mock('@contractor-ops/integrations', () => ({
   getAllProviderHealth: vi.fn(async () => []),
   getAdapter: mockGetAdapter,
   registerAllAdapters: vi.fn(),
+  loadHeavyAdapters: vi.fn(async () => undefined),
 }));
 
 vi.mock('@contractor-ops/validators', async importOriginal => {
