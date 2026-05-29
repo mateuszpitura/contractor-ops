@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:tee": "bash scripts/dev-tee.sh",
+    "dev:observability": "docker compose -f docker-compose.observability.yml up -d && echo '\n✓ GlitchTip http://localhost:8000 · Grafana http://localhost:3001 · Loki http://localhost:3100'",
+    "dev:observability:down": "docker compose -f docker-compose.observability.yml down",
+    "dev:observability:logs": "docker compose -f docker-compose.observability.yml logs -f --tail=200",
+    "dev:observability:reset": "docker compose -f docker-compose.observability.yml down -v",
     "build": "turbo build",
     "lint": "turbo lint",
     "lint:ci": "biome check --config-path=biome.ci.json . && pnpm lint:i18n-casts && pnpm check:web-vite-data-layer && pnpm check:web-vite-page-shells && pnpm check:web-vite-presentational && pnpm check:r2-iframe-sandbox",
@@ -96,7 +100,10 @@
       "fast-xml-builder": "1.1.9",
       "next": "16.2.6",
       "fast-xml-parser": "5.7.3",
-      "uuid": "11.1.1"
+      "uuid": "11.1.1",
+      "ws": "^8.20.1",
+      "esbuild": "^0.25.0",
+      "@prisma/dev>@hono/node-server": "^1.19.13"
     },
     "onlyBuiltDependencies": [
       "@parcel/watcher",

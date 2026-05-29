@@ -1,0 +1,21 @@
+# Auto-provisioned Loki datasource. Picked up on Grafana boot.
+
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: true
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - matcherRegex: '"requestId":"([^"]+)"'
+          name: requestId
+          # No external trace backend in this stack — render the matched
+          # value as a clickable copy-link. If Tempo/Jaeger lands later,
+          # swap `url` for the trace explorer URL template.
+          url: 'https://example.invalid/$${__value.raw}'
+          urlDisplayLabel: 'Copy request id'

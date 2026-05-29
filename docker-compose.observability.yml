@@ -1,0 +1,124 @@
+# Dev-only observability stack — GlitchTip (Sentry-compatible) + Loki + Grafana.
+# Not for production. See README.observability.md for bootstrap.
+#
+# Bring it up:   pnpm dev:observability
+# Tear it down:  docker compose -f docker-compose.observability.yml down -v
+#
+# Networks: all services share the default bridge `observability`.
+
+name: contractor-ops-observability
+
+services:
+  # ──────────────────────────────────────────────────────────────────
+  # GlitchTip — single-image Sentry SDK-compatible error tracker.
+  # Web + worker + migrations share one image; database + redis are
+  # required peers. Ports: 8000 for the Sentry-compatible API + UI.
+  # ──────────────────────────────────────────────────────────────────
+  glitchtip-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${GLITCHTIP_DB_USER:-glitchtip}
+      POSTGRES_PASSWORD: ${GLITCHTIP_DB_PASSWORD:-glitchtip}
+      POSTGRES_DB: ${GLITCHTIP_DB_NAME:-glitchtip}
+    volumes:
+      - glitchtip-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glitchtip"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  glitchtip-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:v4.1
+    restart: unless-stopped
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgres://${GLITCHTIP_DB_USER:-glitchtip}:${GLITCHTIP_DB_PASSWORD:-glitchtip}@glitchtip-db:5432/${GLITCHTIP_DB_NAME:-glitchtip}
+      REDIS_URL: redis://glitchtip-redis:6379/0
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-not-secret-please-rotate-for-anything-real}
+      # Public base used to mint DSN host. localhost is fine for local dev.
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-http://localhost:8000}
+      # Allow the first signup to become the admin (closed after that).
+      ENABLE_USER_REGISTRATION: "true"
+      # Default org/team for the first user — empty enables the UI flow.
+      ENABLE_ORGANIZATION_CREATION: "true"
+      # Email backend: dump to logs in dev so we can see verification mails.
+      EMAIL_URL: consolemail://
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:v4.1
+    restart: unless-stopped
+    depends_on:
+      glitchtip-db:
+        condition: service_healthy
+      glitchtip-redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${GLITCHTIP_DB_USER:-glitchtip}:${GLITCHTIP_DB_PASSWORD:-glitchtip}@glitchtip-db:5432/${GLITCHTIP_DB_NAME:-glitchtip}
+      REDIS_URL: redis://glitchtip-redis:6379/0
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:-dev-only-not-secret-please-rotate-for-anything-real}
+      GLITCHTIP_DOMAIN: ${GLITCHTIP_DOMAIN:-http://localhost:8000}
+      CELERY_WORKER_AUTOSCALE: "1,3"
+      CELERY_WORKER_MAX_TASKS_PER_CHILD: "10000"
+    command: ./bin/run-celery-with-beat.sh
+
+  # ──────────────────────────────────────────────────────────────────
+  # Loki — log aggregator. Pino transport ships logs over HTTP.
+  # ──────────────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:3.2.0
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ──────────────────────────────────────────────────────────────────
+  # Grafana — UI for Loki. Datasource pre-provisioned.
+  # Default credentials: admin / admin (forced password change on first login).
+  # ──────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on:
+      loki:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_FEATURE_TOGGLES_ENABLE: traceqlEditor
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  glitchtip-pg:
+  loki-data:
+  grafana-data:

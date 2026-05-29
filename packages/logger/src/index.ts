@@ -123,6 +123,12 @@ function createRootLogger(): Logger {
   const hasAxiom = !!(axiomDataset && axiomToken);
   const sendToAxiom = hasAxiom && (!isDev || axiomInDev);
 
+  // Local-dev Loki replacement for Axiom. `LOKI_URL` is the only signal —
+  // when present we fan out a Pino stream that pushes to
+  // `${LOKI_URL}/loki/api/v1/push`. Prod leaves `LOKI_URL` unset, the
+  // branch is skipped, and Axiom stays the canonical shipper.
+  const lokiUrl = process.env.LOKI_URL;
+
   // Build stream list for pino.multistream.
   const streams: pino.StreamEntry[] = [];
 
@@ -158,6 +164,28 @@ function createRootLogger(): Logger {
       });
     } catch {
       // Axiom stream failed to initialize — continue with stdout only.
+    }
+  }
+
+  // ── Loki stream (dev-local; opt-in via LOKI_URL) ──────────────────
+  if (lokiUrl) {
+    try {
+      const { createLokiStream } = requireFromHere(
+        './loki-stream.js',
+      ) as typeof import('./loki-stream.js');
+      streams.push({
+        level: baseOptions.level as pino.Level,
+        stream: createLokiStream({
+          url: lokiUrl,
+          // The service tag is overridden per-line when present in the
+          // JSON payload (api-server / cron-worker / public-api set it
+          // via createLogger). `app` is the fallback for the root logger.
+          service: process.env.LOKI_SERVICE_LABEL ?? 'app',
+        }),
+      });
+    } catch {
+      // Loki stream failed to initialize — continue with the streams
+      // that did. Best-effort, dev-only.
     }
   }
 

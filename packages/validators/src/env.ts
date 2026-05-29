@@ -243,6 +243,15 @@ const observabilitySchema = z.object({
   SENTRY_AUTH_TOKEN: z.string().optional(),
   AXIOM_TOKEN: z.string().optional(),
   AXIOM_DATASET: z.string().default('contractor-ops'),
+  // Dev-only — when set, the root Pino logger fans out a second stream
+  // that pushes to `${LOKI_URL}/loki/api/v1/push`. Prod leaves it unset
+  // so the Axiom shipper remains the canonical sink.
+  LOKI_URL: z.url().optional(),
+  LOKI_SERVICE_LABEL: z.string().optional(),
+  // Dev override — when SENTRY_DSN points at a local GlitchTip instance,
+  // SENTRY_DEV=true defeats the dev hard-disable in the app Sentry inits
+  // so events flow into the local project instead of being dropped.
+  SENTRY_DEV: z.union([z.literal('true'), z.literal('false')]).optional(),
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).optional(),
 });
 
