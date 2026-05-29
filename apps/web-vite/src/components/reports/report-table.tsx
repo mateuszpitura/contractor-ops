@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { DataTableBody } from '../shared/data-table-body.js';
+import { DataTablePagination } from '../shared/data-table-pagination.js';
 import { SortableTableHead } from '../shared/sortable-table-head.js';
 
 interface ReportTableProps<TData> {
@@ -88,29 +89,13 @@ export function ReportTable<TData>({
 
   const pagination =
     !isLoading && totalCount > 0 ? (
-      <>
-        <span className="text-sm text-muted-foreground">
-          {tCommon('pagination.page', { page, pageCount, total: totalCount })}
-        </span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(page - 1)}
-            disabled={page <= 1}>
-            {tCommon('pagination.previous')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(page + 1)}
-            disabled={page >= pageCount}>
-            {tCommon('pagination.next')}
-          </Button>
-        </div>
-      </>
+      <DataTablePagination
+        table={table}
+        totalRows={totalCount}
+        pageSize={pageSize}
+        currentPage={page}
+        onPageChange={onPageChange}
+      />
     ) : undefined;
 
   return (

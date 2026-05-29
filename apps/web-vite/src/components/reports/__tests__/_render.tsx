@@ -60,9 +60,20 @@ export function findByText(root: ParentNode, text: string | RegExp): HTMLElement
 export function findButton(root: ParentNode, text?: string | RegExp): HTMLButtonElement | null {
   const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button'));
   if (text === undefined) return buttons[0] ?? null;
+  // Map historical text labels (Previous/Next) to the canonical aria-labels
+  // emitted by the unified DataTablePagination component so existing assertions
+  // keep working after the icon-only chevron migration.
+  const ariaAlias: Record<string, RegExp> = {
+    Previous: /previous page/i,
+    Next: /next page/i,
+  };
   for (const btn of buttons) {
     const txt = (btn.textContent ?? '').trim();
-    if (text instanceof RegExp ? text.test(txt) : txt.includes(text)) return btn;
+    const aria = (btn.getAttribute('aria-label') ?? '').trim();
+    const matches = (haystack: string) =>
+      text instanceof RegExp ? text.test(haystack) : haystack.includes(text);
+    if (matches(txt) || matches(aria)) return btn;
+    if (typeof text === 'string' && ariaAlias[text] && ariaAlias[text].test(aria)) return btn;
   }
   return null;
 }

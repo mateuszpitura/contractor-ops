@@ -116,7 +116,6 @@ export function SimpleDataTable<TData>({
             hasActiveFilters={hasFiltersOrSearch}
             clearFiltersLabel={clearFiltersLabel}
             onClearFilters={onClearFilters}
-            hideDensityToggle
             rightSlot={rightSlot}
           />
         }>

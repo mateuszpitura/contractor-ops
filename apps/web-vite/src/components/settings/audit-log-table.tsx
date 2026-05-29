@@ -5,7 +5,6 @@ import {
   WORKBENCH_DATA_TABLE_CLASS,
 } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
@@ -29,6 +28,7 @@ import { Link } from '../../i18n/navigation';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key';
+import { DataTablePagination } from '../shared/data-table-pagination.js';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
 
 // ---------------------------------------------------------------------------
@@ -248,29 +248,13 @@ export function AuditLogTable({
 
   const pagination =
     totalCount > 0 ? (
-      <div className="flex items-center justify-between px-1 py-1">
-        <p className="text-sm text-muted-foreground">
-          {t('pagination.summary', { page, totalPages })}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(page - 1)}>
-            {t('pagination.previous')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(page + 1)}>
-            {t('pagination.next')}
-          </Button>
-        </div>
-      </div>
+      <DataTablePagination
+        table={table}
+        totalRows={totalCount}
+        pageSize={pageSize}
+        currentPage={page}
+        onPageChange={onPageChange}
+      />
     ) : null;
 
   return (
