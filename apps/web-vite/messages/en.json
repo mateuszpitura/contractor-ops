@@ -3231,6 +3231,7 @@
     "billingProfileNotFound": "Billing profile not found.",
     "whtNotApplicable": "No withholding tax applicable to this payment item.",
     "clockifyConnectionNotFound": "Clockify connection not found.",
+    "clockifyConnectionNotActive": "Clockify connection is not active.",
     "timesheetNotFound": "Timesheet not found.",
     "timesheetEntryNotFound": "Time entry not found.",
     "timesheetWeekStartDateMustBeMonday": "Week start date must be a Monday.",

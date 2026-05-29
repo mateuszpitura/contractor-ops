@@ -167,7 +167,7 @@ describe('syncJiraWorklogs', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('BAD_REQUEST');
-      expect((e as TRPCError).message).toContain('cloudId');
+      expect((e as TRPCError).message).toContain('jiraMissingCloudId');
     }
   });
 
@@ -229,7 +229,7 @@ describe('syncJiraWorklogs', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('BAD_REQUEST');
-      expect((e as TRPCError).message).toContain('Jira account ID not found');
+      expect((e as TRPCError).message).toContain('jiraAccountNotMapped');
     }
   });
 

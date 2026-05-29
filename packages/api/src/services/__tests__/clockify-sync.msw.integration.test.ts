@@ -183,7 +183,7 @@ describe('clockify-sync + MSW', () => {
         '2025-01-01',
         '2025-12-31',
       ),
-    ).rejects.toThrow('Clockify connection not found');
+    ).rejects.toThrow('clockifyConnectionNotFound');
   });
 
   it('throws when connection status is not CONNECTED', async () => {
@@ -205,6 +205,6 @@ describe('clockify-sync + MSW', () => {
         '2025-01-01',
         '2025-12-31',
       ),
-    ).rejects.toThrow('Clockify connection is not active');
+    ).rejects.toThrow('clockifyConnectionNotActive');
   });
 });

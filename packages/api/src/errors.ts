@@ -348,6 +348,7 @@ export const WHT_NOT_APPLICABLE = 'whtNotApplicable';
 
 // ─── Integrations (extended) ────────────────────────────────────
 export const CLOCKIFY_CONNECTION_NOT_FOUND = 'clockifyConnectionNotFound';
+export const CLOCKIFY_CONNECTION_NOT_ACTIVE = 'clockifyConnectionNotActive';
 
 // ─── Timesheets ─────────────────────────────────────────────────
 export const TIMESHEET_NOT_FOUND = 'timesheetNotFound';

@@ -7,6 +7,7 @@ import { TRPCError } from '@trpc/server';
 import {
   CLOCKIFY_API_KEY_INVALID,
   CLOCKIFY_CONFIG_INCOMPLETE,
+  CLOCKIFY_CONNECTION_NOT_ACTIVE,
   CLOCKIFY_CONNECTION_NOT_FOUND,
   CLOCKIFY_SYNC_FAILED,
 } from '../errors';
@@ -164,7 +165,7 @@ async function loadClockifyConnection(prisma: PrismaClient, connectionId: string
   if (connection.status !== 'CONNECTED') {
     throw new TRPCError({
       code: 'PRECONDITION_FAILED',
-      message: CLOCKIFY_CONNECTION_NOT_FOUND,
+      message: CLOCKIFY_CONNECTION_NOT_ACTIVE,
     });
   }
 

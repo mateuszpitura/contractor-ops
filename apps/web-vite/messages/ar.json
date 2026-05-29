@@ -3231,6 +3231,7 @@
     "billingProfileNotFound": "لم يتم العثور على ملف الفوترة.",
     "whtNotApplicable": "لا توجد ضريبة استقطاع مطبقة على هذا البند.",
     "clockifyConnectionNotFound": "لم يتم العثور على اتصال Clockify.",
+    "clockifyConnectionNotActive": "اتصال Clockify غير نشط.",
     "timesheetNotFound": "لم يتم العثور على ورقة الوقت.",
     "timesheetEntryNotFound": "لم يتم العثور على إدخال الوقت.",
     "timesheetWeekStartDateMustBeMonday": "يجب أن يكون تاريخ بدء الأسبوع يوم الاثنين.",

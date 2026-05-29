@@ -158,7 +158,7 @@ describe('jira-issue-sync + MSW', () => {
 
     await expect(
       createJiraIssue(mockPrisma as never, ORG_ID, CONNECTION_ID, 'nonexistent'),
-    ).rejects.toThrow('Workflow task run not found');
+    ).rejects.toThrow('workflowTaskRunNotFound');
   });
 
   it('throws when Jira config is not enabled on template', async () => {
@@ -178,6 +178,6 @@ describe('jira-issue-sync + MSW', () => {
 
     await expect(
       createJiraIssue(mockPrisma as never, ORG_ID, CONNECTION_ID, TASK_RUN_ID),
-    ).rejects.toThrow('Jira is not configured for this task template');
+    ).rejects.toThrow('jiraTaskNotConfigured');
   });
 });

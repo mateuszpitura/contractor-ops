@@ -3231,6 +3231,7 @@
     "billingProfileNotFound": "Nie znaleziono profilu rozliczeniowego.",
     "whtNotApplicable": "Brak podatku u źródła dla tej pozycji płatności.",
     "clockifyConnectionNotFound": "Nie znaleziono połączenia z Clockify.",
+    "clockifyConnectionNotActive": "Połączenie z Clockify nie jest aktywne.",
     "timesheetNotFound": "Nie znaleziono karty pracy.",
     "timesheetEntryNotFound": "Nie znaleziono wpisu czasowego.",
     "timesheetWeekStartDateMustBeMonday": "Data początku tygodnia musi być poniedziałkiem.",

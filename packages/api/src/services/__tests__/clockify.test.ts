@@ -331,7 +331,7 @@ describe('clockify', () => {
           '2024-06-01',
           '2024-06-30',
         ),
-      ).rejects.toThrow(/invalid or expired/i);
+      ).rejects.toThrow(/clockifyApiKeyInvalid/);
 
       // Sync log should be updated with FAILED status
       expect(mockPrisma.integrationSyncLog.update).toHaveBeenCalledWith(
@@ -355,7 +355,7 @@ describe('clockify', () => {
           '2024-06-01',
           '2024-06-30',
         ),
-      ).rejects.toThrow(/not found/i);
+      ).rejects.toThrow(/clockifyConnectionNotFound/);
     });
 
     it('throws PRECONDITION_FAILED when connection is not CONNECTED', async () => {
@@ -377,7 +377,7 @@ describe('clockify', () => {
           '2024-06-01',
           '2024-06-30',
         ),
-      ).rejects.toThrow(/not active/i);
+      ).rejects.toThrow(/clockifyConnectionNotActive/);
     });
 
     it('skips zero-duration entries', async () => {

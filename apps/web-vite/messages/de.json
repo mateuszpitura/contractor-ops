@@ -3231,6 +3231,7 @@
     "billingProfileNotFound": "Abrechnungsprofil nicht gefunden.",
     "whtNotApplicable": "Keine Quellensteuer auf diese Zahlungsposition anwendbar.",
     "clockifyConnectionNotFound": "Clockify-Verbindung nicht gefunden.",
+    "clockifyConnectionNotActive": "Clockify-Verbindung ist nicht aktiv.",
     "timesheetNotFound": "Stundenzettel nicht gefunden.",
     "timesheetEntryNotFound": "Zeiteintrag nicht gefunden.",
     "timesheetWeekStartDateMustBeMonday": "Der Wochenstart muss ein Montag sein.",

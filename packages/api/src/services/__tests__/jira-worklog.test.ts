@@ -349,7 +349,7 @@ describe('jira-worklog', () => {
 
       await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(TRPCError);
 
-      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(/reconnect/i);
+      await expect(syncJiraWorklogs(prisma, ...baseArgs)).rejects.toThrow(/jiraTokenInvalid/);
     });
   });
 });

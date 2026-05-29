@@ -188,6 +188,6 @@ describe('jira-worklog-sync + MSW', () => {
         '2025-01-01',
         '2025-12-31',
       ),
-    ).rejects.toThrow('Jira connection not found');
+    ).rejects.toThrow('jiraConnectionNotFound');
   });
 });
