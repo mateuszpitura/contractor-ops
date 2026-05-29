@@ -38,7 +38,7 @@ import {
   Sun,
   UserPen,
 } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import { useDensity } from '../../hooks/use-density.js';
 import { Link } from '../../i18n/navigation.js';
@@ -90,12 +90,27 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
     }
   }, [nameDialogOpen, user?.name]);
 
-  const submitName = async () => {
+  const submitName = useCallback(async () => {
     setNameSaving(true);
     const result = await onSaveName(nameValue);
     setNameSaving(false);
     if (result.ok) setNameDialogOpen(false);
-  };
+  }, [nameValue, onSaveName]);
+
+  const openNameDialog = useCallback(() => setNameDialogOpen(true), []);
+  const closeNameDialog = useCallback(() => setNameDialogOpen(false), []);
+  const handleThemeChange = useCallback((value: string) => setTheme(value as Theme), [setTheme]);
+  const handleNameSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      void submitName();
+    },
+    [submitName],
+  );
+  const handleNameInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setNameValue(e.target.value),
+    [],
+  );
 
   return (
     <>
@@ -135,10 +150,7 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            // biome-ignore lint/nursery/noJsxPropsBind: dialog open trigger
-            onClick={() => setNameDialogOpen(true)}
-            className="cursor-pointer">
+          <DropdownMenuItem onClick={openNameDialog} className="cursor-pointer">
             <UserPen className="size-4" />
             {t('editName')}
           </DropdownMenuItem>
@@ -159,9 +171,7 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
               {t('appearance')}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup
-                value={theme}
-                onValueChange={value => setTheme(value as Theme)}>
+              <DropdownMenuRadioGroup value={theme} onValueChange={handleThemeChange}>
                 <DropdownMenuRadioItem value="light" className="cursor-pointer">
                   <Sun className="size-4" />
                   {t('appearanceLight')}
@@ -210,30 +220,19 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
               {t('editName')}
             </DialogTitle>
           </DialogHeader>
-          <form
-            // biome-ignore lint/nursery/noJsxPropsBind: form submit handler
-            onSubmit={e => {
-              e.preventDefault();
-              void submitName();
-            }}
-            className="space-y-4">
+          <form onSubmit={handleNameSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor={`${reactId}-user-name`}>{t('editNamePrompt')}</Label>
               <Input
                 ref={nameInputRef}
                 id={`${reactId}-user-name`}
                 value={nameValue}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setNameValue(e.target.value)}
+                onChange={handleNameInputChange}
                 placeholder={t('editNamePrompt')}
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                // biome-ignore lint/nursery/noJsxPropsBind: dialog close handler
-                onClick={() => setNameDialogOpen(false)}>
+              <Button type="button" variant="outline" onClick={closeNameDialog}>
                 {t('cancel')}
               </Button>
               <Button type="submit" disabled={nameSaving || !nameValue.trim()}>

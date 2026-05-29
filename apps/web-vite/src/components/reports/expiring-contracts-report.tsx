@@ -3,7 +3,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CalendarClock } from 'lucide-react';
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useRouter } from '../../i18n/navigation.js';
 import { tKey } from '../../i18n/typed-keys.js';
@@ -20,6 +20,26 @@ import { ReportTable } from './report-table.js';
 interface ExpiringContractsReportProps {
   report: ReturnType<typeof useExpiringContractsReport>;
 }
+
+type DaysOption = '30' | '60' | '90';
+
+interface DaysButtonProps {
+  value: DaysOption;
+  active: boolean;
+  label: string;
+  onSelect: (value: DaysOption) => void;
+}
+
+const DaysButton = memo(function DaysButton({ value, active, label, onSelect }: DaysButtonProps) {
+  const handleClick = useCallback(() => onSelect(value), [onSelect, value]);
+  return (
+    <Button variant={active ? 'default' : 'outline'} size="sm" onClick={handleClick}>
+      {label}
+    </Button>
+  );
+});
+
+const noop = () => undefined;
 
 export function ExpiringContractsReport({ report }: ExpiringContractsReportProps) {
   const t = useTranslations('Reports');
@@ -77,17 +97,22 @@ export function ExpiringContractsReport({ report }: ExpiringContractsReportProps
     [t, formatDate],
   );
 
+  const handleRowClick = useCallback(
+    (row: ExpiringRow) => router.push(`/contracts/${row.contractId}`),
+    [router],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
         {(['30', '60', '90'] as const).map(d => (
-          <Button
+          <DaysButton
             key={d}
-            variant={report.days === d ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => report.handleDaysChange(d)}>
-            {tKey(t, `days${d}`)}
-          </Button>
+            value={d}
+            active={report.days === d}
+            label={tKey(t, `days${d}`)}
+            onSelect={report.handleDaysChange}
+          />
         ))}
       </div>
 
@@ -97,7 +122,7 @@ export function ExpiringContractsReport({ report }: ExpiringContractsReportProps
         dataKey="count"
         nameKey="bucket"
         idKey="bucket"
-        onSegmentClick={() => undefined}
+        onSegmentClick={noop}
         isLoading={report.chartQuery.isLoading}
         isError={report.chartQuery.isError}
         onRetry={report.handleChartRetry}
@@ -115,7 +140,7 @@ export function ExpiringContractsReport({ report }: ExpiringContractsReportProps
         onSortChange={report.handleSortChange}
         sortBy={report.sortBy}
         sortOrder={report.sortOrder}
-        onRowClick={row => router.push(`/contracts/${row.contractId}`)}
+        onRowClick={handleRowClick}
         isLoading={report.tableQuery.isLoading}
         isFetching={report.tableQuery.isFetching}
         isError={report.tableQuery.isError}

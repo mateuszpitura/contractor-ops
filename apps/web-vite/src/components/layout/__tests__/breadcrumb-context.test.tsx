@@ -89,10 +89,13 @@ describe('useBreadcrumbOverride (web-vite)', () => {
 
   it('does not set override when segment is undefined', async () => {
     let lastSize = -1;
+    const captureSize = (size: number) => {
+      lastSize = size;
+    };
     await mount(
       <BreadcrumbProvider>
         <HookHost segment={undefined} label="Label" />
-        <CaptureCtx onCtx={size => (lastSize = size)} />
+        <CaptureCtx onCtx={captureSize} />
       </BreadcrumbProvider>,
     );
     expect(lastSize).toBe(0);
@@ -100,10 +103,13 @@ describe('useBreadcrumbOverride (web-vite)', () => {
 
   it('does not set override when label is null', async () => {
     let lastSize = -1;
+    const captureSize = (size: number) => {
+      lastSize = size;
+    };
     await mount(
       <BreadcrumbProvider>
         <HookHost segment="seg" label={null} />
-        <CaptureCtx onCtx={size => (lastSize = size)} />
+        <CaptureCtx onCtx={captureSize} />
       </BreadcrumbProvider>,
     );
     expect(lastSize).toBe(0);

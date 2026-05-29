@@ -18,7 +18,7 @@ import {
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useBoeRateInsert, useBoeRateValidation } from '../hooks/use-admin-boe-rate.js';
@@ -52,19 +52,22 @@ export function AddBoeRateDialog({
     }
   }, [open]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const rate = validateRate(ratePercent);
-    if (rate === null) return;
-    if (!validateDate(effectiveFrom)) return;
+      const rate = validateRate(ratePercent);
+      if (rate === null) return;
+      if (!validateDate(effectiveFrom)) return;
 
-    insertMutation.mutate({
-      effectiveFrom: new Date(effectiveFrom),
-      ratePercent: rate,
-      notes: notes || undefined,
-    });
-  }
+      insertMutation.mutate({
+        effectiveFrom: new Date(effectiveFrom),
+        ratePercent: rate,
+        notes: notes || undefined,
+      });
+    },
+    [effectiveFrom, insertMutation, notes, ratePercent, validateDate, validateRate],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

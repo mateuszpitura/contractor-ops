@@ -19,7 +19,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { AlertTriangleIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type {
@@ -57,18 +57,21 @@ export function EditBoeRateDialog({
     setNotes(entry.notes ?? '');
   }, [entry]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
 
-    const rate = validateRate(ratePercent);
-    if (rate === null) return;
+      const rate = validateRate(ratePercent);
+      if (rate === null) return;
 
-    updateMutation.mutate({
-      id: entry.id,
-      ratePercent: rate,
-      notes: notes || undefined,
-    });
-  }
+      updateMutation.mutate({
+        id: entry.id,
+        ratePercent: rate,
+        notes: notes || undefined,
+      });
+    },
+    [entry.id, notes, ratePercent, updateMutation, validateRate],
+  );
 
   const effectiveDate = new Date(entry.effectiveFrom).toISOString().slice(0, 10);
 

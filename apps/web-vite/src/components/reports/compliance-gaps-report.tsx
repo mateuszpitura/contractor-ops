@@ -2,7 +2,7 @@ import { ComplianceGapsIllustration, SectionLabel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ShieldAlert } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useRouter } from '../../i18n/navigation.js';
 import { tKey } from '../../i18n/typed-keys.js';
@@ -29,6 +29,11 @@ interface ComplianceGapsReportProps {
 export function ComplianceGapsReport({ report }: ComplianceGapsReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
+
+  const handleRowClick = useCallback(
+    (row: ComplianceRow) => router.push(`/contractors/${row.contractorId}`),
+    [router],
+  );
 
   const columns: ColumnDef<ComplianceRow>[] = useMemo(
     () => [
@@ -101,7 +106,7 @@ export function ComplianceGapsReport({ report }: ComplianceGapsReportProps) {
         onSortChange={report.handleSortChange}
         sortBy={report.sortBy}
         sortOrder={report.sortOrder}
-        onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
+        onRowClick={handleRowClick}
         isLoading={report.tableQuery.isLoading}
         isFetching={report.tableQuery.isFetching}
         isError={report.tableQuery.isError}

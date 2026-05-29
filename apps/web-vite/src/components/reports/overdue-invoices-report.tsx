@@ -3,7 +3,7 @@ import { OverdueInvoicesIllustration, SectionLabel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -24,6 +24,11 @@ export function OverdueInvoicesReport({ report }: OverdueInvoicesReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
   const { formatDate } = useDateFormatter();
+
+  const handleRowClick = useCallback(
+    (row: OverdueRow) => router.push(`/invoices/${row.invoiceId}`),
+    [router],
+  );
 
   const columns: ColumnDef<OverdueRow>[] = useMemo(
     () => [
@@ -80,7 +85,7 @@ export function OverdueInvoicesReport({ report }: OverdueInvoicesReportProps) {
         onSortChange={report.handleSortChange}
         sortBy={report.sortBy}
         sortOrder={report.sortOrder}
-        onRowClick={row => router.push(`/invoices/${row.invoiceId}`)}
+        onRowClick={handleRowClick}
         isLoading={report.tableQuery.isLoading}
         isFetching={report.tableQuery.isFetching}
         isError={report.tableQuery.isError}

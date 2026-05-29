@@ -2,7 +2,7 @@ import { formatMinorAsCurrency } from '@contractor-ops/shared';
 import { SectionLabel, SpendReportIllustration } from '@contractor-ops/ui';
 import type { ColumnDef } from '@tanstack/react-table';
 import { TrendingUp } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -28,6 +28,11 @@ export function SpendContractorReport({ report }: SpendContractorReportProps) {
   const t = useTranslations('Reports');
   const router = useRouter();
   const { formatDate } = useDateFormatter();
+
+  const handleRowClick = useCallback(
+    (row: SpendContractorRow) => router.push(`/contractors/${row.contractorId}`),
+    [router],
+  );
 
   const columns: ColumnDef<SpendContractorRow>[] = useMemo(
     () => [
@@ -98,7 +103,7 @@ export function SpendContractorReport({ report }: SpendContractorReportProps) {
         onSortChange={report.handleSortChange}
         sortBy={report.sortBy}
         sortOrder={report.sortOrder}
-        onRowClick={row => router.push(`/contractors/${row.contractorId}`)}
+        onRowClick={handleRowClick}
         isLoading={report.tableQuery.isLoading}
         isFetching={report.tableQuery.isFetching}
         isError={report.tableQuery.isError}
