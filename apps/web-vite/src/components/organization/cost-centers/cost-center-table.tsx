@@ -71,6 +71,7 @@ export function CostCenterTable({
     <SimpleDataTable
       columns={columns}
       data={rows}
+      constrainHeight={false}
       entityLabel={t('entityCostCenters', { count: rows.length })}
       isLoading={isLoading}
       hasFiltersOrSearch={hasSearch}

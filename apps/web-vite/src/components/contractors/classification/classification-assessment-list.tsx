@@ -1,13 +1,3 @@
-// ---------------------------------------------------------------------------
-// Classification assessment list — Phase 58 Plan 05 Task 2.
-// ---------------------------------------------------------------------------
-// Renders the cross-engagement assessment history for a given contractor.
-//   - ≥ 1024 px → shadcn Table with Engagement | Country | Rule-set | Verdict
-//     pill | Completed at | Actions columns.
-//   - < 1024 px → vertical card list with the same payload stacked.
-// The API already returns rows sorted draft-first then completedAt DESC
-// (see classification.ts `listByContractor`).
-
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -20,16 +10,19 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
-  TableBody,
   TableCaption,
-  TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useMemo } from 'react';
+
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
+import { DataTableBody } from '../../shared/data-table-body.js';
+import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { AssessmentRow } from './hooks/use-classification-assessment-list.js';
 
 export interface ClassificationAssessmentListViewProps {
@@ -72,10 +65,12 @@ export function ClassificationAssessmentListEmpty() {
   );
 }
 
+type VerdictTone = 'success' | 'warning' | 'destructive' | 'neutral';
+
 function readVerdictLabel(
   row: AssessmentRow,
   t: ReturnType<typeof useTranslations>,
-): { label: string; tone: 'success' | 'warning' | 'destructive' | 'neutral' } {
+): { label: string; tone: VerdictTone } {
   if (row.status !== 'completed') {
     return { label: t('list.notCompleted'), tone: 'neutral' };
   }
@@ -99,13 +94,10 @@ function readVerdictLabel(
     case 'red':
       return { label: t('outcome.drv.verdict.red'), tone: 'destructive' };
   }
-  // Defensive fallback — verdict outside the documented enum (legacy rows,
-  // partially-saved drafts, schema drift) used to return `undefined` which
-  // then crashed the table cell on `.tone` access.
   return { label: t('list.notCompleted'), tone: 'neutral' };
 }
 
-const TONE_CLASSES: Record<'success' | 'warning' | 'destructive' | 'neutral', string> = {
+const TONE_CLASSES: Record<VerdictTone, string> = {
   success: 'border-success/30 bg-success/10 text-success',
   warning: 'border-warning/30 bg-warning/10 text-warning',
   destructive: 'border-destructive/30 bg-destructive/10 text-destructive',
@@ -117,11 +109,106 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
   const t = useTranslations('Classification');
   const { formatDateTime } = useDateFormatter();
 
+  const columns = useMemo<ColumnDef<AssessmentRow, unknown>[]>(() => {
+    const formatDate = (raw: Date | string | null): string => {
+      if (!raw) return t('list.notCompleted');
+      const d = raw instanceof Date ? raw : new Date(raw);
+      return formatDateTime(d);
+    };
+
+    return [
+      {
+        id: 'engagement',
+        accessorKey: 'contractorAssignmentId',
+        header: t('list.column.engagement'),
+        cell: ({ row }) => {
+          const isDraft = row.original.status !== 'completed';
+          return (
+            <div className="text-sm">
+              <span className="font-medium">{row.original.contractorAssignmentId}</span>
+              {isDraft ? (
+                <Badge variant="secondary" className="ms-2">
+                  {t('list.draftBadge')}
+                </Badge>
+              ) : null}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'country',
+        accessorKey: 'countryCode',
+        header: t('list.column.country'),
+        cell: ({ row }) => <span className="text-sm">{row.original.countryCode}</span>,
+      },
+      {
+        id: 'ruleSet',
+        accessorKey: 'ruleSetVersion',
+        header: t('list.column.ruleSet'),
+        cell: ({ row }) => (
+          <span className="text-sm tabular-nums">{row.original.ruleSetVersion}</span>
+        ),
+      },
+      {
+        id: 'verdict',
+        header: t('list.column.verdict'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const v = readVerdictLabel(row.original, t);
+          return (
+            <Badge variant="outline" data-tone={v.tone} className={TONE_CLASSES[v.tone]}>
+              {v.label}
+            </Badge>
+          );
+        },
+      },
+      {
+        id: 'completedAt',
+        accessorFn: row => (row.completedAt ? new Date(row.completedAt).getTime() : 0),
+        header: t('list.column.completedAt'),
+        cell: ({ row }) => <span className="text-sm">{formatDate(row.original.completedAt)}</span>,
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-end">{t('list.column.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const isDraft = row.original.status !== 'completed';
+          return (
+            <div className="text-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                render={
+                  <Link
+                    href={
+                      isDraft
+                        ? `/contractors/${contractorId}/engagements/${row.original.contractorAssignmentId}/classification`
+                        : `/contractors/${contractorId}/engagements/${row.original.contractorAssignmentId}/classification/${row.original.id}`
+                    }
+                  />
+                }>
+                {isDraft ? t('list.resume') : t('list.open')}
+              </Button>
+            </div>
+          );
+        },
+      },
+    ];
+  }, [t, contractorId, formatDateTime]);
+
   const formatDate = (raw: Date | string | null): string => {
     if (!raw) return t('list.notCompleted');
     const d = raw instanceof Date ? raw : new Date(raw);
     return formatDateTime(d);
   };
+
+  const data = rows as AssessmentRow[];
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -135,62 +222,21 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
         <Table>
           <TableCaption className="sr-only">{t('list.caption')}</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead scope="col">{t('list.column.engagement')}</TableHead>
-              <TableHead scope="col">{t('list.column.country')}</TableHead>
-              <TableHead scope="col">{t('list.column.ruleSet')}</TableHead>
-              <TableHead scope="col">{t('list.column.verdict')}</TableHead>
-              <TableHead scope="col">{t('list.column.completedAt')}</TableHead>
-              <TableHead scope="col" className="text-end">
-                {t('list.column.actions')}
-              </TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <SortableTableHead key={header.id} header={header} />
+                ))}
+              </TableRow>
+            ))}
           </TableHeader>
-          <TableBody>
-            {rows.map(row => {
-              const verdict = readVerdictLabel(row, t);
-              const isDraft = row.status !== 'completed';
-              return (
-                <TableRow key={row.id}>
-                  <TableCell className="text-sm">
-                    <span className="font-medium">{row.contractorAssignmentId}</span>
-                    {isDraft ? (
-                      <Badge variant="secondary" className="ms-2">
-                        {t('list.draftBadge')}
-                      </Badge>
-                    ) : null}
-                  </TableCell>
-                  <TableCell className="text-sm">{row.countryCode}</TableCell>
-                  <TableCell className="text-sm tabular-nums">{row.ruleSetVersion}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      data-tone={verdict.tone}
-                      className={TONE_CLASSES[verdict.tone]}>
-                      {verdict.label}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{formatDate(row.completedAt)}</TableCell>
-                  <TableCell className="text-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      render={
-                        <Link
-                          href={
-                            isDraft
-                              ? `/contractors/${contractorId}/engagements/${row.contractorAssignmentId}/classification`
-                              : `/contractors/${contractorId}/engagements/${row.contractorAssignmentId}/classification/${row.id}`
-                          }
-                        />
-                      }>
-                      {isDraft ? t('list.resume') : t('list.open')}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={false}
+            hasFiltersOrSearch={false}
+            emptyTitle={t('list.empty')}
+            noResultsTitle={t('list.empty')}
+          />
         </Table>
       </div>
 

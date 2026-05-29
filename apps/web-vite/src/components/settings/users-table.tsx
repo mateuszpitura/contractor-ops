@@ -260,6 +260,7 @@ export function UsersTable({
         data={members}
         isLoading={membersQuery.isLoading}
         isRefetching={membersQuery.isFetching && !membersQuery.isLoading}
+        constrainHeight={false}
         entityLabel={t('entityLabel', { count: members.length })}
         emptyTitle={t('emptyState.heading')}
         emptyDescription={t('emptyState.body')}

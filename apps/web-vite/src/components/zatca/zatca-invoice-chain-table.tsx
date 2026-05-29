@@ -24,7 +24,13 @@ import {
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { useMemo } from 'react';
+
+import { DataTableBody } from '../shared/data-table-body.js';
+import { SortableTableHead } from '../shared/sortable-table-head.js';
 import type { useZatcaInvoiceChainTable } from './hooks/use-zatca-invoice-chain-table.js';
 import type { ZatcaBadgeStatus } from './zatca-status-badge.js';
 import { ZatcaStatusBadge } from './zatca-status-badge.js';
@@ -58,6 +64,8 @@ export type ZatcaInvoiceChainTableViewProps = {
 };
 
 type HookResult = ReturnType<typeof useZatcaInvoiceChainTable>;
+
+type ChainEntry = HookResult['entries'][number];
 
 export function ZatcaInvoiceChainTableSkeleton() {
   return (
@@ -155,6 +163,81 @@ export function ZatcaInvoiceChainTableView({
   refetchChain,
   t,
 }: Omit<HookResult, 'isLoading'>) {
+  const columns = useMemo<ColumnDef<ChainEntry, unknown>[]>(
+    () => [
+      {
+        id: 'icv',
+        accessorKey: 'icv',
+        header: t('table.icv'),
+        size: 64,
+        cell: ({ row }) => <span className="font-mono text-xs">{row.original.icv}</span>,
+      },
+      {
+        id: 'invoice',
+        accessorFn: row => row.zatcaUuid || row.invoiceId,
+        header: t('table.invoice'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span
+            className="font-mono text-xs"
+            title={row.original.zatcaUuid || row.original.invoiceId}>
+            {truncate(row.original.zatcaUuid || row.original.invoiceId)}
+          </span>
+        ),
+      },
+      {
+        id: 'submitted',
+        accessorFn: row =>
+          row.submittedAt ? new Date(row.submittedAt).getTime() : new Date(row.createdAt).getTime(),
+        header: t('table.submitted'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {formatDate(row.original.submittedAt ?? row.original.createdAt)}
+          </span>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'zatcaStatus',
+        header: t('table.status'),
+        cell: ({ row }) => (
+          <ZatcaStatusBadge status={row.original.zatcaStatus as ZatcaBadgeStatus} />
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-end">{t('table.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const canResubmit = RESUBMITTABLE_STATUSES.has(row.original.zatcaStatus);
+          return (
+            <div className="text-end">
+              {canResubmit ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                  onClick={() => openResubmitDialog(row.original.invoiceId, row.original.icv)}>
+                  <RefreshCw className="me-1.5 size-3.5" aria-hidden="true" />
+                  {t('action.resubmit')}
+                </Button>
+              ) : (
+                <span className="text-xs text-muted-foreground">—</span>
+              )}
+            </div>
+          );
+        },
+      },
+    ],
+    [t, openResubmitDialog],
+  );
+
+  const table = useReactTable({
+    data: entries,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <>
       <Card>
@@ -174,50 +257,21 @@ export function ZatcaInvoiceChainTableView({
           <div className="overflow-hidden rounded-lg border">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-16">{t('table.icv')}</TableHead>
-                  <TableHead>{t('table.invoice')}</TableHead>
-                  <TableHead>{t('table.submitted')}</TableHead>
-                  <TableHead>{t('table.status')}</TableHead>
-                  <TableHead className="text-end">{t('table.actions')}</TableHead>
-                </TableRow>
+                {table.getHeaderGroups().map(headerGroup => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <SortableTableHead key={header.id} header={header} />
+                    ))}
+                  </TableRow>
+                ))}
               </TableHeader>
-              <TableBody>
-                {entries.map(entry => {
-                  const canResubmit = RESUBMITTABLE_STATUSES.has(entry.zatcaStatus);
-                  return (
-                    <TableRow key={entry.id}>
-                      <TableCell className="font-mono text-xs">{entry.icv}</TableCell>
-                      <TableCell>
-                        <span
-                          className="font-mono text-xs"
-                          title={entry.zatcaUuid || entry.invoiceId}>
-                          {truncate(entry.zatcaUuid || entry.invoiceId)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(entry.submittedAt ?? entry.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <ZatcaStatusBadge status={entry.zatcaStatus as ZatcaBadgeStatus} />
-                      </TableCell>
-                      <TableCell className="text-end">
-                        {canResubmit ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openResubmitDialog(entry.invoiceId, entry.icv)}>
-                            <RefreshCw className="me-1.5 size-3.5" aria-hidden="true" />
-                            {t('action.resubmit')}
-                          </Button>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
+              <DataTableBody
+                table={table}
+                isLoading={false}
+                hasFiltersOrSearch={false}
+                emptyTitle={t('emptyState')}
+                noResultsTitle={t('emptyState')}
+              />
             </Table>
           </div>
         </CardContent>

@@ -187,6 +187,7 @@ export function ReconciliationTableView({
 
   return (
     <AtelierTableShell
+      constrainHeight={false}
       footer={loadMoreFooter}
       chrome={
         <TableChrome

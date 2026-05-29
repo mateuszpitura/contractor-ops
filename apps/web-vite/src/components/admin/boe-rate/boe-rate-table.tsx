@@ -122,6 +122,7 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
       columns={columns}
       data={rows}
       isLoading={isLoading}
+      constrainHeight={false}
       entityLabel={t('entityLabel', { count: rows.length })}
       emptyTitle={t('noRateEntries')}
       emptyDescription={t('noRateEntriesBody')}

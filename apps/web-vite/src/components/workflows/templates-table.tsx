@@ -204,6 +204,7 @@ export function TemplatesTable({
         columns={columns}
         data={templates}
         isLoading={isLoading}
+        constrainHeight={false}
         entityLabel={t('templatesEntityLabel', { count: templates.length })}
         emptyTitle={tEmpty('heading')}
         emptyDescription={tEmpty('body')}

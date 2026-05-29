@@ -134,6 +134,7 @@ export function WorkflowRolesTable({
         columns={columns}
         data={rows}
         isLoading={listQuery.isLoading}
+        constrainHeight={false}
         entityLabel={t('entityLabel', { count: rows.length })}
         emptyIcon={<WorkflowsIllustration className="h-6 w-6" aria-hidden="true" />}
         emptyTitle={t('empty.heading')}

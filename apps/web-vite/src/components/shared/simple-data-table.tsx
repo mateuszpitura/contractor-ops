@@ -46,6 +46,14 @@ interface SimpleDataTableProps<TData> {
   sortAriaLabel?: string;
   /** Skeleton row count (default 6 — smaller than canonical's 8 for compact tables). */
   skeletonRows?: number;
+  /**
+   * Pass-through to AtelierTableShell.constrainHeight (default true). Set to
+   * false when the table is rendered inside a parent that is NOT a flex
+   * column with `min-h-0 flex-1` (e.g. inside a Tab panel, dialog body, or
+   * regular block flow) — otherwise the shell will try to grow to fill its
+   * container and push the entire page into a scroll.
+   */
+  constrainHeight?: boolean;
 }
 
 /**
@@ -84,6 +92,7 @@ export function SimpleDataTable<TData>({
   rightSlot,
   sortAriaLabel,
   skeletonRows = 6,
+  constrainHeight = true,
 }: SimpleDataTableProps<TData>) {
   const table = useReactTable({
     data,
@@ -93,10 +102,12 @@ export function SimpleDataTable<TData>({
   });
 
   const resolvedCount = totalCount ?? data.length;
+  const wrapperClass = constrainHeight ? WORKBENCH_DATA_TABLE_CLASS : 'flex flex-col gap-4';
 
   return (
-    <div className={WORKBENCH_DATA_TABLE_CLASS}>
+    <div className={wrapperClass}>
       <AtelierTableShell
+        constrainHeight={constrainHeight}
         isLoading={isLoading || isRefetching}
         chrome={
           <TableChrome

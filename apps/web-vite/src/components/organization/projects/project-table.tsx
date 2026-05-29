@@ -109,6 +109,7 @@ export function ProjectTable({
     <SimpleDataTable
       columns={columns}
       data={rows}
+      constrainHeight={false}
       entityLabel={t('entityProjects', { count: rows.length })}
       isLoading={isLoading}
       hasFiltersOrSearch={hasSearch}
