@@ -305,7 +305,6 @@
       "magicLinkSent": "Check your email",
       "magicLinkSentBody": "We sent a sign-in link to",
       "magicLinkBack": "Back to sign in",
-      "socialDivider": "or continue with",
       "emailLabel": "Work email",
       "emailPlaceholder": "name@company.com",
       "passwordLabel": "Password",
@@ -338,11 +337,7 @@
   "Billing": {
     "gate": {
       "requiresTier": "{feature} requires {tier}.",
-      "pageHeading": "This feature requires an upgrade",
-      "pageBody": "Your current plan does not include {feature}. Upgrade to {tier} to unlock it.",
-      "upgradePlan": "Upgrade Plan",
-      "tierErrorToast": "This feature requires {tier} plan.",
-      "upgradeAction": "Upgrade"
+      "upgradePlan": "Upgrade Plan"
     },
     "usage": {
       "currentPlan": "Current Plan",
@@ -457,11 +452,6 @@
     "eventTitlePlaceholder": "e.g., Onboarding kickoff - {contractor}",
     "eventTitleHint": "Available variables: {contractor}, {contract}, {task}",
     "durationLabel": "Duration",
-    "duration30m": "30 minutes",
-    "duration1h": "1 hour",
-    "duration2h": "2 hours",
-    "duration4h": "4 hours",
-    "durationFullDay": "Full day",
     "attendeesLabel": "Attendees",
     "attendeesPlaceholder": "email@example.com, another@example.com",
     "attendeesHint": "Comma-separated email addresses. The contractor and task assignee are included automatically.",
@@ -3148,7 +3138,6 @@
       "summaryNew": "{count} new",
       "summarySelected": "{count} selected",
       "searchPlaceholder": "Search users...",
-      "orgUnitFilter": "Org unit",
       "allOrgUnits": "All org units",
       "alreadyExists": "Already exists",
       "alreadyExistsTooltip": "This user is already a member of your organization.",
@@ -3171,7 +3160,6 @@
       "importing": "Importing users...",
       "successToast": "Successfully imported {count} users",
       "partialError": "{succeeded} of {total} users imported. {failed} failed — review errors and retry.",
-      "retryFailed": "Retry failed",
       "emptyNoUsers": "No users found",
       "emptyNoUsersBody": "The connected Google Workspace directory has no users, or the admin account lacks directory access.",
       "emptyAllImported": "All users imported",
@@ -3197,8 +3185,6 @@
       "importUsers": "Import users",
       "syncing": "Syncing...",
       "syncStarted": "Directory sync started",
-      "syncComplete": "Sync complete — {count} changes detected",
-      "syncNoChanges": "No changes detected",
       "syncError": "Sync failed. Please try again."
     },
     "notifications": {
@@ -3305,8 +3291,7 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Reconnect Google Workspace",
       "bannerBody": "Reconnect your Google Workspace integration to unlock new IdP deprovisioning features. Your existing read-only directory import will continue working until you complete the reconnect.",
-      "reconnectButton": "Reconnect Google Workspace",
-      "dismissAria": "Dismiss reconnect banner"
+      "reconnectButton": "Reconnect Google Workspace"
     },
     "jira": {
       "taskConfig": {
@@ -3726,8 +3711,7 @@
     "skipToContent": "Skip to content",
     "footer": {
       "privacy": "Privacy",
-      "terms": "Terms",
-      "copyright": "© 2026 Contractor Ops"
+      "terms": "Terms"
     }
   },
   "Legal": {
@@ -4348,7 +4332,6 @@
       "reasonLabel": "Reason for override",
       "reasonPlaceholder": "Describe why IP verification is being bypassed (minimum 20 characters).",
       "reasonClientError": "Provide at least 20 characters explaining the override.",
-      "reasonServerError": "The reason must be at least 20 characters and contain a substantive explanation.",
       "acknowledgement": "I confirm IP verification is being intentionally bypassed and I accept responsibility for any compliance gap.",
       "cta": "Override",
       "ctaLoading": "Recording override…",
@@ -4365,10 +4348,6 @@
       "tooltipReason": "Reason: {reason}",
       "tooltipActor": "Overridden by {name} on {date}",
       "tooltipBlockedTask": "Blocked task: IP_VERIFICATION"
-    },
-    "PtoBadge": {
-      "label": "No fallback approver — manager on PTO",
-      "tooltip": "Configure a fallback approver in Settings > Teams to avoid routing to organization owners by default."
     },
     "LocaleFallback": {
       "suffix": " (English)",
@@ -4471,7 +4450,6 @@
       "completeBody": "{imported} people and {projects} projects imported successfully.",
       "completeCta": "Go to Dashboard",
       "retryButton": "Retry",
-      "errorPrefix": "Failed to import {name}. Click Retry to try again, or skip this person.",
       "processing": "Processing..."
     },
     "nav": {
@@ -4487,9 +4465,7 @@
       "notConnected": "Not connected",
       "connect": "Connect",
       "importToggle": "Import from {tool}"
-    },
-    "oauthError": "Could not connect to {tool}. Check your permissions and try again.",
-    "settingsReimport": "Re-import from tools"
+    }
   },
   "OtherClientAttestation": {
     "title": "Other clients attestation",
@@ -6514,7 +6490,6 @@
   "Time": {
     "pageTitle": "Time Tracking",
     "timesheetEntityLabel": "{count, plural, one {timesheet} other {timesheets}}",
-    "entryEntityLabel": "{count, plural, one {entry} other {entries}}",
     "pageDescription": "Review and approve contractor timesheets",
     "tabs": {
       "pendingReviews": "Pending Reviews",
@@ -6632,12 +6607,10 @@
       "description": "Compute time vs. invoiced amount reconciliation for a specific contract and period. Useful before issuing or reviewing an invoice.",
       "contractorLabel": "Contractor",
       "contractorPlaceholder": "Select contractor",
-      "loadingContractors": "Loading contractors...",
       "noContractors": "No contractors with timesheets yet",
       "contractLabel": "Contract",
       "contractPlaceholder": "Select contract",
       "selectContractorFirst": "Select a contractor first",
-      "loadingContracts": "Loading contracts...",
       "noContracts": "No contracts for this contractor",
       "invoicedAmountLabel": "Invoiced amount",
       "invoicedAmountHint": "Amount in contract currency (e.g. 1500.00)",
@@ -6704,7 +6677,6 @@
     "newContract": "New contract",
     "uploadInvoice": "Upload invoice",
     "search": "Search",
-    "searchShortcut": "Cmd+K",
     "notifications": "Notifications",
     "addContractorFirst": "Add a contractor first"
   },
@@ -7640,11 +7612,7 @@
   "boundaries": {
     "error": {
       "title": "Something went wrong",
-      "description": "We couldn't load this page. The error has been reported. Try reloading; if it keeps happening, contact support.",
-      "reload": "Reload"
-    },
-    "loading": {
-      "ariaLabel": "Loading page"
+      "description": "We couldn't load this page. The error has been reported. Try reloading; if it keeps happening, contact support."
     }
   },
   "Organization": {

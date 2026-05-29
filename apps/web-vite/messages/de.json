@@ -305,7 +305,6 @@
       "magicLinkSent": "Prüfen Sie Ihre E-Mails",
       "magicLinkSentBody": "Wir haben einen Anmeldelink gesendet an",
       "magicLinkBack": "Zurück zur Anmeldung",
-      "socialDivider": "oder fortfahren mit",
       "emailLabel": "Geschäftliche E-Mail",
       "emailPlaceholder": "name@firma.de",
       "passwordLabel": "Passwort",
@@ -338,11 +337,7 @@
   "Billing": {
     "gate": {
       "requiresTier": "{feature} erfordert {tier}.",
-      "pageHeading": "Diese Funktion erfordert ein Upgrade",
-      "pageBody": "Ihr aktueller Tarif enthält {feature} nicht. Upgraden Sie auf {tier}, um die Funktion freizuschalten.",
-      "upgradePlan": "Tarif upgraden",
-      "tierErrorToast": "Diese Funktion erfordert den {tier}-Tarif.",
-      "upgradeAction": "Upgrade"
+      "upgradePlan": "Tarif upgraden"
     },
     "usage": {
       "currentPlan": "Aktueller Tarif",
@@ -457,11 +452,6 @@
     "eventTitlePlaceholder": "z. B. Onboarding-Kickoff – {contractor}",
     "eventTitleHint": "Verfügbare Variablen: {contractor}, {contract}, {task}",
     "durationLabel": "Duration",
-    "duration30m": "30 minutes",
-    "duration1h": "1 hour",
-    "duration2h": "2 hours",
-    "duration4h": "4 hours",
-    "durationFullDay": "Ganztägig",
     "attendeesLabel": "Attendees",
     "attendeesPlaceholder": "email@beispiel.de, weitere@beispiel.de",
     "attendeesHint": "Durch Kommas getrennte E-Mail-Adressen. Auftragnehmer und Aufgaben-Verantwortlicher werden automatisch hinzugefügt.",
@@ -3148,7 +3138,6 @@
       "summaryNew": "{count} neu",
       "summarySelected": "{count} ausgewählt",
       "searchPlaceholder": "Benutzer suchen ...",
-      "orgUnitFilter": "Organisationseinheit",
       "allOrgUnits": "Alle Organisationseinheiten",
       "alreadyExists": "Bereits vorhanden",
       "alreadyExistsTooltip": "Dieser Benutzer ist bereits Mitglied Ihrer Organisation.",
@@ -3171,7 +3160,6 @@
       "importing": "Benutzer werden importiert ...",
       "successToast": "{count} Benutzer erfolgreich importiert",
       "partialError": "{succeeded} von {total} Benutzern importiert. {failed} fehlgeschlagen – Fehler prüfen und erneut versuchen.",
-      "retryFailed": "Fehlgeschlagene erneut versuchen",
       "emptyNoUsers": "Keine Benutzer gefunden",
       "emptyNoUsersBody": "Das verbundene Google-Workspace-Verzeichnis enthält keine Benutzer, oder dem Administrator-Konto fehlt der Verzeichnis-Zugriff.",
       "emptyAllImported": "Alle Benutzer importiert",
@@ -3197,8 +3185,6 @@
       "importUsers": "Benutzer importieren",
       "syncing": "Syncing...",
       "syncStarted": "Verzeichnis-Synchronisierung gestartet",
-      "syncComplete": "Synchronisierung abgeschlossen — {count} Änderungen erkannt",
-      "syncNoChanges": "Keine Änderungen erkannt",
       "syncError": "Synchronisierung fehlgeschlagen. Bitte versuchen Sie es erneut."
     },
     "notifications": {
@@ -3305,8 +3291,7 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Google Workspace neu verbinden",
       "bannerBody": "Verbinden Sie Ihre Google-Workspace-Integration neu, um neue IdP-Deprovisioning-Funktionen freizuschalten. Ihr bisheriger Lesezugriff auf das Verzeichnis bleibt bis zum Abschluss der Neuverbindung erhalten.",
-      "reconnectButton": "Google Workspace neu verbinden",
-      "dismissAria": "Hinweis zum Neuverbinden schließen"
+      "reconnectButton": "Google Workspace neu verbinden"
     },
     "jira": {
       "taskConfig": {
@@ -3726,8 +3711,7 @@
     "skipToContent": "Zum Inhalt springen",
     "footer": {
       "privacy": "Datenschutz",
-      "terms": "Nutzungsbedingungen",
-      "copyright": "© 2026 Contractor Ops"
+      "terms": "Nutzungsbedingungen"
     }
   },
   "Legal": {
@@ -4348,7 +4332,6 @@
       "reasonLabel": "Grund für die Umgehung",
       "reasonPlaceholder": "Beschreibe, warum die IP-Verifizierung übersprungen wird (mindestens 20 Zeichen).",
       "reasonClientError": "Gib mindestens 20 Zeichen mit der Begründung der Umgehung an.",
-      "reasonServerError": "Der Grund muss mindestens 20 Zeichen lang sein und eine substanzielle Begründung enthalten.",
       "acknowledgement": "Ich bestätige, dass die IP-Verifizierung bewusst übersprungen wird und übernehme die Verantwortung für eventuelle Compliance-Lücken.",
       "cta": "Umgehen",
       "ctaLoading": "Umgehung wird gespeichert…",
@@ -4365,10 +4348,6 @@
       "tooltipReason": "Grund: {reason}",
       "tooltipActor": "Umgangen von {name} am {date}",
       "tooltipBlockedTask": "Blockierte Aufgabe: IP_VERIFICATION"
-    },
-    "PtoBadge": {
-      "label": "Kein Vertreter — Manager im Urlaub",
-      "tooltip": "Konfiguriere einen Vertreter unter Einstellungen > Teams, um die Standard-Weiterleitung an Organisations-Owner zu vermeiden."
     },
     "LocaleFallback": {
       "suffix": " (Englisch)",
@@ -4471,7 +4450,6 @@
       "completeBody": "{imported} Personen und {projects} Projekte erfolgreich importiert.",
       "completeCta": "Zum Dashboard",
       "retryButton": "Erneut versuchen",
-      "errorPrefix": "Aktion fehlgeschlagen: import {name}. Click Retry to try again, or skip this person.",
       "processing": "Verarbeitung läuft..."
     },
     "nav": {
@@ -4487,9 +4465,7 @@
       "notConnected": "Nicht verbunden",
       "connect": "Verbinden",
       "importToggle": "Aus {tool} importieren"
-    },
-    "oauthError": "Verbindung zu {tool} fehlgeschlagen. Prüfen Sie Ihre Berechtigungen und versuchen Sie es erneut.",
-    "settingsReimport": "Aus Tools erneut importieren"
+    }
   },
   "OtherClientAttestation": {
     "title": "Attestierung weiterer Auftraggeber",
@@ -6514,7 +6490,6 @@
   "Time": {
     "pageTitle": "Zeiterfassung",
     "timesheetEntityLabel": "{count, plural, one {Stundenzettel} other {Stundenzettel}}",
-    "entryEntityLabel": "{count, plural, one {Eintrag} other {Einträge}}",
     "pageDescription": "Arbeitszeitnachweise der Auftragnehmer prüfen und genehmigen",
     "tabs": {
       "pendingReviews": "Ausstehende Prüfungen",
@@ -6632,12 +6607,10 @@
       "description": "Berechnen Sie den Abgleich zwischen erfasster Zeit und Rechnungsbetrag für einen bestimmten Vertrag und Zeitraum. Nützlich vor dem Ausstellen oder Prüfen einer Rechnung.",
       "contractorLabel": "Auftragnehmer",
       "contractorPlaceholder": "Auftragnehmer auswählen",
-      "loadingContractors": "Auftragnehmer werden geladen...",
       "noContractors": "Noch keine Auftragnehmer mit Arbeitszeitnachweisen",
       "contractLabel": "Vertrag",
       "contractPlaceholder": "Vertrag auswählen",
       "selectContractorFirst": "Zuerst einen Auftragnehmer auswählen",
-      "loadingContracts": "Verträge werden geladen...",
       "noContracts": "Keine Verträge für diesen Auftragnehmer",
       "invoicedAmountLabel": "Fakturierter Betrag",
       "invoicedAmountHint": "Betrag in Vertragswährung (z. B. 1500.00)",
@@ -6704,7 +6677,6 @@
     "newContract": "Neuer Vertrag",
     "uploadInvoice": "Rechnung hochladen",
     "search": "Suchen",
-    "searchShortcut": "Cmd+K",
     "notifications": "Benachrichtigungen",
     "addContractorFirst": "Zuerst einen Auftragnehmer hinzufügen"
   },
@@ -7640,11 +7612,7 @@
   "boundaries": {
     "error": {
       "title": "Etwas ist schiefgelaufen",
-      "description": "Wir konnten diese Seite nicht laden. Der Fehler wurde gemeldet. Bitte erneut laden; falls das Problem weiterhin besteht, kontaktiere den Support.",
-      "reload": "Neu laden"
-    },
-    "loading": {
-      "ariaLabel": "Seite wird geladen"
+      "description": "Wir konnten diese Seite nicht laden. Der Fehler wurde gemeldet. Bitte erneut laden; falls das Problem weiterhin besteht, kontaktiere den Support."
     }
   },
   "commandPalette": {

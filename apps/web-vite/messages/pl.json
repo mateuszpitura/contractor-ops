@@ -305,7 +305,6 @@
       "magicLinkSent": "Sprawdź email",
       "magicLinkSentBody": "Wysłaliśmy link do logowania na",
       "magicLinkBack": "Powrót do logowania",
-      "socialDivider": "lub kontynuuj przez",
       "emailLabel": "Email służbowy",
       "emailPlaceholder": "imię@firma.pl",
       "passwordLabel": "Hasło",
@@ -338,11 +337,7 @@
   "Billing": {
     "gate": {
       "requiresTier": "{feature} wymaga planu {tier}.",
-      "pageHeading": "Ta funkcja wymaga wyzszego planu",
-      "pageBody": "Twoj obecny plan nie obejmuje {feature}. Zmien plan na {tier}, aby odblokowac.",
-      "upgradePlan": "Zmien plan",
-      "tierErrorToast": "Ta funkcja wymaga planu {tier}.",
-      "upgradeAction": "Ulepsz"
+      "upgradePlan": "Zmien plan"
     },
     "usage": {
       "currentPlan": "Obecny plan",
@@ -457,11 +452,6 @@
     "eventTitlePlaceholder": "np. Spotkanie onboardingowe - {contractor}",
     "eventTitleHint": "Dostepne zmienne: {contractor}, {contract}, {task}",
     "durationLabel": "Czas trwania",
-    "duration30m": "30 minut",
-    "duration1h": "1 godzina",
-    "duration2h": "2 godziny",
-    "duration4h": "4 godziny",
-    "durationFullDay": "Caly dzien",
     "attendeesLabel": "Uczestnicy",
     "attendeesPlaceholder": "email@przyklad.pl, inny@przyklad.pl",
     "attendeesHint": "Adresy e-mail oddzielone przecinkami. Wykonawca i osoba przypisana do zadania sa dodawani automatycznie.",
@@ -3148,7 +3138,6 @@
       "summaryNew": "{count} nowych",
       "summarySelected": "{count} wybranych",
       "searchPlaceholder": "Szukaj użytkowników...",
-      "orgUnitFilter": "Jednostka organizacyjna",
       "allOrgUnits": "Wszystkie jednostki",
       "alreadyExists": "Już istnieje",
       "alreadyExistsTooltip": "Ten użytkownik jest już członkiem Twojej organizacji.",
@@ -3171,7 +3160,6 @@
       "importing": "Importowanie użytkowników...",
       "successToast": "Pomyślnie zaimportowano {count} użytkowników",
       "partialError": "{succeeded} z {total} użytkowników zaimportowanych. {failed} nie powiodło się — przejrzyj błędy i spróbuj ponownie.",
-      "retryFailed": "Ponów nieudane",
       "emptyNoUsers": "Nie znaleziono użytkowników",
       "emptyNoUsersBody": "Połączony katalog Google Workspace nie zawiera użytkowników lub konto administratora nie ma dostępu do katalogu.",
       "emptyAllImported": "Wszyscy użytkownicy zaimportowani",
@@ -3197,8 +3185,6 @@
       "importUsers": "Importuj użytkowników",
       "syncing": "Synchronizowanie...",
       "syncStarted": "Synchronizacja katalogu rozpoczęta",
-      "syncComplete": "Synchronizacja zakończona — {count} zmian wykrytych",
-      "syncNoChanges": "Brak zmian",
       "syncError": "Synchronizacja nie powiodła się. Spróbuj ponownie."
     },
     "notifications": {
@@ -3305,8 +3291,7 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Połącz ponownie Google Workspace",
       "bannerBody": "Prosimy ponownie połączyć integrację Google Workspace, aby odblokować nowe funkcje deprowizjonowania IdP. Dotychczasowy odczyt katalogu pozostanie aktywny do momentu zakończenia ponownego połączenia.",
-      "reconnectButton": "Połącz ponownie Google Workspace",
-      "dismissAria": "Zamknij banner ponownego połączenia"
+      "reconnectButton": "Połącz ponownie Google Workspace"
     },
     "jira": {
       "taskConfig": {
@@ -3726,8 +3711,7 @@
     "skipToContent": "Przejdź do treści",
     "footer": {
       "privacy": "Prywatność",
-      "terms": "Regulamin",
-      "copyright": "© 2026 Contractor Ops"
+      "terms": "Regulamin"
     }
   },
   "Legal": {
@@ -4348,7 +4332,6 @@
       "reasonLabel": "Powód pominięcia",
       "reasonPlaceholder": "Opisz, dlaczego weryfikacja IP zostaje pominięta (minimum 20 znaków).",
       "reasonClientError": "Podaj co najmniej 20 znaków uzasadnienia pominięcia.",
-      "reasonServerError": "Powód musi mieć co najmniej 20 znaków i zawierać sensowne wyjaśnienie.",
       "acknowledgement": "Potwierdzam, że weryfikacja IP zostaje świadomie pominięta i biorę odpowiedzialność za ewentualne luki w zgodności.",
       "cta": "Pomiń",
       "ctaLoading": "Zapisuję pominięcie…",
@@ -4365,10 +4348,6 @@
       "tooltipReason": "Powód: {reason}",
       "tooltipActor": "Pominięcie wykonał {name} dnia {date}",
       "tooltipBlockedTask": "Zablokowane zadanie: IP_VERIFICATION"
-    },
-    "PtoBadge": {
-      "label": "Brak zastępcy — manager na urlopie",
-      "tooltip": "Skonfiguruj zastępcę w Ustawieniach > Zespoły, aby uniknąć domyślnego routingu do właścicieli organizacji."
     },
     "LocaleFallback": {
       "suffix": " (angielski)",
@@ -4471,7 +4450,6 @@
       "completeBody": "Zaimportowano {imported} osob i {projects} projektow.",
       "completeCta": "Przejdz do pulpitu",
       "retryButton": "Ponow",
-      "errorPrefix": "Nie udalo sie zaimportowac {name}. Kliknij Ponow aby sprobowac ponownie, lub pomin te osobe.",
       "processing": "Przetwarzanie..."
     },
     "nav": {
@@ -4487,9 +4465,7 @@
       "notConnected": "Nie polaczono",
       "connect": "Polacz",
       "importToggle": "Importuj z {tool}"
-    },
-    "oauthError": "Nie udalo sie polaczyc z {tool}. Sprawdz uprawnienia i sprobuj ponownie.",
-    "settingsReimport": "Ponowny import z narzedzi"
+    }
   },
   "OtherClientAttestation": {
     "title": "Oświadczenie o innych klientach",
@@ -6514,7 +6490,6 @@
   "Time": {
     "pageTitle": "Rejestracja czasu pracy",
     "timesheetEntityLabel": "{count, plural, one {karta czasu} few {karty czasu} many {kart czasu} other {kart czasu}}",
-    "entryEntityLabel": "{count, plural, one {wpis} few {wpisy} many {wpisów} other {wpisów}}",
     "pageDescription": "Przeglądaj i zatwierdzaj karty czasu pracy kontrahentów",
     "tabs": {
       "pendingReviews": "Oczekujące do przeglądu",
@@ -6632,12 +6607,10 @@
       "description": "Oblicz uzgodnienie czasu pracy względem zafakturowanej kwoty dla wybranej umowy i okresu. Przydatne przed wystawieniem lub weryfikacją faktury.",
       "contractorLabel": "Kontrahent",
       "contractorPlaceholder": "Wybierz kontrahenta",
-      "loadingContractors": "Ładowanie kontrahentów...",
       "noContractors": "Brak kontrahentów z kartami pracy",
       "contractLabel": "Umowa",
       "contractPlaceholder": "Wybierz umowę",
       "selectContractorFirst": "Najpierw wybierz kontrahenta",
-      "loadingContracts": "Ładowanie umów...",
       "noContracts": "Brak umów dla tego kontrahenta",
       "invoicedAmountLabel": "Kwota z faktury",
       "invoicedAmountHint": "Kwota w walucie umowy (np. 1500.00)",
@@ -6704,7 +6677,6 @@
     "newContract": "Nowa umowa",
     "uploadInvoice": "Prześlij fakturę",
     "search": "Szukaj",
-    "searchShortcut": "Cmd+K",
     "notifications": "Powiadomienia",
     "addContractorFirst": "Najpierw dodaj kontrahenta"
   },
@@ -7640,11 +7612,7 @@
   "boundaries": {
     "error": {
       "title": "Coś poszło nie tak",
-      "description": "Nie udało się załadować tej strony. Błąd został zgłoszony. Spróbuj ponownie; jeśli problem nadal występuje, skontaktuj się z pomocą techniczną.",
-      "reload": "Załaduj ponownie"
-    },
-    "loading": {
-      "ariaLabel": "Ładowanie strony"
+      "description": "Nie udało się załadować tej strony. Błąd został zgłoszony. Spróbuj ponownie; jeśli problem nadal występuje, skontaktuj się z pomocą techniczną."
     }
   },
   "commandPalette": {

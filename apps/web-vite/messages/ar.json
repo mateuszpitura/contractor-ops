@@ -305,7 +305,6 @@
       "magicLinkSent": "تحقق من بريدك الإلكتروني",
       "magicLinkSentBody": "أرسلنا رابط تسجيل الدخول ��لى",
       "magicLinkBack": "العودة لتسجيل الدخول",
-      "socialDivider": "أو المتابعة عبر",
       "emailLabel": "البريد الإلكتروني للعمل",
       "emailPlaceholder": "name@company.com",
       "passwordLabel": "كلمة المرور",
@@ -338,11 +337,7 @@
   "Billing": {
     "gate": {
       "requiresTier": "تتطلب {feature} الباقة {tier}.",
-      "pageHeading": "تتطلب هذه الميزة ترقية",
-      "pageBody": "خطّتك الحالية لا تشمل {feature}. قم بالترقية إلى {tier} لتفعيلها.",
-      "upgradePlan": "ترقية الخطة",
-      "tierErrorToast": "تتطلب هذه الميزة خطة {tier}.",
-      "upgradeAction": "Upgrade"
+      "upgradePlan": "ترقية الخطة"
     },
     "usage": {
       "currentPlan": "الخطة الحالية",
@@ -457,11 +452,6 @@
     "eventTitlePlaceholder": "مثال: , Onboarding kickoff - {contractor}",
     "eventTitleHint": "المتغيّرات المتاحة: {contractor}، {contract}، {task}",
     "durationLabel": "المدة",
-    "duration30m": "30 minutes",
-    "duration1h": "1 hour",
-    "duration2h": "2 hours",
-    "duration4h": "4 hours",
-    "durationFullDay": "يوم كامل",
     "attendeesLabel": "Attendees",
     "attendeesPlaceholder": "email@example.com, another@example.com",
     "attendeesHint": "عناوين بريد إلكتروني مفصولة بفواصل. يُدرَج المقاول والمُسنَدة إليه المهمة تلقائيًا.",
@@ -3148,7 +3138,6 @@
       "summaryNew": "{count} جدد",
       "summarySelected": "{count} محدد",
       "searchPlaceholder": "البحث عن users...",
-      "orgUnitFilter": "وحدة المؤسسة",
       "allOrgUnits": "جميع وحدات المؤسسة",
       "alreadyExists": "موجود بالفعل",
       "alreadyExistsTooltip": "هذا المستخدم عضو في مؤسستك بالفعل.",
@@ -3171,7 +3160,6 @@
       "importing": "جارٍ استيراد المستخدمين...",
       "successToast": "تم استيراد {count} مستخدمين بنجاح",
       "partialError": "تم استيراد {succeeded} من {total} مستخدمين. {failed} فشل — راجع الأخطاء وأعد المحاولة.",
-      "retryFailed": "إعادة محاولة الفاشل",
       "emptyNoUsers": "لم يتم العثور على users",
       "emptyNoUsersBody": "دليل Google Workspace المتصل لا يحتوي على مستخدمين، أو يفتقر حساب المسؤول إلى وصول الدليل.",
       "emptyAllImported": "تم استيراد جميع المستخدمين",
@@ -3197,8 +3185,6 @@
       "importUsers": "استيراد users",
       "syncing": "Syncing...",
       "syncStarted": "بدأت مزامنة الدليل",
-      "syncComplete": "اكتملت المزامنة — تم اكتشاف {count} تغييرات",
-      "syncNoChanges": "لم يُكتشف أي تغييرات",
       "syncError": "فشلت المزامنة. يرجى المحاولة مجددًا."
     },
     "notifications": {
@@ -3305,8 +3291,7 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "أعد ربط Google Workspace",
       "bannerBody": "أعد ربط تكامل Google Workspace الخاص بك لتفعيل ميزات إلغاء تفعيل IdP الجديدة. سيستمر عمل استيراد الدليل للقراءة فقط حتى تكتمل عملية إعادة الربط.",
-      "reconnectButton": "أعد ربط Google Workspace",
-      "dismissAria": "إغلاق إشعار إعادة الربط"
+      "reconnectButton": "أعد ربط Google Workspace"
     },
     "jira": {
       "taskConfig": {
@@ -3726,8 +3711,7 @@
     "skipToContent": "انتقل إلى المحتوى",
     "footer": {
       "privacy": "الخصوصية",
-      "terms": "الشروط",
-      "copyright": "© 2026 Contractor Ops"
+      "terms": "الشروط"
     }
   },
   "Legal": {
@@ -4348,7 +4332,6 @@
       "reasonLabel": "سبب التجاوز",
       "reasonPlaceholder": "صِف سبب تجاوز التحقق من الملكية الفكرية (20 حرفًا كحد أدنى).",
       "reasonClientError": "قدّم ما لا يقل عن 20 حرفًا تشرح فيها التجاوز.",
-      "reasonServerError": "يجب ألا يقل السبب عن 20 حرفًا وأن يتضمن شرحًا جوهريًا.",
       "acknowledgement": "أؤكّد أن التحقق من الملكية الفكرية يُتجاوَز عمدًا وأتحمّل مسؤولية أي فجوة امتثال.",
       "cta": "تجاوز",
       "ctaLoading": "جارٍ تسجيل التجاوز…",
@@ -4365,10 +4348,6 @@
       "tooltipReason": "السبب: {reason}",
       "tooltipActor": "تم التجاوز بواسطة {name} في {date}",
       "tooltipBlockedTask": "المهمة المحظورة: IP_VERIFICATION"
-    },
-    "PtoBadge": {
-      "label": "لا يوجد معتمِد احتياطي — المدير في إجازة",
-      "tooltip": "قم بتكوين معتمِد احتياطي في الإعدادات ← الفرق لتفادي التوجيه إلى مالكي المؤسسة افتراضيًا."
     },
     "LocaleFallback": {
       "suffix": " (بالإنجليزية)",
@@ -4471,7 +4450,6 @@
       "completeBody": "تم استيراد {imported} أشخاص و {projects} مشاريع بنجاح.",
       "completeCta": "الانتقال إلى لوحة المعلومات",
       "retryButton": "Retry",
-      "errorPrefix": "فشل استيراد {name}. انقر على إعادة المحاولة للمحاولة مجددًا، أو تخطَّ هذا الشخص.",
       "processing": "جارِ المعالجة..."
     },
     "nav": {
@@ -4487,9 +4465,7 @@
       "notConnected": "تم توصيل Not",
       "connect": "Connect",
       "importToggle": "استيراد from {tool}"
-    },
-    "oauthError": "تعذّر الاتصال بـ {tool}. تحقّق من صلاحياتك وأعد المحاولة.",
-    "settingsReimport": "إعادة استيراد من الأدوات"
+    }
   },
   "OtherClientAttestation": {
     "title": "إقرار بوجود عملاء آخرين",
@@ -6514,7 +6490,6 @@
   "Time": {
     "pageTitle": "تتبّع الوقت",
     "timesheetEntityLabel": "{count, plural, zero {جدول} one {جدول} two {جدولان} few {جداول} many {جدولاً} other {جدول}}",
-    "entryEntityLabel": "{count, plural, zero {إدخال} one {إدخال} two {إدخالان} few {إدخالات} many {إدخالاً} other {إدخال}}",
     "pageDescription": "مراجعة واعتماد جداول عمل المتعاقدين",
     "tabs": {
       "pendingReviews": "المراجعات المعلّقة",
@@ -6632,12 +6607,10 @@
       "description": "احسب تسوية الوقت مقابل المبلغ المفوتر لعقد وفترة محددين. مفيد قبل إصدار فاتورة أو مراجعتها.",
       "contractorLabel": "المتعاقد",
       "contractorPlaceholder": "اختر متعاقدًا",
-      "loadingContractors": "جارٍ تحميل المتعاقدين...",
       "noContractors": "لا يوجد متعاقدون لديهم كشوف حضور بعد",
       "contractLabel": "العقد",
       "contractPlaceholder": "اختر عقدًا",
       "selectContractorFirst": "اختر متعاقدًا أولاً",
-      "loadingContracts": "جارٍ تحميل العقود...",
       "noContracts": "لا توجد عقود لهذا المتعاقد",
       "invoicedAmountLabel": "المبلغ المفوتر",
       "invoicedAmountHint": "المبلغ بعملة العقد (مثلاً 1500.00)",
@@ -6704,7 +6677,6 @@
     "newContract": "عقد جديد",
     "uploadInvoice": "رفع فاتورة",
     "search": "بحث",
-    "searchShortcut": "Cmd+K",
     "notifications": "الإشعارات",
     "addContractorFirst": "أضف مقاولًا أولًا"
   },
@@ -7640,11 +7612,7 @@
   "boundaries": {
     "error": {
       "title": "حدث خطأ ما",
-      "description": "تعذّر تحميل هذه الصفحة. تم الإبلاغ عن الخطأ. حاول إعادة التحميل، وإذا استمرت المشكلة فاتصل بالدعم.",
-      "reload": "إعادة التحميل"
-    },
-    "loading": {
-      "ariaLabel": "جارٍ تحميل الصفحة"
+      "description": "تعذّر تحميل هذه الصفحة. تم الإبلاغ عن الخطأ. حاول إعادة التحميل، وإذا استمرت المشكلة فاتصل بالدعم."
     }
   },
   "commandPalette": {
