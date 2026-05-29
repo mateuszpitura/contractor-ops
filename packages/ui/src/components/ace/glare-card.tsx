@@ -1,13 +1,15 @@
 'use client';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { cn } from '../../lib/utils.js';
 
 export const GlareCard = ({
   children,
   className,
+  fill = false,
 }: {
   children: React.ReactNode;
   className?: string;
+  fill?: boolean;
 }) => {
   const isPointerInside = useRef(false);
   const refElement = useRef<HTMLDivElement>(null);
@@ -53,7 +55,7 @@ export const GlareCard = ({
     backgroundBlendMode: 'hue, hue, hue, overlay',
   };
 
-  const updateStyles = () => {
+  const updateStyles = useCallback(() => {
     if (refElement.current) {
       const { background, rotate, glare } = state.current;
       refElement.current?.style.setProperty('--m-x', `${glare.x}%`);
@@ -63,57 +65,69 @@ export const GlareCard = ({
       refElement.current?.style.setProperty('--bg-x', `${background.x}%`);
       refElement.current?.style.setProperty('--bg-y', `${background.y}%`);
     }
-  };
+  }, []);
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      const rotateFactor = 0.4;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const position = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+      const percentage = {
+        x: (100 / rect.width) * position.x,
+        y: (100 / rect.height) * position.y,
+      };
+      const delta = {
+        x: percentage.x - 50,
+        y: percentage.y - 50,
+      };
+
+      const { background, rotate, glare } = state.current;
+      background.x = 50 + percentage.x / 4 - 12.5;
+      background.y = 50 + percentage.y / 3 - 16.67;
+      rotate.x = -(delta.x / 3.5);
+      rotate.y = delta.y / 2;
+      rotate.x *= rotateFactor;
+      rotate.y *= rotateFactor;
+      glare.x = percentage.x;
+      glare.y = percentage.y;
+
+      updateStyles();
+    },
+    [updateStyles],
+  );
+
+  const handlePointerEnter = useCallback(() => {
+    isPointerInside.current = true;
+    if (refElement.current) {
+      setTimeout(() => {
+        if (isPointerInside.current) {
+          refElement.current?.style.setProperty('--duration', '0s');
+        }
+      }, 300);
+    }
+  }, []);
+
+  const handlePointerLeave = useCallback(() => {
+    isPointerInside.current = false;
+    if (refElement.current) {
+      refElement.current.style.removeProperty('--duration');
+      refElement.current?.style.setProperty('--r-x', `0deg`);
+      refElement.current?.style.setProperty('--r-y', `0deg`);
+    }
+  }, []);
   return (
     <div
-      className="relative isolate [aspect-ratio:17/21] w-[320px] transition-transform delay-[var(--delay)] duration-[var(--duration)] ease-[var(--easing)] will-change-transform [contain:layout_style] [perspective:600px]"
+      className={cn(
+        'relative isolate transition-transform delay-[var(--delay)] duration-[var(--duration)] ease-[var(--easing)] will-change-transform [contain:layout_style] [perspective:600px]',
+        fill ? 'h-full w-full [aspect-ratio:auto]' : '[aspect-ratio:17/21] w-[320px]',
+      )}
       ref={refElement}
-      onPointerMove={event => {
-        const rotateFactor = 0.4;
-        const rect = event.currentTarget.getBoundingClientRect();
-        const position = {
-          x: event.clientX - rect.left,
-          y: event.clientY - rect.top,
-        };
-        const percentage = {
-          x: (100 / rect.width) * position.x,
-          y: (100 / rect.height) * position.y,
-        };
-        const delta = {
-          x: percentage.x - 50,
-          y: percentage.y - 50,
-        };
-
-        const { background, rotate, glare } = state.current;
-        background.x = 50 + percentage.x / 4 - 12.5;
-        background.y = 50 + percentage.y / 3 - 16.67;
-        rotate.x = -(delta.x / 3.5);
-        rotate.y = delta.y / 2;
-        rotate.x *= rotateFactor;
-        rotate.y *= rotateFactor;
-        glare.x = percentage.x;
-        glare.y = percentage.y;
-
-        updateStyles();
-      }}
-      onPointerEnter={() => {
-        isPointerInside.current = true;
-        if (refElement.current) {
-          setTimeout(() => {
-            if (isPointerInside.current) {
-              refElement.current?.style.setProperty('--duration', '0s');
-            }
-          }, 300);
-        }
-      }}
-      onPointerLeave={() => {
-        isPointerInside.current = false;
-        if (refElement.current) {
-          refElement.current.style.removeProperty('--duration');
-          refElement.current?.style.setProperty('--r-x', `0deg`);
-          refElement.current?.style.setProperty('--r-y', `0deg`);
-        }
-      }}>
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}>
       <div className="grid h-full origin-center [transform:rotateY(var(--r-x))_rotateX(var(--r-y))] overflow-hidden rounded-[var(--radius)] border border-slate-800 transition-transform delay-[var(--delay)] duration-[var(--duration)] ease-[var(--easing)] will-change-transform hover:filter-none hover:[--duration:200ms] hover:[--easing:linear] hover:[--opacity:0.6]">
         <div className="grid h-full w-full mix-blend-soft-light [clip-path:inset(0_0_0_0_round_var(--radius))] [grid-area:1/1]">
           <div className={cn('h-full w-full bg-slate-950', className)}>{children}</div>

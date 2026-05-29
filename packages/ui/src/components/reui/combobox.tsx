@@ -10,6 +10,11 @@
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
+import {
+  formControlClassName,
+  formControlHoverClassName,
+  formControlPlaceholderClassName,
+} from '../../lib/form-control.js';
 import { cn } from '../../lib/utils.js';
 import {
   Command,
@@ -53,14 +58,26 @@ export function Combobox({
     [options, value],
   );
 
+  const handleSelect = React.useCallback(
+    (next: string) => {
+      onValueChange(next);
+      setOpen(false);
+    },
+    [onValueChange],
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         role="combobox"
         aria-expanded={open}
         disabled={disabled}
+        data-form-control=""
         className={cn(
-          'inline-flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
+          formControlClassName,
+          formControlHoverClassName,
+          formControlPlaceholderClassName,
+          'inline-flex h-8 w-full items-center justify-between px-2.5 py-1 text-sm',
           className,
         )}>
         <span className={cn(!selectedLabel && 'text-muted-foreground')}>
@@ -75,22 +92,12 @@ export function Combobox({
             <CommandEmpty>{emptyLabel}</CommandEmpty>
             <CommandGroup>
               {options.map(option => (
-                <CommandItem
+                <ComboboxRow
                   key={option.value}
-                  value={option.label}
-                  onSelect={() => {
-                    onValueChange(option.value);
-                    setOpen(false);
-                  }}>
-                  <Check
-                    className={cn(
-                      'me-2 size-4',
-                      value === option.value ? 'opacity-100' : 'opacity-0',
-                    )}
-                    aria-hidden
-                  />
-                  {option.label}
-                </CommandItem>
+                  option={option}
+                  selected={value === option.value}
+                  onSelect={handleSelect}
+                />
               ))}
             </CommandGroup>
           </CommandList>
@@ -99,3 +106,23 @@ export function Combobox({
     </Popover>
   );
 }
+
+interface ComboboxRowProps {
+  option: ComboboxOption;
+  selected: boolean;
+  onSelect: (value: string) => void;
+}
+
+const ComboboxRow = React.memo(function ComboboxRow({
+  option,
+  selected,
+  onSelect,
+}: ComboboxRowProps) {
+  const handleSelect = React.useCallback(() => onSelect(option.value), [onSelect, option.value]);
+  return (
+    <CommandItem value={option.label} onSelect={handleSelect}>
+      <Check className={cn('me-2 size-4', selected ? 'opacity-100' : 'opacity-0')} aria-hidden />
+      {option.label}
+    </CommandItem>
+  );
+});

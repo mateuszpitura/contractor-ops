@@ -61,16 +61,7 @@ export function CommandPalette({
             {idx > 0 ? <CommandSeparator /> : null}
             <CommandGroup heading={group}>
               {groupItems.map(item => (
-                <CommandItem
-                  key={item.id}
-                  value={item.label}
-                  onSelect={() => {
-                    item.onSelect();
-                    onOpenChange(false);
-                  }}>
-                  <span>{item.label}</span>
-                  {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
-                </CommandItem>
+                <CommandPaletteRow key={item.id} item={item} onOpenChange={onOpenChange} />
               ))}
             </CommandGroup>
           </React.Fragment>
@@ -79,3 +70,24 @@ export function CommandPalette({
     </CommandDialog>
   );
 }
+
+interface CommandPaletteRowProps {
+  item: CommandPaletteItem;
+  onOpenChange: (open: boolean) => void;
+}
+
+const CommandPaletteRow = React.memo(function CommandPaletteRow({
+  item,
+  onOpenChange,
+}: CommandPaletteRowProps) {
+  const handleSelect = React.useCallback(() => {
+    item.onSelect();
+    onOpenChange(false);
+  }, [item, onOpenChange]);
+  return (
+    <CommandItem value={item.label} onSelect={handleSelect}>
+      <span>{item.label}</span>
+      {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
+    </CommandItem>
+  );
+});

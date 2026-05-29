@@ -259,33 +259,38 @@ function StepperTrigger({
     [triggerNodes],
   );
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    switch (e.key) {
-      case 'ArrowRight':
-      case 'ArrowDown':
-        e.preventDefault();
-        if (myIdx !== -1 && focusNext) focusNext(myIdx);
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        e.preventDefault();
-        if (myIdx !== -1 && focusPrev) focusPrev(myIdx);
-        break;
-      case 'Home':
-        e.preventDefault();
-        if (focusFirst) focusFirst();
-        break;
-      case 'End':
-        e.preventDefault();
-        if (focusLast) focusLast();
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        setActiveStep(step);
-        break;
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          if (myIdx !== -1 && focusNext) focusNext(myIdx);
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          if (myIdx !== -1 && focusPrev) focusPrev(myIdx);
+          break;
+        case 'Home':
+          e.preventDefault();
+          if (focusFirst) focusFirst();
+          break;
+        case 'End':
+          e.preventDefault();
+          if (focusLast) focusLast();
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          setActiveStep(step);
+          break;
+      }
+    },
+    [focusFirst, focusLast, focusNext, focusPrev, myIdx, setActiveStep, step],
+  );
+
+  const handleClick = useCallback(() => setActiveStep(step), [setActiveStep, step]);
 
   if (asChild) {
     return (
@@ -311,7 +316,7 @@ function StepperTrigger({
         'gap-2.5 rounded-full',
         className,
       )}
-      onClick={() => setActiveStep(step)}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       disabled={isDisabled}
       {...props}>

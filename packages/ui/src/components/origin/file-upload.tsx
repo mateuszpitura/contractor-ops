@@ -68,6 +68,20 @@ export function FileUpload({
     [files, onFilesChange],
   );
 
+  const handleDropzoneClick = React.useCallback(() => {
+    if (!disabled) inputRef.current?.click();
+  }, [disabled]);
+
+  const handleDropzoneKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+        e.preventDefault();
+        inputRef.current?.click();
+      }
+    },
+    [disabled],
+  );
+
   const handleDragOver = React.useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -91,18 +105,20 @@ export function FileUpload({
     [acceptFiles, disabled],
   );
 
+  const handleInputChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      acceptFiles(e.target.files);
+    },
+    [acceptFiles],
+  );
+
   return (
     <div className={cn('space-y-3', className)}>
       <div
         role="button"
         tabIndex={disabled ? -1 : 0}
-        onClick={() => !disabled && inputRef.current?.click()}
-        onKeyDown={e => {
-          if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
+        onClick={handleDropzoneClick}
+        onKeyDown={handleDropzoneKeyDown}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -122,38 +138,52 @@ export function FileUpload({
           accept={resolvedAccept}
           multiple={multiple}
           disabled={disabled}
-          onChange={e => acceptFiles(e.target.files)}
+          onChange={handleInputChange}
         />
       </div>
 
       {files.length > 0 ? (
         <ul className="space-y-1.5">
           {files.map((file, index) => (
-            <li
+            <FileRow
               // Composite of File-stable fields (size + lastModified) survives
               // reorders/removals; index is the disambiguator for genuinely
               // identical files dropped in the same batch.
               key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-              className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm">
-              <span className="flex items-center gap-2 truncate">
-                <FileIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                <span className="truncate text-foreground">{file.name}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {formatBytes(file.size)}
-                </span>
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label={`Remove ${file.name}`}
-                onClick={() => removeAt(index)}>
-                <X className="size-4" aria-hidden />
-              </Button>
-            </li>
+              file={file}
+              index={index}
+              onRemove={removeAt}
+            />
           ))}
         </ul>
       ) : null}
     </div>
   );
 }
+
+interface FileRowProps {
+  file: File;
+  index: number;
+  onRemove: (index: number) => void;
+}
+
+const FileRow = React.memo(function FileRow({ file, index, onRemove }: FileRowProps) {
+  const handleRemove = React.useCallback(() => onRemove(index), [index, onRemove]);
+  return (
+    <li className="flex items-center justify-between rounded-md border border-border bg-card px-3 py-2 text-sm">
+      <span className="flex items-center gap-2 truncate">
+        <FileIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="truncate text-foreground">{file.name}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{formatBytes(file.size)}</span>
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={`Remove ${file.name}`}
+        onClick={handleRemove}>
+        <X className="size-4" aria-hidden />
+      </Button>
+    </li>
+  );
+});

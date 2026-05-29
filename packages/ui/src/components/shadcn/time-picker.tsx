@@ -331,6 +331,10 @@ export function TimePicker({
     [commit, step],
   );
 
+  const handleFocusHourColumn = useCallback(() => setFocusedColumn('hour'), []);
+  const handleFocusMinuteColumn = useCallback(() => setFocusedColumn('minute'), []);
+  const handleFocusPeriodColumn = useCallback(() => setFocusedColumn('period'), []);
+
   // ── Rendering ───────────────────────────────────────────────────────────
   const triggerLabel = formatTriggerLabel(value, format);
 
@@ -376,7 +380,7 @@ export function TimePicker({
               ref={hourListRef}
               ariaLabel={format === '12h' ? 'Hour' : 'Hour (24h)'}
               focused={focusedColumn === 'hour'}
-              onFocusColumn={() => setFocusedColumn('hour')}
+              onFocusColumn={handleFocusHourColumn}
               options={hourOptions.map(h => ({
                 value: h,
                 label: pad2(h),
@@ -394,7 +398,7 @@ export function TimePicker({
               ref={minuteListRef}
               ariaLabel="Minute"
               focused={focusedColumn === 'minute'}
-              onFocusColumn={() => setFocusedColumn('minute')}
+              onFocusColumn={handleFocusMinuteColumn}
               options={minuteOptions.map(m => ({
                 value: m,
                 label: pad2(m),
@@ -413,7 +417,7 @@ export function TimePicker({
                   ref={periodListRef}
                   ariaLabel="AM or PM"
                   focused={focusedColumn === 'period'}
-                  onFocusColumn={() => setFocusedColumn('period')}
+                  onFocusColumn={handleFocusPeriodColumn}
                   options={(['AM', 'PM'] as Period[]).map(p => ({
                     value: p === 'AM' ? 0 : 1,
                     label: p,

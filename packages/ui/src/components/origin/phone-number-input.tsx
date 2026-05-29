@@ -100,17 +100,31 @@ export function PhoneNumberInput({
     [countries],
   );
 
+  const handleCountryChange = React.useCallback(
+    (iso: string) => {
+      const next = countries.find(c => c.iso2 === iso) ?? country;
+      setCountry(next);
+      emit(next, national);
+    },
+    [countries, country, emit, national],
+  );
+
+  const handleNationalChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const next = e.target.value;
+      setNational(next);
+      emit(country, next);
+    },
+    [country, emit],
+  );
+
   return (
     <div className={cn('flex gap-2', className)}>
       <div className="w-44 shrink-0">
         <Combobox
           options={countryOptions}
           value={country.iso2}
-          onValueChange={iso => {
-            const next = countries.find(c => c.iso2 === iso) ?? country;
-            setCountry(next);
-            emit(next, national);
-          }}
+          onValueChange={handleCountryChange}
           placeholder="Country"
           searchPlaceholder="Search countries..."
           disabled={disabled}
@@ -122,11 +136,7 @@ export function PhoneNumberInput({
         inputMode="numeric"
         aria-label={ariaLabel}
         value={national}
-        onChange={e => {
-          const next = e.target.value;
-          setNational(next);
-          emit(country, next);
-        }}
+        onChange={handleNationalChange}
         placeholder={placeholder}
         disabled={disabled}
         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
