@@ -156,6 +156,7 @@ export function SlackUserMapping({
         columns={columns}
         data={mappings}
         constrainHeight={false}
+        pageSize={25}
         entityLabel={t('integrations.userMapping.entityLabel', { count: mappings.length })}
         emptyTitle={t('integrations.userMapping.emptyTitle')}
         emptyDescription={t('integrations.userMapping.emptyBody')}

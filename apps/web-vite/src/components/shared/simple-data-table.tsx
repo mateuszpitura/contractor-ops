@@ -1,10 +1,16 @@
 import { AtelierTableShell, TableChrome, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import type { ComponentType, ReactNode } from 'react';
 
 import { DataTableBody } from './data-table-body.js';
+import { DataTablePagination } from './data-table-pagination.js';
 import { SortableTableHead } from './sortable-table-head.js';
 
 interface SimpleDataTableProps<TData> {
@@ -54,6 +60,18 @@ interface SimpleDataTableProps<TData> {
    * container and push the entire page into a scroll.
    */
   constrainHeight?: boolean;
+  /**
+   * Initial client-side page size. When set, the table installs a
+   * `getPaginationRowModel`, renders the canonical DataTablePagination footer
+   * (page-size selector + Page X of Y + Prev/Next chevrons), and slices the
+   * `data` array per page locally. Use for small/static lists where the
+   * server returns everything in one batch (organization configs, workflow
+   * roles, settings sub-tables). For server-side pagination, build the
+   * paginator inline alongside AtelierTableShell instead.
+   */
+  pageSize?: number;
+  /** Override the page-size options for the local paginator. Defaults to [10, 25, 50]. */
+  pageSizeOptions?: number[];
 }
 
 /**
@@ -93,22 +111,49 @@ export function SimpleDataTable<TData>({
   sortAriaLabel,
   skeletonRows = 6,
   constrainHeight = true,
+  pageSize,
+  pageSizeOptions,
 }: SimpleDataTableProps<TData>) {
+  const paginated = typeof pageSize === 'number';
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    ...(paginated
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          initialState: { pagination: { pageIndex: 0, pageSize } },
+        }
+      : {}),
   });
 
   const resolvedCount = totalCount ?? data.length;
   const wrapperClass = constrainHeight ? WORKBENCH_DATA_TABLE_CLASS : 'flex flex-col gap-4';
+
+  const livePagination = table.getState().pagination;
+  const paginationFooter =
+    paginated && data.length > 0 ? (
+      <DataTablePagination
+        table={table}
+        totalRows={data.length}
+        pageSize={livePagination.pageSize}
+        currentPage={livePagination.pageIndex + 1}
+        // biome-ignore lint/nursery/noJsxPropsBind: TanStack callback
+        onPageChange={page => table.setPageIndex(page - 1)}
+        // biome-ignore lint/nursery/noJsxPropsBind: TanStack callback
+        onPageSizeChange={size => table.setPageSize(size)}
+        pageSizeOptions={pageSizeOptions}
+      />
+    ) : null;
 
   return (
     <div className={wrapperClass}>
       <AtelierTableShell
         constrainHeight={constrainHeight}
         isLoading={isLoading || isRefetching}
+        footer={paginationFooter}
         chrome={
           <TableChrome
             totalCount={resolvedCount}
