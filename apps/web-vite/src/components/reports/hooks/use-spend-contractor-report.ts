@@ -20,6 +20,7 @@ export function useSpendContractorReport(dateFrom: string, dateTo: string) {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState('totalSpend');
   const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownContractorId, setDrillDownContractorId] = useState<string | null>(null);
@@ -29,7 +30,7 @@ export function useSpendContractorReport(dateFrom: string, dateTo: string) {
       dateFrom,
       dateTo,
       page,
-      pageSize: 20,
+      pageSize,
       sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'contractorName',
       sortOrder: sortOrder as 'asc' | 'desc',
       contractorId: drillDownContractorId ?? undefined,
@@ -119,9 +120,16 @@ export function useSpendContractorReport(dateFrom: string, dateTo: string) {
     void tableQuery.refetch();
   }, [tableQuery]);
 
+  const handlePageSizeChange = useCallback((next: number) => {
+    setPageSize(next);
+    setPage(1);
+  }, []);
+
   return {
     page,
     setPage,
+    pageSize,
+    handlePageSizeChange,
     sortBy,
     sortOrder,
     drillDownContractorId,

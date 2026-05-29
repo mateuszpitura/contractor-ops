@@ -23,13 +23,14 @@ export function useOverdueInvoicesReport() {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState('dueDate');
   const [sortOrder, setSortOrder] = useState('asc');
 
   const tableQuery = useQuery(
     trpc.report.overdueInvoices.queryOptions({
       page,
-      pageSize: 20,
+      pageSize,
       sortBy: sortBy as 'dueDate' | 'amount' | 'contractorName',
       sortOrder: sortOrder as 'asc' | 'desc',
     }),
@@ -71,9 +72,16 @@ export function useOverdueInvoicesReport() {
     exportMutation.mutate(undefined as never);
   }, [exportMutation]);
 
+  const handlePageSizeChange = useCallback((next: number) => {
+    setPageSize(next);
+    setPage(1);
+  }, []);
+
   return {
     page,
     setPage,
+    pageSize,
+    handlePageSizeChange,
     sortBy,
     sortOrder,
     tableData,

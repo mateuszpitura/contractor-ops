@@ -22,6 +22,7 @@ export function useExpiringContractsReport() {
 
   const [days, setDays] = useState<'30' | '60' | '90'>('30');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState('endDate');
   const [sortOrder, setSortOrder] = useState('asc');
 
@@ -29,7 +30,7 @@ export function useExpiringContractsReport() {
     trpc.report.expiringContracts.queryOptions({
       days,
       page,
-      pageSize: 20,
+      pageSize,
       sortBy: sortBy as 'endDate' | 'contractorName' | 'title',
       sortOrder: sortOrder as 'asc' | 'desc',
     }),
@@ -85,10 +86,17 @@ export function useExpiringContractsReport() {
     exportMutation.mutate({ days });
   }, [exportMutation, days]);
 
+  const handlePageSizeChange = useCallback((next: number) => {
+    setPageSize(next);
+    setPage(1);
+  }, []);
+
   return {
     days,
     page,
     setPage,
+    pageSize,
+    handlePageSizeChange,
     sortBy,
     sortOrder,
     tableData,

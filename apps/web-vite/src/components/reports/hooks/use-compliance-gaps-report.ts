@@ -20,6 +20,7 @@ export function useComplianceGapsReport() {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState('health');
   const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownHealth, setDrillDownHealth] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export function useComplianceGapsReport() {
   const tableQuery = useQuery(
     trpc.report.complianceGaps.queryOptions({
       page,
-      pageSize: 20,
+      pageSize,
       sortBy: sortBy as 'health' | 'contractorName' | 'missingDocs',
       sortOrder: sortOrder as 'asc' | 'desc',
     }),
@@ -113,9 +114,16 @@ export function useComplianceGapsReport() {
     exportMutation.mutate(undefined as never);
   }, [exportMutation]);
 
+  const handlePageSizeChange = useCallback((next: number) => {
+    setPageSize(next);
+    setPage(1);
+  }, []);
+
   return {
     page,
     setPage,
+    pageSize,
+    handlePageSizeChange,
     sortBy,
     sortOrder,
     drillDownHealth,

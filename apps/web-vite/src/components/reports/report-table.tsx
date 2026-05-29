@@ -24,6 +24,7 @@ interface ReportTableProps<TData> {
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   onSortChange: (sortBy: string, sortOrder: string) => void;
   sortBy: string;
   sortOrder: string;
@@ -48,6 +49,7 @@ export function ReportTable<TData>({
   page,
   pageSize,
   onPageChange,
+  onPageSizeChange,
   onSortChange,
   sortBy,
   sortOrder,
@@ -95,6 +97,7 @@ export function ReportTable<TData>({
         pageSize={pageSize}
         currentPage={page}
         onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
       />
     ) : undefined;
 

@@ -86,8 +86,9 @@ export function SpendTeamReport({ report }: SpendTeamReportProps) {
         data={report.tableData}
         totalCount={report.totalCount}
         page={report.page}
-        pageSize={20}
+        pageSize={report.pageSize}
         onPageChange={report.setPage}
+        onPageSizeChange={report.handlePageSizeChange}
         onSortChange={report.handleSortChange}
         sortBy={report.sortBy}
         sortOrder={report.sortOrder}
