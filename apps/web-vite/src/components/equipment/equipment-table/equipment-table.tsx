@@ -129,31 +129,26 @@ export function EquipmentTableView({
         }
         footer={
           !isLoading && totalRows > 0 ? (
-            <div className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm text-muted-foreground">
-                {t('list.pagination.itemCount', { count: totalRows })}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onPageChange(Math.max(1, page - 1))}>
-                  {t('list.pagination.previous')}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {t('list.pagination.pageOf', { page, total: totalPages })}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onPageChange(page + 1)}>
-                  {t('list.pagination.next')}
-                </Button>
-              </div>
+            <div className="flex w-full items-center justify-end gap-3 px-4 py-3">
+              <span className="text-sm text-muted-foreground">
+                {t('list.pagination.pageOf', { page, total: totalPages })}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => onPageChange(Math.max(1, page - 1))}>
+                {t('list.pagination.previous')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+                onClick={() => onPageChange(page + 1)}>
+                {t('list.pagination.next')}
+              </Button>
             </div>
           ) : undefined
         }>

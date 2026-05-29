@@ -990,7 +990,7 @@
     "loading": "Laden…",
     "noData": "Keine Daten",
     "pagination": {
-      "page": "Seite {page} von {pageCount} ({total} gesamt)",
+      "page": "Seite {page} von {pageCount}",
       "previous": "Zurück",
       "next": "Weiter"
     },
@@ -3718,7 +3718,8 @@
       "matchConfirmedToast": "Zuordnung bestätigt",
       "matchError": "Aktion fehlgeschlagen: confirm match. Versuchen Sie es erneut.",
       "noContracts": "Keine aktiven Verträge",
-      "noContractorsFound": "Keine Auftragnehmer gefunden"
+      "noContractorsFound": "Keine Auftragnehmer gefunden",
+      "typeToSearch": "Name oder USt-IdNr. eingeben, um die Liste einzugrenzen."
     },
     "duplicate": {
       "heading": "Mögliches Duplikat erkannt",

@@ -55,9 +55,8 @@ describe('DataTablePagination', () => {
     unmount();
   });
 
-  it('renders total row count and page indicator', () => {
+  it('renders page indicator (total row count lives in TableChrome, not pagination)', () => {
     render(<PaginationHarness />);
-    expect(screen.getByText(/of 25/i)).toBeInTheDocument();
     expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
   });
 

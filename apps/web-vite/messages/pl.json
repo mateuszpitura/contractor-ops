@@ -990,7 +990,7 @@
     "loading": "Ładowanie…",
     "noData": "Brak danych",
     "pagination": {
-      "page": "Strona {page} z {pageCount} ({total} łącznie)",
+      "page": "Strona {page} z {pageCount}",
       "previous": "Poprzednia",
       "next": "Następna"
     },
@@ -3718,7 +3718,8 @@
       "matchConfirmedToast": "Dopasowanie potwierdzone",
       "matchError": "Nie udało się potwierdźić dopasowania. Spróbuj ponownie.",
       "noContracts": "Brak aktywnych umów",
-      "noContractorsFound": "Nie znaleziono wykonawców"
+      "noContractorsFound": "Nie znaleziono wykonawców",
+      "typeToSearch": "Wpisz nazwę lub NIP, aby zawęzić listę."
     },
     "duplicate": {
       "heading": "Wykryto możliwy duplikat",

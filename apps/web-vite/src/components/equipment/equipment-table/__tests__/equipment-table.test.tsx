@@ -118,7 +118,7 @@ describe('EquipmentTableView (web-vite)', () => {
     );
     expect(screen.getByText('Previous')).toBeInTheDocument();
     expect(screen.getByText('Next')).toBeInTheDocument();
-    expect(screen.getByText(/30 items/)).toBeInTheDocument();
+    // Item count lives in TableChrome (top-left of table), not in the footer.
   });
 
   it('disables previous button on first page', () => {
@@ -149,7 +149,7 @@ describe('EquipmentTableView (web-vite)', () => {
     expect(screen.getByText('Next').closest('button')).toBeDisabled();
   });
 
-  it('renders 1 item label for single item', () => {
+  it('renders pagination controls even with a single item', () => {
     render(
       <EquipmentTableView
         {...makeViewProps({
@@ -159,7 +159,9 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    expect(screen.getByText('1 item')).toBeInTheDocument();
+    // Total row count is now in TableChrome (top-left), not the footer.
+    expect(screen.getByText('Previous').closest('button')).toBeDisabled();
+    expect(screen.getByText('Next').closest('button')).toBeDisabled();
   });
 
   it('renders page indicator', () => {

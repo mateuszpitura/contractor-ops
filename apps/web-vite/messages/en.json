@@ -990,7 +990,7 @@
     "loading": "Loading…",
     "noData": "No data",
     "pagination": {
-      "page": "Page {page} of {pageCount} ({total} total)",
+      "page": "Page {page} of {pageCount}",
       "previous": "Previous",
       "next": "Next"
     },
@@ -3718,7 +3718,8 @@
       "matchConfirmedToast": "Match confirmed",
       "matchError": "Could not confirm match. Try again.",
       "noContracts": "No active contracts",
-      "noContractorsFound": "No contractors found"
+      "noContractorsFound": "No contractors found",
+      "typeToSearch": "Type a name or NIP to narrow the list."
     },
     "duplicate": {
       "heading": "Possible duplicate detected",

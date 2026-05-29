@@ -45,7 +45,6 @@ export function DataTablePagination<TData>({
     <div className="flex w-full items-center justify-between gap-6 px-4 py-3">
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         {selectedCount > 0 && <span>{tb('selected', { count: selectedCount })}</span>}
-        <span>{t('of', { total: totalRows })}</span>
       </div>
 
       <div className="flex items-center gap-4">

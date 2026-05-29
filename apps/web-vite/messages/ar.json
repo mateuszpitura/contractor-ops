@@ -990,7 +990,7 @@
     "loading": "جارِ التحميل…",
     "noData": "لا توجد بيانات",
     "pagination": {
-      "page": "الصفحة {page} من {pageCount} ({total} إجمالاً)",
+      "page": "الصفحة {page} من {pageCount}",
       "previous": "السابق",
       "next": "التالي"
     },
@@ -3718,7 +3718,8 @@
       "matchConfirmedToast": "تم تأكيد التطابق",
       "matchError": "تعذر confirm match. حاول مجددًا.",
       "noContracts": "لا توجد عقود نشطة",
-      "noContractorsFound": "لم يُعثر على أي متعاقد"
+      "noContractorsFound": "لم يُعثر على أي متعاقد",
+      "typeToSearch": "اكتب الاسم أو الرقم الضريبي لتضييق القائمة."
     },
     "duplicate": {
       "heading": "تم اكتشاف فاتورة مكرّرة محتملة",
