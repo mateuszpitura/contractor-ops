@@ -92,39 +92,49 @@ function ColumnsHarness({
   return null;
 }
 
+// Stable cross-test captor: avoids inline `onReady={c => …}` lambda in JSX.
+type ColumnsRef = { current: ReturnType<typeof getEquipmentColumns> | undefined };
+const colsRef: ColumnsRef = { current: undefined };
+const resetColsRef = () => {
+  colsRef.current = undefined;
+};
+const captureCols = (c: ReturnType<typeof getEquipmentColumns>) => {
+  colsRef.current = c;
+};
+
 describe('getEquipmentColumns (web-vite)', () => {
   it('returns expected column count', () => {
-    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
-    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    expect(cols).toHaveLength(7);
+    resetColsRef();
+    render(<ColumnsHarness actions={makeActions()} onReady={captureCols} />);
+    expect(colsRef.current).toHaveLength(7);
   });
 
   it('has a select column as first', () => {
-    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
-    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    expect(cols?.[0]?.id).toBe('select');
-    expect(cols?.[0]?.enableSorting).toBe(false);
-    expect(cols?.[0]?.enableHiding).toBe(false);
+    resetColsRef();
+    render(<ColumnsHarness actions={makeActions()} onReady={captureCols} />);
+    expect(colsRef.current?.[0]?.id).toBe('select');
+    expect(colsRef.current?.[0]?.enableSorting).toBe(false);
+    expect(colsRef.current?.[0]?.enableHiding).toBe(false);
   });
 
   it('name column has enableHiding false', () => {
-    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
-    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    const nameCol = cols?.find(c => 'accessorKey' in c && c.accessorKey === 'name');
+    resetColsRef();
+    render(<ColumnsHarness actions={makeActions()} onReady={captureCols} />);
+    const nameCol = colsRef.current?.find(c => 'accessorKey' in c && c.accessorKey === 'name');
     expect(nameCol?.enableHiding).toBe(false);
   });
 
   it('assignee column disables sorting', () => {
-    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
-    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    const assigneeCol = cols?.find(c => 'id' in c && c.id === 'assignee');
+    resetColsRef();
+    render(<ColumnsHarness actions={makeActions()} onReady={captureCols} />);
+    const assigneeCol = colsRef.current?.find(c => 'id' in c && c.id === 'assignee');
     expect(assigneeCol?.enableSorting).toBe(false);
   });
 
   it('actions column has fixed size 50', () => {
-    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
-    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    const actionsCol = cols?.find(c => 'id' in c && c.id === 'actions');
+    resetColsRef();
+    render(<ColumnsHarness actions={makeActions()} onReady={captureCols} />);
+    const actionsCol = colsRef.current?.find(c => 'id' in c && c.id === 'actions');
     expect(actionsCol?.size).toBe(50);
   });
 });

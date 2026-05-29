@@ -20,7 +20,7 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { format } from 'date-fns';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useReturnApprovalBanner } from './hooks/use-return-approval-banner.js';
@@ -42,11 +42,12 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const { approve, reject, isApproving, isRejecting, isPending } = useReturnApprovalBanner();
 
-  const handleApprove = () => approve(returnRequest.id);
-  const handleReject = () => {
+  const handleApprove = useCallback(() => approve(returnRequest.id), [approve, returnRequest.id]);
+  const handleReject = useCallback(() => {
     reject(returnRequest.id);
     setRejectDialogOpen(false);
-  };
+  }, [reject, returnRequest.id]);
+  const handleOpenReject = useCallback(() => setRejectDialogOpen(true), []);
 
   return (
     <>
@@ -64,11 +65,7 @@ export function ReturnApprovalBanner({ returnRequest }: ReturnApprovalBannerProp
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setRejectDialogOpen(true)}
-              disabled={isPending}>
+            <Button variant="destructive" size="sm" onClick={handleOpenReject} disabled={isPending}>
               {isRejecting && <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />}
               {t('reject')}
             </Button>

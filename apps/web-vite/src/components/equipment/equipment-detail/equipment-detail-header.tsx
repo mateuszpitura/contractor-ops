@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { Archive, MoreHorizontal, Pencil, Truck, UserMinus, UserPlus } from 'lucide-react';
+import { useCallback } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -83,6 +84,29 @@ export function EquipmentDetailHeaderView({
     equipment.currentAssignment?.contractor.legalName ??
     '';
 
+  const handleOpenUnassign = useCallback(
+    () => setUnassignDialogOpen(true),
+    [setUnassignDialogOpen],
+  );
+  const handleCloseUnassign = useCallback(
+    () => setUnassignDialogOpen(false),
+    [setUnassignDialogOpen],
+  );
+  const handleOpenRetire = useCallback(() => setRetireDialogOpen(true), [setRetireDialogOpen]);
+  const handleCloseRetire = useCallback(() => setRetireDialogOpen(false), [setRetireDialogOpen]);
+  const handleConfirmRetire = useCallback(() => retire(equipment.id), [retire, equipment.id]);
+  const handleConfirmUnassign = useCallback(() => unassign(equipment.id), [unassign, equipment.id]);
+
+  const renderDropdownTrigger = useCallback(
+    (props: React.ComponentProps<typeof Button>) => (
+      <Button {...props} variant="outline" size="icon-sm">
+        <MoreHorizontal className="size-4" />
+        <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
+      </Button>
+    ),
+    [tCommon],
+  );
+
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -116,7 +140,7 @@ export function EquipmentDetailHeaderView({
           )}
 
           {isAssigned && (
-            <Button variant="outline" size="sm" onClick={() => setUnassignDialogOpen(true)}>
+            <Button variant="outline" size="sm" onClick={handleOpenUnassign}>
               <UserMinus className="me-1.5 size-3.5" />
               {t('detail.unassignEquipment')}
             </Button>
@@ -130,17 +154,10 @@ export function EquipmentDetailHeaderView({
           )}
 
           <DropdownMenu>
-            <DropdownMenuTrigger
-              render={props => (
-                <Button {...props} variant="outline" size="icon-sm">
-                  <MoreHorizontal className="size-4" />
-                  <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderDropdownTrigger} />
             <DropdownMenuContent align="end">
               {!(isRetired || isAssigned) && (
-                <DropdownMenuItem variant="destructive" onSelect={() => setRetireDialogOpen(true)}>
+                <DropdownMenuItem variant="destructive" onSelect={handleOpenRetire}>
                   <Archive className="me-2 h-3.5 w-3.5" />
                   {t('detail.retire')}
                 </DropdownMenuItem>
@@ -159,13 +176,13 @@ export function EquipmentDetailHeaderView({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setRetireDialogOpen(false)}
+              onClick={handleCloseRetire}
               disabled={retireMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
-              onClick={() => retire(equipment.id)}
+              onClick={handleConfirmRetire}
               disabled={retireMutation.isPending}>
               {t('detail.retire')}
             </Button>
@@ -186,13 +203,13 @@ export function EquipmentDetailHeaderView({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setUnassignDialogOpen(false)}
+              onClick={handleCloseUnassign}
               disabled={unassignMutation.isPending}>
               {t('form.cancel')}
             </Button>
             <Button
               variant="destructive"
-              onClick={() => unassign(equipment.id)}
+              onClick={handleConfirmUnassign}
               disabled={unassignMutation.isPending}>
               {t('detail.unassignEquipment')}
             </Button>

@@ -11,7 +11,7 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { format } from 'date-fns';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useEquipmentReturnApproval } from '../hooks/use-equipment-detail-actions.js';
@@ -41,6 +41,17 @@ export function ReturnApprovalBannerView({
 
   const isPending = approveMutation.isPending || rejectMutation.isPending;
 
+  const handleOpenReject = useCallback(() => setRejectDialogOpen(true), []);
+  const handleApprove = useCallback(() => {
+    approveMutation.mutate({ id: returnRequest.id, parcelSize: 'large' });
+  }, [approveMutation, returnRequest.id]);
+  const handleConfirmReject = useCallback(() => {
+    rejectMutation.mutate(
+      { id: returnRequest.id },
+      { onSuccess: () => setRejectDialogOpen(false) },
+    );
+  }, [rejectMutation, returnRequest.id]);
+
   return (
     <>
       <div className="rounded-md border-s-4 border-warning bg-warning/10 p-4">
@@ -57,25 +68,13 @@ export function ReturnApprovalBannerView({
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setRejectDialogOpen(true)}
-              disabled={isPending}>
+            <Button variant="destructive" size="sm" onClick={handleOpenReject} disabled={isPending}>
               {!!rejectMutation.isPending && (
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
               {t('reject')}
             </Button>
-            <Button
-              size="sm"
-              onClick={() =>
-                approveMutation.mutate({
-                  id: returnRequest.id,
-                  parcelSize: 'large',
-                })
-              }
-              disabled={isPending}>
+            <Button size="sm" onClick={handleApprove} disabled={isPending}>
               {!!approveMutation.isPending && (
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />
               )}
@@ -97,12 +96,7 @@ export function ReturnApprovalBannerView({
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() =>
-                rejectMutation.mutate(
-                  { id: returnRequest.id },
-                  { onSuccess: () => setRejectDialogOpen(false) },
-                )
-              }
+              onClick={handleConfirmReject}
               disabled={rejectMutation.isPending}>
               {!!rejectMutation.isPending && (
                 <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" />

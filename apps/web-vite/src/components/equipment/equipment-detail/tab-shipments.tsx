@@ -1,3 +1,4 @@
+import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
 import {
   AtelierEmptyState,
   AtelierTableShell,
@@ -33,7 +34,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/table';
 import { format } from 'date-fns';
 import { Download, Eye, Loader2, Trash2, Truck } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -57,12 +58,98 @@ export interface TabShipmentsProps {
 }
 
 type ShipmentsHookState = ReturnType<typeof useEquipmentShipments>;
+type Shipment = ShipmentsHookState['shipments'][number];
 
 export type TabShipmentsViewProps = TabShipmentsProps &
   ShipmentsHookState & {
     selectedShipmentId: string | null;
     setSelectedShipmentId: (id: string | null) => void;
   };
+
+interface ShipmentRowProps {
+  shipment: Shipment;
+  labelLoadingId: string | null;
+  viewLabel: string;
+  labelActionLabel: string;
+  deleteLabel: string;
+  onView: (id: string) => void;
+  onFetchLabel: (id: string) => void;
+  onDelete: (id: string) => void;
+}
+
+// memo: rerendered per shipment row in shipments table
+const ShipmentRow = memo(function ShipmentRow({
+  shipment,
+  labelLoadingId,
+  viewLabel,
+  labelActionLabel,
+  deleteLabel,
+  onView,
+  onFetchLabel,
+  onDelete,
+}: ShipmentRowProps) {
+  const canLabel = shipment.carrier === 'InPost';
+  const isCreated = shipment.currentStatus === 'CREATED';
+  const isLabelLoading = labelLoadingId === shipment.id;
+
+  const handleView = useCallback(() => onView(shipment.id), [onView, shipment.id]);
+  const handleFetchLabel = useCallback(
+    () => onFetchLabel(shipment.id),
+    [onFetchLabel, shipment.id],
+  );
+  const handleDelete = useCallback(() => onDelete(shipment.id), [onDelete, shipment.id]);
+
+  return (
+    <TableRow>
+      <TableCell className="font-mono text-xs">
+        {shipment.trackingNumber ?? <span className="text-muted-foreground">&mdash;</span>}
+      </TableCell>
+      <TableCell className="text-sm">
+        {shipment.carrier}
+        {!!shipment.carrierCustom && (
+          <span className="ms-1 text-xs text-muted-foreground">({shipment.carrierCustom})</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <ShipmentStatusBadge status={shipment.currentStatus} />
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {format(new Date(shipment.createdAt), 'MMM d, yyyy')}
+      </TableCell>
+      <TableCell className="text-end">
+        <div className="inline-flex items-center gap-1">
+          <Button variant="ghost" size="icon-sm" aria-label={viewLabel} onClick={handleView}>
+            <Eye className="size-3.5" />
+          </Button>
+          {canLabel && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={labelActionLabel}
+              disabled={isLabelLoading}
+              onClick={handleFetchLabel}>
+              {isLabelLoading ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Download className="size-3.5" />
+              )}
+            </Button>
+          )}
+          {isCreated && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={deleteLabel}
+              className="text-destructive hover:text-destructive"
+              onClick={handleDelete}>
+              <Trash2 className="size-3.5" />
+            </Button>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 function PendingReturnBanner({
   pendingReturn,
@@ -75,6 +162,19 @@ function PendingReturnBanner({
     createdAt: new Date(pendingReturn.createdAt).toISOString(),
   };
   return <ReturnApprovalBannerContainer returnRequest={normalized} />;
+}
+
+function renderShipmentsEmptyAction(
+  action: AtelierEmptyStateAction,
+  variant: 'primary' | 'secondary',
+) {
+  const Icon = action.icon;
+  return (
+    <Button variant={variant === 'secondary' ? 'outline' : 'default'} onClick={action.onClick}>
+      {Icon ? <Icon className="me-1.5 size-4" /> : null}
+      {action.label}
+    </Button>
+  );
 }
 
 export function TabShipmentsSkeleton({ pendingReturn }: { pendingReturn?: PendingReturn | null }) {
@@ -125,17 +225,7 @@ export function TabShipmentsEmpty({
           onClick: onCreateShipment,
           icon: Truck,
         }}
-        renderAction={(action, variant) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              variant={variant === 'secondary' ? 'outline' : 'default'}
-              onClick={action.onClick}>
-              {Icon ? <Icon className="me-1.5 size-4" /> : null}
-              {action.label}
-            </Button>
-          );
-        }}
+        renderAction={renderShipmentsEmptyAction}
       />
     </div>
   );
@@ -178,6 +268,29 @@ export function TabShipmentsView({
     [setSelectedShipmentId],
   );
 
+  const handleViewShipment = useCallback(
+    (id: string) => setSelectedShipmentId(id),
+    [setSelectedShipmentId],
+  );
+  const handleFetchLabelById = useCallback(
+    (id: string) => {
+      void handleFetchLabel(id);
+    },
+    [handleFetchLabel],
+  );
+  const handleStartDelete = useCallback((id: string) => setDeleteTarget(id), []);
+  const handleCloseDeleteDialog = useCallback((open: boolean) => {
+    if (!open) setDeleteTarget(null);
+  }, []);
+  const handleConfirmDelete = useCallback(() => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate({ id: deleteTarget }, { onSuccess: () => setDeleteTarget(null) });
+  }, [deleteMutation, deleteTarget]);
+
+  const viewLabel = t('shipmentsTable.action.view');
+  const labelActionLabel = t('shipmentsTable.action.label');
+  const deleteLabel = t('shipment.deleteTitle');
+
   return (
     <div className="space-y-4">
       <PendingReturnBanner pendingReturn={pendingReturn} />
@@ -211,68 +324,19 @@ export function TabShipmentsView({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {shipments.map(shipment => {
-              const canLabel = shipment.carrier === 'InPost';
-              const isCreated = shipment.currentStatus === 'CREATED';
-              return (
-                <TableRow key={shipment.id}>
-                  <TableCell className="font-mono text-xs">
-                    {shipment.trackingNumber ?? (
-                      <span className="text-muted-foreground">&mdash;</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {shipment.carrier}
-                    {!!shipment.carrierCustom && (
-                      <span className="ms-1 text-xs text-muted-foreground">
-                        ({shipment.carrierCustom})
-                      </span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <ShipmentStatusBadge status={shipment.currentStatus} />
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(shipment.createdAt), 'MMM d, yyyy')}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <div className="inline-flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('shipmentsTable.action.view')}
-                        onClick={() => setSelectedShipmentId(shipment.id)}>
-                        <Eye className="size-3.5" />
-                      </Button>
-                      {canLabel && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={t('shipmentsTable.action.label')}
-                          disabled={labelLoadingId === shipment.id}
-                          onClick={() => void handleFetchLabel(shipment.id)}>
-                          {labelLoadingId === shipment.id ? (
-                            <Loader2 className="size-3.5 animate-spin" />
-                          ) : (
-                            <Download className="size-3.5" />
-                          )}
-                        </Button>
-                      )}
-                      {isCreated && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={t('shipment.deleteTitle')}
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteTarget(shipment.id)}>
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {shipments.map(shipment => (
+              <ShipmentRow
+                key={shipment.id}
+                shipment={shipment}
+                labelLoadingId={labelLoadingId}
+                viewLabel={viewLabel}
+                labelActionLabel={labelActionLabel}
+                deleteLabel={deleteLabel}
+                onView={handleViewShipment}
+                onFetchLabel={handleFetchLabelById}
+                onDelete={handleStartDelete}
+              />
+            ))}
           </TableBody>
         </Table>
       </AtelierTableShell>
@@ -355,7 +419,7 @@ export function TabShipmentsView({
         </SheetContent>
       </Sheet>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={open => !open && setDeleteTarget(null)}>
+      <AlertDialog open={!!deleteTarget} onOpenChange={handleCloseDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -368,13 +432,7 @@ export function TabShipmentsView({
             <AlertDialogCancel>{t('form.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() =>
-                deleteTarget &&
-                deleteMutation.mutate(
-                  { id: deleteTarget },
-                  { onSuccess: () => setDeleteTarget(null) },
-                )
-              }
+              onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}>
               {t('shipment.deleteTitle')}
             </AlertDialogAction>

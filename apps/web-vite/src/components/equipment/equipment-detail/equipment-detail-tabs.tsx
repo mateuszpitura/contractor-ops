@@ -40,7 +40,7 @@ export function EquipmentDetailTabs({
   );
 
   return (
-    <Tabs value={currentTab} onValueChange={value => setTab(value)} className="w-full">
+    <Tabs value={currentTab} onValueChange={setTab} className="w-full">
       <TabsList className="w-full justify-start overflow-x-auto">
         {TAB_KEYS.map(key => (
           <TabsTrigger key={key} value={key}>

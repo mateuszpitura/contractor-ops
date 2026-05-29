@@ -1,6 +1,5 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   EquipmentIllustration,
   QueryErrorPanel,
   SectionLabel,
@@ -18,10 +17,10 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Package, Plus } from 'lucide-react';
 import { useCallback, useState } from 'react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { AssignmentDialogContainer } from './assignment-dialog-container.js';
 import { EquipmentFormContainer } from './equipment-form-container.js';
 import type { EquipmentRow } from './equipment-table/equipment-columns.js';
@@ -95,17 +94,21 @@ export function EquipmentListContainer() {
     }
   }, [unassignTarget, list]);
 
+  const handleRefetchCount = useCallback(() => {
+    void list.refetchCount();
+  }, [list]);
+
   if (list.isCountError) {
     return (
       <div className="space-y-section-gap">
         <AnimateIn delay={0}>
-          <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
+          <WorkbenchPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>
         <AnimateIn delay={1}>
           <QueryErrorPanel
             message={tCommon('networkError')}
             retryLabel={tProfile('error.retry')}
-            onRetry={() => void list.refetchCount()}
+            onRetry={handleRefetchCount}
           />
         </AnimateIn>
       </div>
@@ -114,11 +117,11 @@ export function EquipmentListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className="space-y-section-gap">
+      <div className={WORKBENCH_TABLE_PAGE_CLASS}>
         <AnimateIn delay={0}>
-          <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
+          <WorkbenchPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>
-        <AnimateIn delay={1}>
+        <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
           <AtelierEmptyState
             illustration={EquipmentIllustration}
             heading={te('equipment.heading')}
@@ -139,7 +142,7 @@ export function EquipmentListContainer() {
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('title')} description={t('pageDescription')} />
+        <WorkbenchPageHeader title={t('title')} description={t('pageDescription')} />
       </AnimateIn>
 
       <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">

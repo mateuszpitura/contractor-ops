@@ -9,7 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -66,6 +66,30 @@ export function ShipmentTimelineView({
   const [newStatus, setNewStatus] = useState<string>('');
   const [newNotes, setNewNotes] = useState('');
 
+  const handleStatusChange = useCallback((val: string | null) => {
+    if (val) setNewStatus(val);
+  }, []);
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setNewNotes(e.target.value),
+    [],
+  );
+  const handleAddEvent = useCallback(() => {
+    if (!newStatus) return;
+    addEventMutation.mutate(
+      {
+        shipmentId,
+        status: newStatus as (typeof UPDATABLE_STATUSES)[number],
+        notes: newNotes || undefined,
+      },
+      {
+        onSuccess: () => {
+          setNewStatus('');
+          setNewNotes('');
+        },
+      },
+    );
+  }, [addEventMutation, shipmentId, newStatus, newNotes]);
+
   const eventByStatus = new Map<string, ShipmentEvent>();
   for (const event of events) {
     eventByStatus.set(event.status, event);
@@ -88,7 +112,7 @@ export function ShipmentTimelineView({
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
-            <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
+            <Select value={newStatus} onValueChange={handleStatusChange}>
               <SelectTrigger id={`${reactId}-shipment-new-status`} className="w-full">
                 <SelectValue placeholder={t('shipment.statusPlaceholder')} />
               </SelectTrigger>
@@ -110,28 +134,13 @@ export function ShipmentTimelineView({
             <Input
               id={`${reactId}-shipment-new-notes`}
               value={newNotes}
-              onChange={e => setNewNotes(e.target.value)}
+              onChange={handleNotesChange}
               placeholder={t('shipment.notesPlaceholder')}
             />
           </div>
           <Button
             size="sm"
-            onClick={() => {
-              if (!newStatus) return;
-              addEventMutation.mutate(
-                {
-                  shipmentId,
-                  status: newStatus as (typeof UPDATABLE_STATUSES)[number],
-                  notes: newNotes || undefined,
-                },
-                {
-                  onSuccess: () => {
-                    setNewStatus('');
-                    setNewNotes('');
-                  },
-                },
-              );
-            }}
+            onClick={handleAddEvent}
             disabled={!newStatus || addEventMutation.isPending}>
             {!!addEventMutation.isPending && <Loader2 className="me-1 h-3 w-3 animate-spin" />}
             {t('shipment.addButton')}

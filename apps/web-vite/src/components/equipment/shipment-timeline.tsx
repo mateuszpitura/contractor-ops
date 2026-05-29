@@ -19,7 +19,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -59,7 +59,7 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
   const [newNotes, setNewNotes] = useState('');
   const { addEvent, isAdding } = useShipmentTimeline();
 
-  const handleAddEvent = () => {
+  const handleAddEvent = useCallback(() => {
     if (!newStatus) return;
     addEvent({
       shipmentId,
@@ -68,7 +68,14 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
     });
     setNewStatus('');
     setNewNotes('');
-  };
+  }, [addEvent, shipmentId, newStatus, newNotes]);
+  const handleStatusChange = useCallback((val: string | null) => {
+    if (val) setNewStatus(val);
+  }, []);
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setNewNotes(e.target.value),
+    [],
+  );
 
   const eventByStatus = new Map<string, ShipmentEvent>();
   for (const event of events) {
@@ -92,7 +99,7 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
               className="text-xs font-medium text-muted-foreground">
               {t('shipment.addStatusUpdate')}
             </label>
-            <Select value={newStatus} onValueChange={val => val && setNewStatus(val)}>
+            <Select value={newStatus} onValueChange={handleStatusChange}>
               <SelectTrigger id={`${reactId}-shipment-new-status`} className="w-full">
                 <SelectValue placeholder={t('shipment.statusPlaceholder')} />
               </SelectTrigger>
@@ -114,7 +121,7 @@ export function ShipmentTimeline({ shipmentId, currentStatus, events }: Shipment
             <Input
               id={`${reactId}-shipment-new-notes`}
               value={newNotes}
-              onChange={e => setNewNotes(e.target.value)}
+              onChange={handleNotesChange}
               placeholder={t('shipment.notesPlaceholder')}
             />
           </div>
