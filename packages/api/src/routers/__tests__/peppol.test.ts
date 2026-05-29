@@ -451,7 +451,7 @@ describe('peppol.connect', () => {
         environment: 'sandbox',
         apiKey: 'test-api-key',
       }),
-    ).rejects.toThrow('Organization already has an active Peppol participant');
+    ).rejects.toThrow('peppolAlreadyConnected');
   });
 
   it('upserts existing IntegrationConnection on reconnect', async () => {
@@ -607,7 +607,7 @@ describe('peppol.retryTransmission', () => {
 
     await expect(
       caller.peppol.retryTransmission({ transmissionId: 'clxxxxxxxxxxxxxxxxxnoext' }),
-    ).rejects.toThrow('Failed transmission not found');
+    ).rejects.toThrow('einvoiceFailedTransmissionNotRetryable');
   });
 });
 
@@ -669,7 +669,7 @@ describe('peppol.lookupCapabilities (Plan 61-05)', () => {
 
     await expect(
       caller.peppol.lookupCapabilities({ schemeId: '0060', value: 'GB123' }),
-    ).rejects.toThrow('PEPPOL_NOT_CONNECTED');
+    ).rejects.toThrow('peppolNotConnected');
   });
 
   it('mirrors capability to own PeppolParticipant when identifier matches org row', async () => {
