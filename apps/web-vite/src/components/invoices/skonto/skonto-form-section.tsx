@@ -21,6 +21,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Loader2, Plus, Save, Trash2 } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -124,47 +125,73 @@ export function SkontoFormSection({
     return !(newErrors.discountPercent || newErrors.discountDays || newErrors.netDays);
   }, [form, validateField, t]);
 
-  const handleBlur = (name: keyof FormState) => {
-    const error = validateField(name, form[name]);
-    setErrors(prev => ({ ...prev, [name]: error }));
-  };
+  const handleBlur = useCallback(
+    (name: keyof FormState) => {
+      const error = validateField(name, form[name]);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    },
+    [validateField, form],
+  );
 
-  const handleChange = (name: keyof FormState, value: string) => {
+  const handleChange = useCallback((name: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!validateAll()) return;
     onSave({
       percent: Number(form.discountPercent),
       discountDays: Number(form.discountDays),
       netDays: Number(form.netDays),
     });
-  };
+  }, [validateAll, onSave, form.discountPercent, form.discountDays, form.netDays]);
 
-  const handleDeleteRequest = () => {
+  const handleDeleteRequest = useCallback(() => {
     if (!invoiceId) return;
     setDeleteDialogOpen(true);
-  };
+  }, [invoiceId]);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (!invoiceId) return;
     onDelete();
     setCustomizing(false);
     setDeleteDialogOpen(false);
-  };
+  }, [invoiceId, onDelete]);
 
-  const handleCustomizeToggle = (checked: boolean) => {
-    setCustomizing(checked);
-    setShowInputs(checked);
-    if (!checked && profileDefault) {
-      setForm({
-        discountPercent: profileDefault.discountPercent.toString(),
-        discountDays: profileDefault.discountDays.toString(),
-        netDays: profileDefault.netDays.toString(),
-      });
-    }
-  };
+  const handleCustomizeToggle = useCallback(
+    (checked: boolean) => {
+      setCustomizing(checked);
+      setShowInputs(checked);
+      if (!checked && profileDefault) {
+        setForm({
+          discountPercent: profileDefault.discountPercent.toString(),
+          discountDays: profileDefault.discountDays.toString(),
+          netDays: profileDefault.netDays.toString(),
+        });
+      }
+    },
+    [profileDefault],
+  );
+
+  const handleShowInputs = useCallback(() => {
+    setShowInputs(true);
+  }, []);
+
+  const handleDiscountPercentChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => handleChange('discountPercent', e.target.value),
+    [handleChange],
+  );
+  const handleDiscountPercentBlur = useCallback(() => handleBlur('discountPercent'), [handleBlur]);
+  const handleDiscountDaysChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => handleChange('discountDays', e.target.value),
+    [handleChange],
+  );
+  const handleDiscountDaysBlur = useCallback(() => handleBlur('discountDays'), [handleBlur]);
+  const handleNetDaysChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => handleChange('netDays', e.target.value),
+    [handleChange],
+  );
+  const handleNetDaysBlur = useCallback(() => handleBlur('netDays'), [handleBlur]);
 
   const previewText =
     form.discountPercent && form.discountDays && form.netDays
@@ -202,7 +229,7 @@ export function SkontoFormSection({
       )}
 
       {!(profileDefault || invoiceTerm || showInputs) && (
-        <Button variant="outline" size="sm" onClick={() => setShowInputs(true)}>
+        <Button variant="outline" size="sm" onClick={handleShowInputs}>
           <Plus className="h-3.5 w-3.5" />
           {t('addSkonto')}
         </Button>
@@ -220,8 +247,8 @@ export function SkontoFormSection({
                 max="50"
                 step="0.01"
                 value={form.discountPercent}
-                onChange={e => handleChange('discountPercent', e.target.value)}
-                onBlur={() => handleBlur('discountPercent')}
+                onChange={handleDiscountPercentChange}
+                onBlur={handleDiscountPercentBlur}
                 className="tabular-nums"
                 aria-invalid={!!errors.discountPercent}
               />
@@ -238,8 +265,8 @@ export function SkontoFormSection({
                 min="1"
                 step="1"
                 value={form.discountDays}
-                onChange={e => handleChange('discountDays', e.target.value)}
-                onBlur={() => handleBlur('discountDays')}
+                onChange={handleDiscountDaysChange}
+                onBlur={handleDiscountDaysBlur}
                 className="tabular-nums"
                 aria-invalid={!!errors.discountDays}
               />
@@ -256,8 +283,8 @@ export function SkontoFormSection({
                 min="1"
                 step="1"
                 value={form.netDays}
-                onChange={e => handleChange('netDays', e.target.value)}
-                onBlur={() => handleBlur('netDays')}
+                onChange={handleNetDaysChange}
+                onBlur={handleNetDaysBlur}
                 className="tabular-nums"
                 aria-invalid={!!errors.netDays}
               />

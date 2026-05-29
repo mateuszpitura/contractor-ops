@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import type { ValidationStatus } from './intake-validation-status-pill.js';
@@ -45,6 +46,10 @@ export function IntakeDetailValidationPane({
   const firstFive = issues.slice(0, 5);
   const count = totalIssueCount ?? issues.length;
 
+  const handleOpenReport = useCallback(() => {
+    void openReport();
+  }, [openReport]);
+
   return (
     <Card className={className} data-slot="intake-detail-validation-pane">
       <CardHeader className="flex-row items-start justify-between gap-2">
@@ -56,7 +61,7 @@ export function IntakeDetailValidationPane({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => void openReport()}
+          onClick={handleOpenReport}
           disabled={reportLoading}
           data-testid="intake-open-report">
           <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />

@@ -8,7 +8,7 @@
 
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { tabsListVariants } from '@contractor-ops/ui/components/shadcn/tabs';
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
@@ -49,6 +49,41 @@ export function StatusChipBarSkeleton() {
   );
 }
 
+interface StatusChipButtonProps {
+  toggleKey: string;
+  label: string;
+  count: number;
+  isActive: boolean;
+  disabled?: boolean;
+  onToggle: (key: string) => void;
+}
+
+const StatusChipButton = memo(function StatusChipButton({
+  toggleKey,
+  label,
+  count,
+  isActive,
+  disabled,
+  onToggle,
+}: StatusChipButtonProps) {
+  const handleClick = useCallback(() => {
+    onToggle(toggleKey);
+  }, [onToggle, toggleKey]);
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      disabled={disabled}
+      aria-checked={isActive}
+      onClick={handleClick}
+      className={cn(TRIGGER_BASE, isActive && TRIGGER_ACTIVE)}>
+      {label}
+      <span className="tabular-nums text-muted-foreground">({count})</span>
+    </button>
+  );
+});
+
 export function StatusChipBar({
   activeStatuses,
   onStatusChange,
@@ -78,24 +113,17 @@ export function StatusChipBar({
     <fieldset
       className={cn(tabsListVariants({ variant: 'default' }), 'h-9 border-0 p-1')}
       aria-label={t('filters')}>
-      {STATUS_TOGGLES.map(toggle => {
-        const isActive = activeSet.has(toggle.key);
-        const count = getCount(toggle.key);
-
-        return (
-          <button
-            key={toggle.key}
-            type="button"
-            role="switch"
-            disabled={disabled}
-            aria-checked={isActive}
-            onClick={() => handleToggle(toggle.key)}
-            className={cn(TRIGGER_BASE, isActive && TRIGGER_ACTIVE)}>
-            {t(toggle.labelKey)}
-            <span className="tabular-nums text-muted-foreground">({count})</span>
-          </button>
-        );
-      })}
+      {STATUS_TOGGLES.map(toggle => (
+        <StatusChipButton
+          key={toggle.key}
+          toggleKey={toggle.key}
+          label={t(toggle.labelKey)}
+          count={getCount(toggle.key)}
+          isActive={activeSet.has(toggle.key)}
+          disabled={disabled}
+          onToggle={handleToggle}
+        />
+      ))}
     </fieldset>
   );
 }

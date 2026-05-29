@@ -19,7 +19,8 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { AlertCircle, AlertTriangle } from 'lucide-react';
-import { useId, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -52,15 +53,18 @@ export function ReverseChargeLineToggle({
   const reasonValid =
     reasonTrim.length >= MIN_REASON_LENGTH && reasonTrim.length <= MAX_REASON_LENGTH;
 
-  const handleCheckedChange = (next: boolean) => {
-    if (!next && isReverseCharge) {
-      setDialogOpen(true);
-      return;
-    }
-    if (onEnable) void onEnable();
-  };
+  const handleCheckedChange = useCallback(
+    (next: boolean) => {
+      if (!next && isReverseCharge) {
+        setDialogOpen(true);
+        return;
+      }
+      if (onEnable) void onEnable();
+    },
+    [isReverseCharge, onEnable],
+  );
 
-  const handleConfirm = async () => {
+  const handleConfirm = useCallback(async () => {
     if (!reasonValid) return;
     setSubmitting(true);
     try {
@@ -72,7 +76,11 @@ export function ReverseChargeLineToggle({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [reasonValid, onDisable, reasonTrim, t]);
+
+  const handleReasonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
+    setReason(event.target.value);
+  }, []);
 
   return (
     <div className="flex items-center gap-2" data-testid="reverse-charge-line-toggle">
@@ -105,7 +113,7 @@ export function ReverseChargeLineToggle({
               id={`${id}-rc-override-reason`}
               data-testid="reverse-charge-override-reason"
               value={reason}
-              onChange={event => setReason(event.target.value)}
+              onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}
               maxLength={MAX_REASON_LENGTH}
               rows={3}

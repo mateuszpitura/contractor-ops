@@ -18,7 +18,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Archive } from 'lucide-react';
-import { useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useState } from 'react';
 
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -41,6 +42,19 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
 
   const isReasonValid = reason.trim().length >= 10;
 
+  const handleTypeChange = useCallback((v: string | null) => {
+    if (v) setWaiveType(v as WaiveType);
+  }, []);
+
+  const handleReasonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
+    setReason(event.target.value);
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    if (!isReasonValid) return;
+    onConfirm(waiveType, reason);
+  }, [isReasonValid, onConfirm, waiveType, reason]);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -55,11 +69,7 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="waive-type">{t('typeLabel')}</Label>
-            <Select
-              value={waiveType}
-              onValueChange={v => {
-                if (v) setWaiveType(v as WaiveType);
-              }}>
+            <Select value={waiveType} onValueChange={handleTypeChange}>
               <SelectTrigger id="waive-type">
                 <SelectValue />
               </SelectTrigger>
@@ -78,7 +88,7 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
             <Textarea
               id="waive-reason"
               value={reason}
-              onChange={e => setReason(e.target.value)}
+              onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}
               minLength={10}
               className="min-h-[80px]"
@@ -92,10 +102,7 @@ export function WaiveDialog({ open, onOpenChange, onConfirm, isPending }: WaiveD
         <AlertDialogFooter>
           <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              if (!isReasonValid) return;
-              onConfirm(waiveType, reason);
-            }}
+            onClick={handleConfirm}
             disabled={!isReasonValid || isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {isPending ? t('confirming') : t('confirm')}

@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -24,6 +24,18 @@ interface ClaimDialogProps {
 export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimDialogProps) {
   const t = useTranslations('Payments.lateInterest.claim');
   const [issueSecondaryInvoice, setIssueSecondaryInvoice] = useState(false);
+
+  const handleCheckedChange = useCallback((checked: boolean | 'indeterminate') => {
+    setIssueSecondaryInvoice(!!checked);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const handleConfirm = useCallback(() => {
+    onConfirm(issueSecondaryInvoice);
+  }, [onConfirm, issueSecondaryInvoice]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,7 +52,7 @@ export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimD
           <Checkbox
             id="issue-secondary-invoice"
             checked={issueSecondaryInvoice}
-            onCheckedChange={checked => setIssueSecondaryInvoice(!!checked)}
+            onCheckedChange={handleCheckedChange}
           />
           <Label htmlFor="issue-secondary-invoice" className="text-sm leading-relaxed">
             {t('issueSecondaryInvoice')}
@@ -48,10 +60,10 @@ export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimD
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             {t('cancel')}
           </Button>
-          <Button onClick={() => onConfirm(issueSecondaryInvoice)} disabled={isPending}>
+          <Button onClick={handleConfirm} disabled={isPending}>
             {isPending ? t('confirming') : t('confirm')}
           </Button>
         </DialogFooter>

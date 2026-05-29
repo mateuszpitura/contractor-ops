@@ -53,6 +53,10 @@ interface EInvoiceComplianceCellProps {
   className?: string;
 }
 
+const stopRowClick = (e: MouseEvent) => {
+  e.stopPropagation();
+};
+
 export function EInvoiceComplianceCell({
   status,
   invoiceId,
@@ -62,10 +66,6 @@ export function EInvoiceComplianceCell({
 
   const visual = STATUS_VISUALS[status];
   const Icon = visual.icon;
-
-  const stopRowClick = (e: MouseEvent) => {
-    e.stopPropagation();
-  };
 
   return (
     <Link

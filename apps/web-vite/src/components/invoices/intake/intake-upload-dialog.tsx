@@ -8,6 +8,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { AlertCircle, Loader2, UploadCloud } from 'lucide-react';
 import type { ChangeEvent, DragEvent, ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
@@ -79,15 +80,25 @@ interface IntakeUploadDropzoneProps {
 
 export function IntakeUploadDropzone({ upload }: IntakeUploadDropzoneProps) {
   const t = useTranslations('EInvoice.intake');
+  const setIsDragOver = upload.setIsDragOver;
+
+  const handleDragOver = useCallback(
+    (event: DragEvent<HTMLLabelElement>) => {
+      event.preventDefault();
+      setIsDragOver(true);
+    },
+    [setIsDragOver],
+  );
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, [setIsDragOver]);
 
   return (
     <label
       htmlFor="intake-upload-input"
-      onDragOver={(event: DragEvent<HTMLLabelElement>) => {
-        event.preventDefault();
-        upload.setIsDragOver(true);
-      }}
-      onDragLeave={() => upload.setIsDragOver(false)}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={upload.handleDrop}
       aria-describedby="intake-upload-helper"
       className={cn(

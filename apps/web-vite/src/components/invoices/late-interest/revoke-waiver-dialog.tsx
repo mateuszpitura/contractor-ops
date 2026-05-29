@@ -11,7 +11,8 @@ import {
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { XCircle } from 'lucide-react';
-import { useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -35,6 +36,16 @@ export function RevokeWaiverDialog({
   const [reason, setReason] = useState('');
   const isReasonValid = reason.trim().length >= 10;
 
+  const handleReasonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
+    setReason(event.target.value);
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    if (!isReasonValid) return;
+    onConfirm(waiverId, reason);
+    setReason('');
+  }, [isReasonValid, onConfirm, waiverId, reason]);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -52,7 +63,7 @@ export function RevokeWaiverDialog({
             <Textarea
               id="revoke-reason"
               value={reason}
-              onChange={e => setReason(e.target.value)}
+              onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}
               minLength={10}
               className="min-h-[80px]"
@@ -66,11 +77,7 @@ export function RevokeWaiverDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              if (!isReasonValid) return;
-              onConfirm(waiverId, reason);
-              setReason('');
-            }}
+            onClick={handleConfirm}
             disabled={!isReasonValid || isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
             {isPending ? t('confirming') : t('confirm')}

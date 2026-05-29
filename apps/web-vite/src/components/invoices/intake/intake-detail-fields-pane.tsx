@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
@@ -61,6 +61,10 @@ export function IntakeDetailFieldsPane({
 
   const hasUnmapped = unmappedFields !== null && unmappedFields !== undefined;
 
+  const toggleAdvanced = useCallback(() => {
+    setAdvancedOpen(prev => !prev);
+  }, []);
+
   return (
     <Card className={className} data-slot="intake-detail-fields-pane" id="parsed-fields">
       <CardHeader>
@@ -92,7 +96,7 @@ export function IntakeDetailFieldsPane({
           <div className="border-t pt-4">
             <button
               type="button"
-              onClick={() => setAdvancedOpen(prev => !prev)}
+              onClick={toggleAdvanced}
               className="flex w-full items-center justify-between text-sm font-medium text-muted-foreground hover:text-foreground"
               aria-expanded={advancedOpen}
               aria-controls="intake-unmapped-fields">

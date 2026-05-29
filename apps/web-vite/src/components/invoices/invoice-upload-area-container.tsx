@@ -19,10 +19,12 @@ export function InvoiceUploadAreaContainer({
   const t = useTranslations('Invoices.upload');
   const upload = useInvoiceUpload(onUploadComplete, onOcrAccept);
 
-  const { setShowPdfReview } = upload;
+  const { setShowPdfReview, ingestFiles } = upload;
   const togglePdfReview = useCallback(() => {
     setShowPdfReview(prev => !prev);
   }, [setShowPdfReview]);
+
+  const handleIngestFiles = useCallback((files: File[]) => ingestFiles(files, t), [ingestFiles, t]);
 
   const ocrReviewPanel =
     upload.showPdfReview && upload.extractionId && upload.pdfUrl ? (
@@ -44,7 +46,7 @@ export function InvoiceUploadAreaContainer({
       isDragActive={upload.isDragActive}
       fileInputRef={upload.fileInputRef}
       onSetDragActive={upload.setIsDragActive}
-      onIngestFiles={files => upload.ingestFiles(files, t)}
+      onIngestFiles={handleIngestFiles}
       onRetryFile={upload.retryFile}
       hasOcrSession={upload.extractionId != null && upload.pdfUrl != null}
       showPdfReview={upload.showPdfReview}

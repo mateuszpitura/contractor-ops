@@ -30,6 +30,7 @@ import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Download, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useLateInterestCard } from '../hooks/use-late-interest-card.js';
@@ -106,6 +107,23 @@ export function LateInterestCard({
 
   const latestClaim = data.claims[0] ?? null;
   const latestWaiver = data.waivers[0] ?? null;
+  const latestClaimId = latestClaim?.id;
+
+  const openClaimDialog = useCallback(() => {
+    onClaimDialogOpenChange(true);
+  }, [onClaimDialogOpenChange]);
+
+  const openWaiveDialog = useCallback(() => {
+    onWaiveDialogOpenChange(true);
+  }, [onWaiveDialogOpenChange]);
+
+  const openRevokeDialog = useCallback(() => {
+    onRevokeDialogOpenChange(true);
+  }, [onRevokeDialogOpenChange]);
+
+  const handleDownloadClaim = useCallback(() => {
+    if (latestClaimId) onDownloadClaim(latestClaimId);
+  }, [onDownloadClaim, latestClaimId]);
 
   const status: 'NOT_YET_OVERDUE' | 'ACCRUING' | 'CLAIMED' | 'WAIVED' | 'PAID' =
     data.daysOverdue === 0
@@ -170,13 +188,13 @@ export function LateInterestCard({
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <Button onClick={() => onClaimDialogOpenChange(true)} size="sm">
+              <Button onClick={openClaimDialog} size="sm">
                 {t('claimCta')}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onWaiveDialogOpenChange(true)}
+                onClick={openWaiveDialog}
                 className="text-destructive hover:text-destructive">
                 {t('waiveCta')}
               </Button>
@@ -245,7 +263,7 @@ export function LateInterestCard({
                 variant="outline"
                 size="sm"
                 disabled={isDownloadClaimPending}
-                onClick={() => onDownloadClaim(latestClaim.id)}
+                onClick={handleDownloadClaim}
                 data-testid="late-interest-download-claim">
                 {isDownloadClaimPending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -285,7 +303,7 @@ export function LateInterestCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onRevokeDialogOpenChange(true)}
+              onClick={openRevokeDialog}
               className="text-destructive hover:text-destructive">
               {t('revokeWaiverCta')}
             </Button>

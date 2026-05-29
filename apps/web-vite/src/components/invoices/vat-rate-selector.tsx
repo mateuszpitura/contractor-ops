@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { TaxRateOption } from './hooks/use-vat-rates.js';
@@ -56,13 +57,15 @@ export function VatRateSelector({ value, onChange, disabled, rates }: VatRateSel
   );
   const exemptRates = rates.filter(r => r.isExempt || r.ratePercent === 0);
 
+  const handleValueChange = useCallback(
+    (code: string | null) => {
+      if (code) onChange(code);
+    },
+    [onChange],
+  );
+
   return (
-    <Select
-      value={value}
-      onValueChange={code => {
-        if (code) onChange(code);
-      }}
-      disabled={disabled}>
+    <Select value={value} onValueChange={handleValueChange} disabled={disabled}>
       <SelectTrigger>
         <SelectValue placeholder={t('placeholder')} />
       </SelectTrigger>

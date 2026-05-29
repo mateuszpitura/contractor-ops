@@ -16,7 +16,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Check, Copy, ExternalLink, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { KsefSourceBadge } from './invoice-table/ksef-source-badge.js';
@@ -36,12 +36,12 @@ interface CopyableFieldProps {
 function CopyableField({ value, ariaLabel }: CopyableFieldProps) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const handleCopy = useCallback(() => {
     void navigator.clipboard.writeText(value).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     });
-  };
+  }, [value]);
 
   return (
     <button

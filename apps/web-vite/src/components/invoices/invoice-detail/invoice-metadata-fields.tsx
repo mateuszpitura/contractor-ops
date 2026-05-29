@@ -5,17 +5,19 @@
  *   - `@/lib/currency-conversion` → `../../../lib/currency-conversion.js`
  */
 
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
+import { cn } from '@contractor-ops/ui/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { displayToMinor, minorToDisplay } from '../../../lib/currency-conversion.js';
 
@@ -34,29 +36,23 @@ export function DatePicker({ value, onChange, disabled, pickDateLabel }: DatePic
   const parsed = value ? new Date(value) : undefined;
   const isValid = parsed && !Number.isNaN(parsed.getTime());
 
+  const handleSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) onChange(toDateString(date));
+    },
+    [onChange],
+  );
+
   return (
     <Popover>
       <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            className={`w-full justify-start text-start font-normal ${
-              isValid ? '' : 'text-muted-foreground'
-            } ${disabled ? 'pointer-events-none opacity-50 bg-muted' : ''}`}
-            disabled={disabled}
-          />
-        }>
+        disabled={disabled}
+        render={formControlPopoverRender(cn('text-start', !isValid && 'text-muted-foreground'))}>
         <CalendarIcon className="me-2 h-4 w-4" />
         {isValid ? format(parsed, 'yyyy-MM-dd') : (pickDateLabel ?? 'Pick a date')}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={isValid ? parsed : undefined}
-          onSelect={date => {
-            if (date) onChange(toDateString(date));
-          }}
-        />
+        <Calendar mode="single" selected={isValid ? parsed : undefined} onSelect={handleSelect} />
       </PopoverContent>
     </Popover>
   );
@@ -76,6 +72,19 @@ export function CurrencyInput({ id, value, onChange, disabled }: CurrencyInputPr
     setDisplayValue(minorToDisplay(value));
   }, [value]);
 
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
+      setDisplayValue(raw);
+    }
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    const minor = displayToMinor(displayValue.replace(',', '.'));
+    onChange(minor);
+    setDisplayValue(minorToDisplay(minor));
+  }, [displayValue, onChange]);
+
   return (
     <Input
       id={id}
@@ -84,17 +93,8 @@ export function CurrencyInput({ id, value, onChange, disabled }: CurrencyInputPr
       className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
-      onChange={e => {
-        const raw = e.target.value;
-        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
-          setDisplayValue(raw);
-        }
-      }}
-      onBlur={() => {
-        const minor = displayToMinor(displayValue.replace(',', '.'));
-        onChange(minor);
-        setDisplayValue(minorToDisplay(minor));
-      }}
+      onChange={handleChange}
+      onBlur={handleBlur}
     />
   );
 }

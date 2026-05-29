@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Filter, X } from 'lucide-react';
-import { useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -90,6 +90,44 @@ export function DataTableFilters({
     [filters, onFiltersChange],
   );
 
+  const toggleStatus = useCallback(
+    (value: string) => toggleFilterValue('status', value),
+    [toggleFilterValue],
+  );
+  const toggleMatchStatus = useCallback(
+    (value: string) => toggleFilterValue('matchStatus', value),
+    [toggleFilterValue],
+  );
+  const toggleSource = useCallback(
+    (value: string) => toggleFilterValue('source', value),
+    [toggleFilterValue],
+  );
+  const removeStatus = useCallback(
+    (value: string) => removeFilter('status', value),
+    [removeFilter],
+  );
+  const removeMatchStatus = useCallback(
+    (value: string) => removeFilter('matchStatus', value),
+    [removeFilter],
+  );
+  const removeSource = useCallback(
+    (value: string) => removeFilter('source', value),
+    [removeFilter],
+  );
+
+  const statusOptions = useMemo(
+    () => INVOICE_STATUSES.map(s => ({ value: s, label: tDynLoose(t, 'status', enumKey(s)) })),
+    [t],
+  );
+  const matchStatusOptions = useMemo(
+    () => MATCH_STATUSES.map(s => ({ value: s, label: tDynLoose(t, 'matchStatus', enumKey(s)) })),
+    [t],
+  );
+  const sourceOptions = useMemo(
+    () => INVOICE_SOURCES.map(s => ({ value: s, label: tDynLoose(t, 'source', enumKey(s)) })),
+    [t],
+  );
+
   return (
     <>
       <Button
@@ -103,8 +141,8 @@ export function DataTableFilters({
 
       <Popover>
         <PopoverTrigger
-          render={props => (
-            <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+          render={
+            <Button variant="outline" size="lg" disabled={filtersDisabled}>
               <Filter className="h-3.5 w-3.5" />
               {t('filters')}
               {hasActiveFilters && (
@@ -113,36 +151,27 @@ export function DataTableFilters({
                 </Badge>
               )}
             </Button>
-          )}
+          }
         />
         <PopoverContent className="w-72 p-0" align="start">
           <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
             <FilterSection
               title={t('columns.status')}
-              options={INVOICE_STATUSES.map(s => ({
-                value: s,
-                label: tDynLoose(t, 'status', enumKey(s)),
-              }))}
+              options={statusOptions}
               selected={filters.status}
-              onToggle={value => toggleFilterValue('status', value)}
+              onToggle={toggleStatus}
             />
             <FilterSection
               title={t('columns.matchStatus')}
-              options={MATCH_STATUSES.map(s => ({
-                value: s,
-                label: tDynLoose(t, 'matchStatus', enumKey(s)),
-              }))}
+              options={matchStatusOptions}
               selected={filters.matchStatus}
-              onToggle={value => toggleFilterValue('matchStatus', value)}
+              onToggle={toggleMatchStatus}
             />
             <FilterSection
               title={t('columns.source')}
-              options={INVOICE_SOURCES.map(s => ({
-                value: s,
-                label: tDynLoose(t, 'source', enumKey(s)),
-              }))}
+              options={sourceOptions}
               selected={filters.source}
-              onToggle={value => toggleFilterValue('source', value)}
+              onToggle={toggleSource}
             />
           </div>
         </PopoverContent>
@@ -152,24 +181,27 @@ export function DataTableFilters({
         <div className="flex flex-wrap items-center gap-1.5">
           {filters.overdue && <FilterBadge label={t('overdueFilter')} onRemove={toggleOverdue} />}
           {filters.status.map(s => (
-            <FilterBadge
+            <FilterBadgeRemovable
               key={`status-${s}`}
+              value={s}
               label={tDynLoose(t, 'status', enumKey(s))}
-              onRemove={() => removeFilter('status', s)}
+              onRemove={removeStatus}
             />
           ))}
           {filters.matchStatus.map(s => (
-            <FilterBadge
+            <FilterBadgeRemovable
               key={`matchStatus-${s}`}
+              value={s}
               label={tDynLoose(t, 'matchStatus', enumKey(s))}
-              onRemove={() => removeFilter('matchStatus', s)}
+              onRemove={removeMatchStatus}
             />
           ))}
           {filters.source.map(s => (
-            <FilterBadge
+            <FilterBadgeRemovable
               key={`source-${s}`}
+              value={s}
               label={tDynLoose(t, 'source', enumKey(s))}
-              onRemove={() => removeFilter('source', s)}
+              onRemove={removeSource}
             />
           ))}
           <button
@@ -183,6 +215,24 @@ export function DataTableFilters({
     </>
   );
 }
+
+interface FilterBadgeRemovableProps {
+  value: string;
+  label: string;
+  onRemove: (value: string) => void;
+}
+
+// memo: rendered per active filter chip; stable handler from parent
+const FilterBadgeRemovable = memo(function FilterBadgeRemovable({
+  value,
+  label,
+  onRemove,
+}: FilterBadgeRemovableProps) {
+  const handleRemove = useCallback(() => {
+    onRemove(value);
+  }, [onRemove, value]);
+  return <FilterBadge label={label} onRemove={handleRemove} />;
+});
 
 function FilterSection({
   title,
@@ -202,22 +252,49 @@ function FilterSection({
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
         {options.map(option => (
-          <label
+          <FilterOption
             key={option.value}
-            htmlFor={`inv-filter-${title}-${option.value}`}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-            <Checkbox
-              id={`inv-filter-${title}-${option.value}`}
-              checked={selected.includes(option.value)}
-              onCheckedChange={() => onToggle(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
+            title={title}
+            value={option.value}
+            label={option.label}
+            checked={selected.includes(option.value)}
+            onToggle={onToggle}
+          />
         ))}
       </div>
     </div>
   );
 }
+
+interface FilterOptionProps {
+  title: string;
+  value: string;
+  label: string;
+  checked: boolean;
+  onToggle: (value: string) => void;
+}
+
+// memo: rendered per option in filter section
+const FilterOption = memo(function FilterOption({
+  title,
+  value,
+  label,
+  checked,
+  onToggle,
+}: FilterOptionProps) {
+  const id = `inv-filter-${title}-${value}`;
+  const handleCheckedChange = useCallback(() => {
+    onToggle(value);
+  }, [onToggle, value]);
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={id} checked={checked} onCheckedChange={handleCheckedChange} />
+      <span>{label}</span>
+    </label>
+  );
+});
 
 function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations('Common.aria');

@@ -1,7 +1,7 @@
 import type { InvoiceMatchStatusInput, InvoiceStatusInput } from '@contractor-ops/ui';
 import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row, Table } from '@tanstack/react-table';
 import {
   AlertCircle,
   AlertTriangle,
@@ -14,7 +14,8 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import type { ComponentType } from 'react';
+import type { ComponentType, MouseEvent } from 'react';
+import { memo, useCallback } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
@@ -99,6 +100,55 @@ function isOverdue(dueDate: string | null, status: string): boolean {
 
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
+interface SelectAllHeaderProps {
+  table: Table<InvoiceRow>;
+  ariaLabel: string;
+}
+
+// memo: rendered in TanStack table header per render
+const SelectAllHeader = memo(function SelectAllHeader({ table, ariaLabel }: SelectAllHeaderProps) {
+  const handleCheckedChange = useCallback(
+    (value: boolean | 'indeterminate') => {
+      table.toggleAllPageRowsSelected(!!value);
+    },
+    [table],
+  );
+  return (
+    <Checkbox
+      checked={table.getIsAllPageRowsSelected()}
+      indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+      onCheckedChange={handleCheckedChange}
+      aria-label={ariaLabel}
+    />
+  );
+});
+
+interface SelectRowCellProps {
+  row: Row<InvoiceRow>;
+  ariaLabel: string;
+}
+
+// memo: rendered per row in invoice table select column
+const SelectRowCell = memo(function SelectRowCell({ row, ariaLabel }: SelectRowCellProps) {
+  const handleCheckedChange = useCallback(
+    (value: boolean | 'indeterminate') => {
+      row.toggleSelected(!!value);
+    },
+    [row],
+  );
+  return (
+    <Checkbox
+      checked={row.getIsSelected()}
+      onCheckedChange={handleCheckedChange}
+      aria-label={ariaLabel}
+    />
+  );
+});
+
+const stopPropagation = (event: MouseEvent<HTMLAnchorElement>) => {
+  event.stopPropagation();
+};
+
 export function getColumns(
   t: LooseTranslator,
   formatDate?: DateFormatter,
@@ -117,22 +167,8 @@ export function getColumns(
   return [
     {
       id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t('columns.selectAll')}
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label={t('columns.selectRow')}
-          onClick={e => e.stopPropagation()}
-        />
-      ),
+      header: ({ table }) => <SelectAllHeader table={table} ariaLabel={t('columns.selectAll')} />,
+      cell: ({ row }) => <SelectRowCell row={row} ariaLabel={t('columns.selectRow')} />,
       enableSorting: false,
       enableHiding: false,
       size: 40,
@@ -156,7 +192,7 @@ export function getColumns(
           <Link
             href={`/contractors/${contractor.id}`}
             className="text-sm text-primary hover:underline"
-            onClick={e => e.stopPropagation()}>
+            onClick={stopPropagation}>
             {contractor.legalName}
           </Link>
         );

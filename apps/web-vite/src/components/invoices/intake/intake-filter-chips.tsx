@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { useCallback, useMemo, useRef } from 'react';
+import { memo, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -106,38 +106,88 @@ export function IntakeFilterChips({ value, onChange }: IntakeFilterChipsProps) {
     }
   }, []);
 
+  const registerChipRef = useCallback((index: number, el: HTMLButtonElement | null) => {
+    chipRefs.current[index] = el;
+  }, []);
+
   return (
     <div
       role="tablist"
       aria-label={t('all')}
       className="flex flex-wrap items-center gap-2"
       data-slot="intake-filter-chips">
-      {INTAKE_FILTERS.map((filter, index) => {
-        const isSelected = filter === selected;
-        return (
-          <button
-            key={filter}
-            ref={el => {
-              chipRefs.current[index] = el;
-            }}
-            type="button"
-            role="tab"
-            aria-selected={isSelected}
-            data-state={isSelected ? 'active' : 'inactive'}
-            tabIndex={isSelected ? 0 : -1}
-            onClick={() => applyFilter(filter)}
-            onKeyDown={event => handleKeyDown(event, index)}
-            className={cn(
-              'inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              isSelected
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground hover:bg-muted/80',
-            )}>
-            {t(filter)}
-          </button>
-        );
-      })}
+      {INTAKE_FILTERS.map((filter, index) => (
+        <IntakeFilterChip
+          key={filter}
+          filter={filter}
+          index={index}
+          isSelected={filter === selected}
+          label={t(filter)}
+          onSelect={applyFilter}
+          onKeyDown={handleKeyDown}
+          registerRef={registerChipRef}
+        />
+      ))}
     </div>
   );
 }
+
+interface IntakeFilterChipProps {
+  filter: IntakeFilterValue;
+  index: number;
+  isSelected: boolean;
+  label: string;
+  onSelect: (filter: IntakeFilterValue) => void;
+  onKeyDown: (event: KeyboardEvent<HTMLButtonElement>, index: number) => void;
+  registerRef: (index: number, el: HTMLButtonElement | null) => void;
+}
+
+// memo: rendered per chip in intake-filter list
+const IntakeFilterChip = memo(function IntakeFilterChip({
+  filter,
+  index,
+  isSelected,
+  label,
+  onSelect,
+  onKeyDown,
+  registerRef,
+}: IntakeFilterChipProps) {
+  const handleRef = useCallback(
+    (el: HTMLButtonElement | null) => {
+      registerRef(index, el);
+    },
+    [registerRef, index],
+  );
+
+  const handleClick = useCallback(() => {
+    onSelect(filter);
+  }, [onSelect, filter]);
+
+  const handleKey = useCallback(
+    (event: KeyboardEvent<HTMLButtonElement>) => {
+      onKeyDown(event, index);
+    },
+    [onKeyDown, index],
+  );
+
+  return (
+    <button
+      ref={handleRef}
+      type="button"
+      role="tab"
+      aria-selected={isSelected}
+      data-state={isSelected ? 'active' : 'inactive'}
+      tabIndex={isSelected ? 0 : -1}
+      onClick={handleClick}
+      onKeyDown={handleKey}
+      className={cn(
+        'inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        isSelected
+          ? 'bg-primary text-primary-foreground'
+          : 'bg-muted text-muted-foreground hover:bg-muted/80',
+      )}>
+      {label}
+    </button>
+  );
+});

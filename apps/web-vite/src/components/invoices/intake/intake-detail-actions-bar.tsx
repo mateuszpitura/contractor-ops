@@ -18,6 +18,8 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Download, FileText, Loader2, XCircle } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
 import type { useIntakeDetailActions } from '../hooks/use-intake-detail-actions.js';
@@ -29,6 +31,13 @@ interface IntakeDetailActionsBarProps {
 
 export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActionsBarProps) {
   const t = useTranslations('EInvoice.intake');
+  const setRejectReason = actions.setRejectReason;
+  const handleRejectReasonChange = useCallback(
+    (event: ChangeEvent<HTMLTextAreaElement>) => {
+      setRejectReason(event.target.value);
+    },
+    [setRejectReason],
+  );
 
   return (
     <TooltipProvider>
@@ -141,7 +150,7 @@ export function IntakeDetailActionsBar({ actions, className }: IntakeDetailActio
             <Textarea
               id="intake-reject-reason"
               value={actions.rejectReason}
-              onChange={event => actions.setRejectReason(event.target.value)}
+              onChange={handleRejectReasonChange}
               placeholder={t('rejectReasonPlaceholder')}
               rows={3}
               minLength={3}

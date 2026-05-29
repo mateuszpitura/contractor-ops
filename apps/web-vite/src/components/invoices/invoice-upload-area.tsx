@@ -19,7 +19,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import type { ChangeEvent, DragEvent, ReactNode, RefObject } from 'react';
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 
 import { useRouter } from '../../i18n/navigation.js';
 import { formatFileSize, truncateFilename as truncateName } from '../../lib/format-file-size.js';
@@ -104,6 +104,10 @@ export function InvoiceUploadArea({
     [fileInputRef],
   );
 
+  const handleNavigateBilling = useCallback(() => {
+    router.push('/settings?tab=billing');
+  }, [router]);
+
   return (
     <div className={`space-y-4 ${className ?? ''}`}>
       {!!hasOcrSession && (
@@ -157,48 +161,20 @@ export function InvoiceUploadArea({
 
       {!!creditExhausted && (
         <CreditExhaustedInline
-          onUpgrade={() => router.push('/settings?tab=billing')}
-          onBuyCredits={() => router.push('/settings?tab=billing')}
+          onUpgrade={handleNavigateBilling}
+          onBuyCredits={handleNavigateBilling}
         />
       )}
 
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map(item => (
-            <div key={item.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
-              <FileText className="size-5 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{truncateName(item.file.name)}</p>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {formatFileSize(item.file.size)}
-                  </span>
-                  {item.status === 'uploading' || item.status === 'creating' ? (
-                    <Progress value={item.progress} className="h-1 max-w-[120px] flex-1" />
-                  ) : null}
-                </div>
-              </div>
-              {(item.status === 'uploading' || item.status === 'creating') && (
-                <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
-              )}
-              {item.status === 'complete' && (
-                <CheckCircle2 className="size-4 shrink-0 text-green-600 dark:text-green-400" />
-              )}
-              {item.status === 'error' && (
-                <div className="flex items-center gap-1">
-                  <XCircle className="size-4 shrink-0 text-destructive" />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-1.5 text-xs"
-                    onClick={() => onRetryFile(item.id)}>
-                    <RotateCcw className="size-3 me-1" />
-                    {t('retry')}
-                  </Button>
-                </div>
-              )}
-            </div>
+            <UploadFileRow
+              key={item.id}
+              item={item}
+              retryLabel={t('retry')}
+              onRetry={onRetryFile}
+            />
           ))}
         </div>
       )}
@@ -207,3 +183,55 @@ export function InvoiceUploadArea({
     </div>
   );
 }
+
+interface UploadFileRowProps {
+  item: UploadingFile;
+  retryLabel: string;
+  onRetry: (fileId: string) => void;
+}
+
+// memo: rendered per file in upload queue
+const UploadFileRow = memo(function UploadFileRow({
+  item,
+  retryLabel,
+  onRetry,
+}: UploadFileRowProps) {
+  const handleRetry = useCallback(() => {
+    onRetry(item.id);
+  }, [onRetry, item.id]);
+
+  return (
+    <div className="flex items-center gap-3 rounded-md border px-3 py-2">
+      <FileText className="size-5 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm">{truncateName(item.file.name)}</p>
+        <div className="mt-0.5 flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{formatFileSize(item.file.size)}</span>
+          {item.status === 'uploading' || item.status === 'creating' ? (
+            <Progress value={item.progress} className="h-1 max-w-[120px] flex-1" />
+          ) : null}
+        </div>
+      </div>
+      {(item.status === 'uploading' || item.status === 'creating') && (
+        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+      )}
+      {item.status === 'complete' && (
+        <CheckCircle2 className="size-4 shrink-0 text-green-600 dark:text-green-400" />
+      )}
+      {item.status === 'error' && (
+        <div className="flex items-center gap-1">
+          <XCircle className="size-4 shrink-0 text-destructive" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-1.5 text-xs"
+            onClick={handleRetry}>
+            <RotateCcw className="size-3 me-1" />
+            {retryLabel}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+});

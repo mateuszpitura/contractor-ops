@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Search, Upload } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -51,6 +52,13 @@ export function DataTableToolbar({
     [onSearchChange],
   );
 
+  const handleSearchChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      handleSearchInput(event.target.value);
+    },
+    [handleSearchInput],
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -60,7 +68,7 @@ export function DataTableToolbar({
             placeholder={t('searchPlaceholder')}
             value={localSearch}
             disabled={filtersDisabled}
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (

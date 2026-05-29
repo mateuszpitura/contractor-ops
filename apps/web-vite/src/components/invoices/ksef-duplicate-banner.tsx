@@ -17,7 +17,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { AlertTriangle, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -38,6 +38,15 @@ export function KsefDuplicateBanner({
   const t = useTranslations('ksef');
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
 
+  const handleOpenVoidDialog = useCallback(() => {
+    setVoidDialogOpen(true);
+  }, []);
+
+  const handleConfirmVoid = useCallback(() => {
+    onVoid?.();
+    setVoidDialogOpen(false);
+  }, [onVoid]);
+
   return (
     <>
       <div className="rounded-md border border-amber-500/30 border-l-4 border-l-amber-500 bg-amber-500/5 p-4">
@@ -55,7 +64,7 @@ export function KsefDuplicateBanner({
                 {t('duplicateViewKsef')}
               </Link>
               {!!onVoid && (
-                <Button variant="destructive" size="sm" onClick={() => setVoidDialogOpen(true)}>
+                <Button variant="destructive" size="sm" onClick={handleOpenVoidDialog}>
                   <Trash2 className="me-1.5 size-4" />
                   {t('duplicateVoid')}
                 </Button>
@@ -79,12 +88,7 @@ export function KsefDuplicateBanner({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('voidConfirmCancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => {
-                onVoid?.();
-                setVoidDialogOpen(false);
-              }}>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmVoid}>
               {t('voidConfirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
