@@ -97,19 +97,58 @@ export function EquipmentToolbar({
   const activeFilterCount = filters.type.length + filters.status.length;
   const hasActiveFilters = activeFilterCount > 0;
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     onFiltersChange({ type: [], status: [] });
-  };
+  }, [onFiltersChange]);
 
-  const toggleFilterValue = (key: keyof FilterState, value: string) => {
-    const current = filters[key];
-    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
-    onFiltersChange({ [key]: next });
-  };
+  const toggleFilterValue = useCallback(
+    (key: keyof FilterState, value: string) => {
+      const current = filters[key];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      onFiltersChange({ [key]: next });
+    },
+    [filters, onFiltersChange],
+  );
 
-  const removeFilter = (key: keyof FilterState, value: string) => {
-    onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
-  };
+  const removeFilter = useCallback(
+    (key: keyof FilterState, value: string) => {
+      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value),
+    [handleSearchInput],
+  );
+
+  const renderTypeFilterTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        {t('list.filters.type')}
+        {filters.type.length > 0 && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {filters.type.length}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [filtersDisabled, filters.type.length, t],
+  );
+
+  const renderStatusFilterTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        {t('list.filters.status')}
+        {filters.status.length > 0 && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {filters.status.length}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [filtersDisabled, filters.status.length, t],
+  );
 
   return (
     <div className="space-y-2">
@@ -120,8 +159,7 @@ export function EquipmentToolbar({
             placeholder={t('list.filters.search')}
             value={localSearch}
             disabled={filtersDisabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (
@@ -130,36 +168,21 @@ export function EquipmentToolbar({
         </div>
 
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-                {t('list.filters.type')}
-                {filters.type.length > 0 && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {filters.type.length}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderTypeFilterTrigger} />
           <PopoverContent className="w-52 p-0" align="start">
             <div className="space-y-2 p-4">
               <h4 className="text-[13px] font-medium text-foreground">{t('list.filters.type')}</h4>
               <div className="space-y-1">
                 {EQUIPMENT_TYPES.map(type => (
-                  <label
+                  <FilterCheckboxRow
                     key={type}
-                    htmlFor={`equip-type-${type}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                    <Checkbox
-                      id={`equip-type-${type}`}
-                      checked={filters.type.includes(type)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onCheckedChange={() => toggleFilterValue('type', type)}
-                    />
-                    <span>{tDynLoose(t, 'type', enumKey(type))}</span>
-                  </label>
+                    id={`equip-type-${type}`}
+                    filterKey="type"
+                    value={type}
+                    checked={filters.type.includes(type)}
+                    label={tDynLoose(t, 'type', enumKey(type))}
+                    onToggle={toggleFilterValue}
+                  />
                 ))}
               </div>
             </div>
@@ -167,19 +190,7 @@ export function EquipmentToolbar({
         </Popover>
 
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-                {t('list.filters.status')}
-                {filters.status.length > 0 && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {filters.status.length}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderStatusFilterTrigger} />
           <PopoverContent className="w-52 p-0" align="start">
             <div className="space-y-2 p-4">
               <h4 className="text-[13px] font-medium text-foreground">
@@ -187,18 +198,15 @@ export function EquipmentToolbar({
               </h4>
               <div className="space-y-1">
                 {EQUIPMENT_STATUSES.map(status => (
-                  <label
+                  <FilterCheckboxRow
                     key={status}
-                    htmlFor={`equip-status-${status}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                    <Checkbox
-                      id={`equip-status-${status}`}
-                      checked={filters.status.includes(status)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onCheckedChange={() => toggleFilterValue('status', status)}
-                    />
-                    <span>{tDynLoose(t, 'status', enumKey(status))}</span>
-                  </label>
+                    id={`equip-status-${status}`}
+                    filterKey="status"
+                    value={status}
+                    checked={filters.status.includes(status)}
+                    label={tDynLoose(t, 'status', enumKey(status))}
+                    onToggle={toggleFilterValue}
+                  />
                 ))}
               </div>
             </div>
@@ -216,31 +224,32 @@ export function EquipmentToolbar({
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
           {filters.type.map(type => (
-            <FilterBadge
+            <ActiveFilterBadge
               key={`type-${type}`}
+              filterKey="type"
+              value={type}
               label={tDynLoose(t, 'type', enumKey(type))}
               removeLabel={t('list.filters.removeFilter', {
                 label: tDynLoose(t, 'type', enumKey(type)),
               })}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('type', type)}
+              onRemove={removeFilter}
             />
           ))}
           {filters.status.map(status => (
-            <FilterBadge
+            <ActiveFilterBadge
               key={`status-${status}`}
+              filterKey="status"
+              value={status}
               label={tDynLoose(t, 'status', enumKey(status))}
               removeLabel={t('list.filters.removeFilter', {
                 label: tDynLoose(t, 'status', enumKey(status)),
               })}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('status', status)}
+              onRemove={removeFilter}
             />
           ))}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground underline hover:text-foreground"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={clearAllFilters}>
             {t('list.filters.clearAll')}
           </button>
@@ -250,22 +259,53 @@ export function EquipmentToolbar({
   );
 }
 
-function FilterBadge({
+function FilterCheckboxRow({
+  id,
+  filterKey,
+  value,
+  checked,
+  label,
+  onToggle,
+}: {
+  id: string;
+  filterKey: keyof FilterState;
+  value: string;
+  checked: boolean;
+  label: string;
+  onToggle: (key: keyof FilterState, value: string) => void;
+}) {
+  const handleChange = useCallback(() => onToggle(filterKey, value), [onToggle, filterKey, value]);
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={id} checked={checked} onCheckedChange={handleChange} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function ActiveFilterBadge({
+  filterKey,
+  value,
   label,
   removeLabel,
   onRemove,
 }: {
+  filterKey: keyof FilterState;
+  value: string;
   label: string;
   removeLabel: string;
-  onRemove: () => void;
+  onRemove: (key: keyof FilterState, value: string) => void;
 }) {
+  const handleClick = useCallback(() => onRemove(filterKey, value), [onRemove, filterKey, value]);
   return (
     <Badge variant="secondary" className="gap-1 py-0.5 ps-2 pe-1">
       <span className="text-xs">{label}</span>
       <button
         type="button"
         className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-        onClick={onRemove}
+        onClick={handleClick}
         aria-label={removeLabel}>
         <X className="h-3 w-3" />
       </button>

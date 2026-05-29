@@ -118,6 +118,12 @@ export function CarrierShipmentFormView({
     serviceCode,
   });
 
+  const handleOpenPicker = useCallback(() => setPickerOpen(true), []);
+  const handleParcelSizeChange = useCallback((val: unknown) => {
+    if (val) setParcelSize(val as ParcelSize);
+  }, []);
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   const handleSubmit = useCallback(() => {
     if (!(selectedCarrier && isFormValid)) return;
     submitShipment({
@@ -207,15 +213,10 @@ export function CarrierShipmentFormView({
                       pointId={selectedPoint.id}
                       pointName={selectedPoint.name}
                       pointAddress={selectedPoint.address}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChangeClick={() => setPickerOpen(true)}
+                      onChangeClick={handleOpenPicker}
                     />
                   ) : (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => setPickerOpen(true)}>
+                    <Button variant="outline" className="w-full" onClick={handleOpenPicker}>
                       <Package className="me-2 h-4 w-4" />
                       {tInpost('selectPaczkomat')}
                     </Button>
@@ -226,8 +227,7 @@ export function CarrierShipmentFormView({
                   <Label>{t('parcelSize')}</Label>
                   <RadioGroup
                     value={parcelSize}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                    onValueChange={val => val && setParcelSize(val as ParcelSize)}
+                    onValueChange={handleParcelSizeChange}
                     className="flex gap-4">
                     {(['small', 'medium', 'large'] as const).map(size => (
                       <label
@@ -265,8 +265,7 @@ export function CarrierShipmentFormView({
           </div>
 
           <DialogFooter>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+            <Button variant="outline" onClick={handleCancel} disabled={isPending}>
               {t('cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={!isFormValid || isPending}>

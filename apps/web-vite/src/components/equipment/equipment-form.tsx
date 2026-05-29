@@ -2,12 +2,15 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
@@ -27,7 +30,7 @@ import type { EquipmentCreateInput } from '@contractor-ops/validators';
 import { equipmentCreateSchema } from '@contractor-ops/validators';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { useEffect, useId } from 'react';
+import { useCallback, useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { tDynLoose } from '../../i18n/typed-keys.js';
@@ -115,6 +118,20 @@ export function EquipmentFormView({
 
   const watchedType = form.watch('type');
 
+  const handleTypeChange = useCallback(
+    (val: unknown) => {
+      if (val) form.setValue('type', val as EquipmentCreateInput['type']);
+    },
+    [form],
+  );
+  const handlePurchaseDateChange = useCallback(
+    (date: Date | undefined) => {
+      form.setValue('purchaseDate', date, { shouldDirty: true });
+    },
+    [form],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -125,116 +142,103 @@ export function EquipmentFormView({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-eq-name`}>{t('form.name')}</Label>
-            <Input
-              id={`${id}-eq-name`}
-              placeholder={t('form.namePlaceholder')}
-              {...form.register('name')}
-              aria-invalid={!!form.formState.errors.name}
-            />
-            {!!form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-eq-serial`}>{t('form.serialNumber')}</Label>
-            <Input
-              id={`${id}-eq-serial`}
-              placeholder={t('form.serialNumberPlaceholder')}
-              className="font-mono"
-              {...form.register('serialNumber')}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('form.type')}</Label>
-            <Select
-              value={watchedType}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val =>
-                val && form.setValue('type', val as EquipmentCreateInput['type'])
-              }>
-              <SelectTrigger className="w-full">
-                {watchedType ? (
-                  <div className="flex items-center gap-2">
-                    <EquipmentTypeIcon type={watchedType} />
-                    <span>{tDynLoose(t, 'type', enumKey(watchedType))}</span>
-                  </div>
-                ) : (
-                  <SelectValue />
-                )}
-              </SelectTrigger>
-              <SelectContent>
-                {EQUIPMENT_TYPES.map(type => (
-                  <SelectItem key={type} value={type}>
-                    <div className="flex items-center gap-2">
-                      <EquipmentTypeIcon type={type} />
-                      <span>{tDynLoose(t, 'type', enumKey(type))}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {watchedType === 'OTHER' && (
+        <form onSubmit={onSubmit} className={dialogFormLayoutClassName}>
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={`${id}-eq-custom-type`}>{t('form.customType')}</Label>
+              <Label htmlFor={`${id}-eq-name`}>{t('form.name')}</Label>
               <Input
-                id={`${id}-eq-custom-type`}
-                placeholder={t('form.customTypePlaceholder')}
-                {...form.register('customType')}
+                id={`${id}-eq-name`}
+                placeholder={t('form.namePlaceholder')}
+                {...form.register('name')}
+                aria-invalid={!!form.formState.errors.name}
+              />
+              {!!form.formState.errors.name && (
+                <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-eq-serial`}>{t('form.serialNumber')}</Label>
+              <Input
+                id={`${id}-eq-serial`}
+                placeholder={t('form.serialNumberPlaceholder')}
+                className="font-mono"
+                {...form.register('serialNumber')}
               />
             </div>
-          )}
 
-          <div className="flex flex-col gap-2">
-            <Label>{t('form.purchaseDate')}</Label>
-            <Popover>
-              <PopoverTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-2 bg-background font-normal"
-                  />
-                }>
-                <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                <span className={form.watch('purchaseDate') ? '' : 'text-muted-foreground'}>
-                  {form.watch('purchaseDate')
-                    ? new Date(form.watch('purchaseDate') as unknown as string).toLocaleDateString()
-                    : t('form.purchaseDatePlaceholder')}
-                </span>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={
-                    form.watch('purchaseDate')
-                      ? new Date(form.watch('purchaseDate') as unknown as string)
-                      : undefined
-                  }
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onSelect={date => form.setValue('purchaseDate', date, { shouldDirty: true })}
+            <div className="space-y-2">
+              <Label>{t('form.type')}</Label>
+              <Select value={watchedType} onValueChange={handleTypeChange}>
+                <SelectTrigger className="w-full">
+                  {watchedType ? (
+                    <div className="flex items-center gap-2">
+                      <EquipmentTypeIcon type={watchedType} />
+                      <span>{tDynLoose(t, 'type', enumKey(watchedType))}</span>
+                    </div>
+                  ) : (
+                    <SelectValue />
+                  )}
+                </SelectTrigger>
+                <SelectContent>
+                  {EQUIPMENT_TYPES.map(type => (
+                    <SelectItem key={type} value={type}>
+                      <div className="flex items-center gap-2">
+                        <EquipmentTypeIcon type={type} />
+                        <span>{tDynLoose(t, 'type', enumKey(type))}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {watchedType === 'OTHER' && (
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-eq-custom-type`}>{t('form.customType')}</Label>
+                <Input
+                  id={`${id}-eq-custom-type`}
+                  placeholder={t('form.customTypePlaceholder')}
+                  {...form.register('customType')}
                 />
-              </PopoverContent>
-            </Popover>
-          </div>
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-eq-notes`}>{t('form.notes')}</Label>
-            <Textarea id={`${id}-eq-notes`} rows={3} {...form.register('notes')} />
-          </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t('form.purchaseDate')}</Label>
+              <Popover>
+                <PopoverTrigger render={formControlPopoverRender('gap-2')}>
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  <span className={form.watch('purchaseDate') ? '' : 'text-muted-foreground'}>
+                    {form.watch('purchaseDate')
+                      ? new Date(
+                          form.watch('purchaseDate') as unknown as string,
+                        ).toLocaleDateString()
+                      : t('form.purchaseDatePlaceholder')}
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={
+                      form.watch('purchaseDate')
+                        ? new Date(form.watch('purchaseDate') as unknown as string)
+                        : undefined
+                    }
+                    onSelect={handlePurchaseDateChange}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-eq-notes`}>{t('form.notes')}</Label>
+              <Textarea id={`${id}-eq-notes`} rows={3} {...form.register('notes')} />
+            </div>
+          </DialogBody>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              // biome-ignore lint/nursery/noJsxPropsBind: dialog state handler
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending}>
               {t('form.cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>

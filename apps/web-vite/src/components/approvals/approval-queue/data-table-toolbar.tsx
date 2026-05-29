@@ -80,6 +80,25 @@ export function ApprovalQueueToolbar({
     onStatusChange([]);
   }, [onStatusChange]);
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value),
+    [handleSearchInput],
+  );
+
+  const renderStatusTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={isLoading}>
+        {t('columns.status')}
+        {activeStatuses.length > 0 && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {activeStatuses.length}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [activeStatuses.length, isLoading, t],
+  );
+
   const activeFilterCount = activeStatuses.length;
 
   return (
@@ -91,8 +110,7 @@ export function ApprovalQueueToolbar({
             placeholder={t('searchPlaceholder')}
             value={localSearch}
             disabled={isLoading}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (
@@ -101,36 +119,20 @@ export function ApprovalQueueToolbar({
         </div>
 
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg" disabled={isLoading}>
-                {t('columns.status')}
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderStatusTrigger} />
           <PopoverContent className="w-56 p-0" align="start">
             <div className="p-4 space-y-2">
               <h4 className="text-[13px] font-medium text-foreground">{t('columns.status')}</h4>
               <div className="space-y-1">
                 {STATUS_OPTIONS.map(option => (
-                  <label
+                  <StatusFilterRow
                     key={option.value}
-                    htmlFor={`${reactId}-filter-${option.value}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                    <Checkbox
-                      id={`${reactId}-filter-${option.value}`}
-                      checked={activeStatuses.includes(option.value)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onCheckedChange={() => toggleFilter(option.value)}
-                    />
-                    <span>{t(option.labelKey)}</span>
-                  </label>
+                    id={`${reactId}-filter-${option.value}`}
+                    value={option.value}
+                    checked={activeStatuses.includes(option.value)}
+                    label={t(option.labelKey)}
+                    onToggle={toggleFilter}
+                  />
                 ))}
               </div>
             </div>
@@ -141,19 +143,15 @@ export function ApprovalQueueToolbar({
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
           {activeStatuses.map(s => (
-            <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-              <span className="text-xs">{tDynLoose(t, 'chips', s.toLowerCase())}</span>
-              <button
-                type="button"
-                className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => removeFilter(s)}
-                aria-label={tAria('removeFilter', {
-                  label: tDynLoose(t, 'chips', s.toLowerCase()),
-                })}>
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
+            <ActiveStatusBadge
+              key={s}
+              value={s}
+              label={tDynLoose(t, 'chips', s.toLowerCase())}
+              removeLabel={tAria('removeFilter', {
+                label: tDynLoose(t, 'chips', s.toLowerCase()),
+              })}
+              onRemove={removeFilter}
+            />
           ))}
           <button
             type="button"
@@ -164,5 +162,55 @@ export function ApprovalQueueToolbar({
         </div>
       )}
     </div>
+  );
+}
+
+function StatusFilterRow({
+  id,
+  value,
+  checked,
+  label,
+  onToggle,
+}: {
+  id: string;
+  value: string;
+  checked: boolean;
+  label: string;
+  onToggle: (value: string) => void;
+}) {
+  const handleChange = useCallback(() => onToggle(value), [onToggle, value]);
+  return (
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={id} checked={checked} onCheckedChange={handleChange} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function ActiveStatusBadge({
+  value,
+  label,
+  removeLabel,
+  onRemove,
+}: {
+  value: string;
+  label: string;
+  removeLabel: string;
+  onRemove: (value: string) => void;
+}) {
+  const handleClick = useCallback(() => onRemove(value), [onRemove, value]);
+  return (
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+      <span className="text-xs">{label}</span>
+      <button
+        type="button"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        onClick={handleClick}
+        aria-label={removeLabel}>
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
   );
 }

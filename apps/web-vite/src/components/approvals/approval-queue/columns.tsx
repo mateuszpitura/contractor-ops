@@ -6,14 +6,18 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import { useId, useState } from 'react';
+import { memo, useCallback, useId, useState } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { formatMinorUnits } from '../../../lib/format-currency.js';
 import { SlaBadge } from '../sla-badge.js';
+
+function stopRowPropagation(e: React.MouseEvent) {
+  e.stopPropagation();
+}
 
 export type ApprovalQueueRow = {
   id: string;
@@ -58,6 +62,28 @@ export type ApprovalQueueRow = {
   } | null;
 };
 
+function RejectTriggerButton(props: React.HTMLAttributes<HTMLButtonElement> & { label: string }) {
+  const { label, onClick, ...rest } = props;
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onClick?.(e);
+    },
+    [onClick],
+  );
+  return (
+    <Button
+      {...rest}
+      variant="ghost"
+      size="sm"
+      className="h-7 gap-1 text-destructive hover:text-destructive"
+      onClick={handleClick}>
+      <XCircle className="h-3.5 w-3.5" />
+      {label}
+    </Button>
+  );
+}
+
 function RejectPopover({
   stepId,
   onReject,
@@ -73,36 +99,35 @@ function RejectPopover({
   const [comment, setComment] = useState('');
   const [open, setOpen] = useState(false);
 
-  const handleReject = () => {
+  const handleReject = useCallback(() => {
     if (comment.length >= 10) {
       onReject(stepId, comment);
       setComment('');
       setOpen(false);
     }
-  };
+  }, [comment, onReject, stepId]);
+
+  const handleCommentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setComment(e.target.value),
+    [],
+  );
+  const handleDismiss = useCallback(() => {
+    setOpen(false);
+    setComment('');
+  }, []);
+
+  const rejectLabel = t('actions.reject');
+  const renderTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <RejectTriggerButton {...props} label={rejectLabel} />
+    ),
+    [rejectLabel],
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button
-            {...props}
-            variant="ghost"
-            size="sm"
-            className="h-7 gap-1 text-destructive hover:text-destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation in render-prop
-            onClick={e => {
-              e.stopPropagation();
-              props.onClick?.(e);
-            }}>
-            <XCircle className="h-3.5 w-3.5" />
-            {t('actions.reject')}
-          </Button>
-        )}
-      />
-      {/* biome-ignore lint/nursery/noJsxPropsBind: stopPropagation on popover */}
-      <PopoverContent className="w-80 p-4" align="end" onClick={e => e.stopPropagation()}>
+      <PopoverTrigger render={renderTrigger} />
+      <PopoverContent className="w-80 p-4" align="end" onClick={stopRowPropagation}>
         <div className="space-y-3">
           <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
           <div className="space-y-1.5">
@@ -114,8 +139,7 @@ function RejectPopover({
             <Textarea
               id={`${reactId}-reject-comment`}
               value={comment}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setComment(e.target.value)}
+              onChange={handleCommentChange}
               placeholder={t('rejectPopover.commentPlaceholder')}
               className="min-h-[80px]"
             />
@@ -124,21 +148,13 @@ function RejectPopover({
             )}
           </div>
           <div className="flex items-center gap-2 justify-end">
-            <Button
-              variant="ghost"
-              size="sm"
-              // biome-ignore lint/nursery/noJsxPropsBind: dismiss handler in popover
-              onClick={() => {
-                setOpen(false);
-                setComment('');
-              }}>
+            <Button variant="ghost" size="sm" onClick={handleDismiss}>
               {t('rejectPopover.dismiss')}
             </Button>
             <Button
               variant="destructive"
               size="sm"
               disabled={comment.length < 10 || isRejecting}
-              // biome-ignore lint/nursery/noJsxPropsBind: local handler in popover
               onClick={handleReject}>
               {t('rejectPopover.confirm')}
             </Button>
@@ -158,31 +174,98 @@ interface ColumnCallbacks {
   isRejecting?: boolean;
 }
 
+const SelectAllHeader = memo(function SelectAllHeader({
+  table,
+  label,
+}: {
+  table: Table<ApprovalQueueRow>;
+  label: string;
+}) {
+  const handleChange = useCallback(
+    (value: boolean) => table.toggleAllPageRowsSelected(!!value),
+    [table],
+  );
+  return (
+    <Checkbox
+      checked={table.getIsAllPageRowsSelected()}
+      indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+      onCheckedChange={handleChange}
+      aria-label={label}
+    />
+  );
+});
+
+const SelectRowCell = memo(function SelectRowCell({
+  row,
+  label,
+}: {
+  row: Row<ApprovalQueueRow>;
+  label: string;
+}) {
+  const handleChange = useCallback((value: boolean) => row.toggleSelected(!!value), [row]);
+  return (
+    <Checkbox checked={row.getIsSelected()} onCheckedChange={handleChange} aria-label={label} />
+  );
+});
+
+function InvoiceLinkCell({ row }: { row: Row<ApprovalQueueRow> }) {
+  const invoice = row.original.invoice;
+  if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
+  return (
+    <Link
+      href={`/invoices/${row.original.approvalFlow.resourceId}`}
+      className="font-mono text-sm text-primary hover:underline"
+      onClick={stopRowPropagation}>
+      {invoice.invoiceNumber}
+    </Link>
+  );
+}
+
+const ApproveActionButton = memo(function ApproveActionButton({
+  stepId,
+  onApprove,
+  disabled,
+  label,
+}: {
+  stepId: string;
+  onApprove: (stepId: string) => void;
+  disabled?: boolean;
+  label: string;
+}) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onApprove(stepId);
+    },
+    [onApprove, stepId],
+  );
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-7 gap-1 text-primary hover:text-primary"
+      disabled={disabled}
+      onClick={handleClick}>
+      <CheckCircle2 className="h-3.5 w-3.5" />
+      {label}
+    </Button>
+  );
+});
+
 export function getColumns(
   t: TranslateFunction,
   callbacks: ColumnCallbacks,
   locale: string = 'en',
 ): ColumnDef<ApprovalQueueRow>[] {
+  const selectAllLabel = t('columns.selectAll');
+  const selectRowLabel = t('columns.selectRow');
+  const approveLabel = t('actions.approve');
+
   return [
     {
       id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t('columns.selectAll')}
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label={t('columns.selectRow')}
-        />
-      ),
+      header: ({ table }) => <SelectAllHeader table={table} label={selectAllLabel} />,
+      cell: ({ row }) => <SelectRowCell row={row} label={selectRowLabel} />,
       enableSorting: false,
       enableHiding: false,
       size: 40,
@@ -191,19 +274,7 @@ export function getColumns(
       id: 'invoiceNumber',
       accessorFn: row => row.invoice?.invoiceNumber ?? '',
       header: t('columns.invoice'),
-      cell: ({ row }) => {
-        const invoice = row.original.invoice;
-        if (!invoice) return <span className="text-muted-foreground">&mdash;</span>;
-        return (
-          <Link
-            href={`/invoices/${row.original.approvalFlow.resourceId}`}
-            className="font-mono text-sm text-primary hover:underline"
-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
-            onClick={e => e.stopPropagation()}>
-            {invoice.invoiceNumber}
-          </Link>
-        );
-      },
+      cell: ({ row }) => <InvoiceLinkCell row={row} />,
       enableHiding: false,
     },
     {
@@ -276,42 +347,48 @@ export function getColumns(
     {
       id: 'actions',
       header: () => <span className="sr-only">{t('columns.actions')}</span>,
-      cell: ({ row }) => {
-        const step = row.original;
-        if (step.status !== 'PENDING') return null;
-
-        return (
-          // biome-ignore lint/a11y/noStaticElementInteractions: onClick only stops propagation to prevent row click
-          <div
-            className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-            role="presentation"
-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
-            onClick={e => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 gap-1 text-primary hover:text-primary"
-              disabled={callbacks.isApproving}
-              // biome-ignore lint/nursery/noJsxPropsBind: column definition
-              onClick={e => {
-                e.stopPropagation();
-                callbacks.onApprove(step.id);
-              }}>
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              {t('actions.approve')}
-            </Button>
-            <RejectPopover
-              stepId={step.id}
-              onReject={callbacks.onReject}
-              t={t}
-              isRejecting={callbacks.isRejecting}
-            />
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <ActionsCell row={row} callbacks={callbacks} t={t} approveLabel={approveLabel} />
+      ),
       enableSorting: false,
       enableHiding: false,
       size: 200,
     },
   ];
+}
+
+function ActionsCell({
+  row,
+  callbacks,
+  t,
+  approveLabel,
+}: {
+  row: Row<ApprovalQueueRow>;
+  callbacks: ColumnCallbacks;
+  t: TranslateFunction;
+  approveLabel: string;
+}) {
+  const step = row.original;
+  if (step.status !== 'PENDING') return null;
+
+  return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: onClick only stops propagation to prevent row click
+    <div
+      className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+      role="presentation"
+      onClick={stopRowPropagation}>
+      <ApproveActionButton
+        stepId={step.id}
+        onApprove={callbacks.onApprove}
+        disabled={callbacks.isApproving}
+        label={approveLabel}
+      />
+      <RejectPopover
+        stepId={step.id}
+        onReject={callbacks.onReject}
+        t={t}
+        isRejecting={callbacks.isRejecting}
+      />
+    </div>
+  );
 }

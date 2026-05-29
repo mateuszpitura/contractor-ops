@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { useCallback } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -41,9 +42,37 @@ export function UpsFieldset({
   const t = useTranslations('Equipment.ups');
   const tCarrier = useTranslations('Equipment.carrier');
 
-  const updateField = (field: keyof DpdAddress, value: string) => {
-    onAddressChange({ ...address, [field]: value });
-  };
+  const updateField = useCallback(
+    (field: keyof DpdAddress, value: string) => {
+      onAddressChange({ ...address, [field]: value });
+    },
+    [address, onAddressChange],
+  );
+
+  const handleStreetChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('street', e.target.value),
+    [updateField],
+  );
+  const handleCityChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('city', e.target.value),
+    [updateField],
+  );
+  const handlePostalCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('postalCode', e.target.value),
+    [updateField],
+  );
+  const handleParcelSizeChange = useCallback(
+    (val: unknown) => {
+      if (val) onParcelSizeChange(val as ParcelSize);
+    },
+    [onParcelSizeChange],
+  );
+  const handleServiceCodeChange = useCallback(
+    (val: unknown) => {
+      if (val) onServiceCodeChange(val as UpsServiceCode);
+    },
+    [onServiceCodeChange],
+  );
 
   return (
     <div className="space-y-4">
@@ -54,8 +83,7 @@ export function UpsFieldset({
           <Input
             placeholder={t('street')}
             value={address.street}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => updateField('street', e.target.value)}
+            onChange={handleStreetChange}
             aria-label={t('street')}
           />
 
@@ -63,15 +91,13 @@ export function UpsFieldset({
             <Input
               placeholder={t('city')}
               value={address.city}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => updateField('city', e.target.value)}
+              onChange={handleCityChange}
               aria-label={t('city')}
             />
             <Input
               placeholder={t('postalCode')}
               value={address.postalCode}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => updateField('postalCode', e.target.value)}
+              onChange={handlePostalCodeChange}
               aria-label={t('postalCode')}
             />
           </div>
@@ -84,8 +110,7 @@ export function UpsFieldset({
         <Label>{tCarrier('parcelSize')}</Label>
         <RadioGroup
           value={parcelSize}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={val => val && onParcelSizeChange(val as ParcelSize)}
+          onValueChange={handleParcelSizeChange}
           className="flex gap-4">
           {(['small', 'medium', 'large'] as const).map(size => (
             <label
@@ -101,10 +126,7 @@ export function UpsFieldset({
 
       <div className="space-y-2">
         <Label>{t('serviceType')}</Label>
-        <Select
-          value={serviceCode}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={val => val && onServiceCodeChange(val as UpsServiceCode)}>
+        <Select value={serviceCode} onValueChange={handleServiceCodeChange}>
           <SelectTrigger className="w-full">
             <SelectValue>
               {(() => {

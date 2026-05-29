@@ -11,6 +11,10 @@ import { Image } from '@unpic/react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
+function handlePrint() {
+  window.print();
+}
+
 export function LabelDisplay({
   label,
   trackingNumber,
@@ -52,8 +56,7 @@ export function LabelDisplay({
         <a href={label.url} download className="text-sm underline">
           {t('shipmentLabel.download')}
         </a>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <button type="button" className="text-sm underline" onClick={() => window.print()}>
+        <button type="button" className="text-sm underline" onClick={handlePrint}>
           {t('shipmentLabel.print')}
         </button>
       </div>

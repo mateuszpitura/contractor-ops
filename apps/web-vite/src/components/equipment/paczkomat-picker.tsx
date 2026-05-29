@@ -94,6 +94,14 @@ export function PaczkomatPicker({
     onOpenChange(false);
   }, [onOpenChange]);
 
+  const handleRetry = useCallback(() => {
+    setIframeError(false);
+    setIframeLoaded(false);
+  }, []);
+
+  const handleIframeLoad = useCallback(() => setIframeLoaded(true), []);
+  const handleIframeError = useCallback(() => setIframeError(true), []);
+
   const iframeSrc = `${GEOWIDGET_ORIGIN}?token=${encodeURIComponent(geowidgetToken)}&language=pl&config=parcelcollect`;
 
   return (
@@ -109,14 +117,7 @@ export function PaczkomatPicker({
               <div className="space-y-2">
                 <MapPin className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">{t('loadError')}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => {
-                    setIframeError(false);
-                    setIframeLoaded(false);
-                  }}>
+                <Button variant="outline" size="sm" onClick={handleRetry}>
                   {t('retry')}
                 </Button>
               </div>
@@ -133,10 +134,8 @@ export function PaczkomatPicker({
                 title={t('paczkomatTitle')}
                 className="h-[400px] w-full rounded-md"
                 allow=""
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onLoad={() => setIframeLoaded(true)}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onError={() => setIframeError(true)}
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
               />
             </div>
           )}

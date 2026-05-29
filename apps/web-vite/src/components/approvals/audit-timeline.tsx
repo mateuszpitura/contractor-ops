@@ -136,14 +136,15 @@ export function AuditTimelineSkeleton() {
 function CommentText({ text, t }: { text: string; t: TranslateFn }) {
   const [expanded, setExpanded] = useState(false);
 
+  const toggleExpanded = useCallback(() => setExpanded(prev => !prev), []);
+
   return (
     <div>
       <p className={cn('text-sm text-foreground', !expanded && 'line-clamp-3')}>{text}</p>
       {text.length > 150 && (
         <button
           type="button"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => setExpanded(prev => !prev)}
+          onClick={toggleExpanded}
           className="mt-0.5 text-[12px] font-medium text-primary hover:underline">
           {expanded ? t('auditTrail.showLess') : t('auditTrail.showMore')}
         </button>

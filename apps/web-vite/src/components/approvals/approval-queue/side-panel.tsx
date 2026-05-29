@@ -27,7 +27,14 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { CheckCircle2, HelpCircle, MoreHorizontal, UserPlus, XCircle } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useState } from 'react';
+
+function stopPropagationClick(e: React.MouseEvent) {
+  e.stopPropagation();
+}
+function stopPropagationKeyDown(e: React.KeyboardEvent) {
+  e.stopPropagation();
+}
 
 import type { useApprovalActions } from '../../../hooks/use-approval-actions.js';
 import { Link, useLocale } from '../../../i18n/navigation.js';
@@ -60,6 +67,56 @@ const statusBadgeColors: Record<string, string> = {
   CANCELLED: 'bg-muted text-muted-foreground',
 };
 
+function ChainStepCircle({
+  order,
+  isCurrent,
+  isPast,
+  stepName,
+}: {
+  order: number;
+  isCurrent: boolean;
+  isPast: boolean;
+  stepName: string;
+}) {
+  let circleClass =
+    'h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors';
+  if (isCurrent) {
+    circleClass += ' bg-primary text-primary-foreground border-primary';
+  } else if (isPast) {
+    circleClass += ' bg-green-500/10 text-green-800 dark:text-green-400 border-green-500/30';
+  } else {
+    circleClass += ' bg-muted text-muted-foreground border-border';
+  }
+
+  const renderTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props} className={circleClass}>
+        {/* biome-ignore lint/nursery/noLeakedRender: order is intentionally rendered as text */}
+        {isPast ? <CheckCircle2 className="h-4 w-4" /> : order}
+      </div>
+    ),
+    [circleClass, isPast, order],
+  );
+
+  return (
+    <div className="flex items-center gap-1">
+      {order > 1 && (
+        <div
+          className={`h-0.5 w-3 ${
+            isPast ? 'bg-green-500' : isCurrent ? 'bg-border' : 'bg-border border-dashed'
+          }`}
+        />
+      )}
+      <Tooltip>
+        <TooltipTrigger render={renderTrigger} />
+        <TooltipContent>
+          {stepName} (Level {order})
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
 function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
   const currentOrder = step.stepOrder;
   const totalSteps = Math.max(currentOrder, 1);
@@ -68,43 +125,14 @@ function MiniChainTracker({ step }: { step: ApprovalQueueRow }) {
     <div className="flex items-center gap-1">
       {Array.from({ length: totalSteps }).map((_, i) => {
         const order = i + 1;
-        const isCurrent = order === currentOrder;
-        const isPast = order < currentOrder;
-
-        let circleClass =
-          'h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium border transition-colors';
-        if (isCurrent) {
-          circleClass += ' bg-primary text-primary-foreground border-primary';
-        } else if (isPast) {
-          circleClass += ' bg-green-500/10 text-green-800 dark:text-green-400 border-green-500/30';
-        } else {
-          circleClass += ' bg-muted text-muted-foreground border-border';
-        }
-
         return (
-          <div key={order} className="flex items-center gap-1">
-            {i > 0 && (
-              <div
-                className={`h-0.5 w-3 ${
-                  isPast ? 'bg-green-500' : isCurrent ? 'bg-border' : 'bg-border border-dashed'
-                }`}
-              />
-            )}
-            <Tooltip>
-              <TooltipTrigger
-                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                render={props => (
-                  <div {...props} className={circleClass}>
-                    {/* biome-ignore lint/nursery/noLeakedRender: order is intentionally rendered as text */}
-                    {isPast ? <CheckCircle2 className="h-4 w-4" /> : order}
-                  </div>
-                )}
-              />
-              <TooltipContent>
-                {step.name} (Level {order})
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <ChainStepCircle
+            key={order}
+            order={order}
+            isCurrent={order === currentOrder}
+            isPast={order < currentOrder}
+            stepName={step.name}
+          />
         );
       })}
     </div>
@@ -219,6 +247,17 @@ function ClarifyOverlay({
   t: LooseTranslator;
 }) {
   const reactId = useId();
+  const handleEscape = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    },
+    [onClose],
+  );
+  const handleCommentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => onCommentChange(e.target.value),
+    [onCommentChange],
+  );
+
   if (!isOpen) return null;
   return (
     <div
@@ -227,17 +266,12 @@ function ClarifyOverlay({
       aria-modal="true"
       aria-label={t('clarifyPopover.heading')}
       onClick={onClose}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-      onKeyDown={(e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') onClose();
-      }}>
+      onKeyDown={handleEscape}>
       <div
         className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
         role="document"
-        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-        onClick={e => e.stopPropagation()}
-        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-        onKeyDown={e => e.stopPropagation()}>
+        onClick={stopPropagationClick}
+        onKeyDown={stopPropagationKeyDown}>
         <h4 className="font-medium text-sm mb-3">{t('clarifyPopover.heading')}</h4>
         <div className="space-y-1.5 mb-3">
           <label
@@ -248,8 +282,7 @@ function ClarifyOverlay({
           <Textarea
             id={`${reactId}-clarify-comment`}
             value={comment}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => onCommentChange(e.target.value)}
+            onChange={handleCommentChange}
             placeholder={t('clarifyPopover.commentPlaceholder')}
             className="min-h-[80px]"
           />
@@ -289,6 +322,21 @@ function DelegateOverlay({
   t: LooseTranslator;
 }) {
   const reactId = useId();
+  const handleEscape = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    },
+    [onClose],
+  );
+  const handleUserIdChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUserIdChange(e.target.value),
+    [onUserIdChange],
+  );
+  const handleNoteChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => onNoteChange(e.target.value),
+    [onNoteChange],
+  );
+
   if (!isOpen) return null;
   return (
     <div
@@ -297,17 +345,12 @@ function DelegateOverlay({
       aria-modal="true"
       aria-label={t('delegatePopover.heading')}
       onClick={onClose}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-      onKeyDown={(e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') onClose();
-      }}>
+      onKeyDown={handleEscape}>
       <div
         className="w-96 rounded-xl bg-background p-4 shadow-lg ring-1 ring-border"
         role="document"
-        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-        onClick={e => e.stopPropagation()}
-        // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-        onKeyDown={e => e.stopPropagation()}>
+        onClick={stopPropagationClick}
+        onKeyDown={stopPropagationKeyDown}>
         <h4 className="font-medium text-sm mb-3">{t('delegatePopover.heading')}</h4>
         <div className="space-y-3 mb-3">
           <div className="space-y-1.5">
@@ -319,8 +362,7 @@ function DelegateOverlay({
             <Input
               id={`${reactId}-delegate-user-id`}
               value={userId}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => onUserIdChange(e.target.value)}
+              onChange={handleUserIdChange}
               placeholder={t('delegatePopover.userPlaceholder')}
             />
           </div>
@@ -333,8 +375,7 @@ function DelegateOverlay({
             <Textarea
               id={`${reactId}-delegate-note`}
               value={note}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => onNoteChange(e.target.value)}
+              onChange={handleNoteChange}
               placeholder={t('delegatePopover.notePlaceholder')}
               className="min-h-[60px]"
             />
@@ -394,6 +435,58 @@ export function ApprovalSidePanelView({
 
   const invoice = step.invoice;
   const isPending = step.status === 'PENDING';
+
+  const handleApprove = useCallback(() => approveAction(), [approveAction]);
+  const handleRejectCommentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectComment(e.target.value),
+    [],
+  );
+  const handleRejectDismiss = useCallback(() => {
+    setRejectOpen(false);
+    setRejectComment('');
+  }, []);
+  const handleRejectConfirm = useCallback(
+    () => rejectAction(rejectComment),
+    [rejectAction, rejectComment],
+  );
+  const handleOpenClarify = useCallback(() => setClarifyOpen(true), []);
+  const handleOpenDelegate = useCallback(() => setDelegateOpen(true), []);
+  const handleClarifyClose = useCallback(() => {
+    setClarifyOpen(false);
+    setClarifyComment('');
+  }, []);
+  const handleClarifySubmit = useCallback(
+    () => clarifyAction(clarifyComment),
+    [clarifyAction, clarifyComment],
+  );
+  const handleDelegateClose = useCallback(() => {
+    setDelegateOpen(false);
+    setDelegateUserId('');
+    setDelegateNote('');
+  }, []);
+  const handleDelegateSubmit = useCallback(
+    () => delegateAction(delegateUserId, delegateNote),
+    [delegateAction, delegateUserId, delegateNote],
+  );
+
+  const renderRejectTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="destructive" className="flex-1">
+        <XCircle className="me-1.5 h-4 w-4" />
+        {t('sidePanel.reject')}
+      </Button>
+    ),
+    [t],
+  );
+  const renderMoreTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="sm" className="w-full">
+        <MoreHorizontal className="me-1.5 h-4 w-4" />
+        {t('sidePanel.more')}
+      </Button>
+    ),
+    [t],
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -482,22 +575,13 @@ export function ApprovalSidePanelView({
         {isPending && (
           <div className="border-t p-4 space-y-2">
             <div className="flex items-center gap-2">
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button className="flex-1" onClick={() => approveAction()} disabled={actionsPending}>
+              <Button className="flex-1" onClick={handleApprove} disabled={actionsPending}>
                 <CheckCircle2 className="me-1.5 h-4 w-4" />
                 {t('sidePanel.approve')}
               </Button>
 
               <Popover open={rejectOpen} onOpenChange={setRejectOpen}>
-                <PopoverTrigger
-                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                  render={props => (
-                    <Button {...props} variant="destructive" className="flex-1">
-                      <XCircle className="me-1.5 h-4 w-4" />
-                      {t('sidePanel.reject')}
-                    </Button>
-                  )}
-                />
+                <PopoverTrigger render={renderRejectTrigger} />
                 <PopoverContent className="w-80 p-4" align="end">
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm">{t('rejectPopover.heading')}</h4>
@@ -510,8 +594,7 @@ export function ApprovalSidePanelView({
                       <Textarea
                         id={`${reactId}-side-reject-comment`}
                         value={rejectComment}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={e => setRejectComment(e.target.value)}
+                        onChange={handleRejectCommentChange}
                         placeholder={t('rejectPopover.commentPlaceholder')}
                         className="min-h-[80px]"
                       />
@@ -522,22 +605,14 @@ export function ApprovalSidePanelView({
                       )}
                     </div>
                     <div className="flex items-center gap-2 justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() => {
-                          setRejectOpen(false);
-                          setRejectComment('');
-                        }}>
+                      <Button variant="ghost" size="sm" onClick={handleRejectDismiss}>
                         {t('rejectPopover.dismiss')}
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
                         disabled={rejectComment.length < 10 || actionsPending}
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() => rejectAction(rejectComment)}>
+                        onClick={handleRejectConfirm}>
                         {t('rejectPopover.confirm')}
                       </Button>
                     </div>
@@ -547,23 +622,13 @@ export function ApprovalSidePanelView({
             </div>
 
             <DropdownMenu>
-              <DropdownMenuTrigger
-                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                render={props => (
-                  <Button {...props} variant="outline" size="sm" className="w-full">
-                    <MoreHorizontal className="me-1.5 h-4 w-4" />
-                    {t('sidePanel.more')}
-                  </Button>
-                )}
-              />
+              <DropdownMenuTrigger render={renderMoreTrigger} />
               <DropdownMenuContent align="end" className="w-56">
-                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <DropdownMenuItem onClick={() => setClarifyOpen(true)}>
+                <DropdownMenuItem onClick={handleOpenClarify}>
                   <HelpCircle className="me-2 h-4 w-4" />
                   {t('sidePanel.requestClarification')}
                 </DropdownMenuItem>
-                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <DropdownMenuItem onClick={() => setDelegateOpen(true)}>
+                <DropdownMenuItem onClick={handleOpenDelegate}>
                   <UserPlus className="me-2 h-4 w-4" />
                   {t('sidePanel.delegateApproval')}
                 </DropdownMenuItem>
@@ -577,13 +642,8 @@ export function ApprovalSidePanelView({
         open={clarifyOpen}
         comment={clarifyComment}
         onCommentChange={setClarifyComment}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onClose={() => {
-          setClarifyOpen(false);
-          setClarifyComment('');
-        }}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onSubmit={() => clarifyAction(clarifyComment)}
+        onClose={handleClarifyClose}
+        onSubmit={handleClarifySubmit}
         isPending={actionsPending}
         t={t}
       />
@@ -594,14 +654,8 @@ export function ApprovalSidePanelView({
         note={delegateNote}
         onUserIdChange={setDelegateUserId}
         onNoteChange={setDelegateNote}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onClose={() => {
-          setDelegateOpen(false);
-          setDelegateUserId('');
-          setDelegateNote('');
-        }}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onSubmit={() => delegateAction(delegateUserId, delegateNote)}
+        onClose={handleDelegateClose}
+        onSubmit={handleDelegateSubmit}
         isPending={actionsPending}
         t={t}
       />

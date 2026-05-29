@@ -51,6 +51,16 @@ export function ApprovalBulkActions({
     }
   }, [bulkActions, selectedIds, rejectComment]);
 
+  const handleOpenReject = useCallback(() => setRejectOpen(true), []);
+  const handleRejectCommentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectComment(e.target.value),
+    [],
+  );
+  const handleDismissReject = useCallback(() => {
+    setRejectOpen(false);
+    setRejectComment('');
+  }, []);
+
   const count = selectedIds.length;
   if (count === 0) return null;
 
@@ -77,8 +87,7 @@ export function ApprovalBulkActions({
           variant="outline"
           size="sm"
           className="h-8 gap-1.5 text-destructive hover:text-destructive"
-          // biome-ignore lint/nursery/noJsxPropsBind: local handler in render
-          onClick={() => setRejectOpen(true)}>
+          onClick={handleOpenReject}>
           <XCircle className={iconSize.sm} />
           {t('bulk.reject', { count })}
         </Button>
@@ -103,8 +112,7 @@ export function ApprovalBulkActions({
             <Textarea
               id={`${reactId}-bulk-reject-comment`}
               value={rejectComment}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setRejectComment(e.target.value)}
+              onChange={handleRejectCommentChange}
               placeholder={t('bulkRejectDialog.commentPlaceholder')}
               className="min-h-[100px]"
             />
@@ -113,13 +121,7 @@ export function ApprovalBulkActions({
             )}
           </div>
           <DialogFooter>
-            <Button
-              variant="ghost"
-              // biome-ignore lint/nursery/noJsxPropsBind: dismiss handler in dialog
-              onClick={() => {
-                setRejectOpen(false);
-                setRejectComment('');
-              }}>
+            <Button variant="ghost" onClick={handleDismissReject}>
               {t('bulkRejectDialog.dismiss')}
             </Button>
             <Button

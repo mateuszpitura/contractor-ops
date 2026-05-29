@@ -1,6 +1,7 @@
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -29,9 +30,31 @@ export function DpdFieldset({
   const t = useTranslations('Equipment.dpd');
   const tCarrier = useTranslations('Equipment.carrier');
 
-  const updateField = (field: keyof DpdAddress, value: string) => {
-    onAddressChange({ ...address, [field]: value });
-  };
+  const updateField = useCallback(
+    (field: keyof DpdAddress, value: string) => {
+      onAddressChange({ ...address, [field]: value });
+    },
+    [address, onAddressChange],
+  );
+
+  const handleStreetChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('street', e.target.value),
+    [updateField],
+  );
+  const handleCityChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('city', e.target.value),
+    [updateField],
+  );
+  const handlePostalCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => updateField('postalCode', e.target.value),
+    [updateField],
+  );
+  const handleParcelSizeChange = useCallback(
+    (val: unknown) => {
+      if (val) onParcelSizeChange(val as ParcelSize);
+    },
+    [onParcelSizeChange],
+  );
 
   return (
     <div className="space-y-4">
@@ -42,8 +65,7 @@ export function DpdFieldset({
           <Input
             placeholder={t('street')}
             value={address.street}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => updateField('street', e.target.value)}
+            onChange={handleStreetChange}
             aria-label={t('street')}
           />
 
@@ -51,15 +73,13 @@ export function DpdFieldset({
             <Input
               placeholder={t('city')}
               value={address.city}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => updateField('city', e.target.value)}
+              onChange={handleCityChange}
               aria-label={t('city')}
             />
             <Input
               placeholder={t('postalCode')}
               value={address.postalCode}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => updateField('postalCode', e.target.value)}
+              onChange={handlePostalCodeChange}
               aria-label={t('postalCode')}
             />
           </div>
@@ -72,8 +92,7 @@ export function DpdFieldset({
         <Label>{tCarrier('parcelSize')}</Label>
         <RadioGroup
           value={parcelSize}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={val => val && onParcelSizeChange(val as ParcelSize)}
+          onValueChange={handleParcelSizeChange}
           className="flex gap-4">
           {(['small', 'medium', 'large'] as const).map(size => (
             <label

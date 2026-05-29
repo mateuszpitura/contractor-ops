@@ -19,7 +19,7 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useId } from 'react';
+import { useCallback, useEffect, useId } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -97,6 +97,20 @@ export function ShipmentFormView({
 
   const watchedCarrier = form.watch('carrier');
 
+  const handleDirectionChange = useCallback(
+    (val: unknown) => {
+      if (val) form.setValue('direction', val as 'OUTBOUND' | 'RETURN');
+    },
+    [form],
+  );
+  const handleCarrierChange = useCallback(
+    (val: unknown) => {
+      if (val) form.setValue('carrier', val as string);
+    },
+    [form],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -108,12 +122,7 @@ export function ShipmentFormView({
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>{t('shipment.direction')}</Label>
-            <Select
-              value={form.watch('direction')}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val =>
-                val && form.setValue('direction', val as 'OUTBOUND' | 'RETURN')
-              }>
+            <Select value={form.watch('direction')} onValueChange={handleDirectionChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -126,10 +135,7 @@ export function ShipmentFormView({
 
           <div className="space-y-2">
             <Label>{t('shipment.carrier')}</Label>
-            <Select
-              value={watchedCarrier}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val => val && form.setValue('carrier', val)}>
+            <Select value={watchedCarrier} onValueChange={handleCarrierChange}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -178,12 +184,7 @@ export function ShipmentFormView({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              // biome-ignore lint/nursery/noJsxPropsBind: dialog state handler
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending}>
               {t('form.cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
