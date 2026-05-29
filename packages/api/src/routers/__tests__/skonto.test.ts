@@ -315,7 +315,7 @@ describe('skontoRouter', () => {
     it('throws NOT_FOUND when invoice does not belong to tenant', async () => {
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(null);
 
-      await expect(caller.upsertForInvoice(input)).rejects.toThrow('Invoice not found');
+      await expect(caller.upsertForInvoice(input)).rejects.toThrow('invoiceNotFound');
     });
 
     it('rejects when discountDays equals netDays', async () => {
@@ -435,9 +435,7 @@ describe('skontoRouter', () => {
     it('throws NOT_FOUND when billing profile does not belong to tenant', async () => {
       mockPrisma.contractorBillingProfile.findFirst.mockResolvedValueOnce(null);
 
-      await expect(caller.upsertForBillingProfile(input)).rejects.toThrow(
-        'Billing profile not found',
-      );
+      await expect(caller.upsertForBillingProfile(input)).rejects.toThrow('billingProfileNotFound');
     });
 
     it('rejects when discountDays equals netDays', async () => {
@@ -676,7 +674,7 @@ describe('skontoRouter', () => {
       mockPrisma.invoice.findFirst.mockResolvedValueOnce(null);
 
       await expect(caller.evaluateForInvoice({ invoiceId: 'nonexistent' })).rejects.toThrow(
-        'Invoice not found',
+        'invoiceNotFound',
       );
     });
   });
