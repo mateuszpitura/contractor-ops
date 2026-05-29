@@ -4191,20 +4191,10 @@
   },
   "Notifications": {
     "popover": {
-      "title": "Powiadomienia",
-      "markAllRead": "Oznacz wszystkie jako przeczytane",
-      "viewAll": "Zobacz wszystkie powiadomienia",
-      "empty": "Brak powiadomień"
+      "title": "Powiadomienia"
     },
     "center": {
       "pageTitle": "Powiadomienia",
-      "filterAll": "Wszystkie",
-      "filterApprovals": "Akceptacje",
-      "filterTasks": "Zadania",
-      "filterContracts": "Umowy",
-      "filterInvoices": "Faktury",
-      "unreadOnly": "Tylko nieprzeczytane",
-      "markAllRead": "Oznacz wszystkie jako przeczytane",
       "emptyHeading": "Brak powiadomień",
       "emptyBody": "Powiadomienia pojawią się tutaj, gdy będą prośby o akceptacje, przypisania zadań lub ważne aktualizacje."
     },

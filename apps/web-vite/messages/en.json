@@ -4191,20 +4191,10 @@
   },
   "Notifications": {
     "popover": {
-      "title": "Notifications",
-      "markAllRead": "Mark all read",
-      "viewAll": "View all notifications",
-      "empty": "No notifications"
+      "title": "Notifications"
     },
     "center": {
       "pageTitle": "Notifications",
-      "filterAll": "All",
-      "filterApprovals": "Approvals",
-      "filterTasks": "Tasks",
-      "filterContracts": "Contracts",
-      "filterInvoices": "Invoices",
-      "unreadOnly": "Unread only",
-      "markAllRead": "Mark all read",
       "emptyHeading": "No notifications yet",
       "emptyBody": "You'll see notifications here when there are approval requests, task assignments, or important updates."
     },

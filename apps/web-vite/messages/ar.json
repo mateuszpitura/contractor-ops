@@ -4191,20 +4191,10 @@
   },
   "Notifications": {
     "popover": {
-      "title": "الإشعارات",
-      "markAllRead": "وضع علامة قراءة على الكل",
-      "viewAll": "عرض all notifications",
-      "empty": "لا توجد إشعارات"
+      "title": "الإشعارات"
     },
     "center": {
       "pageTitle": "الإشعارات",
-      "filterAll": "الكل",
-      "filterApprovals": "الموافقات",
-      "filterTasks": "المهام",
-      "filterContracts": "العقود",
-      "filterInvoices": "الفواتير",
-      "unreadOnly": "غير المقروءة فقط",
-      "markAllRead": "وضع علامة قراءة على الكل",
       "emptyHeading": "لا يوجد notifications بعد",
       "emptyBody": "ستظهر الإشعارات هنا عند ورود طلبات موافقة أو إسناد مهام أو تحديثات مهمة."
     },

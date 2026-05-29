@@ -4191,20 +4191,10 @@
   },
   "Notifications": {
     "popover": {
-      "title": "Benachrichtigungen",
-      "markAllRead": "Alle als gelesen markieren",
-      "viewAll": "Alle Benachrichtigungen anzeigen",
-      "empty": "Keine Benachrichtigungen"
+      "title": "Benachrichtigungen"
     },
     "center": {
       "pageTitle": "Benachrichtigungen",
-      "filterAll": "Alle",
-      "filterApprovals": "Freigaben",
-      "filterTasks": "Aufgaben",
-      "filterContracts": "Verträge",
-      "filterInvoices": "Rechnungen",
-      "unreadOnly": "Nur ungelesene",
-      "markAllRead": "Alle als gelesen markieren",
       "emptyHeading": "Noch keine Benachrichtigungen",
       "emptyBody": "Hier erscheinen Benachrichtigungen, wenn Freigabeanfragen, Aufgabenzuweisungen oder wichtige Aktualisierungen vorliegen."
     },
