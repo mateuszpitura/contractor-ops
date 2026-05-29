@@ -1,7 +1,8 @@
 // @ts-nocheck — vendored from reui registry; types relaxed pending upstream verbatimModuleSyntax fix
 
-import type { Table } from '@tanstack/react-table';
+import type { Column, Table } from '@tanstack/react-table';
 import type { ReactElement } from 'react';
+import { useCallback } from 'react';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -11,6 +12,25 @@ import {
   DropdownMenuTrigger,
 } from '../../shadcn/dropdown-menu.js';
 import { getColumnHeaderLabel } from './data-grid.js';
+
+const preventSelectDefault = (event: Event) => event.preventDefault();
+
+function DataGridColumnVisibilityItem<TData>({ column }: { column: Column<TData, unknown> }) {
+  const handleCheckedChange = useCallback(
+    (value: boolean) => column.toggleVisibility(!!value),
+    [column],
+  );
+
+  return (
+    <DropdownMenuCheckboxItem
+      className="capitalize"
+      checked={column.getIsVisible()}
+      onSelect={preventSelectDefault}
+      onCheckedChange={handleCheckedChange}>
+      {getColumnHeaderLabel(column)}
+    </DropdownMenuCheckboxItem>
+  );
+}
 
 function DataGridColumnVisibility<TData>({
   table,
@@ -28,18 +48,9 @@ function DataGridColumnVisibility<TData>({
           {table
             .getAllColumns()
             .filter(column => column.getCanHide())
-            .map(column => {
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onSelect={event => event.preventDefault()}
-                  onCheckedChange={value => column.toggleVisibility(!!value)}>
-                  {getColumnHeaderLabel(column)}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
+            .map(column => (
+              <DataGridColumnVisibilityItem key={column.id} column={column} />
+            ))}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

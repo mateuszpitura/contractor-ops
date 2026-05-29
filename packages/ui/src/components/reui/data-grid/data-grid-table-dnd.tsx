@@ -16,7 +16,7 @@ import type { Cell, Header, HeaderGroup, Row } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
 import { GripVerticalIcon } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Fragment, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Button } from '../../shadcn/button.js';
 import { useDataGrid } from './data-grid.js';
 import {
@@ -167,17 +167,24 @@ function DataGridTableDnd<TData>({
     };
   };
 
+  const handleDragCancel = useCallback(() => setIsDraggingColumn(false), []);
+  const handleDragEndInternal = useCallback(
+    (event: DragEndEvent) => {
+      setIsDraggingColumn(false);
+      handleDragEnd(event);
+    },
+    [handleDragEnd],
+  );
+  const handleDragStart = useCallback(() => setIsDraggingColumn(true), []);
+
   return (
     <DndContext
       collisionDetection={closestCenter}
       id={useId()}
       modifiers={[restrictToTableBounds]}
-      onDragCancel={() => setIsDraggingColumn(false)}
-      onDragEnd={event => {
-        setIsDraggingColumn(false);
-        handleDragEnd(event);
-      }}
-      onDragStart={() => setIsDraggingColumn(true)}
+      onDragCancel={handleDragCancel}
+      onDragEnd={handleDragEndInternal}
+      onDragStart={handleDragStart}
       sensors={sensors}>
       <DataGridTableViewport
         viewportRef={containerRef}

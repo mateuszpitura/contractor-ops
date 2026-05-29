@@ -12,6 +12,7 @@ import type {
   Ref,
 } from 'react';
 import { Fragment, memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { shouldIgnoreRowClick } from '../../../lib/row-click.js';
 import { cn } from '../../../lib/utils.js';
 import { Checkbox } from '../../shadcn/checkbox.js';
 import { Spinner } from '../../shadcn/spinner.js';
@@ -744,17 +745,28 @@ function DataGridTableBodyRow<TData>({
 }) {
   const { props, table } = useDataGrid();
   const isRowPinned = row.getIsPinned();
+  const handleRowRef = useCallback(
+    (node: HTMLTableRowElement | null) => {
+      assignRef(rowRef, node);
+      assignRef(dndRef, node);
+    },
+    [rowRef, dndRef],
+  );
+  const handleRowClick = useCallback(
+    (event: ReactMouseEvent<HTMLTableRowElement>) => {
+      if (shouldIgnoreRowClick(event)) return;
+      props.onRowClick?.(row.original);
+    },
+    [props, row.original],
+  );
 
   return (
     <tr
-      ref={node => {
-        assignRef(rowRef, node);
-        assignRef(dndRef, node);
-      }}
+      ref={handleRowRef}
       data-state={table.options.enableRowSelection && row.getIsSelected() ? 'selected' : undefined}
       data-row-pinned={isRowPinned || undefined}
       data-row-pinned-boundary={pinnedBoundary}
-      onClick={() => props.onRowClick?.(row.original)}
+      onClick={handleRowClick}
       className={cn(
         'hover:bg-muted/40 data-[state=selected]:bg-muted/50',
         props.onRowClick && 'cursor-pointer',
@@ -890,18 +902,19 @@ function DataGridTableLoader() {
 
 function DataGridTableRowPin<TData>({ row }: { row: Row<TData> }) {
   const isPinned = row.getIsPinned();
+  const handleTogglePin = useCallback(() => {
+    if (isPinned) {
+      row.pin(false);
+    } else {
+      row.pin('top');
+    }
+  }, [isPinned, row]);
 
   return (
     <button
       type="button"
       aria-label={isPinned ? 'Unpin row' : 'Pin row'}
-      onClick={() => {
-        if (isPinned) {
-          row.pin(false);
-        } else {
-          row.pin('top');
-        }
-      }}
+      onClick={handleTogglePin}
       className={cn(
         'text-muted-foreground hover:text-foreground inline-flex size-7 items-center justify-center rounded-md transition-colors',
         isPinned && 'text-primary hover:text-primary/80',
@@ -936,6 +949,8 @@ function DataGridTableRowPin<TData>({ row }: { row: Row<TData> }) {
 }
 
 function DataGridTableRowSelect<TData>({ row }: { row: Row<TData> }) {
+  const handleCheckedChange = useCallback((value: boolean) => row.toggleSelected(!!value), [row]);
+
   return (
     <>
       <div
@@ -945,7 +960,7 @@ function DataGridTableRowSelect<TData>({ row }: { row: Row<TData> }) {
         )}></div>
       <Checkbox
         checked={row.getIsSelected()}
-        onCheckedChange={value => row.toggleSelected(!!value)}
+        onCheckedChange={handleCheckedChange}
         aria-label="Select row"
         className="align-[inherit]"
       />
@@ -958,12 +973,16 @@ function DataGridTableRowSelectAll() {
 
   const isAllSelected = table.getIsAllPageRowsSelected();
   const isSomeSelected = table.getIsSomePageRowsSelected();
+  const handleCheckedChange = useCallback(
+    (value: boolean) => table.toggleAllPageRowsSelected(!!value),
+    [table],
+  );
 
   return (
     <Checkbox
       checked={isSomeSelected && !isAllSelected ? 'indeterminate' : isAllSelected}
       disabled={isLoading || recordCount === 0}
-      onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+      onCheckedChange={handleCheckedChange}
       aria-label="Select all"
       className="align-[inherit]"
     />

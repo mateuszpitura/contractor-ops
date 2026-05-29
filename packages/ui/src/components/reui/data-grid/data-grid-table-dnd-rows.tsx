@@ -18,7 +18,16 @@ import type { Cell, HeaderGroup, Row } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
 import { GripHorizontalIcon } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { cn } from '../../../lib/utils.js';
 import { Button } from '../../shadcn/button.js';
 import { useDataGrid } from './data-grid.js';
@@ -169,17 +178,24 @@ function DataGridTableDndRows<TData>({
     return [restrictToVerticalAxis, restrictToTableContainer];
   }, []);
 
+  const handleDragCancel = useCallback(() => setIsDraggingRow(false), []);
+  const handleDragEndInternal = useCallback(
+    (event: DragEndEvent) => {
+      setIsDraggingRow(false);
+      handleDragEnd(event);
+    },
+    [handleDragEnd],
+  );
+  const handleDragStart = useCallback(() => setIsDraggingRow(true), []);
+
   return (
     <DndContext
       id={useId()}
       collisionDetection={closestCenter}
       modifiers={modifiers}
-      onDragCancel={() => setIsDraggingRow(false)}
-      onDragEnd={event => {
-        setIsDraggingRow(false);
-        handleDragEnd(event);
-      }}
-      onDragStart={() => setIsDraggingRow(true)}
+      onDragCancel={handleDragCancel}
+      onDragEnd={handleDragEndInternal}
+      onDragStart={handleDragStart}
       sensors={sensors}>
       <DataGridTableViewport
         viewportRef={tableContainerRef}

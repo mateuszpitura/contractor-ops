@@ -219,7 +219,7 @@ function DataGridScrollArea({
     };
   }, [clearDragState, resetMetrics, syncCustomVerticalScrollbar, usesCustomVerticalScrollbar]);
 
-  const scrollToThumbOffset = (nextThumbTop: number) => {
+  const scrollToThumbOffset = useCallback((nextThumbTop: number) => {
     const viewport = viewportRef.current;
     const { thumbHeight, trackHeight } = metricsRef.current;
 
@@ -235,9 +235,9 @@ function DataGridScrollArea({
 
     const ratio = clamp(nextThumbTop, 0, maxThumbTop) / maxThumbTop;
     viewport.scrollTop = ratio * maxScroll;
-  };
+  }, []);
 
-  const handleThumbPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+  const handleThumbPointerDown = useCallback((event: PointerEvent<HTMLDivElement>) => {
     const viewport = viewportRef.current;
 
     if (!viewport) return;
@@ -254,9 +254,9 @@ function DataGridScrollArea({
 
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
-  };
+  }, []);
 
-  const handleThumbPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handleThumbPointerMove = useCallback((event: PointerEvent<HTMLDivElement>) => {
     const viewport = viewportRef.current;
     const dragState = dragRef.current;
     const { thumbHeight, trackHeight } = metricsRef.current;
@@ -274,26 +274,32 @@ function DataGridScrollArea({
     const nextScrollTop = dragState.startScrollTop + (deltaY / maxThumbTop) * maxScroll;
 
     viewport.scrollTop = clamp(nextScrollTop, 0, maxScroll);
-  };
+  }, []);
 
-  const handleThumbPointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragRef.current?.pointerId !== event.pointerId) return;
-    clearDragState();
-  };
+  const handleThumbPointerUp = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (dragRef.current?.pointerId !== event.pointerId) return;
+      clearDragState();
+    },
+    [clearDragState],
+  );
 
-  const handleTrackPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    const { thumbHeight } = metricsRef.current;
+  const handleTrackPointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const { thumbHeight } = metricsRef.current;
 
-    if (event.target !== event.currentTarget) return;
+      if (event.target !== event.currentTarget) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+      event.preventDefault();
+      event.stopPropagation();
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const offsetY = event.clientY - rect.top - thumbHeight / 2;
+      const rect = event.currentTarget.getBoundingClientRect();
+      const offsetY = event.clientY - rect.top - thumbHeight / 2;
 
-    scrollToThumbOffset(offsetY);
-  };
+      scrollToThumbOffset(offsetY);
+    },
+    [scrollToThumbOffset],
+  );
 
   return (
     <div ref={containerRef} className="relative">

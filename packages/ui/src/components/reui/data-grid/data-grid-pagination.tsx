@@ -1,9 +1,11 @@
 // @ts-nocheck — vendored from reui registry; types relaxed pending upstream verbatimModuleSyntax fix
 'use client';
 
+import type { Table } from '@tanstack/react-table';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import type React from 'react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { cn } from '../../../lib/utils.js';
 import { Button } from '../../shadcn/button.js';
@@ -16,6 +18,35 @@ import {
 } from '../../shadcn/select.js';
 import { Skeleton } from '../../shadcn/skeleton.js';
 import { useDataGrid } from './data-grid.js';
+
+function DataGridPaginationPageButton({
+  pageIndex,
+  table,
+  targetIndex,
+  className,
+}: {
+  pageIndex: number;
+  table: Table<unknown>;
+  targetIndex: number;
+  className: string;
+}) {
+  const isActive = pageIndex === targetIndex;
+  const handleClick = useCallback(() => {
+    if (!isActive) table.setPageIndex(targetIndex);
+  }, [isActive, table, targetIndex]);
+
+  return (
+    <Button
+      size="icon-sm"
+      variant="ghost"
+      className={cn(className, 'text-muted-foreground', {
+        'bg-accent text-accent-foreground': isActive,
+      })}
+      onClick={handleClick}>
+      {targetIndex + 1}
+    </Button>
+  );
+}
 
 interface DataGridPaginationProps {
   sizes?: number[];
@@ -77,25 +108,33 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
   const currentGroupStart = Math.floor(pageIndex / paginationMoreLimit) * paginationMoreLimit;
   const currentGroupEnd = Math.min(currentGroupStart + paginationMoreLimit, pageCount);
 
+  const handleEllipsisPrev = useCallback(
+    () => table.setPageIndex(currentGroupStart - 1),
+    [currentGroupStart, table],
+  );
+  const handleEllipsisNext = useCallback(
+    () => table.setPageIndex(currentGroupEnd),
+    [currentGroupEnd, table],
+  );
+  const handlePageSizeChange = useCallback(
+    (value: string) => table.setPageSize(Number(value)),
+    [table],
+  );
+  const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
+  const handleNextPage = useCallback(() => table.nextPage(), [table]);
+
   // Render page buttons based on the current group
   const renderPageButtons = () => {
     const buttons: ReactNode[] = [];
     for (let i = currentGroupStart; i < currentGroupEnd; i++) {
       buttons.push(
-        <Button
+        <DataGridPaginationPageButton
           key={i}
-          size="icon-sm"
-          variant="ghost"
-          className={cn(btnBaseClasses, 'text-muted-foreground', {
-            'bg-accent text-accent-foreground': pageIndex === i,
-          })}
-          onClick={() => {
-            if (pageIndex !== i) {
-              table.setPageIndex(i);
-            }
-          }}>
-          {i + 1}
-        </Button>,
+          pageIndex={pageIndex}
+          table={table}
+          targetIndex={i}
+          className={btnBaseClasses}
+        />,
       );
     }
     return buttons;
@@ -109,7 +148,7 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
           size="icon-sm"
           className={btnBaseClasses}
           variant="ghost"
-          onClick={() => table.setPageIndex(currentGroupStart - 1)}>
+          onClick={handleEllipsisPrev}>
           {mergedProps.ellipsisText}
         </Button>
       );
@@ -125,7 +164,7 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
           className={btnBaseClasses}
           variant="ghost"
           size="icon-sm"
-          onClick={() => table.setPageIndex(currentGroupEnd)}>
+          onClick={handleEllipsisNext}>
           {mergedProps.ellipsisText}
         </Button>
       );
@@ -146,12 +185,7 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
         ) : (
           <>
             <div className="text-muted-foreground text-sm">{mergedProps.rowsPerPageLabel}</div>
-            <Select
-              value={`${pageSize}`}
-              onValueChange={value => {
-                const newPageSize = Number(value);
-                table.setPageSize(newPageSize);
-              }}>
+            <Select value={`${pageSize}`} onValueChange={handlePageSizeChange}>
               <SelectTrigger className="w-14" size="sm">
                 <SelectValue />
               </SelectTrigger>
@@ -180,7 +214,7 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
                   size="icon-sm"
                   variant="ghost"
                   className={btnArrowClasses}
-                  onClick={() => table.previousPage()}
+                  onClick={handlePreviousPage}
                   disabled={!table.getCanPreviousPage()}>
                   <span className="sr-only">{mergedProps.previousPageLabel}</span>
                   <ChevronLeftIcon className="size-4" />
@@ -196,7 +230,7 @@ function DataGridPagination(props: DataGridPaginationProps): React.JSX.Element {
                   size="icon-sm"
                   variant="ghost"
                   className={btnArrowClasses}
-                  onClick={() => table.nextPage()}
+                  onClick={handleNextPage}
                   disabled={!table.getCanNextPage()}>
                   <span className="sr-only">{mergedProps.nextPageLabel}</span>
                   <ChevronRightIcon className="size-4" />
