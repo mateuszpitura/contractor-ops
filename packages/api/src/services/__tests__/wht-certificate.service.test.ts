@@ -111,7 +111,7 @@ describe('createWhtCertificate', () => {
         paymentRunItemId: 'nonexistent',
         generatedByUserId: USER_ID,
       }),
-    ).rejects.toThrow('Payment run item not found');
+    ).rejects.toThrow('paymentRunItemNotFound');
   });
 
   it('throws NOT_FOUND when item belongs to different organization', async () => {
@@ -125,7 +125,7 @@ describe('createWhtCertificate', () => {
         paymentRunItemId: ITEM_ID,
         generatedByUserId: USER_ID,
       }),
-    ).rejects.toThrow('Payment run item not found');
+    ).rejects.toThrow('paymentRunItemNotFound');
   });
 
   it('throws BAD_REQUEST when whtAmountMinor is zero', async () => {
@@ -139,7 +139,7 @@ describe('createWhtCertificate', () => {
         paymentRunItemId: ITEM_ID,
         generatedByUserId: USER_ID,
       }),
-    ).rejects.toThrow('No WHT applicable to this payment item');
+    ).rejects.toThrow('whtNotApplicable');
   });
 
   it('throws BAD_REQUEST when whtAmountMinor is null', async () => {
@@ -153,7 +153,7 @@ describe('createWhtCertificate', () => {
         paymentRunItemId: ITEM_ID,
         generatedByUserId: USER_ID,
       }),
-    ).rejects.toThrow('No WHT applicable to this payment item');
+    ).rejects.toThrow('whtNotApplicable');
   });
 
   it('uses amountMinor as grossAmountMinor fallback when grossAmountMinor is null', async () => {
