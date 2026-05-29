@@ -994,7 +994,8 @@
     "pagination": {
       "page": "الصفحة {page} من {pageCount}",
       "previous": "السابق",
-      "next": "التالي"
+      "next": "التالي",
+      "rowsPerPage": "صفوف لكل صفحة"
     },
     "clearDates": "مسح التواريخ",
     "filterFrom": "من {date}",
@@ -2694,7 +2695,9 @@
         "type": "النوع",
         "status": "الحالة",
         "assignee": "المكلف",
-        "actions": "الإجراءات"
+        "actions": "الإجراءات",
+        "selectAll": "تحديد الكل",
+        "selectRow": "تحديد الصف"
       },
       "filters": {
         "search": "البحث عن equipment...",
@@ -2845,6 +2848,21 @@
     "error": {
       "loadFailed": "تعذّر تحميل المعدّات. تحقّق من اتصالك وأعد المحاولة.",
       "actionFailed": "تعذر complete the action. يرجى المحاولة مجددًا."
+    },
+    "bulkActions": {
+      "selected": "{count} محدد",
+      "exportCsv": "تصدير CSV",
+      "unassign": "إلغاء الإسناد",
+      "retire": "إخراج من الخدمة",
+      "cancel": "إلغاء",
+      "retireConfirmTitle": "إخراج {count, plural, zero {# عناصر} one {عنصر واحد} two {عنصرين} few {# عناصر} many {# عنصراً} other {# عنصر}} من الخدمة؟",
+      "retireConfirmBody": "ستُوضع علامة مُخرَجة من الخدمة على العناصر المحددة. لن تظهر في العروض الافتراضية ولا يمكن إسنادها أو شحنها بعد ذلك. لا يمكن التراجع عن هذا الإجراء.",
+      "retireCta": "إخراج {count, plural, zero {# عناصر} one {عنصر واحد} two {عنصرين} few {# عناصر} many {# عنصراً} other {# عنصر}} من الخدمة",
+      "unassignConfirmTitle": "إلغاء إسناد {count, plural, zero {# عناصر} one {عنصر واحد} two {عنصرين} few {# عناصر} many {# عنصراً} other {# عنصر}}؟",
+      "unassignConfirmBody": "ستُزال كل العناصر المحددة من المقاول الحالي. سيتم تخطي العناصر غير المُسنَدة.",
+      "unassignCta": "إلغاء إسناد {count, plural, zero {# عناصر} one {عنصر واحد} two {عنصرين} few {# عناصر} many {# عنصراً} other {# عنصر}}",
+      "exported": "تم تصدير {count, plural, zero {# عناصر} one {عنصر واحد} two {عنصرين} few {# عناصر} many {# عنصراً} other {# عنصر}}",
+      "partial": "اكتمل {ok} من {total} — تعذّر تنفيذ بعض الإجراءات"
     },
     "contractorTab": {
       "tabLabel": "المعدات",
@@ -3791,7 +3809,15 @@
       "submitForMatching": "Submit for matching",
       "void": "Void",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "voidConfirmTitleBulk": "Void {count, plural, one {# invoice} other {# invoices}}?",
+      "voidConfirmBodyBulk": "These invoices will be marked as void and removed from processing. This cannot be undone.",
+      "voidConfirmCtaBulk": "Void {count, plural, one {# invoice} other {# invoices}}",
+      "submittedToast": "{count, plural, one {# invoice} other {# invoices}} submitted for matching",
+      "submitError": "{count, plural, one {# invoice} other {# invoices}} could not be submitted",
+      "voidedToast": "{count, plural, one {# invoice} other {# invoices}} voided",
+      "voidError": "{count, plural, one {# invoice} other {# invoices}} could not be voided"
     }
   },
   "Ir35Chain": {

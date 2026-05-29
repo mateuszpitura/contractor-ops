@@ -47,6 +47,12 @@ function baseProps(overrides: Partial<TableProps> = {}): TableProps {
     isRefetching: false,
     activeFilterCount: 0,
     hasFiltersOrSearch: false,
+    bulkActions: {
+      onBulkSubmitForMatching: vi.fn(),
+      onBulkVoid: vi.fn(),
+      isSubmittingForMatching: false,
+      isVoiding: false,
+    },
     ...overrides,
   } as TableProps;
 }

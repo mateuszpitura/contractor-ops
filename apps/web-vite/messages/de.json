@@ -994,7 +994,8 @@
     "pagination": {
       "page": "Seite {page} von {pageCount}",
       "previous": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "rowsPerPage": "Zeilen pro Seite"
     },
     "clearDates": "Datumsangaben löschen",
     "filterFrom": "Ab {date}",
@@ -2694,7 +2695,9 @@
         "type": "Typ",
         "status": "Status",
         "assignee": "Assignee",
-        "actions": "Aktionen"
+        "actions": "Aktionen",
+        "selectAll": "Alle auswählen",
+        "selectRow": "Zeile auswählen"
       },
       "filters": {
         "search": "Ausrüstung suchen ...",
@@ -2845,6 +2848,21 @@
     "error": {
       "loadFailed": "Ausrüstung konnte nicht geladen werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
       "actionFailed": "Aktion fehlgeschlagen: complete the action. Versuchen Sie es erneut."
+    },
+    "bulkActions": {
+      "selected": "{count} ausgewählt",
+      "exportCsv": "Als CSV exportieren",
+      "unassign": "Zuweisung aufheben",
+      "retire": "Ausmustern",
+      "cancel": "Abbrechen",
+      "retireConfirmTitle": "{count, plural, one {# Gegenstand} other {# Gegenstände}} ausmustern?",
+      "retireConfirmBody": "Die ausgewählten Gegenstände werden als ausgemustert markiert. Sie erscheinen nicht mehr in Standardansichten und können nicht mehr zugewiesen oder versendet werden. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+      "retireCta": "{count, plural, one {# Gegenstand} other {# Gegenstände}} ausmustern",
+      "unassignConfirmTitle": "Zuweisung von {count, plural, one {# Gegenstand} other {# Gegenständen}} aufheben?",
+      "unassignConfirmBody": "Jeder ausgewählte Gegenstand wird vom aktuellen Auftragnehmer entfernt. Nicht zugewiesene Gegenstände werden übersprungen.",
+      "unassignCta": "Zuweisung von {count, plural, one {# Gegenstand} other {# Gegenständen}} aufheben",
+      "exported": "{count, plural, one {# Gegenstand} other {# Gegenstände}} exportiert",
+      "partial": "{ok} von {total} abgeschlossen — einige Aktionen sind fehlgeschlagen"
     },
     "contractorTab": {
       "tabLabel": "Ausrüstung",
@@ -3791,7 +3809,15 @@
       "submitForMatching": "Submit for matching",
       "void": "Void",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "voidConfirmTitleBulk": "Void {count, plural, one {# invoice} other {# invoices}}?",
+      "voidConfirmBodyBulk": "These invoices will be marked as void and removed from processing. This cannot be undone.",
+      "voidConfirmCtaBulk": "Void {count, plural, one {# invoice} other {# invoices}}",
+      "submittedToast": "{count, plural, one {# invoice} other {# invoices}} submitted for matching",
+      "submitError": "{count, plural, one {# invoice} other {# invoices}} could not be submitted",
+      "voidedToast": "{count, plural, one {# invoice} other {# invoices}} voided",
+      "voidError": "{count, plural, one {# invoice} other {# invoices}} could not be voided"
     }
   },
   "Ir35Chain": {

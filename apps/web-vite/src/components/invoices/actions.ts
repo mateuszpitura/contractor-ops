@@ -156,6 +156,15 @@ const REGISTRY: readonly InvoiceAction[] = [
     icon: Download,
     surfaces: ['bulk'],
   },
+  {
+    key: 'bulk.void',
+    labelKey: 'void',
+    i18nNamespace: 'Invoices.bulkActions',
+    icon: AlertTriangle,
+    surfaces: ['bulk'],
+    variant: 'destructive',
+    confirmCopyKey: 'Invoices.bulkActions.voidConfirmBodyBulk',
+  },
 ] as const;
 
 export function getInvoiceActions(): readonly InvoiceAction[] {

@@ -8,6 +8,8 @@ import type { InvoiceRow } from '../invoice-table/columns.js';
 import { deriveComplianceStatus } from '../invoice-table/columns.js';
 import { parseFilterParam } from '../invoice-table/compliance-filter-param.js';
 import { useInvoiceFilters } from '../invoice-table/use-invoice-filters.js';
+import type { InvoiceBulkActionsHandlers } from './use-invoice-bulk-actions.js';
+import { useInvoiceBulkActions } from './use-invoice-bulk-actions.js';
 
 export interface InvoiceListFilterState {
   status: string[];
@@ -36,6 +38,7 @@ export interface InvoiceListTableProps {
   isRefetching: boolean;
   activeFilterCount: number;
   hasFiltersOrSearch: boolean;
+  bulkActions: InvoiceBulkActionsHandlers;
 }
 
 export interface InvoiceListToolbarProps {
@@ -135,6 +138,8 @@ export function useInvoiceList(options: { onUpload: () => void }) {
   const isLoading = invoicesQuery.isPending && !invoicesQuery.data;
   const isRefetching = invoicesQuery.isFetching && !isLoading;
 
+  const bulkActions = useInvoiceBulkActions();
+
   const activeFilterCount =
     (filters.search.length > 0 ? 1 : 0) +
     (filters.status.length > 0 ? 1 : 0) +
@@ -229,6 +234,7 @@ export function useInvoiceList(options: { onUpload: () => void }) {
     isRefetching,
     activeFilterCount,
     hasFiltersOrSearch,
+    bulkActions,
   };
 
   return {

@@ -994,7 +994,8 @@
     "pagination": {
       "page": "Page {page} of {pageCount}",
       "previous": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "rowsPerPage": "Rows per page"
     },
     "clearDates": "Clear dates",
     "filterFrom": "From {date}",
@@ -2694,7 +2695,9 @@
         "type": "Type",
         "status": "Status",
         "assignee": "Assignee",
-        "actions": "Actions"
+        "actions": "Actions",
+        "selectAll": "Select all",
+        "selectRow": "Select row"
       },
       "filters": {
         "search": "Search equipment...",
@@ -2845,6 +2848,21 @@
     "error": {
       "loadFailed": "Could not load equipment. Check your connection and try again.",
       "actionFailed": "Could not complete the action. Please try again."
+    },
+    "bulkActions": {
+      "selected": "{count} selected",
+      "exportCsv": "Export CSV",
+      "unassign": "Unassign",
+      "retire": "Retire",
+      "cancel": "Cancel",
+      "retireConfirmTitle": "Retire {count, plural, one {# item} other {# items}}?",
+      "retireConfirmBody": "These items will be marked as retired. They will no longer appear in default views and cannot be assigned or shipped. This action cannot be reversed.",
+      "retireCta": "Retire {count, plural, one {# item} other {# items}}",
+      "unassignConfirmTitle": "Unassign {count, plural, one {# item} other {# items}}?",
+      "unassignConfirmBody": "Each selected item will be removed from its current contractor. Items that are not currently assigned will be skipped.",
+      "unassignCta": "Unassign {count, plural, one {# item} other {# items}}",
+      "exported": "Exported {count, plural, one {# item} other {# items}}",
+      "partial": "Completed {ok} of {total} — some actions failed"
     },
     "contractorTab": {
       "tabLabel": "Equipment",
@@ -3791,7 +3809,15 @@
       "submitForMatching": "Submit for matching",
       "void": "Void",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "voidConfirmTitleBulk": "Void {count, plural, one {# invoice} other {# invoices}}?",
+      "voidConfirmBodyBulk": "These invoices will be marked as void and removed from processing. This cannot be undone.",
+      "voidConfirmCtaBulk": "Void {count, plural, one {# invoice} other {# invoices}}",
+      "submittedToast": "{count, plural, one {# invoice} other {# invoices}} submitted for matching",
+      "submitError": "{count, plural, one {# invoice} other {# invoices}} could not be submitted",
+      "voidedToast": "{count, plural, one {# invoice} other {# invoices}} voided",
+      "voidError": "{count, plural, one {# invoice} other {# invoices}} could not be voided"
     }
   },
   "Ir35Chain": {

@@ -9,15 +9,16 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
 import { DataTableBody } from '../../shared/data-table-body.js';
+import { DataTablePagination } from '../../shared/data-table-pagination.js';
 import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { InvoiceListTableProps } from '../hooks/use-invoice-list.js';
 import type { InvoiceRow } from './columns.js';
 import { getColumns } from './columns.js';
-import { DataTablePagination } from './data-table-pagination.js';
+import { DataTableBulkActions } from './data-table-bulk-actions.js';
 
 interface InvoiceDataTableProps extends InvoiceListTableProps {
   onRowClick: (invoice: InvoiceRow) => void;
@@ -42,6 +43,7 @@ export function InvoiceDataTable({
   isRefetching,
   activeFilterCount,
   hasFiltersOrSearch,
+  bulkActions,
   onRowClick,
   onUpload,
   parentLoading,
@@ -49,6 +51,9 @@ export function InvoiceDataTable({
 }: InvoiceDataTableProps) {
   const t = useTranslations('Invoices');
   const tAria = useTranslations('Common.aria');
+  const tPagination = useTranslations('Invoices.pagination');
+
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   const formatDateFn = useCallback(
     (value: Date | string | null | undefined) => formatDate(value),
@@ -65,6 +70,7 @@ export function InvoiceDataTable({
     columns,
     pageCount: Math.ceil(totalRows / filters.pageSize),
     state: {
+      rowSelection,
       sorting: [
         {
           id: filters.sortBy,
@@ -72,6 +78,7 @@ export function InvoiceDataTable({
         },
       ],
     },
+    onRowSelectionChange: setRowSelection,
     onSortingChange: updater => {
       const next =
         typeof updater === 'function'
@@ -89,12 +96,21 @@ export function InvoiceDataTable({
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
+    enableRowSelection: true,
     getRowId: row => row.id,
   });
+
+  const deselectAll = useCallback(() => {
+    table.toggleAllPageRowsSelected(false);
+  }, [table]);
 
   return (
     <div className={WORKBENCH_DATA_TABLE_CLASS}>
       <div className="shrink-0">{toolbar}</div>
+
+      <div className="shrink-0">
+        <DataTableBulkActions table={table} bulkActions={bulkActions} onComplete={deselectAll} />
+      </div>
 
       <AtelierTableShell
         isLoading={isLoading || isRefetching || parentLoading === true}
@@ -120,6 +136,7 @@ export function InvoiceDataTable({
               currentPage={filters.page}
               onPageChange={onPageChange}
               onPageSizeChange={onPageSizeChange}
+              selectedCountLabel={count => tPagination('selected', { count })}
             />
           ) : undefined
         }>

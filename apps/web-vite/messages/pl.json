@@ -994,7 +994,8 @@
     "pagination": {
       "page": "Strona {page} z {pageCount}",
       "previous": "Poprzednia",
-      "next": "Następna"
+      "next": "Następna",
+      "rowsPerPage": "Wierszy na stronę"
     },
     "clearDates": "Wyczyść daty",
     "filterFrom": "Od {date}",
@@ -2694,7 +2695,9 @@
         "type": "Typ",
         "status": "Status",
         "assignee": "Przypisany",
-        "actions": "Akcje"
+        "actions": "Akcje",
+        "selectAll": "Zaznacz wszystko",
+        "selectRow": "Zaznacz wiersz"
       },
       "filters": {
         "search": "Szukaj sprzetu...",
@@ -2845,6 +2848,21 @@
     "error": {
       "loadFailed": "Nie udalo sie wczytac sprzetu. Sprawdz polaczenie i sprobuj ponownie.",
       "actionFailed": "Nie udalo sie wykonac akcji. Sprobuj ponownie."
+    },
+    "bulkActions": {
+      "selected": "Zaznaczono: {count}",
+      "exportCsv": "Eksportuj CSV",
+      "unassign": "Cofnij przypisanie",
+      "retire": "Wycofaj",
+      "cancel": "Anuluj",
+      "retireConfirmTitle": "Wycofać {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}}?",
+      "retireConfirmBody": "Wybrany sprzęt zostanie oznaczony jako wycofany. Nie będzie można go przypisać ani wysłać, a operacji nie da się cofnąć.",
+      "retireCta": "Wycofaj {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}}",
+      "unassignConfirmTitle": "Cofnąć przypisanie {count, plural, one {# elementu} few {# elementów} many {# elementów} other {# elementów}}?",
+      "unassignConfirmBody": "Każdy zaznaczony element zostanie odłączony od bieżącego wykonawcy. Elementy bez przypisania zostaną pominięte.",
+      "unassignCta": "Cofnij przypisanie {count, plural, one {# elementu} few {# elementów} many {# elementów} other {# elementów}}",
+      "exported": "Wyeksportowano {count, plural, one {# element} few {# elementy} many {# elementów} other {# elementów}}",
+      "partial": "Wykonano {ok} z {total} — część operacji nie powiodła się"
     },
     "contractorTab": {
       "tabLabel": "Sprzęt",
@@ -3791,7 +3809,15 @@
       "submitForMatching": "Submit for matching",
       "void": "Void",
       "approve": "Approve",
-      "reject": "Reject"
+      "reject": "Reject",
+      "cancel": "Cancel",
+      "voidConfirmTitleBulk": "Void {count, plural, one {# invoice} other {# invoices}}?",
+      "voidConfirmBodyBulk": "These invoices will be marked as void and removed from processing. This cannot be undone.",
+      "voidConfirmCtaBulk": "Void {count, plural, one {# invoice} other {# invoices}}",
+      "submittedToast": "{count, plural, one {# invoice} other {# invoices}} submitted for matching",
+      "submitError": "{count, plural, one {# invoice} other {# invoices}} could not be submitted",
+      "voidedToast": "{count, plural, one {# invoice} other {# invoices}} voided",
+      "voidError": "{count, plural, one {# invoice} other {# invoices}} could not be voided"
     }
   },
   "Ir35Chain": {
