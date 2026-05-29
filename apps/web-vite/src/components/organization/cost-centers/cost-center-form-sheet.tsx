@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { useCostCenterFormSheet } from '../hooks/use-cost-center-form-sheet.js';
 
@@ -54,15 +54,30 @@ export function CostCenterFormSheet({
     setCode(costCenter?.code ?? '');
   }, [costCenter, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = { name: name.trim(), code: code.trim().toUpperCase() };
-    if (isEdit && costCenter) {
-      updateMutation.mutate({ id: costCenter.id, ...payload });
-    } else {
-      createMutation.mutate(payload);
-    }
-  };
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const payload = { name: name.trim(), code: code.trim().toUpperCase() };
+      if (isEdit && costCenter) {
+        updateMutation.mutate({ id: costCenter.id, ...payload });
+      } else {
+        createMutation.mutate(payload);
+      }
+    },
+    [name, code, isEdit, costCenter, updateMutation, createMutation],
+  );
+
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [],
+  );
+  const handleCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value.toUpperCase()),
+    [],
+  );
+  const handleArchive = useCallback(() => {
+    if (costCenter) archiveMutation.mutate({ id: costCenter.id });
+  }, [costCenter, archiveMutation]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -79,20 +94,14 @@ export function CostCenterFormSheet({
           <div className="flex-1 space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="cc-name">Name</Label>
-              <Input
-                id="cc-name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required
-                autoFocus
-              />
+              <Input id="cc-name" value={name} onChange={handleNameChange} required autoFocus />
             </div>
             <div className="space-y-2">
               <Label htmlFor="cc-code">Code</Label>
               <Input
                 id="cc-code"
                 value={code}
-                onChange={e => setCode(e.target.value.toUpperCase())}
+                onChange={handleCodeChange}
                 required
                 pattern="[A-Z0-9_\-]+"
                 title="Uppercase letters, digits, underscores or hyphens"
@@ -106,7 +115,7 @@ export function CostCenterFormSheet({
                 type="button"
                 variant="destructive"
                 disabled={archiveMutation.isPending}
-                onClick={() => archiveMutation.mutate({ id: costCenter.id })}>
+                onClick={handleArchive}>
                 Archive
               </Button>
             ) : (

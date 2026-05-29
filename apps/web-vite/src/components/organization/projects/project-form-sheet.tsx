@@ -16,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
@@ -77,35 +77,83 @@ export function ProjectFormSheet({
     setBudgetCurrency(project?.budgetCurrency ?? '');
   }, [project, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedName = name.trim();
-    const trimmedCode = code.trim() || undefined;
-    const teamIdInput = teamId.trim() || undefined;
-    const budgetMinorNum = budgetMinor.trim() ? Number(budgetMinor) : undefined;
-    const currencyInput = budgetCurrency.trim().toUpperCase() || undefined;
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const trimmedName = name.trim();
+      const trimmedCode = code.trim() || undefined;
+      const teamIdInput = teamId.trim() || undefined;
+      const budgetMinorNum = budgetMinor.trim() ? Number(budgetMinor) : undefined;
+      const currencyInput = budgetCurrency.trim().toUpperCase() || undefined;
 
-    if (budgetMinorNum != null && (Number.isNaN(budgetMinorNum) || budgetMinorNum <= 0)) {
-      toast.error(toasts.budgetMustBePositive());
-      return;
-    }
+      if (budgetMinorNum != null && (Number.isNaN(budgetMinorNum) || budgetMinorNum <= 0)) {
+        toast.error(toasts.budgetMustBePositive());
+        return;
+      }
 
-    const payload = {
-      name: trimmedName,
-      code: trimmedCode,
-      teamId: teamIdInput,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
-      budgetMinor: budgetMinorNum,
-      budgetCurrency: currencyInput,
-    };
+      const payload = {
+        name: trimmedName,
+        code: trimmedCode,
+        teamId: teamIdInput,
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        budgetMinor: budgetMinorNum,
+        budgetCurrency: currencyInput,
+      };
 
-    if (isEdit && project) {
-      updateMutation.mutate({ id: project.id, ...payload });
-    } else {
-      createMutation.mutate(payload);
-    }
-  };
+      if (isEdit && project) {
+        updateMutation.mutate({ id: project.id, ...payload });
+      } else {
+        createMutation.mutate(payload);
+      }
+    },
+    [
+      name,
+      code,
+      teamId,
+      budgetMinor,
+      budgetCurrency,
+      startDate,
+      endDate,
+      isEdit,
+      project,
+      updateMutation,
+      createMutation,
+      toasts,
+    ],
+  );
+
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [],
+  );
+  const handleCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value),
+    [],
+  );
+  const handleTeamChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => setTeamId(e.target.value),
+    [],
+  );
+  const handleStartDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value),
+    [],
+  );
+  const handleEndDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value),
+    [],
+  );
+  const handleBudgetMinorChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setBudgetMinor(e.target.value),
+    [],
+  );
+  const handleBudgetCurrencyChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setBudgetCurrency(e.target.value.toUpperCase()),
+    [],
+  );
+  const handleArchive = useCallback(() => {
+    if (project) archiveMutation.mutate({ id: project.id });
+  }, [project, archiveMutation]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -125,7 +173,7 @@ export function ProjectFormSheet({
               <Input
                 id="project-name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={handleNameChange}
                 required
                 autoFocus
               />
@@ -133,7 +181,7 @@ export function ProjectFormSheet({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-2">
                 <Label htmlFor="project-code">Code</Label>
-                <Input id="project-code" value={code} onChange={e => setCode(e.target.value)} />
+                <Input id="project-code" value={code} onChange={handleCodeChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="project-team">Team</Label>
@@ -141,7 +189,7 @@ export function ProjectFormSheet({
                   id="project-team"
                   className="border-input bg-background focus-visible:ring-ring h-9 w-full rounded-md border px-2 text-sm focus-visible:outline-none focus-visible:ring-2"
                   value={teamId}
-                  onChange={e => setTeamId(e.target.value)}>
+                  onChange={handleTeamChange}>
                   <option value="">No team</option>
                   {teams.map(team => (
                     <option key={team.id} value={team.id}>
@@ -158,7 +206,7 @@ export function ProjectFormSheet({
                   id="project-start"
                   type="date"
                   value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
+                  onChange={handleStartDateChange}
                 />
               </div>
               <div className="space-y-2">
@@ -167,7 +215,7 @@ export function ProjectFormSheet({
                   id="project-end"
                   type="date"
                   value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
+                  onChange={handleEndDateChange}
                 />
               </div>
             </div>
@@ -180,7 +228,7 @@ export function ProjectFormSheet({
                   min={1}
                   step={1}
                   value={budgetMinor}
-                  onChange={e => setBudgetMinor(e.target.value)}
+                  onChange={handleBudgetMinorChange}
                 />
               </div>
               <div className="space-y-2">
@@ -188,7 +236,7 @@ export function ProjectFormSheet({
                 <Input
                   id="project-currency"
                   value={budgetCurrency}
-                  onChange={e => setBudgetCurrency(e.target.value.toUpperCase())}
+                  onChange={handleBudgetCurrencyChange}
                   maxLength={3}
                   placeholder="EUR"
                 />
@@ -201,7 +249,7 @@ export function ProjectFormSheet({
                 type="button"
                 variant="destructive"
                 disabled={archiveMutation.isPending}
-                onClick={() => archiveMutation.mutate({ id: project.id })}>
+                onClick={handleArchive}>
                 Archive
               </Button>
             ) : (

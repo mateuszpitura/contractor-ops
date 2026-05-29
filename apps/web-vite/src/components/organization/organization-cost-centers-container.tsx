@@ -1,12 +1,15 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { FileUp, Plus } from 'lucide-react';
+import { useCallback } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { CostCenterCsvImportDialogContainer } from './cost-centers/cost-center-csv-import-dialog-container.js';
 import { CostCenterFormSheetContainer } from './cost-centers/cost-center-form-sheet-container.js';
 import { CostCenterTable } from './cost-centers/cost-center-table.js';
 import { useOrganizationCostCenters } from './hooks/use-organization-cost-centers.js';
+import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
 
 export function OrganizationCostCentersContainer() {
@@ -25,54 +28,70 @@ export function OrganizationCostCentersContainer() {
     setEditing,
     rows,
     isLoading,
+    isFetching,
   } = useOrganizationCostCenters();
+
+  const controlsDisabled = isListControlsDisabled({ isLoading, isFetching });
+  const hasSearch = search.trim().length > 0;
+  const showFeaturedEmpty = isFeaturedEmptyList({
+    isLoading,
+    itemCount: rows.length,
+    hasSearch,
+  });
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value),
+    [setSearch],
+  );
+  const handleOpenCsv = useCallback(() => setCsvOpen(true), [setCsvOpen]);
+  const handleNewCostCenter = useCallback(() => {
+    setEditing(null);
+    setSheetOpen(true);
+  }, [setEditing, setSheetOpen]);
+  const handleClearSearch = useCallback(() => setSearch(''), [setSearch]);
+  const handleRowClick = useCallback(
+    (row: Parameters<typeof setEditing>[0]) => {
+      if (!canUpdate) return;
+      setEditing(row);
+      setSheetOpen(true);
+    },
+    [canUpdate, setEditing, setSheetOpen],
+  );
 
   return (
     <OrganizationLayout>
       <section className="flex min-h-0 flex-1 flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Input
-            className="max-w-xs"
-            placeholder={t('search')}
-            aria-label={t('search')}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <div className="flex gap-2">
-            {canCreate && (
-              <>
-                <Button variant="outline" onClick={() => setCsvOpen(true)}>
-                  <FileUp className="mr-2 h-4 w-4" /> {t('importCsv')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setEditing(null);
-                    setSheetOpen(true);
-                  }}>
-                  <Plus className="mr-2 h-4 w-4" /> {t('newCostCenter')}
-                </Button>
-              </>
-            )}
+        {showFeaturedEmpty ? null : (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <Input
+              className="max-w-xs"
+              placeholder={t('search')}
+              aria-label={t('search')}
+              value={search}
+              disabled={controlsDisabled}
+              onChange={handleSearchChange}
+            />
+            <div className="flex gap-2">
+              {canCreate ? (
+                <>
+                  <Button variant="outline" disabled={controlsDisabled} onClick={handleOpenCsv}>
+                    <FileUp className="mr-2 h-4 w-4" /> {t('importCsv')}
+                  </Button>
+                  <Button disabled={controlsDisabled} onClick={handleNewCostCenter}>
+                    <Plus className="mr-2 h-4 w-4" /> {t('newCostCenter')}
+                  </Button>
+                </>
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
         <CostCenterTable
           rows={rows}
           isLoading={isLoading}
-          hasSearch={search.trim().length > 0}
-          onClearSearch={() => setSearch('')}
-          onNewCostCenter={
-            canCreate
-              ? () => {
-                  setEditing(null);
-                  setSheetOpen(true);
-                }
-              : undefined
-          }
-          onRowClick={row => {
-            if (!canUpdate) return;
-            setEditing(row);
-            setSheetOpen(true);
-          }}
+          hasSearch={hasSearch}
+          onClearSearch={handleClearSearch}
+          onNewCostCenter={canCreate ? handleNewCostCenter : undefined}
+          onRowClick={handleRowClick}
         />
         <CostCenterFormSheetContainer
           open={sheetOpen}

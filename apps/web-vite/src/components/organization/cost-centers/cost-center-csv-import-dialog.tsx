@@ -15,7 +15,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { AlertTriangle, FileUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 
 import type { useCostCenterCsvImport } from '../hooks/use-cost-center-csv-import.js';
 
@@ -88,6 +88,36 @@ function validate(rows: ParsedRow[]): ParsedRow[] {
   });
 }
 
+interface CsvImportRowProps {
+  row: ParsedRow;
+  onToggle: (index: number, checked: boolean) => void;
+}
+
+// memoized: parsed CSV preview can reach MAX_ROWS=1000 rows.
+const CsvImportRow = memo(function CsvImportRow({ row, onToggle }: CsvImportRowProps) {
+  const handleToggle = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onToggle(row.index, e.target.checked),
+    [onToggle, row.index],
+  );
+  return (
+    <tr className={row.errors.length > 0 ? 'bg-destructive/5' : undefined}>
+      <td className="px-2 py-1">
+        <input
+          type="checkbox"
+          checked={row.selected}
+          onChange={handleToggle}
+          disabled={row.errors.length > 0}
+        />
+      </td>
+      <td className="px-2 py-1">{row.name || <em className="text-muted-foreground">—</em>}</td>
+      <td className="px-2 py-1 font-mono">
+        {row.code || <em className="text-muted-foreground">—</em>}
+      </td>
+      <td className="px-2 py-1 text-destructive text-xs">{row.errors.join('; ')}</td>
+    </tr>
+  );
+});
+
 interface CostCenterCsvImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -111,7 +141,7 @@ export function CostCenterCsvImportDialog({
     }
   }, [open]);
 
-  const handleFile = async (file: File) => {
+  const handleFile = useCallback(async (file: File) => {
     setFileError(null);
     if (file.size > MAX_BYTES) {
       setFileError('File exceeds 5 MB limit');
@@ -143,9 +173,25 @@ export function CostCenterCsvImportDialog({
       errors: [],
     }));
     setRows(validate(parsed));
-  };
+  }, []);
 
   const selectedValidRows = rows.filter(r => r.selected && r.errors.length === 0);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) void handleFile(file);
+    },
+    [handleFile],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const handleImport = useCallback(
+    () => importRows(selectedValidRows.map(r => ({ name: r.name, code: r.code.toUpperCase() }))),
+    [importRows, selectedValidRows],
+  );
+  const handleRowToggle = useCallback((index: number, checked: boolean) => {
+    setRows(prev => prev.map(row => (row.index === index ? { ...row, selected: checked } : row)));
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -158,14 +204,7 @@ export function CostCenterCsvImportDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
-          <Input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={e => {
-              const file = e.target.files?.[0];
-              if (file) void handleFile(file);
-            }}
-          />
+          <Input type="file" accept=".csv,text/csv" onChange={handleFileInputChange} />
           {fileError && (
             <div role="alert" className="text-destructive flex items-center gap-2 text-sm">
               <AlertTriangle className="h-4 w-4" /> {fileError}
@@ -184,33 +223,7 @@ export function CostCenterCsvImportDialog({
                 </thead>
                 <tbody>
                   {rows.map(r => (
-                    <tr
-                      key={r.index}
-                      className={r.errors.length > 0 ? 'bg-destructive/5' : undefined}>
-                      <td className="px-2 py-1">
-                        <input
-                          type="checkbox"
-                          checked={r.selected}
-                          onChange={e => {
-                            setRows(prev =>
-                              prev.map(row =>
-                                row.index === r.index
-                                  ? { ...row, selected: e.target.checked }
-                                  : row,
-                              ),
-                            );
-                          }}
-                          disabled={r.errors.length > 0}
-                        />
-                      </td>
-                      <td className="px-2 py-1">
-                        {r.name || <em className="text-muted-foreground">—</em>}
-                      </td>
-                      <td className="px-2 py-1 font-mono">
-                        {r.code || <em className="text-muted-foreground">—</em>}
-                      </td>
-                      <td className="px-2 py-1 text-destructive text-xs">{r.errors.join('; ')}</td>
-                    </tr>
+                    <CsvImportRow key={r.index} row={r} onToggle={handleRowToggle} />
                   ))}
                 </tbody>
               </table>
@@ -218,14 +231,12 @@ export function CostCenterCsvImportDialog({
           )}
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={handleCancel}>
             Cancel
           </Button>
           <Button
             disabled={selectedValidRows.length === 0 || importMutation.isPending}
-            onClick={() =>
-              importRows(selectedValidRows.map(r => ({ name: r.name, code: r.code.toUpperCase() })))
-            }>
+            onClick={handleImport}>
             <FileUp className="mr-2 h-4 w-4" />
             Import {selectedValidRows.length} {selectedValidRows.length === 1 ? 'row' : 'rows'}
           </Button>

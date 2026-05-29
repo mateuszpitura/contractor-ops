@@ -14,8 +14,54 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { AlertTriangle } from 'lucide-react';
+import { useCallback } from 'react';
 import type { usePendingMergesInbox } from '../hooks/use-pending-merges-inbox.js';
 import { SourceBadge } from '../shared/source-badge.js';
+
+type InboxHandle = ReturnType<typeof usePendingMergesInbox>;
+type InboxItem = InboxHandle['items'][number];
+type MergeCandidate = InboxHandle['candidates'][string];
+
+function PendingMergeRow({ row, onOpen }: { row: InboxItem; onOpen: (row: InboxItem) => void }) {
+  const handleClick = useCallback(() => onOpen(row), [onOpen, row]);
+  return (
+    <li className="flex items-center justify-between gap-2">
+      <span>
+        <SourceBadge source={row.source} /> <strong>{row.incomingName}</strong>
+      </span>
+      <Button size="sm" variant="secondary" onClick={handleClick}>
+        Resolve
+      </Button>
+    </li>
+  );
+}
+
+function MergeCandidateOption({
+  id,
+  candidate,
+  selected,
+  onChoose,
+}: {
+  id: string;
+  candidate: MergeCandidate | undefined;
+  selected: boolean;
+  onChoose: (id: string) => void;
+}) {
+  const handleChange = useCallback(() => onChoose(id), [onChoose, id]);
+  return (
+    <label className="hover:bg-muted/40 flex items-center gap-2 rounded-md border p-2 text-sm">
+      <input
+        type="radio"
+        name="merge-target"
+        value={id}
+        checked={selected}
+        onChange={handleChange}
+      />
+      <span className="font-medium">{candidate?.name ?? id}</span>
+      {candidate?.source && <SourceBadge source={candidate.source} />}
+    </label>
+  );
+}
 
 export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePendingMergesInbox> }) {
   const {
@@ -31,6 +77,13 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
     mergeIntoExisting,
   } = inbox;
 
+  const handleDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) closeMerge();
+    },
+    [closeMerge],
+  );
+
   return (
     <>
       <div
@@ -44,20 +97,13 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
           </p>
           <ul className="mt-2 space-y-1">
             {items.map(row => (
-              <li key={row.id} className="flex items-center justify-between gap-2">
-                <span>
-                  <SourceBadge source={row.source} /> <strong>{row.incomingName}</strong>
-                </span>
-                <Button size="sm" variant="secondary" onClick={() => openMerge(row)}>
-                  Resolve
-                </Button>
-              </li>
+              <PendingMergeRow key={row.id} row={row} onOpen={openMerge} />
             ))}
           </ul>
         </div>
       </div>
 
-      <Dialog open={Boolean(activeMerge)} onOpenChange={open => !open && closeMerge()}>
+      <Dialog open={Boolean(activeMerge)} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Resolve merge</DialogTitle>
@@ -76,24 +122,15 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
                 Existing project(s) with the same name:
               </p>
               <div className="space-y-2">
-                {activeMerge.candidateProjectIds.map(id => {
-                  const c = candidates[id];
-                  return (
-                    <label
-                      key={id}
-                      className="hover:bg-muted/40 flex items-center gap-2 rounded-md border p-2 text-sm">
-                      <input
-                        type="radio"
-                        name="merge-target"
-                        value={id}
-                        checked={chosenTarget === id}
-                        onChange={() => setChosenTarget(id)}
-                      />
-                      <span className="font-medium">{c?.name ?? id}</span>
-                      {c?.source && <SourceBadge source={c.source} />}
-                    </label>
-                  );
-                })}
+                {activeMerge.candidateProjectIds.map(id => (
+                  <MergeCandidateOption
+                    key={id}
+                    id={id}
+                    candidate={candidates[id]}
+                    selected={chosenTarget === id}
+                    onChoose={setChosenTarget}
+                  />
+                ))}
               </div>
             </div>
           )}

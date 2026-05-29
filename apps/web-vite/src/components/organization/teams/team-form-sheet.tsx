@@ -18,7 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { useTeamFormSheet } from '../hooks/use-team-form-sheet.js';
 
@@ -58,15 +58,30 @@ export function TeamFormSheet({
     setCode(team?.code ?? '');
   }, [team, open]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const payload = { name: name.trim(), code: code.trim() || undefined };
-    if (isEdit && team) {
-      updateMutation.mutate({ id: team.id, ...payload });
-    } else {
-      createMutation.mutate(payload);
-    }
-  };
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const payload = { name: name.trim(), code: code.trim() || undefined };
+      if (isEdit && team) {
+        updateMutation.mutate({ id: team.id, ...payload });
+      } else {
+        createMutation.mutate(payload);
+      }
+    },
+    [name, code, isEdit, team, updateMutation, createMutation],
+  );
+
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [],
+  );
+  const handleCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setCode(e.target.value),
+    [],
+  );
+  const handleArchive = useCallback(() => {
+    if (team) archiveMutation.mutate({ id: team.id });
+  }, [team, archiveMutation]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -86,7 +101,7 @@ export function TeamFormSheet({
               <Input
                 id="team-name"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={handleNameChange}
                 required
                 autoFocus
                 minLength={1}
@@ -98,7 +113,7 @@ export function TeamFormSheet({
               <Input
                 id="team-code"
                 value={code}
-                onChange={e => setCode(e.target.value)}
+                onChange={handleCodeChange}
                 placeholder="optional"
                 maxLength={40}
               />
@@ -110,7 +125,7 @@ export function TeamFormSheet({
                 type="button"
                 variant="destructive"
                 disabled={archiveMutation.isPending}
-                onClick={() => archiveMutation.mutate({ id: team.id })}>
+                onClick={handleArchive}>
                 Archive
               </Button>
             ) : (

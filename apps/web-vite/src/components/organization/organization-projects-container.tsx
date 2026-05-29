@@ -1,13 +1,40 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Plus, RefreshCw } from 'lucide-react';
+import { useCallback } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { useOrganizationProjects } from './hooks/use-organization-projects.js';
+import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
 import { PendingMergesInboxContainer } from './projects/pending-merges-inbox-container.js';
 import { ProjectFormSheetContainer } from './projects/project-form-sheet-container.js';
 import { ProjectTable } from './projects/project-table.js';
+
+type SyncConnection = { id: string; provider: string };
+
+function ConnectionSyncButton({
+  conn,
+  disabled,
+  syncMutation,
+  label,
+}: {
+  conn: SyncConnection;
+  disabled: boolean;
+  syncMutation: ReturnType<typeof useOrganizationProjects>['syncMutation'];
+  label: string;
+}) {
+  const handleClick = useCallback(
+    () => syncMutation.mutate({ connectionId: conn.id }),
+    [syncMutation, conn.id],
+  );
+  return (
+    <Button variant="outline" disabled={disabled} onClick={handleClick}>
+      <RefreshCw className="mr-2 h-4 w-4" /> {label} ({conn.provider})
+    </Button>
+  );
+}
 
 export function OrganizationProjectsContainer() {
   const t = useTranslations('Organization');
@@ -24,62 +51,77 @@ export function OrganizationProjectsContainer() {
     rows,
     teamNamesById,
     isLoading,
+    isFetching,
     connections,
     syncMutation,
   } = useOrganizationProjects();
+
+  const controlsDisabled = isListControlsDisabled({ isLoading, isFetching });
+  const hasSearch = search.trim().length > 0;
+  const showFeaturedEmpty = isFeaturedEmptyList({
+    isLoading,
+    itemCount: rows.length,
+    hasSearch,
+  });
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value),
+    [setSearch],
+  );
+  const handleNewProject = useCallback(() => {
+    setEditing(null);
+    setSheetOpen(true);
+  }, [setEditing, setSheetOpen]);
+  const handleClearSearch = useCallback(() => setSearch(''), [setSearch]);
+  const handleRowClick = useCallback(
+    (row: Parameters<typeof setEditing>[0]) => {
+      if (!canUpdate) return;
+      setEditing(row);
+      setSheetOpen(true);
+    },
+    [canUpdate, setEditing, setSheetOpen],
+  );
 
   return (
     <OrganizationLayout>
       <section className="flex min-h-0 flex-1 flex-col gap-4">
         <PendingMergesInboxContainer />
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Input
-            className="max-w-xs"
-            placeholder={t('search')}
-            aria-label={t('search')}
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-          <div className="flex gap-2">
-            {connections.map(conn => (
-              <Button
-                key={conn.id}
-                variant="outline"
-                disabled={syncMutation.isPending}
-                onClick={() => syncMutation.mutate({ connectionId: conn.id })}>
-                <RefreshCw className="mr-2 h-4 w-4" /> {t('syncNow')} ({conn.provider})
-              </Button>
-            ))}
-            {canCreate && (
-              <Button
-                onClick={() => {
-                  setEditing(null);
-                  setSheetOpen(true);
-                }}>
-                <Plus className="mr-2 h-4 w-4" /> {t('newProject')}
-              </Button>
-            )}
+        {showFeaturedEmpty ? null : (
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <Input
+              className="max-w-xs"
+              placeholder={t('search')}
+              aria-label={t('search')}
+              value={search}
+              disabled={controlsDisabled}
+              onChange={handleSearchChange}
+            />
+            <div className="flex gap-2">
+              {connections.map(conn => (
+                <ConnectionSyncButton
+                  key={conn.id}
+                  conn={conn}
+                  disabled={controlsDisabled || syncMutation.isPending}
+                  syncMutation={syncMutation}
+                  label={t('syncNow')}
+                />
+              ))}
+              {canCreate ? (
+                <Button disabled={controlsDisabled} onClick={handleNewProject}>
+                  <Plus className="mr-2 h-4 w-4" /> {t('newProject')}
+                </Button>
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
         <ProjectTable
           rows={rows}
           teamNamesById={teamNamesById}
           isLoading={isLoading}
-          hasSearch={search.trim().length > 0}
-          onClearSearch={() => setSearch('')}
-          onNewProject={
-            canCreate
-              ? () => {
-                  setEditing(null);
-                  setSheetOpen(true);
-                }
-              : undefined
-          }
-          onRowClick={row => {
-            if (!canUpdate) return;
-            setEditing(row);
-            setSheetOpen(true);
-          }}
+          hasSearch={hasSearch}
+          onClearSearch={handleClearSearch}
+          onNewProject={canCreate ? handleNewProject : undefined}
+          onRowClick={handleRowClick}
         />
         <ProjectFormSheetContainer open={sheetOpen} onOpenChange={setSheetOpen} project={editing} />
       </section>
