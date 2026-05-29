@@ -42,12 +42,14 @@ export function DataTablePagination<TData>({
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
 
   return (
-    <div className="flex w-full items-center justify-between gap-6 px-4 py-3">
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        {selectedCount > 0 && <span>{tb('selected', { count: selectedCount })}</span>}
-      </div>
+    <div className="flex w-full items-center gap-6 px-4 py-3">
+      {selectedCount > 0 && (
+        <span className="text-sm text-muted-foreground">
+          {tb('selected', { count: selectedCount })}
+        </span>
+      )}
 
-      <div className="flex items-center gap-4">
+      <div className="ms-auto flex items-center gap-4">
         {/* Page size selector */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">{t('rowsPerPage')}</span>
