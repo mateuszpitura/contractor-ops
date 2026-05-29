@@ -133,35 +133,6 @@
           "finalDocumentation": "Final documentation"
         }
       }
-    },
-    "errors": {
-      "tenant": {
-        "noActiveOrganization": "No active organization. Please select an organization first."
-      },
-      "upload": {
-        "rateLimitExceeded": "Upload rate limit exceeded. Maximum 10 uploads per minute. Try again shortly."
-      },
-      "zatca": {
-        "apiClientUnavailable": "ZATCA API client not available. Ensure e-invoicing engine is configured.",
-        "taxDetailsRequired": "Tax details must be saved before generating CSR.",
-        "csrRequired": "CSR must be generated before requesting compliance CSID.",
-        "taxDetailsRequiredForCompliance": "Tax details required for compliance checks.",
-        "complianceCsidRequired": "Compliance CSID must be obtained before running compliance checks.",
-        "complianceChecksMustPass": "Compliance checks must pass before requesting production certificate."
-      },
-      "timesheet": {
-        "weekStartDateMustBeMonday": "Week start date must be a Monday.",
-        "notFound": "Timesheet not found.",
-        "canOnlyEditDraftOrRejected": "Can only edit DRAFT or REJECTED timesheets.",
-        "entryNotFound": "Time entry not found.",
-        "cannotEditImportedEntries": "Cannot edit imported entries.",
-        "cannotSubmit": "Timesheet cannot be submitted (wrong status or not found).",
-        "cannotApprove": "Timesheet cannot be approved (must be SUBMITTED).",
-        "cannotReject": "Timesheet cannot be rejected (must be SUBMITTED)."
-      },
-      "approval": {
-        "noUserWithRole": "No user with the required role found."
-      }
     }
   },
   "Approvals": {

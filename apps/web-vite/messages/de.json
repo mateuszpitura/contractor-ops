@@ -133,35 +133,6 @@
           "finalDocumentation": "Abschlussdokumentation"
         }
       }
-    },
-    "errors": {
-      "tenant": {
-        "noActiveOrganization": "Keine aktive Organisation. Bitte wählen Sie zuerst eine Organisation aus."
-      },
-      "upload": {
-        "rateLimitExceeded": "Upload-Rate-Limit überschritten. Maximal 10 Uploads pro Minute. Bitte versuchen Sie es in Kürze erneut."
-      },
-      "zatca": {
-        "apiClientUnavailable": "ZATCA-API-Client nicht verfügbar. Stellen Sie sicher, dass die E-Invoicing-Engine konfiguriert ist.",
-        "taxDetailsRequired": "Steuerdaten müssen vor der CSR-Erstellung gespeichert werden.",
-        "csrRequired": "CSR muss vor der Anforderung der Compliance-CSID erstellt werden.",
-        "taxDetailsRequiredForCompliance": "Für Compliance-Prüfungen sind Steuerdaten erforderlich.",
-        "complianceCsidRequired": "Compliance-CSID muss vor der Durchführung von Compliance-Prüfungen vorliegen.",
-        "complianceChecksMustPass": "Compliance-Prüfungen müssen bestanden sein, bevor das Produktionszertifikat angefordert werden kann."
-      },
-      "timesheet": {
-        "weekStartDateMustBeMonday": "Das Wochenstartdatum muss ein Montag sein.",
-        "notFound": "Zeiterfassung nicht gefunden.",
-        "canOnlyEditDraftOrRejected": "Nur Zeiterfassungen mit Status ENTWURF oder ABGELEHNT können bearbeitet werden.",
-        "entryNotFound": "Zeiteintrag nicht gefunden.",
-        "cannotEditImportedEntries": "Importierte Einträge können nicht bearbeitet werden.",
-        "cannotSubmit": "Zeiterfassung kann nicht eingereicht werden (falscher Status oder nicht gefunden).",
-        "cannotApprove": "Zeiterfassung kann nicht freigegeben werden (muss EINGEREICHT sein).",
-        "cannotReject": "Zeiterfassung kann nicht abgelehnt werden (muss EINGEREICHT sein)."
-      },
-      "approval": {
-        "noUserWithRole": "Kein Benutzer mit der erforderlichen Rolle gefunden."
-      }
     }
   },
   "Approvals": {

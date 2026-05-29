@@ -115,9 +115,10 @@ export function formatTrpcError({ shape, error, isProduction }: FormatTrpcErrorA
   }
 
   // For other coded errors (FORBIDDEN, NOT_FOUND, UNAUTHORIZED, ...), keep
-  // the message but cap its length and drop stack. The message field is
-  // commonly used for i18n keys (`errors.tenant.noActiveOrganization`),
-  // so it must remain present.
+  // the message but cap its length and drop stack. The client resolves the
+  // user-facing copy from `data.errorKey` via the `Errors.*` namespace
+  // (see `apps/web-vite/src/i18n/use-translated-error.ts`); `message`
+  // remains present as a developer-facing fallback.
   const safeMessage =
     typeof shape.message === 'string'
       ? shape.message.slice(0, MAX_CLIENT_MESSAGE_LENGTH)

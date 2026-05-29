@@ -133,35 +133,6 @@
           "finalDocumentation": "التوثيق النهائي"
         }
       }
-    },
-    "errors": {
-      "tenant": {
-        "noActiveOrganization": "لا توجد مؤسسة نشطة. يرجى اختيار مؤسسة أولًا."
-      },
-      "upload": {
-        "rateLimitExceeded": "تم تجاوز الحد المسموح للرفع. الحد الأقصى 10 عمليات رفع في الدقيقة. حاول مجددًا قريبًا."
-      },
-      "zatca": {
-        "apiClientUnavailable": "عميل ZATCA API غير متاح. تأكّد من تكوين محرّك الفوترة الإلكترونية.",
-        "taxDetailsRequired": "يجب حفظ التفاصيل الضريبية قبل توليد CSR.",
-        "csrRequired": "يجب توليد CSR قبل طلب CSID للامتثال.",
-        "taxDetailsRequiredForCompliance": "التفاصيل الضريبية مطلوبة لفحوصات الامتثال.",
-        "complianceCsidRequired": "يجب الحصول على CSID للامتثال قبل تنفيذ فحوصات الامتثال.",
-        "complianceChecksMustPass": "يجب أن تنجح فحوصات الامتثال قبل طلب شهادة الإنتاج."
-      },
-      "timesheet": {
-        "weekStartDateMustBeMonday": "يجب أن يكون تاريخ بداية الأسبوع يوم الإثنين.",
-        "notFound": "لم يُعثر على كشف الحضور.",
-        "canOnlyEditDraftOrRejected": "يمكن تعديل كشوف الحضور بحالة DRAFT أو REJECTED فقط.",
-        "entryNotFound": "لم يُعثر على إدخال الوقت.",
-        "cannotEditImportedEntries": "لا يمكن تعديل الإدخالات المستوردة.",
-        "cannotSubmit": "لا يمكن إرسال كشف الحضور (حالة خاطئة أو غير موجود).",
-        "cannotApprove": "لا يمكن اعتماد كشف الحضور (يجب أن يكون SUBMITTED).",
-        "cannotReject": "لا يمكن رفض كشف الحضور (يجب أن يكون SUBMITTED)."
-      },
-      "approval": {
-        "noUserWithRole": "لم يُعثر على مستخدم بالدور المطلوب."
-      }
     }
   },
   "Approvals": {

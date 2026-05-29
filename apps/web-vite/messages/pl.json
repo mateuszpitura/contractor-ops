@@ -133,35 +133,6 @@
           "finalDocumentation": "Końcowa dokumentacja"
         }
       }
-    },
-    "errors": {
-      "tenant": {
-        "noActiveOrganization": "Brak aktywnej organizacji. Najpierw wybierz organizację."
-      },
-      "upload": {
-        "rateLimitExceeded": "Przekroczono limit przesyłania plików. Maksymalnie 10 przesyłań na minutę. Spróbuj ponownie za chwilę."
-      },
-      "zatca": {
-        "apiClientUnavailable": "Klient API ZATCA niedostępny. Upewnij się, że silnik e-fakturowania jest skonfigurowany.",
-        "taxDetailsRequired": "Dane podatkowe muszą zostać zapisane przed wygenerowaniem CSR.",
-        "csrRequired": "CSR musi zostać wygenerowane przed wnioskiem o compliance CSID.",
-        "taxDetailsRequiredForCompliance": "Dane podatkowe są wymagane do testów zgodności.",
-        "complianceCsidRequired": "Compliance CSID musi zostać uzyskane przed uruchomieniem testów zgodności.",
-        "complianceChecksMustPass": "Testy zgodności muszą zakończyć się powodzeniem przed wnioskiem o certyfikat produkcyjny."
-      },
-      "timesheet": {
-        "weekStartDateMustBeMonday": "Data początku tygodnia musi być poniedziałkiem.",
-        "notFound": "Nie znaleziono karty pracy.",
-        "canOnlyEditDraftOrRejected": "Można edytować wyłącznie karty pracy o statusie DRAFT lub REJECTED.",
-        "entryNotFound": "Nie znaleziono wpisu czasu pracy.",
-        "cannotEditImportedEntries": "Nie można edytować zaimportowanych wpisów.",
-        "cannotSubmit": "Karty pracy nie można wysłać (nieprawidłowy status lub nie znaleziono).",
-        "cannotApprove": "Karty pracy nie można zaakceptować (musi mieć status SUBMITTED).",
-        "cannotReject": "Karty pracy nie można odrzucić (musi mieć status SUBMITTED)."
-      },
-      "approval": {
-        "noUserWithRole": "Nie znaleziono użytkownika z wymaganą rolą."
-      }
     }
   },
   "Approvals": {
