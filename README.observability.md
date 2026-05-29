@@ -3,35 +3,36 @@
 Dev-only replacement for **Sentry SaaS** + **Axiom Cloud** so local runs
 stop burning the prod project's error budget and log field quota.
 
-| Component | Image | Local URL | Replaces |
-|---|---|---|---|
-| GlitchTip web | `glitchtip/glitchtip:v4.1` | <http://localhost:8000> | Sentry SaaS |
-| GlitchTip worker | `glitchtip/glitchtip:v4.1` | n/a | Sentry worker |
-| GlitchTip Postgres | `postgres:15-alpine` | n/a | — |
-| GlitchTip Redis | `redis:7-alpine` | n/a | — |
-| Loki | `grafana/loki:3.2.0` | <http://localhost:3100> | Axiom Cloud |
-| Grafana | `grafana/grafana:11.2.0` | <http://localhost:3001> | Axiom dashboards |
+Defined in the main [`docker-compose.yml`](./docker-compose.yml) under
+two profiles:
 
-Compose file: [`docker-compose.observability.yml`](./docker-compose.observability.yml).
-Compose project name: `contractor-ops-observability`.
+| Profile | Component | Image | Local URL | Replaces |
+|---|---|---|---|---|
+| `glitchtip` | GlitchTip web | `glitchtip/glitchtip:latest` | <http://localhost:8000> | Sentry SaaS |
+| `glitchtip` | GlitchTip worker | `glitchtip/glitchtip:latest` | n/a | Sentry worker |
+| `glitchtip` | GlitchTip Postgres | `postgres:17-alpine` | n/a | — |
+| `glitchtip` | GlitchTip Redis | `redis:8.6.3-alpine` | n/a | — |
+| `glitchtip` | GlitchTip migrate + seed sidecars | n/a | n/a | first-run bootstrap |
+| `observability` | Loki | `grafana/loki:3.2.0` | <http://localhost:3100> | Axiom Cloud |
+| `observability` | Grafana | `grafana/grafana:11.2.0` | <http://localhost:3001> | Axiom dashboards |
+
+The two profiles are independent — bring up only one if you only need
+the half. `pnpm dev:observability` activates both for convenience.
 
 ---
 
 ## TL;DR
 
 ```bash
-# 1. Bring the stack up
+# 1. Bring both profiles up (calls docker compose --profile glitchtip --profile observability)
 pnpm dev:observability
 
-# 2. First-run only: create admin + project in GlitchTip
-open http://localhost:8000
-#   → Sign up (first user becomes platform admin)
-#   → Create organization → create project (type: JavaScript or Node)
-#   → Copy the printed DSN
+# 2. Grab the seeded DSN — the glitchtip-seed sidecar prints it on first boot
+pnpm dev:observability:dsn
+#   → SENTRY_DSN=http://abc123@localhost:8000/1
+#   → VITE_SENTRY_DSN=http://abc123@localhost:8000/1
 
-# 3. Paste the DSN into .env
-SENTRY_DSN=http://<key>@localhost:8000/1
-VITE_SENTRY_DSN=http://<key>@localhost:8000/1
+# 3. Paste those into .env (or set them via your secret manager), then add:
 SENTRY_DEV=true
 LOKI_URL=http://localhost:3100
 
@@ -39,7 +40,7 @@ LOKI_URL=http://localhost:3100
 pnpm dev
 
 # 5. Explore the data
-open http://localhost:8000      # GlitchTip Issues feed
+open http://localhost:8000      # GlitchTip Issues feed (admin@glitchtip.local / Test1234!)
 open http://localhost:3001      # Grafana → Explore → Loki → {service="api-server"}
 ```
 
@@ -59,6 +60,23 @@ already speak. No code change needed on the apps. The dev guard added in
 matching `cron-worker`, `public-api`, `web-vite` files) is what made
 `pnpm dev` skip uploads entirely; `SENTRY_DEV=true` lifts that guard,
 events flow into the local project URL, prod Sentry stays untouched.
+
+The compose stack pre-seeds an admin user + organization + project on
+first run via [`docker/glitchtip/seed.py`](docker/glitchtip/seed.py),
+mounted into the `glitchtip-seed` sidecar. Defaults:
+
+- Admin email: `admin@glitchtip.local`
+- Admin password: `Test1234!`
+- Organisation: `contractor-ops`
+- Project: `contractor-ops`
+
+Override any of these via the `GLITCHTIP_ADMIN_EMAIL` /
+`GLITCHTIP_ADMIN_PASSWORD` / `GLITCHTIP_ORG_NAME` / `GLITCHTIP_PROJECT_NAME`
+env vars before bringing the stack up.
+
+Verification emails (e.g. for a second user added via the UI) land in
+Mailpit when the `dev-tooling` profile is also active — the compose file
+already wires `EMAIL_URL: smtp://mailpit:1025` on GlitchTip.
 
 What GlitchTip does *not* support:
 
@@ -95,7 +113,7 @@ parallel to Axiom, independent of it. Prod (no `LOKI_URL`) is unchanged.
 ## Grafana queries
 
 Datasource is auto-provisioned from
-[`infra/grafana/provisioning/datasources/loki.yml`](infra/grafana/provisioning/datasources/loki.yml).
+[`docker/grafana/provisioning/datasources/loki.yml`](docker/grafana/provisioning/datasources/loki.yml).
 Anonymous Admin access is on by default in dev — no login needed.
 
 Useful LogQL:
@@ -126,11 +144,14 @@ trace explorer when one lands in this stack.
   `createRootLogger()` is skipped, no Loki traffic ever leaves prod.
 - `SENTRY_DEV` is unset in Render env → the dev guard does nothing in
   `NODE_ENV=production`, prod Sentry stays the canonical sink.
-- Compose project name is `contractor-ops-observability`; it cannot
-  collide with the main app stack and is opt-in via `pnpm
-  dev:observability` only.
-- The compose volumes (`glitchtip-pg`, `loki-data`, `grafana-data`) live
-  inside Docker and are wiped by `pnpm dev:observability:reset`.
+- The `observability` profile is opt-in — `docker compose up -d` without
+  `--profile observability` (or without `pnpm dev:observability`) never
+  starts these containers.
+- Compose volumes (`glitchtip_pg_data`, `glitchtip_redis_data`,
+  `loki_data`, `grafana_data`) live inside Docker and are wiped by
+  `pnpm dev:observability:reset`.
+- All published ports are bound to `127.0.0.1`. Nothing on the
+  observability stack is reachable from the LAN.
 
 ---
 
@@ -139,16 +160,16 @@ trace explorer when one lands in this stack.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | GlitchTip web container exits with `relation … does not exist` | DB volume from an older image still mounted | `pnpm dev:observability:reset` |
+| `pnpm dev:observability:dsn` prints nothing | The seed sidecar already ran successfully and rotated out of logs | `docker compose logs glitchtip-seed` (no tail) — or sign in to <http://localhost:8000> and grab the DSN from Settings → Client Keys |
 | Events not appearing in GlitchTip | DSN copied with HTTPS instead of HTTP, or `SENTRY_DEV` not set | Check `.env`; restart `pnpm dev` |
-| Loki returns `429 too many ingestion requests` | Pino burst at startup | Increase `ingestion_burst_size_mb` in `infra/loki/loki-config.yml` |
+| Loki returns `429 too many ingestion requests` | Pino burst at startup | Increase `ingestion_burst_size_mb` in `docker/loki/loki-config.yml` |
 | Grafana asks for password | Anonymous Admin disabled or env override | Default login `admin` / `admin`, set new password on first prompt |
-| Pino logs still go nowhere | `LOKI_URL` is set but service can't reach `host.docker.internal` | Use `LOKI_URL=http://localhost:3100` on the host process; the containers reach each other via the compose network, the host process talks to `localhost:3100` |
+| Pino logs still go nowhere | Container can't talk to `host.docker.internal` | Use `LOKI_URL=http://localhost:3100` on the host process. Compose-internal services already reach Loki via the `observability` network. |
 
 If GlitchTip needs a hard reset:
 
 ```bash
 pnpm dev:observability:reset
 pnpm dev:observability
+pnpm dev:observability:dsn
 ```
-
-Then sign up again and paste the new DSN.

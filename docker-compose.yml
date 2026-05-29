@@ -533,6 +533,54 @@ services:
       timeout: 10s
       retries: 10
 
+  # ── Loki — log aggregator (Pino transport ships JSON via HTTP) ───────────────
+  # docker compose --profile observability up -d
+  # Query at http://localhost:${GRAFANA_PORT:-3001} → Explore → Loki datasource.
+  # Set `LOKI_URL=http://localhost:3100` in `.env` so `packages/logger`
+  # fans out a parallel Pino stream that POSTs to /loki/api/v1/push.
+  loki:
+    profiles: [observability]
+    image: grafana/loki:3.2.0
+    container_name: contractor-ops-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./docker/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - observability
+    ports:
+      - "127.0.0.1:${LOKI_PORT:-3100}:3100"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3100/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ── Grafana — UI for Loki. Anonymous Admin enabled for friction-free dev. ───
+  # Datasource auto-provisioned from docker/grafana/provisioning/datasources/.
+  grafana:
+    profiles: [observability]
+    image: grafana/grafana:11.2.0
+    container_name: contractor-ops-grafana
+    restart: unless-stopped
+    depends_on:
+      loki:
+        condition: service_healthy
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_FEATURE_TOGGLES_ENABLE: traceqlEditor
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - observability
+    ports:
+      - "127.0.0.1:${GRAFANA_PORT:-3001}:3000"
+
   # ── Worker — background jobs, cron, QStash callbacks, webhooks ──────────────
   # Build: docker compose --profile worker build worker
   # Run:   docker compose --profile worker up -d worker
@@ -564,6 +612,7 @@ networks:
   infisical:
   unleash:
   glitchtip:
+  observability:
 
 volumes:
   clamav-db:
@@ -576,3 +625,5 @@ volumes:
   app_db_data:
   glitchtip_pg_data:
   glitchtip_redis_data:
+  loki_data:
+  grafana_data:

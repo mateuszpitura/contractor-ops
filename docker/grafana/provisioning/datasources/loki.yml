@@ -14,8 +14,8 @@ datasources:
       derivedFields:
         - matcherRegex: '"requestId":"([^"]+)"'
           name: requestId
-          # No external trace backend in this stack — render the matched
-          # value as a clickable copy-link. If Tempo/Jaeger lands later,
-          # swap `url` for the trace explorer URL template.
+          # No external trace backend wired in this stack — render the
+          # matched value as a clickable copy-link. Swap `url` for a
+          # Tempo / Jaeger explorer URL when one lands.
           url: 'https://example.invalid/$${__value.raw}'
           urlDisplayLabel: 'Copy request id'

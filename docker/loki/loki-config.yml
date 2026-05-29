@@ -1,4 +1,4 @@
-# Minimal Loki config for dev — single-binary mode, filesystem-backed.
+# Minimal Loki config for local dev — single-binary mode, filesystem-backed.
 # Not suitable for production (no replication, no object storage).
 
 auth_enabled: false
