@@ -35,7 +35,7 @@ const { mockPrisma, mockHasPermission, fixtures, mockR2PutObjectAndSignDownload 
       id: string;
       organizationId: string;
       contractorAssignmentId: string;
-      status: 'draft' | 'completed';
+      status: 'DRAFT' | 'COMPLETED';
       countryCode: 'GB' | 'DE';
       outcome: Record<string, unknown> | null;
       completedAt: Date | null;

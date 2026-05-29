@@ -7,7 +7,7 @@
  * trigger label.
  */
 
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { AlertCircleIcon, Check, ChevronsUpDown, Loader2Icon } from 'lucide-react';
 import * as React from 'react';
 
 import {
@@ -40,6 +40,16 @@ export interface ComboboxProps {
   emptyLabel?: string;
   className?: string;
   disabled?: boolean;
+  /**
+   * When true, render a spinner in the trigger and disable interaction.
+   * Mutually exclusive with `error` (loading wins).
+   */
+  loading?: boolean;
+  /**
+   * When set, render an alert icon labelled with `error.message` in the
+   * trigger and disable interaction. Ignored while `loading`.
+   */
+  error?: { message: string } | null;
 }
 
 export function Combobox({
@@ -51,6 +61,8 @@ export function Combobox({
   emptyLabel = 'No options.',
   className,
   disabled = false,
+  loading = false,
+  error = null,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const selectedLabel = React.useMemo(
@@ -66,13 +78,22 @@ export function Combobox({
     [onValueChange],
   );
 
+  const state: 'loading' | 'error' | 'resolved' = loading
+    ? 'loading'
+    : error
+      ? 'error'
+      : 'resolved';
+  const isBlocked = state !== 'resolved';
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         role="combobox"
         aria-expanded={open}
-        disabled={disabled}
+        aria-busy={loading || undefined}
+        disabled={disabled || isBlocked}
         data-form-control=""
+        data-state-async={state}
         className={cn(
           formControlClassName,
           formControlHoverClassName,
@@ -83,7 +104,20 @@ export function Combobox({
         <span className={cn(!selectedLabel && 'text-muted-foreground')}>
           {selectedLabel ?? placeholder}
         </span>
-        <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" aria-hidden />
+        {state === 'loading' ? (
+          <Loader2Icon
+            aria-hidden="true"
+            className="ms-2 size-3.5 shrink-0 animate-spin text-muted-foreground"
+          />
+        ) : state === 'error' ? (
+          <AlertCircleIcon
+            aria-label={error?.message}
+            role="img"
+            className="ms-2 size-3.5 shrink-0 text-destructive"
+          />
+        ) : (
+          <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" aria-hidden />
+        )}
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
         <Command>

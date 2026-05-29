@@ -212,7 +212,7 @@ async function buildDashboardRows(ctx: DbCtx, market: 'GB' | 'DE'): Promise<Dash
     db.classificationAssessment.findMany({
       where: {
         organizationId: orgId,
-        status: 'completed',
+        status: 'COMPLETED',
         countryCode: market,
         contractorAssignmentId: { in: assignmentIds },
       },
@@ -370,7 +370,7 @@ export const classificationDashboardRouter = router({
         },
       }),
       db.classificationAssessment.findMany({
-        where: { organizationId: orgId, status: 'completed', countryCode: input.market },
+        where: { organizationId: orgId, status: 'COMPLETED', countryCode: input.market },
         select: { contractorAssignmentId: true },
         distinct: ['contractorAssignmentId'],
         take: DETAIL_ROW_TAKE,
@@ -409,7 +409,7 @@ export const classificationDashboardRouter = router({
       const rows = await db.classificationAssessment.findMany({
         where: {
           organizationId: ctx.organizationId,
-          status: 'completed',
+          status: 'COMPLETED',
           countryCode: input.market,
         },
         orderBy: { completedAt: 'desc' },
@@ -500,7 +500,7 @@ export const classificationDashboardRouter = router({
     const rows = await db.classificationAssessment.findMany({
       where: {
         organizationId: orgId,
-        status: 'completed',
+        status: 'COMPLETED',
         countryCode: 'DE',
         completedAt: { lt: cutoff },
       },

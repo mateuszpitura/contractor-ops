@@ -22,7 +22,7 @@ const {
       id: string;
       organizationId: string;
       contractorAssignmentId: string;
-      currentBand: 'safe' | 'warning' | 'critical';
+      currentBand: 'SAFE' | 'WARNING' | 'CRITICAL';
       lastBillingShare: number;
       lastScannedAt: Date;
       lastCrossedAt: Date | null;
@@ -188,18 +188,18 @@ beforeEach(resetFixtures);
 
 describe('bandFor (thresholds)', () => {
   it('returns safe below 70%', () => {
-    expect(bandFor(0)).toBe('safe');
-    expect(bandFor(0.69)).toBe('safe');
+    expect(bandFor(0)).toBe('SAFE');
+    expect(bandFor(0.69)).toBe('SAFE');
   });
   it('returns warning at the 70% boundary (inclusive)', () => {
-    expect(bandFor(WARNING_THRESHOLD)).toBe('warning');
-    expect(bandFor(0.75)).toBe('warning');
-    expect(bandFor(0.8332)).toBe('warning');
+    expect(bandFor(WARNING_THRESHOLD)).toBe('WARNING');
+    expect(bandFor(0.75)).toBe('WARNING');
+    expect(bandFor(0.8332)).toBe('WARNING');
   });
   it('returns critical at the 83.33% boundary (inclusive)', () => {
-    expect(bandFor(CRITICAL_THRESHOLD)).toBe('critical');
-    expect(bandFor(0.9)).toBe('critical');
-    expect(bandFor(1)).toBe('critical');
+    expect(bandFor(CRITICAL_THRESHOLD)).toBe('CRITICAL');
+    expect(bandFor(0.9)).toBe('CRITICAL');
+    expect(bandFor(1)).toBe('CRITICAL');
   });
 });
 
@@ -286,8 +286,8 @@ describe('updateBandState', () => {
 
   it('[band-state] safe → warning fires warning notification', async () => {
     const res = await updateBandState(assignment, 0.75, now);
-    expect(res.previousBand).toBe('safe');
-    expect(res.currentBand).toBe('warning');
+    expect(res.previousBand).toBe('SAFE');
+    expect(res.currentBand).toBe('WARNING');
     expect(res.emittedType).toBe('classification.economic_dependency_warning');
     expect(res.reason).toBe('cross-up');
   });
@@ -297,15 +297,15 @@ describe('updateBandState', () => {
       id: 's1',
       organizationId: ORG_A,
       contractorAssignmentId: ASSIGNMENT_A,
-      currentBand: 'warning',
+      currentBand: 'WARNING',
       lastBillingShare: 0.72,
       lastScannedAt: new Date('2026-04-10T00:00:00Z'),
       lastCrossedAt: new Date('2026-04-10T00:00:00Z'),
       lastReminderAt: new Date('2026-04-10T00:00:00Z'),
     });
     const res = await updateBandState(assignment, 0.9, now);
-    expect(res.previousBand).toBe('warning');
-    expect(res.currentBand).toBe('critical');
+    expect(res.previousBand).toBe('WARNING');
+    expect(res.currentBand).toBe('CRITICAL');
     expect(res.emittedType).toBe('classification.economic_dependency_critical');
     expect(res.reason).toBe('cross-up');
   });
@@ -321,15 +321,15 @@ describe('updateBandState', () => {
       id: 's1',
       organizationId: ORG_A,
       contractorAssignmentId: ASSIGNMENT_A,
-      currentBand: 'critical',
+      currentBand: 'CRITICAL',
       lastBillingShare: 0.9,
       lastScannedAt: new Date('2026-04-10T00:00:00Z'),
       lastCrossedAt: new Date('2026-04-10T00:00:00Z'),
       lastReminderAt: new Date('2026-04-10T00:00:00Z'),
     });
     const res = await updateBandState(assignment, 0.75, now);
-    expect(res.previousBand).toBe('critical');
-    expect(res.currentBand).toBe('warning');
+    expect(res.previousBand).toBe('CRITICAL');
+    expect(res.currentBand).toBe('WARNING');
     expect(res.emittedType).toBe('resolved');
     expect(res.reason).toBe('cross-down');
   });
@@ -339,7 +339,7 @@ describe('updateBandState', () => {
       id: 's1',
       organizationId: ORG_A,
       contractorAssignmentId: ASSIGNMENT_A,
-      currentBand: 'warning',
+      currentBand: 'WARNING',
       lastBillingShare: 0.75,
       lastScannedAt: now,
       lastCrossedAt: now,
@@ -362,7 +362,7 @@ describe('updateBandState', () => {
       id: 's1',
       organizationId: ORG_A,
       contractorAssignmentId: ASSIGNMENT_A,
-      currentBand: 'warning',
+      currentBand: 'WARNING',
       lastBillingShare: 0.75,
       lastScannedAt: firstRun,
       lastCrossedAt: firstRun,

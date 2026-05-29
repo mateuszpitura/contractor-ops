@@ -88,18 +88,9 @@ export function ReconciliationSpotCheckView({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="spotcheck-contractor">{t('contractorLabel')}</Label>
-            <Select
-              value={contractorId}
-              onValueChange={handleContractorChange}
-              disabled={contractorsQuery.isLoading}>
-              <SelectTrigger id="spotcheck-contractor">
-                <SelectValue
-                  placeholder={
-                    contractorsQuery.isLoading
-                      ? t('loadingContractors')
-                      : t('contractorPlaceholder')
-                  }
-                />
+            <Select value={contractorId} onValueChange={handleContractorChange}>
+              <SelectTrigger id="spotcheck-contractor" loading={contractorsQuery.isLoading}>
+                <SelectValue placeholder={t('contractorPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {contractors.length === 0 && !contractorsQuery.isLoading ? (
@@ -122,16 +113,10 @@ export function ReconciliationSpotCheckView({
             <Select
               value={contractId}
               onValueChange={handleContractChange}
-              disabled={!contractorId || contractsQuery.isLoading}>
-              <SelectTrigger id="spotcheck-contract">
+              disabled={!contractorId}>
+              <SelectTrigger id="spotcheck-contract" loading={contractsQuery.isLoading}>
                 <SelectValue
-                  placeholder={
-                    contractorId
-                      ? contractsQuery.isLoading
-                        ? t('loadingContracts')
-                        : t('contractPlaceholder')
-                      : t('selectContractorFirst')
-                  }
+                  placeholder={contractorId ? t('contractPlaceholder') : t('selectContractorFirst')}
                 />
               </SelectTrigger>
               <SelectContent>

@@ -597,7 +597,7 @@ describe('classification.createDraft', () => {
       contractorAssignmentId: ASSIGNMENT_GB,
     });
 
-    expect(row.status).toBe('draft');
+    expect(row.status).toBe('DRAFT');
     expect(row.organizationId).toBe(ORG_A_ID);
     expect(row.ruleSetVersion).toBe('1.0.0');
     expect(row.answers).toEqual({});
@@ -761,7 +761,7 @@ describe('classification.submit', () => {
 
     const result = await caller.classification.submit({ assessmentId: DRAFT_ID_A });
 
-    expect(result.status).toBe('completed');
+    expect(result.status).toBe('COMPLETED');
     expect(result.outcome).toMatchObject({ kind: 'IR35', verdict: 'outside' });
     expect(result.questionsSnapshot).toMatchObject({ ruleSetVersion: '1.0.0', profileId: 'ir35' });
     expect(result.completedAt).toBeInstanceOf(Date);
@@ -802,7 +802,7 @@ describe('classification.submit', () => {
     });
 
     expect(fresh.id).not.toBe(COMPLETED_ID_A);
-    expect(fresh.status).toBe('draft');
+    expect(fresh.status).toBe('DRAFT');
     expect(assessments.size).toBe(2); // completed + new draft
   });
 
@@ -1017,7 +1017,7 @@ describe('classification.listByContractor', () => {
     });
 
     expect(rows).toHaveLength(3);
-    expect(rows[0]?.status).toBe('draft');
+    expect(rows[0]?.status).toBe('DRAFT');
     // Completed rows are sorted DESC by completedAt
     expect(rows[1]?.id).toBe('clcomp000000000000000000002');
     expect(rows[2]?.id).toBe('clcomp000000000000000000001');

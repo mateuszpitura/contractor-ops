@@ -106,14 +106,14 @@ describe('tax-id-validation.service — pre-flight short-circuit', () => {
       { db: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
     );
 
-    expect(out.responseStatus).toBe('invalid');
+    expect(out.responseStatus).toBe('INVALID');
     expect(out.source).toBe('local-checksum');
     expect(hmrc.checkVatNumber).not.toHaveBeenCalled();
     expect(vies.checkVatNumber).not.toHaveBeenCalled();
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
     expect(createArgs.data.apiProvider).toBe('local-checksum');
-    expect(createArgs.data.responseStatus).toBe('invalid');
+    expect(createArgs.data.responseStatus).toBe('INVALID');
   });
 
   it('rejects format-invalid DE USt-IdNr locally without hitting VIES', async () => {
@@ -128,7 +128,7 @@ describe('tax-id-validation.service — pre-flight short-circuit', () => {
       { db: prisma as never, hmrcClient: hmrc, viesClient: vies, now: () => NOW },
     );
 
-    expect(out.responseStatus).toBe('invalid');
+    expect(out.responseStatus).toBe('INVALID');
     expect(out.source).toBe('local-checksum');
     expect(vies.checkVatNumber).not.toHaveBeenCalled();
   });
@@ -166,7 +166,7 @@ describe('tax-id-validation.service — happy path', () => {
       organizationId: 'org_1',
       useVerifiedLookup: true,
     });
-    expect(out.responseStatus).toBe('valid');
+    expect(out.responseStatus).toBe('VALID');
     expect(out.confirmationRef).toBe('HMRC-XYZ-001');
     expect(out.source).toBe('api');
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
@@ -177,12 +177,12 @@ describe('tax-id-validation.service — happy path', () => {
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
     expect(createArgs.data.organizationId).toBe('org_1');
     expect(createArgs.data.apiProvider).toBe('hmrc');
-    expect(createArgs.data.responseStatus).toBe('valid');
+    expect(createArgs.data.responseStatus).toBe('VALID');
     expect(createArgs.data.confirmationRef).toBe('HMRC-XYZ-001');
     const updateArgs = prisma.contractor.update.mock.calls[0][0];
     expect(updateArgs.where).toEqual({ id: 'ctr_1' });
     expect(updateArgs.data.latestVatValidatedAt).toEqual(NOW);
-    expect(updateArgs.data.latestVatValidationStatus).toBe('valid');
+    expect(updateArgs.data.latestVatValidationStatus).toBe('VALID');
   });
 
   it('DE: dispatches to ViesClient with qualified=true', async () => {
@@ -213,7 +213,7 @@ describe('tax-id-validation.service — happy path', () => {
       organizationId: 'org_1',
       qualified: true,
     });
-    expect(out.responseStatus).toBe('valid');
+    expect(out.responseStatus).toBe('VALID');
     expect(out.confirmationRef).toBe('VIES-QUAL-42');
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
     expect(createArgs.data.apiProvider).toBe('vies');
@@ -228,7 +228,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
     vi.mocked(hmrc.checkVatNumber).mockRejectedValue(new HmrcApiError('HMRC down', 503));
     const priorDate = new Date(NOW.getTime() - 30 * 24 * 60 * 60 * 1000);
     prisma.taxIdValidation.findFirst.mockResolvedValue({
-      responseStatus: 'valid',
+      responseStatus: 'VALID',
       requestedAt: priorDate,
       confirmationRef: 'HMRC-PRIOR-100',
     });
@@ -242,11 +242,11 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
       now: () => NOW,
     });
 
-    expect(out.responseStatus).toBe('stale');
+    expect(out.responseStatus).toBe('STALE');
     expect(out.source).toBe('stale-cache');
     expect(out.confirmationRef).toBe('HMRC-PRIOR-100');
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
-    expect(createArgs.data.responseStatus).toBe('stale');
+    expect(createArgs.data.responseStatus).toBe('STALE');
     expect(createArgs.data.errorMessage).toContain('HMRC down');
   });
 
@@ -266,9 +266,9 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
       now: () => NOW,
     });
 
-    expect(out.responseStatus).toBe('unavailable');
+    expect(out.responseStatus).toBe('UNAVAILABLE');
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
-    expect(createArgs.data.responseStatus).toBe('unavailable');
+    expect(createArgs.data.responseStatus).toBe('UNAVAILABLE');
   });
 
   it('prior valid from 91 days ago → stale window exceeded → unavailable', async () => {
@@ -278,7 +278,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
     vi.mocked(hmrc.checkVatNumber).mockRejectedValue(new HmrcApiError('HMRC down', 503));
     const oldDate = new Date(NOW.getTime() - 91 * 24 * 60 * 60 * 1000);
     prisma.taxIdValidation.findFirst.mockResolvedValue({
-      responseStatus: 'valid',
+      responseStatus: 'VALID',
       requestedAt: oldDate,
       confirmationRef: 'HMRC-OLD-001',
     });
@@ -292,7 +292,7 @@ describe('tax-id-validation.service — soft-fail (D-08)', () => {
       now: () => NOW,
     });
 
-    expect(out.responseStatus).toBe('unavailable');
+    expect(out.responseStatus).toBe('UNAVAILABLE');
   });
 });
 
@@ -385,7 +385,7 @@ describe('tax-id-validation.service — Zod schema failure surfaces as unavailab
       viesClient: vies,
       now: () => NOW,
     });
-    expect(out.responseStatus).toBe('unavailable');
+    expect(out.responseStatus).toBe('UNAVAILABLE');
     const createArgs = prisma.taxIdValidation.create.mock.calls[0][0];
     expect(createArgs.data.errorMessage).toContain('schema violation');
   });
@@ -394,7 +394,7 @@ describe('tax-id-validation.service — Zod schema failure surfaces as unavailab
 describe('isValidationFresh', () => {
   it('returns true for a valid row within 90 days', () => {
     const v = {
-      responseStatus: 'valid' as const,
+      responseStatus: 'VALID' as const,
       requestedAt: new Date(NOW.getTime() - 89 * 24 * 60 * 60 * 1000),
     };
     expect(isValidationFresh(v, NOW)).toBe(true);
@@ -402,7 +402,7 @@ describe('isValidationFresh', () => {
 
   it('returns false for a valid row exactly 91 days old', () => {
     const v = {
-      responseStatus: 'valid' as const,
+      responseStatus: 'VALID' as const,
       requestedAt: new Date(NOW.getTime() - 91 * 24 * 60 * 60 * 1000),
     };
     expect(isValidationFresh(v, NOW)).toBe(false);
