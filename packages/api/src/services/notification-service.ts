@@ -3,6 +3,7 @@ import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
+import { normalizeLocale } from '../i18n/email-i18n';
 import { sendAppEmail } from './app-email';
 import { renderNotificationEmail } from './email-templates';
 import { getConnectedMessagingProviders } from './messaging/index';
@@ -167,21 +168,31 @@ async function sendNotificationEmail(
     return;
   }
 
+  const org = await prisma.organization.findUnique({
+    where: { id: event.organizationId },
+    select: { language: true },
+  });
+  const locale = normalizeLocale(org?.language ?? null);
+
   const ctaUrl = buildEntityUrl(event.entityType, event.entityId);
   const preferencesUrl = buildPreferencesUrl();
 
-  const { subject, react } = renderNotificationEmail(event.type, {
-    ...event.metadata,
-    ctaUrl,
-    preferencesUrl,
-    title: event.title,
-    body: event.body,
-  });
+  const { subject, react } = renderNotificationEmail(
+    event.type,
+    {
+      ...event.metadata,
+      ctaUrl,
+      preferencesUrl,
+      title: event.title,
+      body: event.body,
+    },
+    locale,
+  );
 
   await sendAppEmail({
     from: 'Contractor Ops <notifications@contractorhub.io>',
     to: user.email,
-    subject: String(subject),
+    subject,
     react,
     headers: {
       'List-Unsubscribe': `<${preferencesUrl}>`,

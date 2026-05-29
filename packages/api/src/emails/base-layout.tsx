@@ -63,19 +63,24 @@ const hr = {
 // Component
 // ---------------------------------------------------------------------------
 
-interface BaseLayoutProps {
+/**
+ * Strings shared by every email template: CTA button, footer links, footer
+ * brand text. Resolved server-side per recipient locale by
+ * `packages/api/src/services/email-templates.ts#renderNotificationEmail`
+ * and threaded through each child template into `<BaseLayout>`.
+ */
+export interface EmailBaseLabels {
+  ctaLabel?: string;
+  managePrefsLabel?: string;
+  unsubscribeLabel?: string;
+  footerText?: string;
+}
+
+interface BaseLayoutProps extends EmailBaseLabels {
   children: ReactNode;
   ctaUrl?: string;
   ctaText?: string;
   preferencesUrl?: string;
-  /** Label for the CTA button. Accepts translated text. */
-  ctaLabel?: string;
-  /** Label for the "Manage notification preferences" link. */
-  managePrefsLabel?: string;
-  /** Label for the "Unsubscribe" link. */
-  unsubscribeLabel?: string;
-  /** Footer brand text. */
-  footerText?: string;
 }
 
 export function BaseLayout({

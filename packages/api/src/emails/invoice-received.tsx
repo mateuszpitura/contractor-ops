@@ -1,4 +1,5 @@
 import { Text } from 'react-email';
+import type { EmailBaseLabels } from './base-layout';
 import { BaseLayout } from './base-layout';
 
 interface InvoiceReceivedLabels {
@@ -16,6 +17,7 @@ interface InvoiceReceivedEmailProps {
   ctaUrl: string;
   preferencesUrl: string;
   labels?: InvoiceReceivedLabels;
+  baseLabels?: EmailBaseLabels;
 }
 
 export function InvoiceReceivedEmail({
@@ -27,6 +29,7 @@ export function InvoiceReceivedEmail({
   ctaUrl,
   preferencesUrl,
   labels,
+  baseLabels,
 }: InvoiceReceivedEmailProps) {
   const l = {
     invoice: labels?.invoice ?? 'Invoice',
@@ -35,7 +38,13 @@ export function InvoiceReceivedEmail({
   };
 
   return (
-    <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
+    <BaseLayout
+      ctaUrl={ctaUrl}
+      ctaLabel={baseLabels?.ctaLabel}
+      managePrefsLabel={baseLabels?.managePrefsLabel}
+      unsubscribeLabel={baseLabels?.unsubscribeLabel}
+      footerText={baseLabels?.footerText}
+      preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {!!invoiceNumber && (

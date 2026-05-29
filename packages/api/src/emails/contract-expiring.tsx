@@ -1,4 +1,5 @@
 import { Text } from 'react-email';
+import type { EmailBaseLabels } from './base-layout';
 import { BaseLayout } from './base-layout';
 
 interface ContractExpiringLabels {
@@ -16,6 +17,7 @@ interface ContractExpiringEmailProps {
   ctaUrl: string;
   preferencesUrl: string;
   labels?: ContractExpiringLabels;
+  baseLabels?: EmailBaseLabels;
 }
 
 export function ContractExpiringEmail({
@@ -27,6 +29,7 @@ export function ContractExpiringEmail({
   ctaUrl,
   preferencesUrl,
   labels,
+  baseLabels,
 }: ContractExpiringEmailProps) {
   const l = {
     contract: labels?.contract ?? 'Contract',
@@ -35,7 +38,13 @@ export function ContractExpiringEmail({
   };
 
   return (
-    <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
+    <BaseLayout
+      ctaUrl={ctaUrl}
+      ctaLabel={baseLabels?.ctaLabel}
+      managePrefsLabel={baseLabels?.managePrefsLabel}
+      unsubscribeLabel={baseLabels?.unsubscribeLabel}
+      footerText={baseLabels?.footerText}
+      preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {!!contractTitle && (

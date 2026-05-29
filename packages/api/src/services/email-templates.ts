@@ -6,32 +6,32 @@ import { ContractExpiringEmail } from '../emails/contract-expiring';
 import { InvoiceReceivedEmail } from '../emails/invoice-received';
 import { TaskAssignedEmail } from '../emails/task-assigned';
 import { TaskOverdueEmail } from '../emails/task-overdue';
+import type { EmailLocale } from '../i18n/email-i18n';
+import { resolveMessage, resolveMessages } from '../i18n/email-i18n';
 
 // ---------------------------------------------------------------------------
-// i18n subject key constants
+// i18n subject keys (full Api.email.* paths into apps/web-vite/messages/*.json)
 // ---------------------------------------------------------------------------
 
 export const EMAIL_SUBJECT_KEYS = {
-  approvalRequest: 'email.subject.approvalRequest',
-  approvalDecision: 'email.subject.approvalDecision',
-  taskAssigned: 'email.subject.taskAssigned',
-  taskOverdue: 'email.subject.taskOverdue',
-  contractExpiring: 'email.subject.contractExpiring',
-  invoiceReceived: 'email.subject.invoiceReceived',
+  approvalRequest: 'Api.email.subject.approvalRequest',
+  approvalDecision: 'Api.email.subject.approvalDecision',
+  taskAssigned: 'Api.email.subject.taskAssigned',
+  taskOverdue: 'Api.email.subject.taskOverdue',
+  contractExpiring: 'Api.email.subject.contractExpiring',
+  invoiceReceived: 'Api.email.subject.invoiceReceived',
 } as const;
 
 // ---------------------------------------------------------------------------
-// Subject lines — return i18n keys with interpolation params
+// Subject lines — return i18n key + interpolation params
 // ---------------------------------------------------------------------------
 
-interface EmailSubject {
-  /** The i18n key for the subject line */
+interface SubjectSpec {
   key: string;
-  /** Interpolation parameters for the frontend to resolve */
   params: Record<string, string>;
 }
 
-const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => EmailSubject> = {
+const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => SubjectSpec> = {
   APPROVAL_REQUEST: data => ({
     key: EMAIL_SUBJECT_KEYS.approvalRequest,
     params: { invoiceNumber: (data.invoiceNumber as string) ?? '' },
@@ -62,6 +62,63 @@ const SUBJECT_LINES: Record<string, (data: Record<string, unknown>) => EmailSubj
 };
 
 // ---------------------------------------------------------------------------
+// Per-template label maps + shared base-layout labels
+// ---------------------------------------------------------------------------
+
+const BASE_LABEL_KEYS = {
+  ctaLabel: 'Api.email.labels.viewInApp',
+  managePrefsLabel: 'Api.email.labels.managePrefs',
+  unsubscribeLabel: 'Api.email.labels.unsubscribe',
+  footerText: 'Api.email.labels.footerText',
+} as const;
+
+const APPROVAL_REQUEST_LABEL_KEYS = {
+  invoice: 'Api.email.labels.invoice',
+  contractor: 'Api.email.labels.contractor',
+  amount: 'Api.email.labels.amount',
+  ctaButton: 'Api.email.labels.reviewAndApprove',
+} as const;
+
+const APPROVAL_DECISION_LABEL_KEYS = {
+  decision: 'Api.email.labels.decision',
+  by: 'Api.email.labels.by',
+  comment: 'Api.email.labels.comment',
+} as const;
+
+const TASK_ASSIGNED_LABEL_KEYS = {
+  task: 'Api.email.labels.task',
+  workflow: 'Api.email.labels.workflow',
+  due: 'Api.email.labels.due',
+} as const;
+
+const TASK_OVERDUE_LABEL_KEYS = {
+  task: 'Api.email.labels.task',
+  workflow: 'Api.email.labels.workflow',
+  wasDue: 'Api.email.labels.wasDue',
+} as const;
+
+const CONTRACT_EXPIRING_LABEL_KEYS = {
+  contract: 'Api.email.labels.contract',
+  contractor: 'Api.email.labels.contractor',
+  expires: 'Api.email.labels.expires',
+} as const;
+
+const INVOICE_RECEIVED_LABEL_KEYS = {
+  invoice: 'Api.email.labels.invoice',
+  from: 'Api.email.labels.from',
+  amount: 'Api.email.labels.amount',
+} as const;
+
+const TEMPLATE_LABEL_KEYS: Record<string, Record<string, string>> = {
+  APPROVAL_REQUEST: APPROVAL_REQUEST_LABEL_KEYS,
+  APPROVAL_DECISION: APPROVAL_DECISION_LABEL_KEYS,
+  TASK_ASSIGNED: TASK_ASSIGNED_LABEL_KEYS,
+  TASK_OVERDUE: TASK_OVERDUE_LABEL_KEYS,
+  CONTRACT_EXPIRING: CONTRACT_EXPIRING_LABEL_KEYS,
+  INVOICE_RECEIVED: INVOICE_RECEIVED_LABEL_KEYS,
+};
+
+// ---------------------------------------------------------------------------
 // Template mapping
 // ---------------------------------------------------------------------------
 
@@ -81,27 +138,42 @@ const TEMPLATE_MAP: Record<string, TemplateComponent> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Renders a notification email by selecting the appropriate React Email
- * template component for the given event type.
+ * Render a notification email in the recipient's locale.
  *
- * @param type - One of the 6 notification event types
- * @param data - Template data including ctaUrl, preferencesUrl, and type-specific fields
- * @returns subject line and React element for the email
- * @throws if the notification type is unknown
+ * Resolves the subject string + per-template + base-layout labels via the
+ * server-side email-i18n bundle reader, then constructs the React Email
+ * element with the pre-resolved props. The returned `subject` is the
+ * final string ready to ship to Resend — no further interpolation needed.
+ *
+ * `locale` should be the recipient's preferred language, normalised to
+ * one of {en, pl, de, ar}. Anything else falls back to en.
+ *
+ * @throws if `type` is not one of the 6 registered notification types
  */
 export function renderNotificationEmail(
   type: string,
   data: Record<string, unknown>,
-): { subject: EmailSubject; react: ReactElement } {
+  locale: EmailLocale,
+): { subject: string; react: ReactElement } {
   const Component = TEMPLATE_MAP[type];
   const getSubject = SUBJECT_LINES[type];
+  const labelKeys = TEMPLATE_LABEL_KEYS[type];
 
-  if (Component === undefined || getSubject === undefined) {
+  if (Component === undefined || getSubject === undefined || labelKeys === undefined) {
     throw new Error(`Unknown notification type: ${type}`);
   }
 
+  const subjectSpec = getSubject(data);
+  const subject = resolveMessage(subjectSpec.key, locale, subjectSpec.params);
+  const labels = resolveMessages(labelKeys, locale);
+  const baseLabels = resolveMessages(BASE_LABEL_KEYS, locale);
+
   return {
-    subject: getSubject(data),
-    react: createElement(Component, data),
+    subject,
+    react: createElement(Component, {
+      ...data,
+      labels,
+      baseLabels,
+    }),
   };
 }

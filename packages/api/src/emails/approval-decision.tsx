@@ -1,4 +1,5 @@
 import { Text } from 'react-email';
+import type { EmailBaseLabels } from './base-layout';
 import { BaseLayout } from './base-layout';
 
 interface ApprovalDecisionLabels {
@@ -16,6 +17,7 @@ interface ApprovalDecisionEmailProps {
   ctaUrl: string;
   preferencesUrl: string;
   labels?: ApprovalDecisionLabels;
+  baseLabels?: EmailBaseLabels;
 }
 
 export function ApprovalDecisionEmail({
@@ -27,6 +29,7 @@ export function ApprovalDecisionEmail({
   ctaUrl,
   preferencesUrl,
   labels,
+  baseLabels,
 }: ApprovalDecisionEmailProps) {
   const l = {
     decision: labels?.decision ?? 'Decision',
@@ -35,7 +38,13 @@ export function ApprovalDecisionEmail({
   };
 
   return (
-    <BaseLayout ctaUrl={ctaUrl} preferencesUrl={preferencesUrl}>
+    <BaseLayout
+      ctaUrl={ctaUrl}
+      ctaLabel={baseLabels?.ctaLabel}
+      managePrefsLabel={baseLabels?.managePrefsLabel}
+      unsubscribeLabel={baseLabels?.unsubscribeLabel}
+      footerText={baseLabels?.footerText}
+      preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {!!decision && (

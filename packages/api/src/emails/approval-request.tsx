@@ -1,4 +1,5 @@
 import { Text } from 'react-email';
+import type { EmailBaseLabels } from './base-layout';
 import { BaseLayout } from './base-layout';
 
 interface ApprovalRequestLabels {
@@ -17,6 +18,7 @@ interface ApprovalRequestEmailProps {
   ctaUrl: string;
   preferencesUrl: string;
   labels?: ApprovalRequestLabels;
+  baseLabels?: EmailBaseLabels;
 }
 
 export function ApprovalRequestEmail({
@@ -28,6 +30,7 @@ export function ApprovalRequestEmail({
   ctaUrl,
   preferencesUrl,
   labels,
+  baseLabels,
 }: ApprovalRequestEmailProps) {
   const l = {
     invoice: labels?.invoice ?? 'Invoice',
@@ -37,7 +40,13 @@ export function ApprovalRequestEmail({
   };
 
   return (
-    <BaseLayout ctaUrl={ctaUrl} ctaLabel={l.ctaButton} preferencesUrl={preferencesUrl}>
+    <BaseLayout
+      ctaUrl={ctaUrl}
+      ctaLabel={baseLabels?.ctaLabel ?? l.ctaButton}
+      managePrefsLabel={baseLabels?.managePrefsLabel}
+      unsubscribeLabel={baseLabels?.unsubscribeLabel}
+      footerText={baseLabels?.footerText}
+      preferencesUrl={preferencesUrl}>
       <Text style={{ fontSize: '20px', fontWeight: '600', color: '#1a1a1a' }}>{title}</Text>
       <Text style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '24px' }}>{body}</Text>
       {!!invoiceNumber && (
