@@ -222,7 +222,7 @@ describe('generateAndStoreCsr', () => {
     const conn = makeConnection({ taxDetails: undefined });
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
-    await expect(generateAndStoreCsr(ORG_ID)).rejects.toThrow('errors.zatca.taxDetailsRequired');
+    await expect(generateAndStoreCsr(ORG_ID)).rejects.toThrow('zatcaTaxDetailsRequired');
   });
 
   it('updates connection step to compliance_csid', async () => {
@@ -271,7 +271,7 @@ describe('requestComplianceCsid', () => {
     const conn = makeConnection({ csrPem: undefined });
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
-    await expect(requestComplianceCsid(ORG_ID)).rejects.toThrow('errors.zatca.csrRequired');
+    await expect(requestComplianceCsid(ORG_ID)).rejects.toThrow('zatcaCsrRequired');
   });
 
   it('updates connection step to compliance_checks', async () => {
@@ -365,7 +365,7 @@ describe('runComplianceChecks', () => {
     db.integrationConnection.findFirst.mockResolvedValue(conn);
 
     await expect(runComplianceChecks(ORG_ID)).rejects.toThrow(
-      'errors.zatca.taxDetailsRequiredForCompliance',
+      'zatcaTaxDetailsRequiredForCompliance',
     );
   });
 
@@ -374,9 +374,7 @@ describe('runComplianceChecks', () => {
     db.integrationConnection.findFirst.mockResolvedValue(conn);
     mockSecretStore.get.mockResolvedValue(null);
 
-    await expect(runComplianceChecks(ORG_ID)).rejects.toThrow(
-      'errors.zatca.complianceCsidRequired',
-    );
+    await expect(runComplianceChecks(ORG_ID)).rejects.toThrow('zatcaComplianceCsidRequired');
   });
 });
 
@@ -418,7 +416,7 @@ describe('exchangeProductionCertificate', () => {
     mockSecretStore.get.mockResolvedValue(null);
 
     await expect(exchangeProductionCertificate(ORG_ID)).rejects.toThrow(
-      'errors.zatca.complianceChecksMustPass',
+      'zatcaComplianceChecksMustPass',
     );
   });
 });
