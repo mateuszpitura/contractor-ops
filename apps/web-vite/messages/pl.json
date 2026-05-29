@@ -6298,51 +6298,11 @@
         "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
       }
     },
-    "provider": {
-      "connectCta": "Połącz {provider}",
-      "disconnectCta": "Rozłącz {provider}",
-      "reconnectCta": "Ponowna autoryzacja",
-      "manageCta": "Zarządzaj połączeniem",
-      "connectedTo": "Połączono z",
-      "connectedBy": "Połączono przez",
-      "connectedOn": "Połączono",
-      "tokenExpires": "Token wygasa",
-      "scopes": "Zakresy",
-      "lastRefresh": "Ostatnie odświeżenie",
-      "status": "Status",
-      "statusConnected": "Połączony",
-      "statusDisconnected": "Niepołączony",
-      "statusError": "Błąd",
-      "statusReauth": "Wymagana ponowna autoryzacja",
-      "errorConnectionFailed": "Połączenie nie powiodło się. Sprawdź dane uwierzytelniające i spróbuj ponownie.",
-      "errorTokenExpired": "Autoryzacja wygasła. Ponownie autoryzuj, aby przywrócić połączenie.",
-      "tokenExpiryExpired": "Wygasł",
-      "syncLogHeading": "Dziennik synchronizacji",
-      "syncLogEmpty": "Brak aktywności synchronizacji. Aktywność pojawi się tutaj po rozpoczęciu synchronizacji.",
-      "syncLogTimestamp": "Czas",
-      "syncLogAction": "Akcja",
-      "syncLogStatus": "Status",
-      "syncLogDuration": "Czas trwania",
-      "webhookLogHeading": "Dostarczenia webhook",
-      "webhookLogEmpty": "Brak dostarczenia webhook. Dostarczenia pojawią się tutaj, gdy dostawca zacznie wysyłać zdarzenia.",
-      "webhookLogReceived": "Odebrano",
-      "webhookLogEventType": "Typ zdarzenia",
-      "webhookLogStatus": "Status",
-      "webhookLogProcessingTime": "Czas przetwarzania",
-      "loadMore": "Więcej",
-      "connectionDetails": "Szczegóły połączenia"
-    },
     "disconnectConfirmGeneric": {
       "title": "Rozłączyć {provider}?",
       "body": "To spowoduje cofnięcie zapisanych danych uwierzytelniających i zatrzymanie synchronizacji. Istniejące dane nie zostaną usunięte. Możesz połączyc ponownie w dowolnym momencie.",
       "confirm": "Rozłącz {provider}",
       "cancel": "Zachowaj połączenie"
-    },
-    "providerToasts": {
-      "connected": "{provider} połączony pomyślnie",
-      "disconnected": "{provider} rozłączony",
-      "connectFailed": "Nie udało się połączyc z {provider}",
-      "disconnectFailed": "Nie udało się rozłączyć {provider}. Spróbuj ponownie."
     },
     "emptyState": {
       "heading": "Brak połączonych integracji",

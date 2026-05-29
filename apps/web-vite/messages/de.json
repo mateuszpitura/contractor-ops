@@ -6298,51 +6298,11 @@
         "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
       }
     },
-    "provider": {
-      "connectCta": "{provider} verbinden",
-      "disconnectCta": "{provider} trennen",
-      "reconnectCta": "Zugriff erneut autorisieren",
-      "manageCta": "Verbindung verwalten",
-      "connectedTo": "Verbunden mit",
-      "connectedBy": "Verbunden von",
-      "connectedOn": "Verbunden am",
-      "tokenExpires": "Token läuft ab",
-      "scopes": "Scopes",
-      "lastRefresh": "Letzte Aktualisierung",
-      "status": "Status",
-      "statusConnected": "Connected",
-      "statusDisconnected": "Nicht verbunden",
-      "statusError": "Error",
-      "statusReauth": "Erneute Authentifizierung erforderlich",
-      "errorConnectionFailed": "Verbindung fehlgeschlagen. Prüfen Sie Ihre Zugangsdaten und versuchen Sie es erneut.",
-      "errorTokenExpired": "Autorisierung abgelaufen. Autorisieren Sie erneut, um die Verbindung wiederherzustellen.",
-      "tokenExpiryExpired": "Abgelaufen",
-      "syncLogHeading": "Synchronisierungsprotokoll",
-      "syncLogEmpty": "Noch keine Synchronisierungsaktivität. Aktivitäten erscheinen hier, sobald die Verbindung mit der Synchronisierung beginnt.",
-      "syncLogTimestamp": "Timestamp",
-      "syncLogAction": "Aktion",
-      "syncLogStatus": "Status",
-      "syncLogDuration": "Duration",
-      "webhookLogHeading": "Webhook-Zustellungen",
-      "webhookLogEmpty": "Noch keine Webhook-Zustellungen. Zustellungen erscheinen hier, sobald der Anbieter Ereignisse sendet.",
-      "webhookLogReceived": "Received",
-      "webhookLogEventType": "Ereignistyp",
-      "webhookLogStatus": "Status",
-      "webhookLogProcessingTime": "Verarbeitungszeit",
-      "loadMore": "Mehr laden",
-      "connectionDetails": "Verbindungsdetails"
-    },
     "disconnectConfirmGeneric": {
       "title": "{provider} trennen?",
       "body": "Dies widerruft gespeicherte Zugangsdaten und beendet die Synchronisierung. Bestehende Daten werden nicht gelöscht. Sie können die Verbindung jederzeit wiederherstellen.",
       "confirm": "{provider} trennen",
       "cancel": "Verbindung beibehalten"
-    },
-    "providerToasts": {
-      "connected": "{provider} erfolgreich verbunden",
-      "disconnected": "{provider} getrennt",
-      "connectFailed": "Aktion fehlgeschlagen: connect {provider}.",
-      "disconnectFailed": "Aktion fehlgeschlagen: disconnect {provider}. Versuchen Sie es erneut."
     },
     "emptyState": {
       "heading": "Keine Integrationen verbunden",

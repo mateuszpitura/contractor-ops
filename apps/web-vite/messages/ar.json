@@ -6298,51 +6298,11 @@
         "descriptionDisconnected": "Connect Jira to sync issues, comments, and worklogs with your projects."
       }
     },
-    "provider": {
-      "connectCta": "توصيل {provider}",
-      "disconnectCta": "فصل {provider}",
-      "reconnectCta": "إعادة تفويض الوصول",
-      "manageCta": "إدارة Connection",
-      "connectedTo": "متصل بـ",
-      "connectedBy": "متصل بواسطة",
-      "connectedOn": "تاريخ الاتصال",
-      "tokenExpires": "تنتهي صلاحية الرمز",
-      "scopes": "النطاقات",
-      "lastRefresh": "آخر تحديث",
-      "status": "الحالة",
-      "statusConnected": "متصل",
-      "statusDisconnected": "تم توصيل Not",
-      "statusError": "خطأ",
-      "statusReauth": "إعادة المصادقة مطلوبة",
-      "errorConnectionFailed": "فشل الاتصال. تحقّق من بيانات الاعتماد وأعد المحاولة.",
-      "errorTokenExpired": "انتهت صلاحية التفويض. أعد التفويض لاستعادة الاتصال.",
-      "tokenExpiryExpired": "منتهي",
-      "syncLogHeading": "سجل المزامنة",
-      "syncLogEmpty": "لا توجد أنشطة مزامنة بعد. ستظهر هنا عند بدء الاتصال في المزامنة.",
-      "syncLogTimestamp": "الطابع الزمني",
-      "syncLogAction": "الإجراء",
-      "syncLogStatus": "الحالة",
-      "syncLogDuration": "المدة",
-      "webhookLogHeading": "تسليمات Webhook",
-      "webhookLogEmpty": "لا توجد تسليمات Webhook بعد. ستظهر هنا عند إرسال المزوّد لأحداث.",
-      "webhookLogReceived": "مستلمة",
-      "webhookLogEventType": "نوع الحدث",
-      "webhookLogStatus": "الحالة",
-      "webhookLogProcessingTime": "زمن المعالجة",
-      "loadMore": "تحميل المزيد",
-      "connectionDetails": "تفاصيل الاتصال"
-    },
     "disconnectConfirmGeneric": {
       "title": "فصل {provider}?",
       "body": "سيؤدي ذلك إلى إبطال بيانات الاعتماد المخزّنة وإيقاف جميع عمليات المزامنة. لن يتم حذف البيانات الحالية. يمكنك إعادة الاتصال في أي وقت.",
       "confirm": "فصل {provider}",
       "cancel": "الإبقاء على الاتصال"
-    },
-    "providerToasts": {
-      "connected": "تم الاتصال بـ {provider} بنجاح",
-      "disconnected": "تم فصل {provider}",
-      "connectFailed": "فشل الاتصال بـ {provider}",
-      "disconnectFailed": "تعذر disconnect {provider}. حاول مجددًا."
     },
     "emptyState": {
       "heading": "تم توصيل No integrations",
