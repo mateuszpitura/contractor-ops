@@ -178,7 +178,7 @@ describe('detachDocLink', () => {
         organizationId: ORG_ID,
         externalLinkId: 'nonexistent',
       }),
-    ).rejects.toThrow('Doc link not found');
+    ).rejects.toThrow('docLinkNotFound');
 
     // delete should NOT be called
     expect(mockPrisma.externalLink.delete).not.toHaveBeenCalled();

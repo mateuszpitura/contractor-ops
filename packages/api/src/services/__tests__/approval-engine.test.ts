@@ -471,7 +471,7 @@ describe('createApprovalFlow', () => {
     mockTx.member.findFirst.mockResolvedValue(null);
 
     await expect(createApprovalFlow(mockTx as unknown, params)).rejects.toThrow(
-      'errors.approval.noUserWithRole',
+      'approvalNoUserWithRole',
     );
   });
 
