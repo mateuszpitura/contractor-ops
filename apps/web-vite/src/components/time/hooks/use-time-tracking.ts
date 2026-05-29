@@ -1,11 +1,15 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
+import { cursorPaginationTotalRows } from '../../shared/cursor-pagination.js';
 import type { TimesheetRow } from '../approval-queue-table.js';
+
+/** Query-param value for “no status filter” (all entries). */
+export const TIME_STATUS_FILTER_ALL = 'ALL';
 
 export function useTimeTracking() {
   const t = useTranslations('Time');
@@ -14,28 +18,38 @@ export function useTimeTracking() {
   const trpc = useTRPC();
 
   const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('pending'));
-  const [statusFilter, setStatusFilter] = useQueryState('status', parseAsString.withDefault('all'));
+  const [statusRaw, setStatusFilter] = useQueryState(
+    'status',
+    parseAsString.withDefault(TIME_STATUS_FILTER_ALL),
+  );
+  const statusFilter = statusRaw === 'all' ? TIME_STATUS_FILTER_ALL : statusRaw;
+
+  const [allPageSize, setAllPageSize] = useState(20);
+  const [allCursors, setAllCursors] = useState<string[]>([]);
+  const allCursor = allCursors[allCursors.length - 1];
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset pagination when filter/page-size changes
+  useEffect(() => {
+    setAllCursors([]);
+  }, [statusFilter, allPageSize]);
 
   const pendingQuery = useQuery({
     ...trpc.time.listPending.queryOptions(),
     refetchInterval: 30000,
   });
 
-  const listAllInput = useMemo(
-    () =>
-      statusFilter === 'all'
-        ? { limit: 20 as const }
-        : {
-            limit: 20 as const,
-            status: statusFilter as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED',
-          },
-    [statusFilter],
-  );
+  const listAllInput = useMemo(() => {
+    const base = { limit: allPageSize, cursor: allCursor };
+    return statusFilter === TIME_STATUS_FILTER_ALL
+      ? base
+      : {
+          ...base,
+          status: statusFilter as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED',
+        };
+  }, [statusFilter, allPageSize, allCursor]);
 
-  const allQuery = useInfiniteQuery({
-    ...trpc.time.listAll.infiniteQueryOptions(listAllInput, {
-      getNextPageParam: lastPage => lastPage.nextCursor ?? undefined,
-    }),
+  const allQuery = useQuery({
+    ...trpc.time.listAll.queryOptions(listAllInput),
     enabled: tab === 'all',
     refetchInterval: 30000,
   });
@@ -45,14 +59,29 @@ export function useTimeTracking() {
     [pendingQuery.data],
   );
 
-  const allTimesheets = useMemo(() => {
-    const pages = allQuery.data?.pages ?? [];
-    return pages.flatMap(page => (page.items ?? []) as TimesheetRow[]);
-  }, [allQuery.data]);
+  const allTimesheets = useMemo(
+    () => (allQuery.data?.items ?? []) as TimesheetRow[],
+    [allQuery.data],
+  );
+
+  const allNextCursor = allQuery.data?.nextCursor;
+  const allHasNextPage = Boolean(allNextCursor);
+  const allCurrentPage = allCursors.length + 1;
+  const allTotalCount = useMemo(
+    () =>
+      cursorPaginationTotalRows(
+        allCursors.length,
+        allPageSize,
+        allTimesheets.length,
+        allHasNextPage,
+      ),
+    [allCursors.length, allPageSize, allTimesheets.length, allHasNextPage],
+  );
 
   const invalidate = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: [['time', 'listPending']] });
     void queryClient.invalidateQueries({ queryKey: [['time', 'listAll']] });
+    void queryClient.invalidateQueries({ queryKey: [['time', 'pendingReviewCount']] });
   }, [queryClient]);
 
   const approveMutation = useMutation(
@@ -124,9 +153,22 @@ export function useTimeTracking() {
     [router],
   );
 
-  const handleLoadMoreAll = useCallback(() => {
-    void allQuery.fetchNextPage();
-  }, [allQuery]);
+  const handleAllPageChange = useCallback(
+    (page: number) => {
+      if (page < allCurrentPage) {
+        setAllCursors(prev => prev.slice(0, page - 1));
+        return;
+      }
+      if (page > allCurrentPage && allNextCursor) {
+        setAllCursors(prev => [...prev, allNextCursor]);
+      }
+    },
+    [allCurrentPage, allNextCursor],
+  );
+
+  const handleAllPageSizeChange = useCallback((size: number) => {
+    setAllPageSize(size);
+  }, []);
 
   return {
     t,
@@ -143,9 +185,12 @@ export function useTimeTracking() {
     handleBulkApprove,
     handleBulkReject,
     handleNavigateToReview,
-    handleLoadMoreAll,
-    hasMoreAll: allQuery.hasNextPage ?? false,
-    isFetchingMoreAll: allQuery.isFetchingNextPage,
+    allPageSize,
+    allCurrentPage,
+    allTotalCount,
+    handleAllPageChange,
+    handleAllPageSizeChange,
+    isAllFetching: allQuery.isFetching,
     isApproving: approveMutation.isPending,
     isRejecting: rejectMutation.isPending,
     isBulkApproving: bulkApproveMutation.isPending,

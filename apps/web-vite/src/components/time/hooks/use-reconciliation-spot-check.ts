@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -40,6 +40,12 @@ export function useReconciliationSpotCheck() {
   const [periodStart, setPeriodStart] = useState<string>(monthAgo);
   const [periodEnd, setPeriodEnd] = useState<string>(today);
   const [invoicedInput, setInvoicedInput] = useState<string>('0.00');
+  const [runCompleted, setRunCompleted] = useState(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset completion flag whenever the spot-check inputs change
+  useEffect(() => {
+    setRunCompleted(false);
+  }, [contractorId, contractId, periodStart, periodEnd, invoicedInput]);
 
   const contractorsQuery = useReconciliationSpotCheckContractors();
   const contractors = (contractorsQuery.data ?? []) as ContractorOption[];
@@ -76,13 +82,15 @@ export function useReconciliationSpotCheck() {
     if (!canRun) return;
     try {
       await reconciliationQuery.refetch({ throwOnError: true });
+      setRunCompleted(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t('toast.failed'));
     }
   }
 
   const result = reconciliationQuery.data;
-  const hasResult = reconciliationQuery.isFetched && !reconciliationQuery.isFetching;
+  const hasResult =
+    runCompleted && reconciliationQuery.isFetched && !reconciliationQuery.isFetching;
 
   function handleContractorChange(value: string | null) {
     setContractorId(value ?? '');
@@ -112,6 +120,7 @@ export function useReconciliationSpotCheck() {
     handleRun,
     result,
     hasResult,
+    runCompleted,
     handleContractorChange,
     handleContractChange,
   } as const;
