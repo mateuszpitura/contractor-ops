@@ -756,25 +756,24 @@ html.theme-transition *::after {
  * className needed in dashboard-shell.tsx.
  */
 /*
- * Tall-enough viewport (≥ 600px): pin the shell to the viewport and let
- * tables scroll internally inside <main>. Anything shorter falls through
- * to the document-scroll default so the table is not crushed to a
- * postage stamp — the page scrolls instead, and the table retains a
- * usable minimum height.
+ * Pin the shell to the viewport on every workbench route so tables scroll
+ * internally inside <main>. AtelierTableShell already carries a
+ * `min-h-[320px]` floor inside `constrainHeight`, so on viewports too
+ * short for the bento (toolbar + chrome + 320px table) the shell pushes
+ * SidebarInset past 100svh and the document falls back to its own
+ * scroll. No media-query gate needed — the floor handles short viewports.
  */
-@media (min-height: 600px) {
-  body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
-    height: 100svh;
-    max-height: 100svh;
-    min-height: 0;
-    overflow: hidden;
-  }
+body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
+  height: 100svh;
+  max-height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+}
 
-  body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
-    flex: 1 1 0%;
-    min-height: 0;
-    overflow-y: auto;
-  }
+body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 /* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
