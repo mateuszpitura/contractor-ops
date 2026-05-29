@@ -4160,24 +4160,6 @@
       "emptyHeading": "Brak powiadomień",
       "emptyBody": "Powiadomienia pojawią się tutaj, gdy będą prośby o akceptacje, przypisania zadań lub ważne aktualizacje."
     },
-    "item": {
-      "approvalRequest": "Prośba o akceptacje {invoiceNumber}",
-      "approvalApproved": "Faktura {invoiceNumber} zaakceptowana",
-      "approvalRejected": "Faktura {invoiceNumber} odrzucona",
-      "taskAssigned": "Przypisano zadanie: {taskTitle}",
-      "taskOverdue": "Zadanie przeterminowane: {taskTitle}",
-      "contractExpiring": "Umowa wygasa za {days} dni: {contractTitle}",
-      "invoiceReceived": "Nowa faktura: {invoiceNumber}"
-    },
-    "itemBody": {
-      "approvalRequest": "{contractorName} – {amount} {currency}. SLA: {slaHours}h",
-      "approvalApproved": "Zaakceptowana przez {approverName}",
-      "approvalRejected": "Odrzucona przez {approverName}: {comment}",
-      "taskAssigned": "Workflow: {workflowName} dla {contractorName}",
-      "taskOverdue": "Termin minal {daysOverdue} dni temu. Workflow: {workflowName}",
-      "contractExpiring": "{contractorName} - wygasa {expiryDate}",
-      "invoiceReceived": "Od {contractorName} - {amount} {currency}"
-    },
     "preferences": {
       "heading": "Preferencje powiadomień",
       "description": "Wybierz, jak chcesz być powiadamiany o każdym typie zdarzenia. Powiadomienia w aplikacji są zawsze włączone.",
@@ -6646,18 +6628,9 @@
   },
   "Teams": {
     "cards": {
-      "approvalTitle": "Wymagane zatwierdzenie faktury",
-      "approved": "Zatwierdzona",
       "rejected": "Odrzucona",
       "approve": "Zatwierdz",
-      "reject": "Odrzuc",
-      "rejectModalTitle": "Odrzuc fakture",
-      "rejectCommentLabel": "Powod odrzucenia (wymagany)",
-      "rejectCommentPlaceholder": "Wyjasnij, dlaczego ta faktura jest odrzucana...",
-      "rejectSubmit": "Odrzuc fakture",
-      "viewInApp": "Zobacz w Contractor Ops",
-      "reminderTitle": "Przypomnienie o zaleglosci",
-      "overdueLabel": "{days} dni po terminie"
+      "reject": "Odrzuc"
     }
   },
   "Time": {

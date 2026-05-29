@@ -4160,24 +4160,6 @@
       "emptyHeading": "Noch keine Benachrichtigungen",
       "emptyBody": "Hier erscheinen Benachrichtigungen, wenn Freigabeanfragen, Aufgabenzuweisungen oder wichtige Aktualisierungen vorliegen."
     },
-    "item": {
-      "approvalRequest": "Freigabe angefragt für {invoiceNumber}",
-      "approvalApproved": "Rechnung {invoiceNumber} freigegeben",
-      "approvalRejected": "Rechnung {invoiceNumber} abgelehnt",
-      "taskAssigned": "Aufgabe zugewiesen: {taskTitle}",
-      "taskOverdue": "Aufgabe überfällig: {taskTitle}",
-      "contractExpiring": "Vertrag läuft in {days} Tagen ab: {contractTitle}",
-      "invoiceReceived": "Neue Rechnung erhalten: {invoiceNumber}"
-    },
-    "itemBody": {
-      "approvalRequest": "{contractorName} – {amount} {currency}. SLA: {slaHours} h",
-      "approvalApproved": "Freigegeben von {approverName}",
-      "approvalRejected": "Abgelehnt von {approverName}: {comment}",
-      "taskAssigned": "Workflow: {workflowName} für {contractorName}",
-      "taskOverdue": "Vor {daysOverdue} Tagen fällig. Workflow: {workflowName}",
-      "contractExpiring": "{contractorName} – läuft am {expiryDate} ab",
-      "invoiceReceived": "Von {contractorName} – {amount} {currency}"
-    },
     "preferences": {
       "heading": "Benachrichtigungseinstellungen",
       "description": "Wählen Sie aus, wie Sie für jeden Ereignistyp benachrichtigt werden möchten. In-App-Benachrichtigungen sind immer aktiviert.",
@@ -6646,18 +6628,9 @@
   },
   "Teams": {
     "cards": {
-      "approvalTitle": "Rechnungsfreigabe erforderlich",
-      "approved": "Genehmigt",
       "rejected": "Abgelehnt",
       "approve": "Genehmigen",
-      "reject": "Ablehnen",
-      "rejectModalTitle": "Rechnung ablehnen",
-      "rejectCommentLabel": "Begründung für Ablehnung (erforderlich)",
-      "rejectCommentPlaceholder": "Erläutern Sie, warum diese Rechnung abgelehnt wird ...",
-      "rejectSubmit": "Rechnung ablehnen",
-      "viewInApp": "In Contractor Ops anzeigen",
-      "reminderTitle": "Erinnerung an überfällige Freigabe",
-      "overdueLabel": "Seit {days} Tagen überfällig"
+      "reject": "Ablehnen"
     }
   },
   "Time": {

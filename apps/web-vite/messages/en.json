@@ -4160,24 +4160,6 @@
       "emptyHeading": "No notifications yet",
       "emptyBody": "You'll see notifications here when there are approval requests, task assignments, or important updates."
     },
-    "item": {
-      "approvalRequest": "Approval requested for {invoiceNumber}",
-      "approvalApproved": "Invoice {invoiceNumber} approved",
-      "approvalRejected": "Invoice {invoiceNumber} rejected",
-      "taskAssigned": "Task assigned: {taskTitle}",
-      "taskOverdue": "Task overdue: {taskTitle}",
-      "contractExpiring": "Contract expiring in {days} days: {contractTitle}",
-      "invoiceReceived": "New invoice received: {invoiceNumber}"
-    },
-    "itemBody": {
-      "approvalRequest": "{contractorName} - {amount} {currency}. SLA: {slaHours}h",
-      "approvalApproved": "Approved by {approverName}",
-      "approvalRejected": "Rejected by {approverName}: {comment}",
-      "taskAssigned": "Workflow: {workflowName} for {contractorName}",
-      "taskOverdue": "Due {daysOverdue} days ago. Workflow: {workflowName}",
-      "contractExpiring": "{contractorName} - expires {expiryDate}",
-      "invoiceReceived": "From {contractorName} - {amount} {currency}"
-    },
     "preferences": {
       "heading": "Notification preferences",
       "description": "Choose how you want to be notified for each event type. In-app notifications are always enabled.",
@@ -6646,18 +6628,9 @@
   },
   "Teams": {
     "cards": {
-      "approvalTitle": "Invoice Approval Required",
-      "approved": "Approved",
       "rejected": "Rejected",
       "approve": "Approve",
-      "reject": "Reject",
-      "rejectModalTitle": "Reject Invoice",
-      "rejectCommentLabel": "Reason for rejection (required)",
-      "rejectCommentPlaceholder": "Explain why this invoice is being rejected...",
-      "rejectSubmit": "Reject Invoice",
-      "viewInApp": "View in Contractor Ops",
-      "reminderTitle": "Overdue Approval Reminder",
-      "overdueLabel": "{days} days overdue"
+      "reject": "Reject"
     }
   },
   "Time": {

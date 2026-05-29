@@ -4160,24 +4160,6 @@
       "emptyHeading": "لا يوجد notifications بعد",
       "emptyBody": "ستظهر الإشعارات هنا عند ورود طلبات موافقة أو إسناد مهام أو تحديثات مهمة."
     },
-    "item": {
-      "approvalRequest": "طُلبت موافقة على {invoiceNumber}",
-      "approvalApproved": "تم اعتماد الفاتورة {invoiceNumber}",
-      "approvalRejected": "تم رفض الفاتورة {invoiceNumber}",
-      "taskAssigned": "تم إسناد مهمة: {taskTitle}",
-      "taskOverdue": "مهمة متأخرة: {taskTitle}",
-      "contractExpiring": "ينتهي العقد خلال {days} أيام: {contractTitle}",
-      "invoiceReceived": "تم استلام فاتورة جديدة: {invoiceNumber}"
-    },
-    "itemBody": {
-      "approvalRequest": "{contractorName} - {amount} {currency}. اتفاقية مستوى الخدمة: {slaHours} س",
-      "approvalApproved": "تم الاعتماد بواسطة {approverName}",
-      "approvalRejected": "تم الرفض بواسطة {approverName}: {comment}",
-      "taskAssigned": "Workflow: {workflowName} لـ {contractorName}",
-      "taskOverdue": "كان الاستحقاق منذ {daysOverdue} أيام. Workflow: {workflowName}",
-      "contractExpiring": "{contractorName} - ينتهي في {expiryDate}",
-      "invoiceReceived": "من {contractorName} - {amount} {currency}"
-    },
     "preferences": {
       "heading": "تفضيلات الإشعارات",
       "description": "اختر طريقة إعلامك بكل نوع من الأحداث. الإشعارات داخل التطبيق مفعّلة دائمًا.",
@@ -6646,18 +6628,9 @@
   },
   "Teams": {
     "cards": {
-      "approvalTitle": "موافقة فاتورة مطلوبة",
-      "approved": "تمت الموافقة",
       "rejected": "مرفوض",
       "approve": "موافقة",
-      "reject": "رفض",
-      "rejectModalTitle": "رفض الفاتورة",
-      "rejectCommentLabel": "سبب الرفض (مطلوب)",
-      "rejectCommentPlaceholder": "اشرح سبب رفض هذه الفاتورة...",
-      "rejectSubmit": "رفض الفاتورة",
-      "viewInApp": "عرض in Contractor Ops",
-      "reminderTitle": "تذكير بموافقة متأخرة",
-      "overdueLabel": "{days} أيام متأخر"
+      "reject": "رفض"
     }
   },
   "Time": {
