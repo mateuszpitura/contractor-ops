@@ -427,7 +427,7 @@ describe('einvoice.generateZugferdPdf', () => {
       expect(err).toBeInstanceOf(TRPCError);
       const trpcErr = err as TRPCError;
       expect(trpcErr.code).toBe('INTERNAL_SERVER_ERROR');
-      expect(trpcErr.message).toBe('ZUGFERD_WRAPPING_FAILED');
+      expect(trpcErr.message).toBe('zugferdWrappingFailed');
     }
 
     expect(mockPutObjectAndSignDownload).not.toHaveBeenCalled();
@@ -447,7 +447,7 @@ describe('einvoice.generateZugferdPdf', () => {
       throw new Error('expected throw');
     } catch (err) {
       expect((err as TRPCError).code).toBe('UNPROCESSABLE_CONTENT');
-      expect((err as TRPCError).message).toBe('ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT');
+      expect((err as TRPCError).message).toBe('zugferdLevelUnsupportedForOutput');
     }
   });
 
