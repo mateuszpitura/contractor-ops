@@ -6188,6 +6188,9 @@
         "unlinkUser": "Rozłącz użytkownika",
         "searchPlaceholder": "Szukaj użytkowników Slack...",
         "mappingStats": "{matched} z {total} użytkowników dopasowanych",
+        "entityLabel": "{count, plural, one {user} other {users}}",
+        "emptyTitle": "Brak użytkowników do mapowania",
+        "emptyBody": "Gdy w organizacji pojawią się członkowie, zostaną tutaj wyświetleni do dopasowania z kontami Slack.",
         "unlinkConfirm": "Odłączyć tego użytkownika Slack od tego konta?",
         "syncUsers": {
           "cta": "Synchronizuj użytkowników",

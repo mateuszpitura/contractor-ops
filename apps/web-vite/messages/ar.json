@@ -6188,6 +6188,9 @@
         "unlinkUser": "إلغاء ربط مستخدم",
         "searchPlaceholder": "البحث عن Slack users...",
         "mappingStats": "{matched} من {total} مستخدمين متطابقون",
+        "entityLabel": "{count, plural, one {user} other {users}}",
+        "emptyTitle": "لا يوجد مستخدمون للتعيين",
+        "emptyBody": "بمجرد أن يكون لمؤسستك أعضاء، سيظهرون هنا للمطابقة مع حسابات Slack.",
         "unlinkConfirm": "هل تريد إلغاء ربط مستخدم Slack هذا بهذا الحساب؟",
         "syncUsers": {
           "cta": "مزامنة المستخدمين",

@@ -49,7 +49,6 @@ const WHITELIST = new Set([
   'components/settings/api-keys-tab.tsx',
   'components/settings/feature-flags-tab.tsx',
   'components/settings/notification-preferences.tsx',
-  'components/settings/slack-user-mapping.tsx',
   'components/settings/tax/country-rates-section.tsx',
   'components/settings/tax/wht-certificates-section.tsx',
   'components/settings/e-invoicing/transmissions-log-card.tsx',

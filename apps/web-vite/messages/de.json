@@ -6188,6 +6188,9 @@
         "unlinkUser": "Verknüpfung aufheben",
         "searchPlaceholder": "Slack-Benutzer suchen ...",
         "mappingStats": "{matched} von {total} Benutzern zugeordnet",
+        "entityLabel": "{count, plural, one {user} other {users}}",
+        "emptyTitle": "Keine Benutzer zum Zuordnen",
+        "emptyBody": "Sobald Ihre Organisation Mitglieder hat, werden sie hier zur Zuordnung mit Slack-Konten angezeigt.",
         "unlinkConfirm": "Diesen Slack-Benutzer von diesem Konto trennen?",
         "syncUsers": {
           "cta": "Benutzer synchronisieren",
