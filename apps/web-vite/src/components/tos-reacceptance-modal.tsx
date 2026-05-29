@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
@@ -23,6 +24,10 @@ export interface TosReacceptanceModalViewProps {
   onAccept: () => void;
 }
 
+// Modal is non-dismissible — block external close attempts.
+const noopOpenChange = () => undefined;
+const preventEvent = (e: { preventDefault: () => void }) => e.preventDefault();
+
 export function TosReacceptanceModalView({
   currentVersion,
   isPending,
@@ -31,16 +36,12 @@ export function TosReacceptanceModalView({
   const t = useTranslations('Legal.TermsModal');
 
   return (
-    <Dialog
-      open
-      onOpenChange={() => {
-        /* Modal is non-dismissible — block external close attempts */
-      }}>
+    <Dialog open onOpenChange={noopOpenChange}>
       <DialogContent
         className="max-w-lg"
         showCloseButton={false}
-        onEscapeKeyDown={e => e.preventDefault()}
-        onInteractOutside={e => e.preventDefault()}>
+        onEscapeKeyDown={preventEvent}
+        onInteractOutside={preventEvent}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ScrollText className="size-4" />
@@ -49,23 +50,31 @@ export function TosReacceptanceModalView({
           <DialogDescription>{t('description', { version: currentVersion })}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-72 rounded-md border p-4">
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            {SOFTWARE_NOT_LEGAL_ADVICE_EN}
+        <div className="space-y-4">
+          <ScrollArea className="max-h-72 rounded-md border p-4">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {SOFTWARE_NOT_LEGAL_ADVICE_EN}
+            </p>
+          </ScrollArea>
+
+          <p className="text-xs text-muted-foreground">
+            {t('readFull')}{' '}
+            <Link
+              href="/legal/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline">
+              {t('termsLink')}
+              <ExternalLink className="ml-1 inline h-3 w-3" />
+            </Link>
           </p>
-        </ScrollArea>
+        </div>
 
-        <p className="text-xs text-muted-foreground">
-          {t('readFull')}{' '}
-          <Link href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline">
-            {t('termsLink')}
-            <ExternalLink className="ml-1 inline h-3 w-3" />
-          </Link>
-        </p>
-
-        <Button onClick={onAccept} disabled={isPending} className="w-full">
-          {isPending ? t('accepting') : t('accept')}
-        </Button>
+        <DialogFooter className="flex-col sm:flex-col">
+          <Button size="lg" onClick={onAccept} disabled={isPending} className="w-full">
+            {isPending ? t('accepting') : t('accept')}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

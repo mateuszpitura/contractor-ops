@@ -27,7 +27,7 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { DataTableBody } from '../shared/data-table-body.js';
 import { SortableTableHead } from '../shared/sortable-table-head.js';
@@ -238,6 +238,13 @@ export function ZatcaInvoiceChainTableView({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const handleResubmitDialogChange = useCallback(
+    (open: boolean) => {
+      if (!open) closeResubmitDialog();
+    },
+    [closeResubmitDialog],
+  );
+
   return (
     <>
       <Card>
@@ -277,11 +284,7 @@ export function ZatcaInvoiceChainTableView({
         </CardContent>
       </Card>
 
-      <AlertDialog
-        open={!!pendingResubmit}
-        onOpenChange={open => {
-          if (!open) closeResubmitDialog();
-        }}>
+      <AlertDialog open={!!pendingResubmit} onOpenChange={handleResubmitDialogChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">

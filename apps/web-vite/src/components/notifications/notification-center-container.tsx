@@ -1,25 +1,37 @@
-import {
-  AtelierEmptyState,
-  AtelierPageHeader,
-  NotificationsIllustration,
-} from '@contractor-ops/ui';
+import { AtelierEmptyState, NotificationsIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Tabs, TabsList, TabsTrigger } from '@contractor-ops/ui/components/shadcn/tabs';
 import { CheckCheck } from 'lucide-react';
-import { useId } from 'react';
-
+import { useCallback, useId } from 'react';
 import { tDyn } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import {
   NOTIFICATION_FILTER_KEYS,
   useNotificationCenter,
 } from './hooks/use-notification-center.js';
 import { NotificationCenterSkeleton } from './notification-center-skeleton.js';
+import type { NotificationData } from './notification-item.js';
 import { NotificationItem } from './notification-item.js';
+
+interface NotificationRowProps {
+  notification: NotificationData;
+  onItemClick: (n: NotificationData) => void;
+  disabled: boolean;
+}
+
+function NotificationRow({ notification, onItemClick, disabled }: NotificationRowProps) {
+  const handleClick = useCallback(() => onItemClick(notification), [onItemClick, notification]);
+  return (
+    <div className="border-b last:border-b-0">
+      <NotificationItem notification={notification} onClick={handleClick} disabled={disabled} />
+    </div>
+  );
+}
 
 export function NotificationCenterContainer() {
   const t = useTranslations('Notifications');
@@ -30,7 +42,7 @@ export function NotificationCenterContainer() {
   return (
     <div className="mx-auto max-w-3xl space-y-section-gap">
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('title')}
           description={t('pageDescription')}
           actions={
@@ -84,13 +96,12 @@ export function NotificationCenterContainer() {
         <>
           <div className="flex flex-col rounded-lg border">
             {center.notifications.map(n => (
-              <div key={n.id} className="border-b last:border-b-0">
-                <NotificationItem
-                  notification={n}
-                  onClick={() => center.handleItemClick(n)}
-                  disabled={center.isMarkingRead}
-                />
-              </div>
+              <NotificationRow
+                key={n.id}
+                notification={n}
+                onItemClick={center.handleItemClick}
+                disabled={center.isMarkingRead}
+              />
             ))}
           </div>
 

@@ -11,6 +11,7 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { FileText } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { AttachDocDialog } from './attach-doc-dialog-container.js';
 import { DocLinkChip } from './doc-link-chip.js';
@@ -66,6 +67,13 @@ export function DocLinksSectionView({
   variant,
   t,
 }: DocLinksSectionViewProps) {
+  const handleDetachDialogChange = useCallback(
+    (open: boolean) => {
+      if (!open) setPendingDetachId(null);
+    },
+    [setPendingDetachId],
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -114,11 +122,7 @@ export function DocLinksSectionView({
         />
       )}
 
-      <AlertDialog
-        open={pendingDetachId !== null}
-        onOpenChange={open => {
-          if (!open) setPendingDetachId(null);
-        }}>
+      <AlertDialog open={pendingDetachId !== null} onOpenChange={handleDetachDialogChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('docs.section.detachConfirmTitle')}</AlertDialogTitle>

@@ -1,5 +1,6 @@
 import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import {
@@ -12,6 +13,7 @@ import { UsageDashboard } from './usage-dashboard.js';
 export function UsageDashboardContainer() {
   const t = useTranslations('Billing.usage');
   const dashboard = useUsageDashboard();
+  const handleRetry = useCallback(() => void dashboard.refetch(), [dashboard.refetch]);
 
   if (dashboard.isLoading) {
     return (
@@ -30,11 +32,7 @@ export function UsageDashboardContainer() {
 
   if (dashboard.isError) {
     return (
-      <QueryErrorPanel
-        message={t('errorLoading')}
-        retryLabel={t('retry')}
-        onRetry={() => void dashboard.refetch()}
-      />
+      <QueryErrorPanel message={t('errorLoading')} retryLabel={t('retry')} onRetry={handleRetry} />
     );
   }
 

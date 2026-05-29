@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+
 import { useImportWizardDialog } from './hooks/use-import-wizard.js';
 import type { ImportWizardDialogProps } from './import-wizard-dialog.js';
 import { ImportWizardDialogView } from './import-wizard-dialog.js';
@@ -10,6 +12,13 @@ import { StepUpload } from './step-upload.js';
 export function ImportWizardDialogContainer(props: ImportWizardDialogProps) {
   const wizard = useImportWizardDialog(props);
 
+  const handleFileRemoved = useCallback(() => {
+    wizard.setFileBase64(null);
+    wizard.setFileName(null);
+  }, [wizard.setFileBase64, wizard.setFileName]);
+
+  const handleImport = useCallback(async () => wizard.handleNext(), [wizard.handleNext]);
+
   let stepBody: React.ReactNode = null;
   switch (wizard.currentStep) {
     case 0:
@@ -19,10 +28,7 @@ export function ImportWizardDialogContainer(props: ImportWizardDialogProps) {
           onEntityTypeChange={wizard.setEntityType}
           onFileSelected={wizard.handleFileSelected}
           fileName={wizard.fileName}
-          onFileRemoved={() => {
-            wizard.setFileBase64(null);
-            wizard.setFileName(null);
-          }}
+          onFileRemoved={handleFileRemoved}
         />
       );
       break;
@@ -67,7 +73,7 @@ export function ImportWizardDialogContainer(props: ImportWizardDialogProps) {
         <StepConfirm
           entityType={wizard.entityType}
           counts={wizard.confirmCounts}
-          onImport={async () => wizard.handleNext()}
+          onImport={handleImport}
           importResult={wizard.importResult}
           isImporting={wizard.commitMutation.isPending}
         />

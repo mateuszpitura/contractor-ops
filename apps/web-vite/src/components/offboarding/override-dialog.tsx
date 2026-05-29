@@ -41,6 +41,7 @@ import {
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -101,6 +102,15 @@ export function OverrideDialog({
     await onSubmit({ workflowRunId, reason: reason.trim(), acknowledged: true });
   }, [submitEnabled, workflowRunId, reason, onSubmit]);
 
+  const handleReasonChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [],
+  );
+
+  const handleAcknowledgeChange = useCallback((v: boolean) => setAcknowledged(v === true), []);
+
+  const handleCancelClick = useCallback(() => attemptClose(false), [attemptClose]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={attemptClose}>
@@ -119,7 +129,7 @@ export function OverrideDialog({
                 id={reasonId}
                 placeholder={t('reasonPlaceholder')}
                 value={reason}
-                onChange={e => setReason(e.target.value)}
+                onChange={handleReasonChange}
                 disabled={pending}
                 rows={4}
                 aria-invalid={reason.length > 0 && !reasonValid}
@@ -136,7 +146,7 @@ export function OverrideDialog({
               <Checkbox
                 id={`${reasonId}-ack`}
                 checked={acknowledged}
-                onCheckedChange={v => setAcknowledged(v === true)}
+                onCheckedChange={handleAcknowledgeChange}
                 disabled={pending}
                 aria-label={t('acknowledgement')}
               />
@@ -152,11 +162,7 @@ export function OverrideDialog({
             )}
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => attemptClose(false)}
-              disabled={pending}>
+            <Button type="button" variant="outline" onClick={handleCancelClick} disabled={pending}>
               {t('cancel')}
             </Button>
             <Button

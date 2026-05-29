@@ -17,7 +17,7 @@
 
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import { Trans } from 'react-i18next';
 
 export interface PrivacyNoticeAcknowledgementProps {
@@ -42,6 +42,7 @@ export function PrivacyNoticeAcknowledgement({
 }: PrivacyNoticeAcknowledgementProps) {
   const id = useId();
   const errorId = `${id}-privacy-ack-error`;
+  const handleCheckedChange = useCallback((value: boolean) => onChange(value === true), [onChange]);
 
   return (
     <div className="space-y-2">
@@ -50,7 +51,7 @@ export function PrivacyNoticeAcknowledgement({
           id={`${id}-privacy-ack`}
           name="privacyNoticeAcknowledged"
           checked={checked}
-          onCheckedChange={value => onChange(value === true)}
+          onCheckedChange={handleCheckedChange}
           aria-required="true"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}

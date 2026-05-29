@@ -26,6 +26,10 @@ interface NormalizedError {
   data?: unknown;
 }
 
+const reloadPage = () => {
+  window.location.reload();
+};
+
 function normalizeError(error: unknown): NormalizedError {
   if (isRouteErrorResponse(error)) {
     return {
@@ -91,9 +95,7 @@ export function RouteErrorBoundary() {
       </h1>
       <p style={{ marginBottom: '1.5rem', color: '#555' }}>{normalized.message}</p>
       <button
-        onClick={() => {
-          window.location.reload();
-        }}
+        onClick={reloadPage}
         style={{
           padding: '0.5rem 1rem',
           borderRadius: '0.375rem',

@@ -1,5 +1,5 @@
 import { FileUpload } from '@contractor-ops/ui/components/origin/file-upload';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ACCEPTED_TYPES, MAX_FILE_SIZE } from './drop-zone-constants.js';
@@ -27,18 +27,21 @@ export function DropZoneView({
   const t = useTranslations('Documents');
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
 
-  const handleChange = (next: File[]) => {
-    const valid = next.filter(f => f.size <= MAX_FILE_SIZE);
-    const rejected = next.filter(f => f.size > MAX_FILE_SIZE);
-    setStagedFiles([]);
-    if (valid.length > 0) {
-      onFilesAccepted?.(valid);
-      uploadDrop(valid);
-    }
-    if (rejected.length > 0) {
-      onFileRejected?.(rejected);
-    }
-  };
+  const handleChange = useCallback(
+    (next: File[]) => {
+      const valid = next.filter(f => f.size <= MAX_FILE_SIZE);
+      const rejected = next.filter(f => f.size > MAX_FILE_SIZE);
+      setStagedFiles([]);
+      if (valid.length > 0) {
+        onFilesAccepted?.(valid);
+        uploadDrop(valid);
+      }
+      if (rejected.length > 0) {
+        onFileRejected?.(rejected);
+      }
+    },
+    [onFilesAccepted, onFileRejected, uploadDrop],
+  );
 
   return (
     <div className="space-y-4">

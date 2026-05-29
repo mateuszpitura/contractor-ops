@@ -11,7 +11,7 @@
 import { AnimatedNumber, Sparkline, TiltCard } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowUpRight, TrendingDown, TrendingUp } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -41,17 +41,20 @@ export function HeroSpendMetric() {
     return ((curr - prev) / prev) * 100;
   }, [monthlyTotals]);
 
+  const formatPLN = useCallback(
+    (minor: number) =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'PLN',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(minor / 100),
+    [locale],
+  );
+
   if (isLoading) {
     return <Skeleton className="h-[200px] w-full rounded-2xl" />;
   }
-
-  const formatPLN = (minor: number) =>
-    new Intl.NumberFormat(locale, {
-      style: 'currency',
-      currency: 'PLN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(minor / 100);
 
   const trendDirection: 'up' | 'down' | 'flat' =
     trendPct === null || trendPct === 0 ? 'flat' : trendPct > 0 ? 'up' : 'down';

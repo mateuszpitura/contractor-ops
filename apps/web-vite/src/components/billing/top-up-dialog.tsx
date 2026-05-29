@@ -46,6 +46,13 @@ export function TopUpDialog({
 }: TopUpDialogProps) {
   const closeDialog = useCallback(() => onOpenChange(false), [onOpenChange]);
 
+  const handleBundleChange = useCallback(
+    (value: string | null) => {
+      if (value) onSelectedBundleChange(value);
+    },
+    [onSelectedBundleChange],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -55,11 +62,7 @@ export function TopUpDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <Select
-            value={selectedBundle}
-            onValueChange={value => {
-              if (value) onSelectedBundleChange(value);
-            }}>
+          <Select value={selectedBundle} onValueChange={handleBundleChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectPlaceholder')} />
             </SelectTrigger>

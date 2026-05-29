@@ -16,6 +16,8 @@ vi.mock('../../billing/feature-gate-container.js', () => ({
   FeatureGateContainer: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+const pickJira = (onSourcesChange: (s: string[]) => void) => () => onSourcesChange(['JIRA']);
+
 vi.mock('../source-selection-step-container.js', () => ({
   SourceSelectionStepContainer: ({
     onSourcesChange,
@@ -23,7 +25,7 @@ vi.mock('../source-selection-step-container.js', () => ({
     onSourcesChange: (s: string[]) => void;
   }) => (
     <div data-testid="step1">
-      <button type="button" onClick={() => onSourcesChange(['JIRA'])}>
+      <button type="button" onClick={pickJira(onSourcesChange)}>
         pick-jira
       </button>
     </div>

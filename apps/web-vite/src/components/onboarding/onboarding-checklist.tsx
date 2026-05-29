@@ -239,6 +239,11 @@ export function OnboardingChecklist() {
     updateMetadata({ onboardingDismissed: false });
   }, [updateMetadata]);
 
+  const handlePrivacyConsentComplete = useCallback(
+    () => completeStep('privacy-consent', true),
+    [completeStep],
+  );
+
   if (permissionsLoading || settingsLoading) {
     return (
       <Card size="sm">
@@ -295,7 +300,7 @@ export function OnboardingChecklist() {
                   <div className="ms-9 mt-2">
                     <OnboardingConsentStep
                       orgCountryCode={orgCountryCode}
-                      onComplete={() => completeStep('privacy-consent', true)}
+                      onComplete={handlePrivacyConsentComplete}
                     />
                   </div>
                 )}

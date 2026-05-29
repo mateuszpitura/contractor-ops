@@ -1,12 +1,11 @@
-import { QueryErrorPanel } from '@contractor-ops/ui';
+import { AtelierEmptyState, PaymentsIllustration, QueryErrorPanel } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Crown, Zap } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from '../../i18n/navigation';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { BillingDateCard } from './billing-date-card';
 import { CreditCard } from './credit-progress-bar';
 import type { UsageDashboardData } from './hooks/use-billing.js';
@@ -66,6 +65,7 @@ export function UsageDashboard({
 }: UsageDashboardProps) {
   const t = useTranslations('Billing.usage');
   const [topUpOpen, setTopUpOpen] = useState(false);
+  const handleBuyMore = useCallback(() => setTopUpOpen(true), []);
 
   // ---- Loading state ----
   if (isLoading) {
@@ -98,14 +98,18 @@ export function UsageDashboard({
   // ---- No subscription state ----
   if (!subscription) {
     return (
-      <div className="flex flex-col items-center gap-4 py-12 text-center">
-        <p className="text-lg font-semibold">{t('noSubscription')}</p>
-        <p className="text-sm text-muted-foreground max-w-md">{t('noSubscriptionBody')}</p>
-        <Button variant="default" render={<Link href="/settings?tab=billing" />}>
-          <Zap className="me-1.5 size-4" />
-          {t('choosePlan')}
-        </Button>
-      </div>
+      <AtelierEmptyState
+        variant="page"
+        illustration={PaymentsIllustration}
+        heading={t('noSubscription')}
+        body={t('noSubscriptionBody')}
+        primaryAction={{
+          label: t('choosePlan'),
+          href: '/settings?tab=billing',
+          icon: Zap,
+        }}
+        renderAction={renderEmptyStateAction}
+      />
     );
   }
 
@@ -150,7 +154,7 @@ export function UsageDashboard({
           used={credits?.used ?? 0}
           total={total}
           isLowCredits={isLowCredits}
-          onBuyMore={() => setTopUpOpen(true)}
+          onBuyMore={handleBuyMore}
         />
 
         {/* Card 4: Next Billing Date */}

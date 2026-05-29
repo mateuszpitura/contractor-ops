@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { useId, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import {
   Area,
   AreaChart,
@@ -52,21 +52,40 @@ const RANGES: ReadonlyArray<{ value: SpendRange; labelKey: string }> = [
   { value: 'ytd', labelKey: 'spend.rangeYtd' },
 ];
 
+interface RangeButtonProps {
+  range: { value: SpendRange; labelKey: string };
+  active: boolean;
+  onChange: (value: SpendRange) => void;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function RangeButton({ range, active, onChange, t }: RangeButtonProps) {
+  const handleClick = useCallback(() => onChange(range.value), [onChange, range.value]);
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
+        active
+          ? 'bg-background text-foreground shadow-sm ring-1 ring-foreground/[0.06]'
+          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+      }`}>
+      {t(range.labelKey)}
+    </button>
+  );
+}
+
 function RangeToggle({ value, onChange, t }: RangeToggleProps) {
   return (
     <div className="flex items-center gap-0.5 rounded-lg bg-muted/40 p-0.5">
       {RANGES.map(range => (
-        <button
+        <RangeButton
           key={range.value}
-          type="button"
-          onClick={() => onChange(range.value)}
-          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
-            value === range.value
-              ? 'bg-background text-foreground shadow-sm ring-1 ring-foreground/[0.06]'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}>
-          {t(range.labelKey)}
-        </button>
+          range={range}
+          active={value === range.value}
+          onChange={onChange}
+          t={t}
+        />
       ))}
     </div>
   );
@@ -144,6 +163,11 @@ export function SpendChart() {
 
   const hasEur = chartData.some(d => d.EUR > 0);
 
+  const formatYAxisTick = useCallback(
+    (val: number) => currencyFormatter.format(val / 100),
+    [currencyFormatter],
+  );
+
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
@@ -194,7 +218,7 @@ export function SpendChart() {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: 'var(--color-muted-foreground)' }}
-                  tickFormatter={(val: number) => currencyFormatter.format(val / 100)}
+                  tickFormatter={formatYAxisTick}
                   width={70}
                   {...yAxisProps}
                 />
