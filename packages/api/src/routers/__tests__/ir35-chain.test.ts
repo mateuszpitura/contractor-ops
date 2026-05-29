@@ -481,7 +481,7 @@ describe('ir35Chain.upsertParticipant', () => {
         displayName: 'Client',
         linkedContractorId: 'c-1',
       }),
-    ).rejects.toThrow('CLIENT participants cannot have a linkedContractorId');
+    ).rejects.toThrow('ir35ClientCannotHaveLinkedContractor');
   });
 
   it('throws NOT_FOUND when linkedContractorId does not exist', async () => {
@@ -530,7 +530,7 @@ describe('ir35Chain.reorderParticipants', () => {
         contractorAssignmentId: ASSIGNMENT_ID,
         orderedIds: ['p-1', 'p-1'],
       }),
-    ).rejects.toThrow('Duplicate ids in orderedIds');
+    ).rejects.toThrow('ir35DuplicateIds');
   });
 
   it('throws BAD_REQUEST when orderedIds count does not match participants', async () => {
@@ -545,7 +545,7 @@ describe('ir35Chain.reorderParticipants', () => {
         contractorAssignmentId: ASSIGNMENT_ID,
         orderedIds: ['p-1', 'p-2'],
       }),
-    ).rejects.toThrow('orderedIds must list every participant exactly once');
+    ).rejects.toThrow('ir35OrderedIdsMustListAll');
   });
 
   it('throws BAD_REQUEST when orderedIds contains foreign id', async () => {
@@ -657,7 +657,7 @@ describe('ir35Chain.removeParticipant', () => {
     });
 
     await expect(caller.ir35Chain.removeParticipant({ id: 'p-client' })).rejects.toThrow(
-      'CLIENT and WORKER rows are auto-populated and cannot be removed',
+      'ir35ClientWorkerCannotBeRemoved',
     );
   });
 
@@ -667,7 +667,7 @@ describe('ir35Chain.removeParticipant', () => {
     });
 
     await expect(caller.ir35Chain.removeParticipant({ id: 'p-worker' })).rejects.toThrow(
-      'CLIENT and WORKER rows are auto-populated and cannot be removed',
+      'ir35ClientWorkerCannotBeRemoved',
     );
   });
 

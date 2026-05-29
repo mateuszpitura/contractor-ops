@@ -24,7 +24,7 @@ type AlertRow = {
   id: string;
   organizationId: string;
   contractorAssignmentId: string;
-  currentBand: 'safe' | 'warning' | 'critical';
+  currentBand: 'SAFE' | 'WARNING' | 'CRITICAL';
   lastBillingShare: number;
   lastScannedAt: Date;
   lastCrossedAt: Date | null;
@@ -193,7 +193,7 @@ function seed() {
     id: 'a1',
     organizationId: ORG_A,
     contractorAssignmentId: ASSIGN_A,
-    currentBand: 'warning',
+    currentBand: 'WARNING',
     lastBillingShare: 0.75,
     lastScannedAt: new Date('2026-04-14T00:00:00Z'),
     lastCrossedAt: new Date('2026-04-14T00:00:00Z'),
@@ -203,7 +203,7 @@ function seed() {
     id: 'b1',
     organizationId: ORG_B,
     contractorAssignmentId: ASSIGN_B,
-    currentBand: 'critical',
+    currentBand: 'CRITICAL',
     lastBillingShare: 0.9,
     lastScannedAt: new Date('2026-04-14T00:00:00Z'),
     lastCrossedAt: new Date('2026-04-14T00:00:00Z'),
@@ -225,7 +225,7 @@ describe('economicDependencyAlert.list', () => {
     // correct band-filter — that's the piece this router owns.
     expect(mockPrisma.economicDependencyAlertState.findMany).toHaveBeenCalled();
     const args = mockPrisma.economicDependencyAlertState.findMany.mock.calls.at(-1)?.[0];
-    expect(args?.where?.currentBand).toEqual({ in: ['warning', 'critical'] });
+    expect(args?.where?.currentBand).toEqual({ in: ['WARNING', 'CRITICAL'] });
     expect(Array.isArray(result.items)).toBe(true);
   });
 
@@ -270,7 +270,7 @@ describe('economicDependencyAlert.listByEngagement', () => {
     const row = await caller.economicDependencyAlert.listByEngagement({
       contractorAssignmentId: ASSIGN_A,
     });
-    expect(row?.currentBand).toBe('warning');
+    expect(row?.currentBand).toBe('WARNING');
     expect(row?.lastBillingShare).toBe(0.75);
   });
 });
