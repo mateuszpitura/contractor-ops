@@ -331,7 +331,7 @@ describe('time-entry', () => {
         ]),
       ).rejects.toMatchObject({
         code: 'PRECONDITION_FAILED',
-        message: 'errors.timesheet.cannotEditImportedEntries',
+        message: 'timesheetCannotEditImported',
       });
     });
 
