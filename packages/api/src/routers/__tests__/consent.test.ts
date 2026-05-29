@@ -591,9 +591,7 @@ describe('consentRouter', () => {
       mockGenerateDPA.mockResolvedValue(null);
 
       const caller = createCaller();
-      await expect(caller.consent.downloadDPA()).rejects.toThrow(
-        'DPA not available for this jurisdiction',
-      );
+      await expect(caller.consent.downloadDPA()).rejects.toThrow('dpaNotAvailable');
     });
   });
 
@@ -617,9 +615,7 @@ describe('consentRouter', () => {
       mockGenerateSCC.mockResolvedValue(null);
 
       const caller = createCaller();
-      await expect(caller.consent.downloadSCC()).rejects.toThrow(
-        'No cross-border transfer detected',
-      );
+      await expect(caller.consent.downloadSCC()).rejects.toThrow('sccNotRequired');
     });
   });
 

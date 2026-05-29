@@ -469,7 +469,7 @@ describe('user.deactivate', () => {
     mockPrisma.member.count.mockResolvedValueOnce(1); // only 1 admin
 
     await expect(caller.user.deactivate({ userId: TARGET_USER_ID })).rejects.toThrow(
-      'LAST_ADMIN_CANNOT_DEACTIVATE',
+      'lastAdminCannotDeactivate',
     );
 
     // F-SEC-07 — deactivate now flips Member.disabledAt instead of

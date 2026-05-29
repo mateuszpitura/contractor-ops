@@ -261,6 +261,7 @@ beforeEach(() => {
   resetServerEnvCacheForTesting();
   // Set required env vars (after reset so getServerEnv re-parses process.env)
   process.env.PUBLIC_APP_URL = 'https://app.test.com';
+  process.env.API_URL = 'https://app.test.com';
 });
 
 // ===========================================================================

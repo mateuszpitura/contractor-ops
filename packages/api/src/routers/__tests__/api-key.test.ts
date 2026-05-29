@@ -492,7 +492,7 @@ describe('apiKey.update', () => {
     });
 
     await expect(caller.apiKey.update({ id: 'key-1', name: 'New Name' })).rejects.toThrow(
-      'Cannot update a revoked key.',
+      'apiKeyCannotUpdateRevoked',
     );
   });
 });
@@ -530,6 +530,6 @@ describe('apiKey.revoke', () => {
       revokedAt: new Date(),
     });
 
-    await expect(caller.apiKey.revoke({ id: 'key-1' })).rejects.toThrow('Key is already revoked.');
+    await expect(caller.apiKey.revoke({ id: 'key-1' })).rejects.toThrow('apiKeyRevoked');
   });
 });

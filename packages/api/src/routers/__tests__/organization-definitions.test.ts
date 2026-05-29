@@ -337,7 +337,7 @@ describe('organizationDefinitions.costCenter', () => {
       caller.organizationDefinitions.costCenter.importCsv({
         rows: [{ name: 'Engineering', code: 'ENG' }],
       }),
-    ).rejects.toThrow(/already exist|CONFLICT/i);
+    ).rejects.toThrow(/already exist|CONFLICT|templateCodesAlreadyExist/i);
     expect(mockWriteAuditLogMany).not.toHaveBeenCalled();
   });
 
@@ -386,7 +386,7 @@ describe('organizationDefinitions.project.resolveMerge', () => {
         action: 'merge',
         mergeIntoProjectId: 'pr-attacker',
       }),
-    ).rejects.toThrow(/candidates/i);
+    ).rejects.toThrow(/candidates|projectMergeIdNotCandidate/i);
     expect(mockPrisma.projectExternalLink.create).not.toHaveBeenCalled();
   });
 

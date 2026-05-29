@@ -382,7 +382,7 @@ describe('billing.getSubscription', () => {
 describe('billing.createCheckoutSession', () => {
   it('rejects unknown price IDs before calling Stripe', async () => {
     await expect(caller.billing.createCheckoutSession({ priceId: 'price_fake' })).rejects.toThrow(
-      'Invalid subscription price ID',
+      'billingInvalidSubscriptionPriceId',
     );
 
     expect(mockCreateCheckoutSession).not.toHaveBeenCalled();
@@ -447,7 +447,7 @@ describe('billing.createPortalSession', () => {
     mockGetSubscription.mockResolvedValueOnce(null);
 
     await expect(caller.billing.createPortalSession()).rejects.toThrow(
-      'No active subscription found',
+      'billingNoActiveSubscription',
     );
 
     expect(mockCreatePortalSession).not.toHaveBeenCalled();
@@ -475,7 +475,7 @@ describe('billing.getProrationPreview', () => {
     mockGetSubscription.mockResolvedValueOnce(null);
 
     await expect(caller.billing.getProrationPreview({ newPriceId: PRICE_ID })).rejects.toThrow(
-      'No active subscription found',
+      'billingNoActiveSubscription',
     );
   });
 
@@ -487,7 +487,7 @@ describe('billing.getProrationPreview', () => {
     } as unknown);
 
     await expect(caller.billing.getProrationPreview({ newPriceId: PRICE_ID })).rejects.toThrow(
-      'Subscription item ID not available',
+      'billingSubscriptionItemUnavailable',
     );
   });
 
@@ -511,7 +511,7 @@ describe('billing.getProrationPreview', () => {
   it('rejects unknown price IDs', async () => {
     await expect(
       caller.billing.getProrationPreview({ newPriceId: 'price_unknown' }),
-    ).rejects.toThrow('Invalid subscription price ID');
+    ).rejects.toThrow('billingInvalidSubscriptionPriceId');
 
     expect(mockGetProrationPreview).not.toHaveBeenCalled();
   });
@@ -525,7 +525,7 @@ describe('billing.createTopUpCheckout', () => {
   it('rejects unknown top-up price IDs', async () => {
     await expect(
       caller.billing.createTopUpCheckout({ priceId: 'price_fake_topup' }),
-    ).rejects.toThrow('Invalid top-up price ID');
+    ).rejects.toThrow('billingInvalidTopupPriceId');
 
     expect(mockCreateTopUpCheckoutSession).not.toHaveBeenCalled();
   });
@@ -534,7 +534,7 @@ describe('billing.createTopUpCheckout', () => {
     mockGetSubscription.mockResolvedValueOnce(null);
 
     await expect(caller.billing.createTopUpCheckout({ priceId: 'price_topup_10' })).rejects.toThrow(
-      'No active subscription found',
+      'billingNoSubscriptionSubscribeFirst',
     );
 
     expect(mockCreateTopUpCheckoutSession).not.toHaveBeenCalled();
@@ -607,7 +607,7 @@ describe('billing.createCheckoutSession — org not found', () => {
       .mockResolvedValueOnce(null);
 
     await expect(caller.billing.createCheckoutSession({ priceId: PRICE_ID })).rejects.toThrow(
-      'Organization not found',
+      'billingOrganizationNotFound',
     );
   });
 });
