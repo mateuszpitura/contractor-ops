@@ -48,7 +48,13 @@ export function AtelierTableShell({
       <div
         className={cn(
           'relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card',
-          constrainHeight && 'min-h-[320px] max-h-max flex-1',
+          // No min-h-[320px] floor — that forced the bordered box to push its
+          // footer below the parent flex slot on pages where the table region
+          // had < 320 px of vertical room (e.g. /invoices, where the
+          // pre-table compliance summary + filter chips + upload area eat the
+          // page's height budget). The inner [role=region] keeps its own
+          // overflow-auto so short content still renders without ugly collapse.
+          constrainHeight && 'min-h-0 max-h-max flex-1',
         )}>
         {chrome ? (
           <div className="shrink-0 border-b border-border/50 bg-muted/40">{chrome}</div>
