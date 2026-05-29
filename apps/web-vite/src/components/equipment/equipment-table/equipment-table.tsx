@@ -4,7 +4,6 @@ import {
   TableChrome,
   WORKBENCH_DATA_TABLE_CLASS,
 } from '@contractor-ops/ui';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DataTableBody } from '../../shared/data-table-body.js';
+import { DataTablePagination } from '../../shared/data-table-pagination.js';
 import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { useEquipmentTable } from '../hooks/use-equipment-table.js';
 import type { EquipmentRow } from './equipment-columns.js';
@@ -44,6 +44,7 @@ export function EquipmentTableView({
   typeFilter,
   statusFilter,
   page,
+  pageSize,
   sortBy,
   sortOrder,
   onSearchChange,
@@ -129,27 +130,13 @@ export function EquipmentTableView({
         }
         footer={
           !isLoading && totalRows > 0 ? (
-            <div className="flex w-full items-center justify-end gap-3 px-4 py-3">
-              <span className="text-sm text-muted-foreground">
-                {t('list.pagination.pageOf', { page, total: totalPages })}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => onPageChange(Math.max(1, page - 1))}>
-                {t('list.pagination.previous')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => onPageChange(page + 1)}>
-                {t('list.pagination.next')}
-              </Button>
-            </div>
+            <DataTablePagination
+              table={table}
+              totalRows={totalRows}
+              pageSize={pageSize}
+              currentPage={page}
+              onPageChange={onPageChange}
+            />
           ) : undefined
         }>
         <Table>

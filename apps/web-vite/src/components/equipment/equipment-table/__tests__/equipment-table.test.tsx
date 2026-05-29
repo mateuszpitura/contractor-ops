@@ -116,8 +116,8 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    expect(screen.getByText('Previous')).toBeInTheDocument();
-    expect(screen.getByText('Next')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeInTheDocument();
     // Item count lives in TableChrome (top-left of table), not in the footer.
   });
 
@@ -132,7 +132,7 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    expect(screen.getByText('Previous').closest('button')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
   });
 
   it('disables next button on last page', () => {
@@ -146,7 +146,7 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    expect(screen.getByText('Next').closest('button')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
   });
 
   it('renders pagination controls even with a single item', () => {
@@ -160,8 +160,8 @@ describe('EquipmentTableView (web-vite)', () => {
       />,
     );
     // Total row count is now in TableChrome (top-left), not the footer.
-    expect(screen.getByText('Previous').closest('button')).toBeDisabled();
-    expect(screen.getByText('Next').closest('button')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
   });
 
   it('renders page indicator', () => {
@@ -175,7 +175,7 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    expect(screen.getByText(/page 1 of 2/i)).toBeInTheDocument();
   });
 
   it('advances to next page when Next button is clicked', async () => {
@@ -191,7 +191,7 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    await user.click(screen.getByText('Next').closest('button') as HTMLButtonElement);
+    await user.click(screen.getByRole('button', { name: /next page/i }));
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 
