@@ -1,11 +1,11 @@
-/**
- * Projects table — Step 10 batch 6 / Step 11 codemod port from
- * apps/web/src/components/organization/projects/project-table.tsx:
- *   - `next-intl` → `../../../i18n/useTranslations.js`
- */
-
+import { TeamsIllustration } from '@contractor-ops/ui';
+import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
+import { Plus } from 'lucide-react';
+import { useMemo } from 'react';
+
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { SimpleDataTable } from '../../shared/simple-data-table.js';
 import { SourceBadge } from '../shared/source-badge.js';
 import { StatusBadge } from '../shared/status-badge.js';
 import type { ProjectRow } from './project-form-sheet.js';
@@ -21,6 +21,9 @@ interface ProjectTableProps {
   rows: ProjectTableRow[];
   teamNamesById: Record<string, string>;
   onRowClick?: (row: ProjectTableRow) => void;
+  onNewProject?: () => void;
+  onClearSearch?: () => void;
+  hasSearch?: boolean;
   isLoading?: boolean;
 }
 
@@ -33,70 +36,94 @@ const formatBudget = (minor: number | null, currency: string | null): string => 
   })}`;
 };
 
-export function ProjectTable({ rows, teamNamesById, onRowClick, isLoading }: ProjectTableProps) {
+export function ProjectTable({
+  rows,
+  teamNamesById,
+  onRowClick,
+  onNewProject,
+  onClearSearch,
+  hasSearch = false,
+  isLoading,
+}: ProjectTableProps) {
   const t = useTranslations('Organization');
-  if (isLoading) {
-    return (
-      <div className="text-muted-foreground py-12 text-center text-sm" aria-busy>
-        Loading…
-      </div>
-    );
-  }
-  if (rows.length === 0) {
-    return (
-      <div className="text-muted-foreground rounded-lg border border-dashed py-12 text-center text-sm">
-        {t('projectsEmpty')}
-      </div>
-    );
-  }
+
+  const columns = useMemo<ColumnDef<ProjectTableRow, unknown>[]>(
+    () => [
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: t('colName'),
+        cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      },
+      {
+        id: 'code',
+        accessorKey: 'code',
+        header: t('colCode'),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.code ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'team',
+        accessorFn: row => (row.teamId ? (teamNamesById[row.teamId] ?? row.teamId) : '—'),
+        header: t('colTeam'),
+        cell: info => <span className="text-muted-foreground">{info.getValue() as string}</span>,
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: t('colStatus'),
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        id: 'budget',
+        accessorFn: row => row.budgetMinor ?? 0,
+        header: t('colBudget'),
+        cell: ({ row }) => (
+          <span className="tabular-nums text-muted-foreground">
+            {formatBudget(row.original.budgetMinor, row.original.budgetCurrency)}
+          </span>
+        ),
+      },
+      {
+        id: 'source',
+        accessorKey: 'source',
+        header: t('colSource'),
+        cell: ({ row }) => <SourceBadge source={row.original.source} />,
+      },
+      {
+        id: 'updated',
+        accessorFn: row => new Date(row.updatedAt).getTime(),
+        header: t('colUpdated'),
+        cell: ({ row }) => (
+          <span className="tabular-nums text-muted-foreground">
+            {format(new Date(row.original.updatedAt), 'yyyy-MM-dd')}
+          </span>
+        ),
+      },
+    ],
+    [t, teamNamesById],
+  );
+
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/40">
-          <tr className="text-muted-foreground text-left">
-            <th className="px-3 py-2 font-medium">{t('colName')}</th>
-            <th className="px-3 py-2 font-medium">{t('colCode')}</th>
-            <th className="px-3 py-2 font-medium">{t('colTeam')}</th>
-            <th className="px-3 py-2 font-medium">{t('colStatus')}</th>
-            <th className="px-3 py-2 font-medium">{t('colBudget')}</th>
-            <th className="px-3 py-2 font-medium">{t('colSource')}</th>
-            <th className="px-3 py-2 font-medium">{t('colUpdated')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(row => (
-            <tr
-              key={row.id}
-              className="hover:bg-muted/30 cursor-pointer border-t transition-colors"
-              onClick={() => onRowClick?.(row)}
-              tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onRowClick?.(row);
-                }
-              }}>
-              <td className="px-3 py-2 font-medium">{row.name}</td>
-              <td className="px-3 py-2 text-muted-foreground">{row.code ?? '—'}</td>
-              <td className="px-3 py-2 text-muted-foreground">
-                {row.teamId ? (teamNamesById[row.teamId] ?? row.teamId) : '—'}
-              </td>
-              <td className="px-3 py-2">
-                <StatusBadge status={row.status} />
-              </td>
-              <td className="px-3 py-2 tabular-nums text-muted-foreground">
-                {formatBudget(row.budgetMinor, row.budgetCurrency)}
-              </td>
-              <td className="px-3 py-2">
-                <SourceBadge source={row.source} />
-              </td>
-              <td className="px-3 py-2 text-muted-foreground tabular-nums">
-                {format(new Date(row.updatedAt), 'yyyy-MM-dd')}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <SimpleDataTable
+      columns={columns}
+      data={rows}
+      entityLabel={t('entityProjects', { count: rows.length })}
+      isLoading={isLoading}
+      hasFiltersOrSearch={hasSearch}
+      onClearFilters={onClearSearch}
+      clearFiltersLabel={t('clearSearchChip')}
+      onRowClick={onRowClick}
+      emptyIcon={<TeamsIllustration className="h-6 w-6" aria-hidden="true" />}
+      emptyTitle={t('projectsEmptyTitle')}
+      emptyDescription={t('projectsEmptyBody')}
+      emptyCta={onNewProject ? t('projectsEmptyCta') : undefined}
+      onEmptyCta={onNewProject}
+      emptyCtaIcon={Plus}
+      noResultsTitle={t('noResultsTitle')}
+      noResultsDescription={t('noResultsBody')}
+      noResultsCta={t('noResultsCta')}
+    />
   );
 }

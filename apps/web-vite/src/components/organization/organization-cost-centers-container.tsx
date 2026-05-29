@@ -58,6 +58,16 @@ export function OrganizationCostCentersContainer() {
         <CostCenterTable
           rows={rows}
           isLoading={isLoading}
+          hasSearch={search.trim().length > 0}
+          onClearSearch={() => setSearch('')}
+          onNewCostCenter={
+            canCreate
+              ? () => {
+                  setEditing(null);
+                  setSheetOpen(true);
+                }
+              : undefined
+          }
           onRowClick={row => {
             if (!canUpdate) return;
             setEditing(row);

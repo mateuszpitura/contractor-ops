@@ -65,6 +65,16 @@ export function OrganizationProjectsContainer() {
           rows={rows}
           teamNamesById={teamNamesById}
           isLoading={isLoading}
+          hasSearch={search.trim().length > 0}
+          onClearSearch={() => setSearch('')}
+          onNewProject={
+            canCreate
+              ? () => {
+                  setEditing(null);
+                  setSheetOpen(true);
+                }
+              : undefined
+          }
           onRowClick={row => {
             if (!canUpdate) return;
             setEditing(row);

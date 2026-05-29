@@ -8011,6 +8011,22 @@
     "costCentersEmpty": "No cost centers yet.",
     "sourceManual": "Manual",
     "sourceJira": "Jira",
-    "sourceLinear": "Linear"
+    "sourceLinear": "Linear",
+    "entityProjects": "{count, plural, one {project} other {projects}}",
+    "entityTeams": "{count, plural, one {team} other {teams}}",
+    "entityCostCenters": "{count, plural, one {cost center} other {cost centers}}",
+    "clearSearchChip": "Clear search",
+    "projectsEmptyTitle": "No projects yet",
+    "projectsEmptyBody": "Set up your first project to start tracking contractor assignments.",
+    "projectsEmptyCta": "New project",
+    "teamsEmptyTitle": "No teams yet",
+    "teamsEmptyBody": "Create your first team to organize contractors.",
+    "teamsEmptyCta": "New team",
+    "costCentersEmptyTitle": "No cost centers yet",
+    "costCentersEmptyBody": "Add your first cost center to allocate contractor spend.",
+    "costCentersEmptyCta": "New cost center",
+    "noResultsTitle": "No matches",
+    "noResultsBody": "Try a different search term.",
+    "noResultsCta": "Clear search"
   }
 }

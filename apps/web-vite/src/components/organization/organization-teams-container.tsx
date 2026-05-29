@@ -52,6 +52,16 @@ export function OrganizationTeamsContainer() {
           isLoading={isLoading}
           isError={isError}
           onRetry={() => void refetch()}
+          hasSearch={search.trim().length > 0}
+          onClearSearch={() => setSearch('')}
+          onNewTeam={
+            canCreate
+              ? () => {
+                  setEditing(null);
+                  setSheetOpen(true);
+                }
+              : undefined
+          }
           onRowClick={row => {
             if (!canUpdate) return;
             setEditing(row);
