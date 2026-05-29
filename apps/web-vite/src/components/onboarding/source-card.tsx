@@ -2,9 +2,14 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
-import type { KeyboardEvent, ReactNode } from 'react';
+import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
+
+function stopEventPropagation(e: MouseEvent) {
+  e.stopPropagation();
+}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -35,12 +40,23 @@ export function SourceCard({
 }: SourceCardProps) {
   const t = useTranslations('OnboardingImport.sourceCard');
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if ((e.key === ' ' || e.key === 'Enter') && connected) {
-      e.preventDefault();
-      onToggle();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if ((e.key === ' ' || e.key === 'Enter') && connected) {
+        e.preventDefault();
+        onToggle();
+      }
+    },
+    [connected, onToggle],
+  );
+
+  const handleConnectClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onConnect();
+    },
+    [onConnect],
+  );
 
   return (
     <Card
@@ -52,7 +68,6 @@ export function SourceCard({
       aria-checked={selected}
       aria-label={name}
       tabIndex={0}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onKeyDown={handleKeyDown}
       onClick={connected ? onToggle : undefined}>
       <CardContent className="flex items-center gap-4 py-4">
@@ -81,19 +96,11 @@ export function SourceCard({
               id={`import-toggle-${provider}`}
               checked={selected}
               onCheckedChange={onToggle}
-              // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-              onClick={e => e.stopPropagation()}
+              onClick={stopEventPropagation}
             />
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={e => {
-              e.stopPropagation();
-              onConnect();
-            }}>
+          <Button variant="outline" size="sm" onClick={handleConnectClick}>
             {t('connect')}
           </Button>
         )}

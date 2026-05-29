@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
@@ -31,11 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { cn } from '@contractor-ops/ui/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2, MoreHorizontal, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { usePermissions } from '../../../hooks/use-permissions.js';
@@ -369,15 +371,34 @@ export function InvoiceMetadataForm({
   const submitForMatchingAction = actionByKey.get('submitForMatching');
   const voidAction = actionByKey.get('void');
 
-  const resolveLabel = (action: InvoiceAction) =>
-    resolveActionLabel(action, {
-      t: (key: string) => tKey(t, key),
-      tDetail: (key: string) => tKey(tDetail, key),
-      tBulk: (key: string) => tKey(tBulk, key),
-    });
+  const resolveLabel = useCallback(
+    (action: InvoiceAction) =>
+      resolveActionLabel(action, {
+        t: (key: string) => tKey(t, key),
+        tDetail: (key: string) => tKey(tDetail, key),
+        tBulk: (key: string) => tKey(tBulk, key),
+      }),
+    [t, tDetail, tBulk],
+  );
 
   const invoiceMetadataSchema = createInvoiceMetadataSchema((key: string) => tKey(tv, key));
   const [voidDialogOpen, setVoidDialogOpen] = useState(false);
+
+  const {
+    onSaveDraft,
+    onSubmitForMatching,
+    onVoid,
+    isSaving,
+    isSubmittingForMatching,
+    isVoiding,
+    isSubmitting,
+  } = mutations;
+
+  const openVoidDialog = useCallback(() => setVoidDialogOpen(true), []);
+  const onConfirmVoid = useCallback(() => {
+    onVoid();
+    setVoidDialogOpen(false);
+  }, [onVoid]);
 
   const {
     register,
@@ -390,6 +411,41 @@ export function InvoiceMetadataForm({
     resolver: zodResolver(invoiceMetadataSchema),
     defaultValues: getDefaultFormValues(invoice),
   });
+
+  const onIssueDateChange = useCallback((date: string) => setValue('issueDate', date), [setValue]);
+  const onDueDateChange = useCallback((date: string) => setValue('dueDate', date), [setValue]);
+  const onServicePeriodStartChange = useCallback(
+    (date: string) => setValue('servicePeriodStart', date || undefined),
+    [setValue],
+  );
+  const onServicePeriodEndChange = useCallback(
+    (date: string) => setValue('servicePeriodEnd', date || undefined),
+    [setValue],
+  );
+  const onSubtotalChange = useCallback(
+    (minor: number) => setValue('subtotalMinor', minor),
+    [setValue],
+  );
+  const onVatRateChange = useCallback((code: string) => setValue('vatRate', code), [setValue]);
+  const onVatAmountChange = useCallback(
+    (minor: number) => setValue('vatAmountMinor', minor),
+    [setValue],
+  );
+  const onTotalChange = useCallback((minor: number) => setValue('totalMinor', minor), [setValue]);
+  const onWithholdingChange = useCallback(
+    (minor: number) => setValue('withholdingMinor', minor),
+    [setValue],
+  );
+  const onAmountToPayChange = useCallback(
+    (minor: number) => setValue('amountToPayMinor', minor),
+    [setValue],
+  );
+  const onCurrencyChange = useCallback(
+    (val: string | null) => {
+      if (val) setValue('currency', val);
+    },
+    [setValue],
+  );
 
   // Reset form when invoice data changes (e.g. after submission)
   useEffect(() => {
@@ -405,16 +461,6 @@ export function InvoiceMetadataForm({
   const currencyValue = watch('currency');
   const sellerTaxIdValue = watch('sellerTaxId');
   const sellerBankAccountValue = watch('sellerBankAccount');
-
-  const {
-    onSaveDraft,
-    onSubmitForMatching,
-    onVoid,
-    isSaving,
-    isSubmittingForMatching,
-    isVoiding,
-    isSubmitting,
-  } = mutations;
 
   return (
     <>
@@ -442,8 +488,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.issueDate')}</Label>
                 <DatePicker
                   value={issueDateValue}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={date => setValue('issueDate', date)}
+                  onChange={onIssueDateChange}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
@@ -455,8 +500,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.dueDate')}</Label>
                 <DatePicker
                   value={dueDateValue}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={date => setValue('dueDate', date)}
+                  onChange={onDueDateChange}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
@@ -472,8 +516,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.servicePeriodStart')}</Label>
                 <DatePicker
                   value={servicePeriodStartValue ?? ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={date => setValue('servicePeriodStart', date || undefined)}
+                  onChange={onServicePeriodStartChange}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
@@ -482,8 +525,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.servicePeriodEnd')}</Label>
                 <DatePicker
                   value={servicePeriodEndValue ?? ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={date => setValue('servicePeriodEnd', date || undefined)}
+                  onChange={onServicePeriodEndChange}
                   disabled={!isEditable}
                   pickDateLabel={tMeta('pickDate')}
                 />
@@ -519,8 +561,7 @@ export function InvoiceMetadataForm({
                 <CurrencyInput
                   id={`${id}-netAmount`}
                   value={watch('subtotalMinor')}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={minor => setValue('subtotalMinor', minor)}
+                  onChange={onSubtotalChange}
                   disabled={!isEditable}
                 />
                 {!!errors.subtotalMinor && (
@@ -531,8 +572,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.vatRate')}</Label>
                 <VatRateSelectorContainer
                   value={vatRateValue ?? undefined}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={code => setValue('vatRate', code)}
+                  onChange={onVatRateChange}
                   disabled={!isEditable}
                 />
               </div>
@@ -545,8 +585,7 @@ export function InvoiceMetadataForm({
                 <CurrencyInput
                   id={`${id}-vatAmount`}
                   value={watch('vatAmountMinor') ?? 0}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={minor => setValue('vatAmountMinor', minor)}
+                  onChange={onVatAmountChange}
                   disabled={!isEditable}
                 />
               </div>
@@ -555,8 +594,7 @@ export function InvoiceMetadataForm({
                 <CurrencyInput
                   id={`${id}-grossAmount`}
                   value={watch('totalMinor')}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={minor => setValue('totalMinor', minor)}
+                  onChange={onTotalChange}
                   disabled={!isEditable}
                 />
                 {!!errors.totalMinor && (
@@ -572,8 +610,7 @@ export function InvoiceMetadataForm({
                 <CurrencyInput
                   id={`${id}-withholding`}
                   value={watch('withholdingMinor') ?? 0}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={minor => setValue('withholdingMinor', minor)}
+                  onChange={onWithholdingChange}
                   disabled={!isEditable}
                 />
               </div>
@@ -582,8 +619,7 @@ export function InvoiceMetadataForm({
                 <CurrencyInput
                   id={`${id}-amountToPay`}
                   value={watch('amountToPayMinor')}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={minor => setValue('amountToPayMinor', minor)}
+                  onChange={onAmountToPayChange}
                   disabled={!isEditable}
                 />
               </div>
@@ -595,10 +631,7 @@ export function InvoiceMetadataForm({
                 <Label>{t('detail.currency')}</Label>
                 <Select
                   value={currencyValue}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onValueChange={val => {
-                    if (val) setValue('currency', val);
-                  }}
+                  onValueChange={onCurrencyChange}
                   disabled={!isEditable}>
                   <SelectTrigger aria-label={t('detail.currency')}>
                     <SelectValue />
@@ -646,9 +679,7 @@ export function InvoiceMetadataForm({
               isSubmittingForMatching={isSubmittingForMatching}
               onSaveDraft={handleSubmit(onSaveDraft)}
               onSubmitForMatching={handleSubmit(onSubmitForMatching)}
-              // biome-ignore lint/nursery/noJsxPropsBind: stable in-render handler
-              onOpenVoidDialog={() => setVoidDialogOpen(true)}
-              // biome-ignore lint/nursery/noJsxPropsBind: closure over translators recreated per render
+              onOpenVoidDialog={openVoidDialog}
               resolveLabel={resolveLabel}
               moreActionsLabel={t('detail.moreActions')}
             />
@@ -661,11 +692,7 @@ export function InvoiceMetadataForm({
       <VoidConfirmDialog
         open={voidDialogOpen}
         onOpenChange={setVoidDialogOpen}
-        // biome-ignore lint/nursery/noJsxPropsBind: stable in-render handler
-        onConfirm={() => {
-          onVoid();
-          setVoidDialogOpen(false);
-        }}
+        onConfirm={onConfirmVoid}
         isPending={isVoiding}
         labels={{
           title: t('detail.voidConfirmTitle'),
@@ -696,30 +723,23 @@ function DatePicker({
   const parsed = value ? new Date(value) : undefined;
   const isValid = parsed && !Number.isNaN(parsed.getTime());
 
+  const handleSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) onChange(toDateString(date));
+    },
+    [onChange],
+  );
+
   return (
     <Popover>
       <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            className={`w-full justify-start text-start font-normal ${
-              isValid ? '' : 'text-muted-foreground'
-            } ${disabled ? 'pointer-events-none opacity-50 bg-muted' : ''}`}
-            disabled={disabled}
-          />
-        }>
+        disabled={disabled}
+        render={formControlPopoverRender(cn('text-start', !isValid && 'text-muted-foreground'))}>
         <CalendarIcon className="me-2 h-4 w-4" />
         {isValid ? format(parsed, 'yyyy-MM-dd') : (pickDateLabel ?? 'Pick a date')}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={isValid ? parsed : undefined}
-          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-          onSelect={date => {
-            if (date) onChange(toDateString(date));
-          }}
-        />
+        <Calendar mode="single" selected={isValid ? parsed : undefined} onSelect={handleSelect} />
       </PopoverContent>
     </Popover>
   );
@@ -747,6 +767,19 @@ function CurrencyInput({
     setDisplayValue(minorToDisplay(value));
   }, [value]);
 
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
+      setDisplayValue(raw);
+    }
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    const minor = displayToMinor(displayValue.replace(',', '.'));
+    onChange(minor);
+    setDisplayValue(minorToDisplay(minor));
+  }, [displayValue, onChange]);
+
   return (
     <Input
       id={id}
@@ -755,20 +788,8 @@ function CurrencyInput({
       className="font-mono text-[13px] text-end"
       value={displayValue}
       disabled={disabled}
-      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-      onChange={e => {
-        const raw = e.target.value;
-        // Allow typing decimals
-        if (/^[0-9]*[.,]?[0-9]{0,2}$/.test(raw) || raw === '') {
-          setDisplayValue(raw);
-        }
-      }}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-      onBlur={() => {
-        const minor = displayToMinor(displayValue.replace(',', '.'));
-        onChange(minor);
-        setDisplayValue(minorToDisplay(minor));
-      }}
+      onChange={handleChange}
+      onBlur={handleBlur}
     />
   );
 }

@@ -14,8 +14,8 @@ import {
   RefreshCw,
   X,
 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraBrandIcon, LinearBrandIcon } from '../integrations/brand-icons.js';
@@ -32,45 +32,136 @@ interface ProjectCardProps {
   onSelectionChange: (sel: ProjectSelection) => void;
 }
 
+interface StepRowProps {
+  step: { name: string; sortOrder: number };
+  index: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onRename: (index: number, name: string) => void;
+  onMoveUp: (index: number) => void;
+  onMoveDown: (index: number) => void;
+  onRemove: (index: number) => void;
+  fallbackLabel: string;
+  moveUpLabel: string;
+  moveDownLabel: string;
+  removeLabel: string;
+}
+
+function StepRow({
+  step,
+  index,
+  isFirst,
+  isLast,
+  onRename,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  fallbackLabel,
+  moveUpLabel,
+  moveDownLabel,
+  removeLabel,
+}: StepRowProps) {
+  const handleNameChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onRename(index, e.target.value),
+    [index, onRename],
+  );
+  const handleMoveUp = useCallback(() => onMoveUp(index), [index, onMoveUp]);
+  const handleMoveDown = useCallback(() => onMoveDown(index), [index, onMoveDown]);
+  const handleRemove = useCallback(() => onRemove(index), [index, onRemove]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
+      <Input
+        value={step.name}
+        onChange={handleNameChange}
+        placeholder={fallbackLabel}
+        className="h-7 flex-1 text-sm"
+      />
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        onClick={handleMoveUp}
+        disabled={isFirst}
+        aria-label={moveUpLabel}>
+        <ArrowUp className="size-3" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        onClick={handleMoveDown}
+        disabled={isLast}
+        aria-label={moveDownLabel}>
+        <ArrowDown className="size-3" />
+      </Button>
+      <Button variant="ghost" size="icon-xs" onClick={handleRemove} aria-label={removeLabel}>
+        <X className="size-3" />
+      </Button>
+    </div>
+  );
+}
+
 function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps) {
   const t = useTranslations('OnboardingImport.step3');
   const tAria = useTranslations('Common.aria');
   const [expanded, setExpanded] = useState(false);
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     onSelectionChange({ ...selection, skip: !selection.skip });
-  };
+  }, [selection, onSelectionChange]);
 
-  const handleNameChange = (name: string) => {
-    onSelectionChange({ ...selection, name });
-  };
+  const handleNameChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onSelectionChange({ ...selection, name: e.target.value });
+    },
+    [selection, onSelectionChange],
+  );
 
-  const handleAddStep = () => {
+  const handleAddStep = useCallback(() => {
     const steps = [...selection.steps];
     steps.push({ name: '', sortOrder: steps.length });
     onSelectionChange({ ...selection, steps });
-  };
+  }, [selection, onSelectionChange]);
 
-  const handleRemoveStep = (index: number) => {
-    const steps = selection.steps.filter((_, i) => i !== index);
-    const reindexed = steps.map((s, i) => ({ ...s, sortOrder: i }));
-    onSelectionChange({ ...selection, steps: reindexed });
-  };
+  const handleRemoveStep = useCallback(
+    (index: number) => {
+      const steps = selection.steps.filter((_, i) => i !== index);
+      const reindexed = steps.map((s, i) => ({ ...s, sortOrder: i }));
+      onSelectionChange({ ...selection, steps: reindexed });
+    },
+    [selection, onSelectionChange],
+  );
 
-  const handleRenameStep = (index: number, name: string) => {
-    const steps = [...selection.steps];
-    steps[index] = { ...steps[index], name };
-    onSelectionChange({ ...selection, steps });
-  };
+  const handleRenameStep = useCallback(
+    (index: number, name: string) => {
+      const steps = [...selection.steps];
+      steps[index] = { ...steps[index], name };
+      onSelectionChange({ ...selection, steps });
+    },
+    [selection, onSelectionChange],
+  );
 
-  const handleMoveStep = (index: number, direction: 'up' | 'down') => {
-    const steps = [...selection.steps];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= steps.length) return;
-    [steps[index], steps[targetIndex]] = [steps[targetIndex], steps[index]];
-    const reindexed = steps.map((s, i) => ({ ...s, sortOrder: i }));
-    onSelectionChange({ ...selection, steps: reindexed });
-  };
+  const handleMoveStep = useCallback(
+    (index: number, direction: 'up' | 'down') => {
+      const steps = [...selection.steps];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= steps.length) return;
+      [steps[index], steps[targetIndex]] = [steps[targetIndex], steps[index]];
+      const reindexed = steps.map((s, i) => ({ ...s, sortOrder: i }));
+      onSelectionChange({ ...selection, steps: reindexed });
+    },
+    [selection, onSelectionChange],
+  );
+
+  const handleMoveUp = useCallback(
+    (index: number) => handleMoveStep(index, 'up'),
+    [handleMoveStep],
+  );
+  const handleMoveDown = useCallback(
+    (index: number) => handleMoveStep(index, 'down'),
+    [handleMoveStep],
+  );
+  const toggleExpanded = useCallback(() => setExpanded(prev => !prev), []);
 
   return (
     <Card className={selection.skip ? 'opacity-50' : ''}>
@@ -80,23 +171,16 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
             {SOURCE_ICONS[project.sourceProvider]}
             <Input
               value={selection.name}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => handleNameChange(e.target.value)}
+              onChange={handleNameChange}
               className="h-7 max-w-xs border-none bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-1"
               disabled={selection.skip}
             />
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => setExpanded(!expanded)}
-              disabled={selection.skip}>
+            <Button variant="ghost" size="sm" onClick={toggleExpanded} disabled={selection.skip}>
               {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
               {t('editSteps')}
             </Button>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="link" size="sm" onClick={handleSkip} className="text-muted-foreground">
               {t('skipProject')}
             </Button>
@@ -119,46 +203,24 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
         {expanded && !selection.skip && (
           <div className="space-y-2">
             {selection.steps.map((step, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
-              <div key={`step-edit-${i}`} className="flex items-center gap-2">
-                <GripVertical className="size-4 text-muted-foreground" aria-hidden="true" />
-                <Input
-                  value={step.name}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={e => handleRenameStep(i, e.target.value)}
-                  placeholder={t('stepFallback', { number: i + 1 })}
-                  className="h-7 flex-1 text-sm"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => handleMoveStep(i, 'up')}
-                  disabled={i === 0}
-                  aria-label={tAria('moveUp')}>
-                  <ArrowUp className="size-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => handleMoveStep(i, 'down')}
-                  disabled={i === selection.steps.length - 1}
-                  aria-label={tAria('moveDown')}>
-                  <ArrowDown className="size-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => handleRemoveStep(i)}
-                  aria-label={tAria('removeStep')}>
-                  <X className="size-3" />
-                </Button>
-              </div>
+              <StepRow
+                // biome-ignore lint/suspicious/noArrayIndexKey: imported steps lack stable id before save
+                key={`step-edit-${i}`}
+                step={step}
+                index={i}
+                isFirst={i === 0}
+                isLast={i === selection.steps.length - 1}
+                onRename={handleRenameStep}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                onRemove={handleRemoveStep}
+                fallbackLabel={t('stepFallback', { number: i + 1 })}
+                moveUpLabel={tAria('moveUp')}
+                moveDownLabel={tAria('moveDown')}
+                removeLabel={tAria('removeStep')}
+              />
             ))}
 
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button variant="outline" size="sm" onClick={handleAddStep} className="mt-1">
               <Plus className="size-3" />
               {t('addStep')}
@@ -167,6 +229,32 @@ function ProjectCard({ project, selection, onSelectionChange }: ProjectCardProps
         )}
       </CardContent>
     </Card>
+  );
+}
+
+interface ProjectCardItemProps {
+  projectKey: string;
+  project: FetchProjectsOutput[number];
+  selection: ProjectSelection;
+  onSelectionChange: (key: string, selection: ProjectSelection) => void;
+}
+
+function ProjectCardItem({
+  projectKey,
+  project,
+  selection,
+  onSelectionChange,
+}: ProjectCardItemProps) {
+  const handleSelectionChange = useCallback(
+    (s: ProjectSelection) => onSelectionChange(projectKey, s),
+    [projectKey, onSelectionChange],
+  );
+  return (
+    <ProjectCard
+      project={project}
+      selection={selection}
+      onSelectionChange={handleSelectionChange}
+    />
   );
 }
 
@@ -193,12 +281,12 @@ export function ProjectImportStep({
         {projects.map(project => {
           const key = getProjectKey(project);
           return (
-            <ProjectCard
+            <ProjectCardItem
               key={key}
+              projectKey={key}
               project={project}
               selection={getSelectionFor(project)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onSelectionChange={s => onSelectionChange(key, s)}
+              onSelectionChange={onSelectionChange}
             />
           );
         })}
@@ -230,12 +318,7 @@ export function ProjectImportError({ onRefetch }: ProjectImportErrorProps) {
   return (
     <div className="flex flex-col items-center gap-4 py-16">
       <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5"
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onClick={onRefetch}>
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={onRefetch}>
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
         {tErr('retry')}
       </Button>

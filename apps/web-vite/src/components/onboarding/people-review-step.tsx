@@ -27,6 +27,7 @@ import type { MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
 import { RefreshCw, Users } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConflictResolutionPopover } from './conflict-resolution-popover.js';
@@ -66,6 +67,132 @@ export interface PeopleReviewStepProps {
   onBatchRole: (role: InvitableMemberRole) => void;
 }
 
+interface RoleOption {
+  value: InvitableMemberRole;
+  label: string;
+}
+
+interface PersonRowProps {
+  person: MergedPerson;
+  selection: PersonSelection | undefined;
+  checked: boolean;
+  roleOptions: RoleOption[];
+  onRowCheck: (email: string) => void;
+  onSkipRow: (email: string) => void;
+  onRoleChange: (email: string, role: InvitableMemberRole) => void;
+  onResolveConflict: (email: string, field: string, value: string) => void;
+  labels: {
+    statusNew: string;
+    statusExists: string;
+    skipRow: string;
+  };
+}
+
+function PersonRow({
+  person,
+  selection,
+  checked,
+  roleOptions,
+  onRowCheck,
+  onSkipRow,
+  onRoleChange,
+  onResolveConflict,
+  labels,
+}: PersonRowProps) {
+  const isSkipped = selection?.skip ?? false;
+  const isExisting = person.status === 'exists';
+
+  const handleCheck = useCallback(() => onRowCheck(person.email), [person.email, onRowCheck]);
+  const handleSkip = useCallback(() => onSkipRow(person.email), [person.email, onSkipRow]);
+  const handleResolve = useCallback(
+    (field: string, value: string) => onResolveConflict(person.email, field, value),
+    [person.email, onResolveConflict],
+  );
+  const handleRoleChange = useCallback(
+    (val: string | null) => {
+      if (val) onRoleChange(person.email, val as InvitableMemberRole);
+    },
+    [person.email, onRoleChange],
+  );
+
+  return (
+    <TableRow className={isSkipped || isExisting ? 'opacity-50' : ''}>
+      <TableCell>
+        {isExisting ? (
+          <Checkbox checked={false} disabled aria-hidden="true" />
+        ) : (
+          <Checkbox
+            checked={checked}
+            onCheckedChange={handleCheck}
+            aria-label={`Select ${person.name}`}
+          />
+        )}
+      </TableCell>
+
+      <TableCell>
+        <span className={`text-sm font-medium ${isSkipped ? 'line-through' : ''}`}>
+          {person.name}
+        </span>
+      </TableCell>
+
+      <TableCell>
+        <span className="text-sm text-muted-foreground">{person.email}</span>
+      </TableCell>
+
+      <TableCell className="hidden md:table-cell">
+        <div className="flex flex-wrap gap-1">
+          {person.sources.map(s => (
+            <Badge
+              key={s.source}
+              variant="secondary"
+              className={`text-[10px] ${SOURCE_COLORS[s.source] ?? ''}`}>
+              {SOURCE_LABELS[s.source] ?? s.source}
+            </Badge>
+          ))}
+        </div>
+      </TableCell>
+
+      <TableCell>
+        {person.status === 'new' && <Badge variant="success">{labels.statusNew}</Badge>}
+        {person.status === 'conflict' && (
+          <ConflictResolutionPopover
+            conflicts={person.conflicts ?? []}
+            resolvedConflicts={selection?.resolvedConflicts ?? {}}
+            onResolve={handleResolve}
+          />
+        )}
+        {person.status === 'exists' && <Badge variant="info">{labels.statusExists}</Badge>}
+      </TableCell>
+
+      <TableCell>
+        <Select
+          value={selection?.role ?? 'readonly'}
+          onValueChange={handleRoleChange}
+          disabled={isExisting || isSkipped}>
+          <SelectTrigger size="sm" className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {roleOptions.map(r => (
+              <SelectItem key={r.value} value={r.value}>
+                {r.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+
+      <TableCell>
+        {!isExisting && (
+          <Button variant="ghost" size="sm" onClick={handleSkip} disabled={isSkipped}>
+            {labels.skipRow}
+          </Button>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
+
 export function PeopleReviewStep({
   filteredPeople,
   counts,
@@ -101,6 +228,19 @@ export function PeopleReviewStep({
     };
     return { value, label: tRoles(roleKeyMap[value]) };
   });
+
+  const handleBatchRoleChange = useCallback(
+    (val: string | null) => {
+      if (val) onBatchRole(val as InvitableMemberRole);
+    },
+    [onBatchRole],
+  );
+
+  const rowLabels = {
+    statusNew: t('statusNew'),
+    statusExists: t('statusExists'),
+    skipRow: t('skipRow'),
+  };
 
   return (
     <div className="space-y-6">
@@ -158,8 +298,7 @@ export function PeopleReviewStep({
             <Button size="sm" variant="outline" onClick={onBatchSkip}>
               {t('batchSkip')}
             </Button>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-            <Select onValueChange={val => val && onBatchRole(val as InvitableMemberRole)}>
+            <Select onValueChange={handleBatchRoleChange}>
               <SelectTrigger size="sm" className="w-36">
                 <SelectValue>{t('batchRole')}</SelectValue>
               </SelectTrigger>
@@ -203,107 +342,20 @@ export function PeopleReviewStep({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredPeople.map(person => {
-                    const sel = personSelections.get(person.email);
-                    const isSkipped = sel?.skip ?? false;
-                    const isExisting = person.status === 'exists';
-
-                    return (
-                      <TableRow
-                        key={person.email}
-                        className={isSkipped || isExisting ? 'opacity-50' : ''}>
-                        <TableCell>
-                          {isExisting ? (
-                            <Checkbox checked={false} disabled aria-hidden="true" />
-                          ) : (
-                            <Checkbox
-                              checked={checkedEmails.has(person.email)}
-                              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                              onCheckedChange={() => onRowCheck(person.email)}
-                              aria-label={`Select ${person.name}`}
-                            />
-                          )}
-                        </TableCell>
-
-                        <TableCell>
-                          <span
-                            className={`text-sm font-medium ${isSkipped ? 'line-through' : ''}`}>
-                            {person.name}
-                          </span>
-                        </TableCell>
-
-                        <TableCell>
-                          <span className="text-sm text-muted-foreground">{person.email}</span>
-                        </TableCell>
-
-                        <TableCell className="hidden md:table-cell">
-                          <div className="flex flex-wrap gap-1">
-                            {person.sources.map(s => (
-                              <Badge
-                                key={s.source}
-                                variant="secondary"
-                                className={`text-[10px] ${SOURCE_COLORS[s.source] ?? ''}`}>
-                                {SOURCE_LABELS[s.source] ?? s.source}
-                              </Badge>
-                            ))}
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          {person.status === 'new' && (
-                            <Badge variant="success">{t('statusNew')}</Badge>
-                          )}
-                          {person.status === 'conflict' && (
-                            <ConflictResolutionPopover
-                              conflicts={person.conflicts ?? []}
-                              resolvedConflicts={sel?.resolvedConflicts ?? {}}
-                              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                              onResolve={(field, value) =>
-                                onResolveConflict(person.email, field, value)
-                              }
-                            />
-                          )}
-                          {person.status === 'exists' && (
-                            <Badge variant="info">{t('statusExists')}</Badge>
-                          )}
-                        </TableCell>
-
-                        <TableCell>
-                          <Select
-                            value={sel?.role ?? 'readonly'}
-                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                            onValueChange={val =>
-                              val && onRoleChange(person.email, val as InvitableMemberRole)
-                            }
-                            disabled={isExisting || isSkipped}>
-                            <SelectTrigger size="sm" className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ROLE_OPTIONS.map(r => (
-                                <SelectItem key={r.value} value={r.value}>
-                                  {r.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-
-                        <TableCell>
-                          {!isExisting && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                              onClick={() => onSkipRow(person.email)}
-                              disabled={isSkipped}>
-                              {t('skipRow')}
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
+                  filteredPeople.map(person => (
+                    <PersonRow
+                      key={person.email}
+                      person={person}
+                      selection={personSelections.get(person.email)}
+                      checked={checkedEmails.has(person.email)}
+                      roleOptions={ROLE_OPTIONS}
+                      onRowCheck={onRowCheck}
+                      onSkipRow={onSkipRow}
+                      onRoleChange={onRoleChange}
+                      onResolveConflict={onResolveConflict}
+                      labels={rowLabels}
+                    />
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -335,12 +387,7 @@ export function PeopleReviewError({ onRefetch }: PeopleReviewErrorProps) {
   return (
     <div className="flex flex-col items-center gap-4 py-16">
       <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5"
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onClick={onRefetch}>
+      <Button variant="outline" size="sm" className="gap-1.5" onClick={onRefetch}>
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
         {tErr('retry')}
       </Button>

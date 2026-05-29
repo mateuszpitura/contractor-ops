@@ -8,12 +8,12 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
 } from '@contractor-ops/ui/components/shadcn/command';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import {
   Popover,
   PopoverContent,
@@ -28,6 +28,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertCircle, AlertTriangle, Ban, Info, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { usePermissions } from '../../../hooks/use-permissions.js';
 import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -258,6 +259,101 @@ export function MatchCard({ invoice }: MatchCardProps) {
 // Unmatched card — contractor search + contract picker
 // ---------------------------------------------------------------------------
 
+interface ContractorCommandItemProps {
+  contractor: {
+    id: string;
+    legalName: string;
+    taxId: string | null;
+    status: string;
+  };
+  showPii: boolean;
+  onSelectContractor: (contractor: { id: string; legalName: string }) => void;
+}
+
+function ContractorCommandItem({
+  contractor,
+  showPii,
+  onSelectContractor,
+}: ContractorCommandItemProps) {
+  const handleSelect = useCallback(
+    () => onSelectContractor(contractor),
+    [contractor, onSelectContractor],
+  );
+  return (
+    <CommandItem value={contractor.id} onSelect={handleSelect}>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm">{contractor.legalName}</span>
+        <div className="flex items-center gap-2">
+          {!!contractor.taxId && (
+            <span className="font-mono text-xs text-muted-foreground">
+              {showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
+            </span>
+          )}
+          <Badge variant="secondary" className="text-xs">
+            {contractor.status}
+          </Badge>
+        </div>
+      </div>
+    </CommandItem>
+  );
+}
+
+function ContractorMatchCommandList({
+  unmatched,
+  showPii,
+  t,
+}: {
+  unmatched: ReturnType<typeof useInvoiceManualMatch>;
+  showPii: boolean;
+  t: ReturnType<typeof useTranslations<'Invoices'>>;
+}) {
+  const isLoading =
+    unmatched.isContractorsLoading ||
+    (unmatched.isContractorsFetching && unmatched.contractors.length === 0);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2 p-2" aria-busy="true" aria-live="polite">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    );
+  }
+
+  if (unmatched.contractors.length === 0) {
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        {unmatched.isContractorSearchActive
+          ? t('match.noContractorsFound')
+          : t('match.searchPrompt')}
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <CommandGroup>
+        {unmatched.contractors.map(
+          (contractor: { id: string; legalName: string; taxId: string | null; status: string }) => (
+            <ContractorCommandItem
+              key={contractor.id}
+              contractor={contractor}
+              showPii={showPii}
+              onSelectContractor={unmatched.onSelectContractor}
+            />
+          ),
+        )}
+      </CommandGroup>
+      {unmatched.isContractorSearchActive ? null : (
+        <p className="border-t px-3 py-2 text-xs text-muted-foreground">
+          {t('match.typeToSearch')}
+        </p>
+      )}
+    </>
+  );
+}
+
 export function UnmatchedCard({
   unmatched,
 }: {
@@ -270,7 +366,8 @@ export function UnmatchedCard({
   return (
     <Card className="bg-amber-500/5 border-amber-500/20">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{t('match.noMatch')}</CardTitle>
+        <CardTitle className="text-base">{t('match.unmatchedTitle')}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t('match.unmatchedDescription')}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Contractor search picker */}
@@ -279,10 +376,7 @@ export function UnmatchedCard({
           <Popover
             open={unmatched.contractorPopoverOpen}
             onOpenChange={unmatched.onContractorPopoverOpenChange}>
-            <PopoverTrigger
-              render={
-                <Button variant="outline" className="w-full justify-start text-start font-normal" />
-              }>
+            <PopoverTrigger render={formControlPopoverRender('text-start')}>
               {unmatched.selectedContractorName || t('match.searchContractor')}
             </PopoverTrigger>
             <PopoverContent className="w-[400px] p-0" align="start">
@@ -293,48 +387,7 @@ export function UnmatchedCard({
                   onValueChange={unmatched.onSearchChange}
                 />
                 <CommandList>
-                  <CommandEmpty>
-                    {unmatched.isContractorsLoading ? (
-                      <div className="space-y-2 p-2">
-                        <Skeleton className="h-8 w-full" />
-                        <Skeleton className="h-8 w-full" />
-                      </div>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        {t('match.noContractorsFound')}
-                      </span>
-                    )}
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {unmatched.contractors.map(
-                      (contractor: {
-                        id: string;
-                        legalName: string;
-                        taxId: string | null;
-                        status: string;
-                      }) => (
-                        <CommandItem
-                          key={contractor.id}
-                          value={contractor.id}
-                          // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                          onSelect={() => unmatched.onSelectContractor(contractor)}>
-                          <div className="flex flex-col gap-0.5">
-                            <span className="text-sm">{contractor.legalName}</span>
-                            <div className="flex items-center gap-2">
-                              {!!contractor.taxId && (
-                                <span className="font-mono text-xs text-muted-foreground">
-                                  {showPii ? contractor.taxId : maskTaxId(contractor.taxId)}
-                                </span>
-                              )}
-                              <Badge variant="secondary" className="text-xs">
-                                {contractor.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CommandItem>
-                      ),
-                    )}
-                  </CommandGroup>
+                  <ContractorMatchCommandList unmatched={unmatched} showPii={showPii} t={t} />
                 </CommandList>
               </Command>
             </PopoverContent>
@@ -352,8 +405,7 @@ export function UnmatchedCard({
             ) : (
               <Select
                 value={unmatched.selectedContractId ?? undefined}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val => unmatched.onSelectContractId(val)}>
+                onValueChange={unmatched.onSelectContractId}>
                 <SelectTrigger aria-label={t('match.selectContract')}>
                   <SelectValue placeholder={t('match.selectContract')} />
                 </SelectTrigger>
@@ -378,7 +430,6 @@ export function UnmatchedCard({
 
         {/* Confirm match CTA */}
         <Button
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
           onClick={unmatched.onConfirmMatch}
           disabled={!unmatched.selectedContractorId || unmatched.isConfirmPending}
           className="w-full">

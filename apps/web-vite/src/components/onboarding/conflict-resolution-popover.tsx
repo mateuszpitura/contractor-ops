@@ -14,7 +14,8 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertTriangle } from 'lucide-react';
-import { useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 // ---------------------------------------------------------------------------
@@ -42,6 +43,84 @@ interface ConflictResolutionPopoverProps {
 // ConflictResolutionPopover
 // ---------------------------------------------------------------------------
 
+interface ConflictValueRowProps {
+  field: string;
+  value: string;
+  source: string;
+  resolved: string | undefined;
+  onResolve: (field: string, value: string) => void;
+}
+
+function ConflictValueRow({ field, value, source, resolved, onResolve }: ConflictValueRowProps) {
+  const handleChange = useCallback(() => onResolve(field, value), [field, value, onResolve]);
+  return (
+    <label className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50">
+      <input
+        type="radio"
+        name={`conflict-${field}`}
+        checked={resolved === value}
+        onChange={handleChange}
+        className="accent-primary"
+      />
+      <span className="flex-1">{value}</span>
+      <Badge variant="secondary" className="text-[10px]">
+        {source}
+      </Badge>
+    </label>
+  );
+}
+
+interface CustomConflictRowProps {
+  field: string;
+  resolved: string | undefined;
+  isCustom: boolean;
+  customValue: string;
+  placeholder: string;
+  onCustomChange: (field: string, value: string) => void;
+  onResolve: (field: string, value: string) => void;
+}
+
+function CustomConflictRow({
+  field,
+  isCustom,
+  customValue,
+  placeholder,
+  onCustomChange,
+  onResolve,
+}: CustomConflictRowProps) {
+  const handleRadioChange = useCallback(() => {
+    if (customValue) onResolve(field, customValue);
+  }, [field, customValue, onResolve]);
+
+  const handleInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onCustomChange(field, e.target.value),
+    [field, onCustomChange],
+  );
+
+  const handleBlur = useCallback(() => {
+    if (customValue) onResolve(field, customValue);
+  }, [field, customValue, onResolve]);
+
+  return (
+    <label className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50">
+      <input
+        type="radio"
+        name={`conflict-${field}`}
+        checked={isCustom}
+        onChange={handleRadioChange}
+        className="accent-primary"
+      />
+      <Input
+        placeholder={placeholder}
+        value={customValue}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        className="h-7 text-xs"
+      />
+    </label>
+  );
+}
+
 export function ConflictResolutionPopover({
   conflicts,
   resolvedConflicts,
@@ -51,6 +130,10 @@ export function ConflictResolutionPopover({
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   const unresolvedCount = conflicts.filter(c => !resolvedConflicts[c.field]).length;
+
+  const handleCustomChange = useCallback((field: string, value: string) => {
+    setCustomValues(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   return (
     <Popover>
@@ -79,6 +162,7 @@ export function ConflictResolutionPopover({
         <div className="space-y-4">
           {conflicts.map(conflict => {
             const resolved = resolvedConflicts[conflict.field];
+            const isCustom = !!resolved && !conflict.values.some(cv => cv.value === resolved);
 
             return (
               <div key={conflict.field} className="space-y-2">
@@ -86,55 +170,25 @@ export function ConflictResolutionPopover({
 
                 <div className="space-y-1">
                   {conflict.values.map(cv => (
-                    <label
+                    <ConflictValueRow
                       key={`${conflict.field}-${cv.source}`}
-                      className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50">
-                      <input
-                        type="radio"
-                        name={`conflict-${conflict.field}`}
-                        checked={resolved === cv.value}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                        onChange={() => onResolve(conflict.field, cv.value)}
-                        className="accent-primary"
-                      />
-                      <span className="flex-1">{cv.value}</span>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {cv.source}
-                      </Badge>
-                    </label>
+                      field={conflict.field}
+                      value={cv.value}
+                      source={cv.source}
+                      resolved={resolved}
+                      onResolve={onResolve}
+                    />
                   ))}
 
-                  {/* Custom value option */}
-                  <label className="flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-muted/50">
-                    <input
-                      type="radio"
-                      name={`conflict-${conflict.field}`}
-                      checked={!!resolved && !conflict.values.some(cv => cv.value === resolved)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={() => {
-                        const custom = customValues[conflict.field] ?? '';
-                        if (custom) onResolve(conflict.field, custom);
-                      }}
-                      className="accent-primary"
-                    />
-                    <Input
-                      placeholder={t('conflictCustom')}
-                      value={customValues[conflict.field] ?? ''}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                      onChange={e => {
-                        setCustomValues(prev => ({
-                          ...prev,
-                          [conflict.field]: e.target.value,
-                        }));
-                      }}
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onBlur={() => {
-                        const custom = customValues[conflict.field];
-                        if (custom) onResolve(conflict.field, custom);
-                      }}
-                      className="h-7 text-xs"
-                    />
-                  </label>
+                  <CustomConflictRow
+                    field={conflict.field}
+                    resolved={resolved}
+                    isCustom={isCustom}
+                    customValue={customValues[conflict.field] ?? ''}
+                    placeholder={t('conflictCustom')}
+                    onCustomChange={handleCustomChange}
+                    onResolve={onResolve}
+                  />
                 </div>
               </div>
             );

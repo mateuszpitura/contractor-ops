@@ -31,8 +31,8 @@ import {
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { RefreshCw, Trash2 } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { lazy, Suspense } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConfidenceFieldWrapper } from './confidence-field-wrapper.js';
@@ -106,6 +106,60 @@ export function OcrReviewPanelProcessingBody() {
   return <OcrProcessingOverlay />;
 }
 
+interface StringInputProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+  step?: string;
+}
+
+function StringInput({ value, onValueChange, placeholder, type, step }: StringInputProps) {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value),
+    [onValueChange],
+  );
+  return (
+    <Input
+      value={value}
+      onChange={handleChange}
+      placeholder={placeholder}
+      type={type}
+      step={step}
+    />
+  );
+}
+
+interface StringSelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder: string;
+  options: readonly string[];
+}
+
+function StringSelect({ value, onValueChange, placeholder, options }: StringSelectProps) {
+  const handleValueChange = useCallback(
+    (val: string | null) => {
+      if (val) onValueChange(val);
+    },
+    [onValueChange],
+  );
+  return (
+    <Select value={value} onValueChange={handleValueChange}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map(o => (
+          <SelectItem key={o} value={o}>
+            {o}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 interface OcrReviewFormBodyProps {
   onDiscard: () => void;
   onRetrigger: () => void;
@@ -135,10 +189,9 @@ export function OcrReviewFormBody({
             <ConfidenceFieldWrapper
               confidence={getFieldConfidence(resultJson?.fields, 'invoiceNumber')}
               label={t('fields.invoiceNumber')}>
-              <Input
+              <StringInput
                 value={state.invoiceNumber}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setters.setInvoiceNumber(e.target.value)}
+                onValueChange={setters.setInvoiceNumber}
                 placeholder={t('fields.invoiceNumberPlaceholder')}
               />
             </ConfidenceFieldWrapper>
@@ -147,11 +200,10 @@ export function OcrReviewFormBody({
             <ConfidenceFieldWrapper
               confidence={getFieldConfidence(resultJson?.fields, 'issueDate')}
               label={t('fields.issueDate')}>
-              <Input
+              <StringInput
                 type="date"
                 value={state.issueDate}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setters.setIssueDate(e.target.value)}
+                onValueChange={setters.setIssueDate}
               />
             </ConfidenceFieldWrapper>
           </div>
@@ -159,35 +211,19 @@ export function OcrReviewFormBody({
             <ConfidenceFieldWrapper
               confidence={getFieldConfidence(resultJson?.fields, 'dueDate')}
               label={t('fields.dueDate')}>
-              <Input
-                type="date"
-                value={state.dueDate}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setters.setDueDate(e.target.value)}
-              />
+              <StringInput type="date" value={state.dueDate} onValueChange={setters.setDueDate} />
             </ConfidenceFieldWrapper>
           </div>
           <div>
             <ConfidenceFieldWrapper
               confidence={getFieldConfidence(resultJson?.fields, 'currency')}
               label={t('fields.currency')}>
-              <Select
+              <StringSelect
                 value={state.currency}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val => {
-                  if (val) setters.setCurrency(val);
-                }}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('fields.currencyPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {OCR_CURRENCIES.map(c => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onValueChange={setters.setCurrency}
+                placeholder={t('fields.currencyPlaceholder')}
+                options={OCR_CURRENCIES}
+              />
             </ConfidenceFieldWrapper>
           </div>
         </div>
@@ -201,10 +237,9 @@ export function OcrReviewFormBody({
             confidence={getFieldConfidence(resultJson?.fields, 'sellerNip')}
             label={t('fields.sellerNip')}>
             <div className="flex items-center gap-2">
-              <Input
+              <StringInput
                 value={state.sellerTaxId}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setters.setSellerTaxId(e.target.value)}
+                onValueChange={setters.setSellerTaxId}
                 placeholder={t('fields.nipPlaceholder')}
               />
               <NipValidationBadge nip={state.sellerTaxId} />
@@ -216,10 +251,9 @@ export function OcrReviewFormBody({
             confidence={getFieldConfidence(resultJson?.fields, 'buyerNip')}
             label={t('fields.buyerNip')}>
             <div className="flex items-center gap-2">
-              <Input
+              <StringInput
                 value={state.buyerTaxId}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setters.setBuyerTaxId(e.target.value)}
+                onValueChange={setters.setBuyerTaxId}
                 placeholder={t('fields.nipPlaceholder')}
               />
               <NipValidationBadge nip={state.buyerTaxId} />
@@ -230,10 +264,9 @@ export function OcrReviewFormBody({
           <ConfidenceFieldWrapper
             confidence={getFieldConfidence(resultJson?.fields, 'sellerName')}
             label={t('fields.sellerName')}>
-            <Input
+            <StringInput
               value={state.sellerName}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setters.setSellerName(e.target.value)}
+              onValueChange={setters.setSellerName}
               placeholder={t('fields.companyNamePlaceholder')}
             />
           </ConfidenceFieldWrapper>
@@ -242,10 +275,9 @@ export function OcrReviewFormBody({
           <ConfidenceFieldWrapper
             confidence={getFieldConfidence(resultJson?.fields, 'buyerName')}
             label={t('fields.buyerName')}>
-            <Input
+            <StringInput
               value={state.buyerName}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setters.setBuyerName(e.target.value)}
+              onValueChange={setters.setBuyerName}
               placeholder={t('fields.companyNamePlaceholder')}
             />
           </ConfidenceFieldWrapper>
@@ -259,12 +291,11 @@ export function OcrReviewFormBody({
           <ConfidenceFieldWrapper
             confidence={getFieldConfidence(resultJson?.fields, 'totalNet')}
             label={t('fields.netAmount')}>
-            <Input
+            <StringInput
               type="number"
               step="0.01"
               value={state.subtotalMinor}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setters.setSubtotalMinor(e.target.value)}
+              onValueChange={setters.setSubtotalMinor}
               placeholder={t('fields.amountPlaceholder')}
             />
           </ConfidenceFieldWrapper>
@@ -273,12 +304,11 @@ export function OcrReviewFormBody({
           <ConfidenceFieldWrapper
             confidence={getFieldConfidence(resultJson?.fields, 'totalTax')}
             label={t('fields.vatAmount')}>
-            <Input
+            <StringInput
               type="number"
               step="0.01"
               value={state.vatAmountMinor}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setters.setVatAmountMinor(e.target.value)}
+              onValueChange={setters.setVatAmountMinor}
               placeholder={t('fields.amountPlaceholder')}
             />
           </ConfidenceFieldWrapper>
@@ -287,12 +317,11 @@ export function OcrReviewFormBody({
           <ConfidenceFieldWrapper
             confidence={getFieldConfidence(resultJson?.fields, 'totalGross')}
             label={t('fields.totalGross')}>
-            <Input
+            <StringInput
               type="number"
               step="0.01"
               value={state.totalMinor}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setters.setTotalMinor(e.target.value)}
+              onValueChange={setters.setTotalMinor}
               placeholder={t('fields.amountPlaceholder')}
             />
           </ConfidenceFieldWrapper>
@@ -305,10 +334,9 @@ export function OcrReviewFormBody({
         <ConfidenceFieldWrapper
           confidence={getFieldConfidence(resultJson?.fields, 'bankAccount')}
           label={t('fields.sellerBankAccount')}>
-          <Input
+          <StringInput
             value={state.sellerBankAccount}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setters.setSellerBankAccount(e.target.value)}
+            onValueChange={setters.setSellerBankAccount}
             placeholder={t('fields.bankAccountPlaceholder')}
           />
         </ConfidenceFieldWrapper>

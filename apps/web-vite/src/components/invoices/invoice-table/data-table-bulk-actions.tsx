@@ -12,7 +12,7 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -54,10 +54,22 @@ export function DataTableBulkActions({
   const SubmitIcon = submitAction?.icon;
   const VoidIcon = voidAction?.icon;
 
-  const finish = () => {
+  const finish = useCallback(() => {
     onComplete();
     setShowVoidDialog(false);
-  };
+  }, [onComplete]);
+
+  const handleBulkSubmit = useCallback(() => {
+    bulkActions.onBulkSubmitForMatching(selectedIds);
+    finish();
+  }, [bulkActions, selectedIds, finish]);
+
+  const handleOpenVoid = useCallback(() => setShowVoidDialog(true), []);
+
+  const handleConfirmVoid = useCallback(() => {
+    bulkActions.onBulkVoid(selectedIds);
+    finish();
+  }, [bulkActions, selectedIds, finish]);
 
   if (count === 0) return null;
 
@@ -71,11 +83,7 @@ export function DataTableBulkActions({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => {
-              bulkActions.onBulkSubmitForMatching(selectedIds);
-              finish();
-            }}
+            onClick={handleBulkSubmit}
             disabled={bulkActions.isSubmittingForMatching}>
             {bulkActions.isSubmittingForMatching ? (
               <Loader2 className={`${iconSize.sm} animate-spin`} />
@@ -91,8 +99,7 @@ export function DataTableBulkActions({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5 text-destructive hover:text-destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setShowVoidDialog(true)}>
+            onClick={handleOpenVoid}>
             <VoidIcon className={iconSize.sm} />
             {tKey(t, voidAction.labelKey)}
           </Button>
@@ -108,11 +115,7 @@ export function DataTableBulkActions({
           <AlertDialogFooter>
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                bulkActions.onBulkVoid(selectedIds);
-                finish();
-              }}
+              onClick={handleConfirmVoid}
               disabled={bulkActions.isVoiding}
               variant="destructive">
               {bulkActions.isVoiding ? (

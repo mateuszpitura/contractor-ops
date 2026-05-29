@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Plus, Trash2 } from 'lucide-react';
+import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -147,100 +148,15 @@ export function LineItemsTable({ items, onChange, readOnly = false }: LineItemsT
           </TableHeader>
           <TableBody>
             {items.map((item, index) => (
-              <TableRow key={item.id} className="animate-in fade-in-0 duration-200">
-                <TableCell>
-                  <InlineInput
-                    value={item.description}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'description', v)}
-                    readOnly={readOnly}
-                    placeholder={t('placeholderDescription')}
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={formatNumber(item.quantity)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'quantity', v)}
-                    readOnly={readOnly}
-                    placeholder="0"
-                    className="text-end"
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={item.unit ?? ''}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'unit', v)}
-                    readOnly={readOnly}
-                    placeholder={t('placeholderUnit')}
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={formatMinorUnits(item.unitPriceMinor)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'unitPriceMinor', v)}
-                    readOnly={readOnly}
-                    placeholder="0.00"
-                    className="text-end"
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={formatMinorUnits(item.netAmountMinor)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'netAmountMinor', v)}
-                    readOnly={readOnly}
-                    placeholder="0.00"
-                    className="text-end"
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={item.vatRate ?? ''}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'vatRate', v)}
-                    readOnly={readOnly}
-                    placeholder={t('placeholderVatRate')}
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={formatMinorUnits(item.vatAmountMinor)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'vatAmountMinor', v)}
-                    readOnly={readOnly}
-                    placeholder="0.00"
-                    className="text-end"
-                  />
-                </TableCell>
-                <TableCell>
-                  <InlineInput
-                    value={formatMinorUnits(item.grossAmountMinor)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                    onChange={v => updateItem(index, 'grossAmountMinor', v)}
-                    readOnly={readOnly}
-                    placeholder="0.00"
-                    className="text-end"
-                  />
-                </TableCell>
-                <TableCell>
-                  <ConfidenceBadge confidence={item.confidence} showPercentage={false} />
-                </TableCell>
-                {!readOnly && (
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => removeItem(index)}
-                      aria-label={t('removeItemAriaLabel')}>
-                      <Trash2 className="text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                )}
-              </TableRow>
+              <LineItemRow
+                key={item.id}
+                item={item}
+                index={index}
+                readOnly={readOnly}
+                updateItem={updateItem}
+                removeItem={removeItem}
+                t={t}
+              />
             ))}
           </TableBody>
         </Table>
@@ -269,6 +185,11 @@ function InlineInput({
   placeholder?: string;
   className?: string;
 }) {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
+    [onChange],
+  );
+
   if (readOnly) {
     return (
       <span className={cn('text-sm', className)}>
@@ -280,13 +201,142 @@ function InlineInput({
   return (
     <Input
       value={value}
-      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-      onChange={e => onChange(e.target.value)}
+      onChange={handleChange}
       placeholder={placeholder}
       className={cn(
         'h-7 border-transparent bg-transparent text-sm shadow-none hover:border-input focus-visible:border-input',
         className,
       )}
     />
+  );
+}
+
+interface LineItemRowProps {
+  item: LineItem;
+  index: number;
+  readOnly: boolean;
+  updateItem: (index: number, field: keyof LineItem, value: string) => void;
+  removeItem: (index: number) => void;
+  t: ReturnType<typeof useTranslations>;
+}
+
+function LineItemRow({ item, index, readOnly, updateItem, removeItem, t }: LineItemRowProps) {
+  const onDescription = useCallback(
+    (v: string) => updateItem(index, 'description', v),
+    [index, updateItem],
+  );
+  const onQuantity = useCallback(
+    (v: string) => updateItem(index, 'quantity', v),
+    [index, updateItem],
+  );
+  const onUnit = useCallback((v: string) => updateItem(index, 'unit', v), [index, updateItem]);
+  const onUnitPrice = useCallback(
+    (v: string) => updateItem(index, 'unitPriceMinor', v),
+    [index, updateItem],
+  );
+  const onNetAmount = useCallback(
+    (v: string) => updateItem(index, 'netAmountMinor', v),
+    [index, updateItem],
+  );
+  const onVatRate = useCallback(
+    (v: string) => updateItem(index, 'vatRate', v),
+    [index, updateItem],
+  );
+  const onVatAmount = useCallback(
+    (v: string) => updateItem(index, 'vatAmountMinor', v),
+    [index, updateItem],
+  );
+  const onGrossAmount = useCallback(
+    (v: string) => updateItem(index, 'grossAmountMinor', v),
+    [index, updateItem],
+  );
+  const onRemove = useCallback(() => removeItem(index), [index, removeItem]);
+
+  return (
+    <TableRow className="animate-in fade-in-0 duration-200">
+      <TableCell>
+        <InlineInput
+          value={item.description}
+          onChange={onDescription}
+          readOnly={readOnly}
+          placeholder={t('placeholderDescription')}
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={formatNumber(item.quantity)}
+          onChange={onQuantity}
+          readOnly={readOnly}
+          placeholder="0"
+          className="text-end"
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={item.unit ?? ''}
+          onChange={onUnit}
+          readOnly={readOnly}
+          placeholder={t('placeholderUnit')}
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={formatMinorUnits(item.unitPriceMinor)}
+          onChange={onUnitPrice}
+          readOnly={readOnly}
+          placeholder="0.00"
+          className="text-end"
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={formatMinorUnits(item.netAmountMinor)}
+          onChange={onNetAmount}
+          readOnly={readOnly}
+          placeholder="0.00"
+          className="text-end"
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={item.vatRate ?? ''}
+          onChange={onVatRate}
+          readOnly={readOnly}
+          placeholder={t('placeholderVatRate')}
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={formatMinorUnits(item.vatAmountMinor)}
+          onChange={onVatAmount}
+          readOnly={readOnly}
+          placeholder="0.00"
+          className="text-end"
+        />
+      </TableCell>
+      <TableCell>
+        <InlineInput
+          value={formatMinorUnits(item.grossAmountMinor)}
+          onChange={onGrossAmount}
+          readOnly={readOnly}
+          placeholder="0.00"
+          className="text-end"
+        />
+      </TableCell>
+      <TableCell>
+        <ConfidenceBadge confidence={item.confidence} showPercentage={false} />
+      </TableCell>
+      {!readOnly && (
+        <TableCell>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onRemove}
+            aria-label={t('removeItemAriaLabel')}>
+            <Trash2 className="text-muted-foreground" />
+          </Button>
+        </TableCell>
+      )}
+    </TableRow>
   );
 }

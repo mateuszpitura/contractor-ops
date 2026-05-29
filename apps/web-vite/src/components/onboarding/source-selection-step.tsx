@@ -1,12 +1,45 @@
 import { QueryErrorPanel } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { JiraBrandIcon, LinearBrandIcon, SlackBrandIcon } from '../integrations/brand-icons.js';
 import { GoogleWorkspaceLogo } from '../integrations/google-workspace-logo.js';
 import type { OnboardingSource } from './hooks/use-onboarding-source-selection.js';
 import { SourceCard } from './source-card.js';
+
+interface SourceCardItemProps {
+  source: OnboardingSource;
+  name: string;
+  icon: ReactNode;
+  selected: boolean;
+  onToggle: (provider: string) => void;
+  onConnect: (provider: string) => void;
+}
+
+function SourceCardItem({
+  source,
+  name,
+  icon,
+  selected,
+  onToggle,
+  onConnect,
+}: SourceCardItemProps) {
+  const handleToggle = useCallback(() => onToggle(source.provider), [source.provider, onToggle]);
+  const handleConnect = useCallback(() => onConnect(source.provider), [source.provider, onConnect]);
+  return (
+    <SourceCard
+      provider={source.provider}
+      name={name}
+      icon={icon}
+      connected={source.connected}
+      selected={selected}
+      onToggle={handleToggle}
+      onConnect={handleConnect}
+    />
+  );
+}
 
 const PROVIDER_ICONS: Record<string, ReactNode> = {
   JIRA: <JiraBrandIcon className="size-8" />,
@@ -45,17 +78,14 @@ export function SourceSelectionStep({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {sources.map(source => (
-          <SourceCard
+          <SourceCardItem
             key={source.provider}
-            provider={source.provider}
+            source={source}
             name={PROVIDER_NAMES[source.provider] ?? source.provider}
             icon={PROVIDER_ICONS[source.provider] ?? null}
-            connected={source.connected}
             selected={selectedSources.includes(source.provider)}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onToggle={() => onToggle(source.provider)}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onConnect={() => onConnect(source.provider)}
+            onToggle={onToggle}
+            onConnect={onConnect}
           />
         ))}
       </div>
