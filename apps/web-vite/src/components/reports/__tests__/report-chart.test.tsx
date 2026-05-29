@@ -16,48 +16,48 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-type BarStubOnClick = (
-  data: Record<string, unknown>,
-  index: number,
-  event: Record<string, unknown>,
-) => void;
-
-const BarStub = ({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick?: BarStubOnClick;
-}) => {
-  const handleClick = () =>
-    onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
-      payload: { id: 'segment-id', name: 'Row' },
-    });
-  return (
-    <button type="button" data-testid="bar" onClick={handleClick}>
-      {children}
-    </button>
-  );
-};
-
-vi.mock('recharts', () => ({
-  BarChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="bar-chart">{children}</div>
-  ),
-  Bar: BarStub,
-  XAxis: () => <div data-testid="x-axis" />,
-  YAxis: () => <div data-testid="y-axis" />,
-  CartesianGrid: () => <div data-testid="grid" />,
-  Tooltip: () => <div data-testid="tooltip" />,
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="responsive-container">{children}</div>
-  ),
-  PieChart: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="pie-chart">{children}</div>
-  ),
-  Pie: ({ children }: { children: React.ReactNode }) => <div data-testid="pie">{children}</div>,
-  Cell: ({ fill }: { fill: string }) => <div data-testid="cell" data-fill={fill} />,
-}));
+vi.mock('recharts', () => {
+  type BarStubOnClick = (
+    data: Record<string, unknown>,
+    index: number,
+    event: Record<string, unknown>,
+  ) => void;
+  const BarStub = ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: BarStubOnClick;
+  }) => {
+    const handleClick = () =>
+      onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
+        payload: { id: 'segment-id', name: 'Row' },
+      });
+    return (
+      <button type="button" data-testid="bar" onClick={handleClick}>
+        {children}
+      </button>
+    );
+  };
+  return {
+    BarChart: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="bar-chart">{children}</div>
+    ),
+    Bar: BarStub,
+    XAxis: () => <div data-testid="x-axis" />,
+    YAxis: () => <div data-testid="y-axis" />,
+    CartesianGrid: () => <div data-testid="grid" />,
+    Tooltip: () => <div data-testid="tooltip" />,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="responsive-container">{children}</div>
+    ),
+    PieChart: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="pie-chart">{children}</div>
+    ),
+    Pie: ({ children }: { children: React.ReactNode }) => <div data-testid="pie">{children}</div>,
+    Cell: ({ fill }: { fill: string }) => <div data-testid="cell" data-fill={fill} />,
+  };
+});
 
 import { ReportChart } from '../report-chart.js';
 import { click, mount } from './_render.js';

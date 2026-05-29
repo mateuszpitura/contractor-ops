@@ -49,6 +49,10 @@ function defaultProps() {
     pageCount: 3,
     page: 1,
     pageSize: 10,
+    // Shared DataTablePagination derives totalPages from `totalCount / pageSize`;
+    // supply enough rows for a 3-page result so Next/Previous render and aren't
+    // both disabled by default.
+    totalCount: 30,
     onPageChange: vi.fn(),
     onPageSizeChange: vi.fn(),
     onRowClick: vi.fn(),
@@ -74,8 +78,8 @@ describe('ApprovalQueueTable (web-vite)', () => {
     render(
       <ApprovalQueueTable {...defaultProps()} data={[makeRow('r1')]} pageCount={3} page={2} />,
     );
-    expect(screen.getByText('Previous')).toBeInTheDocument();
-    expect(screen.getByText('Next')).toBeInTheDocument();
+    expect(screen.getByLabelText(/previous page/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/next page/i)).toBeInTheDocument();
   });
 
   it('calls onPageChange on next click', async () => {
@@ -89,13 +93,13 @@ describe('ApprovalQueueTable (web-vite)', () => {
         onPageChange={onPageChange}
       />,
     );
-    await user.click(screen.getByText('Next'));
+    await user.click(screen.getByLabelText(/next page/i));
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 
   it('disables previous on first page', () => {
     render(<ApprovalQueueTable {...defaultProps()} data={[makeRow('r1')]} page={1} />);
-    expect(screen.getByText('Previous').closest('button')).toBeDisabled();
+    expect(screen.getByLabelText(/previous page/i)).toBeDisabled();
   });
 
   it('calls onRowClick when a row is clicked', async () => {

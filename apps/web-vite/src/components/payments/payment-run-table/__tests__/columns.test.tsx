@@ -53,6 +53,9 @@ function renderCell(columnId: string, row: PaymentRunRow) {
   });
   if (result === null) return null;
   const { container } = render(result);
+  // Memoized cell components wrap content in fiber elements that return null
+  // internally — treat an empty-DOM render as null at the helper boundary.
+  if (container.children.length === 0 && container.textContent === '') return null;
   return container;
 }
 

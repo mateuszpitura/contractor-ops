@@ -2,12 +2,14 @@
  * Ported from apps/web/src/components/contracts/contract-table/__tests__/data-table-filters.test.tsx.
  *
  * Web-vite split: DataTableFilters takes `users` as a prop (no tRPC inside).
- * We pass a static user list and exercise badge / clear-all / remove flows.
+ * The component was further split into `DataTableFilters` (popover trigger +
+ * filter-count badge) and `ActiveFilterBadges` (active chip row), so badge
+ * assertions render both via the `renderToolbar`/`setupToolbar` helpers.
  */
 
 import { vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
-import { DataTableFilters } from '../data-table-filters';
+import { ActiveFilterBadges, DataTableFilters } from '../data-table-filters';
 
 const users = [
   { id: 'u1', userId: 'u1', name: 'Alice', email: 'alice@test.com' },
@@ -25,6 +27,32 @@ const emptyFilters = {
   endDateTo: '',
   complianceRiskLevel: [],
 };
+
+type Filters = typeof emptyFilters;
+
+function renderToolbar(props: {
+  filters: Filters;
+  onFiltersChange: (next: Partial<Filters>) => void;
+}) {
+  return render(
+    <>
+      <DataTableFilters {...props} users={users} />
+      <ActiveFilterBadges {...props} users={users} />
+    </>,
+  );
+}
+
+function setupToolbar(props: {
+  filters: Filters;
+  onFiltersChange: (next: Partial<Filters>) => void;
+}) {
+  return setup(
+    <>
+      <DataTableFilters {...props} users={users} />
+      <ActiveFilterBadges {...props} users={users} />
+    </>,
+  );
+}
 
 describe('DataTableFilters (contracts)', () => {
   it('renders filter button', () => {
@@ -76,68 +104,50 @@ describe('DataTableFilters (contracts)', () => {
   });
 
   it('renders filter badge chips for active status filters', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, status: ['ACTIVE'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, status: ['ACTIVE'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('Active')).toBeInTheDocument();
   });
 
   it('renders filter badge for billing model filter', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, billingModel: ['HOURLY'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, billingModel: ['HOURLY'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('Hourly')).toBeInTheDocument();
   });
 
   it('renders filter badge for compliance risk level', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, complianceRiskLevel: ['HIGH'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, complianceRiskLevel: ['HIGH'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('High')).toBeInTheDocument();
   });
 
   it('renders date filter badges with label prefix', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, endDateFrom: '2026-01-01' }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, endDateFrom: '2026-01-01' },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText(/From: 2026-01-01/)).toBeInTheDocument();
   });
 
   it('renders owner filter badge with user name', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, ownerUserId: ['u1'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, ownerUserId: ['u1'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('Alice')).toBeInTheDocument();
   });
 
   it('shows clear all when filters are active', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, status: ['ACTIVE'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, status: ['ACTIVE'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('Clear all')).toBeInTheDocument();
   });
 
@@ -148,13 +158,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('calls onFiltersChange to clear all filters when clear all is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, status: ['ACTIVE', 'DRAFT'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, status: ['ACTIVE', 'DRAFT'] },
+      onFiltersChange,
+    });
     await user.click(screen.getByText('Clear all'));
     expect(onFiltersChange).toHaveBeenCalledWith({
       status: [],
@@ -171,13 +178,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('calls onFiltersChange when a filter badge remove button is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, status: ['ACTIVE', 'DRAFT'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, status: ['ACTIVE', 'DRAFT'] },
+      onFiltersChange,
+    });
     const activeChip = screen.getByText('Active').closest("[data-slot='badge']");
     const removeBtn = activeChip?.querySelector('button');
     expect(removeBtn).toBeTruthy();
@@ -186,18 +190,15 @@ describe('DataTableFilters (contracts)', () => {
   });
 
   it('renders multiple filter type chips simultaneously', () => {
-    render(
-      <DataTableFilters
-        filters={{
-          ...emptyFilters,
-          status: ['ACTIVE'],
-          type: ['NDA'],
-          endDateTo: '2026-12-31',
-        }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: {
+        ...emptyFilters,
+        status: ['ACTIVE'],
+        type: ['NDA'],
+        endDateTo: '2026-12-31',
+      },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('Active')).toBeInTheDocument();
     expect(screen.getByText('Non-Disclosure Agreement')).toBeInTheDocument();
     expect(screen.getByText(/To: 2026-12-31/)).toBeInTheDocument();
@@ -205,13 +206,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes endDateFrom when its badge remove is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, endDateFrom: '2026-01-01' }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, endDateFrom: '2026-01-01' },
+      onFiltersChange,
+    });
     const badge = screen.getByText(/From: 2026-01-01/).closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -220,13 +218,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes endDateTo when its badge remove is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, endDateTo: '2026-12-31' }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, endDateTo: '2026-12-31' },
+      onFiltersChange,
+    });
     const badge = screen.getByText(/To: 2026-12-31/).closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -235,13 +230,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes owner filter when badge is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, ownerUserId: ['u1'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, ownerUserId: ['u1'] },
+      onFiltersChange,
+    });
     const badge = screen.getByText('Alice').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -250,13 +242,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes type filter when badge is clicked', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, type: ['NDA'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, type: ['NDA'] },
+      onFiltersChange,
+    });
     const badge = screen.getByText('Non-Disclosure Agreement').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -265,13 +254,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes billing model filter badge', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, billingModel: ['HOURLY'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, billingModel: ['HOURLY'] },
+      onFiltersChange,
+    });
     const badge = screen.getByText('Hourly').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -280,13 +266,10 @@ describe('DataTableFilters (contracts)', () => {
 
   it('removes compliance risk level badge', async () => {
     const onFiltersChange = vi.fn();
-    const { user } = setup(
-      <DataTableFilters
-        filters={{ ...emptyFilters, complianceRiskLevel: ['HIGH'] }}
-        onFiltersChange={onFiltersChange}
-        users={users}
-      />,
-    );
+    const { user } = setupToolbar({
+      filters: { ...emptyFilters, complianceRiskLevel: ['HIGH'] },
+      onFiltersChange,
+    });
     const badge = screen.getByText('High').closest("[data-slot='badge']");
     const removeBtn = badge?.querySelector('button');
     await user.click(removeBtn!);
@@ -294,24 +277,18 @@ describe('DataTableFilters (contracts)', () => {
   });
 
   it('renders owner ID as badge text when user not found in list', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, ownerUserId: ['unknown-id'] }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, ownerUserId: ['unknown-id'] },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText('unknown-id')).toBeInTheDocument();
   });
 
   it('renders both date filter badges', () => {
-    render(
-      <DataTableFilters
-        filters={{ ...emptyFilters, endDateFrom: '2026-01-01', endDateTo: '2026-12-31' }}
-        onFiltersChange={vi.fn()}
-        users={users}
-      />,
-    );
+    renderToolbar({
+      filters: { ...emptyFilters, endDateFrom: '2026-01-01', endDateTo: '2026-12-31' },
+      onFiltersChange: vi.fn(),
+    });
     expect(screen.getByText(/From: 2026-01-01/)).toBeInTheDocument();
     expect(screen.getByText(/To: 2026-12-31/)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
