@@ -25,6 +25,8 @@ const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
   },
 };
 
+const noopOnLinked = () => undefined;
+
 export type SlackUserMappingProps = ReturnType<typeof useSlackUserMapping>;
 
 function getMappingStatus(mapping: UserMapping): 'auto_matched' | 'manually_linked' | 'unmatched' {
@@ -131,7 +133,7 @@ export function SlackUserMapping({
               </Button>
             );
           }
-          return <LinkUserPopoverContainer userId={m.userId} onLinked={() => undefined} />;
+          return <LinkUserPopoverContainer userId={m.userId} onLinked={noopOnLinked} />;
         },
       },
     ],

@@ -19,6 +19,7 @@ import {
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Download, Loader2, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
 import type { useGdprDataRightsSection } from './hooks/use-gdpr-data-rights-section.js';
 import { GDPR_CONFIRM_PHRASE } from './hooks/use-gdpr-data-rights-section.js';
 
@@ -37,6 +38,16 @@ export function GdprDataRightsSection({
   handleErasureConfirm,
   isErasurePending,
 }: GdprDataRightsSectionProps) {
+  const handleOpenErasure = useCallback(() => setErasureOpen(true), [setErasureOpen]);
+  const handleConfirmInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setConfirmInput(e.target.value),
+    [setConfirmInput],
+  );
+  const handleRetainFinancialChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRetainFinancial(e.target.checked),
+    [setRetainFinancial],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -63,7 +74,7 @@ export function GdprDataRightsSection({
           <p className="text-sm font-medium text-destructive">{t('erasure.title')}</p>
           <p className="text-sm text-muted-foreground">{t('erasure.body')}</p>
           <div>
-            <Button variant="destructive" onClick={() => setErasureOpen(true)}>
+            <Button variant="destructive" onClick={handleOpenErasure}>
               <Trash2 className="me-1.5 size-3.5" />
               {t('erasure.cta')}
             </Button>
@@ -89,7 +100,7 @@ export function GdprDataRightsSection({
               <Input
                 id="erasure-confirm"
                 value={confirmInput}
-                onChange={e => setConfirmInput(e.target.value)}
+                onChange={handleConfirmInputChange}
                 placeholder={GDPR_CONFIRM_PHRASE}
                 autoComplete="off"
               />
@@ -99,7 +110,7 @@ export function GdprDataRightsSection({
                 type="checkbox"
                 className="mt-1"
                 checked={retainFinancial}
-                onChange={e => setRetainFinancial(e.target.checked)}
+                onChange={handleRetainFinancialChange}
               />
               <span>{t('erasure.retainFinancialLabel')}</span>
             </label>

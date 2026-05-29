@@ -30,7 +30,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { peppolParticipantPairSchema } from '@contractor-ops/validators';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { cn } from '../../../lib/utils.js';
 import type { usePeppolParticipantRegisterDialog } from './hooks/use-peppol-participant-register-dialog.js';
 
@@ -94,11 +94,24 @@ export function PeppolParticipantRegisterDialog({
     } as const;
   }, [scheme, value]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!validation.ok) return;
-    connect(scheme, value, apiKey);
-  }
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!validation.ok) return;
+      connect(scheme, value, apiKey);
+    },
+    [validation.ok, connect, scheme, value, apiKey],
+  );
+
+  const handleSchemeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setScheme(e.target.value),
+    [],
+  );
+  const handleValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   const saveDisabled = !validation.ok || isPending;
 
@@ -117,7 +130,7 @@ export function PeppolParticipantRegisterDialog({
               id={schemeId}
               name="scheme"
               value={scheme}
-              onChange={e => setScheme(e.target.value)}
+              onChange={handleSchemeChange}
               pattern="\d{4}"
               inputMode="numeric"
               maxLength={4}
@@ -139,7 +152,7 @@ export function PeppolParticipantRegisterDialog({
               id={valueId}
               name="value"
               value={value}
-              onChange={e => setValue(e.target.value)}
+              onChange={handleValueChange}
               maxLength={64}
               aria-invalid={!validation.ok && 'value' in validation && !!validation.value}
               aria-describedby={cn(valueErrId)}
@@ -154,7 +167,7 @@ export function PeppolParticipantRegisterDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={saveDisabled}>

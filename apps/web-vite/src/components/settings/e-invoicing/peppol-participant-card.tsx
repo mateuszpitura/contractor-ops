@@ -22,6 +22,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
+import { useCallback } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import type { useFormatter } from '../../../i18n/useFormatter.js';
 import type { usePeppolParticipantCard } from './hooks/use-peppol-participant-card.js';
@@ -52,6 +53,9 @@ export function PeppolParticipantCard({
   handleRecheckCapabilities,
   isLoading,
 }: PeppolParticipantCardProps) {
+  const handleOpenDeregister = useCallback(() => setDeregisterOpen(true), [setDeregisterOpen]);
+  const handleOpenRegister = useCallback(() => setRegisterOpen(true), [setRegisterOpen]);
+
   return (
     <Card data-testid="peppol-participant-card">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
@@ -119,7 +123,7 @@ export function PeppolParticipantCard({
                 )}
                 {lookupQuery.isFetching ? tCap('rechecking') : tCap('recheckCapabilities')}
               </Button>
-              <Button type="button" variant="destructive" onClick={() => setDeregisterOpen(true)}>
+              <Button type="button" variant="destructive" onClick={handleOpenDeregister}>
                 {tDialog('deregisterButton')}
               </Button>
             </div>
@@ -127,7 +131,7 @@ export function PeppolParticipantCard({
         ) : (
           <div className="flex flex-col items-center gap-4 py-8 text-center">
             <IntegrationsIllustration className="h-24 w-24" />
-            <Button type="button" onClick={() => setRegisterOpen(true)}>
+            <Button type="button" onClick={handleOpenRegister}>
               {t('ctaNotRegistered')}
             </Button>
           </div>

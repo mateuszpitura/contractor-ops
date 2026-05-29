@@ -11,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
+import { useCallback } from 'react';
 
 import type { useLinkUserPopover } from './hooks/use-slack-user-mapping.js';
 
@@ -28,6 +29,8 @@ export function LinkUserPopover({
   handleSelect,
   isLinkPending,
 }: LinkUserPopoverProps) {
+  const handleLink = useCallback(() => handleSelect(search), [handleSelect, search]);
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger render={<Button variant="ghost" size="sm" type="button" />}>
@@ -45,9 +48,8 @@ export function LinkUserPopover({
               {search.length > 0 ? (
                 <CommandItem
                   value={search}
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
                   disabled={isLinkPending}
-                  onSelect={() => handleSelect(search)}
+                  onSelect={handleLink}
                   className="cursor-pointer">
                   <span className="text-sm">Link as &quot;{search}&quot;</span>
                 </CommandItem>

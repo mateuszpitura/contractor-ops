@@ -26,6 +26,7 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
 import type {
   SupportedCountry,
@@ -46,6 +47,17 @@ export function CountryRatesSection({
   rates,
   isLoading,
 }: CountryRatesSectionProps) {
+  const handleCountryChange = useCallback(
+    (value: SupportedCountry | null) => {
+      if (value) setCountry(value);
+    },
+    [setCountry],
+  );
+  const handleValidateCodeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValidateCode(e.target.value),
+    [setValidateCode],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -57,7 +69,7 @@ export function CountryRatesSection({
           <Label htmlFor="tax-country" className="text-[13px]">
             {t('countryLabel')}
           </Label>
-          <Select value={country} onValueChange={value => setCountry(value as SupportedCountry)}>
+          <Select value={country} onValueChange={handleCountryChange}>
             <SelectTrigger id="tax-country" className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -127,7 +139,7 @@ export function CountryRatesSection({
               <Input
                 id="tax-validate-code"
                 value={validateCode}
-                onChange={e => setValidateCode(e.target.value)}
+                onChange={handleValidateCodeChange}
                 placeholder={t('validation.codePlaceholder')}
                 maxLength={10}
                 autoComplete="off"

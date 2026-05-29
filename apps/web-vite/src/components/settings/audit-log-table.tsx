@@ -19,16 +19,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
-import { Fragment, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { Link } from '../../i18n/navigation';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key';
 import { DataTablePagination } from '../shared/data-table-pagination.js';
+import { shouldIgnoreRowClick } from '../shared/row-click.js';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
 
 // ---------------------------------------------------------------------------
@@ -90,6 +91,31 @@ const RESOURCE_TYPE_URL_MAP: Record<string, (id: string) => string> = {
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
+
+function AuditLogTableRow({
+  row,
+  onToggleRow,
+}: {
+  row: Row<AuditLogEntry>;
+  onToggleRow: (id: string) => void;
+}) {
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLTableRowElement>) => {
+      if (shouldIgnoreRowClick(event)) return;
+      onToggleRow(row.original.id);
+    },
+    [onToggleRow, row.original.id],
+  );
+  return (
+    <TableRow className="cursor-pointer" onClick={handleClick}>
+      {row.getVisibleCells().map(cell => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
 
 /**
  * TanStack Table for audit log entries with expandable rows showing diffs.
@@ -251,7 +277,6 @@ export function AuditLogTable({
   const pagination =
     totalCount > 0 ? (
       <DataTablePagination
-        table={table}
         totalRows={totalCount}
         pageSize={pageSize}
         currentPage={page}
@@ -334,16 +359,7 @@ export function AuditLogTable({
                 const isExpanded = !!expandedRows[row.original.id];
                 return (
                   <Fragment key={row.id}>
-                    {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                    <TableRow
-                      className="cursor-pointer"
-                      onClick={() => onToggleRow(row.original.id)}>
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                    <AuditLogTableRow row={row} onToggleRow={onToggleRow} />
                     {isExpanded && (
                       <TableRow>
                         <TableCell colSpan={columns.length} className="p-0">

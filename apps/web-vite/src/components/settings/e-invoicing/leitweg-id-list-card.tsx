@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
+import { useCallback } from 'react';
 
 import type { useLeitwegIdListCard } from './hooks/use-leitweg-id-list-card.js';
 import { LeitwegIdCreateDialogContainer } from './leitweg-id-create-dialog-container.js';
@@ -29,6 +30,8 @@ export function LeitwegIdListCard({
   isEmpty,
   isLoading,
 }: LeitwegIdListCardProps) {
+  const handleOpenCreate = useCallback(() => setCreateOpen(true), [setCreateOpen]);
+
   return (
     <Card data-testid="leitweg-id-list-card">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
@@ -38,7 +41,7 @@ export function LeitwegIdListCard({
             <p className="text-sm text-muted-foreground max-w-prose">{t('emptyBody')}</p>
           ) : null}
         </div>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
+        <Button type="button" onClick={handleOpenCreate}>
           {t('ctaCreate')}
         </Button>
       </CardHeader>

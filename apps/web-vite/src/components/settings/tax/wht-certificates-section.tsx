@@ -25,10 +25,55 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Download, Eye, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { formatMinorUnits } from '../../../lib/format-currency';
 import type { useWhtCertificatesSection } from './hooks/use-wht-certificates-section.js';
 
 export type WhtCertificatesSectionProps = ReturnType<typeof useWhtCertificatesSection>;
+
+type SetOpenId = WhtCertificatesSectionProps['setOpenId'];
+type HandleDownload = WhtCertificatesSectionProps['handleDownload'];
+
+function ViewCertificateButton({
+  id,
+  label,
+  onOpen,
+}: {
+  id: string;
+  label: string;
+  onOpen: SetOpenId;
+}) {
+  const handleClick = useCallback(() => onOpen(id), [onOpen, id]);
+  return (
+    <Button variant="ghost" size="icon-sm" aria-label={label} onClick={handleClick}>
+      <Eye className="size-3.5" />
+    </Button>
+  );
+}
+
+function DownloadCertificateButton({
+  documentId,
+  disabled,
+  label,
+  onDownload,
+}: {
+  documentId: string;
+  disabled: boolean;
+  label: string;
+  onDownload: HandleDownload;
+}) {
+  const handleClick = useCallback(() => onDownload(documentId), [onDownload, documentId]);
+  return (
+    <Button variant="default" disabled={disabled} onClick={handleClick}>
+      {disabled ? (
+        <Loader2 className="me-1.5 size-3.5 animate-spin" />
+      ) : (
+        <Download className="me-1.5 size-3.5" />
+      )}
+      {label}
+    </Button>
+  );
+}
 
 export function WhtCertificatesSectionSkeleton({ t }: { t: WhtCertificatesSectionProps['t'] }) {
   return (
@@ -94,6 +139,14 @@ export function WhtCertificatesSection({
   detail,
   handleDownload,
 }: WhtCertificatesSectionProps) {
+  const handleDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setOpenId(null);
+    },
+    [setOpenId],
+  );
+  const handleClose = useCallback(() => setOpenId(null), [setOpenId]);
+
   return (
     <Card>
       <CardHeader>
@@ -144,14 +197,11 @@ export function WhtCertificatesSection({
                       {format.dateTime(new Date(row.paymentDate), { dateStyle: 'medium' })}
                     </TableCell>
                     <TableCell className="text-end">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={t('action.view')}
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() => setOpenId(row.id)}>
-                        <Eye className="size-3.5" />
-                      </Button>
+                      <ViewCertificateButton
+                        id={row.id}
+                        label={t('action.view')}
+                        onOpen={setOpenId}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -161,7 +211,7 @@ export function WhtCertificatesSection({
         )}
       </CardContent>
 
-      <Dialog open={!!openId} onOpenChange={open => !open && setOpenId(null)}>
+      <Dialog open={!!openId} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t('detail.title')}</DialogTitle>
@@ -256,20 +306,14 @@ export function WhtCertificatesSection({
 
           <DialogFooter>
             {detail?.documentId ? (
-              <Button
-                variant="default"
+              <DownloadCertificateButton
+                documentId={detail.documentId as string}
                 disabled={downloadPending}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => handleDownload(detail.documentId as string)}>
-                {downloadPending ? (
-                  <Loader2 className="me-1.5 size-3.5 animate-spin" />
-                ) : (
-                  <Download className="me-1.5 size-3.5" />
-                )}
-                {t('detail.downloadCta')}
-              </Button>
+                label={t('detail.downloadCta')}
+                onDownload={handleDownload}
+              />
             ) : (
-              <Button variant="outline" onClick={() => setOpenId(null)}>
+              <Button variant="outline" onClick={handleClose}>
                 {t('detail.closeCta')}
               </Button>
             )}

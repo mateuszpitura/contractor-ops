@@ -3,7 +3,6 @@
  * apps/web/src/app/[locale]/(dashboard)/settings/page.tsx.
  */
 
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Card,
@@ -19,14 +18,16 @@ import {
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import { Pin, RefreshCw } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import type { SettingsTabKey } from '../../lib/settings-tabs.js';
 import { cn } from '../../lib/utils.js';
 import { BillingTabContainer } from '../billing/billing-tab-container.js';
 import { ConsentManagementSectionContainer } from '../consent/consent-management-section-container.js';
 import { EInvoiceComplianceDetail } from '../einvoice/compliance-detail-container.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { AdminBrandingSectionContainer } from './admin-branding-section-container.js';
 import { ApiKeysTabContainer } from './api-keys-tab-container.js';
 import { ApprovalChainsTabContainer } from './approval-chains-tab-container.js';
@@ -47,6 +48,40 @@ import { ReminderRulesSectionContainer } from './reminder-rules-section-containe
 import { SettingsTabsScroller } from './settings-tabs-scroller.js';
 import { TransferTitleSettingsContainer } from './transfer-title-settings-container.js';
 
+function PinTabToggle({
+  tabKey,
+  tabLabel,
+  pinned,
+  active,
+  disabled,
+  pinAriaLabel,
+  unpinAriaLabel,
+  onTogglePin,
+}: {
+  tabKey: SettingsTabKey;
+  tabLabel: string;
+  pinned: boolean;
+  active: boolean;
+  disabled?: boolean;
+  pinAriaLabel: string;
+  unpinAriaLabel: string;
+  onTogglePin: (key: SettingsTabKey) => void;
+}) {
+  const handleToggle = useCallback(() => onTogglePin(tabKey), [onTogglePin, tabKey]);
+  return (
+    <PinTabButton
+      tabKey={tabKey}
+      tabLabel={tabLabel}
+      pinned={pinned}
+      active={active}
+      disabled={disabled}
+      pinAriaLabel={pinAriaLabel}
+      unpinAriaLabel={unpinAriaLabel}
+      onToggle={handleToggle}
+    />
+  );
+}
+
 function SettingsContent() {
   const t = useTranslations('Settings');
   const {
@@ -64,7 +99,7 @@ function SettingsContent() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('title')} description={t('subtitle')} />
+        <WorkbenchPageHeader title={t('title')} description={t('subtitle')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>
@@ -82,7 +117,7 @@ function SettingsContent() {
                     className={cn('gap-1.5', (showsToggle || showsIndicator) && 'pe-1.5')}>
                     <span>{tab.label}</span>
                     {showsToggle && (
-                      <PinTabButton
+                      <PinTabToggle
                         tabKey={tab.key}
                         tabLabel={tab.label}
                         pinned={tab.pinned}
@@ -90,7 +125,7 @@ function SettingsContent() {
                         disabled={pinPending}
                         pinAriaLabel={tab.pinAriaLabel}
                         unpinAriaLabel={tab.unpinAriaLabel}
-                        onToggle={() => togglePin(tab.key)}
+                        onTogglePin={togglePin}
                       />
                     )}
                     {showsIndicator && (
@@ -127,7 +162,7 @@ function SettingsContent() {
             <PortalSubdomainSectionContainer />
           </TabsContent>
 
-          <TabsContent value="approvals" className="mt-6">
+          <TabsContent value="approvals" className="mt-6 flex min-h-[60vh] flex-col">
             <ApprovalChainsTabContainer />
           </TabsContent>
 
@@ -151,7 +186,7 @@ function SettingsContent() {
           )}
 
           {canViewAuditLog && (
-            <TabsContent value="audit-log" className="mt-6">
+            <TabsContent value="audit-log" className="mt-6 flex min-h-[60vh] flex-col">
               <AuditLogTabContainer />
             </TabsContent>
           )}

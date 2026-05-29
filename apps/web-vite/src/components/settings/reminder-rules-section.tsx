@@ -20,6 +20,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { renderEmptyStateAction } from '../shared/atelier-bridges';
 import type { ReminderRule, useReminderRulesSection } from './hooks/use-reminder-rules-section.js';
 import { CHANNEL_BADGE_VARIANT } from './hooks/use-reminder-rules-section.js';
 import { ReminderRuleEditorContainer } from './reminder-rule-editor-container.js';
@@ -86,13 +87,7 @@ export function ReminderRulesSection({
             onClick: handleCreate,
             icon: Plus,
           }}
-          renderAction={action => (
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            <Button onClick={action.onClick}>
-              {action.icon ? <action.icon className="me-1.5 size-4" /> : null}
-              {action.label}
-            </Button>
-          )}
+          renderAction={renderEmptyStateAction}
         />
         <ReminderRuleEditorContainer
           open={editorOpen}

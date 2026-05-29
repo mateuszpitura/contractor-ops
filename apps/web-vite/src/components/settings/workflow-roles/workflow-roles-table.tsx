@@ -1,4 +1,4 @@
-import { WorkflowsIllustration } from '@contractor-ops/ui';
+import { TemplatesIllustration } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { SimpleDataTable } from '../../shared/simple-data-table.js';
 import type { useWorkflowRolesTable } from './hooks/use-workflow-roles-table.js';
@@ -41,6 +41,22 @@ export function WorkflowRolesTable({
   setDeleting,
   deleteMutation,
 }: WorkflowRolesTableViewProps) {
+  const handleEditDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setEditing(null);
+    },
+    [setEditing],
+  );
+  const handleDeleteDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setDeleting(null);
+    },
+    [setDeleting],
+  );
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleting) deleteMutation.mutate({ id: deleting.id });
+  }, [deleting, deleteMutation]);
+
   const columns = useMemo<ColumnDef<WorkflowRoleRow, unknown>[]>(
     () => [
       {
@@ -134,9 +150,11 @@ export function WorkflowRolesTable({
         columns={columns}
         data={rows}
         isLoading={listQuery.isLoading}
+        isRefetching={listQuery.isFetching && !listQuery.isLoading}
         pageSize={25}
+        constrainHeight={false}
         entityLabel={t('entityLabel', { count: rows.length })}
-        emptyIcon={<WorkflowsIllustration className="h-6 w-6" aria-hidden="true" />}
+        emptyIllustration={TemplatesIllustration}
         emptyTitle={t('empty.heading')}
         emptyDescription={t('empty.body')}
         emptyCta={canCreate && onCreate ? t('empty.cta') : undefined}
@@ -151,13 +169,11 @@ export function WorkflowRolesTable({
           mode="edit"
           initial={editing}
           open={!!editing}
-          onOpenChange={open => {
-            if (!open) setEditing(null);
-          }}
+          onOpenChange={handleEditDialogOpenChange}
         />
       )}
 
-      <AlertDialog open={!!deleting} onOpenChange={open => !open && setDeleting(null)}>
+      <AlertDialog open={!!deleting} onOpenChange={handleDeleteDialogOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -170,8 +186,7 @@ export function WorkflowRolesTable({
             <AlertDialogCancel>{t('deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => deleting && deleteMutation.mutate({ id: deleting.id })}
+              onClick={handleDeleteConfirm}
               disabled={deleteMutation.isPending}>
               {t('deleteDialog.confirm')}
             </AlertDialogAction>

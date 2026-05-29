@@ -10,13 +10,35 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Calendar as CalendarIcon, Download, Loader2, Search, Shield, X } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { enumKey } from '../../lib/enum-key';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
 import { AuditLogTable } from './audit-log-table';
 import type { useAuditLogTab } from './hooks/use-audit-log-tab.js';
 import { AUDIT_LOG_PAGE_SIZE } from './hooks/use-audit-log-tab.js';
+
+function ActorOptionButton({
+  id,
+  name,
+  isSelected,
+  onSelect,
+}: {
+  id: string;
+  name: string;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const handleClick = useCallback(() => onSelect(id), [onSelect, id]);
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-start text-sm hover:bg-accent ${isSelected ? 'bg-accent/60 font-medium text-foreground' : ''}`}>
+      <span className="truncate">{name}</span>
+    </button>
+  );
+}
 
 const ACTION_OPTIONS = [
   'CREATE',
@@ -95,6 +117,18 @@ export function AuditLogTab({
 }: AuditLogTabProps) {
   const reactId = useId();
 
+  if (isTrulyEmpty && !isLoading) {
+    return (
+      <AtelierEmptyState
+        variant="page"
+        illustration={AuditLogIllustration}
+        heading={tEmpty('heading')}
+        body={tEmpty('body')}
+        renderAction={renderEmptyStateAction}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <SectionLabel icon={Shield}>{t('title')}</SectionLabel>
@@ -165,18 +199,15 @@ export function AuditLogTab({
                   </p>
                 )}
                 <div className="space-y-1">
-                  {visibleActorOptions.map(actor => {
-                    const isSelected = actor.id === actorId;
-                    return (
-                      <button
-                        key={actor.id}
-                        type="button"
-                        onClick={() => selectActor(actor.id)}
-                        className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-start text-sm hover:bg-accent ${isSelected ? 'bg-accent/60 font-medium text-foreground' : ''}`}>
-                        <span className="truncate">{actor.name}</span>
-                      </button>
-                    );
-                  })}
+                  {visibleActorOptions.map(actor => (
+                    <ActorOptionButton
+                      key={actor.id}
+                      id={actor.id}
+                      name={actor.name}
+                      isSelected={actor.id === actorId}
+                      onSelect={selectActor}
+                    />
+                  ))}
                   {visibleActorOptions.length === 0 && (
                     <p className="px-2 py-1 text-xs text-muted-foreground">
                       {t('filterActorNoMatches')}
@@ -390,30 +421,20 @@ export function AuditLogTab({
         )}
       </div>
 
-      {isTrulyEmpty ? (
-        <AtelierEmptyState
-          variant="subview"
-          illustration={AuditLogIllustration}
-          heading={tEmpty('heading')}
-          body={tEmpty('body')}
-          renderAction={renderEmptyStateAction}
-        />
-      ) : (
-        <AuditLogTable
-          data={items}
-          totalCount={totalCount}
-          page={currentPage}
-          pageSize={currentPageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-          sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
-          onSortOrderChange={handleSortOrderChange}
-          expandedRows={expandedRows}
-          onToggleRow={handleToggleRow}
-          isLoading={isLoading}
-          isFetching={isRefetching}
-        />
-      )}
+      <AuditLogTable
+        data={items}
+        totalCount={totalCount}
+        page={currentPage}
+        pageSize={currentPageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+        sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
+        onSortOrderChange={handleSortOrderChange}
+        expandedRows={expandedRows}
+        onToggleRow={handleToggleRow}
+        isLoading={isLoading}
+        isFetching={isRefetching}
+      />
     </div>
   );
 }

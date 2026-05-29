@@ -9,6 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { Check, MoreHorizontal } from 'lucide-react';
+import { useCallback } from 'react';
 import type { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useLeitwegIdRow } from './hooks/use-leitweg-id-row.js';
 import type { LeitwegIdEditInitial } from './leitweg-id-create-dialog.js';
@@ -45,6 +46,9 @@ export function LeitwegIdRow({
   isSetDefaultPending,
   handleSetDefault,
 }: LeitwegIdRowProps) {
+  const handleOpenEdit = useCallback(() => setEditOpen(true), [setEditOpen]);
+  const handleOpenDelete = useCallback(() => setDeleteOpen(true), [setDeleteOpen]);
+
   return (
     <>
       <TableRow data-testid={`leitweg-id-row-${row.id}`}>
@@ -104,16 +108,14 @@ export function LeitwegIdRow({
               <MoreHorizontal aria-hidden="true" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                {t('actionEdit')}
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleOpenEdit}>{t('actionEdit')}</DropdownMenuItem>
               <DropdownMenuItem
                 disabled={!row.contractorId || row.isDefaultForContractor || isSetDefaultPending}
                 onClick={handleSetDefault}>
                 {t('actionSetDefault')}
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setDeleteOpen(true)}
+                onClick={handleOpenDelete}
                 className="text-destructive focus:text-destructive">
                 {t('actionDelete')}
               </DropdownMenuItem>

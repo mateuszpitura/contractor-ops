@@ -18,6 +18,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import type { WhtServiceType } from '@contractor-ops/validators';
 import { Calculator, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { tDyn } from '../../../i18n/typed-keys';
 import { formatMinorUnits } from '../../../lib/format-currency';
 import type {
@@ -43,6 +44,23 @@ export function WhtCalculatorSection({
   result,
   hasResult,
 }: WhtCalculatorSectionProps) {
+  const handleGrossChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setGrossAmountInput(e.target.value),
+    [setGrossAmountInput],
+  );
+  const handleResidencyChange = useCallback(
+    (value: ContractorCountry | null) => {
+      if (value) setContractorResidency(value);
+    },
+    [setContractorResidency],
+  );
+  const handleServiceTypeChange = useCallback(
+    (value: WhtServiceType | null) => {
+      if (value) setServiceType(value);
+    },
+    [setServiceType],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -60,7 +78,7 @@ export function WhtCalculatorSection({
               type="text"
               inputMode="decimal"
               value={grossAmountInput}
-              onChange={e => setGrossAmountInput(e.target.value)}
+              onChange={handleGrossChange}
               placeholder="1000.00"
               autoComplete="off"
             />
@@ -71,9 +89,7 @@ export function WhtCalculatorSection({
             <Label htmlFor="wht-country" className="text-[13px]">
               {t('residencyLabel')}
             </Label>
-            <Select
-              value={contractorResidency}
-              onValueChange={value => setContractorResidency(value as ContractorCountry)}>
+            <Select value={contractorResidency} onValueChange={handleResidencyChange}>
               <SelectTrigger id="wht-country" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -91,9 +107,7 @@ export function WhtCalculatorSection({
             <Label htmlFor="wht-service" className="text-[13px]">
               {t('serviceTypeLabel')}
             </Label>
-            <Select
-              value={serviceType}
-              onValueChange={value => setServiceType(value as WhtServiceType)}>
+            <Select value={serviceType} onValueChange={handleServiceTypeChange}>
               <SelectTrigger id="wht-service" className="w-full">
                 <SelectValue />
               </SelectTrigger>

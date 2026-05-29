@@ -36,7 +36,7 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { leitwegIdSchema } from '@contractor-ops/validators';
 import { Loader2, Pencil, Plus } from 'lucide-react';
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { cn } from '../../../lib/utils.js';
 import type { useLeitwegIdCreateDialog } from './hooks/use-leitweg-id-create-dialog.js';
 
@@ -153,26 +153,72 @@ export function LeitwegIdCreateDialog({
 
   const saveDisabled = !valueValidation.ok || isPending;
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!valueValidation.ok) return;
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!valueValidation.ok) return;
 
-    save(
-      {
-        value,
-        description: description.trim() || undefined,
-        contractorId: contractorId || null,
-        contractId: contractId || null,
-        isDefaultForContractor: !!(contractorId && isDefault),
-        validFrom: validFrom ? new Date(validFrom) : null,
-        validTo: validTo ? new Date(validTo) : null,
-        notes: notes.trim() || null,
-      },
+      save(
+        {
+          value,
+          description: description.trim() || undefined,
+          contractorId: contractorId || null,
+          contractId: contractId || null,
+          isDefaultForContractor: !!(contractorId && isDefault),
+          validFrom: validFrom ? new Date(validFrom) : null,
+          validTo: validTo ? new Date(validTo) : null,
+          notes: notes.trim() || null,
+        },
+        isEdit,
+      );
+    },
+    [
+      valueValidation.ok,
+      save,
+      value,
+      description,
+      contractorId,
+      contractId,
+      isDefault,
+      validFrom,
+      validTo,
+      notes,
       isEdit,
-    );
-  }
+    ],
+  );
 
   const defaultToggleDisabled = !contractorId;
+
+  const handleValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value.toUpperCase()),
+    [],
+  );
+  const handleDescriptionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value),
+    [],
+  );
+  const handleContractorChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => setContractorId(e.target.value),
+    [],
+  );
+  const handleContractChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setContractId(e.target.value),
+    [],
+  );
+  const handleDefaultChange = useCallback((v: boolean) => setIsDefault(v), []);
+  const handleValidFromChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValidFrom(e.target.value),
+    [],
+  );
+  const handleValidToChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValidTo(e.target.value),
+    [],
+  );
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -195,7 +241,7 @@ export function LeitwegIdCreateDialog({
               id={valueId}
               name="value"
               value={value}
-              onChange={e => setValue(e.target.value.toUpperCase())}
+              onChange={handleValueChange}
               aria-invalid={!valueValidation.ok && !!value}
               aria-describedby={cn(valueErrId)}
               autoComplete="off"
@@ -216,7 +262,7 @@ export function LeitwegIdCreateDialog({
               id={descriptionId}
               name="description"
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               maxLength={200}
             />
             <p className="text-sm text-muted-foreground">{t('descriptionHelper')}</p>
@@ -229,7 +275,7 @@ export function LeitwegIdCreateDialog({
                 id={contractorSelectId}
                 name="contractorId"
                 value={contractorId}
-                onChange={e => setContractorId(e.target.value)}
+                onChange={handleContractorChange}
                 className={cn(
                   'flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm',
                   'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none',
@@ -249,7 +295,7 @@ export function LeitwegIdCreateDialog({
                 id={contractSelectId}
                 name="contractId"
                 value={contractId}
-                onChange={e => setContractId(e.target.value)}
+                onChange={handleContractChange}
                 placeholder={t('contractIdPlaceholder')}
               />
             </div>
@@ -264,7 +310,7 @@ export function LeitwegIdCreateDialog({
               name="isDefaultForContractor"
               checked={!!(contractorId && isDefault)}
               disabled={defaultToggleDisabled}
-              onCheckedChange={(v: boolean) => setIsDefault(v)}
+              onCheckedChange={handleDefaultChange}
             />
           </div>
 
@@ -276,7 +322,7 @@ export function LeitwegIdCreateDialog({
                 name="validFrom"
                 type="date"
                 value={validFrom}
-                onChange={e => setValidFrom(e.target.value)}
+                onChange={handleValidFromChange}
               />
             </div>
 
@@ -287,7 +333,7 @@ export function LeitwegIdCreateDialog({
                 name="validTo"
                 type="date"
                 value={validTo}
-                onChange={e => setValidTo(e.target.value)}
+                onChange={handleValidToChange}
               />
             </div>
           </div>
@@ -298,7 +344,7 @@ export function LeitwegIdCreateDialog({
               id={notesId}
               name="notes"
               value={notes}
-              onChange={e => setNotes(e.target.value)}
+              onChange={handleNotesChange}
               maxLength={2000}
               rows={3}
             />
@@ -311,7 +357,7 @@ export function LeitwegIdCreateDialog({
           ) : null}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={saveDisabled} data-testid="leitweg-save">
