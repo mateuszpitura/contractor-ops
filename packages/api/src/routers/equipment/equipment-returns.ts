@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { RETURN_REQUEST_NOT_PENDING } from '../../errors';
+import { RETURN_REQUEST_NOT_FOUND, RETURN_REQUEST_NOT_PENDING } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
 import { requirePermission } from '../../middleware/rbac';
@@ -51,7 +51,7 @@ export const equipmentReturnsRouter = router({
               },
             },
           }),
-        'RETURN_REQUEST_NOT_FOUND',
+        RETURN_REQUEST_NOT_FOUND,
       );
 
       if (returnRequest.status !== 'PENDING_APPROVAL') {
@@ -226,7 +226,7 @@ export const equipmentReturnsRouter = router({
               organizationId: ctx.organizationId,
             },
           }),
-        'RETURN_REQUEST_NOT_FOUND',
+        RETURN_REQUEST_NOT_FOUND,
       );
 
       if (returnRequest.status !== 'PENDING_APPROVAL') {

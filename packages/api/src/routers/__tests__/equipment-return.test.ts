@@ -388,7 +388,7 @@ describe('portal.requestReturn', () => {
         targetPointName: 'Krakow Nowa Huta',
         targetPointAddress: 'ul. Bienczycka 15',
       }),
-    ).rejects.toThrow('RETURN_ALREADY_PENDING');
+    ).rejects.toThrow('returnAlreadyPending');
   });
 
   it('throws if contractor has no assigned equipment', async () => {
@@ -402,7 +402,7 @@ describe('portal.requestReturn', () => {
         targetPointName: 'Krakow Nowa Huta',
         targetPointAddress: 'ul. Bienczycka 15',
       }),
-    ).rejects.toThrow('NO_EQUIPMENT_ASSIGNED');
+    ).rejects.toThrow('noEquipmentAssigned');
   });
 });
 

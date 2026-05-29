@@ -438,7 +438,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
 
     await expect(
       caller.approveReturnRequest({ id: 'nonexistent', parcelSize: 'small' }),
-    ).rejects.toThrow('RETURN_REQUEST_NOT_FOUND');
+    ).rejects.toThrow('returnRequestNotFound');
   });
 
   it('throws BAD_REQUEST when return request is not pending', async () => {
@@ -450,7 +450,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
     });
 
     await expect(caller.approveReturnRequest({ id: 'rr-1', parcelSize: 'small' })).rejects.toThrow(
-      'RETURN_REQUEST_NOT_PENDING',
+      'returnRequestNotPending',
     );
   });
 
@@ -467,7 +467,7 @@ describe('equipmentReturns.approveReturnRequest', () => {
     mockPrisma.courierConfig.findUnique.mockResolvedValueOnce(null);
 
     await expect(caller.approveReturnRequest({ id: 'rr-1', parcelSize: 'small' })).rejects.toThrow(
-      'COURIER_CONFIG_NOT_FOUND',
+      'courierConfigNotFound',
     );
   });
 });
@@ -508,7 +508,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
     mockPrisma.returnRequest.findFirst.mockResolvedValueOnce(null);
 
     await expect(caller.rejectReturnRequest({ id: 'nonexistent' })).rejects.toThrow(
-      'RETURN_REQUEST_NOT_FOUND',
+      'returnRequestNotFound',
     );
   });
 
@@ -520,7 +520,7 @@ describe('equipmentReturns.rejectReturnRequest', () => {
     });
 
     await expect(caller.rejectReturnRequest({ id: 'rr-1' })).rejects.toThrow(
-      'RETURN_REQUEST_NOT_PENDING',
+      'returnRequestNotPending',
     );
   });
 });

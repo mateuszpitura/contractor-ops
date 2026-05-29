@@ -494,7 +494,7 @@ describe('equipmentCouriers.createInPostShipment', () => {
         targetPointAddress: 'ul. Testowa 1, Warszawa',
         parcelSize: 'small',
       }),
-    ).rejects.toThrow('COURIER_CONFIG_NOT_FOUND');
+    ).rejects.toThrow('courierConfigNotFound');
   });
 
   it('throws NOT_FOUND when equipment item not found', async () => {
@@ -644,7 +644,7 @@ describe('equipmentCouriers.getShipmentLabel', () => {
     });
 
     await expect(caller.getShipmentLabel({ shipmentId: 'ship-1' })).rejects.toThrow(
-      'SHIPMENT_NO_INPOST_LABEL',
+      'shipmentNoInpostLabel',
     );
   });
 });
