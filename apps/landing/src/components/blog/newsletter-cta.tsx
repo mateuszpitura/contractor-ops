@@ -2,7 +2,7 @@
 
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 // Tight ASCII subset of RFC 5321/5322: local@domain.tld. Intentionally
 // rejects unicode + quoted local-parts (`"a b"@x.y`) because our server
@@ -41,16 +41,29 @@ export function NewsletterCta({
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = email.trim();
-    if (trimmed.length === 0 || trimmed.length > 254 || !EMAIL_RE.test(trimmed)) {
-      setError(errorInvalid);
-      return;
-    }
-    setError(null);
-    setSubmitted(true);
-  };
+  const onSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const trimmed = email.trim();
+      if (trimmed.length === 0 || trimmed.length > 254 || !EMAIL_RE.test(trimmed)) {
+        setError(errorInvalid);
+        return;
+      }
+      setError(null);
+      setSubmitted(true);
+    },
+    [email, errorInvalid],
+  );
+
+  const onEmailChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setEmail(event.currentTarget.value);
+      if (error) {
+        setError(null);
+      }
+    },
+    [error],
+  );
 
   return (
     <aside className="rounded-2xl border border-border/60 bg-card/60 p-6 backdrop-blur md:p-8">
@@ -71,12 +84,7 @@ export function NewsletterCta({
             inputMode="email"
             placeholder={placeholder}
             value={email}
-            onChange={event => {
-              setEmail(event.currentTarget.value);
-              if (error) {
-                setError(null);
-              }
-            }}
+            onChange={onEmailChange}
             className="flex-1"
             aria-label={placeholder}
             aria-invalid={error ? true : undefined}

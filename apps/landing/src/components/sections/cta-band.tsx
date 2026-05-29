@@ -4,6 +4,7 @@ import { Button as MovingBorderButton } from '@contractor-ops/ui/components/ace/
 import { ArrowRight, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 
 interface CtaBandProps {
   label: string;
@@ -28,8 +29,12 @@ export function CtaBand({
 }: CtaBandProps) {
   const router = useRouter();
 
+  const onSignupClick = useCallback(() => {
+    router.push(signupHref);
+  }, [router, signupHref]);
+
   return (
-    <section className="relative isolate overflow-hidden py-24">
+    <section id="cta" className="relative isolate overflow-hidden py-24">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto h-[40rem] max-w-7xl bg-gradient-to-b from-primary/15 via-transparent to-transparent blur-3xl"
@@ -53,7 +58,7 @@ export function CtaBand({
             containerClassName="h-14 w-auto"
             borderClassName="bg-[radial-gradient(var(--color-primary)_40%,transparent_60%)] opacity-80"
             className="bg-primary px-7 text-primary-foreground border-primary/40 text-base font-semibold gap-2"
-            onClick={() => router.push(signupHref)}
+            onClick={onSignupClick}
             aria-label={ctaPrimary}>
             {ctaPrimary}
             <ArrowRight aria-hidden className="size-4" />

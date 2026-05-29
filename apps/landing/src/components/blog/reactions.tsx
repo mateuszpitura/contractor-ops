@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@contractor-ops/ui/lib/utils';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type ReactionKey = 'thumbs' | 'heart' | 'party';
 
@@ -26,18 +26,25 @@ export function Reactions({ postId }: ReactionsProps) {
     setPicked((window.localStorage.getItem(storageKey) as ReactionKey | null) ?? null);
   }, [storageKey]);
 
-  const toggle = (key: ReactionKey) => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    const next = picked === key ? null : key;
-    setPicked(next);
-    if (next) {
-      window.localStorage.setItem(storageKey, next);
-    } else {
-      window.localStorage.removeItem(storageKey);
-    }
-  };
+  const onToggle = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      const key = event.currentTarget.dataset.reactionKey as ReactionKey | undefined;
+      if (!key) {
+        return;
+      }
+      const next = picked === key ? null : key;
+      setPicked(next);
+      if (next) {
+        window.localStorage.setItem(storageKey, next);
+      } else {
+        window.localStorage.removeItem(storageKey);
+      }
+    },
+    [picked, storageKey],
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -51,7 +58,8 @@ export function Reactions({ postId }: ReactionsProps) {
             <button
               key={reaction.key}
               type="button"
-              onClick={() => toggle(reaction.key)}
+              data-reaction-key={reaction.key}
+              onClick={onToggle}
               aria-pressed={active}
               aria-label={reaction.label}
               className={cn(

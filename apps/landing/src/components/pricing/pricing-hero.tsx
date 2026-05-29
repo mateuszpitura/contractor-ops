@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, Check, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { TrackClick } from '@/components/analytics/track-click';
 import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion-wrapper';
 import { useLocale, useTranslations } from '@/i18n';
@@ -21,6 +21,9 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
   const t = useTranslations();
   const [period, setPeriod] = useState<Period>('month');
   const intlLocale = intlLocaleFor(locale);
+
+  const selectMonthly = useCallback(() => setPeriod('month'), []);
+  const selectAnnual = useCallback(() => setPeriod('year'), []);
 
   const toggleMonthly = t.pricing.toggleMonthly ?? 'Monthly';
   const toggleAnnual = t.pricing.toggleAnnual ?? 'Annual';
@@ -64,7 +67,7 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
               role="tab"
               type="button"
               aria-selected={period === 'month'}
-              onClick={() => setPeriod('month')}
+              onClick={selectMonthly}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 period === 'month'
                   ? 'bg-primary text-primary-foreground shadow-sm'
@@ -76,7 +79,7 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
               role="tab"
               type="button"
               aria-selected={period === 'year'}
-              onClick={() => setPeriod('year')}
+              onClick={selectAnnual}
               className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                 period === 'year'
                   ? 'bg-primary text-primary-foreground shadow-sm'
@@ -107,9 +110,8 @@ export function PricingHero({ views, annualSavings }: PricingHeroProps) {
                     plan.popular ? 'border-primary/40 shadow-lg' : 'border-border/50'
                   }`}>
                   {plan.popular && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-md">
-                      <Sparkles className="h-3 w-3" />
-                      Most popular
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
+                      {t.pricing.popularBadge ?? 'Most popular'}
                     </div>
                   )}
 
