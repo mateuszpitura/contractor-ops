@@ -6,7 +6,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
+import { Link } from '../../i18n/navigation.js';
 
 export interface SummaryCardItem {
   href: string;
@@ -20,8 +21,7 @@ interface SummaryCardProps extends SummaryCardItem {}
 function SummaryCard({ href, label, count, icon: Icon }: SummaryCardProps) {
   return (
     <Link
-      to={href}
-      relative="path"
+      href={href}
       className="focus-visible:ring-ring rounded-lg focus-visible:outline-none focus-visible:ring-2">
       <Card className="hover:border-foreground/30 transition-colors">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

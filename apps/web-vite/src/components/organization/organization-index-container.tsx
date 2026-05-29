@@ -18,10 +18,15 @@ export function OrganizationIndexContainer() {
   }
 
   const items: SummaryCardItem[] = [
-    { href: 'teams', label: t('summaryTeams'), count: teamsCount, icon: Building2 },
-    { href: 'projects', label: t('summaryProjects'), count: projectsCount, icon: Layers },
+    { href: '/organization/teams', label: t('summaryTeams'), count: teamsCount, icon: Building2 },
     {
-      href: 'cost-centers',
+      href: '/organization/projects',
+      label: t('summaryProjects'),
+      count: projectsCount,
+      icon: Layers,
+    },
+    {
+      href: '/organization/cost-centers',
       label: t('summaryCostCenters'),
       count: costCentersCount,
       icon: Wallet,
