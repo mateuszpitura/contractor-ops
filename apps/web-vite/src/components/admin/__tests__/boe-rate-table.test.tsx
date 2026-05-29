@@ -89,12 +89,17 @@ afterEach(() => {
 });
 
 describe('BoeRateTable', () => {
-  it('renders 5 skeleton rows in the loading state', () => {
+  it('renders skeleton rows in the loading state', () => {
     harness = mount(
       <BoeRateTable entries={undefined} isLoading={true} onEdit={onEdit} onDelete={onDelete} />,
     );
+    // SimpleDataTable renders 6 skeleton rows by default, one Skeleton per cell.
+    const skeletonRows = harness.container.querySelectorAll('tbody tr');
+    expect(skeletonRows.length).toBe(6);
     const skeletons = harness.container.querySelectorAll('[data-slot="skeleton"]');
-    expect(skeletons.length).toBe(5);
+    expect(skeletons.length).toBeGreaterThan(0);
+    // Shell exposes aria-busy while loading.
+    expect(harness.container.querySelector('[aria-busy="true"]')).not.toBeNull();
   });
 
   it('renders the empty state when entries is an empty array', () => {

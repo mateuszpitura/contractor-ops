@@ -51,7 +51,8 @@
       "navLabel": "معدّل BoE",
       "deleteDialogBodyDynamic": "حذف المعدّل التاريخي للتاريخ {date} ({rate}٪) سيُغيّر حسابات الفائدة للفواتير المرتبطة بهذه الفترة. لا يمكن التراجع عن هذا الإجراء.",
       "notesPlaceholder": "مثال: قرار MPC بتاريخ 2026-03-20",
-      "editNotesPlaceholder": "مثال: تصحيح قيمة مصدرها cron"
+      "editNotesPlaceholder": "مثال: تصحيح قيمة مصدرها cron",
+      "entityLabel": "{count, plural, one {rate entry} other {rate entries}}"
     },
     "ClassificationEngineFlag": {
       "title": "حالة علم محرّك التصنيف",
@@ -7183,6 +7184,7 @@
     "subtitle": "إدارة قوالب مهام نقل المعرفة لكل دور. القوالب الأساسية للقراءة فقط؛ القوالب المخصصة يمكن تعديلها وحذفها.",
     "createCta": "قالب دور جديد",
     "listSectionLabel": "قوالب الأدوار",
+    "entityLabel": "{count, plural, one {role template} other {role templates}}",
     "empty": {
       "heading": "لا توجد قوالب أدوار بعد",
       "body": "أنشئ قالب دور لتعريف مهام نقل المعرفة لكل دور. القوالب الأساسية مضمّنة جاهزة؛ القوالب المخصصة يمكن تعديلها وحذفها.",

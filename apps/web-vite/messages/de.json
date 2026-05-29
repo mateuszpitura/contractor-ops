@@ -51,7 +51,8 @@
       "navLabel": "BoE-Zinssatz",
       "deleteDialogBodyDynamic": "Das Löschen des historischen Zinssatzes für {date} ({rate}%) ändert die Zinsberechnung für alle Rechnungen, die diesen Zeitraum betreffen. Diese Aktion kann nicht rückgängig gemacht werden.",
       "notesPlaceholder": "z.B. MPC-Entscheidung 2026-03-20",
-      "editNotesPlaceholder": "z.B. Korrektur des Cron-Werts"
+      "editNotesPlaceholder": "z.B. Korrektur des Cron-Werts",
+      "entityLabel": "{count, plural, one {rate entry} other {rate entries}}"
     },
     "ClassificationEngineFlag": {
       "title": "Klassifizierungs-Engine Flag-Status",
@@ -7183,6 +7184,7 @@
     "subtitle": "Verwalten Sie Wissenstransfer-Vorlagen pro Rolle. Seed-Vorlagen sind nicht editierbar; eigene Vorlagen können bearbeitet und gelöscht werden.",
     "createCta": "Neue Rollenvorlage",
     "listSectionLabel": "Rollenvorlagen",
+    "entityLabel": "{count, plural, one {role template} other {role templates}}",
     "empty": {
       "heading": "Noch keine Rollenvorlagen",
       "body": "Erstellen Sie eine Rollenvorlage, um Wissenstransfer-Aufgaben pro Rolle zu definieren. Seed-Vorlagen sind standardmäßig enthalten; eigene können bearbeitet und gelöscht werden.",

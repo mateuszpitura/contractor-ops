@@ -51,7 +51,8 @@
       "navLabel": "BoE rate",
       "deleteDialogBodyDynamic": "Deleting the historical rate for {date} ({rate}%) will change interest calculations for any invoices referencing this statutory period. This action cannot be undone.",
       "notesPlaceholder": "e.g., MPC decision 2026-03-20",
-      "editNotesPlaceholder": "e.g., Corrected from cron-sourced value"
+      "editNotesPlaceholder": "e.g., Corrected from cron-sourced value",
+      "entityLabel": "{count, plural, one {rate entry} other {rate entries}}"
     },
     "ClassificationEngineFlag": {
       "title": "Classification Engine Flag Status",
@@ -7183,6 +7184,7 @@
     "subtitle": "Manage knowledge-transfer task templates per role. Seed templates ship out-of-the-box and are read-only; custom templates can be edited and deleted.",
     "createCta": "New role template",
     "listSectionLabel": "Role templates",
+    "entityLabel": "{count, plural, one {role template} other {role templates}}",
     "empty": {
       "heading": "No role templates yet",
       "body": "Create a role template to define knowledge-transfer tasks per role. Seed templates ship out-of-the-box; custom ones can be edited and deleted.",

@@ -51,7 +51,8 @@
       "navLabel": "Stopa BoE",
       "deleteDialogBodyDynamic": "Usunięcie historycznej stopy dla {date} ({rate}%) zmieni obliczenia odsetek dla faktur objętych tym okresem. Tej operacji nie można cofnąć.",
       "notesPlaceholder": "np. decyzja MPC 2026-03-20",
-      "editNotesPlaceholder": "np. korekta wartości z crona"
+      "editNotesPlaceholder": "np. korekta wartości z crona",
+      "entityLabel": "{count, plural, one {rate entry} other {rate entries}}"
     },
     "ClassificationEngineFlag": {
       "title": "Status flagi Classification Engine",
@@ -7183,6 +7184,7 @@
     "subtitle": "Zarządzaj szablonami zadań KT (knowledge transfer) per rola. Szablony seed są tylko do odczytu; własne można edytować i usuwać.",
     "createCta": "Nowy szablon roli",
     "listSectionLabel": "Szablony ról",
+    "entityLabel": "{count, plural, one {role template} other {role templates}}",
     "empty": {
       "heading": "Brak szablonów ról",
       "body": "Utwórz szablon roli, aby zdefiniować zadania KT (knowledge transfer) per rola. Szablony seed są dostarczane gotowe; własne można edytować i usuwać.",
