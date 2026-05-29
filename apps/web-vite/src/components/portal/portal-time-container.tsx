@@ -1,9 +1,4 @@
-import {
-  AtelierPageHeader,
-  AtelierTableShell,
-  SectionLabel,
-  TimeTrackingIllustration,
-} from '@contractor-ops/ui';
+import { AtelierTableShell, SectionLabel, TimeTrackingIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
@@ -16,8 +11,11 @@ import {
 } from '@contractor-ops/ui/components/shadcn/table';
 import { endOfISOWeek, format, startOfISOWeek } from 'date-fns';
 import { AlertCircle, Plus } from 'lucide-react';
+import type { KeyboardEvent } from 'react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { ExternalSyncButton } from '../time/external-sync-button.js';
 import { SingleEntryForm } from '../time/single-entry-form.js';
 import { TimeEntryStatusBadge } from '../time/time-entry-status-badge.js';
@@ -35,6 +33,53 @@ function formatWeekRange(weekStart: Date | string): string {
 function minutesToHoursDisplay(minutes: number): string {
   const hours = minutes / 60;
   return hours % 1 === 0 ? `${hours}h` : `${hours.toFixed(1)}h`;
+}
+
+interface TimesheetHistoryRowProps {
+  weekStartDate: Date | string;
+  totalMinutes: number;
+  status: string;
+  submittedAt: Date | string | null | undefined;
+  ariaLabel: string;
+  onSelectWeek: (weekStartDate: Date | string) => void;
+}
+
+function TimesheetHistoryRow({
+  weekStartDate,
+  totalMinutes,
+  status,
+  submittedAt,
+  ariaLabel,
+  onSelectWeek,
+}: TimesheetHistoryRowProps) {
+  const handleClick = useCallback(() => onSelectWeek(weekStartDate), [onSelectWeek, weekStartDate]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTableRowElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onSelectWeek(weekStartDate);
+      }
+    },
+    [onSelectWeek, weekStartDate],
+  );
+  return (
+    <TableRow
+      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}>
+      <TableCell className="font-medium">{formatWeekRange(weekStartDate)}</TableCell>
+      <TableCell>{minutesToHoursDisplay(totalMinutes)}</TableCell>
+      <TableCell>
+        <TimeEntryStatusBadge status={status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'} />
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        {submittedAt ? format(new Date(submittedAt as unknown as string), 'MMM d, yyyy') : '-'}
+      </TableCell>
+    </TableRow>
+  );
 }
 
 export function PortalTimeContainer() {
@@ -67,6 +112,15 @@ export function PortalTimeContainer() {
     isDisabled,
   } = usePortalTime();
 
+  const handleSelectWeek = useCallback(
+    (weekStartDate: Date | string) => {
+      const d = new Date(weekStartDate);
+      setCurrentWeekStart(startOfISOWeek(d));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [setCurrentWeekStart],
+  );
+
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -79,7 +133,7 @@ export function PortalTimeContainer() {
   return (
     <div className="space-y-8">
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('title')}
           actions={
             isDisabled ? null : (
@@ -207,40 +261,16 @@ export function PortalTimeContainer() {
                 <TableBody>
                   {historyQuery.data.items.map(ts => {
                     const weekRange = formatWeekRange(ts.weekStartDate);
-                    const openWeek = () => {
-                      const d = new Date(ts.weekStartDate);
-                      setCurrentWeekStart(startOfISOWeek(d));
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    };
                     return (
-                      <TableRow
+                      <TimesheetHistoryRow
                         key={ts.id}
-                        className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`${t('viewTimesheet')} ${weekRange}`}
-                        onClick={openWeek}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            openWeek();
-                          }
-                        }}>
-                        <TableCell className="font-medium">
-                          {formatWeekRange(ts.weekStartDate)}
-                        </TableCell>
-                        <TableCell>{minutesToHoursDisplay(ts.totalMinutes)}</TableCell>
-                        <TableCell>
-                          <TimeEntryStatusBadge
-                            status={ts.status as 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'}
-                          />
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {ts.submittedAt
-                            ? format(new Date(ts.submittedAt as unknown as string), 'MMM d, yyyy')
-                            : '-'}
-                        </TableCell>
-                      </TableRow>
+                        weekStartDate={ts.weekStartDate}
+                        totalMinutes={ts.totalMinutes}
+                        status={ts.status}
+                        submittedAt={ts.submittedAt as Date | string | null | undefined}
+                        ariaLabel={`${t('viewTimesheet')} ${weekRange}`}
+                        onSelectWeek={handleSelectWeek}
+                      />
                     );
                   })}
                 </TableBody>

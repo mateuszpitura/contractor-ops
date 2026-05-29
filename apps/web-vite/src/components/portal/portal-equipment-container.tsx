@@ -1,7 +1,10 @@
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalEquipment } from './hooks/use-portal-equipment.js';
 import { PortalEquipmentTab } from './portal-equipment-tab.js';
 import { PortalReturnFlow } from './portal-return-flow.js';
+
+const noop = () => undefined;
 
 export function PortalEquipmentContainer() {
   const t = useTranslations('Portal.equipment');
@@ -27,6 +30,9 @@ export function PortalEquipmentContainer() {
 
   const errorMessage = tErrors('somethingWentWrong');
 
+  const openReturnFlow = useCallback(() => setReturnFlowOpen(true), [setReturnFlowOpen]);
+  const openCancelDialog = useCallback(() => setCancelDialogOpen(true), [setCancelDialogOpen]);
+
   if (isPending) {
     return (
       <PortalEquipmentTab
@@ -38,12 +44,12 @@ export function PortalEquipmentContainer() {
         returnRequest={null}
         canReturn={false}
         hasActiveReturn={false}
-        onReturnClick={() => undefined}
-        onViewLabelClick={() => undefined}
-        onCancelReturnClick={() => undefined}
+        onReturnClick={noop}
+        onViewLabelClick={noop}
+        onCancelReturnClick={noop}
         cancelDialogOpen={false}
-        onCancelDialogOpenChange={() => undefined}
-        onConfirmCancelReturn={() => undefined}
+        onCancelDialogOpenChange={noop}
+        onConfirmCancelReturn={noop}
         isCancelling={false}
         errorMessage={errorMessage}
       />
@@ -61,12 +67,12 @@ export function PortalEquipmentContainer() {
         returnRequest={null}
         canReturn={false}
         hasActiveReturn={false}
-        onReturnClick={() => undefined}
-        onViewLabelClick={() => undefined}
-        onCancelReturnClick={() => undefined}
+        onReturnClick={noop}
+        onViewLabelClick={noop}
+        onCancelReturnClick={noop}
         cancelDialogOpen={false}
-        onCancelDialogOpenChange={() => undefined}
-        onConfirmCancelReturn={() => undefined}
+        onCancelDialogOpenChange={noop}
+        onConfirmCancelReturn={noop}
         isCancelling={false}
         errorMessage={errorMessage}
       />
@@ -84,9 +90,9 @@ export function PortalEquipmentContainer() {
         returnRequest={returnRequest}
         canReturn={canReturn}
         hasActiveReturn={hasActiveReturn}
-        onReturnClick={() => setReturnFlowOpen(true)}
-        onViewLabelClick={() => setReturnFlowOpen(true)}
-        onCancelReturnClick={() => setCancelDialogOpen(true)}
+        onReturnClick={openReturnFlow}
+        onViewLabelClick={openReturnFlow}
+        onCancelReturnClick={openCancelDialog}
         cancelDialogOpen={cancelDialogOpen}
         onCancelDialogOpenChange={setCancelDialogOpen}
         onConfirmCancelReturn={confirmCancelReturn}

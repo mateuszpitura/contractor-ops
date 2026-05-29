@@ -8,35 +8,23 @@ import {
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { Image } from '@unpic/react';
-import {
-  Banknote,
-  Clock,
-  FileText,
-  FolderOpen,
-  LayoutDashboard,
-  LogOut,
-  Package,
-  Receipt,
-  Settings,
-} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { useCallback } from 'react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { PORTAL_NAV_ITEMS } from '../../lib/portal-navigation.js';
 import { cn } from '../../lib/utils.js';
 import type { usePortalMobileMenu } from './hooks/use-portal-top-bar.js';
 import { OrgSwitcherList } from './org-switcher-list.js';
 
 function getNavItems(t: LooseTranslator) {
-  return [
-    { label: t('overview'), href: '/portal', icon: LayoutDashboard },
-    { label: t('contracts'), href: '/portal/contracts', icon: FileText },
-    { label: t('invoices'), href: '/portal/invoices', icon: Receipt },
-    { label: t('documents'), href: '/portal/documents', icon: FolderOpen },
-    { label: t('time'), href: '/portal/time', icon: Clock },
-    { label: t('equipment'), href: '/portal/equipment', icon: Package },
-    { label: t('payments'), href: '/portal/payments', icon: Banknote },
-    { label: t('settings'), href: '/portal/settings', icon: Settings },
-  ] as const;
+  return PORTAL_NAV_ITEMS.map(item => ({
+    label: t(item.key),
+    href: item.href,
+    icon: item.icon,
+  }));
 }
 
 function isNavActive(href: string, pathname: string): boolean {
@@ -45,6 +33,33 @@ function isNavActive(href: string, pathname: string): boolean {
     return path === '/portal' || path === '/portal/';
   }
   return path.startsWith(href);
+}
+
+interface NavItemButtonProps {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  onNavigate: (href: string) => void;
+}
+
+function NavItemButton({ href, label, icon: Icon, active, onNavigate }: NavItemButtonProps) {
+  const handleClick = useCallback(() => onNavigate(href), [onNavigate, href]);
+  return (
+    <button
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      onClick={handleClick}
+      className={cn(
+        'flex min-h-12 items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+        active
+          ? 'bg-accent/50 text-foreground font-medium'
+          : 'text-muted-foreground hover:text-foreground hover:bg-accent/30',
+      )}>
+      <Icon className="h-5 w-5 shrink-0" />
+      {label}
+    </button>
+  );
 }
 
 interface PortalMobileMenuProps {
@@ -72,6 +87,13 @@ export function PortalMobileMenu({
   const { pathname, orgSwitcher, handleNavClick, handleLogout } = menu;
 
   const NAV_ITEMS = getNavItems(t);
+
+  const handleSelectOrg = useCallback(
+    (target: { contractorId: string; organizationId: string }) => {
+      void orgSwitcher.switchTo(target);
+    },
+    [orgSwitcher],
+  );
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -102,20 +124,14 @@ export function PortalMobileMenu({
           {NAV_ITEMS.map(item => {
             const active = isNavActive(item.href, pathname);
             return (
-              <button
+              <NavItemButton
                 key={item.href}
-                type="button"
-                aria-current={active ? 'page' : undefined}
-                onClick={() => handleNavClick(item.href)}
-                className={cn(
-                  'flex min-h-12 items-center gap-3 border-b px-4 py-3 text-base transition-colors text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                  active
-                    ? 'bg-accent/50 text-foreground font-medium'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/30',
-                )}>
-                <item.icon className="h-5 w-5 shrink-0" />
-                {item.label}
-              </button>
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={active}
+                onNavigate={handleNavClick}
+              />
             );
           })}
         </nav>
@@ -129,9 +145,7 @@ export function PortalMobileMenu({
             <OrgSwitcherList
               orgs={orgSwitcher.orgs}
               switchingContractorId={orgSwitcher.switchingContractorId}
-              onSelect={target => {
-                void orgSwitcher.switchTo(target);
-              }}
+              onSelect={handleSelectOrg}
               variant="sheet"
             />
           </div>

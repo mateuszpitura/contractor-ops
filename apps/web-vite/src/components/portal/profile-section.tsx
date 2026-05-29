@@ -11,7 +11,9 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ChevronDown, Info, Loader2, Lock, Pencil, Save } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import type { FieldValues, UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -38,6 +40,32 @@ interface ProfileSectionProps {
     createdAt: Date;
   } | null;
   defaultOpen?: boolean;
+}
+
+interface PhoneFieldProps {
+  fieldKey: string;
+  label: string;
+  form: UseFormReturn<FieldValues>;
+}
+
+function PhoneField({ fieldKey, label, form }: PhoneFieldProps) {
+  const handleValueChange = useCallback(
+    (value: string) => form.setValue(fieldKey, value, { shouldDirty: true }),
+    [form, fieldKey],
+  );
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={fieldKey} className="text-sm">
+        {label}
+      </Label>
+      <PhoneNumberInput
+        id={fieldKey}
+        value={String(form.watch(fieldKey) ?? '')}
+        onValueChange={handleValueChange}
+        aria-label={label}
+      />
+    </div>
+  );
 }
 
 export function ProfileSection({
@@ -90,39 +118,45 @@ export function ProfileSection({
     }
   };
 
-  const handleDiscard = () => {
+  const handleDiscard = useCallback(() => {
     form.reset(defaultValues);
     setEditing(false);
-  };
+  }, [form, defaultValues]);
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditing(true);
-    if (!isOpen) {
-      setIsOpen(true);
-    }
-  };
+  const handleEditClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setEditing(true);
+      if (!isOpen) {
+        setIsOpen(true);
+      }
+    },
+    [isOpen],
+  );
+
+  const renderTrigger = useCallback(
+    (props: ComponentPropsWithoutRef<'button'>) => (
+      <button
+        {...props}
+        type="button"
+        className="flex flex-1 items-center gap-3 text-start outline-none">
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+        <span className="text-sm font-semibold">{title}</span>
+        {!!requiresApproval && <Badge variant="info">{t('requiresApproval')}</Badge>}
+      </button>
+    ),
+    [isOpen, title, requiresApproval, t],
+  );
 
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="flex min-h-[48px] items-center gap-3 px-4 py-3">
-          <CollapsibleTrigger
-            render={props => (
-              <button
-                {...props}
-                type="button"
-                className="flex flex-1 items-center gap-3 text-start outline-none">
-                <ChevronDown
-                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                    isOpen ? 'rotate-180' : ''
-                  }`}
-                />
-                <span className="text-sm font-semibold">{title}</span>
-                {!!requiresApproval && <Badge variant="info">{t('requiresApproval')}</Badge>}
-              </button>
-            )}
-          />
+          <CollapsibleTrigger render={renderTrigger} />
           {!editing && (
             <Button
               variant="ghost"
@@ -164,19 +198,12 @@ export function ProfileSection({
 
                     if (field.key === 'phone') {
                       return (
-                        <div key={field.key} className="space-y-1.5">
-                          <Label htmlFor={field.key} className="text-sm">
-                            {field.label}
-                          </Label>
-                          <PhoneNumberInput
-                            id={field.key}
-                            value={String(form.watch(field.key) ?? '')}
-                            onValueChange={value =>
-                              form.setValue(field.key, value, { shouldDirty: true })
-                            }
-                            aria-label={field.label}
-                          />
-                        </div>
+                        <PhoneField
+                          key={field.key}
+                          fieldKey={field.key}
+                          label={field.label}
+                          form={form as UseFormReturn<FieldValues>}
+                        />
                       );
                     }
 

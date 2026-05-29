@@ -8,6 +8,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowRight, Loader2, Package, PackageOpen } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
 import { PaczkomatDisplay } from '../equipment/paczkomat-display.js';
@@ -70,6 +71,11 @@ export function PortalReturnFlow({
     geowidgetToken,
   } = usePortalReturnFlow({ open, onOpenChange, returnRequest, onSuccess });
 
+  const openPicker = useCallback(() => setPickerOpen(true), [setPickerOpen]);
+  const closeDialog = useCallback(() => onOpenChange(false), [onOpenChange]);
+  const goToStep2 = useCallback(() => setStep(2), [setStep]);
+  const goToStep1 = useCallback(() => setStep(1), [setStep]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -111,10 +117,10 @@ export function PortalReturnFlow({
                     pointId={selectedPoint.id}
                     pointName={selectedPoint.name}
                     pointAddress={selectedPoint.address}
-                    onChangeClick={() => setPickerOpen(true)}
+                    onChangeClick={openPicker}
                   />
                 ) : (
-                  <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
+                  <Button variant="outline" className="w-full" onClick={openPicker}>
                     <Package className="me-2 h-4 w-4" />
                     {t('selectDropOff')}
                   </Button>
@@ -122,10 +128,10 @@ export function PortalReturnFlow({
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                <Button variant="outline" onClick={closeDialog}>
                   {t('cancel')}
                 </Button>
-                <Button onClick={() => setStep(2)} disabled={!selectedPoint}>
+                <Button onClick={goToStep2} disabled={!selectedPoint}>
                   {t('next')}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -167,7 +173,7 @@ export function PortalReturnFlow({
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setStep(1)}>
+                <Button variant="outline" onClick={goToStep1}>
                   {t('back')}
                 </Button>
                 <Button
@@ -209,7 +215,7 @@ export function PortalReturnFlow({
               )}
 
               <DialogFooter>
-                <Button onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
+                <Button onClick={closeDialog}>{t('cancel')}</Button>
               </DialogFooter>
             </div>
           )}

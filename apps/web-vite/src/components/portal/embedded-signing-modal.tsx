@@ -2,6 +2,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink, Loader2, X } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -15,6 +16,7 @@ function ModalShell({
   children: ReactNode;
 }) {
   const tAria = useTranslations('Common.aria');
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
@@ -24,7 +26,7 @@ function ModalShell({
           variant="ghost"
           size="icon"
           className="size-8"
-          onClick={() => onOpenChange(false)}
+          onClick={handleClose}
           aria-label={tAria('closeSigningModal')}>
           <X className="size-4" />
         </Button>
@@ -103,6 +105,11 @@ export function EmbeddedSigningRedirect({
 }) {
   const t = useTranslations('ContractDetail.signing.modal');
   const providerLabel = provider === 'AUTENTI' ? 'Autenti' : provider;
+  const handleOpenProvider = useCallback(
+    () => window.open(signingUrl, '_blank', 'noopener,noreferrer'),
+    [signingUrl],
+  );
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   return (
     <ModalShell documentTitle={documentTitle} onOpenChange={onOpenChange}>
       <div className="flex h-full items-center justify-center">
@@ -115,11 +122,11 @@ export function EmbeddedSigningRedirect({
               {t('redirectMessage', { provider: providerLabel })}
             </p>
             <div className="flex gap-3">
-              <Button onClick={() => window.open(signingUrl, '_blank', 'noopener,noreferrer')}>
+              <Button onClick={handleOpenProvider}>
                 <ExternalLink className="me-1.5 size-4" />
                 {t('continueToProvider', { provider: providerLabel })}
               </Button>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <Button variant="outline" onClick={handleClose}>
                 {t('returnToContract')}
               </Button>
             </div>
@@ -138,12 +145,13 @@ export function EmbeddedSigningError({
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('ContractDetail.signing.modal');
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   return (
     <ModalShell documentTitle={documentTitle} onOpenChange={onOpenChange}>
       <div className="flex h-full items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="text-sm text-muted-foreground">{t('loadError')}</p>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleClose}>
             {t('returnToContract')}
           </Button>
         </div>

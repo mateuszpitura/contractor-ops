@@ -12,38 +12,17 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { Image } from '@unpic/react';
-import {
-  Banknote,
-  Building2,
-  Clock,
-  FileText,
-  FolderOpen,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Package,
-  Receipt,
-  Settings,
-} from 'lucide-react';
+import { Building2, LogOut, Menu } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../lib/avatar-initials.js';
+import { PORTAL_NAV_ITEMS } from '../../lib/portal-navigation.js';
 import { cn } from '../../lib/utils.js';
 import type { usePortalTopBar } from './hooks/use-portal-top-bar.js';
 import { OrgSwitcherList } from './org-switcher-list.js';
 import { PortalMobileMenuContainer } from './portal-mobile-menu-container.js';
-
-const NAV_ITEM_DEFS = [
-  { key: 'overview', href: '/portal', icon: LayoutDashboard },
-  { key: 'contracts', href: '/portal/contracts', icon: FileText },
-  { key: 'invoices', href: '/portal/invoices', icon: Receipt },
-  { key: 'documents', href: '/portal/documents', icon: FolderOpen },
-  { key: 'time', href: '/portal/time', icon: Clock },
-  { key: 'equipment', href: '/portal/equipment', icon: Package },
-  { key: 'payments', href: '/portal/payments', icon: Banknote },
-  { key: 'settings', href: '/portal/settings', icon: Settings },
-] as const;
 
 function isNavActive(href: string, pathname: string): boolean {
   const path = pathname.replace(/^\/[a-z]{2}(?=\/)/, '');
@@ -73,10 +52,18 @@ export function PortalTopBar({
   const tSwitch = useTranslations('Portal.orgSwitch');
   const { pathname, orgSwitcher, mobileMenuOpen, setMobileMenuOpen, handleLogout } = bar;
 
-  const NAV_ITEMS = NAV_ITEM_DEFS.map(item => ({
+  const NAV_ITEMS = PORTAL_NAV_ITEMS.map(item => ({
     ...item,
     label: tNav(item.key),
   }));
+
+  const handleSelectOrg = useCallback(
+    (target: { contractorId: string; organizationId: string }) => {
+      void orgSwitcher.switchTo(target);
+    },
+    [orgSwitcher],
+  );
+  const openMobileMenu = useCallback(() => setMobileMenuOpen(true), [setMobileMenuOpen]);
 
   return (
     <header className="border-b bg-card">
@@ -152,9 +139,7 @@ export function PortalTopBar({
                       <OrgSwitcherList
                         orgs={orgSwitcher.orgs}
                         switchingContractorId={orgSwitcher.switchingContractorId}
-                        onSelect={target => {
-                          void orgSwitcher.switchTo(target);
-                        }}
+                        onSelect={handleSelectOrg}
                         variant="menu"
                       />
                     </DropdownMenuSubContent>
@@ -174,7 +159,7 @@ export function PortalTopBar({
           variant="ghost"
           size="icon"
           className="md:hidden"
-          onClick={() => setMobileMenuOpen(true)}
+          onClick={openMobileMenu}
           aria-label={tAria('openNavigationMenu')}>
           <Menu className="h-5 w-5" />
         </Button>

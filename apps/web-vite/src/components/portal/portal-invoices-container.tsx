@@ -1,7 +1,6 @@
 import type { AtelierStatusVariant } from '@contractor-ops/ui';
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   AtelierStatusPill,
   AtelierTableShell,
   InvoicesIllustration,
@@ -21,11 +20,17 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Plus } from 'lucide-react';
+import type { KeyboardEvent, MouseEvent } from 'react';
+import { useCallback } from 'react';
 import { Link, useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { usePortalInvoicesList } from './hooks/use-portal-invoices-list.js';
+
+const stopPropagation = (e: MouseEvent) => e.stopPropagation();
 
 function formatAmount(minor: number, currency: string): string {
   return new Intl.NumberFormat('en-US', {
@@ -133,22 +138,74 @@ function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations> }) {
         href: '/portal/invoices/submit',
         icon: Plus,
       }}
-      renderAction={action =>
-        action.href ? (
-          <Link href={action.href}>
-            <Button>
-              {action.icon ? <action.icon className="me-1.5 h-4 w-4" /> : null}
-              {action.label}
-            </Button>
-          </Link>
-        ) : (
-          <Button onClick={action.onClick}>
-            {action.icon ? <action.icon className="me-1.5 h-4 w-4" /> : null}
-            {action.label}
-          </Button>
-        )
-      }
+      renderAction={renderEmptyStateAction}
     />
+  );
+}
+
+interface InvoiceRowProps {
+  href: string;
+  ariaLabel: string;
+  invoiceNumber: string;
+  contractTitle: string | null | undefined;
+  fallback: string;
+  totalMinor: number;
+  currency: string;
+  receivedAt: Date | string | null | undefined;
+  formatDate: (value: Date | string | null | undefined) => string;
+  statusDisplay: InvoiceStatusDisplay;
+  onNavigate: (href: string) => void;
+}
+
+function InvoiceRow({
+  href,
+  ariaLabel,
+  invoiceNumber,
+  contractTitle,
+  fallback,
+  totalMinor,
+  currency,
+  receivedAt,
+  formatDate,
+  statusDisplay,
+  onNavigate,
+}: InvoiceRowProps) {
+  const handleClick = useCallback(() => onNavigate(href), [onNavigate, href]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTableRowElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onNavigate(href);
+      }
+    },
+    [onNavigate, href],
+  );
+
+  return (
+    <TableRow
+      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      role="link"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}>
+      <TableCell>
+        <Link
+          href={href}
+          className="font-medium text-primary hover:underline"
+          onClick={stopPropagation}>
+          {invoiceNumber}
+        </Link>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{contractTitle ?? fallback}</TableCell>
+      <TableCell>{formatAmount(totalMinor, currency)}</TableCell>
+      <TableCell className="text-muted-foreground">
+        {receivedAt ? formatDate(receivedAt) : fallback}
+      </TableCell>
+      <TableCell>
+        <AtelierStatusPill variant={statusDisplay.variant}>{statusDisplay.label}</AtelierStatusPill>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -158,10 +215,12 @@ export function PortalInvoicesContainer() {
   const router = useRouter();
   const { invoices, isLoading } = usePortalInvoicesList();
 
+  const handleNavigate = useCallback((href: string) => router.push(href), [router]);
+
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('invoices.title')}
           actions={
             <Link href="/portal/invoices/submit">
@@ -200,44 +259,20 @@ export function PortalInvoicesContainer() {
                         const statusDisplay = getStatusDisplay(invoice, t);
                         const href = `/portal/invoices/${invoice.id}`;
                         return (
-                          <TableRow
+                          <InvoiceRow
                             key={invoice.id}
-                            className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                            role="link"
-                            tabIndex={0}
-                            aria-label={`${t('invoices.viewInvoice')} ${invoice.invoiceNumber}`}
-                            onClick={() => router.push(href)}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                router.push(href);
-                              }
-                            }}>
-                            <TableCell>
-                              <Link
-                                href={href}
-                                className="font-medium text-primary hover:underline"
-                                onClick={e => e.stopPropagation()}>
-                                {invoice.invoiceNumber}
-                              </Link>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {invoice.contract?.title ?? t('invoices.fallback')}
-                            </TableCell>
-                            <TableCell>
-                              {formatAmount(invoice.totalMinor, invoice.currency)}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {invoice.receivedAt
-                                ? formatDate(invoice.receivedAt)
-                                : t('invoices.fallback')}
-                            </TableCell>
-                            <TableCell>
-                              <AtelierStatusPill variant={statusDisplay.variant}>
-                                {statusDisplay.label}
-                              </AtelierStatusPill>
-                            </TableCell>
-                          </TableRow>
+                            href={href}
+                            ariaLabel={`${t('invoices.viewInvoice')} ${invoice.invoiceNumber}`}
+                            invoiceNumber={invoice.invoiceNumber}
+                            contractTitle={invoice.contract?.title}
+                            fallback={t('invoices.fallback')}
+                            totalMinor={invoice.totalMinor}
+                            currency={invoice.currency}
+                            receivedAt={invoice.receivedAt}
+                            formatDate={formatDate}
+                            statusDisplay={statusDisplay}
+                            onNavigate={handleNavigate}
+                          />
                         );
                       })}
                     </TableBody>

@@ -8,7 +8,8 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { LucideIcon } from 'lucide-react';
 import { Banknote, ChevronDown, FileText, FolderOpen, Receipt, Shield } from 'lucide-react';
-import { useState } from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -69,24 +70,27 @@ export function NotificationPreferencesSkeleton() {
   const t = useTranslations('Portal.notificationPreferences');
   const [isOpen, setIsOpen] = useState(true);
 
+  const renderTrigger = useCallback(
+    (props: ComponentPropsWithoutRef<'button'>) => (
+      <button
+        {...props}
+        type="button"
+        className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none">
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+        <span className="text-sm font-semibold">{t('title')}</span>
+      </button>
+    ),
+    [isOpen, t],
+  );
+
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger
-          render={props => (
-            <button
-              {...props}
-              type="button"
-              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none">
-              <ChevronDown
-                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                  isOpen ? 'rotate-180' : ''
-                }`}
-              />
-              <span className="text-sm font-semibold">{t('title')}</span>
-            </button>
-          )}
-        />
+        <CollapsibleTrigger render={renderTrigger} />
         <CollapsibleContent>
           <div className="border-t">
             <div className="space-y-1">
@@ -113,6 +117,43 @@ export function NotificationPreferencesSkeleton() {
   );
 }
 
+interface CategoryRowProps {
+  cat: CategoryConfig;
+  checked: boolean;
+  lockedCaption: string;
+  onToggle: (category: NotificationCategory, value: boolean) => void;
+}
+
+function CategoryRow({ cat, checked, lockedCaption, onToggle }: CategoryRowProps) {
+  const Icon = cat.icon;
+  const handleCheckedChange = useCallback(
+    (value: boolean) => onToggle(cat.category, value),
+    [onToggle, cat.category],
+  );
+  return (
+    <div className="flex min-h-[48px] items-center justify-between gap-4 px-4 py-3">
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+        <div>
+          <p className="text-sm">{cat.label}</p>
+          <p className="text-sm text-muted-foreground">{cat.description}</p>
+        </div>
+      </div>
+      <div className="shrink-0">
+        <Switch
+          checked={checked}
+          onCheckedChange={handleCheckedChange}
+          disabled={cat.locked}
+          aria-label={cat.label}
+        />
+        {!!cat.locked && (
+          <p className="mt-1 text-end text-xs text-muted-foreground">{lockedCaption}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function NotificationPreferencesSection({
   prefs,
 }: {
@@ -123,58 +164,43 @@ export function NotificationPreferencesSection({
 
   const CATEGORIES = getCategories(t);
   const { getChecked, handleToggle } = prefs;
+  const lockedCaption = t('securityLocked');
+
+  const renderTrigger = useCallback(
+    (props: ComponentPropsWithoutRef<'button'>) => (
+      <button
+        {...props}
+        type="button"
+        className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none">
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+        <span className="text-sm font-semibold">{t('title')}</span>
+      </button>
+    ),
+    [isOpen, t],
+  );
 
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger
-          render={props => (
-            <button
-              {...props}
-              type="button"
-              className="flex min-h-[48px] w-full items-center gap-3 px-4 py-3 text-start outline-none">
-              <ChevronDown
-                className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                  isOpen ? 'rotate-180' : ''
-                }`}
-              />
-              <span className="text-sm font-semibold">{t('title')}</span>
-            </button>
-          )}
-        />
+        <CollapsibleTrigger render={renderTrigger} />
 
         <CollapsibleContent>
           <div className="border-t">
             <div className="divide-y">
               {CATEGORIES.map(cat => {
-                const Icon = cat.icon;
                 const checked = cat.locked ? true : getChecked(cat.category);
-
                 return (
-                  <div
+                  <CategoryRow
                     key={cat.category}
-                    className="flex min-h-[48px] items-center justify-between gap-4 px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm">{cat.label}</p>
-                        <p className="text-sm text-muted-foreground">{cat.description}</p>
-                      </div>
-                    </div>
-                    <div className="shrink-0">
-                      <Switch
-                        checked={checked}
-                        onCheckedChange={val => handleToggle(cat.category, val)}
-                        disabled={cat.locked}
-                        aria-label={cat.label}
-                      />
-                      {!!cat.locked && (
-                        <p className="mt-1 text-end text-xs text-muted-foreground">
-                          {t('securityLocked')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                    cat={cat}
+                    checked={checked}
+                    lockedCaption={lockedCaption}
+                    onToggle={handleToggle}
+                  />
                 );
               })}
             </div>

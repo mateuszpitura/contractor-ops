@@ -1,12 +1,13 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useCallback } from 'react';
 import { Link } from '../../i18n/navigation.js';
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { EmbeddedSigningModalContainer } from './embedded-signing-modal-container.js';
 import type {
   PendingSignatureItem,
@@ -64,6 +65,37 @@ export function PendingSignaturesError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+interface PendingSignatureCardProps {
+  item: PendingSignatureItem;
+  title: string;
+  sentLine: string | null;
+  signLabel: string;
+  onSign: (item: PendingSignatureItem) => void;
+}
+
+function PendingSignatureCard({
+  item,
+  title,
+  sentLine,
+  signLabel,
+  onSign,
+}: PendingSignatureCardProps) {
+  const handleSign = useCallback(() => onSign(item), [onSign, item]);
+  return (
+    <Card className="p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{title}</p>
+          {!!sentLine && <p className="text-sm text-muted-foreground">{sentLine}</p>}
+        </div>
+        <Button size="sm" onClick={handleSign}>
+          {signLabel}
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
 function PendingSignaturesList({
   items,
   limit,
@@ -78,30 +110,26 @@ function PendingSignaturesList({
 
   const displayItems = limit ? items.slice(0, limit) : items;
   const hasMore = limit !== undefined && items.length > limit;
+  const signLabel = t('pendingSignatures.signNow');
 
   return (
     <div className="space-y-3">
-      {displayItems.map(item => (
-        <Card key={item.envelopeId} className="p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                Contract #{item.contractId?.slice(-6) ?? t('pendingSignatures.na')}
-              </p>
-              {!!item.sentAt && (
-                <p className="text-sm text-muted-foreground">
-                  {t('pendingSignatures.sent', {
-                    time: formatRelativeTime(item.sentAt, t, formatDate),
-                  })}
-                </p>
-              )}
-            </div>
-            <Button size="sm" onClick={() => onSign(item)}>
-              {t('pendingSignatures.signNow')}
-            </Button>
-          </div>
-        </Card>
-      ))}
+      {displayItems.map(item => {
+        const title = `Contract #${item.contractId?.slice(-6) ?? t('pendingSignatures.na')}`;
+        const sentLine = item.sentAt
+          ? t('pendingSignatures.sent', { time: formatRelativeTime(item.sentAt, t, formatDate) })
+          : null;
+        return (
+          <PendingSignatureCard
+            key={item.envelopeId}
+            item={item}
+            title={title}
+            sentLine={sentLine}
+            signLabel={signLabel}
+            onSign={onSign}
+          />
+        );
+      })}
 
       {hasMore && (
         <Link href="/portal/signatures" className="text-sm text-primary hover:underline">
@@ -115,6 +143,13 @@ function PendingSignaturesList({
 function SigningModal({ view }: { view: ReturnType<typeof usePortalPendingSignaturesView> }) {
   const { signingTarget, clearSigningTarget, handleSigningComplete } = view;
 
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) clearSigningTarget();
+    },
+    [clearSigningTarget],
+  );
+
   if (!signingTarget) return null;
 
   return (
@@ -125,9 +160,7 @@ function SigningModal({ view }: { view: ReturnType<typeof usePortalPendingSignat
       provider="DOCUSIGN"
       usePortalAuth
       open
-      onOpenChange={open => {
-        if (!open) clearSigningTarget();
-      }}
+      onOpenChange={handleOpenChange}
       onComplete={handleSigningComplete}
     />
   );
@@ -164,7 +197,7 @@ export function PortalPendingSignatures({ view }: PortalPendingSignaturesViewPro
 
 export function PortalSignaturesPageHeader() {
   const t = useTranslations('Portal');
-  return <AtelierPageHeader title={t('pendingSignatures.title')} />;
+  return <WorkbenchPageHeader title={t('pendingSignatures.title')} />;
 }
 
 /**

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import {
@@ -24,9 +25,9 @@ export function InvoiceSubmitFormContainer() {
     grossAmount: '',
   });
 
-  const onNavigateBilling = () => {
+  const onNavigateBilling = useCallback(() => {
     router.push('/settings?tab=billing');
-  };
+  }, [router]);
 
   return (
     <InvoiceSubmitForm
