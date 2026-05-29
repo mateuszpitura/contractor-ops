@@ -162,6 +162,11 @@ function ReassignPopover({
   reassign: ReturnType<typeof useReassignTaskPopover>;
 }) {
   const t = useTranslations('Workflows');
+  const { setSelectedUserId } = reassign;
+  const handleSelectedUserChange = useCallback(
+    (val: string | null | undefined) => setSelectedUserId(val ?? ''),
+    [setSelectedUserId],
+  );
 
   return (
     <Popover open={reassign.open} onOpenChange={reassign.setOpen}>
@@ -174,10 +179,7 @@ function ReassignPopover({
         )}
       />
       <PopoverContent className="w-72 space-y-3" align="start">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-        <Select
-          value={reassign.selectedUserId}
-          onValueChange={val => reassign.setSelectedUserId(val ?? '')}>
+        <Select value={reassign.selectedUserId} onValueChange={handleSelectedUserChange}>
           <SelectTrigger>
             <SelectValue placeholder={t('reassignPlaceholder')} />
           </SelectTrigger>

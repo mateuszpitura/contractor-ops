@@ -21,7 +21,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { approvalAuditSystemLabel } from '@contractor-ops/validators';
 import { ArrowRightLeft, CheckCircle2, HelpCircle, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -152,7 +152,27 @@ function CommentText({ text, t }: { text: string; t: TranslateFn }) {
   );
 }
 
-function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
+function EntryRow({
+  node,
+  isLast,
+  children,
+}: {
+  node: React.ReactNode;
+  isLast: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex gap-3">
+      <div className="flex w-8 shrink-0 flex-col items-center">
+        {node}
+        {!isLast && <span className="mt-1 w-[2px] flex-1 rounded-full bg-border" />}
+      </div>
+      <div className={cn('min-w-0 flex-1', !isLast && 'pb-4')}>{children}</div>
+    </li>
+  );
+}
+
+function HumanEntry({ event, t, isLast }: { event: AuditEvent; t: TranslateFn; isLast: boolean }) {
   const config = DECISION_CONFIG[event.label];
 
   if (!(config && event.actor)) return null;
@@ -160,13 +180,15 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
   const Icon = config.icon;
 
   return (
-    <div className="relative flex gap-3 ps-0">
-      <Avatar className="shrink-0">
-        {!!event.actor.image && <AvatarImage src={event.actor.image} />}
-        <AvatarFallback>{getAvatarInitials(event.actor.name, event.actor.email)}</AvatarFallback>
-      </Avatar>
-
-      <div className="flex-1 space-y-1">
+    <EntryRow
+      isLast={isLast}
+      node={
+        <Avatar className="shrink-0">
+          {!!event.actor.image && <AvatarImage src={event.actor.image} />}
+          <AvatarFallback>{getAvatarInitials(event.actor.name, event.actor.email)}</AvatarFallback>
+        </Avatar>
+      }>
+      <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold">{event.actor.name ?? event.actor.email}</span>
           <Badge variant="secondary" className={cn('gap-1', config.className)}>
@@ -179,22 +201,24 @@ function HumanEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
 
         <p className="text-[12px] text-muted-foreground">{getRelativeTime(event.timestamp)}</p>
       </div>
-    </div>
+    </EntryRow>
   );
 }
 
-function SystemEntry({ event, t }: { event: AuditEvent; t: TranslateFn }) {
+function SystemEntry({ event, t, isLast }: { event: AuditEvent; t: TranslateFn; isLast: boolean }) {
   return (
-    <div className="relative flex items-start gap-3 ps-0">
-      <div className="mt-1.5 flex h-8 w-8 shrink-0 items-center justify-center">
-        <div className="h-2 w-2 rounded-full bg-border" />
-      </div>
-
-      <div className="flex flex-col gap-0.5">
+    <EntryRow
+      isLast={isLast}
+      node={
+        <div className="flex h-8 w-8 items-center justify-center">
+          <div className="h-2 w-2 rounded-full bg-border" />
+        </div>
+      }>
+      <div className="flex flex-col gap-0.5 pt-2">
         <p className="text-[12px] text-muted-foreground">{getSystemEventLabel(event, t)}</p>
         <p className="text-[12px] text-muted-foreground/70">{getRelativeTime(event.timestamp)}</p>
       </div>
-    </div>
+    </EntryRow>
   );
 }
 
@@ -205,7 +229,10 @@ interface AuditTimelineProps {
 export function AuditTimeline({ events }: AuditTimelineProps) {
   const t = useTranslations('Approvals');
 
-  const tFn = (key: string, params?: Record<string, string>) => tKey(t, key, params);
+  const tFn = useCallback(
+    (key: string, params?: Record<string, string>) => tKey(t, key, params),
+    [t],
+  );
 
   return (
     <Card>
@@ -216,20 +243,27 @@ export function AuditTimeline({ events }: AuditTimelineProps) {
         {events.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">{t('auditTrail.empty')}</p>
         ) : (
-          <div className="relative space-y-4">
-            <div className="absolute start-4 top-0 bottom-0 w-[2px] bg-border" />
-
-            {events.map((event, idx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
-              <div key={`${event.label}-${event.timestamp}-${idx}`} className="relative">
-                {event.type === 'decision' ? (
-                  <HumanEntry event={event} t={tFn} />
-                ) : (
-                  <SystemEntry event={event} t={tFn} />
-                )}
-              </div>
-            ))}
-          </div>
+          <ol className="flex flex-col">
+            {events.map((event, idx) =>
+              event.type === 'decision' ? (
+                <HumanEntry
+                  // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
+                  key={`${event.label}-${event.timestamp}-${idx}`}
+                  event={event}
+                  t={tFn}
+                  isLast={idx === events.length - 1}
+                />
+              ) : (
+                <SystemEntry
+                  // biome-ignore lint/suspicious/noArrayIndexKey: audit events may share label+timestamp
+                  key={`${event.label}-${event.timestamp}-${idx}`}
+                  event={event}
+                  t={tFn}
+                  isLast={idx === events.length - 1}
+                />
+              ),
+            )}
+          </ol>
         )}
       </CardContent>
     </Card>

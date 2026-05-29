@@ -59,11 +59,13 @@ export type ApprovalQueueRow = {
 };
 
 function RejectPopover({
+  stepId,
   onReject,
   t,
   isRejecting = false,
 }: {
-  onReject: (comment: string) => void;
+  stepId: string;
+  onReject: (stepId: string, comment: string) => void;
   t: LooseTranslator;
   isRejecting?: boolean;
 }) {
@@ -73,7 +75,7 @@ function RejectPopover({
 
   const handleReject = () => {
     if (comment.length >= 10) {
-      onReject(comment);
+      onReject(stepId, comment);
       setComment('');
       setOpen(false);
     }
@@ -179,8 +181,6 @@ export function getColumns(
           // biome-ignore lint/nursery/noJsxPropsBind: column definition
           onCheckedChange={value => row.toggleSelected(!!value)}
           aria-label={t('columns.selectRow')}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onClick={e => e.stopPropagation()}
         />
       ),
       enableSorting: false,
@@ -300,9 +300,9 @@ export function getColumns(
               <CheckCircle2 className="h-3.5 w-3.5" />
               {t('actions.approve')}
             </Button>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: column definition */}
             <RejectPopover
-              onReject={comment => callbacks.onReject(step.id, comment)}
+              stepId={step.id}
+              onReject={callbacks.onReject}
               t={t}
               isRejecting={callbacks.isRejecting}
             />

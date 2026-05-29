@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -65,16 +65,19 @@ export function CalendarEventConfigDialog({
   const [duration, setDuration] = useState<string>(config.duration ?? '1h');
   const [attendeesText, setAttendeesText] = useState((config.attendees ?? []).join(', '));
 
-  function handleOpenChange(newOpen: boolean) {
-    if (newOpen) {
-      setTitleTemplate(config.titleTemplate ?? '');
-      setDuration(config.duration ?? '1h');
-      setAttendeesText((config.attendees ?? []).join(', '));
-    }
-    onOpenChange(newOpen);
-  }
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (newOpen) {
+        setTitleTemplate(config.titleTemplate ?? '');
+        setDuration(config.duration ?? '1h');
+        setAttendeesText((config.attendees ?? []).join(', '));
+      }
+      onOpenChange(newOpen);
+    },
+    [config, onOpenChange],
+  );
 
-  function handleSave() {
+  const handleSave = useCallback(() => {
     const attendees: string[] = attendeesText
       .split(',')
       .map(email => email.trim())
@@ -88,7 +91,21 @@ export function CalendarEventConfigDialog({
     });
 
     onOpenChange(false);
-  }
+  }, [attendeesText, config.calendarEnabled, titleTemplate, duration, onSave, onOpenChange]);
+
+  const handleTitleTemplateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setTitleTemplate(e.target.value),
+    [],
+  );
+  const handleDurationChange = useCallback(
+    (val: string | null | undefined) => setDuration(val ?? '1h'),
+    [],
+  );
+  const handleAttendeesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setAttendeesText(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -104,7 +121,7 @@ export function CalendarEventConfigDialog({
             <Input
               id={`${reactId}-calendar-event-title`}
               value={titleTemplate}
-              onChange={e => setTitleTemplate(e.target.value)}
+              onChange={handleTitleTemplateChange}
               placeholder={t('eventTitlePlaceholder')}
               maxLength={200}
             />
@@ -113,7 +130,7 @@ export function CalendarEventConfigDialog({
 
           <div className="space-y-2">
             <Label htmlFor={`${reactId}-calendar-event-duration`}>{t('durationLabel')}</Label>
-            <Select value={duration} onValueChange={val => setDuration(val ?? '1h')}>
+            <Select value={duration} onValueChange={handleDurationChange}>
               <SelectTrigger id={`${reactId}-calendar-event-duration`}>
                 <SelectValue />
               </SelectTrigger>
@@ -132,7 +149,7 @@ export function CalendarEventConfigDialog({
             <Textarea
               id={`${reactId}-calendar-event-attendees`}
               value={attendeesText}
-              onChange={e => setAttendeesText(e.target.value)}
+              onChange={handleAttendeesChange}
               placeholder={t('attendeesPlaceholder')}
               rows={3}
             />
@@ -141,7 +158,7 @@ export function CalendarEventConfigDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleCancel}>
             {t('cancelButton')}
           </Button>
           <Button onClick={handleSave}>{t('saveEventConfig')}</Button>

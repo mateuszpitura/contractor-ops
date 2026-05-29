@@ -1,4 +1,3 @@
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
@@ -9,6 +8,7 @@ import {
   CommandItem,
   CommandList,
 } from '@contractor-ops/ui/components/shadcn/command';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
@@ -26,7 +26,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { usePermissions } from '../../../hooks/use-permissions.js';
@@ -102,21 +102,13 @@ function ContractorPickerField({
         <Input
           value={selectedContractor?.displayName ?? lockedContractorId}
           readOnly
-          className="bg-muted"
+          className="disabled:opacity-100"
         />
       );
     }
     return (
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          render={
-            <Button
-              variant="outline"
-              className="w-full justify-start font-normal"
-              role="combobox"
-              aria-expanded={open}
-            />
-          }>
+        <PopoverTrigger render={formControlPopoverRender()} role="combobox" aria-expanded={open}>
           {selectedContractor?.displayName ?? (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
@@ -204,35 +196,44 @@ export function StepDetails({
     label: tDynLoose(t, 'typeOptions', enumKey(type)),
   }));
 
-  const handleContractorPick = (nextContractorId: string) => {
-    setValue('contractorId', nextContractorId, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-    setContractorSearch('');
-  };
-
-  const handleStartDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setValue('startDate', date.toISOString(), {
+  const handleContractorPick = useCallback(
+    (nextContractorId: string) => {
+      setValue('contractorId', nextContractorId, {
         shouldDirty: true,
         shouldValidate: true,
       });
-      setStartDateOpen(false);
-    }
-  };
+      setContractorSearch('');
+    },
+    [setValue, setContractorSearch],
+  );
 
-  const handleEndDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setValue('endDate', date.toISOString(), {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    } else {
-      setValue('endDate', undefined, { shouldDirty: true });
-    }
-    setEndDateOpen(false);
-  };
+  const handleStartDateSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) {
+        setValue('startDate', date.toISOString(), {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+        setStartDateOpen(false);
+      }
+    },
+    [setValue],
+  );
+
+  const handleEndDateSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) {
+        setValue('endDate', date.toISOString(), {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      } else {
+        setValue('endDate', undefined, { shouldDirty: true });
+      }
+      setEndDateOpen(false);
+    },
+    [setValue],
+  );
 
   return (
     <div className="space-y-4">
@@ -289,8 +290,7 @@ export function StepDetails({
       <div className="flex flex-col gap-2">
         <Label className="text-[13px]">{t('fields.startDate')}</Label>
         <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
-          <PopoverTrigger
-            render={<Button variant="outline" className="w-full justify-start font-normal" />}>
+          <PopoverTrigger render={formControlPopoverRender()}>
             <CalendarIcon className="me-2 h-4 w-4" />
             {formatDateOrPlaceholder(startDate, t('fields.selectDate'))}
           </PopoverTrigger>
@@ -310,8 +310,7 @@ export function StepDetails({
       <div className="flex flex-col gap-2">
         <Label className="text-[13px]">{t('fields.endDate')}</Label>
         <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
-          <PopoverTrigger
-            render={<Button variant="outline" className="w-full justify-start font-normal" />}>
+          <PopoverTrigger render={formControlPopoverRender()}>
             <CalendarIcon className="me-2 h-4 w-4" />
             {formatDateOrPlaceholder(endDate, t('fields.selectDate'))}
           </PopoverTrigger>

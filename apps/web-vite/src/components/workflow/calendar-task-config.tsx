@@ -9,7 +9,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
@@ -36,6 +36,18 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
     t('eventConfigSaved'),
   );
 
+  const handleToggle = useCallback(
+    (checked: boolean) => {
+      if (config) saveToggle(checked, config);
+    },
+    [config, saveToggle],
+  );
+  const handleConfigureClick = useCallback(() => setDialogOpen(true), []);
+  const handleDialogSave = useCallback(
+    (updated: CalendarTaskConfigType) => saveFull(updated),
+    [saveFull],
+  );
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-3">
@@ -59,7 +71,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
       <div className="flex items-center gap-3">
         <Switch
           checked={config?.calendarEnabled ?? false}
-          onCheckedChange={checked => config && saveToggle(checked, config)}
+          onCheckedChange={handleToggle}
           disabled={!isConfigured || isSaving}
           aria-label={t('createCalendarEvent')}
         />
@@ -67,7 +79,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         <span className={`flex-1 text-sm ${isConfigured ? '' : 'text-muted-foreground'}`}>
           {summaryText}
         </span>
-        <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
+        <Button variant="ghost" size="sm" onClick={handleConfigureClick}>
           {t('configureButton')}
         </Button>
       </div>
@@ -83,7 +95,7 @@ export function CalendarTaskConfig({ taskTemplateId }: CalendarTaskConfigProps) 
         }
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onSave={(updated: CalendarTaskConfigType) => saveFull(updated)}
+        onSave={handleDialogSave}
       />
     </>
   );

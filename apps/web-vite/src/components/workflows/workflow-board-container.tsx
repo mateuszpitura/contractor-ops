@@ -19,6 +19,10 @@ const COLUMN_LABELS: Record<string, string> = {
 
 const COLUMN_ORDER = ['todo', 'in_progress', 'blocked', 'done'];
 
+function getBoardItemValue(item: BoardItem): string {
+  return item.id;
+}
+
 // Decisive container: gates render on org context (board is org-scoped) and
 // branches to an empty-state when every column is empty. Hook ships
 // placeholder data today; the gates + empty branch survive the tRPC swap.
@@ -30,7 +34,7 @@ export function WorkflowBoardContainer() {
   if (isBoardEmpty(columns)) return <WorkflowBoardEmpty />;
 
   return (
-    <Kanban<BoardItem> value={columns} onValueChange={handleMove} getItemValue={item => item.id}>
+    <Kanban<BoardItem> value={columns} onValueChange={handleMove} getItemValue={getBoardItemValue}>
       <KanbanBoard className="grid grid-cols-1 gap-4 md:grid-cols-4">
         {COLUMN_ORDER.map(columnId => (
           <KanbanColumn

@@ -20,7 +20,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -181,10 +181,15 @@ export function TemplatesTable({
     [t, handleRowNavigate, handleDuplicate, handleActivate, handleArchive, setDeleteTarget],
   );
 
+  const handleRowClickTemplate = useCallback(
+    (template: TemplateRow) => handleRowNavigate(template.id),
+    [handleRowNavigate],
+  );
+
   if (!isLoading && templates.length === 0) {
     return (
       <AtelierEmptyState
-        variant="subview"
+        variant="page"
         illustration={TemplatesIllustration}
         heading={tEmpty('heading')}
         body={tEmpty('body')}
@@ -204,12 +209,15 @@ export function TemplatesTable({
         columns={columns}
         data={templates}
         isLoading={isLoading}
+        pageSize={25}
+        constrainHeight={false}
+        emptyIllustration={TemplatesIllustration}
         entityLabel={t('templatesEntityLabel', { count: templates.length })}
         emptyTitle={tEmpty('heading')}
         emptyDescription={tEmpty('body')}
         noResultsTitle={tEmpty('heading')}
         noResultsDescription={tEmpty('body')}
-        onRowClick={template => handleRowNavigate(template.id)}
+        onRowClick={handleRowClickTemplate}
       />
 
       <AlertDialog

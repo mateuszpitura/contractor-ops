@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useApprovalQueueBulkActions } from '../hooks/use-approval-queue-bulk-actions.js';
@@ -39,20 +39,20 @@ export function ApprovalBulkActions({
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectComment, setRejectComment] = useState('');
 
-  const count = selectedIds.length;
-  if (count === 0) return null;
-
-  const handleApprove = () => {
+  const handleApprove = useCallback(() => {
     bulkActions.onBulkApprove(selectedIds);
-  };
+  }, [bulkActions, selectedIds]);
 
-  const handleReject = () => {
+  const handleReject = useCallback(() => {
     if (rejectComment.length >= 10) {
       bulkActions.onBulkReject(selectedIds, rejectComment);
       setRejectOpen(false);
       setRejectComment('');
     }
-  };
+  }, [bulkActions, selectedIds, rejectComment]);
+
+  const count = selectedIds.length;
+  if (count === 0) return null;
 
   return (
     <>

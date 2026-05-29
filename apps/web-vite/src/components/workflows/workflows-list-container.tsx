@@ -1,7 +1,5 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
-  SectionLabel,
   WORKBENCH_TABLE_PAGE_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
   WORKBENCH_TABLE_TAB_PANEL_CLASS,
@@ -15,14 +13,13 @@ import {
   TabsList,
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
-import { GitBranch, Play, Plus } from 'lucide-react';
+import { Play, Plus } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useState } from 'react';
-
-import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useWorkflowsList } from './hooks/use-workflows-list.js';
 import { MyTasksListContainer } from './my-tasks-list-container.js';
 import { TemplatePickerContainer } from './template-picker-container.js';
@@ -65,22 +62,29 @@ export function WorkflowsListContainer() {
     setSelectedRun(null);
   }, []);
 
+  const handleTabChange = useCallback(
+    (value: string) => {
+      void setTab(value);
+    },
+    [setTab],
+  );
+
   if (list.showEmptyState) {
     return (
-      <div className="space-y-section-gap">
+      <div className={WORKBENCH_TABLE_PAGE_CLASS}>
         <AnimateIn delay={0}>
-          <AtelierPageHeader
+          <WorkbenchPageHeader
             title={t('pageTitle')}
             description={t('pageDescription')}
             actions={
-              <Button size="sm" onClick={handleStartWorkflow}>
+              <Button size="sm" disabled={list.isCountLoading} onClick={handleStartWorkflow}>
                 <Play className="h-4 w-4" aria-hidden="true" />
                 {t('startWorkflow')}
               </Button>
             }
           />
         </AnimateIn>
-        <AnimateIn delay={1}>
+        <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
           <AtelierEmptyState
             illustration={WorkflowsIllustration}
             heading={te('workflows.heading')}
@@ -107,11 +111,11 @@ export function WorkflowsListContainer() {
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('pageTitle')}
           description={t('pageDescription')}
           actions={
-            <Button size="sm" onClick={handleStartWorkflow}>
+            <Button size="sm" disabled={list.isCountLoading} onClick={handleStartWorkflow}>
               <Play className="h-3.5 w-3.5" aria-hidden="true" />
               {t('startWorkflow')}
             </Button>
@@ -120,11 +124,7 @@ export function WorkflowsListContainer() {
       </AnimateIn>
 
       <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-        <Tabs
-          value={tab}
-          onValueChange={value => void setTab(value)}
-          className={WORKBENCH_TABLE_TABS_CLASS}>
+        <Tabs value={tab} onValueChange={handleTabChange} className={WORKBENCH_TABLE_TABS_CLASS}>
           <TabsList className="shrink-0">
             <TabsTrigger value="runs">{t('tabRuns')}</TabsTrigger>
             <TabsTrigger value="tasks">{t('tabMyTasks')}</TabsTrigger>
@@ -135,30 +135,23 @@ export function WorkflowsListContainer() {
 
           <TabsContent value="runs" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
             <section aria-label={t('pageTitle')} className={WORKBENCH_TABLE_SECTION_CLASS}>
-              <SectionLabel icon={GitBranch}>{t('pageTitle')}</SectionLabel>
               <WorkflowRunsDataTableContainer
                 onRowClick={handleRowClick}
                 onStartWorkflow={handleStartWorkflow}
                 parentLoading={list.isCountLoading}
+                contractorCount={list.contractorCount}
+                canManageTemplates={list.canManageTemplates}
               />
             </section>
           </TabsContent>
 
-          <TabsContent value="tasks" className="mt-4">
-            <MyTasksListContainer />
+          <TabsContent value="tasks" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
+            <MyTasksListContainer onStartWorkflow={handleStartWorkflow} />
           </TabsContent>
 
           {list.canManageTemplates && (
             <TabsContent value="templates" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
-              <section className={WORKBENCH_TABLE_SECTION_CLASS}>
-                <div className="flex shrink-0 items-center justify-end">
-                  <Button size="sm" render={<Link href="/workflows/templates/new" />}>
-                    <Plus className="h-4 w-4" aria-hidden="true" />
-                    {t('templates.newTemplate')}
-                  </Button>
-                </div>
-                <TemplatesTableContainer />
-              </section>
+              <TemplatesTableContainer />
             </TabsContent>
           )}
         </Tabs>

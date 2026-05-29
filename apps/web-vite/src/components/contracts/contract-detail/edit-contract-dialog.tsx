@@ -9,7 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useEditContractDialog } from '../hooks/use-edit-contract-dialog.js';
@@ -41,6 +41,29 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
     value,
   } = edit;
 
+  const handleTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value),
+    [setTitle],
+  );
+  const handleStartDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value),
+    [setStartDate],
+  );
+  const handleEndDateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value),
+    [setEndDate],
+  );
+  const handleCurrencyChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      setCurrency(e.target.value.toUpperCase().slice(0, 3)),
+    [setCurrency],
+  );
+  const handleValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+    [setValue],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -55,7 +78,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
             <Input
               id={`${id}-title`}
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder={t('fields.titlePlaceholder')}
               disabled={isPending}
               maxLength={255}
@@ -69,7 +92,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
                 id={`${id}-start`}
                 type="date"
                 value={startDate}
-                onChange={e => setStartDate(e.target.value)}
+                onChange={handleStartDateChange}
                 disabled={isPending}
               />
             </div>
@@ -79,7 +102,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
                 id={`${id}-end`}
                 type="date"
                 value={endDate}
-                onChange={e => setEndDate(e.target.value)}
+                onChange={handleEndDateChange}
                 disabled={isPending}
               />
             </div>
@@ -91,7 +114,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
               <Input
                 id={`${id}-currency`}
                 value={currency}
-                onChange={e => setCurrency(e.target.value.toUpperCase().slice(0, 3))}
+                onChange={handleCurrencyChange}
                 placeholder="EUR"
                 pattern={CURRENCY_PATTERN}
                 maxLength={3}
@@ -108,7 +131,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
                 step="0.01"
                 min={0}
                 value={value}
-                onChange={e => setValue(e.target.value)}
+                onChange={handleValueChange}
                 placeholder="0.00"
                 disabled={isPending}
               />
@@ -118,7 +141,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button variant="outline" onClick={handleCancel} disabled={isPending}>
             {t('actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>

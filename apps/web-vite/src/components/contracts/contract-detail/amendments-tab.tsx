@@ -1,3 +1,4 @@
+import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
 import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
 import {
   Timeline,
@@ -53,6 +54,19 @@ type AmendmentsTabProps = {
   addDialog: AddDialog;
 };
 
+function renderAmendmentsEmptyAction(
+  action: AtelierEmptyStateAction,
+  variant: 'primary' | 'secondary',
+) {
+  const Icon = action.icon;
+  return (
+    <Button variant={variant === 'secondary' ? 'outline' : 'default'} onClick={action.onClick}>
+      {Icon ? <Icon className="h-4 w-4" /> : null}
+      {action.label}
+    </Button>
+  );
+}
+
 export function AddAmendmentDialog({
   open,
   onOpenChange,
@@ -85,7 +99,6 @@ export function AddAmendmentDialog({
             {t('addTitle')}
           </DialogTitle>
         </DialogHeader>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor={`${id}-amendment-title`} className="text-sm font-medium">
@@ -222,17 +235,7 @@ export function AmendmentsTabEmpty({ tab }: { tab: Tab }) {
           onClick: tab.openDialog,
           icon: Plus,
         }}
-        renderAction={(action, variant) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              variant={variant === 'secondary' ? 'outline' : 'default'}
-              onClick={action.onClick}>
-              {Icon ? <Icon className="h-4 w-4" /> : null}
-              {action.label}
-            </Button>
-          );
-        }}
+        renderAction={renderAmendmentsEmptyAction}
       />
     </div>
   );

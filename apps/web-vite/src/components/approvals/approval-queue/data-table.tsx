@@ -32,6 +32,10 @@ function isOverdue(row: ApprovalQueueRow): boolean {
   return new Date(row.slaDeadline).getTime() < Date.now();
 }
 
+function rowClassNameForOverdue(row: ApprovalQueueRow): string {
+  return `group ${isOverdue(row) ? 'bg-destructive/5' : ''}`;
+}
+
 export function ApprovalQueueTable({
   data,
   columns,
@@ -100,7 +104,6 @@ export function ApprovalQueueTable({
         footer={
           !isLoading && totalPages > 0 ? (
             <DataTablePagination
-              table={table}
               totalRows={resolvedTotal}
               pageSize={pageSize}
               currentPage={page}
@@ -124,7 +127,7 @@ export function ApprovalQueueTable({
             isLoading={isLoading ?? false}
             hasFiltersOrSearch={Boolean(hasActiveFilters)}
             onRowClick={onRowClick}
-            rowClassName={row => `group ${isOverdue(row) ? 'bg-destructive/5' : ''}`}
+            rowClassName={rowClassNameForOverdue}
             emptyTitle={t('empty.heading')}
             emptyDescription={t('empty.body')}
             noResultsTitle={t('noResults.heading')}

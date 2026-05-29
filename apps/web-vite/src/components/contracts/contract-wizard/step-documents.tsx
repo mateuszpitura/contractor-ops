@@ -9,6 +9,7 @@ import {
   UploadCloud,
   X,
 } from 'lucide-react';
+import { memo, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -71,6 +72,47 @@ function ScanStatusBadge({ status }: { status: UploadStatus }) {
   }
 }
 
+interface FileRowProps {
+  item: UploadingFile;
+  onRemove: (fileId: string) => void;
+}
+
+// memo + stable per-item handler avoids recreating onClick for every row on parent rerender.
+const FileRow = memo(function FileRow({ item, onRemove }: FileRowProps) {
+  const tCommon = useTranslations('Common');
+  const handleRemove = useCallback(() => onRemove(item.id), [onRemove, item.id]);
+
+  const { key, size } = formatFileSizeData(item.file.size);
+
+  return (
+    <div className="flex items-center gap-3 rounded-md border px-3 py-2">
+      <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm truncate">{item.file.name}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-muted-foreground">
+            {tDynLoose(tCommon, 'fileSize', key, { size })}
+          </span>
+          {item.status === 'uploading' ? (
+            <Progress value={item.progress} className="h-1.5 flex-1 max-w-[120px]" />
+          ) : (
+            <ScanStatusBadge status={item.status} />
+          )}
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-6 w-6 shrink-0"
+        onClick={handleRemove}>
+        <X className="h-3.5 w-3.5" />
+        <span className="sr-only">{tCommon('srOnly.remove')}</span>
+      </Button>
+    </div>
+  );
+});
+
 interface StepDocumentsProps {
   onSkip?: () => void;
   files: UploadingFile[];
@@ -83,7 +125,6 @@ interface StepDocumentsProps {
  */
 export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumentsProps) {
   const t = useTranslations('Contracts.wizard');
-  const tCommon = useTranslations('Common');
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -115,34 +156,7 @@ export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumen
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map(item => (
-            <div key={item.id} className="flex items-center gap-3 rounded-md border px-3 py-2">
-              <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm truncate">{item.file.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-muted-foreground">
-                    {(() => {
-                      const { key, size } = formatFileSizeData(item.file.size);
-                      return tDynLoose(tCommon, 'fileSize', key, { size });
-                    })()}
-                  </span>
-                  {item.status === 'uploading' ? (
-                    <Progress value={item.progress} className="h-1.5 flex-1 max-w-[120px]" />
-                  ) : (
-                    <ScanStatusBadge status={item.status} />
-                  )}
-                </div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={() => removeFile(item.id)}>
-                <X className="h-3.5 w-3.5" />
-                <span className="sr-only">{tCommon('srOnly.remove')}</span>
-              </Button>
-            </div>
+            <FileRow key={item.id} item={item} onRemove={removeFile} />
           ))}
         </div>
       )}
