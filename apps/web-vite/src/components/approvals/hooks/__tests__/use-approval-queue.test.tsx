@@ -232,10 +232,10 @@ describe('useApprovalQueue — handlers', () => {
     await waitFor(() => expect(result.current.queueSectionProps.isLoading).toBe(false));
 
     act(() => {
-      void result.current.queueSectionProps.onStatusChange(['pending', 'overdue']);
+      void result.current.queueSectionProps.onStatusChange(['PENDING', 'OVERDUE']);
     });
     await waitFor(() =>
-      expect(result.current.queueSectionProps.statuses).toEqual(['pending', 'overdue']),
+      expect(result.current.queueSectionProps.statuses).toEqual(['PENDING', 'OVERDUE']),
     );
     expect(result.current.queueSectionProps.page).toBe(1);
   });
@@ -246,7 +246,7 @@ describe('useApprovalQueue — handlers', () => {
     await waitFor(() => expect(result.current.queueSectionProps.isLoading).toBe(false));
 
     act(() => {
-      void result.current.queueSectionProps.onStatusChange(['pending']);
+      void result.current.queueSectionProps.onStatusChange(['PENDING']);
       void result.current.queueSectionProps.onSearchChange('q');
     });
     await waitFor(() => expect(result.current.queueSectionProps.search).toBe('q'));

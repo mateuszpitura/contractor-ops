@@ -27,7 +27,7 @@ function getEntityHref(type: DeadlineType, entityId: string): string {
     case 'CONTRACT_EXPIRING':
       return `/contracts/${entityId}`;
     case 'TASK_OVERDUE':
-      return `/workflows?tab=my-tasks`;
+      return `/workflows?tab=tasks`;
     case 'INVOICE_DUE':
       return `/invoices/${entityId}`;
   }

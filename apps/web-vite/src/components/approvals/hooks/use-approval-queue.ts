@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { parseAsArrayOf, parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { createParser, parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -12,13 +12,32 @@ import { getColumns } from '../approval-queue/columns.js';
 import { useApprovalChain } from './use-approval-chain.js';
 import { useApprovalQueueBulkActions } from './use-approval-queue-bulk-actions.js';
 
+// Uppercase the URL ?status= values on read so the chip toggles, the
+// `matchesStatusFilter` comparison, and the tRPC `apiStatus` payload all
+// speak the same canonical enum. Keeps external links like the
+// dashboard's "Pending approvals" KPI (`?status=PENDING`) and existing
+// lowercase URLs both working — the parser folds both to uppercase.
+const parseAsUpperEnumArray = createParser<string[]>({
+  parse(query) {
+    if (!query) return [];
+    return query
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean)
+      .map(v => v.toUpperCase());
+  },
+  serialize(value) {
+    return value.join(',');
+  },
+}).withDefault([]);
+
 function matchesStatusFilter(row: ApprovalQueueRow, filterSet: Set<string>): boolean {
   const isOverdue =
     row.status === 'PENDING' && !!row.slaDeadline && new Date(row.slaDeadline) < new Date();
-  if (filterSet.has('overdue') && isOverdue) return true;
-  if (filterSet.has('pending') && row.status === 'PENDING') return true;
-  if (filterSet.has('approved') && row.status === 'APPROVED') return true;
-  if (filterSet.has('rejected') && row.status === 'REJECTED') return true;
+  if (filterSet.has('OVERDUE') && isOverdue) return true;
+  if (filterSet.has('PENDING') && row.status === 'PENDING') return true;
+  if (filterSet.has('APPROVED') && row.status === 'APPROVED') return true;
+  if (filterSet.has('REJECTED') && row.status === 'REJECTED') return true;
   return false;
 }
 
@@ -40,10 +59,7 @@ export function useApprovalQueue() {
   const queryClient = useQueryClient();
 
   const [tab, setTab] = useQueryState('tab', parseAsString.withDefault('my'));
-  const [statuses, setStatuses] = useQueryState(
-    'status',
-    parseAsArrayOf(parseAsString).withDefault([]),
-  );
+  const [statuses, setStatuses] = useQueryState('status', parseAsUpperEnumArray);
   const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [pageSize, setPageSize] = useQueryState('pageSize', parseAsInteger.withDefault(10));
@@ -63,10 +79,10 @@ export function useApprovalQueue() {
   const changeRequests = (changeRequestsQuery.data ?? []) as unknown as ChangeRequestRow[];
   const pendingCount = changeRequests.length;
 
-  const apiStatus: 'all' | 'pending' | 'overdue' | 'approved' | 'rejected' =
+  const apiStatus: 'ALL' | 'PENDING' | 'OVERDUE' | 'APPROVED' | 'REJECTED' =
     statuses.length === 1
-      ? (statuses[0] as 'pending' | 'overdue' | 'approved' | 'rejected')
-      : 'all';
+      ? (statuses[0] as 'PENDING' | 'OVERDUE' | 'APPROVED' | 'REJECTED')
+      : 'ALL';
 
   const queryInput = useMemo(
     () => ({
@@ -110,6 +126,9 @@ export function useApprovalQueue() {
         void queryClient.invalidateQueries({
           queryKey: [['approval', 'listPending']],
         });
+        void queryClient.invalidateQueries({
+          queryKey: [['approval', 'actionableCount']],
+        });
       },
       onError: () => {
         toast.error(t('errors.failedToApprove'));
@@ -123,6 +142,9 @@ export function useApprovalQueue() {
         toast.success(t('toast.rejected'));
         void queryClient.invalidateQueries({
           queryKey: [['approval', 'listPending']],
+        });
+        void queryClient.invalidateQueries({
+          queryKey: [['approval', 'actionableCount']],
         });
       },
       onError: () => {
@@ -194,6 +216,9 @@ export function useApprovalQueue() {
   const handleChangeRequestInvalidate = useCallback(() => {
     void queryClient.invalidateQueries({
       queryKey: trpc.settings.listChangeRequests.queryKey(),
+    });
+    void queryClient.invalidateQueries({
+      queryKey: [['approval', 'actionableCount']],
     });
   }, [queryClient, trpc.settings.listChangeRequests]);
 

@@ -35,10 +35,10 @@ interface ApprovalQueueToolbarProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'pending', labelKey: 'chips.pending' },
-  { value: 'overdue', labelKey: 'chips.overdue' },
-  { value: 'approved', labelKey: 'chips.approved' },
-  { value: 'rejected', labelKey: 'chips.rejected' },
+  { value: 'PENDING', labelKey: 'chips.pending' },
+  { value: 'OVERDUE', labelKey: 'chips.overdue' },
+  { value: 'APPROVED', labelKey: 'chips.approved' },
+  { value: 'REJECTED', labelKey: 'chips.rejected' },
 ] as const;
 
 export function ApprovalQueueToolbar({

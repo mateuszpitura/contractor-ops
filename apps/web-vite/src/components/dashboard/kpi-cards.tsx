@@ -36,7 +36,7 @@ const KPI_CARDS: KpiCardConfig[] = [
   {
     key: 'pendingApprovals',
     labelKey: 'kpi.pendingApprovals',
-    href: '/approvals?tab=my&status=pending',
+    href: '/approvals?tab=my&status=PENDING',
   },
   {
     key: 'readyToPayTotal',
@@ -50,7 +50,7 @@ const KPI_CARDS: KpiCardConfig[] = [
     labelKey: 'kpi.expiringContracts',
     href: '/contracts?status=expiring',
   },
-  { key: 'openTasks', labelKey: 'kpi.openTasks', href: '/workflows?tab=my-tasks' },
+  { key: 'openTasks', labelKey: 'kpi.openTasks', href: '/workflows?tab=tasks' },
 ];
 
 function getTrend(value: number, prevValue: number) {
