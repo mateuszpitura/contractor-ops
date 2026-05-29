@@ -6856,7 +6856,11 @@
       "rejectAll": "Odrzuć wszystkie",
       "approveAll": "Zatwierdź wszystkie",
       "bulkApproveTitle": "{count, plural, one {Zatwierdź # kartę pracy} few {Zatwierdź # karty pracy} many {Zatwierdź # kart pracy} other {Zatwierdź # kart pracy}}",
-      "bulkApproveDescription": "Spowoduje to zatwierdzenie wszystkich wybranych kart pracy. Kontrahenci zostaną powiadomieni."
+      "bulkApproveDescription": "Spowoduje to zatwierdzenie wszystkich wybranych kart pracy. Kontrahenci zostaną powiadomieni.",
+      "empty": {
+        "heading": "Brak kart pracy do weryfikacji",
+        "body": "Złożone karty pracy oczekujące na zatwierdzenie pojawią się tutaj."
+      }
     },
     "review": {
       "totalHours": "łączna liczba godzin",
@@ -6880,7 +6884,11 @@
       "noDataBody": "Dane uzgadniania pojawiają się, gdy faktury mają pasujące zatwierdzone wpisy czasu pracy.",
       "deviation": "Odchylenie",
       "viewInvoice": "Pokaż fakturę",
-      "unknown": "Nieznany"
+      "unknown": "Nieznany",
+      "empty": {
+        "heading": "Brak danych uzgadniania",
+        "body": "Dane uzgadniania pojawiają się, gdy faktury mają pasujące zatwierdzone wpisy czasu pracy."
+      }
     },
     "spotCheck": {
       "title": "Wyrywkowe sprawdzenie umowy",

@@ -6856,7 +6856,11 @@
       "rejectAll": "Reject All",
       "approveAll": "Approve All",
       "bulkApproveTitle": "{count, plural, one {Approve # Timesheet} other {Approve # Timesheets}}",
-      "bulkApproveDescription": "This will approve all selected timesheets. The contractors will be notified."
+      "bulkApproveDescription": "This will approve all selected timesheets. The contractors will be notified.",
+      "empty": {
+        "heading": "No timesheets to review",
+        "body": "Submitted timesheets awaiting your approval will appear here."
+      }
     },
     "review": {
       "totalHours": "total hours",
@@ -6880,7 +6884,11 @@
       "noDataBody": "Reconciliation data appears when invoices have matching approved time entries.",
       "deviation": "Deviation",
       "viewInvoice": "View invoice",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "empty": {
+        "heading": "No reconciliation data",
+        "body": "Reconciliation data appears when invoices have matching approved time entries."
+      }
     },
     "spotCheck": {
       "title": "Spot-check a contract",

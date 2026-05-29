@@ -6856,7 +6856,11 @@
       "rejectAll": "Alle ablehnen",
       "approveAll": "Alle genehmigen",
       "bulkApproveTitle": "{count, plural, one {# Arbeitszeitnachweis genehmigen} other {# Arbeitszeitnachweise genehmigen}}",
-      "bulkApproveDescription": "Dadurch werden alle ausgewählten Arbeitszeitnachweise genehmigt. Die Auftragnehmer werden benachrichtigt."
+      "bulkApproveDescription": "Dadurch werden alle ausgewählten Arbeitszeitnachweise genehmigt. Die Auftragnehmer werden benachrichtigt.",
+      "empty": {
+        "heading": "Keine Arbeitszeitnachweise zur Prüfung",
+        "body": "Eingereichte Arbeitszeitnachweise, die auf Ihre Genehmigung warten, erscheinen hier."
+      }
     },
     "review": {
       "totalHours": "Stunden gesamt",
@@ -6880,7 +6884,11 @@
       "noDataBody": "Abstimmungsdaten erscheinen, wenn Rechnungen übereinstimmende genehmigte Zeiteinträge haben.",
       "deviation": "Abweichung",
       "viewInvoice": "Rechnung anzeigen",
-      "unknown": "Unbekannt"
+      "unknown": "Unbekannt",
+      "empty": {
+        "heading": "Keine Abstimmungsdaten",
+        "body": "Abstimmungsdaten erscheinen, wenn Rechnungen übereinstimmende genehmigte Zeiteinträge haben."
+      }
     },
     "spotCheck": {
       "title": "Vertrag stichprobenartig prüfen",

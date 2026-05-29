@@ -1,11 +1,3 @@
-/**
- * Approval queue table for pending timesheets. Ported from
- * apps/web/src/components/time/approval-queue-table.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/lib/utils → ../../lib/utils.js
- */
-
-import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,20 +10,13 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { cn } from '../../lib/utils.js';
+import { SimpleDataTable } from '../shared/simple-data-table.js';
 import { RejectionReasonDialog } from './rejection-reason-dialog.js';
 import { TimeEntryStatusBadge } from './time-entry-status-badge.js';
 
@@ -95,7 +80,6 @@ export function ApprovalQueueTable({
 }: ApprovalQueueTableProps) {
   const t = useTranslations('Time');
   const tCommon = useTranslations('Common');
-  const tAria = useTranslations('Common.aria');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
@@ -152,119 +136,135 @@ export function ApprovalQueueTable({
 
   const selectedArray = useMemo(() => Array.from(selectedIds), [selectedIds]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-          <div key={`skel-${i}`} className="flex items-center gap-4 rounded-lg border px-4 py-3">
-            <div className="h-4 w-4 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-16 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-20 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+  const columns = useMemo<ColumnDef<TimesheetRow, unknown>[]>(
+    () => [
+      {
+        id: 'select',
+        header: () => (
+          <Checkbox
+            checked={allSelected}
+            onCheckedChange={toggleAll}
+            aria-label={t('approvalQueue.selectAll')}
+          />
+        ),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Checkbox
+            checked={selectedIds.has(row.original.id)}
+            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
+            onCheckedChange={() => toggleRow(row.original.id)}
+            aria-label={`Select timesheet for ${row.original.contractor.legalName}`}
+          />
+        ),
+        size: 48,
+      },
+      {
+        id: 'contractor',
+        accessorFn: row => row.contractor.legalName,
+        header: t('columns.contractor'),
+        cell: ({ row }) => (
+          <button
+            type="button"
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() =>
+              onNavigateToReview(row.original.contractor.id, toDateStr(row.original.weekStartDate))
+            }>
+            {row.original.contractor.legalName}
+          </button>
+        ),
+      },
+      {
+        id: 'period',
+        accessorFn: row => new Date(row.weekStartDate).getTime(),
+        header: t('columns.period'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {formatPeriod(row.original.weekStartDate)}
+          </span>
+        ),
+      },
+      {
+        id: 'totalHours',
+        accessorKey: 'totalMinutes',
+        header: () => <span className="block text-end">{t('columns.totalHours')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-end text-sm font-medium">
+            {minutesToDisplay(row.original.totalMinutes)}
+          </span>
+        ),
+      },
+      {
+        id: 'entries',
+        accessorFn: row => row._count?.entries ?? 0,
+        header: t('columns.entries'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original._count?.entries ?? '-'}
+          </span>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: t('columns.status'),
+        cell: ({ row }) => <TimeEntryStatusBadge status={row.original.status} />,
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-end">{t('columns.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
+            <Button
+              size="sm"
+              variant="default"
+              disabled={isApproving}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => onApprove(row.original.id)}>
+              <CheckCircle className="me-1.5 h-3.5 w-3.5" />
+              {t('approvalQueue.approve')}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-destructive hover:bg-destructive/10"
+              disabled={isRejecting}
+              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+              onClick={() => setRejectingId(row.original.id)}>
+              <XCircle className="me-1.5 h-3.5 w-3.5" />
+              {t('approvalQueue.reject')}
+            </Button>
           </div>
-        ))}
-      </div>
-    );
-  }
+        ),
+      },
+    ],
+    [
+      t,
+      allSelected,
+      toggleAll,
+      selectedIds,
+      toggleRow,
+      onNavigateToReview,
+      onApprove,
+      isApproving,
+      isRejecting,
+    ],
+  );
 
   return (
     <>
-      <AtelierTableShell
-        chrome={
-          <TableChrome
-            totalCount={timesheets.length}
-            entityLabel={t('timesheetEntityLabel', { count: timesheets.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-12">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={toggleAll}
-                  aria-label={t('approvalQueue.selectAll')}
-                />
-              </TableHead>
-              <TableHead>{t('columns.contractor')}</TableHead>
-              <TableHead>{t('columns.period')}</TableHead>
-              <TableHead className="text-end">{t('columns.totalHours')}</TableHead>
-              <TableHead>{t('columns.entries')}</TableHead>
-              <TableHead>{t('columns.status')}</TableHead>
-              <TableHead className="text-end">{t('columns.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {timesheets.map(ts => (
-              <TableRow
-                key={ts.id}
-                className={cn('group', selectedIds.has(ts.id) && 'bg-muted/50')}>
-                <TableCell>
-                  <Checkbox
-                    checked={selectedIds.has(ts.id)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                    onCheckedChange={() => toggleRow(ts.id)}
-                    aria-label={`Select timesheet for ${ts.contractor.legalName}`}
-                  />
-                </TableCell>
-                <TableCell>
-                  <button
-                    type="button"
-                    className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() =>
-                      onNavigateToReview(ts.contractor.id, toDateStr(ts.weekStartDate))
-                    }>
-                    {ts.contractor.legalName}
-                  </button>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatPeriod(ts.weekStartDate)}
-                </TableCell>
-                <TableCell className="text-end text-sm font-medium">
-                  {minutesToDisplay(ts.totalMinutes)}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {ts._count?.entries ?? '-'}
-                </TableCell>
-                <TableCell>
-                  <TimeEntryStatusBadge status={ts.status} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
-                    <Button
-                      size="sm"
-                      variant="default"
-                      disabled={isApproving}
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => onApprove(ts.id)}>
-                      <CheckCircle className="me-1.5 h-3.5 w-3.5" />
-                      {t('approvalQueue.approve')}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive hover:bg-destructive/10"
-                      disabled={isRejecting}
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => setRejectingId(ts.id)}>
-                      <XCircle className="me-1.5 h-3.5 w-3.5" />
-                      {t('approvalQueue.reject')}
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AtelierTableShell>
+      <SimpleDataTable
+        columns={columns}
+        data={timesheets}
+        isLoading={isLoading}
+        entityLabel={t('timesheetEntityLabel', { count: timesheets.length })}
+        emptyTitle={t('approvalQueue.empty.heading')}
+        emptyDescription={t('approvalQueue.empty.body')}
+        noResultsTitle={t('approvalQueue.empty.heading')}
+        noResultsDescription={t('approvalQueue.empty.body')}
+        rowClassName={row => `group ${selectedIds.has(row.id) ? 'bg-muted/50' : ''}`}
+      />
 
       {someSelected && (
         <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-card px-6 py-3 shadow-lg animate-in slide-in-from-bottom-4">

@@ -94,9 +94,10 @@ describe('ApprovalQueueTable (web-vite)', () => {
     expect(findByText(document.body, 'Contractor 2')).not.toBeNull();
   });
 
-  it('renders pulsed skeletons when isLoading', async () => {
+  it('renders skeleton rows when isLoading', async () => {
     const { container } = await mount(<ApprovalQueueTable {...baseProps} isLoading />);
-    expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
   });
 
   it('formats total hours (2400 minutes -> 40h)', async () => {

@@ -1,26 +1,17 @@
-/**
- * Admin reconciliation view table — data-only render path.
- *
- * Variant pick (loading / error / empty / data) lives in the container.
- * This view only renders the populated table + paginated load-more.
- */
-
 import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { ExternalLink } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatMinorUnits as formatMinorUnitsLib } from '../../lib/format-currency.js';
+import { DataTableBody } from '../shared/data-table-body.js';
+import { SortableTableHead } from '../shared/sortable-table-head.js';
 import { DeviationFlag } from './deviation-flag.js';
 
 interface ReconciliationItem {
@@ -96,6 +87,96 @@ export function ReconciliationTableView({
   const tSettings = useTranslations('Settings.provider');
   const tTransmissions = useTranslations('EInvoice.TransmissionsLog');
 
+  const columns = useMemo<ColumnDef<ReconciliationItem, unknown>[]>(
+    () => [
+      {
+        id: 'contractor',
+        accessorFn: row => row.contractor?.legalName ?? '',
+        header: t('columns.contractor'),
+        cell: ({ row }) => (
+          <span className="text-sm font-medium">
+            {row.original.contractor?.legalName ?? t('reconciliation.unknown')}
+          </span>
+        ),
+      },
+      {
+        id: 'period',
+        header: t('columns.period'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">{formatPeriod(row.original)}</span>
+        ),
+      },
+      {
+        id: 'approvedHours',
+        accessorFn: row => row.reconciliation.approvedMinutes,
+        header: () => <span className="block text-end">{t('reconciliation.approvedHours')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-end text-sm font-medium tabular-nums">
+            {formatHours(row.original.reconciliation.approvedMinutes)}
+          </span>
+        ),
+      },
+      {
+        id: 'expectedAmount',
+        accessorFn: row => row.reconciliation.expectedAmountMinor,
+        header: () => <span className="block text-end">{t('reconciliation.expectedAmount')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-end text-sm tabular-nums">
+            {formatMinorUnits(row.original.reconciliation.expectedAmountMinor)}{' '}
+            <span className="text-muted-foreground">{row.original.invoice.currency}</span>
+          </span>
+        ),
+      },
+      {
+        id: 'invoicedAmount',
+        accessorFn: row => row.reconciliation.invoicedAmountMinor,
+        header: () => <span className="block text-end">{t('reconciliation.invoicedAmount')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-end text-sm tabular-nums">
+            {formatMinorUnits(row.original.reconciliation.invoicedAmountMinor)}{' '}
+            <span className="text-muted-foreground">{row.original.invoice.currency}</span>
+          </span>
+        ),
+      },
+      {
+        id: 'deviation',
+        accessorFn: row => row.reconciliation.deviationPercent,
+        header: t('reconciliation.deviation'),
+        cell: ({ row }) => (
+          <DeviationFlag
+            deviationPercent={row.original.reconciliation.deviationPercent}
+            thresholdPercent={row.original.reconciliation.thresholdPercent}
+            expectedAmountMinor={row.original.reconciliation.expectedAmountMinor}
+            invoicedAmountMinor={row.original.reconciliation.invoicedAmountMinor}
+            rateValueMinor={row.original.reconciliation.rateValueMinor}
+            approvedMinutes={row.original.reconciliation.approvedMinutes}
+          />
+        ),
+      },
+      {
+        id: 'actions',
+        header: '',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Link
+            href={`/invoices/${row.original.invoice.id}`}
+            className="text-muted-foreground hover:text-foreground">
+            <ExternalLink className="h-4 w-4" />
+            <span className="sr-only">{t('reconciliation.viewInvoice')}</span>
+          </Link>
+        ),
+      },
+    ],
+    [t],
+  );
+
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   const loadMoreFooter = hasNextPage ? (
     <div className="flex w-full justify-center border-t p-4">
       <Button type="button" variant="ghost" disabled={isFetchingNextPage} onClick={onLoadMore}>
@@ -119,55 +200,23 @@ export function ReconciliationTableView({
       }>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>{t('columns.contractor')}</TableHead>
-            <TableHead>{t('columns.period')}</TableHead>
-            <TableHead className="text-end">{t('reconciliation.approvedHours')}</TableHead>
-            <TableHead className="text-end">{t('reconciliation.expectedAmount')}</TableHead>
-            <TableHead className="text-end">{t('reconciliation.invoicedAmount')}</TableHead>
-            <TableHead>{t('reconciliation.deviation')}</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map(item => (
-            <TableRow key={item.invoice.id}>
-              <TableCell className="text-sm font-medium">
-                {item.contractor?.legalName ?? t('reconciliation.unknown')}
-              </TableCell>
-              <TableCell className="text-sm text-muted-foreground">{formatPeriod(item)}</TableCell>
-              <TableCell className="text-end text-sm font-medium tabular-nums">
-                {formatHours(item.reconciliation.approvedMinutes)}
-              </TableCell>
-              <TableCell className="text-end text-sm tabular-nums">
-                {formatMinorUnits(item.reconciliation.expectedAmountMinor)}{' '}
-                <span className="text-muted-foreground">{item.invoice.currency}</span>
-              </TableCell>
-              <TableCell className="text-end text-sm tabular-nums">
-                {formatMinorUnits(item.reconciliation.invoicedAmountMinor)}{' '}
-                <span className="text-muted-foreground">{item.invoice.currency}</span>
-              </TableCell>
-              <TableCell>
-                <DeviationFlag
-                  deviationPercent={item.reconciliation.deviationPercent}
-                  thresholdPercent={item.reconciliation.thresholdPercent}
-                  expectedAmountMinor={item.reconciliation.expectedAmountMinor}
-                  invoicedAmountMinor={item.reconciliation.invoicedAmountMinor}
-                  rateValueMinor={item.reconciliation.rateValueMinor}
-                  approvedMinutes={item.reconciliation.approvedMinutes}
-                />
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={`/invoices/${item.invoice.id}`}
-                  className="text-muted-foreground hover:text-foreground">
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="sr-only">{t('reconciliation.viewInvoice')}</span>
-                </Link>
-              </TableCell>
+          {table.getHeaderGroups().map(headerGroup => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <SortableTableHead key={header.id} header={header} />
+              ))}
             </TableRow>
           ))}
-        </TableBody>
+        </TableHeader>
+        <DataTableBody
+          table={table}
+          isLoading={false}
+          hasFiltersOrSearch={false}
+          emptyTitle={t('reconciliation.empty.heading')}
+          emptyDescription={t('reconciliation.empty.body')}
+          noResultsTitle={t('reconciliation.empty.heading')}
+          noResultsDescription={t('reconciliation.empty.body')}
+        />
       </Table>
     </AtelierTableShell>
   );

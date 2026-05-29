@@ -1,10 +1,5 @@
 import type { MemberStatusInput } from '@contractor-ops/ui';
-import {
-  AtelierStatusPill,
-  AtelierTableShell,
-  statusToVariant,
-  TableChrome,
-} from '@contractor-ops/ui';
+import { AtelierStatusPill, statusToVariant } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -13,21 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { ShieldCheck, UserX } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
-import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
+import { SimpleDataTable } from '../shared/simple-data-table.js';
 import { DeactivateDialogContainer } from './deactivate-dialog-container.js';
 import type { useUsersTable } from './hooks/use-users-table.js';
 import {
@@ -39,6 +27,8 @@ import {
 import { UserConsentSheetContainer } from './user-consent-sheet-container.js';
 
 export type UsersTableProps = ReturnType<typeof useUsersTable>;
+
+type MemberRow = UsersTableProps['members'][number];
 
 const KNOWN_MEMBER_STATUSES = new Set<MemberStatusInput>([
   'active',
@@ -123,8 +113,6 @@ export function UsersTable({
   updateRoleMutation,
   reactivateMutation,
 }: UsersTableProps) {
-  const tAria = useTranslations('Common.aria');
-
   const [deactivateTarget, setDeactivateTarget] = useState<{
     userId: string;
     name: string;
@@ -134,179 +122,150 @@ export function UsersTable({
     name: string;
   } | null>(null);
 
-  if (membersQuery.isLoading) {
-    return (
-      <AtelierTableShell>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('columns.name')}</TableHead>
-              <TableHead>{t('columns.email')}</TableHead>
-              <TableHead>{t('columns.role')}</TableHead>
-              <TableHead>{t('columns.status')}</TableHead>
-              {showActionsColumn && (
-                <TableHead className="text-end">{t('columns.actions')}</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {Array.from({ length: 5 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`skel-${i}`}>
-                <TableCell>
-                  <Skeleton className="h-4 w-28" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-40" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-20" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-16" />
-                </TableCell>
-                {showActionsColumn && (
-                  <TableCell>
-                    <Skeleton className="h-8 w-20 ms-auto" />
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AtelierTableShell>
-    );
-  }
+  const columns = useMemo<ColumnDef<MemberRow, unknown>[]>(() => {
+    const roleLabel = (role: string) => tDynLoose(t, 'roles', enumKey(role)) ?? role;
+    const roleDescription = (role: string) => tDynLoose(t, 'roleDescriptions', enumKey(role));
+    const statusLabel = (status: string) => tDynLoose(t, 'status', enumKey(status)) ?? status;
 
-  if (members.length === 0) {
-    return (
-      <div className="overflow-hidden rounded-xl border border-border/50 bg-card py-16 text-center">
-        <h3 className="text-[16px] font-medium">{t('emptyState.heading')}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{t('emptyState.body')}</p>
-      </div>
-    );
-  }
+    const cols: ColumnDef<MemberRow, unknown>[] = [
+      {
+        id: 'name',
+        accessorFn: row => displayName(row),
+        header: t('columns.name'),
+        cell: ({ row }) => <span className="font-medium">{displayName(row.original)}</span>,
+      },
+      {
+        id: 'email',
+        accessorKey: 'email',
+        header: t('columns.email'),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.email ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'role',
+        accessorKey: 'role',
+        header: t('columns.role'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const m = row.original;
+          const memberId = m.id ?? m.userId ?? '';
+          if (!canManageMembers) {
+            return (
+              <Badge variant="secondary" className={roleBadgeColors[m.role ?? ''] ?? ''}>
+                {roleLabel(m.role ?? '')}
+              </Badge>
+            );
+          }
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="cursor-pointer focus:outline-none"
+                disabled={updateRoleMutation.isPending}>
+                <Badge
+                  variant="secondary"
+                  className={`${roleBadgeColors[m.role ?? ''] ?? ''} cursor-pointer hover:opacity-80 transition-opacity`}>
+                  {roleLabel(m.role ?? '')}
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {assignableRoles.map(role => (
+                  <DropdownMenuItem
+                    key={role}
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                    onSelect={() => {
+                      if (role !== m.role) {
+                        updateRoleMutation.mutate({ userId: memberId, role });
+                      }
+                    }}
+                    className={`${role === m.role ? 'font-semibold' : ''} flex flex-col items-start gap-0.5`}>
+                    <span>{roleLabel(role)}</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {roleDescription(role)}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+      {
+        id: 'status',
+        accessorFn: row => displayStatus(row),
+        header: t('columns.status'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const status = displayStatus(row.original);
+          if (KNOWN_MEMBER_STATUSES.has(status as MemberStatusInput)) {
+            return (
+              <AtelierStatusPill variant={statusToVariant('member', status as MemberStatusInput)}>
+                {statusLabel(status)}
+              </AtelierStatusPill>
+            );
+          }
+          return <Badge variant="secondary">{statusLabel(status)}</Badge>;
+        },
+      },
+    ];
 
-  const roleLabel = (role: string) => tDynLoose(t, 'roles', enumKey(role)) ?? role;
+    if (showActionsColumn) {
+      cols.push({
+        id: 'actions',
+        header: () => <span className="block text-end">{t('columns.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const m = row.original;
+          const memberId = m.id ?? m.userId ?? '';
+          const status = displayStatus(m);
+          return (
+            <MemberActionsCell
+              memberId={memberId}
+              memberName={displayName(m)}
+              isSelf={m.userId === currentUserId}
+              isDisabled={status === 'disabled'}
+              canManageMembers={canManageMembers}
+              canDeleteMembers={canDeleteMembers}
+              canReadConsent={canReadConsent}
+              reactivatePending={reactivateMutation.isPending}
+              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+              onReactivate={uid => reactivateMutation.mutate({ userId: uid })}
+              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+              onDeactivate={(uid, name) => setDeactivateTarget({ userId: uid, name })}
+              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
+              onViewConsent={(uid, name) => setConsentTarget({ userId: uid, name })}
+              t={t}
+            />
+          );
+        },
+      });
+    }
 
-  const roleDescription = (role: string) => tDynLoose(t, 'roleDescriptions', enumKey(role));
-
-  const statusLabel = (status: string) => tDynLoose(t, 'status', enumKey(status)) ?? status;
+    return cols;
+  }, [
+    t,
+    showActionsColumn,
+    canManageMembers,
+    canDeleteMembers,
+    canReadConsent,
+    currentUserId,
+    updateRoleMutation,
+    reactivateMutation,
+  ]);
 
   return (
     <>
-      <AtelierTableShell
-        isLoading={membersQuery.isFetching && !membersQuery.isLoading}
-        chrome={
-          <TableChrome
-            totalCount={members.length}
-            entityLabel={t('entityLabel', { count: members.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('columns.name')}</TableHead>
-              <TableHead>{t('columns.email')}</TableHead>
-              <TableHead>{t('columns.role')}</TableHead>
-              <TableHead>{t('columns.status')}</TableHead>
-              {showActionsColumn && (
-                <TableHead className="text-end">{t('columns.actions')}</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map((m, idx) => {
-              const status = displayStatus(m);
-              const memberId = m.id ?? m.userId ?? '';
-              const isSelf = m.userId === currentUserId;
-              const isDisabled = status === 'disabled';
-
-              return (
-                <TableRow key={memberId || String(idx)}>
-                  <TableCell className="font-medium">{displayName(m)}</TableCell>
-                  <TableCell className="text-muted-foreground">{m.email ?? '\u2014'}</TableCell>
-                  <TableCell>
-                    {canManageMembers ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          className="cursor-pointer focus:outline-none"
-                          disabled={updateRoleMutation.isPending}>
-                          <Badge
-                            variant="secondary"
-                            className={`${roleBadgeColors[m.role ?? ''] ?? ''} cursor-pointer hover:opacity-80 transition-opacity`}>
-                            {roleLabel(m.role ?? '')}
-                          </Badge>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          {assignableRoles.map(role => (
-                            <DropdownMenuItem
-                              key={role}
-                              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                              onSelect={() => {
-                                if (role !== m.role) {
-                                  updateRoleMutation.mutate({
-                                    userId: memberId,
-                                    role,
-                                  });
-                                }
-                              }}
-                              className={`${role === m.role ? 'font-semibold' : ''} flex flex-col items-start gap-0.5`}>
-                              <span>{roleLabel(role)}</span>
-                              <span className="text-xs font-normal text-muted-foreground">
-                                {roleDescription(role)}
-                              </span>
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Badge variant="secondary" className={roleBadgeColors[m.role ?? ''] ?? ''}>
-                        {roleLabel(m.role ?? '')}
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {KNOWN_MEMBER_STATUSES.has(status as MemberStatusInput) ? (
-                      <AtelierStatusPill
-                        variant={statusToVariant('member', status as MemberStatusInput)}>
-                        {statusLabel(status)}
-                      </AtelierStatusPill>
-                    ) : (
-                      <Badge variant="secondary">{statusLabel(status)}</Badge>
-                    )}
-                  </TableCell>
-                  {showActionsColumn && (
-                    <TableCell className="text-end">
-                      <MemberActionsCell
-                        memberId={memberId}
-                        memberName={displayName(m)}
-                        isSelf={isSelf}
-                        isDisabled={isDisabled}
-                        canManageMembers={canManageMembers}
-                        canDeleteMembers={canDeleteMembers}
-                        canReadConsent={canReadConsent}
-                        reactivatePending={reactivateMutation.isPending}
-                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-                        onReactivate={uid => reactivateMutation.mutate({ userId: uid })}
-                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-                        onDeactivate={(uid, name) => setDeactivateTarget({ userId: uid, name })}
-                        // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-                        onViewConsent={(uid, name) => setConsentTarget({ userId: uid, name })}
-                        t={t}
-                      />
-                    </TableCell>
-                  )}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </AtelierTableShell>
+      <SimpleDataTable
+        columns={columns}
+        data={members}
+        isLoading={membersQuery.isLoading}
+        isRefetching={membersQuery.isFetching && !membersQuery.isLoading}
+        entityLabel={t('entityLabel', { count: members.length })}
+        emptyTitle={t('emptyState.heading')}
+        emptyDescription={t('emptyState.body')}
+        noResultsTitle={t('emptyState.heading')}
+        noResultsDescription={t('emptyState.body')}
+      />
 
       {!!deactivateTarget && (
         <DeactivateDialogContainer

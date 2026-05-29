@@ -1,10 +1,4 @@
-import {
-  AtelierEmptyState,
-  AtelierTableShell,
-  SectionLabel,
-  TableChrome,
-  TemplatesIllustration,
-} from '@contractor-ops/ui';
+import { AtelierEmptyState, SectionLabel, TemplatesIllustration } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,21 +18,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
+
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { enumKey } from '../../lib/enum-key.js';
 import { formatDate } from '../../lib/format-date.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { SimpleDataTable } from '../shared/simple-data-table.js';
 import type { TemplateRow, useTemplatesTable } from './hooks/use-templates-table.js';
 
 const templateStatusBadgeColors: Record<string, string> = {
@@ -57,9 +46,6 @@ const templateTypeBadgeColors: Record<string, string> = {
 
 type TemplatesTableProps = ReturnType<typeof useTemplatesTable>;
 
-/**
- * Presentational table for the Templates tab.
- */
 export function TemplatesTable({
   templates,
   isLoading,
@@ -73,56 +59,129 @@ export function TemplatesTable({
 }: TemplatesTableProps) {
   const t = useTranslations('Workflows');
   const tEmpty = useTranslations('EmptyStates.templates');
-  const tAria = useTranslations('Common.aria');
 
-  if (isLoading) {
-    return (
-      <>
-        <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
-        <AtelierTableShell isLoading>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('templates.columns.name')}</TableHead>
-                <TableHead>{t('templates.columns.type')}</TableHead>
-                <TableHead>{t('templates.columns.status')}</TableHead>
-                <TableHead>{t('templates.columns.taskCount')}</TableHead>
-                <TableHead>{t('templates.columns.lastUpdated')}</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-40" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-16" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-8" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-4" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AtelierTableShell>
-      </>
-    );
-  }
+  const columns = useMemo<ColumnDef<TemplateRow, unknown>[]>(
+    () => [
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: t('templates.columns.name'),
+        cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      },
+      {
+        id: 'type',
+        accessorKey: 'type',
+        header: t('templates.columns.type'),
+        cell: ({ row }) => (
+          <Badge variant="secondary" className={templateTypeBadgeColors[row.original.type] ?? ''}>
+            {tDynLoose(t, 'templateType', enumKey(row.original.type))}
+          </Badge>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: t('templates.columns.status'),
+        cell: ({ row }) => (
+          <Badge
+            variant="secondary"
+            className={templateStatusBadgeColors[row.original.status] ?? ''}>
+            {tDynLoose(t, 'templateStatus', enumKey(row.original.status))}
+          </Badge>
+        ),
+      },
+      {
+        id: 'taskCount',
+        accessorFn: row => row._count.tasks,
+        header: t('templates.columns.taskCount'),
+        cell: ({ row }) => (
+          <span className="text-sm tabular-nums">{row.original._count.tasks}</span>
+        ),
+      },
+      {
+        id: 'lastUpdated',
+        accessorFn: row => new Date(row.updatedAt).getTime(),
+        header: t('templates.columns.lastUpdated'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {formatDate(row.original.updatedAt)}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="sr-only">{t('templates.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const template = row.original;
+          return (
+            <div className="text-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
+                  render={props => (
+                    <Button
+                      {...props}
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
+                      onClick={e => e.stopPropagation()}>
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">{t('templates.actions')}</span>
+                    </Button>
+                  )}
+                />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                    onSelect={() => handleRowNavigate(template.id)}>
+                    <Pencil className="me-2 h-4 w-4" />
+                    {t('templates.actionEdit')}
+                  </DropdownMenuItem>
+                  {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
+                  <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
+                    <Copy className="me-2 h-4 w-4" />
+                    {t('templates.actionDuplicate')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {template.status === 'DRAFT' && (
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                    <DropdownMenuItem onSelect={() => void handleActivate(template)}>
+                      <Power className="me-2 h-4 w-4" />
+                      {t('templates.actionActivate')}
+                    </DropdownMenuItem>
+                  )}
+                  {template.status === 'ACTIVE' && (
+                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                    <DropdownMenuItem onSelect={() => void handleArchive(template)}>
+                      <Archive className="me-2 h-4 w-4" />
+                      {t('templates.actionArchive')}
+                    </DropdownMenuItem>
+                  )}
+                  {template.status === 'DRAFT' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
+                        onSelect={() => setDeleteTarget(template)}>
+                        <Trash2 className="me-2 h-4 w-4" />
+                        {t('templates.actionDelete')}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          );
+        },
+      },
+    ],
+    [t, handleRowNavigate, handleDuplicate, handleActivate, handleArchive, setDeleteTarget],
+  );
 
-  if (templates.length === 0) {
+  if (!isLoading && templates.length === 0) {
     return (
       <AtelierEmptyState
         variant="subview"
@@ -141,124 +200,17 @@ export function TemplatesTable({
   return (
     <>
       <SectionLabel icon={GitBranch}>{t('tabTemplates')}</SectionLabel>
-      <AtelierTableShell
-        chrome={
-          <TableChrome
-            totalCount={templates.length}
-            entityLabel={t('templatesEntityLabel', { count: templates.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('templates.columns.name')}</TableHead>
-              <TableHead>{t('templates.columns.type')}</TableHead>
-              <TableHead>{t('templates.columns.status')}</TableHead>
-              <TableHead>{t('templates.columns.taskCount')}</TableHead>
-              <TableHead>{t('templates.columns.lastUpdated')}</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {templates.map((template: TemplateRow) => (
-              <TableRow
-                key={template.id}
-                className="cursor-pointer"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => handleRowNavigate(template.id)}>
-                <TableCell>
-                  <span className="font-medium">{template.name}</span>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={templateTypeBadgeColors[template.type] ?? ''}>
-                    {tDynLoose(t, 'templateType', enumKey(template.type))}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={templateStatusBadgeColors[template.status] ?? ''}>
-                    {tDynLoose(t, 'templateStatus', enumKey(template.status))}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm tabular-nums">{template._count.tasks}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm text-muted-foreground">
-                    {formatDate(template.updatedAt)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                      render={props => (
-                        <Button
-                          {...props}
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-                          onClick={e => e.stopPropagation()}>
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">{t('templates.actions')}</span>
-                        </Button>
-                      )}
-                    />
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        onSelect={() => handleRowNavigate(template.id)}>
-                        <Pencil className="me-2 h-4 w-4" />
-                        {t('templates.actionEdit')}
-                      </DropdownMenuItem>
-                      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
-                      <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
-                        <Copy className="me-2 h-4 w-4" />
-                        {t('templates.actionDuplicate')}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {template.status === 'DRAFT' && (
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        <DropdownMenuItem onSelect={() => void handleActivate(template)}>
-                          <Power className="me-2 h-4 w-4" />
-                          {t('templates.actionActivate')}
-                        </DropdownMenuItem>
-                      )}
-                      {template.status === 'ACTIVE' && (
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        <DropdownMenuItem onSelect={() => void handleArchive(template)}>
-                          <Archive className="me-2 h-4 w-4" />
-                          {t('templates.actionArchive')}
-                        </DropdownMenuItem>
-                      )}
-                      {template.status === 'DRAFT' && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                            onSelect={() => setDeleteTarget(template)}>
-                            <Trash2 className="me-2 h-4 w-4" />
-                            {t('templates.actionDelete')}
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </AtelierTableShell>
+      <SimpleDataTable
+        columns={columns}
+        data={templates}
+        isLoading={isLoading}
+        entityLabel={t('templatesEntityLabel', { count: templates.length })}
+        emptyTitle={tEmpty('heading')}
+        emptyDescription={tEmpty('body')}
+        noResultsTitle={tEmpty('heading')}
+        noResultsDescription={tEmpty('body')}
+        onRowClick={template => handleRowNavigate(template.id)}
+      />
 
       <AlertDialog
         open={deleteTarget !== null}
