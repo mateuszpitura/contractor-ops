@@ -1,5 +1,6 @@
 'use client';
 
+import type { HTMLProps } from '@base-ui/react';
 import { ChevronDown } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -20,6 +21,50 @@ const LOCALE_TO_FLAG: Record<string, { flag: string; label: string }> = {
 
 function flagFor(locale: string) {
   return LOCALE_TO_FLAG[locale] ?? { flag: '/flags/gb.svg', label: locale.toUpperCase() };
+}
+
+interface LocaleListItemButtonProps {
+  locale: string;
+  meta: { flag: string; label: string };
+  filled: boolean;
+  isActive: boolean;
+  onSelect: (locale: string) => void;
+}
+
+function LocaleListItemButton({
+  locale,
+  meta,
+  filled,
+  isActive,
+  onSelect,
+}: LocaleListItemButtonProps) {
+  const handleClick = useCallback(() => onSelect(locale), [onSelect, locale]);
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
+        isActive && 'bg-accent/60 font-medium',
+      )}>
+      {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
+      <img
+        src={meta.flag}
+        alt=""
+        aria-hidden="true"
+        className="h-3.5 w-5 rounded-sm object-cover"
+      />
+      <span className="flex-1 text-start">{meta.label}</span>
+      <span
+        data-filled={filled ? 'true' : 'false'}
+        aria-label={filled ? 'translated' : 'empty'}
+        className={cn(
+          'h-2 w-2 rounded-full border',
+          filled ? 'border-primary bg-primary' : 'border-muted-foreground/40 bg-transparent',
+        )}
+      />
+    </button>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -102,40 +147,46 @@ export function I18nInput({
     setOpen(false);
   }, []);
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange(e.target.value),
+    [handleChange],
+  );
+
+  const renderLocaleTrigger = useCallback(
+    (props: HTMLProps<HTMLButtonElement>) => (
+      <button
+        {...props}
+        type="button"
+        disabled={disabled}
+        className="absolute inset-y-0 end-1 my-auto inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label={`Switch language (current: ${activeMeta.label})`}>
+        {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
+        <img
+          src={activeMeta.flag}
+          alt=""
+          aria-hidden="true"
+          className="h-3.5 w-5 rounded-sm object-cover"
+        />
+        <span>{activeMeta.label}</span>
+        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+      </button>
+    ),
+    [disabled, activeMeta.flag, activeMeta.label],
+  );
+
   return (
     <div className={cn('relative flex items-stretch', className)}>
       <Input
         id={id}
         value={activeValue}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={e => handleChange(e.target.value)}
+        onChange={handleInputChange}
         placeholder={placeholder}
         disabled={disabled}
         className="pe-24"
         {...inputProps}
       />
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger
-          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-          render={props => (
-            <button
-              {...props}
-              type="button"
-              disabled={disabled}
-              className="absolute inset-y-0 end-1 my-auto inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label={`Switch language (current: ${activeMeta.label})`}>
-              {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
-              <img
-                src={activeMeta.flag}
-                alt=""
-                aria-hidden="true"
-                className="h-3.5 w-5 rounded-sm object-cover"
-              />
-              <span>{activeMeta.label}</span>
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-            </button>
-          )}
-        />
+        <PopoverTrigger render={renderLocaleTrigger} />
         <PopoverContent align="end" className="w-44 p-1">
           <ul className="space-y-0.5">
             {locales.map(loc => {
@@ -144,33 +195,13 @@ export function I18nInput({
               const isActive = loc === activeLocale;
               return (
                 <li key={loc}>
-                  <button
-                    type="button"
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => handleSelectLocale(loc)}
-                    className={cn(
-                      'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent',
-                      isActive && 'bg-accent/60 font-medium',
-                    )}>
-                    {/** biome-ignore lint/performance/noImgElement: small static svg under /public */}
-                    <img
-                      src={meta.flag}
-                      alt=""
-                      aria-hidden="true"
-                      className="h-3.5 w-5 rounded-sm object-cover"
-                    />
-                    <span className="flex-1 text-start">{meta.label}</span>
-                    <span
-                      data-filled={filled ? 'true' : 'false'}
-                      aria-label={filled ? 'translated' : 'empty'}
-                      className={cn(
-                        'h-2 w-2 rounded-full border',
-                        filled
-                          ? 'border-primary bg-primary'
-                          : 'border-muted-foreground/40 bg-transparent',
-                      )}
-                    />
-                  </button>
+                  <LocaleListItemButton
+                    locale={loc}
+                    meta={meta}
+                    filled={Boolean(filled)}
+                    isActive={isActive}
+                    onSelect={handleSelectLocale}
+                  />
                 </li>
               );
             })}

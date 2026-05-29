@@ -36,7 +36,7 @@ const listByEngagementInput = z.object({
 export const economicDependencyAlertRouter = router({
   list: contractorReadProcedure.input(listInput).query(async ({ ctx, input }) => {
     const rows = await ctx.db.economicDependencyAlertState.findMany({
-      where: { currentBand: { in: ['warning', 'critical'] } },
+      where: { currentBand: { in: ['WARNING', 'CRITICAL'] } },
       orderBy: [{ lastScannedAt: 'desc' }, { id: 'asc' }],
       include: {
         contractorAssignment: {

@@ -1,5 +1,6 @@
 'use client';
 
+import type { HTMLProps } from '@base-ui/react';
 import { Clock } from 'lucide-react';
 import type { KeyboardEvent, MouseEvent, Ref } from 'react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -338,33 +339,35 @@ export function TimePicker({
   // ── Rendering ───────────────────────────────────────────────────────────
   const triggerLabel = formatTriggerLabel(value, format);
 
+  const renderTrigger = useCallback(
+    (props: HTMLProps<HTMLButtonElement>) => (
+      <Button
+        {...props}
+        id={id}
+        type="button"
+        variant="outline"
+        size="default"
+        disabled={disabled}
+        aria-haspopup="dialog"
+        aria-label={ariaLabel ?? 'Pick a time'}
+        className={cn(
+          'group/time-trigger w-full justify-start gap-2 font-normal tabular-nums',
+          !triggerLabel && 'text-muted-foreground',
+          className,
+        )}>
+        <Clock
+          aria-hidden="true"
+          className="size-4 text-muted-foreground group-hover/time-trigger:text-foreground/80"
+        />
+        <span className="truncate">{triggerLabel ?? placeholder ?? '--:--'}</span>
+      </Button>
+    ),
+    [id, disabled, ariaLabel, triggerLabel, className, placeholder],
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button
-            {...props}
-            id={id}
-            type="button"
-            variant="outline"
-            size="default"
-            disabled={disabled}
-            aria-haspopup="dialog"
-            aria-label={ariaLabel ?? 'Pick a time'}
-            className={cn(
-              'group/time-trigger w-full justify-start gap-2 font-normal tabular-nums',
-              !triggerLabel && 'text-muted-foreground',
-              className,
-            )}>
-            <Clock
-              aria-hidden="true"
-              className="size-4 text-muted-foreground group-hover/time-trigger:text-foreground/80"
-            />
-            <span className="truncate">{triggerLabel ?? placeholder ?? '--:--'}</span>
-          </Button>
-        )}
-      />
+      <PopoverTrigger render={renderTrigger} />
       <PopoverContent
         align="start"
         sideOffset={6}
@@ -533,6 +536,6 @@ function closestMinute(target: number, options: number[]): number {
   if (options.length === 0) return target;
   return options.reduce(
     (acc, m) => (Math.abs(m - target) < Math.abs(acc - target) ? m : acc),
-    options[0]!,
+    target,
   );
 }

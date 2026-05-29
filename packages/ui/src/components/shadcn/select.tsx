@@ -1,8 +1,19 @@
 'use client';
 
 import { Select as SelectPrimitive } from '@base-ui/react/select';
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import {
+  AlertCircleIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  Loader2Icon,
+} from 'lucide-react';
 import type * as React from 'react';
+import {
+  formControlClassName,
+  formControlHoverClassName,
+  formControlPlaceholderClassName,
+} from '../../lib/form-control.js';
 import { cn } from '../../lib/utils.js';
 
 const Select = SelectPrimitive.Root;
@@ -32,32 +43,76 @@ function SelectValue({
   );
 }
 
+export interface SelectTriggerExtraProps {
+  /**
+   * Mark the trigger as resolving an async data source. Renders a spinner inside
+   * the trigger and disables interaction. Mutually exclusive with `error`
+   * (loading wins when both are set).
+   */
+  loading?: boolean;
+  /**
+   * Mark the trigger as failed to resolve. Renders an alert icon labelled with
+   * `error.message` and keeps the trigger disabled. Ignored while `loading`.
+   */
+  error?: { message: string } | null;
+}
+
 function SelectTrigger({
   className,
   size = 'default',
   children,
+  loading = false,
+  error = null,
+  disabled,
   ...props
 }: SelectPrimitive.Trigger.Props & {
   size?: 'sm' | 'default';
-}) {
+} & SelectTriggerExtraProps) {
+  const state: 'loading' | 'error' | 'resolved' = loading
+    ? 'loading'
+    : error
+      ? 'error'
+      : 'resolved';
+  const isBlocked = state !== 'resolved';
+
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
+      data-form-control=""
       data-size={size}
+      data-state-async={state}
+      aria-busy={loading || undefined}
+      disabled={disabled || isBlocked}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pe-2 ps-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        formControlClassName,
+        formControlHoverClassName,
+        formControlPlaceholderClassName,
+        "flex w-fit items-center justify-between gap-1.5 py-2 pe-2 ps-2.5 text-sm whitespace-nowrap select-none data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}>
       {children}
-      <SelectPrimitive.Icon
-        render={
-          <ChevronDownIcon
-            aria-hidden="true"
-            className="pointer-events-none size-4 text-muted-foreground"
-          />
-        }
-      />
+      {state === 'loading' ? (
+        <Loader2Icon
+          aria-hidden="true"
+          className="pointer-events-none size-3.5 animate-spin text-muted-foreground"
+        />
+      ) : state === 'error' ? (
+        <AlertCircleIcon
+          aria-label={error?.message}
+          role="img"
+          className="pointer-events-none size-3.5 text-destructive"
+        />
+      ) : (
+        <SelectPrimitive.Icon
+          render={
+            <ChevronDownIcon
+              aria-hidden="true"
+              className="pointer-events-none size-4 text-muted-foreground"
+            />
+          }
+        />
+      )}
     </SelectPrimitive.Trigger>
   );
 }
@@ -178,6 +233,92 @@ function SelectScrollDownButton({
   );
 }
 
+// ---------------------------------------------------------------------------
+// SelectValueLabel — option-label resolver with environment-aware fallback.
+//
+// In development a missing option throws so data drift is caught at build /
+// dev time. In production the unknown key is reported via the configured
+// `errorSink` and rendered in a muted style so the UI degrades gracefully.
+//
+// The error sink is intentionally pluggable: `packages/ui` stays free of
+// logger / runtime deps, and consumers wire `setSelectErrorSink` to whatever
+// observability surface they own (`@contractor-ops/logger`, Sentry, console
+// in tests, etc.).
+// ---------------------------------------------------------------------------
+
+export interface SelectValueLabelMissEvent {
+  component: 'SelectValueLabel';
+  value: string;
+  availableValues: ReadonlyArray<string>;
+  context?: string;
+}
+
+type SelectErrorSink = (event: SelectValueLabelMissEvent) => void;
+
+let selectErrorSink: SelectErrorSink = () => {
+  // no-op default; apps wire a real sink via setSelectErrorSink
+};
+
+export function setSelectErrorSink(sink: SelectErrorSink): void {
+  selectErrorSink = sink;
+}
+
+export interface SelectValueLabelOption {
+  value: string;
+  label: string;
+}
+
+export interface SelectValueLabelProps {
+  /** The current selected value (the enum key, never the label). */
+  value: string;
+  /** Static or fetched option list — label is rendered for the matching value. */
+  options: ReadonlyArray<SelectValueLabelOption>;
+  /**
+   * Optional human context for the error sink (e.g. component name, field).
+   * Useful when many SelectValueLabel instances share the same sink.
+   */
+  context?: string;
+  /** Optional className passed through to the rendered span. */
+  className?: string;
+}
+
+function isProduction(): boolean {
+  const proc = (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process;
+  return proc?.env?.NODE_ENV === 'production';
+}
+
+function SelectValueLabel({ value, options, context, className }: SelectValueLabelProps) {
+  const match = options.find(option => option.value === value);
+  if (match) {
+    return <span className={className}>{match.label}</span>;
+  }
+
+  const event: SelectValueLabelMissEvent = {
+    component: 'SelectValueLabel',
+    value,
+    availableValues: options.map(option => option.value),
+    context,
+  };
+
+  if (!isProduction()) {
+    throw new Error(
+      `[SelectValueLabel] no option for value "${value}"` +
+        (context ? ` (${context})` : '') +
+        `; available: [${event.availableValues.join(', ')}]`,
+    );
+  }
+
+  selectErrorSink(event);
+  return (
+    <span
+      data-slot="select-value-label-fallback"
+      data-fallback="unknown-key"
+      className={cn('text-muted-foreground', className)}>
+      {value}
+    </span>
+  );
+}
+
 export {
   Select,
   SelectContent,
@@ -189,4 +330,5 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  SelectValueLabel,
 };

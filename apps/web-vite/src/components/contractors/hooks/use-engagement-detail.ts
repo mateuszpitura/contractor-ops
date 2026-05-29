@@ -27,7 +27,7 @@ export function useEngagementDetail(engagementId: string) {
 
   const draft = latestQuery.data;
   const countryCode = draft?.countryCode ?? null;
-  const completedAssessmentId = draft && draft.status === 'completed' ? draft.id : null;
+  const completedAssessmentId = draft && draft.status === 'COMPLETED' ? draft.id : null;
   const attestationSigned = Boolean(attestationQuery.data?.signedAt);
 
   return {

@@ -31,10 +31,77 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { memo, useCallback } from 'react';
 import type { useJiraStatusMappingDialog } from './hooks/use-jira-status-mapping-dialog.js';
 import { WORKFLOW_STATUSES } from './status-mapping.constants.js';
 
 export type JiraStatusMappingDialogViewProps = ReturnType<typeof useJiraStatusMappingDialog>;
+
+type JiraStatus = JiraStatusMappingDialogViewProps['jiraStatuses'][number];
+
+interface StatusMappingRowProps {
+  workflowStatusValue: string;
+  workflowStatusLabel: string;
+  isUnmapped: boolean;
+  unmappedTooltip: string;
+  isStatusesLoading: boolean;
+  jiraStatuses: JiraStatus[];
+  mappedId: string | undefined;
+  notMappedLabel: string;
+  onStatusSelect: (workflowStatus: string, jiraStatusId: string) => void;
+}
+
+const StatusMappingRow = memo(function StatusMappingRow({
+  workflowStatusValue,
+  workflowStatusLabel,
+  isUnmapped,
+  unmappedTooltip,
+  isStatusesLoading,
+  jiraStatuses,
+  mappedId,
+  notMappedLabel,
+  onStatusSelect,
+}: StatusMappingRowProps) {
+  const handleValueChange = useCallback(
+    (v: string | null) => {
+      if (v) onStatusSelect(workflowStatusValue, v);
+    },
+    [workflowStatusValue, onStatusSelect],
+  );
+  return (
+    <TableRow>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{workflowStatusLabel}</span>
+          {isUnmapped && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="size-3.5 text-warning" />
+                </TooltipTrigger>
+                <TooltipContent>{unmappedTooltip}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <Select value={mappedId ?? undefined} onValueChange={handleValueChange}>
+          <SelectTrigger className="w-full" loading={isStatusesLoading}>
+            <SelectValue placeholder={notMappedLabel} />
+          </SelectTrigger>
+          <SelectContent>
+            {jiraStatuses.map(status => (
+              <SelectItem key={status.id} value={status.id}>
+                {status.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 export function JiraStatusMappingDialogView({
   open,
@@ -53,6 +120,16 @@ export function JiraStatusMappingDialogView({
   saveMutation,
   t,
 }: JiraStatusMappingDialogViewProps) {
+  const handleProjectChange = useCallback(
+    (v: string | null) => setSelectedProjectId(v),
+    [setSelectedProjectId],
+  );
+  const handleDiscard = useCallback(() => onOpenChange(false), [onOpenChange]);
+
+  const unmappedTooltip = t('unmappedTooltip');
+  const notMappedLabel = t('notMapped');
+  const isStatusesLoading = statusesQuery.isLoading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
@@ -67,14 +144,9 @@ export function JiraStatusMappingDialogView({
 
         <div className="space-y-2">
           <Label>{t('jiraProject')}</Label>
-          <Select
-            value={selectedProjectId ?? undefined}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={v => setSelectedProjectId(v as string)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t('selectProject')}>
-                {!!projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
-              </SelectValue>
+          <Select value={selectedProjectId ?? undefined} onValueChange={handleProjectChange}>
+            <SelectTrigger className="w-full" loading={projectsQuery.isLoading}>
+              <SelectValue placeholder={t('selectProject')} />
             </SelectTrigger>
             <SelectContent>
               {projects.map(project => (
@@ -98,47 +170,19 @@ export function JiraStatusMappingDialogView({
               <TableBody>
                 {WORKFLOW_STATUSES.map(ws => {
                   const mappedId = getMappedJiraStatusId(ws.value);
-                  const isUnmapped = !mappedId;
-
                   return (
-                    <TableRow key={ws.value}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{ws.label}</span>
-                          {isUnmapped && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <AlertTriangle className="size-3.5 text-warning" />
-                                </TooltipTrigger>
-                                <TooltipContent>{t('unmappedTooltip')}</TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {statusesQuery.isLoading ? (
-                          <Loader2 className="size-3.5 animate-spin" />
-                        ) : (
-                          <Select
-                            value={mappedId ?? undefined}
-                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                            onValueChange={v => handleStatusSelect(ws.value, v as string)}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder={t('notMapped')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {jiraStatuses.map(status => (
-                                <SelectItem key={status.id} value={status.id}>
-                                  {status.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                    <StatusMappingRow
+                      key={ws.value}
+                      workflowStatusValue={ws.value}
+                      workflowStatusLabel={ws.label}
+                      isUnmapped={!mappedId}
+                      unmappedTooltip={unmappedTooltip}
+                      isStatusesLoading={isStatusesLoading}
+                      jiraStatuses={jiraStatuses}
+                      mappedId={mappedId}
+                      notMappedLabel={notMappedLabel}
+                      onStatusSelect={handleStatusSelect}
+                    />
                   );
                 })}
               </TableBody>
@@ -147,12 +191,10 @@ export function JiraStatusMappingDialogView({
         )}
 
         <DialogFooter>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleDiscard}>
             {t('discardChanges')}
           </Button>
           <Button
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedProjectId}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}

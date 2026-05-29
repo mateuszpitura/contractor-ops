@@ -74,8 +74,8 @@ export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof Subscr
 
 
 export const ClassificationAssessmentStatus = {
-  draft: 'draft',
-  completed: 'completed'
+  DRAFT: 'DRAFT',
+  COMPLETED: 'COMPLETED'
 } as const
 
 export type ClassificationAssessmentStatus = (typeof ClassificationAssessmentStatus)[keyof typeof ClassificationAssessmentStatus]
@@ -101,9 +101,9 @@ export type Ir35ChainRole = (typeof Ir35ChainRole)[keyof typeof Ir35ChainRole]
 
 
 export const EconomicDependencyBand = {
-  safe: 'safe',
-  warning: 'warning',
-  critical: 'critical'
+  SAFE: 'SAFE',
+  WARNING: 'WARNING',
+  CRITICAL: 'CRITICAL'
 } as const
 
 export type EconomicDependencyBand = (typeof EconomicDependencyBand)[keyof typeof EconomicDependencyBand]
@@ -392,10 +392,10 @@ export type Severity = (typeof Severity)[keyof typeof Severity]
 
 
 export const WaivedReason = {
-  superseded_by_policy_version: 'superseded_by_policy_version',
-  classification_outcome_change: 'classification_outcome_change',
-  admin_manual_waive: 'admin_manual_waive',
-  contractor_offboarded: 'contractor_offboarded'
+  SUPERSEDED_BY_POLICY_VERSION: 'SUPERSEDED_BY_POLICY_VERSION',
+  CLASSIFICATION_OUTCOME_CHANGE: 'CLASSIFICATION_OUTCOME_CHANGE',
+  ADMIN_MANUAL_WAIVE: 'ADMIN_MANUAL_WAIVE',
+  CONTRACTOR_OFFBOARDED: 'CONTRACTOR_OFFBOARDED'
 } as const
 
 export type WaivedReason = (typeof WaivedReason)[keyof typeof WaivedReason]
@@ -985,10 +985,10 @@ export type TaxIdType = (typeof TaxIdType)[keyof typeof TaxIdType]
 
 
 export const ValidationStatus = {
-  valid: 'valid',
-  invalid: 'invalid',
-  stale: 'stale',
-  unavailable: 'unavailable'
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  STALE: 'STALE',
+  UNAVAILABLE: 'UNAVAILABLE'
 } as const
 
 export type ValidationStatus = (typeof ValidationStatus)[keyof typeof ValidationStatus]
@@ -1063,14 +1063,14 @@ export type AssigneeMode = (typeof AssigneeMode)[keyof typeof AssigneeMode]
 
 
 export const UserRole = {
-  admin: 'admin',
-  finance_admin: 'finance_admin',
-  ops_manager: 'ops_manager',
-  team_manager: 'team_manager',
-  legal_compliance_viewer: 'legal_compliance_viewer',
-  it_admin: 'it_admin',
-  external_accountant: 'external_accountant',
-  readonly: 'readonly'
+  ADMIN: 'ADMIN',
+  FINANCE_ADMIN: 'FINANCE_ADMIN',
+  OPS_MANAGER: 'OPS_MANAGER',
+  TEAM_MANAGER: 'TEAM_MANAGER',
+  LEGAL_COMPLIANCE_VIEWER: 'LEGAL_COMPLIANCE_VIEWER',
+  IT_ADMIN: 'IT_ADMIN',
+  EXTERNAL_ACCOUNTANT: 'EXTERNAL_ACCOUNTANT',
+  READONLY: 'READONLY'
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]

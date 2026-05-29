@@ -1,4 +1,4 @@
-import type { Prisma, TaxIdType } from '@contractor-ops/db';
+import type { Prisma, TaxIdType, ValidationStatus } from '@contractor-ops/db';
 import {
   invoiceCreateSchema,
   invoiceListSchema,
@@ -175,7 +175,7 @@ type ContractorTaxSnapshot = {
   vatId: string | null;
   type: string;
   latestVatValidatedAt: Date | null;
-  latestVatValidationStatus: string | null;
+  latestVatValidationStatus: ValidationStatus | null;
 };
 
 /**
@@ -191,11 +191,7 @@ async function revalidateStaleVatIfNeeded(
   const fresh = isValidationFresh(
     contractor.latestVatValidatedAt
       ? {
-          responseStatus: (contractor.latestVatValidationStatus ?? 'unavailable') as
-            | 'valid'
-            | 'invalid'
-            | 'stale'
-            | 'unavailable',
+          responseStatus: contractor.latestVatValidationStatus ?? 'UNAVAILABLE',
           requestedAt: contractor.latestVatValidatedAt,
         }
       : null,
@@ -669,6 +665,14 @@ export const invoiceRouter = router({
       if (filters?.contractorId) {
         where.contractorId = filters.contractorId;
       }
+      if (filters?.overdue) {
+        where.dueDate = { lt: new Date() };
+        // Mirror UI helper in columns.tsx: terminal states (PAID/VOID) cannot
+        // be "overdue".
+        where.status = where.status
+          ? { ...(where.status as object), notIn: ['PAID', 'VOID'] }
+          : { notIn: ['PAID', 'VOID'] };
+      }
 
       // Search via invoiceNumber OR contractor legalName (case-insensitive)
       if (search && search.length >= 1) {
@@ -1095,32 +1099,35 @@ export const invoiceRouter = router({
 
   /**
    * Search contractors by legalName or taxId (for manual matching UI).
-   * Case-insensitive, limit 10 results.
+   * Empty query returns the first `take` contractors (browse list); non-empty
+   * query filters case-insensitively on name or NIP.
    */
   searchContractors: tenantProcedure
     .use(requirePermission({ invoice: ['read'] }))
     .input(
       z.object({
-        query: z.string().min(1).max(100),
+        query: z.string().max(100).default(''),
         // F-DB-09: bound autocomplete to a documented cap. Default 10 keeps
         // dropdown UX snappy; max 200 leaves headroom for rare bulk uses.
         take: z.number().int().min(1).max(200).default(10),
       }),
     )
     .query(async ({ ctx, input }) => {
+      const trimmed = input.query.trim();
+      const where: Prisma.ContractorWhereInput = {
+        organizationId: ctx.organizationId,
+        deletedAt: null,
+      };
+
+      if (trimmed.length > 0) {
+        where.OR = [
+          { legalName: { contains: trimmed, mode: 'insensitive' } },
+          { taxId: { contains: trimmed, mode: 'insensitive' } },
+        ];
+      }
+
       const contractors = await ctx.db.contractor.findMany({
-        where: {
-          organizationId: ctx.organizationId,
-          deletedAt: null,
-          OR: [
-            {
-              legalName: { contains: input.query, mode: 'insensitive' },
-            },
-            {
-              taxId: { contains: input.query, mode: 'insensitive' },
-            },
-          ],
-        },
+        where,
         select: {
           id: true,
           legalName: true,
@@ -1128,6 +1135,7 @@ export const invoiceRouter = router({
           status: true,
         },
         take: input.take,
+        orderBy: { legalName: 'asc' },
       });
 
       return contractors;

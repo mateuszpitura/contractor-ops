@@ -17,7 +17,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Loader2 } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 
 import type { useJiraProjectMappingDialog } from './hooks/use-jira-project-mapping-dialog.js';
 
@@ -43,6 +43,22 @@ export function JiraProjectMappingDialogView({
 }: JiraProjectMappingDialogViewProps) {
   const reactId = useId();
 
+  const handleEnabledChange = useCallback(
+    (checked: boolean) => setJiraEnabled(checked),
+    [setJiraEnabled],
+  );
+  const handleDiscard = useCallback(() => onOpenChange(false), [onOpenChange]);
+
+  const projectsError = useMemo(
+    () => (projectsQuery.error ? { message: t('jira.projectMapping.loadProjectsFailed') } : null),
+    [projectsQuery.error, t],
+  );
+  const issueTypesError = useMemo(
+    () =>
+      issueTypesQuery.error ? { message: t('jira.projectMapping.loadIssueTypesFailed') } : null,
+    [issueTypesQuery.error, t],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -54,12 +70,12 @@ export function JiraProjectMappingDialogView({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t('jira.projectMapping.jiraProject')}</Label>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={projectId} onValueChange={handleProjectChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('jira.projectMapping.selectProject')}>
-                  {!!projectsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
-                </SelectValue>
+              <SelectTrigger
+                className="w-full"
+                loading={projectsQuery.isLoading}
+                error={projectsError}>
+                <SelectValue placeholder={t('jira.projectMapping.selectProject')} />
               </SelectTrigger>
               <SelectContent>
                 {projects.map(project => (
@@ -73,12 +89,12 @@ export function JiraProjectMappingDialogView({
 
           <div className="space-y-2">
             <Label>{t('jira.projectMapping.issueType')}</Label>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
             <Select value={issueTypeId} onValueChange={handleIssueTypeChange} disabled={!projectId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder={t('jira.projectMapping.selectIssueType')}>
-                  {!!issueTypesQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
-                </SelectValue>
+              <SelectTrigger
+                className="w-full"
+                loading={issueTypesQuery.isLoading}
+                error={issueTypesError}>
+                <SelectValue placeholder={t('jira.projectMapping.selectIssueType')} />
               </SelectTrigger>
               <SelectContent>
                 {issueTypes.map(type => (
@@ -97,18 +113,15 @@ export function JiraProjectMappingDialogView({
             <Switch
               id={`${reactId}-jira-auto-create`}
               checked={jiraEnabled}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={checked => setJiraEnabled(checked as boolean)}
+              onCheckedChange={handleEnabledChange}
             />
           </div>
         </div>
 
         <DialogFooter>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleDiscard}>
             {t('jira.projectMapping.discardChanges')}
           </Button>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave} disabled={!hasChanges || saveMutation.isPending}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
             {t('jira.projectMapping.saveMapping')}

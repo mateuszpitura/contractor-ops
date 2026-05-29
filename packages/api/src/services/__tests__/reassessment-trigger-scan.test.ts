@@ -273,7 +273,7 @@ function seedGbEngagementWithIr35(assignmentId: string, orgId = 'org-a') {
     organizationId: orgId,
     contractorAssignmentId: assignmentId,
     countryCode: 'GB',
-    status: 'completed',
+    status: 'COMPLETED',
     completedAt: new Date('2026-01-01'),
     classificationDocuments: [{ id: `doc-${assignmentId}` }],
   });

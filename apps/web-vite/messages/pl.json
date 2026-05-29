@@ -3484,6 +3484,8 @@
         "selectProject": "Wybierz projekt",
         "issueType": "Typ zgłoszenia",
         "selectIssueType": "Wybierz typ zgłoszenia",
+        "loadProjectsFailed": "Nie udało się załadować projektów Jira",
+        "loadIssueTypesFailed": "Nie udało się załadować typów zgłoszeń",
         "discardChanges": "Odrzuć zmiany",
         "saveMapping": "Zapisz mapowanie",
         "toast": {
@@ -4008,11 +4010,16 @@
           "body": "Contractor Ops korzysta z następujących podwykonawców przetwarzania danych w celu świadczenia naszych usług. Każdy podwykonawca jest związany umową o przetwarzanie danych zapewniającą zgodność z RODO. Udostępniamy jedynie minimum danych niezbędnych do realizacji funkcji każdego podwykonawcy."
         },
         "processors": {
-          "heading": "Aktualni podwykonawcy"
+          "heading": "Aktualni podwykonawcy",
+          "body": "Poniższe podmioty trzecie przetwarzają dane osobowe w naszym imieniu. Każdy z nich jest objęty umową powierzenia przetwarzania danych oraz — tam, gdzie wymagane — standardowymi klauzulami umownymi lub równoważnymi zabezpieczeniami."
         },
         "changes": {
           "heading": "Zmiany podwykonawców",
-          "body": "Powiadomimy klientów z co najmniej 30-dniowym wyprzedzeniem o wszelkich zmianach na liście podwykonawców. Powiadomienia będą wysyłane e-mailem do administratorów organizacji. Jeśli sprzeciwiasz się nowemu podwykonawcy, możesz wypowiedzieć subskrypcję przed wejściem zmiany w życie."
+          "body": "Powiadomimy klientów z co najmniej 30-dniowym wyprzedzeniem o wszelkich zmianach na liście podwykonawców. Powiadomienia będą wysyłane e-mailem do administratorów organizacji."
+        },
+        "objection": {
+          "heading": "Prawo sprzeciwu",
+          "body": "Jeśli w uzasadnionych związanych z ochroną danych podstawach sprzeciwiasz się powierzeniu nowemu podwykonawcy, skontaktuj się z nami pod adresem privacy@contractorops.com przed wejściem zmiany w życie. Dołożymy starań, aby wspólnie znaleźć rozsądne rozwiązanie handlowe. Jeśli to niemożliwe, możesz wypowiedzieć subskrypcję dotyczącą tej usługi bez kary, zanim nowy podwykonawca rozpocznie przetwarzanie."
         },
         "contact": {
           "heading": "Kontakt",
@@ -6832,7 +6839,9 @@
       "submitted": "Złożone",
       "approved": "Zatwierdzone",
       "rejected": "Odrzucone",
-      "statusPlaceholder": "Status"
+      "statusPlaceholder": "Status",
+      "noResultsHeading": "Brak wpisów dla tego statusu",
+      "noResultsBody": "Wybierz inny status lub „Wszystkie statusy”."
     },
     "columns": {
       "contractor": "Contractor",

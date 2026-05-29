@@ -37,7 +37,7 @@ describe('ClassificationAssessmentListView', () => {
     const rows: AssessmentRow[] = [
       {
         id: 'a-1',
-        status: 'completed',
+        status: 'COMPLETED',
         countryCode: 'GB',
         ruleSetVersion: 'IR35-2024-CEST',
         completedAt: '2025-06-01T00:00:00Z',
@@ -60,7 +60,7 @@ describe('ClassificationAssessmentListView', () => {
     const rows: AssessmentRow[] = [
       {
         id: 'a-2',
-        status: 'draft',
+        status: 'DRAFT',
         countryCode: 'DE',
         ruleSetVersion: 'DRV-2024-v1',
         completedAt: null,

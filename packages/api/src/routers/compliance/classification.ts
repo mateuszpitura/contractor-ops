@@ -265,7 +265,7 @@ export const classificationRouter = router({
     const existing = await ctx.db.classificationAssessment.findFirst({
       where: {
         contractorAssignmentId: assignment.id,
-        status: 'draft',
+        status: 'DRAFT',
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -278,7 +278,7 @@ export const classificationRouter = router({
         contractorAssignmentId: assignment.id,
         countryCode: profile.country,
         ruleSetVersion: profile.ruleSetVersion,
-        status: 'draft',
+        status: 'DRAFT',
         answers: {},
       },
     });
@@ -314,7 +314,7 @@ export const classificationRouter = router({
       if (!stale || stale.contractorAssignmentId !== assignment.id) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      if (stale.status !== 'draft') {
+      if (stale.status !== 'DRAFT') {
         throw new TRPCError({
           code: 'CONFLICT',
           message: CLASSIFICATION_ONLY_DRAFT_CAN_RECREATE,
@@ -338,7 +338,7 @@ export const classificationRouter = router({
           contractorAssignmentId: assignment.id,
           countryCode: profile.country,
           ruleSetVersion: profile.ruleSetVersion,
-          status: 'draft',
+          status: 'DRAFT',
           answers: {},
         },
       });
@@ -380,7 +380,7 @@ export const classificationRouter = router({
                   contractorId,
                   organizationId: ctx.organizationId, // tenant guard (T-71-05-06)
                 },
-                status: 'completed',
+                status: 'COMPLETED',
               },
               orderBy: { completedAt: 'desc' },
               include: {
@@ -438,13 +438,13 @@ export const classificationRouter = router({
 
             // 4. Map input reason → supersede reason enum.
             const supersedeReason:
-              | 'classification_outcome_change'
-              | 'superseded_by_policy_version'
+              | 'CLASSIFICATION_OUTCOME_CHANGE'
+              | 'SUPERSEDED_BY_POLICY_VERSION'
               | 'admin_correction' =
               input.reason === 'policy_version_bump'
-                ? 'superseded_by_policy_version'
+                ? 'SUPERSEDED_BY_POLICY_VERSION'
                 : input.reason === 'classification_outcome_change'
-                  ? 'classification_outcome_change'
+                  ? 'CLASSIFICATION_OUTCOME_CHANGE'
                   : 'admin_correction';
 
             // 5. Run the supersession (reuses Plan 71-04's helper).
@@ -518,7 +518,7 @@ export const classificationRouter = router({
     const draft = await ctx.db.classificationAssessment.findFirst({
       where: {
         contractorAssignmentId: assignment.id,
-        status: 'draft',
+        status: 'DRAFT',
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -556,7 +556,7 @@ export const classificationRouter = router({
       if (!row) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      if (row.status !== 'draft') {
+      if (row.status !== 'DRAFT') {
         throw new TRPCError({
           code: 'CONFLICT',
           message: CLASSIFICATION_ASSESSMENT_NOT_DRAFT,
@@ -624,7 +624,7 @@ export const classificationRouter = router({
       if (!row) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      if (row.status !== 'draft') {
+      if (row.status !== 'DRAFT') {
         throw new TRPCError({
           code: 'CONFLICT',
           message: CLASSIFICATION_ALREADY_SUBMITTED,
@@ -668,7 +668,7 @@ export const classificationRouter = router({
       const prior = await tx.classificationAssessment.findFirst({
         where: {
           contractorAssignmentId: row.contractorAssignmentId,
-          status: 'completed',
+          status: 'COMPLETED',
         },
         orderBy: { completedAt: 'desc' },
       });
@@ -676,7 +676,7 @@ export const classificationRouter = router({
       const updated = await tx.classificationAssessment.update({
         where: { id: row.id },
         data: {
-          status: 'completed',
+          status: 'COMPLETED',
           outcome: validatedOutcome,
           questionsSnapshot: snapshot as unknown as Prisma.InputJsonValue,
           completedAt: now,
@@ -726,7 +726,7 @@ export const classificationRouter = router({
               contractorId: assignment.contractorId,
               contractId: null,
               engagement,
-              reason: 'classification_outcome_change',
+              reason: 'CLASSIFICATION_OUTCOME_CHANGE',
             });
           }
           // else: same outcome kind — no row churn (D-10 atomicity preserved by skipping).
@@ -765,7 +765,7 @@ export const classificationRouter = router({
       if (!row) {
         throw new TRPCError({ code: 'NOT_FOUND' });
       }
-      if (row.status !== 'completed') {
+      if (row.status !== 'COMPLETED') {
         throw new TRPCError({
           code: 'CONFLICT',
           message: CLASSIFICATION_ONLY_COMPLETED_CAN_ACKNOWLEDGE,
@@ -785,7 +785,7 @@ export const classificationRouter = router({
     const row = await ctx.db.classificationAssessment.findFirst({
       where: {
         contractorAssignmentId: input.contractorAssignmentId,
-        status: 'completed',
+        status: 'COMPLETED',
       },
       orderBy: { completedAt: 'desc' },
     });
@@ -857,8 +857,8 @@ export const classificationRouter = router({
         orderBy: [{ completedAt: 'desc' }, { createdAt: 'desc' }],
       });
 
-      const drafts = rows.filter((r: { status: string }) => r.status === 'draft');
-      const completed = rows.filter((r: { status: string }) => r.status === 'completed');
+      const drafts = rows.filter((r: { status: string }) => r.status === 'DRAFT');
+      const completed = rows.filter((r: { status: string }) => r.status === 'COMPLETED');
       return [...drafts, ...completed];
     }),
 
@@ -927,7 +927,7 @@ export const classificationRouter = router({
       const assessment = await findOrThrow(
         () =>
           ctx.db.classificationAssessment.findFirst({
-            where: { id: input.assessmentId, status: 'completed' },
+            where: { id: input.assessmentId, status: 'COMPLETED' },
             select: { id: true, countryCode: true },
           }),
         'Completed assessment not found',

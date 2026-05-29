@@ -411,6 +411,54 @@ For the rare case where every primitive is needed, the barrel
 `@contractor-ops/ui/components/shadcn` re-exports the lot — prefer the
 per-file path for tree-shaking.
 
+### Select — async loading, error, and label rendering
+
+`SelectTrigger` accepts two extra props so async dropdowns expose the same
+in-trigger feedback everywhere in the app:
+
+| Prop | Type | When to use |
+|---|---|---|
+| `loading` | `boolean` | Source query is pending. Renders a spinner in the trigger, sets `aria-busy="true"`, and disables interaction. |
+| `error` | `{ message: string } \| null` | Source query failed. Renders an alert icon labelled with `error.message` and disables interaction. Ignored while `loading`. |
+
+The trigger also sets `data-state-async="loading" \| "error" \| "resolved"` so
+styles and tests can target the lifecycle without sniffing icons.
+
+```tsx
+const query = useTRPC().contractor.list.useQuery();
+
+<Select value={selected} onValueChange={setSelected}>
+  <SelectTrigger
+    loading={query.isPending}
+    error={query.error ? { message: t('loadFailed') } : null}>
+    <SelectValue placeholder={t('placeholder')}>
+      <SelectValueLabel value={selected} options={CONTRACTOR_OPTIONS} context="contractor" />
+    </SelectValue>
+  </SelectTrigger>
+  <SelectContent>{/* ... */}</SelectContent>
+</Select>
+```
+
+`SelectValueLabel` resolves a key to its human-readable label by looking it up
+in the supplied `options` array. When the key is missing it fails loud in
+development (throws) so data drift surfaces at build / dev time, and falls
+back gracefully in production by emitting a structured event through the
+configured error sink and rendering the raw key in `text-muted-foreground`.
+
+Wire the sink once at app startup so misses land in the same observability
+surface as the rest of the app:
+
+```ts
+// apps/web-vite/src/main.tsx
+import { setSelectErrorSink } from '@contractor-ops/ui/components/shadcn/select';
+import { logger } from '@contractor-ops/logger';
+
+setSelectErrorSink(event => logger.error({ event }, 'SelectValueLabel miss'));
+```
+
+`SelectValueLabelMissEvent` carries `value`, `availableValues`, and the
+optional `context` string so logs are filterable per surface.
+
 Utilities companion to shadcn:
 
 ```ts

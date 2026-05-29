@@ -193,7 +193,7 @@ async function resolveIr35Assessment(assignmentId: string): Promise<{
     where: {
       contractorAssignmentId: assignmentId,
       countryCode: 'GB',
-      status: 'completed',
+      status: 'COMPLETED',
     },
     orderBy: { completedAt: 'desc' },
     select: {

@@ -1,7 +1,7 @@
 // Invoice, InvoiceFile, InvoiceLine, InvoiceMatchResult
 
 model Invoice {
-  id                    String             @id @default(cuid())
+  id                    String                   @id @default(cuid())
   organizationId        String
   contractorId          String?
   contractId            String?
@@ -10,29 +10,29 @@ model Invoice {
   externalInvoiceId     String?
   source                InvoiceSource
   sourceReference       String?
-  issueDate             DateTime           @db.Date
-  servicePeriodStart    DateTime?          @db.Date
-  servicePeriodEnd      DateTime?          @db.Date
-  dueDate               DateTime           @db.Date
-  currency              String             @db.Char(3)
+  issueDate             DateTime                 @db.Date
+  servicePeriodStart    DateTime?                @db.Date
+  servicePeriodEnd      DateTime?                @db.Date
+  dueDate               DateTime                 @db.Date
+  currency              String                   @db.Char(3)
   subtotalMinor         Int
   vatRate               String?
   vatAmountMinor        Int?
   totalMinor            Int
   withholdingMinor      Int?
-  isReverseCharge       Boolean            @default(false)
+  isReverseCharge       Boolean                  @default(false)
   reverseChargeOverride Boolean? // null = auto-detected, true/false = manually set
   amountToPayMinor      Int
-  sellerTaxId           String?            @db.VarChar(50)
-  sellerName            String?            @db.VarChar(500)
-  sellerBankAccount     String?            @db.VarChar(34)
-  buyerTaxId            String?            @db.VarChar(50)
-  status                InvoiceStatus      @default(RECEIVED)
-  matchStatus           InvoiceMatchStatus @default(UNMATCHED)
-  approvalStatus        ApprovalStatus     @default(NOT_STARTED)
-  paymentStatus         PaymentStatus      @default(NOT_READY)
-  duplicateCheckHash    String?            @db.VarChar(64)
-  receivedAt            DateTime           @default(now())
+  sellerTaxId           String?                  @db.VarChar(50)
+  sellerName            String?                  @db.VarChar(500)
+  sellerBankAccount     String?                  @db.VarChar(34)
+  buyerTaxId            String?                  @db.VarChar(50)
+  status                InvoiceStatus            @default(RECEIVED)
+  matchStatus           InvoiceMatchStatus       @default(UNMATCHED)
+  approvalStatus        ApprovalStatus           @default(NOT_STARTED)
+  paymentStatus         PaymentStatus            @default(NOT_READY)
+  duplicateCheckHash    String?                  @db.VarChar(64)
+  receivedAt            DateTime                 @default(now())
   reviewedAt            DateTime?
   approvedAt            DateTime?
   readyForPaymentAt     DateTime?
@@ -42,10 +42,11 @@ model Invoice {
   submittedByEmail      String?
   notes                 String?
   flagsJson             Json?
-  qrCodeBase64          String?            @db.Text
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  qrCodeBase64          String?                  @db.Text
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
   deletedAt             DateTime?
+  search_vector         Unsupported("tsvector")?
 
   organization   Organization              @relation(fields: [organizationId], references: [id])
   contractor     Contractor?               @relation(fields: [contractorId], references: [id])

@@ -40,7 +40,7 @@ type AssessmentRow = {
   contractorAssignmentId: string;
   countryCode: string;
   ruleSetVersion: string;
-  status: 'draft' | 'completed';
+  status: 'DRAFT' | 'COMPLETED';
   answers: Record<string, unknown>;
   outcome: unknown;
   questionsSnapshot: unknown;
@@ -455,7 +455,7 @@ function seedDraft(id: string, overrides: Partial<AssessmentRow> = {}): Assessme
     contractorAssignmentId: ASSIGNMENT_GB,
     countryCode: 'GB',
     ruleSetVersion: '1.0.0',
-    status: 'draft',
+    status: 'DRAFT',
     answers: {},
     outcome: null,
     questionsSnapshot: null,
@@ -485,7 +485,7 @@ function seedCompleted(id: string, overrides: Partial<AssessmentRow> = {}): Asse
     contractorAssignmentId: ASSIGNMENT_GB,
     countryCode: 'GB',
     ruleSetVersion: '1.0.0',
-    status: 'completed',
+    status: 'COMPLETED',
     answers: { 'Q-SUB-01': 'yes' },
     outcome: ir35Outcome,
     questionsSnapshot: {
@@ -935,7 +935,7 @@ describe('classification.getLatest', () => {
       contractorAssignmentId: ASSIGNMENT_B,
       countryCode: 'GB',
       ruleSetVersion: '1.0.0',
-      status: 'completed',
+      status: 'COMPLETED',
       answers: {},
       outcome: null,
       questionsSnapshot: null,
@@ -1031,7 +1031,7 @@ describe('classification.listByContractor', () => {
       contractorAssignmentId: ASSIGNMENT_B,
       countryCode: 'GB',
       ruleSetVersion: '1.0.0',
-      status: 'completed',
+      status: 'COMPLETED',
       answers: {},
       outcome: null,
       questionsSnapshot: null,

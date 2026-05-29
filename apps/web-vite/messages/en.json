@@ -3484,6 +3484,8 @@
         "selectProject": "Select a project",
         "issueType": "Issue Type",
         "selectIssueType": "Select an issue type",
+        "loadProjectsFailed": "Couldn't load Jira projects",
+        "loadIssueTypesFailed": "Couldn't load issue types",
         "discardChanges": "Discard Changes",
         "saveMapping": "Save Mapping",
         "toast": {
@@ -4008,11 +4010,16 @@
           "body": "Contractor Ops uses the following third-party sub-processors to deliver our services. Each sub-processor is bound by a data processing agreement ensuring GDPR compliance. We only share the minimum data necessary for each processor to fulfil its function."
         },
         "processors": {
-          "heading": "Current Sub-processors"
+          "heading": "Current Sub-processors",
+          "body": "The following third parties process personal data on our behalf. Each is bound by a data processing agreement and, where required, Standard Contractual Clauses or equivalent safeguards."
         },
         "changes": {
           "heading": "Changes to Sub-processors",
-          "body": "We will notify customers at least 30 days in advance of any changes to this sub-processor list. Notifications will be sent via email to organization administrators. If you object to a new sub-processor, you may terminate your subscription before the change takes effect."
+          "body": "We will notify customers at least 30 days in advance of any changes to this sub-processor list. Notifications will be sent via email to organization administrators."
+        },
+        "objection": {
+          "heading": "Right to Object",
+          "body": "If you object to the engagement of a new sub-processor on legitimate data-protection grounds, contact privacy@contractorops.com before the change takes effect. We will work with you in good faith to find a commercially reasonable alternative. If we cannot, you may terminate the affected subscription without penalty before the new sub-processor begins processing."
         },
         "contact": {
           "heading": "Contact",
@@ -6832,7 +6839,9 @@
       "submitted": "Submitted",
       "approved": "Approved",
       "rejected": "Rejected",
-      "statusPlaceholder": "Status"
+      "statusPlaceholder": "Status",
+      "noResultsHeading": "No entries match this status",
+      "noResultsBody": "Try another status or choose All Statuses."
     },
     "columns": {
       "contractor": "Contractor",

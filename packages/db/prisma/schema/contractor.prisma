@@ -49,6 +49,7 @@ model Contractor {
   updatedAt                 DateTime                 @updatedAt
   archivedAt                DateTime?
   deletedAt                 DateTime?
+  search_vector             Unsupported("tsvector")?
 
   organization      Organization          @relation(fields: [organizationId], references: [id])
   owner             User?                 @relation("ContractorOwner", fields: [ownerUserId], references: [id])
@@ -306,8 +307,8 @@ enum Severity {
 // Phase 71 D-11 — Closed enum for `waivedReason` audit-fidelity field.
 // Strong type at the DB level, greppable in audit queries; prevents free-text drift.
 enum WaivedReason {
-  superseded_by_policy_version // Policy version bump (D-09)
-  classification_outcome_change // Outcome differs from prior assessment (D-10)
-  admin_manual_waive // Admin clicked "Waive this requirement" (existing UX)
-  contractor_offboarded // Phase 74/75 fires this on offboarding completion
+  SUPERSEDED_BY_POLICY_VERSION // Policy version bump (D-09)
+  CLASSIFICATION_OUTCOME_CHANGE // Outcome differs from prior assessment (D-10)
+  ADMIN_MANUAL_WAIVE // Admin clicked "Waive this requirement" (existing UX)
+  CONTRACTOR_OFFBOARDED // Phase 74/75 fires this on offboarding completion
 }

@@ -89,7 +89,7 @@ export async function renderSdsPdfBuffer(params: RenderSdsParams): Promise<Rende
     },
   });
 
-  if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+  if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
     throw new Error(
       'Assessment must be completed with a captured questions snapshot before generating an SDS.',
     );
@@ -208,7 +208,7 @@ export async function renderDrvDefenseBundlePdfBuffer(
     },
   });
 
-  if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+  if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
     throw new Error(
       'Assessment must be completed with a captured questions snapshot before generating a DRV defense bundle.',
     );
@@ -223,7 +223,7 @@ export async function renderDrvDefenseBundlePdfBuffer(
   const priorAssessments = await prisma.classificationAssessment.findMany({
     where: {
       contractorAssignmentId: assessment.contractorAssignmentId,
-      status: 'completed',
+      status: 'COMPLETED',
       countryCode: 'DE',
       id: { not: assessment.id },
     },

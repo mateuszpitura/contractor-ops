@@ -8,8 +8,8 @@
 // append-only for the history of completed assessments per D-04.
 
 enum ClassificationAssessmentStatus {
-  draft
-  completed
+  DRAFT
+  COMPLETED
 }
 
 model ClassificationAssessment {
@@ -19,7 +19,7 @@ model ClassificationAssessment {
   countryCode              String                         @db.Char(2)
   ruleSetVersion           String
   policyRuleSetVersion     String? // Phase 71 D-03 — null pre-backfill; set on every new submit
-  status                   ClassificationAssessmentStatus @default(draft)
+  status                   ClassificationAssessmentStatus @default(DRAFT)
   questionsSnapshot        Json? // frozen on submit (D-08)
   answers                  Json                           @default("{}")
   outcome                  Json? // populated on submit
@@ -149,16 +149,16 @@ model Ir35OtherClientAttestation {
 // ---------------------------------------------------------------------------
 
 enum EconomicDependencyBand {
-  safe
-  warning
-  critical
+  SAFE
+  WARNING
+  CRITICAL
 }
 
 model EconomicDependencyAlertState {
   id                     String                 @id @default(cuid())
   organizationId         String
   contractorAssignmentId String                 @unique
-  currentBand            EconomicDependencyBand @default(safe)
+  currentBand            EconomicDependencyBand @default(SAFE)
   lastBillingShare       Decimal                @db.Decimal(5, 4)
   lastScannedAt          DateTime
   lastCrossedAt          DateTime?

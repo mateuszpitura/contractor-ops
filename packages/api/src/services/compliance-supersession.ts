@@ -64,7 +64,7 @@ export interface MaterialiseContext {
 }
 
 export interface SupersedeContext extends MaterialiseContext {
-  reason: 'classification_outcome_change' | 'superseded_by_policy_version' | 'admin_correction';
+  reason: 'CLASSIFICATION_OUTCOME_CHANGE' | 'SUPERSEDED_BY_POLICY_VERSION' | 'admin_correction';
 }
 
 /**

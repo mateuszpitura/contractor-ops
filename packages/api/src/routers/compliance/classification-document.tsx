@@ -128,7 +128,7 @@ export const classificationDocumentRouter = router({
           });
         });
 
-      if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+      if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: CLASSIFICATION_ASSESSMENT_NOT_COMPLETED,
@@ -197,7 +197,7 @@ export const classificationDocumentRouter = router({
           });
         });
 
-      if (assessment.status !== 'completed' || assessment.questionsSnapshot === null) {
+      if (assessment.status !== 'COMPLETED' || assessment.questionsSnapshot === null) {
         throw new TRPCError({
           code: 'PRECONDITION_FAILED',
           message: CLASSIFICATION_DRV_BUNDLE_NOT_COMPLETED,

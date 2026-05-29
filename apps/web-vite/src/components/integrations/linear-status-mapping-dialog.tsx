@@ -31,12 +31,91 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { memo, useCallback } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
 import type { useLinearStatusMappingDialog } from './hooks/use-linear-status-mapping-dialog.js';
 import { WORKFLOW_STATUS_VALUES } from './status-mapping.constants.js';
 
 export type LinearStatusMappingDialogViewProps = ReturnType<typeof useLinearStatusMappingDialog>;
+
+type LinearTeamState = LinearStatusMappingDialogViewProps['teamStates'][number];
+
+interface StateMappingRowProps {
+  workflowStatusValue: string;
+  workflowStatusLabel: string;
+  isUnmapped: boolean;
+  unmappedTooltip: string;
+  isExistingMappingLoading: boolean;
+  teamStates: LinearTeamState[];
+  mappedId: string | undefined;
+  notMappedLabel: string;
+  onStateSelect: (workflowStatus: string, stateId: string) => void;
+}
+
+const StateMappingRow = memo(function StateMappingRow({
+  workflowStatusValue,
+  workflowStatusLabel,
+  isUnmapped,
+  unmappedTooltip,
+  isExistingMappingLoading,
+  teamStates,
+  mappedId,
+  notMappedLabel,
+  onStateSelect,
+}: StateMappingRowProps) {
+  const handleValueChange = useCallback(
+    (v: string | null) => {
+      if (v) onStateSelect(workflowStatusValue, v);
+    },
+    [workflowStatusValue, onStateSelect],
+  );
+  return (
+    <TableRow>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{workflowStatusLabel}</span>
+          {isUnmapped && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <AlertTriangle className="size-3.5 text-warning" />
+                </TooltipTrigger>
+                <TooltipContent>{unmappedTooltip}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <Select value={mappedId ?? undefined} onValueChange={handleValueChange}>
+          <SelectTrigger className="w-full" loading={isExistingMappingLoading}>
+            <SelectValue placeholder={notMappedLabel} />
+          </SelectTrigger>
+          <SelectContent>
+            {teamStates.map(state => (
+              <SelectItem key={state.id} value={state.id}>
+                <div className="flex items-center gap-2">
+                  <span className="size-2 shrink-0 rounded-full" aria-hidden="true" />
+                  {state.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+const WS_LABEL_KEYS: Record<string, string> = {
+  TODO: 'workflowStatus.todo',
+  IN_PROGRESS: 'workflowStatus.inProgress',
+  DONE: 'workflowStatus.done',
+  BLOCKED: 'workflowStatus.blocked',
+  SKIPPED: 'workflowStatus.skipped',
+  CANCELLED: 'workflowStatus.cancelled',
+};
 
 export function LinearStatusMappingDialogView({
   open,
@@ -56,6 +135,16 @@ export function LinearStatusMappingDialogView({
   t,
   tI,
 }: LinearStatusMappingDialogViewProps) {
+  const handleTeamChange = useCallback(
+    (v: string | null) => setSelectedTeamId(v),
+    [setSelectedTeamId],
+  );
+  const handleDiscard = useCallback(() => onOpenChange(false), [onOpenChange]);
+
+  const unmappedTooltip = t('unmappedTooltip');
+  const notMappedLabel = tI('notMapped');
+  const isExistingMappingLoading = existingMappingQuery.isLoading;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
@@ -68,12 +157,9 @@ export function LinearStatusMappingDialogView({
 
         <div className="space-y-2">
           <Label>{t('selectTeam')}</Label>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-          <Select value={selectedTeamId ?? undefined} onValueChange={v => setSelectedTeamId(v)}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={t('selectTeam')}>
-                {!!teamsQuery.isLoading && <Loader2 className="size-3.5 animate-spin" />}
-              </SelectValue>
+          <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamChange}>
+            <SelectTrigger className="w-full" loading={teamsQuery.isLoading}>
+              <SelectValue placeholder={t('selectTeam')} />
             </SelectTrigger>
             <SelectContent>
               {teams.map(team => (
@@ -104,63 +190,20 @@ export function LinearStatusMappingDialogView({
               <TableBody>
                 {WORKFLOW_STATUS_VALUES.map(wsValue => {
                   const mappedId = getMappedStateId(wsValue);
-                  const isUnmapped = !mappedId;
-                  const wsLabelKey = {
-                    TODO: 'workflowStatus.todo',
-                    IN_PROGRESS: 'workflowStatus.inProgress',
-                    DONE: 'workflowStatus.done',
-                    BLOCKED: 'workflowStatus.blocked',
-                    SKIPPED: 'workflowStatus.skipped',
-                    CANCELLED: 'workflowStatus.cancelled',
-                  }[wsValue];
-
+                  const wsLabelKey = WS_LABEL_KEYS[wsValue] ?? '';
                   return (
-                    <TableRow key={wsValue}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{tKey(tI, wsLabelKey)}</span>
-                          {isUnmapped && (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <AlertTriangle className="size-3.5 text-warning" />
-                                </TooltipTrigger>
-                                <TooltipContent>{t('unmappedTooltip')}</TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {existingMappingQuery.isLoading ? (
-                          <Loader2 className="size-3.5 animate-spin" />
-                        ) : (
-                          <Select
-                            value={mappedId ?? undefined}
-                            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                            onValueChange={v => {
-                              if (v) handleStateSelect(wsValue, v);
-                            }}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder={tI('notMapped')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {teamStates.map(state => (
-                                <SelectItem key={state.id} value={state.id}>
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className="size-2 shrink-0 rounded-full"
-                                      aria-hidden="true"
-                                    />
-                                    {state.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                    <StateMappingRow
+                      key={wsValue}
+                      workflowStatusValue={wsValue}
+                      workflowStatusLabel={tKey(tI, wsLabelKey)}
+                      isUnmapped={!mappedId}
+                      unmappedTooltip={unmappedTooltip}
+                      isExistingMappingLoading={isExistingMappingLoading}
+                      teamStates={teamStates}
+                      mappedId={mappedId}
+                      notMappedLabel={notMappedLabel}
+                      onStateSelect={handleStateSelect}
+                    />
                   );
                 })}
               </TableBody>
@@ -169,12 +212,10 @@ export function LinearStatusMappingDialogView({
         )}
 
         <DialogFooter>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={handleDiscard}>
             {t('discard')}
           </Button>
           <Button
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSave}
             disabled={!hasChanges || saveMutation.isPending || !selectedTeamId}>
             {!!saveMutation.isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}

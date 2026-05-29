@@ -12,10 +12,10 @@ export function useRevalidateVat(contractorId: string) {
 
   const mutation = useMutation(
     trpc.contractor.revalidateVat.mutationOptions({
-      onSuccess: (result: { responseStatus: 'valid' | 'invalid' | 'stale' | 'unavailable' }) => {
-        if (result.responseStatus === 'valid') {
+      onSuccess: (result: { responseStatus: 'VALID' | 'INVALID' | 'STALE' | 'UNAVAILABLE' }) => {
+        if (result.responseStatus === 'VALID') {
           toast.success(t('successToast'));
-        } else if (result.responseStatus === 'invalid') {
+        } else if (result.responseStatus === 'INVALID') {
           toast.error(t('invalidToast'));
         } else {
           toast.warning(t('unavailableToast'));

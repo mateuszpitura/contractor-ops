@@ -61,22 +61,22 @@ export const REMINDER_CADENCE_DAYS = 30;
 // Pure helpers
 // ---------------------------------------------------------------------------
 
-export type Band = 'safe' | 'warning' | 'critical';
+export type Band = 'SAFE' | 'WARNING' | 'CRITICAL';
 
 export function bandFor(share: number): Band {
-  if (!Number.isFinite(share) || share < 0) return 'safe';
-  if (share >= CRITICAL_THRESHOLD) return 'critical';
-  if (share >= WARNING_THRESHOLD) return 'warning';
-  return 'safe';
+  if (!Number.isFinite(share) || share < 0) return 'SAFE';
+  if (share >= CRITICAL_THRESHOLD) return 'CRITICAL';
+  if (share >= WARNING_THRESHOLD) return 'WARNING';
+  return 'SAFE';
 }
 
 export function bandIndex(b: Band): number {
   switch (b) {
-    case 'safe':
+    case 'SAFE':
       return 0;
-    case 'warning':
+    case 'WARNING':
       return 1;
-    case 'critical':
+    case 'CRITICAL':
       return 2;
   }
 }
@@ -190,7 +190,7 @@ export async function updateBandState(
     where: { contractorAssignmentId: assignment.id },
   });
 
-  const previousBand: Band = existing?.currentBand ?? 'safe';
+  const previousBand: Band = existing?.currentBand ?? 'SAFE';
 
   let emittedType: EmittedType = null;
   let reason: UpdateBandStateResult['reason'] = 'no-change';
@@ -200,7 +200,7 @@ export async function updateBandState(
   if (next > prev) {
     // Up-crossing — always fire.
     emittedType =
-      nextBand === 'critical'
+      nextBand === 'CRITICAL'
         ? 'classification.economic_dependency_critical'
         : 'classification.economic_dependency_warning';
     reason = 'cross-up';
@@ -208,12 +208,12 @@ export async function updateBandState(
     // Improvement — fire "resolved" (warning→safe, critical→warning, critical→safe).
     emittedType = 'resolved';
     reason = 'cross-down';
-  } else if (next === prev && nextBand !== 'safe') {
+  } else if (next === prev && nextBand !== 'SAFE') {
     // Same non-safe band — re-fire every REMINDER_CADENCE_DAYS.
     const lastReminder = existing?.lastReminderAt ?? null;
     if (!lastReminder || daysBetween(lastReminder, now) >= REMINDER_CADENCE_DAYS) {
       emittedType =
-        nextBand === 'critical'
+        nextBand === 'CRITICAL'
           ? 'classification.economic_dependency_critical'
           : 'classification.economic_dependency_warning';
       reason = 'reminder';

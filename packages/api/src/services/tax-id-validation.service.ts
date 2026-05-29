@@ -117,7 +117,7 @@ export function isValidationFresh(
   now: Date = new Date(),
 ): boolean {
   if (!validation) return false;
-  if (validation.responseStatus !== 'valid') return false;
+  if (validation.responseStatus !== 'VALID') return false;
   return now.getTime() - validation.requestedAt.getTime() < NINETY_DAYS_MS;
 }
 
@@ -183,7 +183,7 @@ export async function validateTaxId(
       {
         input,
         apiProvider: 'local-checksum',
-        responseStatus: 'invalid',
+        responseStatus: 'INVALID',
         confirmationRef: null,
         responseBody: { source: 'local-checksum' } as Prisma.InputJsonValue,
         errorMessage: null,
@@ -205,7 +205,7 @@ export async function validateTaxId(
         {
           input,
           apiProvider: 'hmrc',
-          responseStatus: result.status === 'valid' ? 'valid' : 'invalid',
+          responseStatus: result.status === 'valid' ? 'VALID' : 'INVALID',
           confirmationRef: result.status === 'valid' ? result.confirmationRef : null,
           responseBody:
             result.status === 'valid'
@@ -243,7 +243,7 @@ export async function validateTaxId(
       {
         input,
         apiProvider: 'vies',
-        responseStatus: viesResult.status === 'valid' ? 'valid' : 'invalid',
+        responseStatus: viesResult.status === 'valid' ? 'VALID' : 'INVALID',
         confirmationRef: viesResult.status === 'valid' ? viesResult.confirmationRef : null,
         responseBody: viesResult.raw as unknown as Prisma.InputJsonValue,
         errorMessage: null,
@@ -370,7 +370,7 @@ async function softFail(args: SoftFailArgs): Promise<TaxIdValidationResult> {
       {
         input,
         apiProvider,
-        responseStatus: 'stale',
+        responseStatus: 'STALE',
         confirmationRef: prior?.confirmationRef ?? null,
         responseBody,
         errorMessage,
@@ -386,7 +386,7 @@ async function softFail(args: SoftFailArgs): Promise<TaxIdValidationResult> {
     {
       input,
       apiProvider,
-      responseStatus: 'unavailable',
+      responseStatus: 'UNAVAILABLE',
       confirmationRef: null,
       responseBody,
       errorMessage,

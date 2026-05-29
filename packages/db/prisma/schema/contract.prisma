@@ -1,29 +1,29 @@
 // Contract, ContractAmendment, ContractRatePeriod, Document, DocumentLink
 
 model Contract {
-  id                            String               @id @default(cuid())
+  id                            String                   @id @default(cuid())
   organizationId                String
   contractorId                  String
   contractNumber                String?
   title                         String
   type                          ContractType
-  status                        ContractStatus       @default(DRAFT)
-  startDate                     DateTime             @db.Date
-  endDate                       DateTime?            @db.Date
+  status                        ContractStatus           @default(DRAFT)
+  startDate                     DateTime                 @db.Date
+  endDate                       DateTime?                @db.Date
   noticePeriodDays              Int?
-  autoRenewal                   Boolean              @default(false)
+  autoRenewal                   Boolean                  @default(false)
   renewalTerms                  String?
-  currency                      String               @db.Char(3)
+  currency                      String                   @db.Char(3)
   billingModel                  BillingModel
   rateType                      RateType
   rateValueMinor                Int?
-  expectedHoursPerPeriod        Decimal?             @db.Decimal(10, 2)
+  expectedHoursPerPeriod        Decimal?                 @db.Decimal(10, 2)
   retainerAmountMinor           Int?
   paymentTermsDays              Int?
   invoiceCycle                  InvoiceCycle?
-  expenseReimbursementAllowed   Boolean              @default(false)
-  requiresTimesheet             Boolean              @default(false)
-  requiresDeliverableAcceptance Boolean              @default(false)
+  expenseReimbursementAllowed   Boolean                  @default(false)
+  requiresTimesheet             Boolean                  @default(false)
+  requiresDeliverableAcceptance Boolean                  @default(false)
   internalOwnerUserId           String?
   teamId                        String?
   projectId                     String?
@@ -34,9 +34,10 @@ model Contract {
   terminatedAt                  DateTime?
   terminationReason             String?
   metadataJson                  Json?
-  createdAt                     DateTime             @default(now())
-  updatedAt                     DateTime             @updatedAt
+  createdAt                     DateTime                 @default(now())
+  updatedAt                     DateTime                 @updatedAt
   deletedAt                     DateTime?
+  searchVector                  Unsupported("tsvector")?
 
   organization  Organization @relation(fields: [organizationId], references: [id])
   contractor    Contractor   @relation(fields: [contractorId], references: [id])
