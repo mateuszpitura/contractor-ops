@@ -46,6 +46,7 @@ const baseHandlers = {
   handleDelete: vi.fn(),
   handleRowNavigate: vi.fn(),
   isError: false,
+  isFetching: false,
   handleRetry: vi.fn(),
 };
 

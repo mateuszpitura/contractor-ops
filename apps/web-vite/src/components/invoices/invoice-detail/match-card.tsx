@@ -305,7 +305,7 @@ function ContractorMatchCommandList({
 }: {
   unmatched: ReturnType<typeof useInvoiceManualMatch>;
   showPii: boolean;
-  t: ReturnType<typeof useTranslations<'Invoices'>>;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const isLoading =
     unmatched.isContractorsLoading ||

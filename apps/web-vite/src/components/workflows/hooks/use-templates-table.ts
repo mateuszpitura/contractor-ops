@@ -106,6 +106,7 @@ export function useTemplatesTable() {
   return {
     templates,
     isLoading: templatesQuery.isLoading,
+    isFetching: templatesQuery.isFetching,
     isError: templatesQuery.isError,
     handleRetry: templatesQuery.handleRetry,
     deleteTarget,
