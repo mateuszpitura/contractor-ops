@@ -77,6 +77,73 @@ function toDateStr(d: string | Date): string {
   return format(d, 'yyyy-MM-dd');
 }
 
+interface TimesheetCellInputProps {
+  contractId: string;
+  dayIndex: number;
+  contractIndex: number;
+  cellKey: string;
+  value: string;
+  disabled: boolean;
+  ariaLabel: string;
+  setInputRef: (cellKey: string, el: HTMLInputElement | null) => void;
+  onCellChange: (contractId: string, dayIndex: number, value: string) => void;
+  onCellBlur: (contractId: string, dayIndex: number) => void;
+  onCellKeyDown: (
+    e: React.KeyboardEvent,
+    contractId: string,
+    dayIndex: number,
+    contractIndex: number,
+  ) => void;
+}
+
+function TimesheetCellInput({
+  contractId,
+  dayIndex,
+  contractIndex,
+  cellKey,
+  value,
+  disabled,
+  ariaLabel,
+  setInputRef,
+  onCellChange,
+  onCellBlur,
+  onCellKeyDown,
+}: TimesheetCellInputProps) {
+  const handleRef = useCallback(
+    (el: HTMLInputElement | null) => setInputRef(cellKey, el),
+    [setInputRef, cellKey],
+  );
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onCellChange(contractId, dayIndex, e.target.value),
+    [onCellChange, contractId, dayIndex],
+  );
+  const handleBlur = useCallback(
+    () => onCellBlur(contractId, dayIndex),
+    [onCellBlur, contractId, dayIndex],
+  );
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => onCellKeyDown(e, contractId, dayIndex, contractIndex),
+    [onCellKeyDown, contractId, dayIndex, contractIndex],
+  );
+
+  return (
+    <Input
+      ref={handleRef}
+      type="number"
+      step="0.25"
+      min="0"
+      max="24"
+      className="h-10 w-16 text-center text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      value={value}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    />
+  );
+}
+
 export function TimesheetGrid({
   weekStartDate,
   entries,
@@ -131,10 +198,18 @@ export function TimesheetGrid({
     return entry?.source ?? null;
   };
 
-  const handleCellChange = (contractId: string, dayIndex: number, value: string) => {
-    const key = getCellKey(contractId, dayIndex);
-    setLocalValues(prev => ({ ...prev, [key]: value }));
-  };
+  const setInputRef = useCallback((cellKey: string, el: HTMLInputElement | null) => {
+    if (el) inputRefs.current.set(cellKey, el);
+    else inputRefs.current.delete(cellKey);
+  }, []);
+
+  const handleCellChange = useCallback(
+    (contractId: string, dayIndex: number, value: string) => {
+      const key = getCellKey(contractId, dayIndex);
+      setLocalValues(prev => ({ ...prev, [key]: value }));
+    },
+    [getCellKey],
+  );
 
   const handleCellBlur = useCallback(
     (contractId: string, dayIndex: number) => {
@@ -174,36 +249,34 @@ export function TimesheetGrid({
     [localValues, entryMap, weekStartDate, onSave, getCellKey],
   );
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent,
-    contractId: string,
-    dayIndex: number,
-    contractIndex: number,
-  ) => {
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault();
-      handleCellBlur(contractId, dayIndex);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, contractId: string, dayIndex: number, contractIndex: number) => {
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        handleCellBlur(contractId, dayIndex);
 
-      let nextContractIdx = contractIndex;
-      let nextDayIdx = dayIndex;
+        let nextContractIdx = contractIndex;
+        let nextDayIdx = dayIndex;
 
-      if (e.key === 'Enter') {
-        nextContractIdx = (contractIndex + 1) % contracts.length;
-      } else {
-        nextDayIdx = dayIndex + 1;
-        if (nextDayIdx > 6) {
-          nextDayIdx = 0;
+        if (e.key === 'Enter') {
           nextContractIdx = (contractIndex + 1) % contracts.length;
+        } else {
+          nextDayIdx = dayIndex + 1;
+          if (nextDayIdx > 6) {
+            nextDayIdx = 0;
+            nextContractIdx = (contractIndex + 1) % contracts.length;
+          }
+        }
+
+        const nextContract = contracts[nextContractIdx];
+        if (nextContract) {
+          const nextKey = getCellKey(nextContract.id, nextDayIdx);
+          inputRefs.current.get(nextKey)?.focus();
         }
       }
-
-      const nextContract = contracts[nextContractIdx];
-      if (nextContract) {
-        const nextKey = getCellKey(nextContract.id, nextDayIdx);
-        inputRefs.current.get(nextKey)?.focus();
-      }
-    }
-  };
+    },
+    [contracts, getCellKey, handleCellBlur],
+  );
 
   const getRowTotal = (contractId: string): number => {
     let total = 0;
@@ -303,31 +376,21 @@ export function TimesheetGrid({
                           // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
                           <td key={dayIdx} className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
-                              <Input
-                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                                ref={el => {
-                                  if (el) inputRefs.current.set(cellKey, el);
-                                  else inputRefs.current.delete(cellKey);
-                                }}
-                                type="number"
-                                step="0.25"
-                                min="0"
-                                max="24"
-                                className="h-10 w-16 text-center text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                              <TimesheetCellInput
+                                contractId={contract.id}
+                                dayIndex={dayIdx}
+                                contractIndex={contractIdx}
+                                cellKey={cellKey}
                                 value={getCellValue(contract.id, dayIdx)}
-                                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                                onChange={e =>
-                                  handleCellChange(contract.id, dayIdx, e.target.value)
-                                }
-                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                                onBlur={() => handleCellBlur(contract.id, dayIdx)}
-                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                                onKeyDown={e => handleKeyDown(e, contract.id, dayIdx, contractIdx)}
                                 disabled={cellDisabled}
-                                aria-label={t('grid.hoursAriaLabel', {
+                                ariaLabel={t('grid.hoursAriaLabel', {
                                   project: contract.title,
                                   day: DAY_LABELS[dayIdx] ?? '',
                                 })}
+                                setInputRef={setInputRef}
+                                onCellChange={handleCellChange}
+                                onCellBlur={handleCellBlur}
+                                onCellKeyDown={handleKeyDown}
                               />
                               {source && source !== 'MANUAL' && (
                                 <div className="absolute -top-1 -end-1">

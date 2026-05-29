@@ -8,6 +8,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/breadcrumb';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { X } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 interface DrillDownBreadcrumbProps {
@@ -18,6 +19,19 @@ interface DrillDownBreadcrumbProps {
 export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbProps) {
   const t = useTranslations('Reports');
 
+  const renderAllTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <button
+        {...props}
+        type="button"
+        onClick={onClear}
+        className="cursor-pointer text-sm transition-colors hover:text-foreground">
+        {t('all')}
+      </button>
+    ),
+    [onClear, t],
+  );
+
   // Only render when a drill-down is active (more than 1 segment)
   if (segments.length <= 1) return null;
 
@@ -26,18 +40,7 @@ export function DrillDownBreadcrumb({ segments, onClear }: DrillDownBreadcrumbPr
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <button
-                  {...props}
-                  type="button"
-                  onClick={onClear}
-                  className="cursor-pointer text-sm transition-colors hover:text-foreground">
-                  {t('all')}
-                </button>
-              )}
-            />
+            <BreadcrumbLink render={renderAllTrigger} />
           </BreadcrumbItem>
           {segments.slice(1).map((segment, idx) => (
             <BreadcrumbItem key={segment.id ?? idx}>

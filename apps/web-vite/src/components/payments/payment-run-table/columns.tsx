@@ -7,6 +7,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
 import { CheckCircle2, Download, MoreHorizontal, XCircle } from 'lucide-react';
+import type * as React from 'react';
+import { memo, useCallback } from 'react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { formatMinorUnits } from '../../../lib/format-currency.js';
@@ -50,6 +52,113 @@ interface ColumnActions {
   onMarkAllPaid?: (run: PaymentRunRow) => void;
   onCancelRun?: (run: PaymentRunRow) => void;
 }
+
+type ButtonProps = React.ComponentProps<typeof Button>;
+
+interface DropdownTriggerButtonProps extends ButtonProps {
+  srLabel: string;
+}
+
+const DropdownTriggerButton = memo(function DropdownTriggerButton({
+  srLabel,
+  onClick,
+  ...rest
+}: DropdownTriggerButtonProps) {
+  const handleClick = useCallback<NonNullable<ButtonProps['onClick']>>(
+    e => {
+      e.stopPropagation();
+      onClick?.(e);
+    },
+    [onClick],
+  );
+  return (
+    <Button {...rest} variant="ghost" size="icon" className="h-8 w-8" onClick={handleClick}>
+      <MoreHorizontal className="h-4 w-4" />
+      <span className="sr-only">{srLabel}</span>
+    </Button>
+  );
+});
+
+interface ActionMenuItemProps {
+  run: PaymentRunRow;
+  action: ((run: PaymentRunRow) => void) | undefined;
+  icon: React.ReactNode;
+  label: string;
+  className?: string;
+}
+
+type DropdownMenuItemProps = React.ComponentProps<typeof DropdownMenuItem>;
+
+const ActionMenuItem = memo(function ActionMenuItem({
+  run,
+  action,
+  icon,
+  label,
+  className,
+}: ActionMenuItemProps) {
+  const handleClick = useCallback<NonNullable<DropdownMenuItemProps['onClick']>>(
+    e => {
+      e.stopPropagation();
+      action?.(run);
+    },
+    [run, action],
+  );
+  return (
+    <DropdownMenuItem className={className} onClick={handleClick}>
+      {icon}
+      {label}
+    </DropdownMenuItem>
+  );
+});
+
+interface ActionsCellProps {
+  run: PaymentRunRow;
+  t: TranslateFunction;
+  actions: ColumnActions;
+}
+
+const ActionsCell = memo(function ActionsCell({ run, t, actions }: ActionsCellProps) {
+  const showDownload = !!run.exportedAt;
+  const showMarkPaid = run.status === 'EXPORTED';
+  const showCancel = run.status === 'DRAFT' || run.status === 'LOCKED' || run.status === 'EXPORTED';
+
+  if (!(showDownload || showMarkPaid || showCancel)) return null;
+
+  const srLabel = t('columns.actions');
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<DropdownTriggerButton srLabel={srLabel} />} />
+      <DropdownMenuContent align="end">
+        {showDownload && (
+          <ActionMenuItem
+            run={run}
+            action={actions.onDownloadExport}
+            icon={<Download className="me-2 h-4 w-4" />}
+            label={t('actions.downloadExport')}
+          />
+        )}
+        {showMarkPaid && (
+          <ActionMenuItem
+            run={run}
+            action={actions.onMarkAllPaid}
+            icon={<CheckCircle2 className="me-2 h-4 w-4" />}
+            label={t('actions.markAllPaid')}
+          />
+        )}
+        {!!showCancel && (
+          <ActionMenuItem
+            run={run}
+            action={actions.onCancelRun}
+            icon={<XCircle className="me-2 h-4 w-4" />}
+            label={t('actions.cancelRun')}
+            className="text-destructive"
+          />
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+});
 
 export function getColumns(
   t: TranslateFunction,
@@ -131,74 +240,7 @@ export function getColumns(
     {
       id: 'actions',
       header: t('columns.actions'),
-      cell: ({ row }) => {
-        const run = row.original;
-        const showDownload = !!run.exportedAt;
-        const showMarkPaid = run.status === 'EXPORTED';
-        const showCancel =
-          run.status === 'DRAFT' || run.status === 'LOCKED' || run.status === 'EXPORTED';
-
-        if (!(showDownload || showMarkPaid || showCancel)) return null;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: column definition
-              render={props => (
-                <Button
-                  {...props}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
-                  onClick={e => {
-                    e.stopPropagation();
-                    props.onClick?.(e);
-                  }}>
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">{t('columns.actions')}</span>
-                </Button>
-              )}
-            />
-            <DropdownMenuContent align="end">
-              {showDownload && (
-                <DropdownMenuItem
-                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
-                  onClick={e => {
-                    e.stopPropagation();
-                    actions.onDownloadExport?.(run);
-                  }}>
-                  <Download className="me-2 h-4 w-4" />
-                  {t('actions.downloadExport')}
-                </DropdownMenuItem>
-              )}
-              {showMarkPaid && (
-                <DropdownMenuItem
-                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
-                  onClick={e => {
-                    e.stopPropagation();
-                    actions.onMarkAllPaid?.(run);
-                  }}>
-                  <CheckCircle2 className="me-2 h-4 w-4" />
-                  {t('actions.markAllPaid')}
-                </DropdownMenuItem>
-              )}
-              {!!showCancel && (
-                <DropdownMenuItem
-                  className="text-destructive"
-                  // biome-ignore lint/nursery/noJsxPropsBind: column definition
-                  onClick={e => {
-                    e.stopPropagation();
-                    actions.onCancelRun?.(run);
-                  }}>
-                  <XCircle className="me-2 h-4 w-4" />
-                  {t('actions.cancelRun')}
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
+      cell: ({ row }) => <ActionsCell run={row.original} t={t} actions={actions} />,
       enableSorting: false,
       enableHiding: false,
     },

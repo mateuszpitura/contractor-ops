@@ -17,11 +17,17 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { AlertCircle, Loader2, Upload } from 'lucide-react';
+import type * as React from 'react';
 import type { ReactNode, RefObject } from 'react';
+import { memo, useCallback } from 'react';
 
 import type { TranslateFn } from '../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../lib/format-currency.js';
 import type { BankStatementMatchResult } from './hooks/use-bank-statement-import.js';
+
+function preventDefault(e: React.DragEvent<HTMLButtonElement>) {
+  e.preventDefault();
+}
 
 interface BankStatementDialogShellProps {
   open: boolean;
@@ -60,27 +66,30 @@ interface UploadStepProps {
 }
 
 export function BankStatementUploadStep({ t, fileInputRef, onFileSelect }: UploadStepProps) {
+  const handleZoneClick = useCallback(() => fileInputRef.current?.click(), [fileInputRef]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file && fileInputRef.current) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInputRef.current.files = dt.files;
+        fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    },
+    [fileInputRef],
+  );
+
   return (
     <div className="space-y-4">
       <button
         type="button"
         className="flex flex-col items-center justify-center gap-3 py-12 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary/50 transition-colors w-full"
         aria-label={t('bankStatement.dropzoneText')}
-        // biome-ignore lint/nursery/noJsxPropsBind: ref callback in JSX
-        onClick={() => fileInputRef.current?.click()}
-        // biome-ignore lint/nursery/noJsxPropsBind: inline drag handler
-        onDragOver={e => e.preventDefault()}
-        // biome-ignore lint/nursery/noJsxPropsBind: inline drop handler
-        onDrop={e => {
-          e.preventDefault();
-          const file = e.dataTransfer.files[0];
-          if (file && fileInputRef.current) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            fileInputRef.current.files = dt.files;
-            fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }}>
+        onClick={handleZoneClick}
+        onDragOver={preventDefault}
+        onDrop={handleDrop}>
         <Upload className="h-8 w-8 text-muted-foreground" />
         <p className="text-sm text-muted-foreground text-center">
           {t('bankStatement.dropzoneText')}
@@ -139,6 +148,21 @@ interface ResultsStepProps {
   isConfirmPending: boolean;
 }
 
+interface MatchCheckboxProps {
+  index: number;
+  checked: boolean;
+  onToggle: (index: number) => void;
+}
+
+const MatchCheckbox = memo(function MatchCheckbox({
+  index,
+  checked,
+  onToggle,
+}: MatchCheckboxProps) {
+  const handleChange = useCallback(() => onToggle(index), [index, onToggle]);
+  return <Checkbox checked={checked} onCheckedChange={handleChange} />;
+});
+
 export function BankStatementResultsStep({
   t,
   matches,
@@ -178,10 +202,10 @@ export function BankStatementResultsStep({
                 className={match.matched ? '' : 'bg-yellow-500/10'}>
                 <TableCell>
                   {match.matched ? (
-                    <Checkbox
+                    <MatchCheckbox
+                      index={match.transactionIndex}
                       checked={selectedMatches.has(match.transactionIndex)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX
-                      onCheckedChange={() => onToggleMatch(match.transactionIndex)}
+                      onToggle={onToggleMatch}
                     />
                   ) : null}
                 </TableCell>

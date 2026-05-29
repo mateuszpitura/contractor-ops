@@ -16,33 +16,35 @@
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+type BarStubOnClick = (
+  data: Record<string, unknown>,
+  index: number,
+  event: Record<string, unknown>,
+) => void;
+
+const BarStub = ({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick?: BarStubOnClick;
+}) => {
+  const handleClick = () =>
+    onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
+      payload: { id: 'segment-id', name: 'Row' },
+    });
+  return (
+    <button type="button" data-testid="bar" onClick={handleClick}>
+      {children}
+    </button>
+  );
+};
+
 vi.mock('recharts', () => ({
   BarChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="bar-chart">{children}</div>
   ),
-  Bar: ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: (
-      data: Record<string, unknown>,
-      index: number,
-      event: Record<string, unknown>,
-    ) => void;
-  }) => (
-    <button
-      type="button"
-      data-testid="bar"
-      // biome-ignore lint/nursery/noJsxPropsBind: stub passes a synthetic payload
-      onClick={() =>
-        onClick?.({ id: 'segment-id', name: 'Row' }, 0, {
-          payload: { id: 'segment-id', name: 'Row' },
-        })
-      }>
-      {children}
-    </button>
-  ),
+  Bar: BarStub,
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   CartesianGrid: () => <div data-testid="grid" />,

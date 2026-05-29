@@ -10,6 +10,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { ConsentPurpose } from '@contractor-ops/validators';
 import { Shield } from 'lucide-react';
+import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -34,6 +35,11 @@ export function ConsentPurposeToggle({
   const description = tKey(t, `purposes.${purposeKey}.description`);
   const switchId = `consent-${purpose}`;
 
+  const handleCheckedChange = useCallback(
+    (checked: boolean) => onToggle(purpose, checked),
+    [onToggle, purpose],
+  );
+
   return (
     <div className="flex items-start gap-4 rounded-lg border border-border/50 bg-surface-1 p-4">
       <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
@@ -53,8 +59,7 @@ export function ConsentPurposeToggle({
       <Switch
         id={switchId}
         checked={granted}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-        onCheckedChange={checked => onToggle(purpose, checked)}
+        onCheckedChange={handleCheckedChange}
         disabled={disabled || (required && !granted)}
         aria-required={required}
         aria-label={`${label} consent toggle`}

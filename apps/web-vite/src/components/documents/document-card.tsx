@@ -30,6 +30,7 @@ import {
   Upload,
 } from 'lucide-react';
 
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
 import type { DocumentCardProps } from './hooks/use-document-card.js';
@@ -113,6 +114,17 @@ export function DocumentCardView({ versionNumber, cardActions }: DocumentCardVie
 
   const FileIcon = getFileIcon(doc.mimeType);
 
+  const downloadLabel = t('download');
+  const renderDisabledDownloadTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="ghost" size="icon-sm" disabled>
+        <Download className="size-3.5" />
+        <span className="sr-only">{downloadLabel}</span>
+      </Button>
+    ),
+    [downloadLabel],
+  );
+
   return (
     <div className="flex items-start gap-4 rounded-lg border bg-card p-4">
       <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted">
@@ -153,15 +165,7 @@ export function DocumentCardView({ versionNumber, cardActions }: DocumentCardVie
         ) : (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger
-                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                render={props => (
-                  <Button {...props} variant="ghost" size="icon-sm" disabled>
-                    <Download className="size-3.5" />
-                    <span className="sr-only">{t('download')}</span>
-                  </Button>
-                )}
-              />
+              <TooltipTrigger render={renderDisabledDownloadTrigger} />
               <TooltipContent>{t('threatDetected')}</TooltipContent>
             </Tooltip>
           </TooltipProvider>

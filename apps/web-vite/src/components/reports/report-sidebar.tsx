@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { Clock, FileWarning, ShieldAlert, Users, UsersRound } from 'lucide-react';
+import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
@@ -21,6 +22,34 @@ interface ReportSidebarProps {
   onSelect: (report: string) => void;
 }
 
+interface ReportButtonProps {
+  reportId: string;
+  Icon: LucideIcon;
+  label: string;
+  onSelect: (report: string) => void;
+  className: string;
+  iconClassName: string;
+  labelClassName: string;
+}
+
+function ReportButton({
+  reportId,
+  Icon,
+  label,
+  onSelect,
+  className,
+  iconClassName,
+  labelClassName,
+}: ReportButtonProps) {
+  const handleClick = useCallback(() => onSelect(reportId), [onSelect, reportId]);
+  return (
+    <button type="button" onClick={handleClick} className={className}>
+      <Icon className={iconClassName} />
+      <span className={labelClassName}>{label}</span>
+    </button>
+  );
+}
+
 export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
   const t = useTranslations('Reports');
 
@@ -30,24 +59,23 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
       <nav className="hidden w-[220px] shrink-0 lg:block">
         <ul className="space-y-0.5">
           {REPORT_TYPES.map(report => {
-            const Icon = report.icon;
             const isActive = activeReport === report.id;
-
             return (
               <li key={report.id}>
-                <button
-                  type="button"
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                  onClick={() => onSelect(report.id)}
+                <ReportButton
+                  reportId={report.id}
+                  Icon={report.icon}
+                  label={tKey(t, report.labelKey)}
+                  onSelect={onSelect}
                   className={cn(
                     'flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
                     isActive
                       ? 'border-l-[3px] border-primary bg-primary/5 text-primary'
                       : 'text-muted-foreground hover:bg-muted',
-                  )}>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{tKey(t, report.labelKey)}</span>
-                </button>
+                  )}
+                  iconClassName="h-4 w-4 shrink-0"
+                  labelClassName="truncate"
+                />
               </li>
             );
           })}
@@ -58,24 +86,23 @@ export function ReportSidebar({ activeReport, onSelect }: ReportSidebarProps) {
       <nav className="lg:hidden">
         <div className="flex gap-2 overflow-x-auto pb-2">
           {REPORT_TYPES.map(report => {
-            const Icon = report.icon;
             const isActive = activeReport === report.id;
-
             return (
-              <button
+              <ReportButton
                 key={report.id}
-                type="button"
-                // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                onClick={() => onSelect(report.id)}
+                reportId={report.id}
+                Icon={report.icon}
+                label={tKey(t, report.labelKey)}
+                onSelect={onSelect}
                 className={cn(
                   'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors',
                   isActive
                     ? 'bg-primary/10 text-primary'
                     : 'bg-muted text-muted-foreground hover:bg-muted/80',
-                )}>
-                <Icon className="h-3.5 w-3.5" />
-                <span>{tKey(t, report.labelKey)}</span>
-              </button>
+                )}
+                iconClassName="h-3.5 w-3.5"
+                labelClassName=""
+              />
             );
           })}
         </div>

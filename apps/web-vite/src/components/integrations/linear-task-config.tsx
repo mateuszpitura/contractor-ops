@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
+import { useCallback } from 'react';
 
 import type { useLinearTaskConfig } from './hooks/use-linear-task-config.js';
 import { LinearLogo } from './linear-logo.js';
@@ -27,6 +28,13 @@ export function LinearTaskConfigView({
   teamSummary,
   t,
 }: LinearTaskConfigViewProps) {
+  const handleTeamValueChange = useCallback(
+    (v: string | null) => {
+      if (v) handleTeamChange(v);
+    },
+    [handleTeamChange],
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
@@ -34,7 +42,6 @@ export function LinearTaskConfigView({
           <Switch
             id={`linear-toggle-${taskTemplateId}`}
             checked={linearEnabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onCheckedChange={handleToggle}
             disabled={!selectedTeamId || saveMutation.isPending}
           />
@@ -51,12 +58,7 @@ export function LinearTaskConfigView({
       <div className="flex items-center gap-2">
         <LinearLogo className="size-4" />
         <Label className="text-sm">{t('teamLabel')}</Label>
-        <Select
-          value={selectedTeamId ?? undefined}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={v => {
-            if (v) handleTeamChange(v);
-          }}>
+        <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamValueChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder={t('teamPlaceholder')} />
           </SelectTrigger>

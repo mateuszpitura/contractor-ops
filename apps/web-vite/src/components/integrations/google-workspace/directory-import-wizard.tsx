@@ -1,12 +1,15 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
+  DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { AlertTriangle, Check } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { FeatureGateContainer } from '../../billing/feature-gate-container.js';
 import { DirectoryPreviewTable } from './directory-preview-table.js';
@@ -78,119 +81,126 @@ export function DirectoryImportWizardView({
   stepsConfig,
   t,
 }: DirectoryImportWizardViewProps) {
+  const handleBackToStep1 = useCallback(() => setStep(1), [setStep]);
+  const handleGoToStep3 = useCallback(() => setStep(3), [setStep]);
+  const handleBackToStep2 = useCallback(() => setStep(2), [setStep]);
+
   return (
     <FeatureGateContainer requiredTier="Pro" featureName="Google Workspace directory import">
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[85vh] max-w-3xl sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
-          <StepIndicator currentStep={step} steps={stepsConfig} />
+          <DialogSection>
+            <StepIndicator currentStep={step} steps={stepsConfig} />
+          </DialogSection>
 
-          {step === 1 && (
-            <div className="space-y-4">
-              {!!directoryQuery.isLoading && (
-                <div className="space-y-3">
-                  <Skeleton className="h-12 w-full" />
-                  <Skeleton className="h-8 w-64" />
-                  <Skeleton className="h-64 w-full" />
-                </div>
-              )}
+          <DialogBody>
+            {step === 1 && (
+              <div className="space-y-4">
+                {!!directoryQuery.isLoading && (
+                  <div className="space-y-3">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-64 w-full" />
+                  </div>
+                )}
 
-              {!!directoryQuery.isError && (
-                <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                  <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
-                  <p className="text-sm text-destructive">{t('fetchError')}</p>
-                </div>
-              )}
+                {!!directoryQuery.isError && (
+                  <div className="flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                    <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
+                    <p className="text-sm text-destructive">{t('fetchError')}</p>
+                  </div>
+                )}
 
-              {!!directoryData && !!stats && (
-                <>
-                  {stats.total === 0 ? (
-                    <div className="py-8 text-center">
-                      <h3 className="text-lg font-semibold">{t('emptyNoUsers')}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{t('emptyNoUsersBody')}</p>
-                    </div>
-                  ) : stats.new === 0 ? (
-                    <div className="py-8 text-center">
-                      <h3 className="text-lg font-semibold">{t('emptyAllImported')}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {t('emptyAllImportedBody')}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <DirectorySummaryBar
-                        total={stats.total}
-                        alreadyImported={stats.alreadyImported}
-                        newUsers={stats.new}
-                        selected={selectedEmails.size}
-                      />
+                {!!directoryData && !!stats && (
+                  <>
+                    {stats.total === 0 ? (
+                      <div className="py-8 text-center">
+                        <h3 className="text-lg font-semibold">{t('emptyNoUsers')}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {t('emptyNoUsersBody')}
+                        </p>
+                      </div>
+                    ) : stats.new === 0 ? (
+                      <div className="py-8 text-center">
+                        <h3 className="text-lg font-semibold">{t('emptyAllImported')}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {t('emptyAllImportedBody')}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <DirectorySummaryBar
+                          total={stats.total}
+                          alreadyImported={stats.alreadyImported}
+                          newUsers={stats.new}
+                          selected={selectedEmails.size}
+                        />
 
-                      <DirectoryPreviewTable
-                        users={users}
-                        selectedEmails={selectedEmails}
-                        onSelectionChange={setSelectedEmails}
-                      />
-                    </>
-                  )}
+                        <DirectoryPreviewTable
+                          users={users}
+                          selectedEmails={selectedEmails}
+                          onSelectionChange={setSelectedEmails}
+                        />
+                      </>
+                    )}
 
-                  {stats.new > 0 && (
-                    <div className="flex justify-end">
-                      <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
-                        {t('nextRoles')}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-6">
-              <RoleAssignmentControls
-                defaultRole={defaultRole}
-                onDefaultRoleChange={setDefaultRole}
-              />
-
-              {listGroupsMutation.isPending ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              ) : (
-                <GroupRoleMappingStep
-                  groups={groups}
-                  mappings={groupMappings}
-                  onMappingChange={handleGroupMappingChange}
-                  defaultRole={defaultRole}
-                />
-              )}
-
-              <div className="flex justify-end gap-2">
-                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  {t('back')}
-                </Button>
-                {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-                <Button onClick={() => setStep(3)}>{t('nextReview')}</Button>
+                    {stats.new > 0 && (
+                      <div className="flex justify-end">
+                        <Button onClick={handleGoToStep2} disabled={selectedEmails.size === 0}>
+                          {t('nextRoles')}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {step === 3 && (
-            <ImportConfirmStep
-              userCount={selectedUsers.length}
-              roleBreakdown={roleBreakdown}
-              onConfirm={handleConfirmImport}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onBack={() => setStep(2)}
-              isImporting={importMutation.isPending}
-            />
-          )}
+            {step === 2 && (
+              <div className="space-y-6">
+                <RoleAssignmentControls
+                  defaultRole={defaultRole}
+                  onDefaultRoleChange={setDefaultRole}
+                />
+
+                {listGroupsMutation.isPending ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </div>
+                ) : (
+                  <GroupRoleMappingStep
+                    groups={groups}
+                    mappings={groupMappings}
+                    onMappingChange={handleGroupMappingChange}
+                    defaultRole={defaultRole}
+                  />
+                )}
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={handleBackToStep1}>
+                    {t('back')}
+                  </Button>
+                  <Button onClick={handleGoToStep3}>{t('nextReview')}</Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <ImportConfirmStep
+                userCount={selectedUsers.length}
+                roleBreakdown={roleBreakdown}
+                onConfirm={handleConfirmImport}
+                onBack={handleBackToStep2}
+                isImporting={importMutation.isPending}
+              />
+            )}
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </FeatureGateContainer>

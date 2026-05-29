@@ -84,6 +84,19 @@ export function StepUpload({
     [onFileSelected, t],
   );
 
+  const handleEntityTypeChange = useCallback(
+    (val: string) => onEntityTypeChange(val as EntityType),
+    [onEntityTypeChange],
+  );
+
+  const handleRemoveFile = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      onFileRemoved();
+    },
+    [onFileRemoved],
+  );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: ACCEPTED_TYPES,
@@ -112,8 +125,7 @@ export function StepUpload({
         </label>
         <RadioGroup
           value={entityType}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={val => onEntityTypeChange(val as EntityType)}
+          onValueChange={handleEntityTypeChange}
           aria-label={t('upload.entityType')}
           className="flex gap-4">
           <label
@@ -141,11 +153,7 @@ export function StepUpload({
           <Button
             variant="ghost"
             size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={e => {
-              e.stopPropagation();
-              onFileRemoved();
-            }}
+            onClick={handleRemoveFile}
             type="button"
             aria-label={t('upload.remove')}>
             <X className="size-4" />

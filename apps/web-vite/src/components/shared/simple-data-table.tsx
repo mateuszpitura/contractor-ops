@@ -1,4 +1,10 @@
-import { AtelierTableShell, TableChrome, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
+import {
+  AtelierEmptyState,
+  AtelierTableShell,
+  TableChrome,
+  WORKBENCH_DATA_TABLE_CLASS,
+  WORKBENCH_EMPTY_STATE_PAGE_CLASS,
+} from '@contractor-ops/ui';
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -8,7 +14,9 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import type { ComponentType, ReactNode } from 'react';
+import { useCallback } from 'react';
 
+import { renderEmptyStateAction } from './atelier-bridges.js';
 import { DataTableBody } from './data-table-body.js';
 import { DataTablePagination } from './data-table-pagination.js';
 import { SortableTableHead } from './sortable-table-head.js';
@@ -37,6 +45,8 @@ interface SimpleDataTableProps<TData> {
   rowClassName?: (row: TData) => string;
   /** Empty-state config (no rows, no filters). */
   emptyIcon?: ReactNode;
+  /** When set, empty + no filters renders a full AtelierEmptyState panel (dot-grid). */
+  emptyIllustration?: ComponentType<{ className?: string }>;
   emptyTitle: string;
   emptyDescription?: string;
   emptyCta?: string;
@@ -99,6 +109,7 @@ export function SimpleDataTable<TData>({
   onRowClick,
   rowClassName,
   emptyIcon,
+  emptyIllustration,
   emptyTitle,
   emptyDescription,
   emptyCta,
@@ -132,18 +143,40 @@ export function SimpleDataTable<TData>({
   const resolvedCount = totalCount ?? data.length;
   const wrapperClass = constrainHeight ? WORKBENCH_DATA_TABLE_CLASS : 'flex flex-col gap-4';
 
+  const handlePageChange = useCallback((page: number) => table.setPageIndex(page - 1), [table]);
+  const handlePageSizeChange = useCallback((size: number) => table.setPageSize(size), [table]);
+
+  const showFeaturedEmpty =
+    !!emptyIllustration && !isLoading && !isRefetching && data.length === 0 && !hasFiltersOrSearch;
+
+  if (showFeaturedEmpty) {
+    return (
+      <div className={WORKBENCH_EMPTY_STATE_PAGE_CLASS}>
+        <AtelierEmptyState
+          variant="page"
+          illustration={emptyIllustration}
+          heading={emptyTitle}
+          body={emptyDescription ?? ''}
+          primaryAction={
+            onEmptyCta && emptyCta
+              ? { label: emptyCta, onClick: onEmptyCta, icon: emptyCtaIcon }
+              : undefined
+          }
+          renderAction={renderEmptyStateAction}
+        />
+      </div>
+    );
+  }
+
   const livePagination = table.getState().pagination;
   const paginationFooter =
     paginated && data.length > 0 ? (
       <DataTablePagination
-        table={table}
         totalRows={data.length}
         pageSize={livePagination.pageSize}
         currentPage={livePagination.pageIndex + 1}
-        // biome-ignore lint/nursery/noJsxPropsBind: TanStack callback
-        onPageChange={page => table.setPageIndex(page - 1)}
-        // biome-ignore lint/nursery/noJsxPropsBind: TanStack callback
-        onPageSizeChange={size => table.setPageSize(size)}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         pageSizeOptions={pageSizeOptions}
       />
     ) : null;

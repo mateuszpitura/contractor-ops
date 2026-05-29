@@ -20,6 +20,8 @@ import {
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2 } from 'lucide-react';
+import type * as React from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../../lib/format-currency.js';
@@ -67,6 +69,19 @@ export function StepReview({
     handleLockAndExport,
   } = review;
 
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [setName],
+  );
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value),
+    [setNotes],
+  );
+  const handleExportFormatChange = useCallback(
+    (v: string | null) => setExportFormat(v ?? 'CSV'),
+    [setExportFormat],
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="text-center">
@@ -80,8 +95,7 @@ export function StepReview({
           <Input
             placeholder={t('step2.namePlaceholder')}
             value={name}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setName(e.target.value)}
+            onChange={handleNameChange}
             maxLength={100}
             className="h-8 text-sm"
           />
@@ -91,8 +105,7 @@ export function StepReview({
           <Textarea
             placeholder={t('step2.descriptionPlaceholder')}
             value={notes}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setNotes(e.target.value)}
+            onChange={handleNotesChange}
             maxLength={500}
             className="h-16 text-sm resize-none"
           />
@@ -152,8 +165,7 @@ export function StepReview({
 
       <div className="space-y-1.5">
         <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-        <Select value={exportFormat} onValueChange={v => setExportFormat(v ?? 'CSV')}>
+        <Select value={exportFormat} onValueChange={handleExportFormatChange}>
           <SelectTrigger className="w-full h-8">
             <SelectValue />
           </SelectTrigger>

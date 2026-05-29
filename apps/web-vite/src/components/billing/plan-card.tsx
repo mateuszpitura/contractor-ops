@@ -7,6 +7,7 @@ import {
   CardHeader,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Check, X } from 'lucide-react';
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils';
 
@@ -77,6 +78,16 @@ export function PlanCard({
   const ctaVariant = CTA_VARIANTS[ctaMode];
   const ctaLabel = t(CTA_KEY[ctaMode]);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (!(isCurrentPlan || disabled)) onSelect();
+      }
+    },
+    [isCurrentPlan, disabled, onSelect],
+  );
+
   return (
     <Card
       role="radio"
@@ -88,13 +99,7 @@ export function PlanCard({
         isRecommended && !isCurrentPlan && 'ring-2 ring-primary/50',
         compact && 'py-3',
       )}
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-      onKeyDown={e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          if (!(isCurrentPlan || disabled)) onSelect();
-        }
-      }}>
+      onKeyDown={handleKeyDown}>
       <CardHeader>
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{tier.name}</span>

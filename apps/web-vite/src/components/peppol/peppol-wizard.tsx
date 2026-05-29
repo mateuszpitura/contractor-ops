@@ -13,7 +13,7 @@ import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import { CheckCircle2, Globe, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type {
   PeppolWizardEnvironment,
@@ -120,6 +120,14 @@ export function PeppolWizardStep1({ trn, setTrn, participantId }: PeppolWizardSt
   const t = useTranslations('Peppol.wizard');
   const reactId = useId();
 
+  const handleTrnChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 15);
+      setTrn(val);
+    },
+    [setTrn],
+  );
+
   return (
     <div className="space-y-4">
       <h3 className="text-base font-semibold">{t('step1Heading')}</h3>
@@ -129,11 +137,7 @@ export function PeppolWizardStep1({ trn, setTrn, participantId }: PeppolWizardSt
           id={`${reactId}-trn`}
           placeholder="123456789012345"
           value={trn}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => {
-            const val = e.target.value.replace(/\D/g, '').slice(0, 15);
-            setTrn(val);
-          }}
+          onChange={handleTrnChange}
           pattern="[0-9]*"
           maxLength={15}
           inputMode="numeric"
@@ -205,6 +209,15 @@ export function PeppolWizardStep3({
   const t = useTranslations('Peppol.wizard');
   const reactId = useId();
 
+  const handleApiKeyChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setApiKey(e.target.value),
+    [setApiKey],
+  );
+  const handleEnvChange = useCallback(
+    (val: string) => setEnvironment(val as PeppolWizardEnvironment),
+    [setEnvironment],
+  );
+
   return (
     <div className="space-y-4">
       <h3 className="text-base font-semibold">{t('step3Heading')}</h3>
@@ -215,8 +228,7 @@ export function PeppolWizardStep3({
             id={`${reactId}-apiKey`}
             type={showApiKey ? 'text' : 'password'}
             value={apiKey}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setApiKey(e.target.value)}
+            onChange={handleApiKeyChange}
             placeholder={t('apiKeyPlaceholder')}
           />
           <Button
@@ -232,11 +244,7 @@ export function PeppolWizardStep3({
       </div>
       <div className="space-y-2">
         <Label>Environment</Label>
-        <RadioGroup
-          value={environment}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={val => setEnvironment(val as PeppolWizardEnvironment)}
-          className="flex gap-4">
+        <RadioGroup value={environment} onValueChange={handleEnvChange} className="flex gap-4">
           <label
             htmlFor={`${reactId}-peppol-env-sandbox`}
             className="flex cursor-pointer items-center gap-2">

@@ -20,6 +20,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { CheckCircle2, Download, FileUp, Lightbulb, XCircle } from 'lucide-react';
+import { useCallback } from 'react';
 
 import type { TranslateFn } from '../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../lib/format-currency.js';
@@ -134,6 +135,11 @@ export function PaymentRunSidePanel({
 }: PaymentRunSidePanelProps) {
   const { run, safeRunId, status, items } = panel;
 
+  const handleImportStatementClick = useCallback(
+    () => onImportStatement?.(safeRunId),
+    [onImportStatement, safeRunId],
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] p-0">
@@ -182,7 +188,6 @@ export function PaymentRunSidePanel({
               {status === 'DRAFT' && (
                 <CancelRunButton
                   status={status}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onConfirm={panel.onCancelRun}
                   isLoading={panel.isCancelPending}
                   t={t}
@@ -206,11 +211,7 @@ export function PaymentRunSidePanel({
                           ? t('sidePanel.confirmMarkAllPaid')
                           : t('sidePanel.markAllPaid')}
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() => onImportStatement?.(safeRunId)}>
+                      <Button variant="outline" size="sm" onClick={handleImportStatementClick}>
                         <FileUp className="me-1.5 h-3.5 w-3.5" />
                         {t('sidePanel.importStatement')}
                       </Button>

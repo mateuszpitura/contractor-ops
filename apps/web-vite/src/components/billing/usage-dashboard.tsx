@@ -30,6 +30,8 @@ const STATUS_BADGE_VARIANT: Record<string, 'success' | 'warning' | 'destructive'
   PAUSED: 'secondary',
 };
 
+const noopSelectPlan = (): void => undefined;
+
 function formatStatus(status: string): string {
   const map: Record<string, string> = {
     ACTIVE: 'Active',
@@ -164,8 +166,7 @@ export function UsageDashboard({
       <Separator />
 
       {/* Plan Comparison Grid */}
-      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
-      <PlanComparisonGrid currentTier={resolvedTier} onSelectPlan={() => undefined} />
+      <PlanComparisonGrid currentTier={resolvedTier} onSelectPlan={noopSelectPlan} />
 
       <TopUpDialogContainer open={topUpOpen} onOpenChange={setTopUpOpen} />
     </div>

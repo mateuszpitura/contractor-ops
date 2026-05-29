@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { ChevronDown, Copy, FileCode, Loader2, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import type { useZatcaSubmissionDetail } from './hooks/use-zatca-submission-detail.js';
 import type { ZatcaBadgeStatus } from './zatca-status-badge.js';
@@ -95,6 +95,36 @@ export function ZatcaSubmissionDetailView({
   const isB2B = invoiceType === 'standard' || submission.zatcaStatus === 'CLEARED';
   const typeLabel = isB2B ? t('typeB2B') : t('typeB2C');
 
+  const handleCopyUuid = useCallback(
+    () =>
+      copyToClipboard(
+        submission.zatcaUuid,
+        t('toast.copySuccess', { label: t('uuid') }),
+        t('toast.copyError'),
+      ),
+    [submission.zatcaUuid, t],
+  );
+
+  const handleCopyPreviousHash = useCallback(
+    () =>
+      copyToClipboard(
+        submission.previousHash ?? '',
+        t('toast.copySuccess', { label: t('previousHash') }),
+        t('toast.copyError'),
+      ),
+    [submission.previousHash, t],
+  );
+
+  const handleCopyInvoiceHash = useCallback(
+    () =>
+      copyToClipboard(
+        submission.invoiceHash ?? '',
+        t('toast.copySuccess', { label: t('invoiceHash') }),
+        t('toast.copyError'),
+      ),
+    [submission.invoiceHash, t],
+  );
+
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <div className="rounded-lg border bg-card">
@@ -115,14 +145,7 @@ export function ZatcaSubmissionDetailView({
                 <span className="font-mono text-xs break-all">{submission.zatcaUuid}</span>
                 <button
                   type="button"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() =>
-                    copyToClipboard(
-                      submission.zatcaUuid,
-                      t('toast.copySuccess', { label: t('uuid') }),
-                      t('toast.copyError'),
-                    )
-                  }
+                  onClick={handleCopyUuid}
                   className="shrink-0 text-muted-foreground hover:text-foreground"
                   aria-label={t('copyUuid')}>
                   <Copy className="h-3 w-3" />
@@ -165,14 +188,7 @@ export function ZatcaSubmissionDetailView({
                       </span>
                       <button
                         type="button"
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() =>
-                          copyToClipboard(
-                            submission.previousHash ?? '',
-                            t('toast.copySuccess', { label: t('previousHash') }),
-                            t('toast.copyError'),
-                          )
-                        }
+                        onClick={handleCopyPreviousHash}
                         className="shrink-0 text-muted-foreground hover:text-foreground"
                         aria-label={t('copyPreviousHash')}>
                         <Copy className="h-3 w-3" />
@@ -190,14 +206,7 @@ export function ZatcaSubmissionDetailView({
                       </span>
                       <button
                         type="button"
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() =>
-                          copyToClipboard(
-                            submission.invoiceHash ?? '',
-                            t('toast.copySuccess', { label: t('invoiceHash') }),
-                            t('toast.copyError'),
-                          )
-                        }
+                        onClick={handleCopyInvoiceHash}
                         className="shrink-0 text-muted-foreground hover:text-foreground"
                         aria-label={t('copyInvoiceHash')}>
                         <Copy className="h-3 w-3" />
@@ -269,12 +278,7 @@ export function ZatcaSubmissionDetailView({
 
               {/* Resubmit — only for REJECTED */}
               {isRejected && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={resubmit}
-                  disabled={isResubmitPending}>
+                <Button variant="outline" size="sm" onClick={resubmit} disabled={isResubmitPending}>
                   {isResubmitPending ? (
                     <Loader2 className="me-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                   ) : (

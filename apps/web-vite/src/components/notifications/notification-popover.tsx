@@ -40,7 +40,6 @@ export function NotificationPopoverShell({
   const badgeText = unreadCount > 99 ? '99+' : String(unreadCount);
 
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
     <Popover onOpenChange={onOpenChange}>
       <PopoverTrigger
         render={
@@ -72,7 +71,6 @@ export function NotificationPopoverShell({
           {unreadCount > 0 && (
             <button
               type="button"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={onMarkAllRead}
               disabled={isMarkingAllRead}
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:opacity-50">

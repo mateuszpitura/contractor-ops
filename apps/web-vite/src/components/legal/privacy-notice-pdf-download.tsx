@@ -29,7 +29,6 @@ export function PrivacyNoticePdfDownload({
       variant="outline"
       size="sm"
       className="min-h-[44px] gap-2"
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
       onClick={onDownload}
       disabled={isPending}
       aria-label={t('downloadAsPdfAriaLabel')}>

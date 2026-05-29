@@ -6,9 +6,67 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
+import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
 import type { useTaxDetailsForm } from './hooks/use-tax-details-form.js';
+
+// ---------------------------------------------------------------------------
+// Invoice types field renderer
+// ---------------------------------------------------------------------------
+
+interface InvoiceTypesFieldProps {
+  field: ControllerRenderProps<ZatcaTaxDetails, 'invoiceTypes'>;
+  reactId: string;
+  labelStandard: string;
+  labelSimplified: string;
+}
+
+function InvoiceTypesField({
+  field,
+  reactId,
+  labelStandard,
+  labelSimplified,
+}: InvoiceTypesFieldProps) {
+  const handleStandardChange = useCallback(
+    (checked: boolean | 'indeterminate') => {
+      const current = field.value ?? [];
+      field.onChange(checked ? [...current, 'standard'] : current.filter(v => v !== 'standard'));
+    },
+    [field],
+  );
+  const handleSimplifiedChange = useCallback(
+    (checked: boolean | 'indeterminate') => {
+      const current = field.value ?? [];
+      field.onChange(
+        checked ? [...current, 'simplified'] : current.filter(v => v !== 'simplified'),
+      );
+    },
+    [field],
+  );
+  return (
+    <div className="space-y-2">
+      <label htmlFor={`${reactId}-zatca-inv-standard`} className="flex items-center gap-2 text-sm">
+        <Checkbox
+          id={`${reactId}-zatca-inv-standard`}
+          checked={field.value?.includes('standard')}
+          onCheckedChange={handleStandardChange}
+        />
+        {labelStandard}
+      </label>
+      <label
+        htmlFor={`${reactId}-zatca-inv-simplified`}
+        className="flex items-center gap-2 text-sm">
+        <Checkbox
+          id={`${reactId}-zatca-inv-simplified`}
+          checked={field.value?.includes('simplified')}
+          onCheckedChange={handleSimplifiedChange}
+        />
+        {labelSimplified}
+      </label>
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Props
@@ -38,6 +96,19 @@ export function TaxDetailsFormView({
   t,
 }: TaxDetailsFormViewProps) {
   const reactId = useId();
+  const labelStandard = t('standardInvoice');
+  const labelSimplified = t('simplifiedInvoice');
+  const renderInvoiceTypes = useCallback(
+    ({ field }: { field: ControllerRenderProps<ZatcaTaxDetails, 'invoiceTypes'> }) => (
+      <InvoiceTypesField
+        field={field}
+        reactId={reactId}
+        labelStandard={labelStandard}
+        labelSimplified={labelSimplified}
+      />
+    ),
+    [reactId, labelStandard, labelSimplified],
+  );
   const {
     register,
     handleSubmit,
@@ -150,49 +221,7 @@ export function TaxDetailsFormView({
       <fieldset className="space-y-3">
         <legend className="text-sm font-medium">{t('invoiceTypesSection')}</legend>
 
-        <Controller
-          control={control}
-          name="invoiceTypes"
-          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-          render={({ field }) => (
-            <div className="space-y-2">
-              <label
-                htmlFor={`${reactId}-zatca-inv-standard`}
-                className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  id={`${reactId}-zatca-inv-standard`}
-                  checked={field.value?.includes('standard')}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onCheckedChange={checked => {
-                    const current = field.value ?? [];
-                    field.onChange(
-                      checked ? [...current, 'standard'] : current.filter(v => v !== 'standard'),
-                    );
-                  }}
-                />
-                {t('standardInvoice')}
-              </label>
-              <label
-                htmlFor={`${reactId}-zatca-inv-simplified`}
-                className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  id={`${reactId}-zatca-inv-simplified`}
-                  checked={field.value?.includes('simplified')}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onCheckedChange={checked => {
-                    const current = field.value ?? [];
-                    field.onChange(
-                      checked
-                        ? [...current, 'simplified']
-                        : current.filter(v => v !== 'simplified'),
-                    );
-                  }}
-                />
-                {t('simplifiedInvoice')}
-              </label>
-            </div>
-          )}
-        />
+        <Controller control={control} name="invoiceTypes" render={renderInvoiceTypes} />
         {!!errors.invoiceTypes && (
           <p className="text-xs text-destructive">{errors.invoiceTypes.message}</p>
         )}

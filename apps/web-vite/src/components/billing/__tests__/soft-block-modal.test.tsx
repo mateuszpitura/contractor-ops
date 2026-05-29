@@ -6,16 +6,23 @@ import { SoftBlockModal } from '../soft-block-modal';
 // ---------------------------------------------------------------------------
 
 // Mock PlanComparisonGrid to simplify
-vi.mock('../plan-comparison-grid', () => ({
-  PlanComparisonGrid: ({ onSelectPlan }: { onSelectPlan: (plan: string) => void }) => (
-    <div data-testid="plan-grid">
-      {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
-      <button type="button" onClick={() => onSelectPlan('price_pro')}>
+vi.mock('../plan-comparison-grid', () => {
+  const SelectProButton = ({ onSelectPlan }: { onSelectPlan: (plan: string) => void }) => {
+    const handleClick = () => onSelectPlan('price_pro');
+    return (
+      <button type="button" onClick={handleClick}>
         Select Pro
       </button>
-    </div>
-  ),
-}));
+    );
+  };
+  return {
+    PlanComparisonGrid: ({ onSelectPlan }: { onSelectPlan: (plan: string) => void }) => (
+      <div data-testid="plan-grid">
+        <SelectProButton onSelectPlan={onSelectPlan} />
+      </div>
+    ),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Tests

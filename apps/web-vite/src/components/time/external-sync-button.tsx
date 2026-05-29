@@ -6,6 +6,7 @@
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
   Popover,
@@ -20,7 +21,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { endOfISOWeek, format, startOfISOWeek } from 'date-fns';
 import { CalendarDays, Clock, Loader2, Ticket } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -59,7 +60,7 @@ export function ExternalSyncButton({
   const [fromCalendarOpen, setFromCalendarOpen] = useState(false);
   const [toCalendarOpen, setToCalendarOpen] = useState(false);
 
-  const handleImport = async () => {
+  const handleImport = useCallback(async () => {
     setPopoverOpen(false);
     try {
       const result = await onSync(format(fromDate, 'yyyy-MM-dd'), format(toDate, 'yyyy-MM-dd'));
@@ -72,7 +73,17 @@ export function ExternalSyncButton({
     } catch {
       toast.error(`Failed to import from ${config.label}. Check your connection in Settings.`);
     }
-  };
+  }, [config.label, fromDate, onSync, toDate]);
+
+  const handleFromSelect = useCallback((d: Date | undefined) => {
+    if (d) setFromDate(d);
+    setFromCalendarOpen(false);
+  }, []);
+
+  const handleToSelect = useCallback((d: Date | undefined) => {
+    if (d) setToDate(d);
+    setToCalendarOpen(false);
+  }, []);
 
   if (!connected) {
     return (
@@ -116,14 +127,7 @@ export function ExternalSyncButton({
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">{t('externalSync.from')}</Label>
             <Popover open={fromCalendarOpen} onOpenChange={setFromCalendarOpen}>
-              <PopoverTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start font-normal"
-                  />
-                }>
+              <PopoverTrigger render={formControlPopoverRender(undefined, { size: 'sm' })}>
                 <CalendarDays className="me-2 h-3.5 w-3.5" />
                 {format(fromDate, 'MMM d, yyyy')}
               </PopoverTrigger>
@@ -131,11 +135,7 @@ export function ExternalSyncButton({
                 <Calendar
                   mode="single"
                   selected={fromDate}
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                  onSelect={d => {
-                    if (d) setFromDate(d);
-                    setFromCalendarOpen(false);
-                  }}
+                  onSelect={handleFromSelect}
                   defaultMonth={fromDate}
                 />
               </PopoverContent>
@@ -145,14 +145,7 @@ export function ExternalSyncButton({
           <div className="flex flex-col gap-1.5">
             <Label className="text-xs">{t('externalSync.to')}</Label>
             <Popover open={toCalendarOpen} onOpenChange={setToCalendarOpen}>
-              <PopoverTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-start font-normal"
-                  />
-                }>
+              <PopoverTrigger render={formControlPopoverRender(undefined, { size: 'sm' })}>
                 <CalendarDays className="me-2 h-3.5 w-3.5" />
                 {format(toDate, 'MMM d, yyyy')}
               </PopoverTrigger>
@@ -160,18 +153,13 @@ export function ExternalSyncButton({
                 <Calendar
                   mode="single"
                   selected={toDate}
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                  onSelect={d => {
-                    if (d) setToDate(d);
-                    setToCalendarOpen(false);
-                  }}
+                  onSelect={handleToSelect}
                   defaultMonth={toDate}
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button className="w-full" onClick={handleImport}>
             {t('externalSync.importEntries')}
           </Button>

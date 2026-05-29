@@ -1,6 +1,6 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { X, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -14,6 +14,7 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
   const daysRemaining = Math.ceil((trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const handleDismiss = useCallback(() => setDismissed(true), []);
 
   if (daysRemaining <= 0 || daysRemaining > 7 || dismissed) {
     return null;
@@ -35,8 +36,7 @@ export function TrialBanner({ trialEnd, onUpgrade }: TrialBannerProps) {
           </Button>
           <button
             type="button"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setDismissed(true)}
+            onClick={handleDismiss}
             className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label={t('dismissAria')}>
             <X size={16} aria-hidden="true" />

@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Download } from 'lucide-react';
+import { useCallback } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -52,11 +53,16 @@ export function WhtCertificatePreviewDialog({
   const locale = useLocale();
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
+  const handleOpenChange = useCallback(
+    (o: boolean) => {
+      if (!o) onClose();
+    },
+    [onClose],
+  );
   if (!certificate) return null;
 
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-    <Dialog open={open} onOpenChange={o => !o && onClose()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('dialogTitle')}</DialogTitle>

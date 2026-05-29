@@ -4,9 +4,32 @@
  * renders `NotificationItem` rows plus the "view all" footer.
  */
 
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { NotificationData } from './notification-item.js';
 import { NotificationItem } from './notification-item.js';
+
+interface NotificationPopoverItemProps {
+  notification: NotificationData;
+  onItemClick: (notification: NotificationData) => void;
+  disabled: boolean;
+}
+
+function NotificationPopoverItem({
+  notification,
+  onItemClick,
+  disabled,
+}: NotificationPopoverItemProps) {
+  const handleClick = useCallback(() => onItemClick(notification), [onItemClick, notification]);
+  return (
+    <NotificationItem
+      notification={notification}
+      onClick={handleClick}
+      compact
+      disabled={disabled}
+    />
+  );
+}
 
 export interface NotificationPopoverListProps {
   notifications: readonly NotificationData[];
@@ -27,12 +50,10 @@ export function NotificationPopoverList({
       <div className="max-h-[360px] overflow-y-auto">
         <div className="flex flex-col">
           {notifications.map(n => (
-            <NotificationItem
+            <NotificationPopoverItem
               key={n.id}
               notification={n}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onItemClick(n)}
-              compact
+              onItemClick={onItemClick}
               disabled={isMarkingRead}
             />
           ))}
@@ -40,11 +61,7 @@ export function NotificationPopoverList({
       </div>
 
       <div className="border-t px-4 py-2 text-center">
-        <button
-          type="button"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={onViewAll}
-          className="text-xs text-primary hover:underline">
+        <button type="button" onClick={onViewAll} className="text-xs text-primary hover:underline">
           {t('viewAll')}
         </button>
       </div>

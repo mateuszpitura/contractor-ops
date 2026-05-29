@@ -1,7 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { RefreshCw } from 'lucide-react';
-import { useId, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import {
   Bar,
   BarChart,
@@ -40,6 +40,11 @@ const PIE_COLORS: Record<string, string> = {
   warning: 'oklch(0.72 0.17 65)',
   ok: 'oklch(0.65 0.17 155)',
 };
+
+const numberTooltipFormatter = (value: unknown): [number, string] => [Number(value), ''];
+
+const pieLabelFormatter = ({ name, value }: { name?: string; value?: number }): string =>
+  `${name ?? ''}: ${value ?? 0}`;
 
 export function ReportChart({
   type,
@@ -81,6 +86,39 @@ export function ReportChart({
     return data;
   }, [data, dataKey, type]);
 
+  const handleBarClick = useCallback(
+    (_data: unknown, _index: number, e: unknown) => {
+      const payload =
+        ((e as Record<string, unknown> | undefined)?.payload as
+          | Record<string, unknown>
+          | undefined) ?? (_data as Record<string, unknown> | undefined);
+      const id = payload?.[idKey] as string | undefined;
+      if (id) onSegmentClick(id);
+    },
+    [idKey, onSegmentClick],
+  );
+
+  const handlePieClick = useCallback(
+    (_data: unknown, _index: number, e: unknown) => {
+      const payload =
+        ((e as Record<string, unknown> | undefined)?.payload as
+          | Record<string, unknown>
+          | undefined) ?? (_data as Record<string, unknown> | undefined);
+      const id = (payload?.id ?? (payload?.name as string | undefined)?.toLowerCase()) as
+        | string
+        | undefined;
+      if (id) onSegmentClick(id);
+    },
+    [onSegmentClick],
+  );
+
+  const formatCurrencyTick = useCallback((v: number) => formatCurrency(v), [formatCurrency]);
+
+  const currencyTooltipFormatter = useCallback(
+    (value: unknown) => [formatCurrency(Number(value)), ''] as [string, string],
+    [formatCurrency],
+  );
+
   // Pie chart data transformation (must be called unconditionally for hooks rules)
   const pieData = useMemo(() => {
     if (type !== 'pie') return [];
@@ -105,12 +143,7 @@ export function ReportChart({
       <div className="flex h-[240px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border">
         <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
         {onRetry ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={onRetry}>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={onRetry}>
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
             {tErr('retry')}
           </Button>
@@ -154,8 +187,7 @@ export function ReportChart({
               />
               <XAxis
                 type="number"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                tickFormatter={(v: number) => formatCurrency(v)}
+                tickFormatter={formatCurrencyTick}
                 tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
                 tickLine={false}
                 axisLine={false}
@@ -171,8 +203,7 @@ export function ReportChart({
                 {...yAxisProps}
               />
               <Tooltip
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={value => [formatCurrency(Number(value)), '']}
+                formatter={currencyTooltipFormatter}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',
@@ -190,16 +221,7 @@ export function ReportChart({
                 radius={[0, 6, 6, 0]}
                 cursor="pointer"
                 filter={`url(#${glowId})`}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={(_data, _index, e) => {
-                  const payload =
-                    ((e as unknown as Record<string, unknown>)?.payload as Record<
-                      string,
-                      unknown
-                    >) ?? _data;
-                  const id = payload?.[idKey] as string;
-                  if (id) onSegmentClick(id);
-                }}>
+                onClick={handleBarClick}>
                 {sortedData.map(entry => {
                   const entryId = entry[idKey] as string;
                   const isActive = !activeId || entryId === activeId;
@@ -259,8 +281,7 @@ export function ReportChart({
                 {...yAxisProps}
               />
               <Tooltip
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                formatter={value => [Number(value), '']}
+                formatter={numberTooltipFormatter}
                 cursor={{ fill: 'var(--color-muted)', opacity: 0.15 }}
                 contentStyle={{
                   borderRadius: '0.75rem',
@@ -279,16 +300,7 @@ export function ReportChart({
                 radius={[6, 6, 0, 0]}
                 filter={`url(#${glowId})`}
                 cursor="pointer"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={(_data, _index, e) => {
-                  const payload =
-                    ((e as unknown as Record<string, unknown>)?.payload as Record<
-                      string,
-                      unknown
-                    >) ?? _data;
-                  const id = payload?.[idKey] as string;
-                  if (id) onSegmentClick(id);
-                }}
+                onClick={handleBarClick}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -327,21 +339,8 @@ export function ReportChart({
                 cursor="pointer"
                 stroke="none"
                 filter={`url(#${glowId}-pie)`}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={(_data, _index, e) => {
-                  const payload =
-                    ((e as unknown as Record<string, unknown>)?.payload as Record<
-                      string,
-                      unknown
-                    >) ?? (_data as unknown as Record<string, unknown>);
-                  const id = (payload?.id ??
-                    (payload?.name as string | undefined)?.toLowerCase()) as string;
-                  if (id) onSegmentClick(id);
-                }}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                label={({ name, value }: { name?: string; value?: number }) =>
-                  `${name ?? ''}: ${value ?? 0}`
-                }>
+                onClick={handlePieClick}
+                label={pieLabelFormatter}>
                 {pieData.map(entry => (
                   <Cell
                     key={entry.id ?? entry.name}

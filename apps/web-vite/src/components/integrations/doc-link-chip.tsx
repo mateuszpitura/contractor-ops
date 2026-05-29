@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { RefreshCw, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils';
 import { ConfluenceIcon, NotionIcon } from './provider-icons';
@@ -89,6 +89,26 @@ export function DocLinkChip({
     ? t('docs.chip.lastEdited', { time: formatRelativeTime(lastEditedTime) })
     : t('docs.chip.openIn', { provider: providerLabel });
 
+  const handleRefreshClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onRefresh?.(id);
+    },
+    [onRefresh, id],
+  );
+
+  const handleOpenConfirm = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setConfirmOpen(true);
+  }, []);
+
+  const handleConfirmRemove = useCallback(() => {
+    onRemove?.(id);
+    setConfirmOpen(false);
+  }, [onRemove, id]);
+
   return (
     <>
       <Tooltip>
@@ -116,12 +136,7 @@ export function DocLinkChip({
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-foreground ms-0.5 shrink-0 disabled:opacity-50"
               aria-label={t('docs.chip.refreshAriaLabel', { title })}
               disabled={isRefreshing}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                onRefresh(id);
-              }}>
+              onClick={handleRefreshClick}>
               <RefreshCw className={cn('h-3 w-3', isRefreshing && 'animate-spin')} />
             </button>
           )}
@@ -130,12 +145,7 @@ export function DocLinkChip({
               type="button"
               className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-muted-foreground hover:text-destructive ms-0.5 shrink-0"
               aria-label={t('docs.chip.removeAriaLabel', { title })}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={e => {
-                e.preventDefault();
-                e.stopPropagation();
-                setConfirmOpen(true);
-              }}>
+              onClick={handleOpenConfirm}>
               <X className="h-3 w-3" />
             </button>
           )}
@@ -154,13 +164,7 @@ export function DocLinkChip({
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>{t('docs.chip.removeDialog.keepLink')}</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  onRemove(id);
-                  setConfirmOpen(false);
-                }}>
+              <AlertDialogAction variant="destructive" onClick={handleConfirmRemove}>
                 {t('docs.chip.removeDialog.removeLink')}
               </AlertDialogAction>
             </AlertDialogFooter>

@@ -52,6 +52,23 @@ export function AddBoeRateDialog({
     }
   }, [open]);
 
+  const handleEffectiveFromChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setEffectiveFrom(e.target.value),
+    [],
+  );
+
+  const handleRatePercentChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRatePercent(e.target.value),
+    [],
+  );
+
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value),
+    [],
+  );
+
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
@@ -83,8 +100,7 @@ export function AddBoeRateDialog({
               id="add-effective-from"
               type="date"
               value={effectiveFrom}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setEffectiveFrom(e.target.value)}
+              onChange={handleEffectiveFromChange}
               required
             />
           </div>
@@ -97,8 +113,7 @@ export function AddBoeRateDialog({
               min="0"
               max="99.99"
               value={ratePercent}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setRatePercent(e.target.value)}
+              onChange={handleRatePercentChange}
               className="tabular-nums"
               required
             />
@@ -108,18 +123,13 @@ export function AddBoeRateDialog({
             <Textarea
               id="add-notes"
               value={notes}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setNotes(e.target.value)}
+              onChange={handleNotesChange}
               placeholder={t('notesPlaceholder')}
               rows={3}
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              // biome-ignore lint/nursery/noJsxPropsBind: dialog close handler
-              onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={insertMutation.isPending}>

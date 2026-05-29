@@ -6,14 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import type { Table } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
-interface DataTablePaginationProps<TData> {
-  /** Optional TanStack table — when present, drives the selected-row count label. */
-  table?: Table<TData>;
+interface DataTablePaginationProps {
   totalRows: number;
   pageSize: number;
   currentPage: number;
@@ -26,11 +24,6 @@ interface DataTablePaginationProps<TData> {
   rowsPerPageLabel?: string;
   /** Localized "Page X of Y" formatter input. Defaults to Common.pagination.page. */
   pageOfLabel?: string;
-  /**
-   * Optional selected-count translator. When provided AND `table` is provided,
-   * the selected-row count appears on the left side.
-   */
-  selectedCountLabel?: (count: number) => string;
 }
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -39,14 +32,14 @@ const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50];
  * Canonical pagination row used at the bottom of every workbench data table.
  *
  * Anatomy (left → right):
- *   [selected-count]                        [rows-per-page Select] [page-of] [Prev] [Next]
+ *   [rows-per-page Select] [page-of] [Prev] [Next]   (all right-aligned)
  *
- * Total row count is intentionally NOT rendered here — it lives in the
- * `TableChrome` count strip at the top-left of the table, so repeating it
- * in the footer reads as visual noise.
+ * Neither the total row count nor the selected-row count is rendered here —
+ * the total lives in the `TableChrome` count strip at the top-left, and the
+ * selected count lives in the bulk-action bar above the table. Repeating
+ * either in the footer reads as visual noise.
  */
-export function DataTablePagination<TData>({
-  table,
+export function DataTablePagination({
   totalRows,
   pageSize,
   currentPage,
@@ -55,32 +48,37 @@ export function DataTablePagination<TData>({
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   rowsPerPageLabel,
   pageOfLabel,
-  selectedCountLabel,
-}: DataTablePaginationProps<TData>) {
+}: DataTablePaginationProps) {
   const tCommon = useTranslations('Common');
   const tAria = useTranslations('Common.aria');
 
   const totalPages = Math.max(1, Math.ceil(totalRows / pageSize));
-  const selectedCount = table?.getFilteredSelectedRowModel().rows.length ?? 0;
-  const showSelectedChip = selectedCount > 0 && typeof selectedCountLabel === 'function';
   const rowsPerPage = rowsPerPageLabel ?? tCommon('pagination.rowsPerPage');
   const pageIndicator =
     pageOfLabel ?? tCommon('pagination.page', { page: currentPage, pageCount: totalPages });
 
+  const handlePageSizeChange = useCallback(
+    (value: string | null) => {
+      if (value !== null) onPageSizeChange?.(Number(value));
+    },
+    [onPageSizeChange],
+  );
+  const handlePreviousPage = useCallback(
+    () => onPageChange(currentPage - 1),
+    [onPageChange, currentPage],
+  );
+  const handleNextPage = useCallback(
+    () => onPageChange(currentPage + 1),
+    [onPageChange, currentPage],
+  );
+
   return (
     <div className="flex w-full items-center gap-6 px-4 py-3">
-      {showSelectedChip && (
-        <span className="text-sm text-muted-foreground">{selectedCountLabel(selectedCount)}</span>
-      )}
-
       <div className="ms-auto flex items-center gap-4">
         {typeof onPageSizeChange === 'function' && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{rowsPerPage}</span>
-            <Select
-              value={String(pageSize)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={value => onPageSizeChange(Number(value))}>
+            <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
               <SelectTrigger className="h-8 w-[70px]" aria-label={rowsPerPage}>
                 <SelectValue />
               </SelectTrigger>
@@ -103,8 +101,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="h-8 w-8"
             disabled={currentPage <= 1}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={handlePreviousPage}
             aria-label={tAria('previousPage')}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -113,8 +110,7 @@ export function DataTablePagination<TData>({
             size="icon"
             className="h-8 w-8"
             disabled={currentPage >= totalPages}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={handleNextPage}
             aria-label={tAria('nextPage')}>
             <ChevronRight className="h-4 w-4" />
           </Button>

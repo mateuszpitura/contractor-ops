@@ -9,6 +9,8 @@ import {
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { PlanComparisonGrid } from './plan-comparison-grid.js';
 
+const preventEvent = (e: { preventDefault: () => void }) => e.preventDefault();
+
 interface SoftBlockModalProps {
   isOpen: boolean;
   onSelectPlan: (priceId: string) => void;
@@ -24,10 +26,8 @@ export function SoftBlockModal({ isOpen, onSelectPlan, isSelecting = false }: So
         role="alertdialog"
         showCloseButton={false}
         className="max-w-4xl"
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onPointerDownOutside={e => e.preventDefault()}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onEscapeKeyDown={e => e.preventDefault()}>
+        onPointerDownOutside={preventEvent}
+        onEscapeKeyDown={preventEvent}>
         <DialogHeader>
           <DialogTitle className="font-display text-[28px] font-semibold leading-tight">
             {t('title')}

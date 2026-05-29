@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Download, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePdfPreview } from './hooks/use-pdf-preview.js';
@@ -52,14 +53,17 @@ export function PdfPreviewView({
 }: Omit<PdfPreviewViewProps, 'documentId'>) {
   const t = useTranslations('Documents');
 
+  const handleDownload = useCallback(() => {
+    if (pdfUrl) window.open(pdfUrl, '_blank');
+  }, [pdfUrl]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[960px] max-h-[80vh] flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between gap-4">
           <DialogTitle className="truncate">{filename}</DialogTitle>
           {!!pdfUrl && (
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            <Button variant="outline" size="sm" onClick={() => window.open(pdfUrl, '_blank')}>
+            <Button variant="outline" size="sm" onClick={handleDownload}>
               <Download className="me-1.5 size-3.5" />
               {t('download')}
             </Button>

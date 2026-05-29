@@ -75,6 +75,16 @@ export function EditBoeRateDialog({
 
   const effectiveDate = new Date(entry.effectiveFrom).toISOString().slice(0, 10);
 
+  const handleRatePercentChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRatePercent(e.target.value),
+    [],
+  );
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value),
+    [],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -104,8 +114,7 @@ export function EditBoeRateDialog({
               min="0"
               max="99.99"
               value={ratePercent}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setRatePercent(e.target.value)}
+              onChange={handleRatePercentChange}
               className="tabular-nums"
               required
             />
@@ -115,18 +124,13 @@ export function EditBoeRateDialog({
             <Textarea
               id="edit-notes"
               value={notes}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setNotes(e.target.value)}
+              onChange={handleNotesChange}
               placeholder={t('editNotesPlaceholder')}
               rows={3}
             />
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              // biome-ignore lint/nursery/noJsxPropsBind: dialog close handler
-              onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}
             </Button>
             <Button type="submit" disabled={updateMutation.isPending}>

@@ -1,5 +1,6 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
@@ -57,6 +58,48 @@ type VersionHistoryListProps = {
   onDownloadVersion: (versionId: string) => void;
 };
 
+interface VersionHistoryRowProps {
+  version: VersionRow;
+  displayIndex: number;
+  totalVersions: number;
+  onDownloadVersion: (versionId: string) => void;
+  formatDate: (d: Date | string) => string;
+  versionLabel: (n: number) => string;
+  supersededLabel: string;
+  downloadLabel: string;
+}
+
+function VersionHistoryRow({
+  version,
+  displayIndex,
+  totalVersions,
+  onDownloadVersion,
+  formatDate,
+  versionLabel,
+  supersededLabel,
+  downloadLabel,
+}: VersionHistoryRowProps) {
+  const handleDownload = useCallback(
+    () => onDownloadVersion(version.id),
+    [onDownloadVersion, version.id],
+  );
+  return (
+    <div className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1">
+      <div className="min-w-0">
+        <span className="text-xs font-medium">{versionLabel(totalVersions - displayIndex)}</span>
+        <span className="ms-2 text-xs text-muted-foreground">{formatDate(version.createdAt)}</span>
+        {version.status === 'SUPERSEDED' && (
+          <span className="ms-2 text-xs text-muted-foreground/60">({supersededLabel})</span>
+        )}
+      </div>
+      <Button variant="ghost" size="icon-sm" onClick={handleDownload}>
+        <Download className="size-3" />
+        <span className="sr-only">{downloadLabel}</span>
+      </Button>
+    </div>
+  );
+}
+
 export function VersionHistoryList({
   versions,
   onToggle,
@@ -64,34 +107,25 @@ export function VersionHistoryList({
 }: VersionHistoryListProps) {
   const t = useTranslations('Documents');
   const { formatDate } = useDateFormatter();
+  const versionLabel = useCallback((n: number) => t('version', { n }), [t]);
+  const supersededLabel = t('superseded');
+  const downloadLabel = t('download');
   return (
     <div className="mt-2">
       <ExpandedHeader onToggle={onToggle} />
       <div className="mt-2 space-y-1">
         {versions.map((version, i) => (
-          <div
+          <VersionHistoryRow
             key={version.id}
-            className="flex items-center justify-between rounded-md bg-muted/50 px-2 py-1">
-            <div className="min-w-0">
-              <span className="text-xs font-medium">
-                {t('version', { n: versions.length - i })}
-              </span>
-              <span className="ms-2 text-xs text-muted-foreground">
-                {formatDate(version.createdAt)}
-              </span>
-              {version.status === 'SUPERSEDED' && (
-                <span className="ms-2 text-xs text-muted-foreground/60">({t('superseded')})</span>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              // biome-ignore lint/nursery/noJsxPropsBind: per-row callback binding
-              onClick={() => onDownloadVersion(version.id)}>
-              <Download className="size-3" />
-              <span className="sr-only">{t('download')}</span>
-            </Button>
-          </div>
+            version={version}
+            displayIndex={i}
+            totalVersions={versions.length}
+            onDownloadVersion={onDownloadVersion}
+            formatDate={formatDate}
+            versionLabel={versionLabel}
+            supersededLabel={supersededLabel}
+            downloadLabel={downloadLabel}
+          />
         ))}
       </div>
     </div>

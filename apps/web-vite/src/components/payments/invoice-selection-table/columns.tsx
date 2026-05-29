@@ -6,7 +6,8 @@
 
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row, Table } from '@tanstack/react-table';
+import { memo, useCallback } from 'react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { formatMinorUnits } from '../../../lib/format-currency.js';
@@ -38,6 +39,47 @@ export type ReadyInvoiceRow = {
 
 type DateFormatter = (value: Date | string | null | undefined) => string;
 
+interface HeaderCheckboxProps {
+  table: Table<ReadyInvoiceRow>;
+  ariaLabel: string;
+}
+
+const HeaderCheckbox = memo(function HeaderCheckbox({ table, ariaLabel }: HeaderCheckboxProps) {
+  const handleChange = useCallback(
+    (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
+    [table],
+  );
+  return (
+    <Checkbox
+      checked={table.getIsAllPageRowsSelected()}
+      indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+      onCheckedChange={handleChange}
+      aria-label={ariaLabel}
+    />
+  );
+});
+
+interface RowCheckboxProps {
+  row: Row<ReadyInvoiceRow>;
+  disabled: boolean;
+  ariaLabel: string;
+}
+
+const RowCheckbox = memo(function RowCheckbox({ row, disabled, ariaLabel }: RowCheckboxProps) {
+  const handleChange = useCallback(
+    (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+    [row],
+  );
+  return (
+    <Checkbox
+      checked={row.getIsSelected()}
+      onCheckedChange={handleChange}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    />
+  );
+});
+
 export function getColumns(
   t: LooseTranslator,
   formatDate?: DateFormatter,
@@ -55,28 +97,10 @@ export function getColumns(
   return [
     {
       id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t('selection.selectAll')}
-        />
-      ),
+      header: ({ table }) => <HeaderCheckbox table={table} ariaLabel={t('selection.selectAll')} />,
       cell: ({ row }) => {
         const inRun = !!row.original._inRunNumber;
-        return (
-          <Checkbox
-            checked={row.getIsSelected()}
-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            disabled={inRun}
-            aria-label={t('selection.selectRow')}
-            // biome-ignore lint/nursery/noJsxPropsBind: column definition
-            onClick={e => e.stopPropagation()}
-          />
-        );
+        return <RowCheckbox row={row} disabled={inRun} ariaLabel={t('selection.selectRow')} />;
       },
       enableSorting: false,
       enableHiding: false,

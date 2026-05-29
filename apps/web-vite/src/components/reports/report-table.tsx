@@ -92,7 +92,6 @@ export function ReportTable<TData>({
   const pagination =
     !isLoading && totalCount > 0 ? (
       <DataTablePagination
-        table={table}
         totalRows={totalCount}
         pageSize={pageSize}
         currentPage={page}
@@ -140,12 +139,7 @@ export function ReportTable<TData>({
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
                 {onRetry ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 gap-1.5"
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={onRetry}>
+                  <Button variant="outline" size="sm" className="mt-4 gap-1.5" onClick={onRetry}>
                     <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                     {tErr('retry')}
                   </Button>

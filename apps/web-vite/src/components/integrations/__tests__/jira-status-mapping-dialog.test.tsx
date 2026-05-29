@@ -6,6 +6,7 @@
 
 import type * as React from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { useCallback } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TranslateFn } from '@/i18n/useTranslations';
@@ -15,26 +16,29 @@ import { JiraStatusMappingDialogView } from '../jira-status-mapping-dialog';
 
 // Replace the Base UI select (portal + inert dialog parent → flaky under jsdom)
 // with a native <select>. Tests still drive the same onValueChange contract.
+function MockSelect({
+  children,
+  onValueChange,
+  value,
+}: {
+  children: React.ReactNode;
+  value?: string;
+  onValueChange?: (v: string) => void;
+}) {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => onValueChange?.(e.target.value),
+    [onValueChange],
+  );
+  return (
+    <select aria-expanded={false} aria-label="select" value={value ?? ''} onChange={handleChange}>
+      {children}
+    </select>
+  );
+}
+
 vi.mock('@contractor-ops/ui/components/shadcn/select', () => {
   return {
-    Select: ({
-      children,
-      onValueChange,
-      value,
-    }: {
-      children: React.ReactNode;
-      value?: string;
-      onValueChange?: (v: string) => void;
-    }) => (
-      <select
-        aria-expanded={false}
-        aria-label="select"
-        value={value ?? ''}
-        // biome-ignore lint/nursery/noJsxPropsBind: test stub
-        onChange={e => onValueChange?.(e.target.value)}>
-        {children}
-      </select>
-    ),
+    Select: MockSelect,
     SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
     SelectValue: ({
       children,

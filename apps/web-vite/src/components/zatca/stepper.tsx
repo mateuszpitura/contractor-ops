@@ -20,6 +20,71 @@ interface StepperProps {
   className?: string;
 }
 
+interface StepButtonProps {
+  step: StepDefinition;
+  index: number;
+  isCompleted: boolean;
+  isCurrent: boolean;
+  isFuture: boolean;
+  isClickable: boolean;
+  ariaLabel: string;
+  onStepClick?: (index: number) => void;
+}
+
+function StepButton({
+  step,
+  index,
+  isCompleted,
+  isCurrent,
+  isFuture,
+  isClickable,
+  ariaLabel,
+  onStepClick,
+}: StepButtonProps) {
+  const handleClick = useCallback(() => {
+    if (isClickable && onStepClick) onStepClick(index);
+  }, [isClickable, onStepClick, index]);
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={isCurrent}
+      aria-current={isCurrent ? 'step' : undefined}
+      aria-label={ariaLabel}
+      tabIndex={isCurrent ? 0 : -1}
+      disabled={isFuture}
+      onClick={handleClick}
+      className={cn(
+        'relative flex shrink-0 items-center gap-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 rounded-full',
+        isClickable && 'cursor-pointer',
+        isFuture && 'cursor-default',
+      )}>
+      {/* Circle */}
+      <span
+        className={cn(
+          'flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all',
+          isCompleted && 'bg-green-600 text-white dark:bg-green-600',
+          isCurrent && 'bg-primary text-primary-foreground',
+          isFuture && 'border-2 border-muted-foreground/30 text-muted-foreground',
+        )}>
+        {isCompleted ? <Check className="h-4 w-4" aria-hidden="true" /> : index + 1}
+      </span>
+
+      {/* Label */}
+      <span
+        className={cn(
+          'text-sm font-medium whitespace-nowrap',
+          'md:hidden lg:inline',
+          isCompleted && 'text-foreground',
+          isCurrent && 'text-foreground',
+          isFuture && 'text-muted-foreground',
+        )}>
+        {step.shortLabel ?? step.label}
+      </span>
+    </button>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Stepper — custom composition of shadcn primitives
 // ---------------------------------------------------------------------------
@@ -63,49 +128,20 @@ export function Stepper({ steps, currentStep, onStepClick, className }: StepperP
         const isCompleted = index < currentStep;
         const isCurrent = index === currentStep;
         const isFuture = index > currentStep;
-        const isClickable = isCompleted && onStepClick;
+        const isClickable = isCompleted && Boolean(onStepClick);
 
         return (
           <div key={step.id} className="flex items-center gap-0 md:flex-1">
-            {/* Step indicator */}
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isCurrent}
-              aria-current={isCurrent ? 'step' : undefined}
-              aria-label={t('stepAriaLabel', { number: index + 1, label: step.label })}
-              tabIndex={isCurrent ? 0 : -1}
-              disabled={isFuture}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => isClickable && onStepClick(index)}
-              className={cn(
-                'relative flex shrink-0 items-center gap-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 rounded-full',
-                isClickable && 'cursor-pointer',
-                isFuture && 'cursor-default',
-              )}>
-              {/* Circle */}
-              <span
-                className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-all',
-                  isCompleted && 'bg-green-600 text-white dark:bg-green-600',
-                  isCurrent && 'bg-primary text-primary-foreground',
-                  isFuture && 'border-2 border-muted-foreground/30 text-muted-foreground',
-                )}>
-                {isCompleted ? <Check className="h-4 w-4" aria-hidden="true" /> : index + 1}
-              </span>
-
-              {/* Label — hidden on tablet, shown on desktop/mobile */}
-              <span
-                className={cn(
-                  'text-sm font-medium whitespace-nowrap',
-                  'md:hidden lg:inline',
-                  isCompleted && 'text-foreground',
-                  isCurrent && 'text-foreground',
-                  isFuture && 'text-muted-foreground',
-                )}>
-                {step.shortLabel ?? step.label}
-              </span>
-            </button>
+            <StepButton
+              step={step}
+              index={index}
+              isCompleted={isCompleted}
+              isCurrent={isCurrent}
+              isFuture={isFuture}
+              isClickable={isClickable}
+              ariaLabel={t('stepAriaLabel', { number: index + 1, label: step.label })}
+              onStepClick={onStepClick}
+            />
 
             {/* Connector line (not after last step) */}
             {index < steps.length - 1 && (

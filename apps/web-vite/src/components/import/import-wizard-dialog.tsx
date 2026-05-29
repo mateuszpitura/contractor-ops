@@ -11,12 +11,16 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
+  DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Check, Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { useImportWizardDialog } from './hooks/use-import-wizard.js';
@@ -179,24 +183,30 @@ export function ImportWizardDialogView({
   getNextLabel,
   stepBody,
 }: ImportWizardDialogViewProps) {
+  const handleDialogOpenChange = useCallback(
+    (o: boolean) => {
+      if (!o) handleClose();
+    },
+    [handleClose],
+  );
+  const handleCloseClick = useCallback(() => handleClose(), [handleClose]);
   return (
     <>
-      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-      <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-[720px]" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t('title')}</DialogTitle>
           </DialogHeader>
 
           {/* Step indicator */}
-          <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          <DialogSection>
+            <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          </DialogSection>
 
-          {/* Step content */}
-          <div className="min-h-[360px]">{stepBody}</div>
+          <DialogBody className="min-h-[360px]">{stepBody}</DialogBody>
 
-          {/* Footer */}
           {!importResult && (
-            <div className="flex items-center justify-between border-t pt-4 mt-2">
+            <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between">
               <div>
                 {currentStep > 0 ? (
                   <Button
@@ -207,8 +217,7 @@ export function ImportWizardDialogView({
                     {t('actions.back')}
                   </Button>
                 ) : (
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  <Button type="button" variant="ghost" onClick={() => handleClose()}>
+                  <Button type="button" variant="ghost" onClick={handleCloseClick}>
                     {fileBase64 ? t('actions.discard') : t('actions.close')}
                   </Button>
                 )}
@@ -225,7 +234,7 @@ export function ImportWizardDialogView({
                   )}
                 </Button>
               )}
-            </div>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>

@@ -10,13 +10,43 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { CheckCircle2, MoreHorizontal, Trash2, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import type * as React from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { Link, useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatMinorUnits } from '../../lib/format-currency.js';
 import { PaymentItemBadge } from './payment-run-badge.js';
 import { SkontoApplyCheckboxContainer } from './run/skonto-apply-checkbox-container.js';
+
+function stopAnchorPropagation(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.stopPropagation();
+}
+
+type ButtonProps = React.ComponentProps<typeof Button>;
+
+const DropdownTriggerButton = memo(function DropdownTriggerButton({
+  onClick,
+  ...rest
+}: ButtonProps) {
+  const handleClick = useCallback<NonNullable<ButtonProps['onClick']>>(
+    e => {
+      e.stopPropagation();
+      onClick?.(e);
+    },
+    [onClick],
+  );
+  return (
+    <Button
+      {...rest}
+      variant="ghost"
+      size="icon"
+      className="h-6 w-6 shrink-0"
+      onClick={handleClick}>
+      <MoreHorizontal className="h-3 w-3" />
+    </Button>
+  );
+});
 
 export interface PaymentRunItem {
   id: string;
@@ -62,6 +92,48 @@ export function PaymentRunItemRow({
   const [reference, setReference] = useState('');
   const [failureReason, setFailureReason] = useState('');
 
+  const handleMarkPaidStart = useCallback(() => setActiveAction('paid'), []);
+  const handleMarkFailedStart = useCallback(() => setActiveAction('failed'), []);
+  const handleRemoveStart = useCallback(() => setActiveAction('remove'), []);
+
+  const handleReferenceChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setReference(e.target.value),
+    [],
+  );
+  const handleFailureReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setFailureReason(e.target.value),
+    [],
+  );
+
+  const handleConfirmPaid = useCallback(() => {
+    onUpdateStatus(item.id, 'PAID', reference || undefined);
+    setActiveAction(null);
+    setReference('');
+  }, [onUpdateStatus, item.id, reference]);
+  const handleCancelPaid = useCallback(() => {
+    setActiveAction(null);
+    setReference('');
+  }, []);
+
+  const handleConfirmFailed = useCallback(() => {
+    const trimmed = failureReason.trim();
+    if (trimmed) {
+      onUpdateStatus(item.id, 'FAILED', undefined, trimmed);
+      setActiveAction(null);
+      setFailureReason('');
+    }
+  }, [onUpdateStatus, item.id, failureReason]);
+  const handleCancelFailed = useCallback(() => {
+    setActiveAction(null);
+    setFailureReason('');
+  }, []);
+
+  const handleConfirmRemove = useCallback(() => {
+    onRemoveFromRun(item.invoiceId);
+    setActiveAction(null);
+  }, [onRemoveFromRun, item.invoiceId]);
+  const handleCancelRemove = useCallback(() => setActiveAction(null), []);
+
   return (
     <div className="py-2 px-2 rounded hover:bg-muted/50 text-sm">
       <div className="flex items-center gap-2">
@@ -70,8 +142,7 @@ export function PaymentRunItemRow({
             <Link
               href={`/invoices/${item.invoiceId}`}
               className="text-primary hover:underline text-xs font-medium truncate"
-              // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-              onClick={e => e.stopPropagation()}>
+              onClick={stopAnchorPropagation}>
               <Bdi>{item.invoice.invoiceNumber}</Bdi>
             </Link>
             <PaymentItemBadge status={item.status} />
@@ -91,38 +162,18 @@ export function PaymentRunItemRow({
 
         {!isTerminal || isDraft ? (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button
-                  {...props}
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 shrink-0"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={e => {
-                    e.stopPropagation();
-                    props.onClick?.(e);
-                  }}>
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={<DropdownTriggerButton />} />
             <DropdownMenuContent align="end">
               {isTerminal ? null : (
                 <>
-                  <DropdownMenuItem
-                    disabled={isUpdating}
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => setActiveAction('paid')}>
+                  <DropdownMenuItem disabled={isUpdating} onClick={handleMarkPaidStart}>
                     <CheckCircle2 className="me-2 h-4 w-4" />
                     {t('sidePanel.markPaid')}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="text-destructive"
                     disabled={isUpdating}
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => setActiveAction('failed')}>
+                    onClick={handleMarkFailedStart}>
                     <XCircle className="me-2 h-4 w-4" />
                     {t('sidePanel.markFailed')}
                   </DropdownMenuItem>
@@ -132,8 +183,7 @@ export function PaymentRunItemRow({
                 <DropdownMenuItem
                   className="text-destructive"
                   disabled={isRemoving}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => setActiveAction('remove')}>
+                  onClick={handleRemoveStart}>
                   <Trash2 className="me-2 h-4 w-4" />
                   {t('sidePanel.removeFromRun')}
                 </DropdownMenuItem>
@@ -159,31 +209,14 @@ export function PaymentRunItemRow({
           <Input
             placeholder={t('sidePanel.referencePlaceholder')}
             value={reference}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setReference(e.target.value)}
+            onChange={handleReferenceChange}
             className="h-7 text-xs"
           />
           <div className="flex gap-1.5">
-            <Button
-              size="sm"
-              className="h-6 text-xs flex-1"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                onUpdateStatus(item.id, 'PAID', reference || undefined);
-                setActiveAction(null);
-                setReference('');
-              }}>
+            <Button size="sm" className="h-6 text-xs flex-1" onClick={handleConfirmPaid}>
               {t('sidePanel.confirm')}
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-xs"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                setActiveAction(null);
-                setReference('');
-              }}>
+            <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={handleCancelPaid}>
               {t('cancel')}
             </Button>
           </div>
@@ -196,8 +229,7 @@ export function PaymentRunItemRow({
           <Textarea
             placeholder={t('sidePanel.failureReasonPlaceholder')}
             value={failureReason}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setFailureReason(e.target.value)}
+            onChange={handleFailureReasonChange}
             className="h-14 text-xs resize-none"
           />
           <div className="flex gap-1.5">
@@ -205,26 +237,11 @@ export function PaymentRunItemRow({
               size="sm"
               variant="destructive"
               className="h-6 text-xs flex-1"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                if (failureReason.trim()) {
-                  onUpdateStatus(item.id, 'FAILED', undefined, failureReason.trim());
-                  setActiveAction(null);
-                  setFailureReason('');
-                }
-              }}
+              onClick={handleConfirmFailed}
               disabled={!failureReason.trim()}>
               {t('sidePanel.confirm')}
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-xs"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                setActiveAction(null);
-                setFailureReason('');
-              }}>
+            <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={handleCancelFailed}>
               {t('cancel')}
             </Button>
           </div>
@@ -239,19 +256,10 @@ export function PaymentRunItemRow({
               size="sm"
               variant="destructive"
               className="h-6 text-xs flex-1"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                onRemoveFromRun(item.invoiceId);
-                setActiveAction(null);
-              }}>
+              onClick={handleConfirmRemove}>
               {t('sidePanel.removeButton')}
             </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-xs"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => setActiveAction(null)}>
+            <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={handleCancelRemove}>
               {t('cancel')}
             </Button>
           </div>

@@ -19,6 +19,38 @@ const MARKET_LABELS: Record<Market, string> = {
   SA: 'Saudi Arabia — SAR',
 };
 
+interface MarketOptionButtonProps {
+  locale: (typeof locales)[number];
+  isSelected: boolean;
+  marketLabel: string;
+  englishName: string;
+  onSelect: (locale: (typeof locales)[number]) => void;
+}
+
+function MarketOptionButton({
+  locale,
+  isSelected,
+  marketLabel,
+  englishName,
+  onSelect,
+}: MarketOptionButtonProps) {
+  const handleClick = useCallback(() => onSelect(locale), [onSelect, locale]);
+  return (
+    <button
+      type="button"
+      role="option"
+      aria-selected={isSelected}
+      onClick={handleClick}
+      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
+      <span className="flex flex-col">
+        <span className="font-medium text-foreground">{marketLabel}</span>
+        <span className="text-[11px] text-muted-foreground">{englishName}</span>
+      </span>
+      {isSelected && <Check className="h-3.5 w-3.5 text-primary" aria-hidden />}
+    </button>
+  );
+}
+
 function setMarketCookie(market: Market) {
   if (typeof document === 'undefined') return;
   const maxAge = COOKIE_MAX_AGE_DAYS * 24 * 60 * 60;
@@ -88,23 +120,13 @@ export function MarketSwitcher() {
             const market = localeToMarket(locale);
             return (
               <li key={locale}>
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={locale === currentLocale}
-                  // biome-ignore lint/nursery/noJsxPropsBind: per-item handler closes over locale
-                  onClick={() => handleSelect(locale)}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
-                  <span className="flex flex-col">
-                    <span className="font-medium text-foreground">{MARKET_LABELS[market]}</span>
-                    <span className="text-[11px] text-muted-foreground">
-                      {localeConfigs[locale].englishName}
-                    </span>
-                  </span>
-                  {locale === currentLocale && (
-                    <Check className="h-3.5 w-3.5 text-primary" aria-hidden />
-                  )}
-                </button>
+                <MarketOptionButton
+                  locale={locale}
+                  isSelected={locale === currentLocale}
+                  marketLabel={MARKET_LABELS[market]}
+                  englishName={localeConfigs[locale].englishName}
+                  onSelect={handleSelect}
+                />
               </li>
             );
           })}

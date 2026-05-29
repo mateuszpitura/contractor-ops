@@ -33,7 +33,6 @@ export function CookieConsentBanner({ onAccept }: CookieConsentBannerProps) {
             {t('learnMore')}
           </Link>
         </p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button size="sm" onClick={onAccept} className="shrink-0">
           {t('accept')}
         </Button>

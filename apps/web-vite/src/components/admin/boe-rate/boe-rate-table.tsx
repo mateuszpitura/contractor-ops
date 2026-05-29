@@ -2,11 +2,40 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import type { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, TrashIcon } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { SimpleDataTable } from '../../shared/simple-data-table.js';
 import type { BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
+
+interface BoeRateRowActionsProps {
+  entry: BoeRateEntry;
+  onEdit: (entry: BoeRateEntry) => void;
+  onDelete: (entry: BoeRateEntry) => void;
+  ariaEdit: string;
+  ariaDelete: string;
+}
+
+function BoeRateRowActions({
+  entry,
+  onEdit,
+  onDelete,
+  ariaEdit,
+  ariaDelete,
+}: BoeRateRowActionsProps) {
+  const handleEdit = useCallback(() => onEdit(entry), [onEdit, entry]);
+  const handleDelete = useCallback(() => onDelete(entry), [onDelete, entry]);
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <Button variant="ghost" size="icon" onClick={handleEdit} aria-label={ariaEdit}>
+        <PencilIcon className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" onClick={handleDelete} aria-label={ariaDelete}>
+        <TrashIcon className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
 interface BoeRateTableProps {
   entries: BoeRateEntry[] | undefined;
@@ -93,24 +122,13 @@ export function BoeRateTable({ entries, isLoading, onEdit, onDelete }: BoeRateTa
         header: () => <span className="block text-end">{t('colActions')}</span>,
         enableSorting: false,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onEdit(row.original)}
-              aria-label={t('ariaEditRate')}>
-              <PencilIcon className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onDelete(row.original)}
-              aria-label={t('ariaDeleteRate')}>
-              <TrashIcon className="h-4 w-4" />
-            </Button>
-          </div>
+          <BoeRateRowActions
+            entry={row.original}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            ariaEdit={t('ariaEditRate')}
+            ariaDelete={t('ariaDeleteRate')}
+          />
         ),
       },
     ],

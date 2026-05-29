@@ -27,8 +27,9 @@ import {
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { CalendarIcon } from 'lucide-react';
+import type * as React from 'react';
 import type { ReactNode } from 'react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import type { TranslateFn } from '../../../i18n/useTranslations.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -82,11 +83,20 @@ export function StepSelect({
   const t = useTranslations('Payments');
   const reactId = useId();
 
+  const { setCurrency, setContractorSearch } = filters;
+  const handleCurrencyChange = useCallback(
+    (v: string | null) => setCurrency(v ?? 'all'),
+    [setCurrency],
+  );
+  const handleContractorSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setContractorSearch(e.target.value),
+    [setContractorSearch],
+  );
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2 flex-wrap">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-        <Select value={filters.currency} onValueChange={v => filters.setCurrency(v ?? 'all')}>
+        <Select value={filters.currency} onValueChange={handleCurrencyChange}>
           <SelectTrigger className="w-[160px] h-8">
             <SelectValue placeholder={t('step1.allCurrencies')} />
           </SelectTrigger>
@@ -133,8 +143,7 @@ export function StepSelect({
         <Input
           placeholder={t('step1.searchContractors')}
           value={filters.contractorSearch}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => filters.setContractorSearch(e.target.value)}
+          onChange={handleContractorSearchChange}
           className="h-8 w-[200px] text-xs"
         />
       </div>

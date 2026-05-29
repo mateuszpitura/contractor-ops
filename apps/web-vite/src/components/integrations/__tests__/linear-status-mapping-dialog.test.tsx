@@ -5,6 +5,7 @@
 
 import type * as React from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { useCallback } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TranslateFn } from '@/i18n/useTranslations';
@@ -12,24 +13,28 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { LinearStatusMappingDialogViewProps } from '../linear-status-mapping-dialog';
 import { LinearStatusMappingDialogView } from '../linear-status-mapping-dialog';
 
-vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
-  Select: ({
-    children,
-    onValueChange,
-    value,
-  }: {
-    children: React.ReactNode;
-    value?: string;
-    onValueChange?: (v: string) => void;
-  }) => (
-    <select
-      aria-label="select"
-      value={value ?? ''}
-      // biome-ignore lint/nursery/noJsxPropsBind: test stub
-      onChange={e => onValueChange?.(e.target.value)}>
+function MockSelect({
+  children,
+  onValueChange,
+  value,
+}: {
+  children: React.ReactNode;
+  value?: string;
+  onValueChange?: (v: string) => void;
+}) {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => onValueChange?.(e.target.value),
+    [onValueChange],
+  );
+  return (
+    <select aria-label="select" value={value ?? ''} onChange={handleChange}>
       {children}
     </select>
-  ),
+  );
+}
+
+vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
+  Select: MockSelect,
   SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SelectValue: ({
     children,

@@ -29,7 +29,6 @@ export function JiraTaskConfigView({
           <Switch
             id={`jira-toggle-${taskTemplateId}`}
             checked={jiraEnabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
             onCheckedChange={handleToggle}
             disabled={!hasMappingConfigured || saveMutation.isPending}
           />

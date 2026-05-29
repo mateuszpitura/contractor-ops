@@ -6,6 +6,7 @@
 
 import type * as React from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { useCallback } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TranslateFn } from '@/i18n/useTranslations';
@@ -13,27 +14,30 @@ import { render, screen, setup } from '@/test/test-utils';
 import type { JiraProjectMappingDialogViewProps } from '../jira-project-mapping-dialog';
 import { JiraProjectMappingDialogView } from '../jira-project-mapping-dialog';
 
-vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
-  Select: ({
-    children,
-    onValueChange,
-    value,
-    disabled,
-  }: {
-    children: React.ReactNode;
-    value?: string;
-    onValueChange?: (v: string) => void;
-    disabled?: boolean;
-  }) => (
-    <select
-      aria-label="select"
-      disabled={disabled}
-      value={value ?? ''}
-      // biome-ignore lint/nursery/noJsxPropsBind: test stub
-      onChange={e => onValueChange?.(e.target.value)}>
+function MockSelect({
+  children,
+  onValueChange,
+  value,
+  disabled,
+}: {
+  children: React.ReactNode;
+  value?: string;
+  onValueChange?: (v: string) => void;
+  disabled?: boolean;
+}) {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => onValueChange?.(e.target.value),
+    [onValueChange],
+  );
+  return (
+    <select aria-label="select" disabled={disabled} value={value ?? ''} onChange={handleChange}>
       {children}
     </select>
-  ),
+  );
+}
+
+vi.mock('@contractor-ops/ui/components/shadcn/select', () => ({
+  Select: MockSelect,
   SelectTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SelectValue: ({
     children,

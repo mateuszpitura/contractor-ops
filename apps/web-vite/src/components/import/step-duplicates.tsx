@@ -10,11 +10,59 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { AlertTriangle } from 'lucide-react';
+import { useCallback } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
 
 import type { ImportRow } from './import-wizard-dialog.js';
+
+type DuplicateAction = 'skip' | 'update' | 'create';
+
+interface DuplicateActionRadioProps {
+  rowNumber: number;
+  action: DuplicateAction;
+  onActionChange: (rowNumber: number, action: DuplicateAction) => void;
+  labelSkip: string;
+  labelUpdate: string;
+  labelCreate: string;
+}
+
+function DuplicateActionRadio({
+  rowNumber,
+  action,
+  onActionChange,
+  labelSkip,
+  labelUpdate,
+  labelCreate,
+}: DuplicateActionRadioProps) {
+  const handleChange = useCallback(
+    (val: string) => onActionChange(rowNumber, val as DuplicateAction),
+    [onActionChange, rowNumber],
+  );
+  return (
+    <RadioGroup value={action} onValueChange={handleChange} className="flex gap-3">
+      <label
+        htmlFor={`dup-${rowNumber}-skip`}
+        className="flex cursor-pointer items-center gap-1.5 text-xs">
+        <RadioGroupItem id={`dup-${rowNumber}-skip`} value="skip" />
+        {labelSkip}
+      </label>
+      <label
+        htmlFor={`dup-${rowNumber}-update`}
+        className="flex cursor-pointer items-center gap-1.5 text-xs">
+        <RadioGroupItem id={`dup-${rowNumber}-update`} value="update" />
+        {labelUpdate}
+      </label>
+      <label
+        htmlFor={`dup-${rowNumber}-create`}
+        className="flex cursor-pointer items-center gap-1.5 text-xs">
+        <RadioGroupItem id={`dup-${rowNumber}-create`} value="create" />
+        {labelCreate}
+      </label>
+    </RadioGroup>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -39,20 +87,29 @@ export function StepDuplicates({
     return duplicateActions[String(rowNumber)] ?? 'skip';
   };
 
-  const handleActionChange = (rowNumber: number, action: 'skip' | 'update' | 'create') => {
-    onActionsChange({
-      ...duplicateActions,
-      [String(rowNumber)]: action,
-    });
-  };
+  const handleActionChange = useCallback(
+    (rowNumber: number, action: 'skip' | 'update' | 'create') => {
+      onActionsChange({
+        ...duplicateActions,
+        [String(rowNumber)]: action,
+      });
+    },
+    [duplicateActions, onActionsChange],
+  );
 
-  const handleBulkAction = (action: 'skip' | 'update') => {
-    const newActions: Record<string, 'skip' | 'update' | 'create'> = {};
-    for (const row of duplicateRows) {
-      newActions[String(row.rowNumber)] = action;
-    }
-    onActionsChange(newActions);
-  };
+  const handleBulkAction = useCallback(
+    (action: 'skip' | 'update') => {
+      const newActions: Record<string, 'skip' | 'update' | 'create'> = {};
+      for (const row of duplicateRows) {
+        newActions[String(row.rowNumber)] = action;
+      }
+      onActionsChange(newActions);
+    },
+    [duplicateRows, onActionsChange],
+  );
+
+  const handleSkipAll = useCallback(() => handleBulkAction('skip'), [handleBulkAction]);
+  const handleUpdateAll = useCallback(() => handleBulkAction('update'), [handleBulkAction]);
 
   return (
     <div className="space-y-4">
@@ -66,16 +123,10 @@ export function StepDuplicates({
 
       {/* Bulk action buttons */}
       <div className="flex gap-2">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="outline" size="sm" onClick={() => handleBulkAction('skip')} type="button">
+        <Button variant="outline" size="sm" onClick={handleSkipAll} type="button">
           {t('duplicates.skipAll')}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => handleBulkAction('update')}
-          type="button">
+        <Button variant="outline" size="sm" onClick={handleUpdateAll} type="button">
           {t('duplicates.updateAll')}
         </Button>
       </div>
@@ -106,32 +157,14 @@ export function StepDuplicates({
                   <TableCell className="text-sm">{name}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{existingName}</TableCell>
                   <TableCell>
-                    <RadioGroup
-                      value={action}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onValueChange={val =>
-                        handleActionChange(row.rowNumber, val as 'skip' | 'update' | 'create')
-                      }
-                      className="flex gap-3">
-                      <label
-                        htmlFor={`dup-${row.rowNumber}-skip`}
-                        className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem id={`dup-${row.rowNumber}-skip`} value="skip" />
-                        {t('duplicates.skip')}
-                      </label>
-                      <label
-                        htmlFor={`dup-${row.rowNumber}-update`}
-                        className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem id={`dup-${row.rowNumber}-update`} value="update" />
-                        {t('duplicates.update')}
-                      </label>
-                      <label
-                        htmlFor={`dup-${row.rowNumber}-create`}
-                        className="flex cursor-pointer items-center gap-1.5 text-xs">
-                        <RadioGroupItem id={`dup-${row.rowNumber}-create`} value="create" />
-                        {t('duplicates.create')}
-                      </label>
-                    </RadioGroup>
+                    <DuplicateActionRadio
+                      rowNumber={row.rowNumber}
+                      action={action}
+                      onActionChange={handleActionChange}
+                      labelSkip={t('duplicates.skip')}
+                      labelUpdate={t('duplicates.update')}
+                      labelCreate={t('duplicates.create')}
+                    />
                   </TableCell>
                 </TableRow>
               );

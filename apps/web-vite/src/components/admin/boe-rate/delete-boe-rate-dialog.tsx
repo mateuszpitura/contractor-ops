@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
+import { useCallback } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { BoeRateEntry, useBoeRateDelete } from '../hooks/use-admin-boe-rate.js';
 
@@ -38,6 +39,11 @@ export function DeleteBoeRateDialog({
   const effectiveDate = new Date(entry.effectiveFrom).toISOString().slice(0, 10);
   const rate = Number(entry.ratePercent).toFixed(2);
 
+  const handleDelete = useCallback(
+    () => deleteMutation.mutate({ id: entry.id }),
+    [deleteMutation, entry.id],
+  );
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -51,8 +57,7 @@ export function DeleteBoeRateDialog({
           <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => deleteMutation.mutate({ id: entry.id })}
+            onClick={handleDelete}
             disabled={deleteMutation.isPending}>
             {deleteMutation.isPending ? t('deleting') : t('deleteRate')}
           </AlertDialogAction>

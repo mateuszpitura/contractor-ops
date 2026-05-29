@@ -1,6 +1,39 @@
+import { useCallback } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { PlanCtaMode } from './plan-card';
 import { PlanCard } from './plan-card';
+
+interface PlanCardItemProps {
+  tier: React.ComponentProps<typeof PlanCard>['tier'];
+  priceId: string;
+  ctaMode: PlanCtaMode;
+  isRecommended: boolean;
+  onSelectPlan: (priceId: string) => void;
+  disabled: boolean;
+  compact: boolean | undefined;
+}
+
+function PlanCardItem({
+  tier,
+  priceId,
+  ctaMode,
+  isRecommended,
+  onSelectPlan,
+  disabled,
+  compact,
+}: PlanCardItemProps) {
+  const handleSelect = useCallback(() => onSelectPlan(priceId), [onSelectPlan, priceId]);
+  return (
+    <PlanCard
+      tier={tier}
+      ctaMode={ctaMode}
+      isRecommended={isRecommended}
+      onSelect={handleSelect}
+      disabled={disabled}
+      compact={compact}
+    />
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Static plan data (D-01 through D-06)
@@ -122,12 +155,12 @@ export function PlanComparisonGrid({
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {PLANS.map((plan, index) => (
         <div key={plan.id} className={index === 2 ? 'md:col-span-2 lg:col-span-1' : undefined}>
-          <PlanCard
+          <PlanCardItem
             tier={plan}
+            priceId={plan.priceId}
             ctaMode={getCtaMode(plan.id, currentTier)}
             isRecommended={plan.id === 'PRO'}
-            // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-            onSelect={() => onSelectPlan(plan.priceId)}
+            onSelectPlan={onSelectPlan}
             disabled={!plan.priceId || isSelecting}
             compact={compact}
           />

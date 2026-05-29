@@ -9,7 +9,7 @@ import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { ScrollArea, ScrollBar } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { RejectionReasonDialog } from './rejection-reason-dialog.js';
@@ -121,10 +121,15 @@ export function ContractorTimesheetReview({
     [timesheet.entries],
   );
 
-  function handleReject(reason: string) {
-    onReject(reason);
-    setRejectDialogOpen(false);
-  }
+  const handleReject = useCallback(
+    (reason: string) => {
+      onReject(reason);
+      setRejectDialogOpen(false);
+    },
+    [onReject],
+  );
+
+  const openRejectDialog = useCallback(() => setRejectDialogOpen(true), []);
 
   return (
     <div className="space-y-6">
@@ -273,8 +278,7 @@ export function ContractorTimesheetReview({
                 <Button
                   variant="outline"
                   className="text-destructive hover:bg-destructive/10"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => setRejectDialogOpen(true)}>
+                  onClick={openRejectDialog}>
                   <XCircle className="me-2 h-4 w-4" />
                   {t('review.reject')}
                 </Button>
@@ -291,7 +295,6 @@ export function ContractorTimesheetReview({
       <RejectionReasonDialog
         open={rejectDialogOpen}
         onOpenChange={setRejectDialogOpen}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onConfirm={handleReject}
         isSubmitting={isRejecting}
       />

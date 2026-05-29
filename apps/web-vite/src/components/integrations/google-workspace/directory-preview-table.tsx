@@ -33,7 +33,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import type * as React from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +65,23 @@ interface DirectoryPreviewTableProps {
 function getInitials(name: { givenName: string; familyName: string }): string {
   return `${name.givenName.charAt(0)}${name.familyName.charAt(0)}`.toUpperCase();
 }
+
+interface RowCheckboxProps {
+  email: string;
+  checked: boolean;
+  ariaLabel: string;
+  onSelect: (email: string) => void;
+}
+
+const RowCheckbox = memo(function RowCheckbox({
+  email,
+  checked,
+  ariaLabel,
+  onSelect,
+}: RowCheckboxProps) {
+  const handleChange = useCallback(() => onSelect(email), [email, onSelect]);
+  return <Checkbox checked={checked} onCheckedChange={handleChange} aria-label={ariaLabel} />;
+});
 
 // ---------------------------------------------------------------------------
 // DirectoryPreviewTable
@@ -181,11 +199,11 @@ export function DirectoryPreviewTable({
             return <Checkbox checked={false} disabled aria-hidden="true" />;
           }
           return (
-            <Checkbox
+            <RowCheckbox
+              email={user.primaryEmail}
               checked={selectedEmails.has(user.primaryEmail)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={() => handleRowSelect(user.primaryEmail)}
-              aria-label={t('selectUser', { name: user.name.fullName })}
+              ariaLabel={t('selectUser', { name: user.name.fullName })}
+              onSelect={handleRowSelect}
             />
           );
         },
@@ -283,6 +301,19 @@ export function DirectoryPreviewTable({
     },
   });
 
+  const handleSearchInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchChange(e.target.value),
+    [handleSearchChange],
+  );
+
+  const handleOrgUnitChange = useCallback(
+    (val: string | null) => setOrgUnitFilter(val === '__all__' ? '' : (val ?? '')),
+    [],
+  );
+
+  const handlePreviousPage = useCallback(() => table.previousPage(), [table]);
+  const handleNextPage = useCallback(() => table.nextPage(), [table]);
+
   return (
     <div className="space-y-3">
       {/* Search + filter bar */}
@@ -290,16 +321,12 @@ export function DirectoryPreviewTable({
         <Input
           placeholder={t('searchPlaceholder')}
           value={searchValue}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => handleSearchChange(e.target.value)}
+          onChange={handleSearchInputChange}
           className="max-w-xs"
         />
 
         {orgUnits.length > 1 && (
-          <Select
-            value={orgUnitFilter}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={val => setOrgUnitFilter(val === '__all__' ? '' : (val ?? ''))}>
+          <Select value={orgUnitFilter} onValueChange={handleOrgUnitChange}>
             <SelectTrigger className="w-48">
               <SelectValue>{orgUnitFilter || t('allOrgUnits')}</SelectValue>
             </SelectTrigger>
@@ -404,8 +431,7 @@ export function DirectoryPreviewTable({
             <Button
               variant="outline"
               size="icon-sm"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => table.previousPage()}
+              onClick={handlePreviousPage}
               disabled={!table.getCanPreviousPage()}
               aria-label={t('pagination.previousPage')}>
               <ChevronLeft className="size-4" />
@@ -413,8 +439,7 @@ export function DirectoryPreviewTable({
             <Button
               variant="outline"
               size="icon-sm"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => table.nextPage()}
+              onClick={handleNextPage}
               disabled={!table.getCanNextPage()}
               aria-label={t('pagination.nextPage')}>
               <ChevronRight className="size-4" />

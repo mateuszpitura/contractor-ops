@@ -6,6 +6,18 @@ import { ACCEPTED_TYPES, MAX_FILE_SIZE } from './drop-zone-constants.js';
 import type { useDocumentDropZone } from './hooks/use-document-drop-zone.js';
 import { UploadProgress } from './upload-progress.js';
 
+type UploadFileItem = ReturnType<typeof useDocumentDropZone>['files'][number];
+
+interface UploadProgressItemProps {
+  item: UploadFileItem;
+  onRemoveFile: (id: string) => void;
+}
+
+function UploadProgressItem({ item, onRemoveFile }: UploadProgressItemProps) {
+  const handleRemove = useCallback(() => onRemoveFile(item.id), [onRemoveFile, item.id]);
+  return <UploadProgress file={item} onRemove={handleRemove} />;
+}
+
 type DropZoneViewProps = ReturnType<typeof useDocumentDropZone> & {
   onFilesAccepted?: (files: File[]) => void;
   onFileRejected?: (files: File[]) => void;
@@ -59,8 +71,7 @@ export function DropZoneView({
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map(item => (
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            <UploadProgress key={item.id} file={item} onRemove={() => removeFile(item.id)} />
+            <UploadProgressItem key={item.id} item={item} onRemoveFile={removeFile} />
           ))}
         </div>
       )}

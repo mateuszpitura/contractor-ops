@@ -5,7 +5,10 @@ import { TableBody, TableCell, TableRow } from '@contractor-ops/ui/components/sh
 import type { Row, Table } from '@tanstack/react-table';
 import { flexRender } from '@tanstack/react-table';
 import { FilterX } from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType, MouseEvent, ReactNode } from 'react';
+import { useCallback } from 'react';
+
+import { shouldIgnoreRowClick } from './row-click.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -201,6 +204,37 @@ function NoResultsState({
 // Data rows
 // ---------------------------------------------------------------------------
 
+function DataRow<TData>({
+  row,
+  onRowClick,
+  rowClassName,
+}: {
+  row: Row<TData>;
+  onRowClick?: (row: TData) => void;
+  rowClassName?: (row: TData) => string;
+}) {
+  const handleClick = useCallback(
+    (event: MouseEvent<HTMLTableRowElement>) => {
+      if (!onRowClick) return;
+      if (shouldIgnoreRowClick(event)) return;
+      onRowClick(row.original);
+    },
+    [onRowClick, row.original],
+  );
+  return (
+    <TableRow
+      data-state={row.getIsSelected() ? 'selected' : undefined}
+      className={`${onRowClick ? 'cursor-pointer' : ''} ${rowClassName?.(row.original) ?? ''}`}
+      onClick={onRowClick ? handleClick : undefined}>
+      {row.getVisibleCells().map(cell => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
 function DataRows<TData>({
   rows,
   onRowClick,
@@ -213,17 +247,7 @@ function DataRows<TData>({
   return (
     <>
       {rows.map(row => (
-        <TableRow
-          key={row.id}
-          data-state={row.getIsSelected() ? 'selected' : undefined}
-          className={`${onRowClick ? 'cursor-pointer' : ''} ${rowClassName?.(row.original) ?? ''}`}
-          onClick={onRowClick ? () => onRowClick(row.original) : undefined}>
-          {row.getVisibleCells().map(cell => (
-            <TableCell key={cell.id}>
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </TableCell>
-          ))}
-        </TableRow>
+        <DataRow key={row.id} row={row} onRowClick={onRowClick} rowClassName={rowClassName} />
       ))}
     </>
   );

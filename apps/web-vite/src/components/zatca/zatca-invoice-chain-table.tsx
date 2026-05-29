@@ -37,6 +37,26 @@ import { ZatcaStatusBadge } from './zatca-status-badge.js';
 
 const RESUBMITTABLE_STATUSES = new Set(['REJECTED', 'PENDING']);
 
+interface ResubmitRowButtonProps {
+  invoiceId: string;
+  icv: number;
+  onOpenResubmit: (invoiceId: string, icv: number) => void;
+  label: string;
+}
+
+function ResubmitRowButton({ invoiceId, icv, onOpenResubmit, label }: ResubmitRowButtonProps) {
+  const handleClick = useCallback(
+    () => onOpenResubmit(invoiceId, icv),
+    [onOpenResubmit, invoiceId, icv],
+  );
+  return (
+    <Button variant="outline" size="sm" onClick={handleClick}>
+      <RefreshCw className="me-1.5 size-3.5" aria-hidden="true" />
+      {label}
+    </Button>
+  );
+}
+
 function formatDate(value: string | Date | null | undefined, locale?: string): string {
   if (!value) return '—';
   const date = value instanceof Date ? value : new Date(value);
@@ -213,14 +233,12 @@ export function ZatcaInvoiceChainTableView({
           return (
             <div className="text-end">
               {canResubmit ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => openResubmitDialog(row.original.invoiceId, row.original.icv)}>
-                  <RefreshCw className="me-1.5 size-3.5" aria-hidden="true" />
-                  {t('action.resubmit')}
-                </Button>
+                <ResubmitRowButton
+                  invoiceId={row.original.invoiceId}
+                  icv={row.original.icv}
+                  onOpenResubmit={openResubmitDialog}
+                  label={t('action.resubmit')}
+                />
               ) : (
                 <span className="text-xs text-muted-foreground">—</span>
               )}

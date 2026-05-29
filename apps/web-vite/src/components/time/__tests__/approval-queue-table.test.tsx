@@ -33,25 +33,32 @@ vi.mock('../time-entry-status-badge', () => ({
   ),
 }));
 
-vi.mock('../rejection-reason-dialog', () => ({
-  RejectionReasonDialog: ({
-    open,
-    onConfirm,
-    isBulk,
-  }: {
-    open: boolean;
-    onConfirm: (r: string) => void;
-    isBulk?: boolean;
-  }) =>
-    open ? (
-      <div data-testid={isBulk ? 'rejection-dialog-bulk' : 'rejection-dialog'}>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: test stub */}
-        <button type="button" onClick={() => onConfirm('too long')}>
-          confirm-reject
-        </button>
-      </div>
-    ) : null,
-}));
+vi.mock('../rejection-reason-dialog', () => {
+  const ConfirmRejectButton = ({ onConfirm }: { onConfirm: (r: string) => void }) => {
+    const handleClick = () => onConfirm('too long');
+    return (
+      <button type="button" onClick={handleClick}>
+        confirm-reject
+      </button>
+    );
+  };
+  return {
+    RejectionReasonDialog: ({
+      open,
+      onConfirm,
+      isBulk,
+    }: {
+      open: boolean;
+      onConfirm: (r: string) => void;
+      isBulk?: boolean;
+    }) =>
+      open ? (
+        <div data-testid={isBulk ? 'rejection-dialog-bulk' : 'rejection-dialog'}>
+          <ConfirmRejectButton onConfirm={onConfirm} />
+        </div>
+      ) : null,
+  };
+});
 
 import type { TimesheetRow } from '../approval-queue-table.js';
 import { ApprovalQueueTable } from '../approval-queue-table.js';

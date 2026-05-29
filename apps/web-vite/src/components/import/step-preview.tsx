@@ -15,7 +15,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 import type { ImportRow } from './import-wizard-dialog.js';
@@ -76,6 +76,9 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
 
   const hasNoInvalidRows = invalidRows.length === 0;
 
+  const showAll = useCallback(() => setShowErrorsOnly(false), []);
+  const showErrors = useCallback(() => setShowErrorsOnly(true), []);
+
   return (
     <div className="space-y-4">
       {/* Stats bar */}
@@ -97,16 +100,14 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
           <Button
             variant={showErrorsOnly ? 'outline' : 'default'}
             size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setShowErrorsOnly(false)}
+            onClick={showAll}
             type="button">
             {t('preview.showAll')}
           </Button>
           <Button
             variant={showErrorsOnly ? 'default' : 'outline'}
             size="sm"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setShowErrorsOnly(true)}
+            onClick={showErrors}
             type="button">
             {t('preview.showErrors')}
           </Button>

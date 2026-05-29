@@ -1,7 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -39,14 +39,19 @@ export function StepConfirm({
   const entityLabel =
     entityType === 'contractor' ? t('confirm.contractors') : t('confirm.contracts');
 
-  const handleImport = async () => {
+  const handleImport = useCallback(async () => {
     setHasError(false);
     try {
       await onImport();
     } catch {
       setHasError(true);
     }
-  };
+  }, [onImport]);
+
+  const handleViewEntities = useCallback(
+    () => router.push(entityType === 'contractor' ? '/contractors' : '/contracts'),
+    [router, entityType],
+  );
 
   // ---------------------------------------------------------------------------
   // Completion state
@@ -66,11 +71,7 @@ export function StepConfirm({
             </p>
           )}
         </div>
-        <Button
-          className="mt-6"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => router.push(entityType === 'contractor' ? '/contractors' : '/contracts')}
-          type="button">
+        <Button className="mt-6" onClick={handleViewEntities} type="button">
           {t('confirm.viewEntities', { entities: entityLabel })}
         </Button>
       </div>
@@ -99,7 +100,6 @@ export function StepConfirm({
         <AlertCircle className="size-12 text-destructive" />
         <h3 className="mt-4 text-lg font-semibold">{t('confirm.errorTitle')}</h3>
         <p className="mt-2 text-sm text-muted-foreground">{t('confirm.errorDescription')}</p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button className="mt-6" onClick={handleImport} type="button">
           {t('confirm.tryAgain')}
         </Button>
@@ -135,7 +135,6 @@ export function StepConfirm({
         </div>
       </div>
 
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button className="mt-8" onClick={handleImport} type="button">
         {t('confirm.importButton', { count: totalToImport })}
       </Button>

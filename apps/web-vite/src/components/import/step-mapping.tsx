@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 import type { EntityType } from './import-wizard-dialog.js';
@@ -40,6 +40,55 @@ const CONTRACT_FIELDS: TargetField[] = [
   { key: 'endDate', label: 'End Date', required: false },
   { key: 'contractorTaxId', label: 'Contractor Tax ID', required: true },
 ];
+
+interface MappingFieldSelectProps {
+  header: string;
+  currentTarget: string | null;
+  targetFields: TargetField[];
+  usedTargets: Set<string>;
+  onMappingChange: (header: string, value: string) => void;
+  skipLabel: string;
+  ariaMapColumnToField: string;
+  ariaMapTo: string;
+}
+
+function MappingFieldSelect({
+  header,
+  currentTarget,
+  targetFields,
+  usedTargets,
+  onMappingChange,
+  skipLabel,
+  ariaMapColumnToField,
+  ariaMapTo,
+}: MappingFieldSelectProps) {
+  const handleChange = useCallback(
+    (val: string | null) => onMappingChange(header, val ?? '__skip__'),
+    [onMappingChange, header],
+  );
+  return (
+    <Select
+      value={currentTarget ?? '__skip__'}
+      onValueChange={handleChange}
+      aria-label={ariaMapColumnToField}>
+      <SelectTrigger className="w-full" aria-label={ariaMapTo}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="__skip__">{skipLabel}</SelectItem>
+        {targetFields.map(field => {
+          const isUsedByOther = usedTargets.has(field.key) && currentTarget !== field.key;
+          return (
+            <SelectItem key={field.key} value={field.key} disabled={isUsedByOther}>
+              {field.label}
+              {field.required ? ' *' : ''}
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -76,15 +125,18 @@ export function StepMapping({
     return used;
   }, [columnMapping]);
 
-  const handleMappingChange = (header: string, value: string) => {
-    const newMapping = { ...columnMapping };
-    if (value === '__skip__') {
-      newMapping[header] = null;
-    } else {
-      newMapping[header] = value;
-    }
-    onMappingChange(newMapping);
-  };
+  const handleMappingChange = useCallback(
+    (header: string, value: string) => {
+      const newMapping = { ...columnMapping };
+      if (value === '__skip__') {
+        newMapping[header] = null;
+      } else {
+        newMapping[header] = value;
+      }
+      onMappingChange(newMapping);
+    },
+    [columnMapping, onMappingChange],
+  );
 
   const getSampleValue = (header: string): string => {
     for (const row of sampleRows) {
@@ -129,28 +181,16 @@ export function StepMapping({
               </div>
 
               {/* Target field select */}
-              <Select
-                value={currentTarget ?? '__skip__'}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val => handleMappingChange(header, val ?? '__skip__')}
-                aria-label={tAria('mapColumnToField', { header })}>
-                <SelectTrigger className="w-full" aria-label={tAria('mapTo', { header })}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__skip__">{t('mapping.skip')}</SelectItem>
-                  {targetFields.map(field => {
-                    const isUsedByOther = usedTargets.has(field.key) && currentTarget !== field.key;
-
-                    return (
-                      <SelectItem key={field.key} value={field.key} disabled={isUsedByOther}>
-                        {field.label}
-                        {field.required ? ' *' : ''}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+              <MappingFieldSelect
+                header={header}
+                currentTarget={currentTarget ?? null}
+                targetFields={targetFields}
+                usedTargets={usedTargets}
+                onMappingChange={handleMappingChange}
+                skipLabel={t('mapping.skip')}
+                ariaMapColumnToField={tAria('mapColumnToField', { header })}
+                ariaMapTo={tAria('mapTo', { header })}
+              />
             </div>
           );
         })}

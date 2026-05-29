@@ -15,6 +15,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Loader2, RefreshCw } from 'lucide-react';
 import type * as React from 'react';
+import { memo, useCallback } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
 import { FeatureGateContainer } from '../billing/feature-gate-container.js';
@@ -55,6 +56,51 @@ export function ChannelMappingEmpty({
   return <p className="text-sm text-muted-foreground">{t('noChannels')}</p>;
 }
 
+interface CategoryChannelRowProps {
+  category: string;
+  label: string;
+  ariaLabel: string;
+  value: string | undefined;
+  channels: TeamsChannel[];
+  placeholder: string;
+  onChannelSelect: (category: string, channelId: string) => void;
+}
+
+const CategoryChannelRow = memo(function CategoryChannelRow({
+  category,
+  label,
+  ariaLabel,
+  value,
+  channels,
+  placeholder,
+  onChannelSelect,
+}: CategoryChannelRowProps) {
+  const handleValueChange = useCallback(
+    (v: string | null) => {
+      if (v) onChannelSelect(category, v);
+    },
+    [category, onChannelSelect],
+  );
+
+  return (
+    <div className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-sm font-semibold">{label}</span>
+      <Select value={value} onValueChange={handleValueChange}>
+        <SelectTrigger className="w-full sm:w-64" aria-label={ariaLabel}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {channels.map(ch => (
+            <SelectItem key={ch.id} value={ch.id}>
+              {ch.displayName}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+});
+
 function ChannelMappingList({
   channels,
   localMapping,
@@ -72,30 +118,21 @@ function ChannelMappingList({
 }) {
   return (
     <>
-      {NOTIFICATION_CATEGORIES.map(category => (
-        <div
-          key={category}
-          className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm font-semibold">{tKey(t, CATEGORY_LABEL_KEYS[category])}</span>
-          <Select
+      {NOTIFICATION_CATEGORIES.map(category => {
+        const label = tKey(t, CATEGORY_LABEL_KEYS[category]);
+        return (
+          <CategoryChannelRow
+            key={category}
+            category={category}
+            label={label}
+            ariaLabel={`${label} notification channel`}
             value={localMapping[category] ?? undefined}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={v => v && onChannelSelect(category, v)}>
-            <SelectTrigger
-              className="w-full sm:w-64"
-              aria-label={`${tKey(t, CATEGORY_LABEL_KEYS[category])} notification channel`}>
-              <SelectValue placeholder={t('selectChannel')} />
-            </SelectTrigger>
-            <SelectContent>
-              {channels.map(ch => (
-                <SelectItem key={ch.id} value={ch.id}>
-                  {ch.displayName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      ))}
+            channels={channels}
+            placeholder={t('selectChannel')}
+            onChannelSelect={onChannelSelect}
+          />
+        );
+      })}
       <div className="flex justify-end pt-2">
         <Button onClick={onSave} disabled={isSaving}>
           {!!isSaving && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
@@ -128,6 +165,13 @@ export function TeamsChannelMappingCardView({
   saveMutation,
   t,
 }: TeamsChannelMappingCardViewProps) {
+  const handleTeamChange = useCallback(
+    (v: string | null) => {
+      if (v) setSelectedTeamId(v);
+    },
+    [setSelectedTeamId],
+  );
+
   let body: React.ReactNode = null;
   if (variant === 'error') {
     body = <ChannelMappingError t={t} />;
@@ -162,7 +206,6 @@ export function TeamsChannelMappingCardView({
                 <Button
                   variant="ghost"
                   size="icon"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                   onClick={handleRefresh}
                   disabled={isRefreshing}
                   aria-label={t('refreshChannels')}>
@@ -180,10 +223,7 @@ export function TeamsChannelMappingCardView({
 
         <CardContent className="space-y-4">
           {teams.length > 1 && (
-            <Select
-              value={selectedTeamId ?? undefined}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={v => v && setSelectedTeamId(v)}>
+            <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamChange}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t('selectChannel')} />
               </SelectTrigger>

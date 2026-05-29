@@ -7,7 +7,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import type { DirectoryRole } from '@contractor-ops/validators/roles';
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 // ---------------------------------------------------------------------------
@@ -43,17 +43,19 @@ export function RoleAssignmentControls({
   const t = useTranslations('GoogleWorkspace.import');
   const reactId = useId();
 
+  const handleRoleChange = useCallback(
+    (val: DirectoryRole | null) => {
+      if (val) onDefaultRoleChange(val);
+    },
+    [onDefaultRoleChange],
+  );
+
   return (
     <div className="space-y-2">
       <label htmlFor={`${reactId}-gw-default-role`} className="text-sm font-medium">
         {t('defaultRoleLabel')}
       </label>
-      <Select
-        value={defaultRole}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-        onValueChange={val => {
-          if (val) onDefaultRoleChange(val as DirectoryRole);
-        }}>
+      <Select value={defaultRole} onValueChange={handleRoleChange}>
         <SelectTrigger id={`${reactId}-gw-default-role`} className="w-60">
           <SelectValue>{ROLE_LABELS[defaultRole]}</SelectValue>
         </SelectTrigger>

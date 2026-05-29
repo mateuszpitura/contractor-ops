@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import { Cloud, Settings, TestTube } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 // ---------------------------------------------------------------------------
@@ -46,27 +46,28 @@ export function EnvironmentToggle({
   const reactId = useId();
   const [confirmSandbox, setConfirmSandbox] = useState(false);
 
-  function handleChange(newValue: string) {
-    const env = newValue as ZatcaEnvironment;
+  const handleChange = useCallback(
+    (newValue: string) => {
+      const env = newValue as ZatcaEnvironment;
 
-    if (env === 'sandbox' && value === 'production') {
-      // Production -> Sandbox requires confirmation
-      setConfirmSandbox(true);
-      return;
-    }
+      if (env === 'sandbox' && value === 'production') {
+        setConfirmSandbox(true);
+        return;
+      }
 
-    if (env === 'production' && !productionReady) {
-      // Can't switch to production without completing onboarding
-      return;
-    }
+      if (env === 'production' && !productionReady) {
+        return;
+      }
 
-    onChange(env);
-  }
+      onChange(env);
+    },
+    [value, productionReady, onChange],
+  );
 
-  function confirmSwitchToSandbox() {
+  const confirmSwitchToSandbox = useCallback(() => {
     setConfirmSandbox(false);
     onChange('sandbox');
-  }
+  }, [onChange]);
 
   return (
     <>
@@ -74,7 +75,6 @@ export function EnvironmentToggle({
         <p className="text-sm font-medium">{t('label')}</p>
         <RadioGroup
           value={value}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onValueChange={handleChange}
           className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {/* Sandbox */}
@@ -143,7 +143,6 @@ export function EnvironmentToggle({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('confirmDialog.cancel')}</AlertDialogCancel>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <AlertDialogAction onClick={confirmSwitchToSandbox}>
               {t('confirmDialog.confirm')}
             </AlertDialogAction>

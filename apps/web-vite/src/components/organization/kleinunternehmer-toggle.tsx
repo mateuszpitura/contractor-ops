@@ -62,7 +62,6 @@ export function KleinunternehmerToggle({
         <Switch
           id={`${id}-kleinunternehmer-switch`}
           checked={isKleinunternehmer}
-          // biome-ignore lint/nursery/noJsxPropsBind: small toggle component
           onCheckedChange={handleCheckedChange}
           disabled={mutation.isPending}
           aria-label={t('toggleLabel')}
@@ -84,7 +83,6 @@ export function KleinunternehmerToggle({
             <AlertDialogCancel disabled={mutation.isPending}>{tCommon('cancel')}</AlertDialogCancel>
             <Button
               type="button"
-              // biome-ignore lint/nursery/noJsxPropsBind: small toggle component
               onClick={handleConfirm}
               disabled={mutation.isPending}
               data-testid="kleinunternehmer-confirm">

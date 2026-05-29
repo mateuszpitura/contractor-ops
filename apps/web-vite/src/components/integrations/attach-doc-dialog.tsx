@@ -10,14 +10,69 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Search } from 'lucide-react';
+import { memo, useCallback } from 'react';
 
-import type { useAttachDocDialog } from './hooks/use-attach-doc-dialog.js';
+import type { DocSearchResult, useAttachDocDialog } from './hooks/use-attach-doc-dialog.js';
 import { ConfluenceIcon, NotionIcon } from './provider-icons.js';
 
 export type AttachDocDialogViewProps = ReturnType<typeof useAttachDocDialog> & {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
+
+interface FilterButtonProps {
+  value: 'all' | 'notion' | 'confluence';
+  label: string;
+  icon?: React.ReactNode;
+  active: boolean;
+  onSelect: (value: 'all' | 'notion' | 'confluence') => void;
+}
+
+const FilterButton = memo(function FilterButton({
+  value,
+  label,
+  icon,
+  active,
+  onSelect,
+}: FilterButtonProps) {
+  const handleClick = useCallback(() => onSelect(value), [value, onSelect]);
+  return (
+    <Button
+      variant={active ? 'secondary' : 'ghost'}
+      size="sm"
+      className="h-7 px-2.5 text-xs"
+      onClick={handleClick}>
+      {!!icon && <span className="me-1">{icon}</span>}
+      {label}
+    </Button>
+  );
+});
+
+interface SearchResultButtonProps {
+  result: DocSearchResult;
+  onSelect: (result: DocSearchResult) => void;
+  disabled: boolean;
+}
+
+const SearchResultButton = memo(function SearchResultButton({
+  result,
+  onSelect,
+  disabled,
+}: SearchResultButtonProps) {
+  const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
+  const handleClick = useCallback(() => onSelect(result), [result, onSelect]);
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center gap-2 rounded-md p-2 text-start transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+      onClick={handleClick}
+      disabled={disabled}>
+      <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
+      <span className="text-sm font-medium flex-1 truncate">{result.title}</span>
+      <span className="text-xs text-muted-foreground shrink-0">{result.subtitle}</span>
+    </button>
+  );
+});
 
 export function AttachDocDialogView({
   open,
@@ -47,6 +102,11 @@ export function AttachDocDialogView({
     },
   ];
 
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value),
+    [setQuery],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -60,24 +120,21 @@ export function AttachDocDialogView({
           <Input
             placeholder={t('docs.attachDialog.searchPlaceholder')}
             value={query}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             className="ps-9"
           />
         </div>
 
         <div className="flex gap-1">
           {filterButtons.map(btn => (
-            <Button
+            <FilterButton
               key={btn.value}
-              variant={providerFilter === btn.value ? 'secondary' : 'ghost'}
-              size="sm"
-              className="h-7 px-2.5 text-xs"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => setProviderFilter(btn.value)}>
-              {!!btn.icon && <span className="me-1">{btn.icon}</span>}
-              {btn.label}
-            </Button>
+              value={btn.value}
+              label={btn.label}
+              icon={btn.icon}
+              active={providerFilter === btn.value}
+              onSelect={setProviderFilter}
+            />
           ))}
         </div>
 
@@ -99,25 +156,14 @@ export function AttachDocDialogView({
             </p>
           ) : (
             <div className="space-y-0.5 p-1">
-              {results.map(result => {
-                const ProviderIcon = result.provider === 'notion' ? NotionIcon : ConfluenceIcon;
-
-                return (
-                  <button
-                    key={`${result.provider}-${result.id}`}
-                    type="button"
-                    className="flex w-full items-center gap-2 rounded-md p-2 text-start transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
-                    // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                    onClick={() => handleSelect(result)}
-                    disabled={attachMutation.isPending}>
-                    <ProviderIcon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="text-sm font-medium flex-1 truncate">{result.title}</span>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {result.subtitle}
-                    </span>
-                  </button>
-                );
-              })}
+              {results.map(result => (
+                <SearchResultButton
+                  key={`${result.provider}-${result.id}`}
+                  result={result}
+                  onSelect={handleSelect}
+                  disabled={attachMutation.isPending}
+                />
+              ))}
             </div>
           )}
         </ScrollArea>

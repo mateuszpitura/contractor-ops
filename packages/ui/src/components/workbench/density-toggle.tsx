@@ -1,7 +1,7 @@
 'use client';
 
 import { Rows2, Rows3 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { cn } from '../../lib/utils.js';
 import { Button } from '../shadcn/button.js';
@@ -57,13 +57,17 @@ export function DensityToggle({ labels, className }: DensityToggleProps) {
     labels?.[isCompact ? 'comfortable' : 'compact'] ??
     (isCompact ? 'Comfortable density' : 'Compact density');
 
+  const handleToggle = useCallback(
+    () => setDensity(prev => (prev === 'compact' ? 'comfortable' : 'compact')),
+    [],
+  );
+
   return (
     <Button
       type="button"
       variant="ghost"
       size="icon"
-      // biome-ignore lint/nursery/noJsxPropsBind: simple state toggle
-      onClick={() => setDensity(isCompact ? 'comfortable' : 'compact')}
+      onClick={handleToggle}
       aria-label={nextLabel}
       title={nextLabel}
       aria-pressed={isCompact}
