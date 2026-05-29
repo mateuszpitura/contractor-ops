@@ -66,43 +66,43 @@ export function OrgSettingsForm({
   isPending,
 }: OrgSettingsFormProps) {
   const handleCountryChange = useCallback(
-    (value: string) => {
+    (value: string | null) => {
       if (value) setValue('country', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleCurrencyChange = useCallback(
-    (value: string) => {
+    (value: string | null) => {
       if (value) setValue('currency', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleTimezoneChange = useCallback(
-    (value: string) => {
+    (value: string | null) => {
       if (value) setValue('timezone', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleLanguageChange = useCallback(
-    (value: string) => {
-      if (value) setValue('language', value as 'pl' | 'en' | 'ar' | 'de', { shouldDirty: true });
+    (value: 'pl' | 'en' | 'ar' | 'de' | null) => {
+      if (value) setValue('language', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleDateFormatChange = useCallback(
-    (value: string) => {
-      if (value) setValue('dateFormat', value as DateFormatKey, { shouldDirty: true });
+    (value: DateFormatKey | null) => {
+      if (value) setValue('dateFormat', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleTimeFormatChange = useCallback(
-    (value: string) => {
-      if (value) setValue('timeFormat', value as TimeFormatKey, { shouldDirty: true });
+    (value: TimeFormatKey | null) => {
+      if (value) setValue('timeFormat', value, { shouldDirty: true });
     },
     [setValue],
   );
   const handleFiscalYearMonthChange = useCallback(
-    (value: string) => {
+    (value: string | null) => {
       if (!value) return;
       setValue('fiscalYearStartMonth', Number.parseInt(value, 10), { shouldDirty: true });
     },
