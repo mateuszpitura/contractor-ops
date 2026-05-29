@@ -1,7 +1,6 @@
 import {
   ApprovalsIllustration,
   AtelierEmptyState,
-  AtelierPageHeader,
   SectionLabel,
   WORKBENCH_DATA_TABLE_CLASS,
   WORKBENCH_TABLE_PAGE_CLASS,
@@ -21,7 +20,9 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { ChangeRequestDiffCardContainer } from '../settings/change-request-diff-card-container.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { ApprovalQueueTable } from './approval-queue/data-table.js';
+import { ApprovalBulkActions } from './approval-queue/data-table-bulk-actions.js';
 import { ApprovalQueueToolbar } from './approval-queue/data-table-toolbar.js';
 import { ApprovalSidePanelContainer } from './approval-queue/side-panel-container.js';
 import { useApprovalQueue } from './hooks/use-approval-queue.js';
@@ -76,11 +77,15 @@ export function ApprovalQueueContainer() {
             search={search}
             onSearchChange={onSearchChange}
             isSearching={isSearching}
-            selectedIds={selectedIds}
-            onClearSelection={onClearSelection}
             isLoading={isLoading}
-            bulkActions={bulkActions}
           />
+          <div className="shrink-0">
+            <ApprovalBulkActions
+              selectedIds={selectedIds}
+              onClearSelection={onClearSelection}
+              bulkActions={bulkActions}
+            />
+          </div>
           <ApprovalQueueTable
             data={data}
             columns={columns}
@@ -105,7 +110,7 @@ export function ApprovalQueueContainer() {
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
