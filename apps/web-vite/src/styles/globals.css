@@ -744,33 +744,27 @@ html.theme-transition *::after {
 
 /* ─── Workbench scroll model ─────────────────────────────────────────
  *
- * Dense operational routes (contractors, invoices, payments, settings…)
- * pin the SidebarInset to the viewport height and scroll *inside* main
- * so the WORKBENCH_TABLE_* layout primitives can hand a flex-constrained
- * height to their data tables. Atelier routes (dashboard, reports) keep
- * document-level scroll instead because the bento surface has multiple
- * variable-height sections that look wrong inside a fixed pane.
+ * Only list/table routes opt into viewport-bound scroll, gated on the
+ * `.workbench-list-page` marker that WORKBENCH_TABLE_PAGE_CLASS emits
+ * (see packages/ui/src/components/workbench/table-page-layout.ts). When
+ * the active route renders one, we pin SidebarInset to the viewport so
+ * AtelierTableShell can hand a flex-constrained height to its scrollable
+ * table body. Other workbench routes (settings, forms, detail pages)
+ * keep document-level scroll so the footer breathes with the content
+ * instead of getting clipped at a flex-1 box edge.
  *
- * The mirror-to-body pattern (set by IntensityRouter via useEffect) means
- * this rule only attaches in workbench intensity — no JS conditional
- * className needed in dashboard-shell.tsx.
+ * `:has()` is required for the gate. All evergreen browsers ship it.
  */
-/*
- * Pin the shell to the viewport on every workbench route so tables scroll
- * internally inside <main>. AtelierTableShell already carries a
- * `min-h-[320px]` floor inside `constrainHeight`, so on viewports too
- * short for the bento (toolbar + chrome + 320px table) the shell pushes
- * SidebarInset past 100svh and the document falls back to its own
- * scroll. No media-query gate needed — the floor handles short viewports.
- */
-body[data-intensity="workbench"] [data-slot="sidebar-inset"] {
+body[data-intensity="workbench"] [data-slot="sidebar-inset"]:has(.workbench-list-page) {
   height: 100svh;
   max-height: 100svh;
   min-height: 0;
   overflow: hidden;
 }
 
-body[data-intensity="workbench"] [data-slot="sidebar-inset"] > main#main-content {
+body[data-intensity="workbench"]
+  [data-slot="sidebar-inset"]:has(.workbench-list-page)
+  > main#main-content {
   flex: 1 1 0%;
   min-height: 0;
   overflow-y: auto;

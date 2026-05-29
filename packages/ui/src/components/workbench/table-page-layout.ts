@@ -1,5 +1,11 @@
-/** List page root — fills dashboard main content area without growing the document. */
-export const WORKBENCH_TABLE_PAGE_CLASS = 'flex min-h-0 flex-1 flex-col gap-6';
+/**
+ * List page root — fills dashboard main content area without growing the
+ * document. The `workbench-list-page` token has no Tailwind effect; it's
+ * the marker the shell-level CSS keys on (`:has(.workbench-list-page)`)
+ * to opt main into viewport-bound scroll. Pages without it inherit the
+ * document-scroll behaviour so footers and forms breathe naturally.
+ */
+export const WORKBENCH_TABLE_PAGE_CLASS = 'workbench-list-page flex min-h-0 flex-1 flex-col gap-6';
 
 /** Section wrapping a directory table (label + data table). */
 export const WORKBENCH_TABLE_SECTION_CLASS = 'flex min-h-0 flex-1 flex-col gap-3';
