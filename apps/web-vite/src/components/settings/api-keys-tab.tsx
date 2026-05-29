@@ -48,7 +48,8 @@ import {
   ShieldAlert,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import type * as React from 'react';
+import { useCallback, useState } from 'react';
 import { FeatureGateContainer } from '../billing/feature-gate-container';
 import { CreateKeyDialogContainer } from './create-api-key-dialog-container.js';
 import { EditKeyDialogContainer } from './edit-api-key-dialog-container.js';
@@ -90,6 +91,107 @@ function statusBadgeVariant(status: ReturnType<typeof getKeyStatus>) {
   }
 }
 
+interface ScopeCheckboxRowProps<T extends string> {
+  id: string;
+  scopeValue: T;
+  label: string;
+  isChecked: boolean;
+  onToggle: (value: T) => void;
+}
+
+function ScopeCheckboxRow<T extends string>({
+  id,
+  scopeValue,
+  label,
+  isChecked,
+  onToggle,
+}: ScopeCheckboxRowProps<T>) {
+  const handleChange = useCallback(() => onToggle(scopeValue), [onToggle, scopeValue]);
+  return (
+    <label htmlFor={id} className="flex cursor-pointer items-center gap-2.5 text-sm">
+      <Checkbox id={id} checked={isChecked} onCheckedChange={handleChange} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+interface ApiKeyRowProps {
+  apiKey: {
+    id: string;
+    name: string;
+    prefix: string;
+    scopes: readonly string[];
+    createdBy: { name: string | null } | null;
+    createdAt: string | Date;
+    lastUsedAt: string | Date | null;
+    revokedAt: string | Date | null;
+    expiresAt: string | Date | null;
+  };
+  t: (key: string) => string;
+  onEdit: (target: { id: string; name: string; scopes: readonly string[] }) => void;
+  onRevoke: (target: { id: string; name: string }) => void;
+}
+
+function ApiKeyRow({ apiKey: key, t, onEdit, onRevoke }: ApiKeyRowProps) {
+  const status = getKeyStatus(key);
+  const handleEdit = useCallback(
+    () => onEdit({ id: key.id, name: key.name, scopes: key.scopes }),
+    [onEdit, key.id, key.name, key.scopes],
+  );
+  const handleRevoke = useCallback(
+    () => onRevoke({ id: key.id, name: key.name }),
+    [onRevoke, key.id, key.name],
+  );
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{key.name}</TableCell>
+      <TableCell>
+        <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+          co_live_{key.prefix}...
+        </code>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+          {key.scopes.map(scope => (
+            <Badge key={scope} variant="outline" className="text-[10px]">
+              {scope}
+            </Badge>
+          ))}
+        </div>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{key.createdBy?.name ?? '—'}</TableCell>
+      <TableCell className="text-muted-foreground text-xs">{formatDate(key.createdAt)}</TableCell>
+      <TableCell className="text-muted-foreground text-xs">{formatDate(key.lastUsedAt)}</TableCell>
+      <TableCell>
+        <Badge variant={statusBadgeVariant(status)} className="capitalize">
+          {status}
+        </Badge>
+      </TableCell>
+      <TableCell>
+        {status === 'active' && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon-sm" aria-label={t('aria.keyActions')} />}>
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Pencil className="mr-2 size-4" />
+                {t('editAction')}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={handleRevoke}>
+                <Trash2 className="mr-2 size-4" />
+                {t('revokeAction')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Create API Key Dialog
 // ---------------------------------------------------------------------------
@@ -120,10 +222,18 @@ export function CreateKeyDialog({
   handleClose,
   toggleScope,
 }: CreateKeyDialogProps) {
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [setName],
+  );
+  const handleExpiresAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setExpiresAt(e.target.value),
+    [setExpiresAt],
+  );
+
   // After creation — show plaintext key
   if (createdKey) {
     return (
-      // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -137,7 +247,6 @@ export function CreateKeyDialog({
           <div className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -167,7 +276,6 @@ export function CreateKeyDialog({
 
   // Creation form
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -185,8 +293,7 @@ export function CreateKeyDialog({
               id={`${id}-key-name`}
               placeholder={t('createDialog.namePlaceholder')}
               value={name}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setName(e.target.value)}
+              onChange={handleNameChange}
               autoFocus
             />
           </div>
@@ -195,18 +302,14 @@ export function CreateKeyDialog({
             <Label>{t('createDialog.scopesLabel')}</Label>
             <div className="space-y-2 rounded-lg border p-3">
               {AVAILABLE_SCOPES.map(scope => (
-                <label
+                <ScopeCheckboxRow
                   key={scope.value}
-                  htmlFor={`${id}-scope-${scope.value}`}
-                  className="flex cursor-pointer items-center gap-2.5 text-sm">
-                  <Checkbox
-                    id={`${id}-scope-${scope.value}`}
-                    checked={scopes.includes(scope.value)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                    onCheckedChange={() => toggleScope(scope.value)}
-                  />
-                  <span>{t(scope.labelKey)}</span>
-                </label>
+                  id={`${id}-scope-${scope.value}`}
+                  scopeValue={scope.value}
+                  label={t(scope.labelKey)}
+                  isChecked={scopes.includes(scope.value)}
+                  onToggle={toggleScope}
+                />
               ))}
             </div>
           </div>
@@ -217,8 +320,7 @@ export function CreateKeyDialog({
               id={`${id}-key-expiry`}
               type="date"
               value={expiresAt}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setExpiresAt(e.target.value)}
+              onChange={handleExpiresAtChange}
               min={new Date().toISOString().split('T')[0]}
             />
           </div>
@@ -227,7 +329,6 @@ export function CreateKeyDialog({
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
           <Button
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleCreate}
             disabled={!name.trim() || scopes.length === 0 || createMutation.isPending}>
             {!!createMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
@@ -276,11 +377,7 @@ export function RevokeKeyDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleRevoke}
-            disabled={isPending}>
+          <AlertDialogAction variant="destructive" onClick={handleRevoke} disabled={isPending}>
             {!!isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             {t('revokeDialog.confirmButton')}
           </AlertDialogAction>
@@ -318,8 +415,12 @@ export function EditKeyDialog({
   handleClose,
   toggleScope,
 }: EditKeyDialogProps) {
+  const handleNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value),
+    [setName],
+  );
+
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -337,8 +438,7 @@ export function EditKeyDialog({
               id={`${id}-edit-name`}
               placeholder={t('createDialog.namePlaceholder')}
               value={name}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setName(e.target.value)}
+              onChange={handleNameChange}
               autoFocus
             />
           </div>
@@ -347,18 +447,14 @@ export function EditKeyDialog({
             <Label>{t('createDialog.scopesLabel')}</Label>
             <div className="space-y-2 rounded-lg border p-3">
               {AVAILABLE_SCOPES.map(scope => (
-                <label
+                <ScopeCheckboxRow
                   key={scope.value}
-                  htmlFor={`${id}-edit-scope-${scope.value}`}
-                  className="flex cursor-pointer items-center gap-2.5 text-sm">
-                  <Checkbox
-                    id={`${id}-edit-scope-${scope.value}`}
-                    checked={scopes.includes(scope.value)}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                    onCheckedChange={() => toggleScope(scope.value)}
-                  />
-                  <span>{t(scope.labelKey)}</span>
-                </label>
+                  id={`${id}-edit-scope-${scope.value}`}
+                  scopeValue={scope.value}
+                  label={t(scope.labelKey)}
+                  isChecked={scopes.includes(scope.value)}
+                  onToggle={toggleScope}
+                />
               ))}
             </div>
           </div>
@@ -366,10 +462,7 @@ export function EditKeyDialog({
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
-          <Button
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleSubmit}
-            disabled={!canSubmit}>
+          <Button onClick={handleSubmit} disabled={!canSubmit}>
             {!!updateMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             {t('editDialog.submitButton')}
           </Button>
@@ -394,6 +487,14 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
     scopes: readonly string[];
   } | null>(null);
 
+  const openCreate = useCallback(() => setCreateOpen(true), []);
+  const handleEditOpenChange = useCallback((open: boolean) => {
+    if (!open) setEditTarget(null);
+  }, []);
+  const handleRevokeOpenChange = useCallback((open: boolean) => {
+    if (!open) setRevokeTarget(null);
+  }, []);
+
   return (
     <FeatureGateContainer requiredTier="Enterprise" featureName="API Keys">
       <div className="space-y-4">
@@ -402,8 +503,7 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
             <h3 className="text-sm font-semibold">{t('title')}</h3>
             <p className="text-xs text-muted-foreground">{t('description')}</p>
           </div>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
+          <Button size="sm" onClick={openCreate}>
             <Plus className="mr-1.5 size-4" />
             {t('createKeyButton')}
           </Button>
@@ -429,79 +529,15 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {keys.map(key => {
-                  const status = getKeyStatus(key);
-                  return (
-                    <TableRow key={key.id}>
-                      <TableCell className="font-medium">{key.name}</TableCell>
-                      <TableCell>
-                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-                          co_live_{key.prefix}...
-                        </code>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {key.scopes.map(scope => (
-                            <Badge key={scope} variant="outline" className="text-[10px]">
-                              {scope}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {key.createdBy?.name ?? '—'}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {formatDate(key.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {formatDate(key.lastUsedAt)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusBadgeVariant(status)} className="capitalize">
-                          {status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {status === 'active' && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  aria-label={t('aria.keyActions')}
-                                />
-                              }>
-                              <MoreHorizontal className="size-4" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                                onClick={() =>
-                                  setEditTarget({
-                                    id: key.id,
-                                    name: key.name,
-                                    scopes: key.scopes,
-                                  })
-                                }>
-                                <Pencil className="mr-2 size-4" />
-                                {t('editAction')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                                onClick={() => setRevokeTarget({ id: key.id, name: key.name })}>
-                                <Trash2 className="mr-2 size-4" />
-                                {t('revokeAction')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {keys.map(key => (
+                  <ApiKeyRow
+                    key={key.id}
+                    apiKey={key}
+                    t={t}
+                    onEdit={setEditTarget}
+                    onRevoke={setRevokeTarget}
+                  />
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -512,12 +548,7 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
             </div>
             <p className="text-sm font-medium">{t('emptyHeading')}</p>
             <p className="text-xs text-muted-foreground">{t('emptyBody')}</p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-2"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => setCreateOpen(true)}>
+            <Button size="sm" variant="outline" className="mt-2" onClick={openCreate}>
               <Plus className="mr-1.5 size-4" />
               {t('createKeyButton')}
             </Button>
@@ -532,10 +563,7 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
             initialName={editTarget.name}
             initialScopes={editTarget.scopes}
             open={!!editTarget}
-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-            onOpenChange={open => {
-              if (!open) setEditTarget(null);
-            }}
+            onOpenChange={handleEditOpenChange}
           />
         )}
 
@@ -544,10 +572,7 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
             keyId={revokeTarget.id}
             keyName={revokeTarget.name}
             open={!!revokeTarget}
-            // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-            onOpenChange={open => {
-              if (!open) setRevokeTarget(null);
-            }}
+            onOpenChange={handleRevokeOpenChange}
           />
         )}
       </div>

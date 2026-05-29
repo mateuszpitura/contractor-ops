@@ -64,7 +64,6 @@ export function InvoiceMatchingSettings({
             min={1}
             max={100}
             value={threshold}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setThreshold(Number(e.target.value))}
             className="max-w-[120px]"
           />
@@ -72,7 +71,6 @@ export function InvoiceMatchingSettings({
         </div>
       </CardContent>
       <CardFooter>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button onClick={handleSave} disabled={!isDirty || isPending}>
           {isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />

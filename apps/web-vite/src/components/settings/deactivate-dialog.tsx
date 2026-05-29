@@ -46,11 +46,7 @@ export function DeactivateDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>{t('cancel')}</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleConfirm}
-            disabled={isPending}>
+          <Button variant="destructive" onClick={handleConfirm} disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />

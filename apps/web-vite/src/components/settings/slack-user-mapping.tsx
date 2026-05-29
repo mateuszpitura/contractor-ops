@@ -3,7 +3,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { getAvatarInitials } from '../../lib/avatar-initials';
 import { SimpleDataTable } from '../shared/simple-data-table.js';
@@ -28,6 +28,32 @@ const STATUS_BADGE: Record<string, { labelKey: string; className: string }> = {
 const noopOnLinked = () => undefined;
 
 export type SlackUserMappingProps = ReturnType<typeof useSlackUserMapping>;
+
+interface UnlinkButtonProps {
+  externalLinkId: string;
+  confirmMessage: string;
+  label: string;
+  disabled: boolean;
+  onUnlink: (id: string) => void;
+}
+
+function UnlinkButton({
+  externalLinkId,
+  confirmMessage,
+  label,
+  disabled,
+  onUnlink,
+}: UnlinkButtonProps) {
+  const handleClick = useCallback(() => {
+    if (!window.confirm(confirmMessage)) return;
+    onUnlink(externalLinkId);
+  }, [confirmMessage, externalLinkId, onUnlink]);
+  return (
+    <Button variant="ghost" size="sm" onClick={handleClick} disabled={disabled}>
+      {label}
+    </Button>
+  );
+}
 
 function getMappingStatus(mapping: UserMapping): 'auto_matched' | 'manually_linked' | 'unmatched' {
   if (!mapping.slackLink) return 'unmatched';
@@ -120,17 +146,13 @@ export function SlackUserMapping({
           const m = row.original;
           if (m.slackLink) {
             return (
-              <Button
-                variant="ghost"
-                size="sm"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  if (!window.confirm(t('integrations.userMapping.unlinkConfirm'))) return;
-                  handleUnlink(m.slackLink?.externalLinkId ?? '');
-                }}
-                disabled={isUnlinkPending}>
-                {t('integrations.userMapping.unlinkUser')}
-              </Button>
+              <UnlinkButton
+                externalLinkId={m.slackLink.externalLinkId ?? ''}
+                confirmMessage={t('integrations.userMapping.unlinkConfirm')}
+                label={t('integrations.userMapping.unlinkUser')}
+                disabled={isUnlinkPending}
+                onUnlink={handleUnlink}
+              />
             );
           }
           return <LinkUserPopoverContainer userId={m.userId} onLinked={noopOnLinked} />;

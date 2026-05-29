@@ -58,7 +58,6 @@ export function OutOfOfficeSection({
             id="ooo-reason"
             rows={2}
             value={reason}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => setReason(e.target.value)}
             disabled={isPending}
             maxLength={500}
@@ -67,11 +66,7 @@ export function OutOfOfficeSection({
         </div>
       </CardContent>
       <CardFooter className="justify-end gap-2">
-        <Button
-          variant="outline"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={handleClear}
-          disabled={isPending}>
+        <Button variant="outline" onClick={handleClear} disabled={isPending}>
           {isClearPending && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
           {t('clearCta')}
         </Button>

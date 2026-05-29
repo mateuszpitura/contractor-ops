@@ -1,11 +1,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
@@ -17,7 +19,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Loader2, UserPlus } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import type { InviteValues, useInviteDialog } from './hooks/use-invite-dialog.js';
 
@@ -44,6 +46,13 @@ export function InviteDialog({
     formState: { errors },
   } = form;
 
+  const handleRoleChange = useCallback(
+    (value: InviteValues['role'] | null) => {
+      if (value) setValue('role', value);
+    },
+    [setValue],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -55,48 +64,49 @@ export function InviteDialog({
           <DialogDescription>{t('body', { orgName: '' })}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-invite-email`} className="text-[13px]">
-              {t('emailLabel')}
-            </Label>
-            <Input
-              id={`${id}-invite-email`}
-              type="email"
-              autoComplete="email"
-              disabled={isPending}
-              {...register('email')}
-            />
-            {!!errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)} className={dialogFormLayoutClassName}>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-invite-email`} className="text-[13px]">
+                {t('emailLabel')}
+              </Label>
+              <Input
+                id={`${id}-invite-email`}
+                type="email"
+                autoComplete="email"
+                disabled={isPending}
+                {...register('email')}
+              />
+              {!!errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-invite-role`} className="text-[13px]">
-              {t('roleLabel')}
-            </Label>
-            <Select
-              value={watch('role')}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={value => setValue('role', value as InviteValues['role'])}
-              disabled={isPending}
-              items={roleItems}>
-              <SelectTrigger id={`${id}-invite-role`} className="w-full">
-                <SelectValue placeholder={t('rolePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent side="bottom" className="max-h-64 overflow-y-auto">
-                {roleItems.map(item => (
-                  <SelectItem key={item.value} value={item.value} className="py-2">
-                    <div className="flex flex-col">
-                      <span>{item.label}</span>
-                      <span className="text-xs font-normal text-muted-foreground whitespace-normal">
-                        {item.description}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-invite-role`} className="text-[13px]">
+                {t('roleLabel')}
+              </Label>
+              <Select
+                value={watch('role')}
+                onValueChange={handleRoleChange}
+                disabled={isPending}
+                items={roleItems}>
+                <SelectTrigger id={`${id}-invite-role`} className="w-full">
+                  <SelectValue placeholder={t('rolePlaceholder')} />
+                </SelectTrigger>
+                <SelectContent side="bottom" className="max-h-64 overflow-y-auto">
+                  {roleItems.map(item => (
+                    <SelectItem key={item.value} value={item.value} className="py-2">
+                      <div className="flex flex-col">
+                        <span>{item.label}</span>
+                        <span className="text-xs font-normal text-muted-foreground whitespace-normal">
+                          {item.description}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </DialogBody>
 
           <DialogFooter showCloseButton>
             <Button type="submit" disabled={isPending}>

@@ -20,7 +20,9 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys';
+import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { ChainEditorDialogContainer } from './chain-editor-dialog-container.js';
 import type { useApprovalChainsTab } from './hooks/use-approval-chains-tab.js';
 
@@ -42,6 +44,83 @@ function formatConditionSummary(conditions: unknown, t: SettingsTranslateFn): st
 
 export type ApprovalChainsTabProps = ReturnType<typeof useApprovalChainsTab>;
 
+type Chain = ApprovalChainsTabProps['chains'][number];
+
+interface ChainCardProps {
+  chain: Chain;
+  t: ApprovalChainsTabProps['t'];
+  tAria: ApprovalChainsTabProps['tAria'];
+  isTogglePending: boolean;
+  onToggleActive: (chain: Chain) => void;
+  onEdit: (chain: Chain) => void;
+  onRequestDelete: (id: string | null) => void;
+}
+
+function ChainCard({
+  chain,
+  t,
+  tAria,
+  isTogglePending,
+  onToggleActive,
+  onEdit,
+  onRequestDelete,
+}: ChainCardProps) {
+  const handleToggle = useCallback(() => onToggleActive(chain), [onToggleActive, chain]);
+  const handleEditClick = useCallback(() => onEdit(chain), [onEdit, chain]);
+  const handleDeleteClick = useCallback(
+    () => onRequestDelete(chain.id),
+    [onRequestDelete, chain.id],
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold">{chain.name}</span>
+            {!!chain.isDefault && <Badge variant="secondary">{t('approvals.defaultBadge')}</Badge>}
+          </div>
+          <Switch
+            checked={chain.isActive}
+            onCheckedChange={handleToggle}
+            disabled={isTogglePending}
+            aria-label={tAria('toggleActive', { name: chain.name })}
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary">
+            {t('approvals.levelsCount', {
+              n: Array.isArray(chain.stepsJson) ? chain.stepsJson.length : 0,
+            })}
+          </Badge>
+          <span className="text-sm text-muted-foreground">
+            {formatConditionSummary(
+              chain.conditionsJson,
+              (key: string, params?: Record<string, string | number>) => tKey(t, key, params),
+            )}
+          </span>
+        </div>
+      </CardContent>
+      <CardFooter className="gap-2">
+        <Button variant="ghost" size="sm" onClick={handleEditClick}>
+          <Pencil className="me-1.5 size-3.5" />
+          {t('approvals.edit')}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive"
+          onClick={handleDeleteClick}>
+          <Trash2 className="me-1.5 size-3.5" />
+          {t('approvals.delete')}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
 export function ApprovalChainsTab({
   t,
   tAria,
@@ -59,6 +138,17 @@ export function ApprovalChainsTab({
   handleCreate,
   handleDelete,
 }: ApprovalChainsTabProps) {
+  const handleAlertOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setDeletingChainId(null);
+    },
+    [setDeletingChainId],
+  );
+
+  const handleConfirmDelete = useCallback(() => {
+    if (deletingChainId) handleDelete(deletingChainId);
+  }, [deletingChainId, handleDelete]);
+
   if (chainsQuery.isLoading) {
     return (
       <div className="space-y-4">
@@ -88,7 +178,7 @@ export function ApprovalChainsTab({
     return (
       <>
         <AtelierEmptyState
-          variant="subview"
+          variant="page"
           illustration={ApprovalsIllustration}
           heading={t('approvals.empty.heading')}
           body={t('approvals.empty.body')}
@@ -97,12 +187,7 @@ export function ApprovalChainsTab({
             onClick: handleCreate,
             icon: Plus,
           }}
-          renderAction={action => (
-            <Button onClick={action.onClick}>
-              {action.icon ? <action.icon className="me-1.5 size-4" /> : null}
-              {action.label}
-            </Button>
-          )}
+          renderAction={renderEmptyStateAction}
         />
         <ChainEditorDialogContainer
           open={editorOpen}
@@ -121,7 +206,6 @@ export function ApprovalChainsTab({
             <h3 className="text-base font-semibold">{t('approvals.heading')}</h3>
             <p className="text-sm text-muted-foreground">{t('approvals.description')}</p>
           </div>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleCreate}>
             <Plus className="me-1.5 size-4" />
             {t('approvals.createChain')}
@@ -129,56 +213,16 @@ export function ApprovalChainsTab({
         </div>
 
         {chains.map(chain => (
-          <Card key={chain.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">{chain.name}</span>
-                  {!!chain.isDefault && (
-                    <Badge variant="secondary">{t('approvals.defaultBadge')}</Badge>
-                  )}
-                </div>
-                <Switch
-                  checked={chain.isActive}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onCheckedChange={() => handleToggleActive(chain)}
-                  disabled={toggleActiveMutation.isPending}
-                  aria-label={tAria('toggleActive', { name: chain.name })}
-                />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary">
-                  {t('approvals.levelsCount', {
-                    n: Array.isArray(chain.stepsJson) ? chain.stepsJson.length : 0,
-                  })}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {formatConditionSummary(
-                    chain.conditionsJson,
-                    (key: string, params?: Record<string, string | number>) => tKey(t, key, params),
-                  )}
-                </span>
-              </div>
-            </CardContent>
-            <CardFooter className="gap-2">
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button variant="ghost" size="sm" onClick={() => handleEdit(chain)}>
-                <Pencil className="me-1.5 size-3.5" />
-                {t('approvals.edit')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setDeletingChainId(chain.id)}>
-                <Trash2 className="me-1.5 size-3.5" />
-                {t('approvals.delete')}
-              </Button>
-            </CardFooter>
-          </Card>
+          <ChainCard
+            key={chain.id}
+            chain={chain}
+            t={t}
+            tAria={tAria}
+            isTogglePending={toggleActiveMutation.isPending}
+            onToggleActive={handleToggleActive}
+            onEdit={handleEdit}
+            onRequestDelete={setDeletingChainId}
+          />
         ))}
       </div>
 
@@ -188,12 +232,7 @@ export function ApprovalChainsTab({
         chainData={editingChain}
       />
 
-      <AlertDialog
-        open={deletingChainId !== null}
-        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-        onOpenChange={open => {
-          if (!open) setDeletingChainId(null);
-        }}>
+      <AlertDialog open={deletingChainId !== null} onOpenChange={handleAlertOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -207,10 +246,7 @@ export function ApprovalChainsTab({
             <AlertDialogAction
               variant="destructive"
               disabled={deleteMutation.isPending}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                if (deletingChainId) handleDelete(deletingChainId);
-              }}>
+              onClick={handleConfirmDelete}>
               {t('approvals.deleteConfirm.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

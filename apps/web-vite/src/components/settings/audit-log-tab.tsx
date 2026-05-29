@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Calendar as CalendarIcon, Download, Loader2, Search, Shield, X } from 'lucide-react';
+import type * as React from 'react';
 import { useCallback, useId } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { enumKey } from '../../lib/enum-key';
@@ -37,6 +38,80 @@ function ActorOptionButton({
       className={`flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-start text-sm hover:bg-accent ${isSelected ? 'bg-accent/60 font-medium text-foreground' : ''}`}>
       <span className="truncate">{name}</span>
     </button>
+  );
+}
+
+interface FilterCheckboxRowProps<T extends string> {
+  reactId: string;
+  group: 'action' | 'resource';
+  value: T;
+  isChecked: boolean;
+  label: string;
+  onToggle: (value: T) => void;
+}
+
+function FilterCheckboxRow<T extends string>({
+  reactId,
+  group,
+  value,
+  isChecked,
+  label,
+  onToggle,
+}: FilterCheckboxRowProps<T>) {
+  const handleChange = useCallback(() => onToggle(value), [onToggle, value]);
+  return (
+    <label
+      htmlFor={`${reactId}-${group}-${value}`}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox
+        id={`${reactId}-${group}-${value}`}
+        checked={isChecked}
+        onCheckedChange={handleChange}
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+interface FilterChipProps<T extends string> {
+  value: T;
+  label: string;
+  ariaLabel: string;
+  onRemove: (value: T) => void;
+}
+
+function FilterChip<T extends string>({ value, label, ariaLabel, onRemove }: FilterChipProps<T>) {
+  const handleClick = useCallback(() => onRemove(value), [onRemove, value]);
+  return (
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+      <span className="text-xs">{label}</span>
+      <button
+        type="button"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        onClick={handleClick}
+        aria-label={ariaLabel}>
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
+  );
+}
+
+interface FilterTriggerButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  label: string;
+  count?: number;
+  disabled?: boolean;
+}
+
+function FilterTriggerButton({ label, count, disabled, ...rest }: FilterTriggerButtonProps) {
+  return (
+    <Button {...rest} variant="outline" size="sm" className="h-8 gap-1.5" disabled={disabled}>
+      <span className="truncate">{label}</span>
+      {!!count && (
+        <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+          {count}
+        </Badge>
+      )}
+    </Button>
   );
 }
 
@@ -117,6 +192,48 @@ export function AuditLogTab({
 }: AuditLogTabProps) {
   const reactId = useId();
 
+  const handleLocalSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setLocalSearch(e.target.value),
+    [setLocalSearch],
+  );
+  const handleActorQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setActorQuery(e.target.value),
+    [setActorQuery],
+  );
+  const renderActorTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <FilterTriggerButton
+        {...props}
+        label={selectedActorLabel ?? t('filterActor')}
+        count={actorId ? 1 : 0}
+        disabled={isLoading}
+      />
+    ),
+    [selectedActorLabel, t, actorId, isLoading],
+  );
+  const renderActionTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <FilterTriggerButton
+        {...props}
+        label={t('filterAction')}
+        count={actions.length}
+        disabled={isLoading}
+      />
+    ),
+    [t, actions.length, isLoading],
+  );
+  const renderResourceTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <FilterTriggerButton
+        {...props}
+        label={t('filterResource')}
+        count={resourceTypes.length}
+        disabled={isLoading}
+      />
+    ),
+    [t, resourceTypes.length, isLoading],
+  );
+
   if (isTrulyEmpty && !isLoading) {
     return (
       <AtelierEmptyState
@@ -138,8 +255,7 @@ export function AuditLogTab({
           <Input
             value={localSearch}
             disabled={isLoading}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setLocalSearch(e.target.value)}
+            onChange={handleLocalSearchChange}
             placeholder={t('searchPlaceholder')}
             className="ps-9"
           />
@@ -160,34 +276,14 @@ export function AuditLogTab({
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
           <Popover open={actorOpen} onOpenChange={setActorOpen}>
-            <PopoverTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button
-                  {...props}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5"
-                  disabled={isLoading}>
-                  <span className="truncate">{selectedActorLabel ?? t('filterActor')}</span>
-                  {actorId && (
-                    <Badge
-                      variant="secondary"
-                      className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                      1
-                    </Badge>
-                  )}
-                </Button>
-              )}
-            />
+            <PopoverTrigger render={renderActorTrigger} />
             <PopoverContent className="w-64 p-0" align="start">
               <div className="space-y-2 p-3">
                 <h4 className="text-[13px] font-medium text-foreground">{t('filterActor')}</h4>
                 <Input
                   placeholder={t('filterActorSearchPlaceholder')}
                   value={actorQuery}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={e => setActorQuery(e.target.value)}
+                  onChange={handleActorQueryChange}
                   className="h-7 text-xs"
                 />
                 {!actorQuery.trim() && actorOptions.length > MAX_VISIBLE_ACTORS && (
@@ -219,43 +315,21 @@ export function AuditLogTab({
           </Popover>
 
           <Popover>
-            <PopoverTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button
-                  {...props}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5"
-                  disabled={isLoading}>
-                  {t('filterAction')}
-                  {actions.length > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                      {actions.length}
-                    </Badge>
-                  )}
-                </Button>
-              )}
-            />
+            <PopoverTrigger render={renderActionTrigger} />
             <PopoverContent className="w-52 p-0" align="start">
               <div className="space-y-2 p-4">
                 <h4 className="text-[13px] font-medium text-foreground">{t('filterAction')}</h4>
                 <div className="space-y-1">
                   {ACTION_OPTIONS.map(action => (
-                    <label
+                    <FilterCheckboxRow
                       key={action}
-                      htmlFor={`${reactId}-action-${action}`}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                      <Checkbox
-                        id={`${reactId}-action-${action}`}
-                        checked={actions.includes(action)}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                        onCheckedChange={() => toggleAction(action)}
-                      />
-                      <span>{tDynLoose(t, 'actions', enumKey(action))}</span>
-                    </label>
+                      reactId={reactId}
+                      group="action"
+                      value={action}
+                      isChecked={actions.includes(action)}
+                      label={tDynLoose(t, 'actions', enumKey(action))}
+                      onToggle={toggleAction}
+                    />
                   ))}
                 </div>
               </div>
@@ -263,43 +337,21 @@ export function AuditLogTab({
           </Popover>
 
           <Popover>
-            <PopoverTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button
-                  {...props}
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5"
-                  disabled={isLoading}>
-                  {t('filterResource')}
-                  {resourceTypes.length > 0 && (
-                    <Badge
-                      variant="secondary"
-                      className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                      {resourceTypes.length}
-                    </Badge>
-                  )}
-                </Button>
-              )}
-            />
+            <PopoverTrigger render={renderResourceTrigger} />
             <PopoverContent className="w-52 p-0" align="start">
               <div className="space-y-2 p-4">
                 <h4 className="text-[13px] font-medium text-foreground">{t('filterResource')}</h4>
                 <div className="space-y-1">
                   {RESOURCE_TYPE_OPTIONS.map(rt => (
-                    <label
+                    <FilterCheckboxRow
                       key={rt}
-                      htmlFor={`${reactId}-resource-${rt}`}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                      <Checkbox
-                        id={`${reactId}-resource-${rt}`}
-                        checked={resourceTypes.includes(rt)}
-                        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                        onCheckedChange={() => toggleResourceType(rt)}
-                      />
-                      <span>{tDynLoose(t, 'resources', enumKey(rt))}</span>
-                    </label>
+                      reactId={reactId}
+                      group="resource"
+                      value={rt}
+                      isChecked={resourceTypes.includes(rt)}
+                      label={tDynLoose(t, 'resources', enumKey(rt))}
+                      onToggle={toggleResourceType}
+                    />
                   ))}
                 </div>
               </div>
@@ -328,7 +380,6 @@ export function AuditLogTab({
                   mode="range"
                   numberOfMonths={2}
                   selected={dateRangeValue}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
                   onSelect={handleDateRangeSelect}
                 />
               </div>
@@ -346,34 +397,22 @@ export function AuditLogTab({
         {activeFilterCount > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
             {actions.map(a => (
-              <Badge key={`a-${a}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">{tDynLoose(t, 'actions', enumKey(a))}</span>
-                <button
-                  type="button"
-                  className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => removeAction(a)}
-                  aria-label={tAria('removeFilter', {
-                    label: tDynLoose(t, 'actions', enumKey(a)),
-                  })}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+              <FilterChip
+                key={`a-${a}`}
+                value={a}
+                label={tDynLoose(t, 'actions', enumKey(a))}
+                ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'actions', enumKey(a)) })}
+                onRemove={removeAction}
+              />
             ))}
             {resourceTypes.map(rt => (
-              <Badge key={`r-${rt}`} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-                <span className="text-xs">{tDynLoose(t, 'resources', enumKey(rt))}</span>
-                <button
-                  type="button"
-                  className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => removeResourceType(rt)}
-                  aria-label={tAria('removeFilter', {
-                    label: tDynLoose(t, 'resources', enumKey(rt)),
-                  })}>
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
+              <FilterChip
+                key={`r-${rt}`}
+                value={rt}
+                label={tDynLoose(t, 'resources', enumKey(rt))}
+                ariaLabel={tAria('removeFilter', { label: tDynLoose(t, 'resources', enumKey(rt)) })}
+                onRemove={removeResourceType}
+              />
             ))}
             {actorId && (
               <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">

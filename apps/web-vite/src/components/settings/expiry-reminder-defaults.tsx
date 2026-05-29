@@ -9,6 +9,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Save } from 'lucide-react';
+import type * as React from 'react';
+import { useCallback } from 'react';
 
 import type { useExpiryReminderDefaults } from './hooks/use-expiry-reminder-defaults.js';
 
@@ -23,6 +25,10 @@ export function ExpiryReminderDefaults({
   isPending,
   handleSave,
 }: ExpiryReminderDefaultsProps) {
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value),
+    [setInputValue],
+  );
   return (
     <Card>
       <CardHeader>
@@ -37,15 +43,13 @@ export function ExpiryReminderDefaults({
           <Input
             id={`${id}-reminder-days`}
             value={inputValue}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setInputValue(e.target.value)}
+            onChange={handleChange}
             placeholder={t('expiryReminders.placeholder')}
           />
           <p className="text-xs text-muted-foreground">{t('expiryReminders.description')}</p>
         </div>
       </CardContent>
       <CardFooter>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button onClick={handleSave} disabled={!isDirty || isPending}>
           {isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />

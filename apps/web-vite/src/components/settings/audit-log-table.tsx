@@ -23,6 +23,7 @@ import type { ColumnDef, Row } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronRight } from 'lucide-react';
+import type * as React from 'react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { Link } from '../../i18n/navigation';
 import { tDynLoose } from '../../i18n/typed-keys';
@@ -31,6 +32,41 @@ import { enumKey } from '../../lib/enum-key';
 import { DataTablePagination } from '../shared/data-table-pagination.js';
 import { shouldIgnoreRowClick } from '../shared/row-click.js';
 import { AuditLogDiffViewer } from './audit-log-diff-viewer';
+
+const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
+
+interface ExpandRowButtonProps {
+  rowId: string;
+  isExpanded: boolean;
+  expandLabel: string;
+  collapseLabel: string;
+  onToggle: (id: string) => void;
+}
+
+function ExpandRowButton({
+  rowId,
+  isExpanded,
+  expandLabel,
+  collapseLabel,
+  onToggle,
+}: ExpandRowButtonProps) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggle(rowId);
+    },
+    [onToggle, rowId],
+  );
+  return (
+    <button
+      type="button"
+      className="flex items-center justify-center rounded p-1 hover:bg-muted"
+      onClick={handleClick}
+      aria-label={isExpanded ? collapseLabel : expandLabel}>
+      <ChevronRight className={`size-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+    </button>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -140,6 +176,11 @@ export function AuditLogTable({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
+  const toggleSortOrder = useCallback(
+    () => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc'),
+    [onSortOrderChange, sortOrder],
+  );
+
   const columns: ColumnDef<AuditLogEntry>[] = useMemo(
     () => [
       {
@@ -148,8 +189,7 @@ export function AuditLogTable({
           <button
             type="button"
             className="flex items-center gap-1 uppercase hover:text-foreground"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => onSortOrderChange(sortOrder === 'desc' ? 'asc' : 'desc')}>
+            onClick={toggleSortOrder}>
             {t('columns.timestamp')}
             {sortOrder === 'asc' ? (
               <ArrowUp className="h-3 w-3" />
@@ -227,8 +267,7 @@ export function AuditLogTable({
                 <Link
                   href={href}
                   className="text-sm text-primary underline-offset-2 hover:underline"
-                  // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-                  onClick={e => e.stopPropagation()}>
+                  onClick={stopPropagation}>
                   {resourceName ?? resourceId}
                 </Link>
               ) : (
@@ -245,24 +284,18 @@ export function AuditLogTable({
         cell: ({ row }) => {
           const isExpanded = !!expandedRows[row.original.id];
           return (
-            <button
-              type="button"
-              className="flex items-center justify-center rounded p-1 hover:bg-muted"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={e => {
-                e.stopPropagation();
-                onToggleRow(row.original.id);
-              }}
-              aria-label={isExpanded ? t('collapse') : t('expand')}>
-              <ChevronRight
-                className={`size-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-              />
-            </button>
+            <ExpandRowButton
+              rowId={row.original.id}
+              isExpanded={isExpanded}
+              expandLabel={t('expand')}
+              collapseLabel={t('collapse')}
+              onToggle={onToggleRow}
+            />
           );
         },
       },
     ],
-    [t, expandedRows, onToggleRow, sortOrder, onSortOrderChange],
+    [t, expandedRows, onToggleRow, sortOrder, toggleSortOrder],
   );
 
   const table = useReactTable({

@@ -22,6 +22,7 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import { Tabs, TabsList, TabsTrigger } from '@contractor-ops/ui/components/shadcn/tabs';
+import { useCallback } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import type {
@@ -109,6 +110,11 @@ export function TransmissionsLogCard({
   rows,
   isLoading,
 }: TransmissionsLogCardProps) {
+  const handleStatusChange = useCallback((v: string) => setStatus(v as StatusFilter), [setStatus]);
+  const handleLoadMore = useCallback(() => {
+    listQuery.fetchNextPage();
+  }, [listQuery]);
+
   return (
     <Card data-testid="einvoice-transmissions-log">
       <CardHeader className="space-y-3">
@@ -116,10 +122,7 @@ export function TransmissionsLogCard({
           <CardTitle className="text-xl">{t('cardTitle')}</CardTitle>
           <p className="text-sm text-muted-foreground max-w-prose">{t('cardDescription')}</p>
         </div>
-        <Tabs
-          value={status}
-          // biome-ignore lint/nursery/noJsxPropsBind: Tabs onValueChange is a stable controlled-component handler
-          onValueChange={v => setStatus(v as StatusFilter)}>
+        <Tabs value={status} onValueChange={handleStatusChange}>
           <TabsList>
             <TabsTrigger value="all">{t('filter.all')}</TabsTrigger>
             <TabsTrigger value="notGenerated">{t('filter.notGenerated')}</TabsTrigger>
@@ -167,8 +170,7 @@ export function TransmissionsLogCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => listQuery.fetchNextPage()}
+                  onClick={handleLoadMore}
                   disabled={listQuery.isFetchingNextPage}>
                   {listQuery.isFetchingNextPage ? t('loadingMore') : t('loadMore')}
                 </Button>

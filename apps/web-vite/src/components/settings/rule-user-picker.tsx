@@ -1,4 +1,3 @@
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Command,
   CommandEmpty,
@@ -7,11 +6,13 @@ import {
   CommandItem,
   CommandList,
 } from '@contractor-ops/ui/components/shadcn/command';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
+import { useCallback } from 'react';
 import type {
   RuleUserPickerProps as RuleUserPickerInputProps,
   useRuleUserPicker,
@@ -21,6 +22,26 @@ export type { RuleUserPickerInputProps as RuleUserPickerProps };
 
 export type RuleUserPickerViewProps = RuleUserPickerInputProps &
   ReturnType<typeof useRuleUserPicker>;
+
+type UserRow = RuleUserPickerViewProps['filteredUsers'][number];
+
+interface UserItemProps {
+  user: UserRow;
+  isChecked: boolean;
+  onSelect: (id: string) => void;
+}
+
+function UserItem({ user, isChecked, onSelect }: UserItemProps) {
+  const handleSelect = useCallback(() => onSelect(user.id), [onSelect, user.id]);
+  return (
+    <CommandItem value={user.id} onSelect={handleSelect} data-checked={isChecked || undefined}>
+      <div className="flex flex-col">
+        <span className="text-sm font-medium">{user.name}</span>
+        <span className="text-xs text-muted-foreground">{user.email}</span>
+      </div>
+    </CommandItem>
+  );
+}
 
 export function RuleUserPicker({
   value,
@@ -35,15 +56,7 @@ export function RuleUserPicker({
 }: RuleUserPickerViewProps) {
   return (
     <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start font-normal"
-            type="button"
-          />
-        }>
+      <PopoverTrigger render={formControlPopoverRender(undefined, { size: 'sm' })}>
         {selectedUser ? (
           <span className="truncate">
             {selectedUser.name} ({selectedUser.email})
@@ -63,17 +76,12 @@ export function RuleUserPicker({
             <CommandEmpty>{t('reminderRules.editor.noUsersFound')}</CommandEmpty>
             <CommandGroup>
               {filteredUsers.map(user => (
-                <CommandItem
+                <UserItem
                   key={user.id}
-                  value={user.id}
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                  onSelect={() => handleSelect(user.id)}
-                  data-checked={user.id === value || undefined}>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">{user.email}</span>
-                  </div>
-                </CommandItem>
+                  user={user}
+                  isChecked={user.id === value}
+                  onSelect={handleSelect}
+                />
               ))}
             </CommandGroup>
           </CommandList>

@@ -41,7 +41,6 @@ export function PortalSubdomainSection({
         <div className="flex items-center gap-2">
           <Input
             value={portalSubdomain}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={e => handleSubdomainChange(e.target.value)}
             placeholder={t('subdomainPlaceholder')}
             className="max-w-[200px]"
@@ -62,10 +61,7 @@ export function PortalSubdomainSection({
         )}
       </CardContent>
       <CardFooter>
-        <Button
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={handleSaveSubdomain}
-          disabled={!isDirty || isPending}>
+        <Button onClick={handleSaveSubdomain} disabled={!isDirty || isPending}>
           {isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (

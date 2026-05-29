@@ -13,6 +13,8 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { formatDistanceToNow } from 'date-fns';
 import { XCircle } from 'lucide-react';
+import type * as React from 'react';
+import { useCallback } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { enumKey } from '../../lib/enum-key.js';
@@ -65,6 +67,12 @@ export function ChangeRequestDiffCard({
   const statusVariant = statusToVariant(
     'change-request',
     request.status as ChangeRequestStatusInput,
+  );
+
+  const openRejectDialog = useCallback(() => setRejectDialogOpen(true), [setRejectDialogOpen]);
+  const handleRejectCommentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setRejectComment(e.target.value),
+    [setRejectComment],
   );
 
   function getFieldLabel(key: string): string {
@@ -135,7 +143,6 @@ export function ChangeRequestDiffCard({
           {request.status === 'PENDING' && (
             <div className="flex items-center gap-2">
               <Button
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleApprove}
                 disabled={approveMutation.isPending || rejectMutation.isPending}>
                 {approveMutation.isPending ? t('approving') : t('approveChanges')}
@@ -143,8 +150,7 @@ export function ChangeRequestDiffCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setRejectDialogOpen(true)}
+                onClick={openRejectDialog}
                 disabled={approveMutation.isPending || rejectMutation.isPending}>
                 {t('rejectChanges')}
               </Button>
@@ -165,14 +171,12 @@ export function ChangeRequestDiffCard({
           <Textarea
             placeholder={t('rejectPlaceholder')}
             value={rejectComment}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setRejectComment(e.target.value)}
+            onChange={handleRejectCommentChange}
             rows={3}
           />
           <DialogFooter>
             <Button
               variant="destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={handleRejectConfirm}
               disabled={rejectMutation.isPending}>
               {rejectMutation.isPending ? t('rejecting') : t('confirmRejection')}

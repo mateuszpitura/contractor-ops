@@ -74,7 +74,6 @@ export function KsefSetupDialog({
             )}
           </div>
 
-          {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
           <Tabs value={authMethod} onValueChange={v => setAuthMethod(v as 'token' | 'certificate')}>
             <TabsList>
               <TabsTrigger value="token" disabled={isFormDisabled}>
@@ -92,7 +91,6 @@ export function KsefSetupDialog({
                   id={`${id}-ksef-token`}
                   rows={4}
                   value={token}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                   onChange={e => setToken(e.target.value)}
                   disabled={isFormDisabled}
                   placeholder={t('tokenPlaceholder')}
@@ -122,7 +120,6 @@ export function KsefSetupDialog({
                       type="file"
                       accept=".p12,.pem"
                       disabled={isFormDisabled}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                       onChange={e => setCertificateFile(e.target.files?.[0] ?? null)}
                       className="sr-only"
                     />
@@ -137,7 +134,6 @@ export function KsefSetupDialog({
                     id={`${id}-ksef-cert-password`}
                     type="password"
                     value={certificatePassword}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
                     onChange={e => setCertificatePassword(e.target.value)}
                     disabled={isFormDisabled}
                     placeholder={t('certificatePasswordPlaceholder')}
@@ -149,11 +145,9 @@ export function KsefSetupDialog({
         </div>
 
         <DialogFooter>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={resetAndClose}>
             {t('discard')}
           </Button>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSave} disabled={isSaveDisabled}>
             {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />}
             {t('saveCredentials')}

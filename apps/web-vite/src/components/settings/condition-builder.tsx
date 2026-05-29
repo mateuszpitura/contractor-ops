@@ -8,6 +8,8 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Plus, X } from 'lucide-react';
+import type * as React from 'react';
+import { useCallback } from 'react';
 import { tKey } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -45,6 +47,107 @@ const OPERATOR_OPTIONS: { value: Condition['operator']; labelKey: string }[] = [
 // Component
 // ---------------------------------------------------------------------------
 
+interface ConditionRowProps {
+  index: number;
+  condition: Condition;
+  fieldItems: { value: Condition['field']; label: string }[];
+  operatorItems: { value: Condition['operator']; label: string }[];
+  fieldPlaceholder: string;
+  operatorPlaceholder: string;
+  valuePlaceholder: string;
+  removeLabel: string;
+  onUpdate: (index: number, patch: Partial<Condition>) => void;
+  onRemove: (index: number) => void;
+}
+
+function ConditionRow({
+  index,
+  condition,
+  fieldItems,
+  operatorItems,
+  fieldPlaceholder,
+  operatorPlaceholder,
+  valuePlaceholder,
+  removeLabel,
+  onUpdate,
+  onRemove,
+}: ConditionRowProps) {
+  const handleFieldChange = useCallback(
+    (v: Condition['field'] | null) => {
+      if (v) onUpdate(index, { field: v });
+    },
+    [onUpdate, index],
+  );
+  const handleOperatorChange = useCallback(
+    (v: Condition['operator'] | null) => {
+      if (v) onUpdate(index, { operator: v });
+    },
+    [onUpdate, index],
+  );
+  const handleValueChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onUpdate(index, {
+        value:
+          condition.field === 'amount'
+            ? e.target.value === ''
+              ? ''
+              : Number(e.target.value)
+            : e.target.value,
+      }),
+    [onUpdate, index, condition.field],
+  );
+  const handleRemove = useCallback(() => onRemove(index), [onRemove, index]);
+
+  return (
+    <div className="flex h-10 items-center gap-2">
+      <Select value={condition.field} onValueChange={handleFieldChange} items={fieldItems}>
+        <SelectTrigger className="w-[160px]">
+          <SelectValue placeholder={fieldPlaceholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {fieldItems.map(item => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={condition.operator} onValueChange={handleOperatorChange} items={operatorItems}>
+        <SelectTrigger className="w-[140px]">
+          <SelectValue placeholder={operatorPlaceholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {operatorItems.map(item => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Input
+        type={condition.field === 'amount' ? 'number' : 'text'}
+        value={condition.value}
+        onChange={handleValueChange}
+        placeholder={valuePlaceholder}
+        className="flex-1"
+        min={condition.field === 'amount' ? 0 : undefined}
+      />
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className="shrink-0 text-destructive hover:text-destructive"
+        onClick={handleRemove}
+        aria-label={removeLabel}>
+        <X className="size-4" />
+      </Button>
+    </div>
+  );
+}
+
 export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const t = useTranslations('Settings');
 
@@ -57,105 +160,51 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
     value: opt.value,
     label: tKey(t, opt.labelKey),
   }));
-  function handleAdd() {
-    onChange([...value, { field: 'amount', operator: 'gt', value: '' }]);
-  }
+  const handleAdd = useCallback(
+    () => onChange([...value, { field: 'amount', operator: 'gt', value: '' }]),
+    [onChange, value],
+  );
 
-  function handleRemove(index: number) {
-    onChange(value.filter((_, i) => i !== index));
-  }
+  const handleRemove = useCallback(
+    (index: number) => onChange(value.filter((_, i) => i !== index)),
+    [onChange, value],
+  );
 
-  function handleUpdate(index: number, patch: Partial<Condition>) {
-    onChange(
-      value.map((c, i) => {
-        if (i !== index) return c;
-        const updated = { ...c, ...patch };
-        // Reset value when field changes
-        if (patch.field && patch.field !== c.field) {
-          updated.value = '';
-        }
-        return updated;
-      }),
-    );
-  }
+  const handleUpdate = useCallback(
+    (index: number, patch: Partial<Condition>) => {
+      onChange(
+        value.map((c, i) => {
+          if (i !== index) return c;
+          const updated = { ...c, ...patch };
+          if (patch.field && patch.field !== c.field) {
+            updated.value = '';
+          }
+          return updated;
+        }),
+      );
+    },
+    [onChange, value],
+  );
 
   return (
     <div className="space-y-3">
       {value.map((condition, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, conditions have no stable id
-        <div key={`condition-${index}`} className="flex h-10 items-center gap-2">
-          {/* Field select */}
-          <Select
-            value={condition.field}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={v => handleUpdate(index, { field: v as Condition['field'] })}
-            items={fieldItems}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder={t('approvals.editor.conditionField')} />
-            </SelectTrigger>
-            <SelectContent>
-              {fieldItems.map(item => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Operator select */}
-          <Select
-            value={condition.operator}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={v => handleUpdate(index, { operator: v as Condition['operator'] })}
-            items={operatorItems}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder={t('approvals.editor.conditionOperator')} />
-            </SelectTrigger>
-            <SelectContent>
-              {operatorItems.map(item => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Value input */}
-          <Input
-            type={condition.field === 'amount' ? 'number' : 'text'}
-            value={condition.value}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e =>
-              handleUpdate(index, {
-                value:
-                  condition.field === 'amount'
-                    ? e.target.value === ''
-                      ? ''
-                      : Number(e.target.value)
-                    : e.target.value,
-              })
-            }
-            placeholder={t('approvals.editor.conditionValue')}
-            className="flex-1"
-            min={condition.field === 'amount' ? 0 : undefined}
-          />
-
-          {/* Remove button */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="shrink-0 text-destructive hover:text-destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => handleRemove(index)}
-            aria-label={t('approvals.editor.removeCondition')}>
-            <X className="size-4" />
-          </Button>
-        </div>
+        <ConditionRow
+          // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, conditions have no stable id
+          key={`condition-${index}`}
+          index={index}
+          condition={condition}
+          fieldItems={fieldItems}
+          operatorItems={operatorItems}
+          fieldPlaceholder={t('approvals.editor.conditionField')}
+          operatorPlaceholder={t('approvals.editor.conditionOperator')}
+          valuePlaceholder={t('approvals.editor.conditionValue')}
+          removeLabel={t('approvals.editor.removeCondition')}
+          onUpdate={handleUpdate}
+          onRemove={handleRemove}
+        />
       ))}
 
-      {/* Add condition */}
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
         <Plus className="me-1.5 size-3.5" />
         {t('approvals.editor.addCondition')}

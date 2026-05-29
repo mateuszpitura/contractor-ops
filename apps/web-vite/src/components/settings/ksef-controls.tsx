@@ -9,12 +9,7 @@ export type KsefControlsProps = ReturnType<typeof useKsefControls>;
 export function KsefControls({ t, connection, isPending, handleSync }: KsefControlsProps) {
   return (
     <div className="space-y-3">
-      <Button
-        variant="outline"
-        size="sm"
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onClick={handleSync}
-        disabled={isPending}>
+      <Button variant="outline" size="sm" onClick={handleSync} disabled={isPending}>
         {!!isPending && <Loader2 className="me-1.5 size-3.5 animate-spin" aria-hidden="true" />}
         {isPending ? t('syncing') : t('syncNow')}
       </Button>

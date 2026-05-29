@@ -8,6 +8,7 @@ import {
   DialogTitle as DialogTitleComponent,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
+import { useCallback } from 'react';
 import { DpdBrandIcon } from '../integrations/brand-icons';
 import { CarrierCredentialFormContainer } from './carrier-credential-form-container.js';
 import type { useDpdProviderSection } from './hooks/use-dpd-provider-section.js';
@@ -38,6 +39,7 @@ export function DpdProviderSection({
   setConfigOpen,
   isConfigured,
 }: DpdProviderSectionProps) {
+  const openConfig = useCallback(() => setConfigOpen(true), [setConfigOpen]);
   return (
     <div className="flex h-full flex-col gap-4">
       <Card className="flex h-full flex-col">
@@ -54,8 +56,7 @@ export function DpdProviderSection({
           <div className="flex flex-1 flex-col space-y-3">
             <p className="text-sm text-muted-foreground">{t('dpdDescription')}</p>
             <div className="mt-auto pt-3">
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button variant="outline" onClick={() => setConfigOpen(true)}>
+              <Button variant="outline" onClick={openConfig}>
                 {t('configureDpd')}
               </Button>
             </div>

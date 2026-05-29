@@ -11,6 +11,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Image } from '@unpic/react';
 import { Loader2, Save, Upload } from 'lucide-react';
+import { useCallback } from 'react';
 import { BrandColorPicker } from './brand-color-picker';
 import { BrandPreviewStrip } from './brand-preview-strip';
 import type { useAdminBrandingSection } from './hooks/use-admin-branding-section.js';
@@ -32,6 +33,8 @@ export function AdminBrandingSection({
   handleSave,
   isSavePending,
 }: AdminBrandingSectionProps) {
+  const handleUploadClick = useCallback(() => fileInputRef.current?.click(), [fileInputRef]);
+
   if (brandingQuery.isLoading) {
     return (
       <Card>
@@ -71,7 +74,6 @@ export function AdminBrandingSection({
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
                 onClick={handleRemoveLogo}>
                 {t('removeLogo')}
               </button>
@@ -80,8 +82,7 @@ export function AdminBrandingSection({
             <button
               type="button"
               className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed border-muted-foreground/25 text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:text-foreground"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadClick}
               disabled={uploading}>
               {uploading ? (
                 <Loader2 className="h-6 w-6 animate-spin" />
@@ -99,7 +100,6 @@ export function AdminBrandingSection({
             type="file"
             className="hidden"
             accept="image/png,image/jpeg,image/webp"
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
             onChange={handleFileSelect}
           />
         </div>
@@ -112,10 +112,7 @@ export function AdminBrandingSection({
         <BrandPreviewStrip color={brandColor} />
       </CardContent>
       <CardFooter>
-        <Button
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={handleSave}
-          disabled={!isDirty || isSavePending}>
+        <Button onClick={handleSave} disabled={!isDirty || isSavePending}>
           {isSavePending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
           ) : (

@@ -10,7 +10,8 @@ import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Eye, EyeOff, Loader2, Save, Truck, Wifi } from 'lucide-react';
-import { useState } from 'react';
+import type * as React from 'react';
+import { useCallback, useState } from 'react';
 import type { useCarrierCredentialForm } from './hooks/use-carrier-credential-form.js';
 
 interface CarrierCredentialFormBaseProps {
@@ -34,6 +35,12 @@ function PasswordField({
 }) {
   const [visible, setVisible] = useState(false);
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
+    [onChange],
+  );
+  const toggleVisible = useCallback(() => setVisible(v => !v), []);
+
   return (
     <div className="space-y-1.5">
       <Label className="text-sm">{label}</Label>
@@ -41,16 +48,14 @@ function PasswordField({
         <Input
           type={visible ? 'text' : 'password'}
           value={value}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange(e.target.value)}
+          onChange={handleInputChange}
           placeholder={placeholder}
           className="pe-10"
         />
         <button
           type="button"
           className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => setVisible(!visible)}
+          onClick={toggleVisible}
           aria-label={visible ? 'Hide' : 'Show'}>
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
@@ -75,6 +80,41 @@ export function CarrierCredentialForm({
   isTestPending,
   isSavePending,
 }: CarrierCredentialFormProps) {
+  const handleDpdUsername = useCallback(
+    (v: string) => setDpdCreds(prev => ({ ...prev, username: v })),
+    [setDpdCreds],
+  );
+  const handleDpdPassword = useCallback(
+    (v: string) => setDpdCreds(prev => ({ ...prev, password: v })),
+    [setDpdCreds],
+  );
+  const handleDpdFid = useCallback(
+    (v: string) => setDpdCreds(prev => ({ ...prev, fid: v })),
+    [setDpdCreds],
+  );
+  const handleDpdSandbox = useCallback(
+    (checked: boolean | 'indeterminate') =>
+      setDpdCreds(prev => ({ ...prev, sandbox: checked === true })),
+    [setDpdCreds],
+  );
+  const handleUpsClientId = useCallback(
+    (v: string) => setUpsCreds(prev => ({ ...prev, clientId: v })),
+    [setUpsCreds],
+  );
+  const handleUpsClientSecret = useCallback(
+    (v: string) => setUpsCreds(prev => ({ ...prev, clientSecret: v })),
+    [setUpsCreds],
+  );
+  const handleUpsAccount = useCallback(
+    (v: string) => setUpsCreds(prev => ({ ...prev, accountNumber: v })),
+    [setUpsCreds],
+  );
+  const handleUpsSandbox = useCallback(
+    (checked: boolean | 'indeterminate') =>
+      setUpsCreds(prev => ({ ...prev, sandbox: checked === true })),
+    [setUpsCreds],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -97,32 +137,19 @@ export function CarrierCredentialForm({
             <PasswordField
               label={t('username')}
               value={dpdCreds.username}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setDpdCreds(prev => ({ ...prev, username: v }))}
+              onChange={handleDpdUsername}
             />
             <PasswordField
               label={t('password')}
               value={dpdCreds.password}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setDpdCreds(prev => ({ ...prev, password: v }))}
+              onChange={handleDpdPassword}
             />
-            <PasswordField
-              label={t('fid')}
-              value={dpdCreds.fid}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setDpdCreds(prev => ({ ...prev, fid: v }))}
-            />
+            <PasswordField label={t('fid')} value={dpdCreds.fid} onChange={handleDpdFid} />
             <label htmlFor={`${id}-dpd-sandbox`} className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 id={`${id}-dpd-sandbox`}
                 checked={dpdCreds.sandbox}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onCheckedChange={checked =>
-                  setDpdCreds(prev => ({
-                    ...prev,
-                    sandbox: checked === true,
-                  }))
-                }
+                onCheckedChange={handleDpdSandbox}
               />
               <span className="text-sm">{t('sandbox')}</span>
             </label>
@@ -132,32 +159,23 @@ export function CarrierCredentialForm({
             <PasswordField
               label={t('clientId')}
               value={upsCreds.clientId}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setUpsCreds(prev => ({ ...prev, clientId: v }))}
+              onChange={handleUpsClientId}
             />
             <PasswordField
               label={t('clientSecret')}
               value={upsCreds.clientSecret}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setUpsCreds(prev => ({ ...prev, clientSecret: v }))}
+              onChange={handleUpsClientSecret}
             />
             <PasswordField
               label={t('accountNumber')}
               value={upsCreds.accountNumber}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={v => setUpsCreds(prev => ({ ...prev, accountNumber: v }))}
+              onChange={handleUpsAccount}
             />
             <label htmlFor={`${id}-ups-sandbox`} className="flex cursor-pointer items-center gap-2">
               <Checkbox
                 id={`${id}-ups-sandbox`}
                 checked={upsCreds.sandbox}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onCheckedChange={checked =>
-                  setUpsCreds(prev => ({
-                    ...prev,
-                    sandbox: checked === true,
-                  }))
-                }
+                onCheckedChange={handleUpsSandbox}
               />
               <span className="text-sm">{t('sandbox')}</span>
             </label>

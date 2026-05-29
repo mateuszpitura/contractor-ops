@@ -10,7 +10,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ShieldCheck, UserX } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
@@ -29,6 +29,37 @@ import { UserConsentSheetContainer } from './user-consent-sheet-container.js';
 export type UsersTableProps = ReturnType<typeof useUsersTable>;
 
 type MemberRow = UsersTableProps['members'][number];
+type AssignableRole = (typeof assignableRoles)[number];
+
+interface RoleDropdownItemProps {
+  role: AssignableRole;
+  currentRole: string;
+  userId: string;
+  label: string;
+  description: string;
+  onSelectRole: (userId: string, role: AssignableRole) => void;
+}
+
+function RoleDropdownItem({
+  role,
+  currentRole,
+  userId,
+  label,
+  description,
+  onSelectRole,
+}: RoleDropdownItemProps) {
+  const handleSelect = useCallback(() => {
+    if (role !== currentRole) onSelectRole(userId, role);
+  }, [role, currentRole, userId, onSelectRole]);
+  return (
+    <DropdownMenuItem
+      onSelect={handleSelect}
+      className={`${role === currentRole ? 'font-semibold' : ''} flex flex-col items-start gap-0.5`}>
+      <span>{label}</span>
+      <span className="text-xs font-normal text-muted-foreground">{description}</span>
+    </DropdownMenuItem>
+  );
+}
 
 const KNOWN_MEMBER_STATUSES = new Set<MemberStatusInput>([
   'active',
@@ -66,33 +97,30 @@ function MemberActionsCell({
   onViewConsent,
   t,
 }: MemberActionsCellProps) {
+  const handleViewConsent = useCallback(
+    () => onViewConsent(memberId, memberName),
+    [onViewConsent, memberId, memberName],
+  );
+  const handleReactivate = useCallback(() => onReactivate(memberId), [onReactivate, memberId]);
+  const handleDeactivate = useCallback(
+    () => onDeactivate(memberId, memberName),
+    [onDeactivate, memberId, memberName],
+  );
+
   return (
     <div className="flex items-center justify-end gap-1.5">
       {!!canReadConsent && (
-        <Button
-          variant="ghost"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => onViewConsent(memberId, memberName)}>
+        <Button variant="ghost" size="sm" onClick={handleViewConsent}>
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           {t('actions.viewConsent')}
         </Button>
       )}
       {isDisabled && canManageMembers ? (
-        <Button
-          variant="outline"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => onReactivate(memberId)}
-          disabled={reactivatePending}>
+        <Button variant="outline" size="sm" onClick={handleReactivate} disabled={reactivatePending}>
           {t('actions.reactivate')}
         </Button>
       ) : !(isDisabled || isSelf) && canDeleteMembers ? (
-        <Button
-          variant="destructive"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => onDeactivate(memberId, memberName)}>
+        <Button variant="destructive" size="sm" onClick={handleDeactivate}>
           <UserX className="h-3.5 w-3.5" aria-hidden="true" />
           {t('actions.deactivate')}
         </Button>
@@ -121,6 +149,29 @@ export function UsersTable({
     userId: string;
     name: string;
   } | null>(null);
+
+  const handleRoleSelect = useCallback(
+    (userId: string, role: AssignableRole) => updateRoleMutation.mutate({ userId, role }),
+    [updateRoleMutation],
+  );
+  const handleReactivate = useCallback(
+    (uid: string) => reactivateMutation.mutate({ userId: uid }),
+    [reactivateMutation],
+  );
+  const handleDeactivate = useCallback(
+    (uid: string, name: string) => setDeactivateTarget({ userId: uid, name }),
+    [],
+  );
+  const handleViewConsent = useCallback(
+    (uid: string, name: string) => setConsentTarget({ userId: uid, name }),
+    [],
+  );
+  const handleDeactivateOpenChange = useCallback((open: boolean) => {
+    if (!open) setDeactivateTarget(null);
+  }, []);
+  const handleConsentOpenChange = useCallback((openState: boolean) => {
+    if (!openState) setConsentTarget(null);
+  }, []);
 
   const columns = useMemo<ColumnDef<MemberRow, unknown>[]>(() => {
     const roleLabel = (role: string) => tDynLoose(t, 'roles', enumKey(role)) ?? role;
@@ -170,20 +221,15 @@ export function UsersTable({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 {assignableRoles.map(role => (
-                  <DropdownMenuItem
+                  <RoleDropdownItem
                     key={role}
-                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                    onSelect={() => {
-                      if (role !== m.role) {
-                        updateRoleMutation.mutate({ userId: memberId, role });
-                      }
-                    }}
-                    className={`${role === m.role ? 'font-semibold' : ''} flex flex-col items-start gap-0.5`}>
-                    <span>{roleLabel(role)}</span>
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {roleDescription(role)}
-                    </span>
-                  </DropdownMenuItem>
+                    role={role}
+                    currentRole={m.role ?? ''}
+                    userId={memberId}
+                    label={roleLabel(role)}
+                    description={roleDescription(role) ?? ''}
+                    onSelectRole={handleRoleSelect}
+                  />
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -228,12 +274,9 @@ export function UsersTable({
               canDeleteMembers={canDeleteMembers}
               canReadConsent={canReadConsent}
               reactivatePending={reactivateMutation.isPending}
-              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-              onReactivate={uid => reactivateMutation.mutate({ userId: uid })}
-              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-              onDeactivate={(uid, name) => setDeactivateTarget({ userId: uid, name })}
-              // biome-ignore lint/nursery/noJsxPropsBind: stable callback
-              onViewConsent={(uid, name) => setConsentTarget({ userId: uid, name })}
+              onReactivate={handleReactivate}
+              onDeactivate={handleDeactivate}
+              onViewConsent={handleViewConsent}
               t={t}
             />
           );
@@ -249,8 +292,12 @@ export function UsersTable({
     canDeleteMembers,
     canReadConsent,
     currentUserId,
-    updateRoleMutation,
-    reactivateMutation,
+    updateRoleMutation.isPending,
+    reactivateMutation.isPending,
+    handleRoleSelect,
+    handleReactivate,
+    handleDeactivate,
+    handleViewConsent,
   ]);
 
   return (
@@ -270,10 +317,7 @@ export function UsersTable({
       {!!deactivateTarget && (
         <DeactivateDialogContainer
           open={!!deactivateTarget}
-          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-          onOpenChange={open => {
-            if (!open) setDeactivateTarget(null);
-          }}
+          onOpenChange={handleDeactivateOpenChange}
           userId={deactivateTarget.userId}
           userName={deactivateTarget.name}
         />
@@ -283,10 +327,7 @@ export function UsersTable({
         userId={consentTarget?.userId ?? null}
         userName={consentTarget?.name ?? ''}
         open={!!consentTarget}
-        // biome-ignore lint/nursery/noJsxPropsBind: sheet state handler
-        onOpenChange={openState => {
-          if (!openState) setConsentTarget(null);
-        }}
+        onOpenChange={handleConsentOpenChange}
       />
     </>
   );

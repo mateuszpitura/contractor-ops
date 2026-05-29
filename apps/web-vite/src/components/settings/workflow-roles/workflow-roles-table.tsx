@@ -28,6 +28,63 @@ export type WorkflowRolesTableViewProps = WorkflowRolesTableProps &
   ReturnType<typeof useWorkflowRolesTable>;
 
 type WorkflowRoleRow = WorkflowRolesTableViewProps['rows'][number];
+type EditingPayload = NonNullable<WorkflowRolesTableViewProps['editing']>;
+type DeletingPayload = NonNullable<WorkflowRolesTableViewProps['deleting']>;
+
+interface RoleActionsCellProps {
+  row: WorkflowRoleRow;
+  editLabel: string;
+  deleteLabel: string;
+  onEdit: (payload: EditingPayload) => void;
+  onDelete: (payload: DeletingPayload) => void;
+}
+
+function RoleActionsCell({ row, editLabel, deleteLabel, onEdit, onDelete }: RoleActionsCellProps) {
+  const handleEdit = useCallback(
+    () =>
+      onEdit({
+        id: row.id,
+        role: row.role,
+        displayNameEn: row.displayNameEn ?? '',
+        displayNamePl: row.displayNamePl ?? '',
+        displayNameDe: row.displayNameDe ?? '',
+        taskItems: row.taskTemplates.map(item => ({
+          sortOrder: item.sortOrder,
+          titleEn: item.titleEn ?? '',
+          titlePl: item.titlePl ?? '',
+          titleDe: item.titleDe ?? '',
+          descriptionEn: item.descriptionEn ?? '',
+          descriptionPl: item.descriptionPl ?? '',
+          descriptionDe: item.descriptionDe ?? '',
+          dueDayOffset: item.dueDayOffset,
+          requiredDocs: Array.isArray(item.requiredDocsJson)
+            ? (item.requiredDocsJson as string[])
+            : [],
+        })),
+      }),
+    [onEdit, row],
+  );
+  const handleDelete = useCallback(
+    () => onDelete({ id: row.id, name: row.displayNameEn ?? '' }),
+    [onDelete, row.id, row.displayNameEn],
+  );
+
+  return (
+    <div className="inline-flex w-full items-center justify-end gap-1">
+      <Button variant="ghost" size="icon-sm" aria-label={editLabel} onClick={handleEdit}>
+        <Pencil className="size-3.5" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={deleteLabel}
+        className="text-destructive hover:text-destructive"
+        onClick={handleDelete}>
+        <Trash2 className="size-3.5" />
+      </Button>
+    </div>
+  );
+}
 
 export function WorkflowRolesTable({
   canCreate,
@@ -95,48 +152,13 @@ export function WorkflowRolesTable({
         cell: ({ row }) => {
           if (row.original.isSeed) return null;
           return (
-            <div className="inline-flex w-full items-center justify-end gap-1">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t('action.edit')}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() =>
-                  setEditing({
-                    id: row.original.id,
-                    role: row.original.role,
-                    displayNameEn: row.original.displayNameEn ?? '',
-                    displayNamePl: row.original.displayNamePl ?? '',
-                    displayNameDe: row.original.displayNameDe ?? '',
-                    taskItems: row.original.taskTemplates.map(item => ({
-                      sortOrder: item.sortOrder,
-                      titleEn: item.titleEn ?? '',
-                      titlePl: item.titlePl ?? '',
-                      titleDe: item.titleDe ?? '',
-                      descriptionEn: item.descriptionEn ?? '',
-                      descriptionPl: item.descriptionPl ?? '',
-                      descriptionDe: item.descriptionDe ?? '',
-                      dueDayOffset: item.dueDayOffset,
-                      requiredDocs: Array.isArray(item.requiredDocsJson)
-                        ? (item.requiredDocsJson as string[])
-                        : [],
-                    })),
-                  })
-                }>
-                <Pencil className="size-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t('action.delete')}
-                className="text-destructive hover:text-destructive"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() =>
-                  setDeleting({ id: row.original.id, name: row.original.displayNameEn ?? '' })
-                }>
-                <Trash2 className="size-3.5" />
-              </Button>
-            </div>
+            <RoleActionsCell
+              row={row.original}
+              editLabel={t('action.edit')}
+              deleteLabel={t('action.delete')}
+              onEdit={setEditing}
+              onDelete={setDeleting}
+            />
           );
         },
       },
