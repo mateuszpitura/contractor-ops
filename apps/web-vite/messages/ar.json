@@ -11,17 +11,12 @@
       "colNotes": "ملاحظات",
       "sourceBoeApi": "BOE API",
       "sourceManual": "يدوي",
-      "addCta": "+ إضافة معدّل",
       "addDialogTitle": "إضافة سجل معدّل أساسي لبنك إنجلترا",
       "deleteDialogTitle": "حذف سجل معدّل BoE؟",
-      "deleteDialogBody": "حذف معدّل تاريخي يُغيّر حسابات الفائدة لأي فواتير أصبحت متأخرة خلال فترة سريانه. تابع فقط إذا تم إدخال هذا السجل بالخطأ.",
       "pollerSuccess": "آخر استعلام لـ BoE API: {date} — المعدّل دون تغيير / تم تسجيل معدّل جديد {percent}%",
-      "pollerFailure": "فشل آخر استعلام لـ BoE API في {date}. لا يزال الإدخال اليدوي ممكنًا؛ سيُعاد المحاولة في التشغيل المجدول التالي.",
       "pollerSuccessUnchanged": "آخر استعلام لـ BoE API: {date} — المعدّل دون تغيير",
       "pollerNoData": "لا تتوفر بيانات استعلام BoE API. يُدخَل المعدّل يدويًا فقط.",
       "ariaPollerStatus": "حالة استعلام BoE API",
-      "accessDeniedHeading": "تم رفض الوصول",
-      "accessDeniedBody": "ليس لديك صلاحية لإدارة البيانات المرجعية لـ BoE.",
       "addRate": "إضافة معدّل",
       "addDialogDesc": "إضافة سجل معدّل أساسي جديد لبنك إنجلترا لحسابات الفائدة.",
       "notesOptionalLabel": "ملاحظات (اختياري)",
@@ -56,7 +51,6 @@
     },
     "ClassificationEngineFlag": {
       "title": "حالة علم محرّك التصنيف",
-      "subtitle": "حالة مفتاح إيقاف module.classification-engine وسجل توقيعات الإقرار.",
       "appSideValue": "القيمة على جانب التطبيق (ما يراه المستخدمون)",
       "signoffRegistry": "سجل التوقيعات",
       "pendingGate": "العَلم مُفعَّل في Unleash ولكنه مُقيَّد على مستوى التطبيق — {count} إقرار(ات) قيد الانتظار.",
@@ -2230,9 +2224,6 @@
       "uploadError": "رفع failed. Try again."
     },
     "scanStatus": {
-      "scanning": "جارٍ الفحص بحثًا عن التهديدات...",
-      "clean": "اجتاز الفحص",
-      "infected": "تم اكتشاف تهديد - تم حجر الملف",
       "failed": "تعذّر اكتمال الفحص"
     },
     "metadata": {
@@ -4539,7 +4530,6 @@
     "progress": "{completed} من {total} مكتمل",
     "collapsed": "متابعة الإعداد",
     "dismiss": "Dismiss",
-    "completed": "مكتمل",
     "optional": "اختياري",
     "steps": {
       "orgDetails": {
@@ -4568,9 +4558,6 @@
         "description": "فعّل إشعارات Slack والموافقات المضمّنة",
         "cta": "Connect"
       }
-    },
-    "toast": {
-      "stepComplete": "اكتملت الخطوة: {stepTitle}"
     }
   },
   "OnboardingImport": {
@@ -5351,8 +5338,6 @@
     },
     "return": {
       "title": "إرجاع المعدات",
-      "step1Title": "اختر نقطة استلام Paczkomat",
-      "step2Title": "تأكيد الإرجاع",
       "step3Title": "تمت الموافقة على الإرجاع",
       "itemsToReturn": "أنت تعيد {count, plural, one {# عنصرًا} other {# عناصر}}:",
       "selectDropOff": "اختر نقطة استلام Paczkomat",

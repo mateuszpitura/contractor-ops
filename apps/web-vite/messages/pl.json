@@ -11,17 +11,12 @@
       "colNotes": "Uwagi",
       "sourceBoeApi": "API BOE",
       "sourceManual": "Ręcznie",
-      "addCta": "+ Dodaj stopę",
       "addDialogTitle": "Dodaj wpis stopy bazowej BoE",
       "deleteDialogTitle": "Usunąć wpis stopy BoE?",
-      "deleteDialogBody": "Usunięcie historycznej stopy zmienia obliczenia odsetek dla wszystkich faktur, które stały się przeterminowane w okresie jej obowiązywania. Kontynuuj wyłącznie wtedy, gdy wpis został wprowadzony błędnie.",
       "pollerSuccess": "Ostatnie odpytanie API BOE: {date} — stopa bez zmian / zapisano nową stopę {percent}%",
-      "pollerFailure": "Ostatnie odpytanie API BOE nie powiodło się dnia {date}. Wpis ręczny nadal możliwy; mechanizm ponowi próbę przy kolejnym zaplanowanym uruchomieniu.",
       "pollerSuccessUnchanged": "Ostatnie odpytanie API BOE: {date} — stopa bez zmian",
       "pollerNoData": "Brak danych z API BOE. Stopy są wprowadzane wyłącznie ręcznie.",
       "ariaPollerStatus": "Status odpytania API BOE",
-      "accessDeniedHeading": "Brak dostępu",
-      "accessDeniedBody": "Nie masz uprawnień do zarządzania danymi referencyjnymi BoE.",
       "addRate": "Dodaj stopę",
       "addDialogDesc": "Dodaj nowy wpis stopy bazowej Bank of England do obliczeń odsetek.",
       "notesOptionalLabel": "Uwagi (opcjonalne)",
@@ -56,7 +51,6 @@
     },
     "ClassificationEngineFlag": {
       "title": "Status flagi Classification Engine",
-      "subtitle": "Status wyłącznika module.classification-engine oraz rejestr zatwierdzeń klauzul.",
       "appSideValue": "Wartość po stronie aplikacji (co widzą użytkownicy)",
       "signoffRegistry": "Rejestr zatwierdzeń",
       "pendingGate": "Flaga włączona w Unleash, ale zablokowana w aplikacji — {count} klauzul(a) OCZEKUJĄCYCH.",
@@ -2230,9 +2224,6 @@
       "uploadError": "Przesyłanie nie powiodło się. Spróbuj ponownie."
     },
     "scanStatus": {
-      "scanning": "Skanowanie w poszukiwaniu zagrożeń...",
-      "clean": "Skanowanie przeszło",
-      "infected": "Wykryto zagrożenie - plik poddany kwarantannie",
       "failed": "Nie udało się zakończyć skanowania"
     },
     "metadata": {
@@ -4539,7 +4530,6 @@
     "progress": "{completed} z {total} ukończone",
     "collapsed": "Kontynuuj konfiguracje",
     "dismiss": "Ukryj",
-    "completed": "Ukończone",
     "optional": "Opcjonalne",
     "steps": {
       "orgDetails": {
@@ -4568,9 +4558,6 @@
         "description": "Włącz powiadomienia Slack i akceptacje inline",
         "cta": "Połącz"
       }
-    },
-    "toast": {
-      "stepComplete": "Krok ukończony: {stepTitle}"
     }
   },
   "OnboardingImport": {
@@ -5351,8 +5338,6 @@
     },
     "return": {
       "title": "Zwroc sprzet",
-      "step1Title": "Wybierz Paczkomat nadawczy",
-      "step2Title": "Potwierdz zwrot",
       "step3Title": "Zwrot zatwierdzony",
       "itemsToReturn": "Zwracasz {count, plural, one {# przedmiot} few {# przedmioty} many {# przedmiotow} other {# przedmiotow}}:",
       "selectDropOff": "Wybierz Paczkomat nadawczy",
