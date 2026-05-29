@@ -1,4 +1,10 @@
-import { AtelierPageHeader, SectionLabel } from '@contractor-ops/ui';
+import {
+  AtelierPageHeader,
+  SectionLabel,
+  WORKBENCH_DATA_TABLE_CLASS,
+  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_SECTION_CLASS,
+} from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { UserPlus, Users } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -13,7 +19,7 @@ export function SettingsMembersContainer() {
   const { inviteOpen, setInviteOpen, openInvite, canInvite } = useSettingsMembers();
 
   return (
-    <div className="space-y-6">
+    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
         <AtelierPageHeader
           title={t('title')}
@@ -32,10 +38,12 @@ export function SettingsMembersContainer() {
         />
       </AnimateIn>
 
-      <AnimateIn delay={1}>
-        <section aria-label={t('title')} className="space-y-3">
+      <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
+        <section aria-label={t('title')} className={WORKBENCH_TABLE_SECTION_CLASS}>
           <SectionLabel icon={Users}>{t('title')}</SectionLabel>
-          <UsersTableContainer />
+          <div className={WORKBENCH_DATA_TABLE_CLASS}>
+            <UsersTableContainer />
+          </div>
         </section>
       </AnimateIn>
 

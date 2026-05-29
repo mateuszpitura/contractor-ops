@@ -257,7 +257,6 @@ export function ApprovalQueueTable({
       <SimpleDataTable
         columns={columns}
         data={timesheets}
-        constrainHeight={false}
         isLoading={isLoading}
         entityLabel={t('timesheetEntityLabel', { count: timesheets.length })}
         emptyTitle={t('approvalQueue.empty.heading')}

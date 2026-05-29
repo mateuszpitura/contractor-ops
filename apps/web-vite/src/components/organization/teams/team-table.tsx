@@ -103,7 +103,6 @@ export function TeamTable({
     <SimpleDataTable
       columns={columns}
       data={rows}
-      constrainHeight={false}
       entityLabel={t('entityTeams', { count: rows.length })}
       isLoading={isLoading}
       hasFiltersOrSearch={hasSearch}

@@ -149,14 +149,16 @@ export function WorkflowsListContainer() {
           </TabsContent>
 
           {list.canManageTemplates && (
-            <TabsContent value="templates" className="mt-4">
-              <div className="flex items-center justify-end mb-4">
-                <Button size="sm" render={<Link href="/workflows/templates/new" />}>
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  {t('templates.newTemplate')}
-                </Button>
-              </div>
-              <TemplatesTableContainer />
+            <TabsContent value="templates" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
+              <section className={WORKBENCH_TABLE_SECTION_CLASS}>
+                <div className="flex shrink-0 items-center justify-end">
+                  <Button size="sm" render={<Link href="/workflows/templates/new" />}>
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    {t('templates.newTemplate')}
+                  </Button>
+                </div>
+                <TemplatesTableContainer />
+              </section>
             </TabsContent>
           )}
         </Tabs>

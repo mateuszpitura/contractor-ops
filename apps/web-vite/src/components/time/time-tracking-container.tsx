@@ -12,6 +12,10 @@ import {
   QueryErrorPanel,
   SectionLabel,
   TimeTrackingIllustration,
+  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_SECTION_CLASS,
+  WORKBENCH_TABLE_TAB_PANEL_CLASS,
+  WORKBENCH_TABLE_TABS_CLASS,
 } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -89,15 +93,18 @@ export function TimeTrackingContainer() {
   const tProfile = useTranslations('ContractorProfile');
 
   return (
-    <div className="space-y-section-gap">
+    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
         <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
-      <AnimateIn delay={2}>
+      <AnimateIn delay={2} className="flex min-h-0 flex-1 flex-col">
         {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-        <Tabs value={tab} onValueChange={value => void setTab(value)}>
-          <TabsList>
+        <Tabs
+          value={tab}
+          onValueChange={value => void setTab(value)}
+          className={WORKBENCH_TABLE_TABS_CLASS}>
+          <TabsList className="shrink-0">
             <TabsTrigger value="pending">
               {t('tabs.pendingReviews')}
               {pendingTimesheets.length > 0 && (
@@ -110,8 +117,8 @@ export function TimeTrackingContainer() {
             <TabsTrigger value="reconciliation">{t('tabs.reconciliation')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="pending" className="mt-4">
-            <div className="space-y-card-gap">
+          <TabsContent value="pending" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
+            <section className={WORKBENCH_TABLE_SECTION_CLASS}>
               <SectionLabel icon={Clock}>{t('tabs.pendingReviews')}</SectionLabel>
               {pendingQuery.isLoading ? (
                 <LoadingSkeleton />
@@ -142,11 +149,11 @@ export function TimeTrackingContainer() {
                   isBulkRejecting={isBulkRejecting}
                 />
               )}
-            </div>
+            </section>
           </TabsContent>
 
-          <TabsContent value="all" className="mt-4">
-            <div className="space-y-card-gap">
+          <TabsContent value="all" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
+            <section className={WORKBENCH_TABLE_SECTION_CLASS}>
               <SectionLabel icon={Clock}>{t('tabs.allEntries')}</SectionLabel>
               <div className="flex items-center gap-3">
                 {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
@@ -222,15 +229,15 @@ export function TimeTrackingContainer() {
                   ) : null}
                 </div>
               )}
-            </div>
+            </section>
           </TabsContent>
 
-          <TabsContent value="reconciliation" className="mt-4">
-            <div className="space-y-section-gap">
+          <TabsContent value="reconciliation" className={WORKBENCH_TABLE_TAB_PANEL_CLASS}>
+            <section className={WORKBENCH_TABLE_SECTION_CLASS}>
               <SectionLabel icon={Clock}>{t('tabs.reconciliation')}</SectionLabel>
               <ReconciliationSpotCheck />
               <ReconciliationTable />
-            </div>
+            </section>
           </TabsContent>
         </Tabs>
       </AnimateIn>

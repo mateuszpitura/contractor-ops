@@ -29,7 +29,7 @@ export function OrganizationCostCentersContainer() {
 
   return (
     <OrganizationLayout>
-      <section className="flex flex-col gap-4">
+      <section className="flex min-h-0 flex-1 flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Input
             className="max-w-xs"
