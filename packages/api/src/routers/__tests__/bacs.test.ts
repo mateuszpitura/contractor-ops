@@ -314,7 +314,7 @@ describe('bacsRouter.getSubmitterMasks', () => {
     // configured=false silently masked the failure mode and produced a
     // confusing UX (empty form -> save -> opaque error). Surface NOT_FOUND.
     mockPrisma.organization.findUnique = vi.fn().mockResolvedValue(null);
-    await expect(caller.getSubmitterMasks()).rejects.toThrow(/Organization not found/i);
+    await expect(caller.getSubmitterMasks()).rejects.toThrow(/billingOrganizationNotFound/);
   });
 });
 
@@ -411,7 +411,9 @@ describe('bacsRouter.previewExport / generateExport', () => {
       bacsServiceUserNumberEncrypted: null,
     });
 
-    await expect(caller.previewExport({ paymentRunId: RUN_ID })).rejects.toThrow(/not configured/i);
+    await expect(caller.previewExport({ paymentRunId: RUN_ID })).rejects.toThrow(
+      /bacsSubmitterNotConfigured/,
+    );
   });
 
   it('generateExport: throws PRECONDITION_FAILED when submitter not configured', async () => {
@@ -420,7 +422,7 @@ describe('bacsRouter.previewExport / generateExport', () => {
     });
 
     await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(
-      /not configured/i,
+      /bacsSubmitterNotConfigured/,
     );
   });
 
@@ -460,7 +462,7 @@ describe('bacsRouter.previewExport / generateExport', () => {
     });
 
     await expect(caller.generateExport({ paymentRunId: RUN_ID })).rejects.toThrow(
-      /unmappable characters/i,
+      /bacsUnmappableCharacters/,
     );
 
     // Defense-in-depth: the file must NOT be uploaded to R2 when blocked.
