@@ -8,15 +8,22 @@
 // i18n notification key constants
 // ---------------------------------------------------------------------------
 
+/**
+ * i18n key constants for equipment-domain in-app notifications. Producers
+ * pass these into `dispatch({ title, body, ... })`; the dispatcher resolves
+ * them against `apps/web-vite/messages/<locale>.json` using the originating
+ * org's `Organization.language` and the event's `metadata` for placeholder
+ * params (`{trackingNumber}`, `{reason}`).
+ */
 export const NOTIFICATION_KEYS = {
   equipment: {
     returnApproved: {
-      title: 'notifications.equipment.returnApproved.title',
-      body: 'notifications.equipment.returnApproved.body',
+      title: 'Notifications.equipment.returnApproved.title',
+      body: 'Notifications.equipment.returnApproved.body',
     },
     returnRejected: {
-      title: 'notifications.equipment.returnRejected.title',
-      body: 'notifications.equipment.returnRejected.body',
+      title: 'Notifications.equipment.returnRejected.title',
+      body: 'Notifications.equipment.returnRejected.body',
     },
   },
 } as const;

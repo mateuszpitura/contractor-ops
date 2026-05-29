@@ -4260,6 +4260,16 @@
       "previous": "Previous",
       "next": "Next",
       "pageOf": "Page {page} of {totalPages}"
+    },
+    "equipment": {
+      "returnApproved": {
+        "title": "Equipment return approved",
+        "body": "Tracking: {trackingNumber}"
+      },
+      "returnRejected": {
+        "title": "Equipment return rejected",
+        "body": "Reason: {reason}"
+      }
     }
   },
   "OcrReview": {

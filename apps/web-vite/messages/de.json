@@ -4260,6 +4260,16 @@
       "previous": "Zurück",
       "next": "Weiter",
       "pageOf": "Seite {page} von {totalPages}"
+    },
+    "equipment": {
+      "returnApproved": {
+        "title": "Geräterückgabe genehmigt",
+        "body": "Sendungsnummer: {trackingNumber}"
+      },
+      "returnRejected": {
+        "title": "Geräterückgabe abgelehnt",
+        "body": "Grund: {reason}"
+      }
     }
   },
   "OcrReview": {

@@ -10,6 +10,7 @@ const {
   mockPrefCreate,
   mockPrefFindFirst,
   mockUserFindUnique,
+  mockOrgFindUnique,
   mockConnectionFindMany,
   mockConnectionFindFirst,
   mockSendAppEmail,
@@ -21,6 +22,7 @@ const {
   mockPrefCreate: vi.fn(),
   mockPrefFindFirst: vi.fn(),
   mockUserFindUnique: vi.fn(),
+  mockOrgFindUnique: vi.fn().mockResolvedValue({ language: 'en' }),
   mockConnectionFindMany: vi.fn(),
   mockConnectionFindFirst: vi.fn(),
   mockSendAppEmail: vi.fn().mockResolvedValue(undefined),
@@ -73,6 +75,9 @@ vi.mock('@contractor-ops/db', () => ({
     },
     user: {
       findUnique: mockUserFindUnique,
+    },
+    organization: {
+      findUnique: mockOrgFindUnique,
     },
     integrationConnection: {
       findMany: mockConnectionFindMany,

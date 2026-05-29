@@ -4260,6 +4260,16 @@
       "previous": "السابق",
       "next": "التالي",
       "pageOf": "صفحة {page} من {totalPages}"
+    },
+    "equipment": {
+      "returnApproved": {
+        "title": "تمت الموافقة على إرجاع المعدات",
+        "body": "رقم التتبع: {trackingNumber}"
+      },
+      "returnRejected": {
+        "title": "تم رفض إرجاع المعدات",
+        "body": "السبب: {reason}"
+      }
     }
   },
   "OcrReview": {

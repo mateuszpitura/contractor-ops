@@ -4260,6 +4260,16 @@
       "previous": "Poprzednia",
       "next": "Następna",
       "pageOf": "Strona {page} z {totalPages}"
+    },
+    "equipment": {
+      "returnApproved": {
+        "title": "Zwrot sprzętu zatwierdzony",
+        "body": "Numer śledzenia: {trackingNumber}"
+      },
+      "returnRejected": {
+        "title": "Zwrot sprzętu odrzucony",
+        "body": "Powód: {reason}"
+      }
     }
   },
   "OcrReview": {

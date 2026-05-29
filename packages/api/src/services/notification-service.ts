@@ -3,7 +3,8 @@ import { pLimit } from '@contractor-ops/integrations/services/concurrency';
 import { createLogger } from '@contractor-ops/logger';
 import type { NOTIFICATION_TYPES } from '@contractor-ops/validators';
 import { getServerEnv } from '@contractor-ops/validators';
-import { normalizeLocale } from '../i18n/email-i18n';
+import type { EmailLocale } from '../i18n/email-i18n';
+import { normalizeLocale, resolveMessage } from '../i18n/email-i18n';
 import { sendAppEmail } from './app-email';
 import { renderNotificationEmail } from './email-templates';
 import { getConnectedMessagingProviders } from './messaging/index';
@@ -271,6 +272,13 @@ export async function dispatch(
 ): Promise<void> {
   const now = new Date();
 
+  // Resolve i18n-key-shaped title / body strings against the org's locale
+  // BEFORE any side channel uses them. Producers may pass a finalised
+  // English string (kept as-is) or an `apps/web-vite/messages/<NS>.<path>`
+  // dotted key (resolved via the same server bundle the email pipeline
+  // uses, with `event.metadata` supplying interpolation params).
+  const resolvedEvent = await resolveEventCopy(event);
+
   // F-ASYNC-09 / F-SCALE-05 / P2-B: bound the per-user fan-out at
   // FANOUT_CONCURRENCY (10) so a 100-recipient broadcast completes in ~10
   // RTTs instead of 100 while still protecting downstream providers
@@ -285,11 +293,54 @@ export async function dispatch(
   const FANOUT_CONCURRENCY = 10;
   const limit = pLimit(FANOUT_CONCURRENCY);
   await Promise.all(
-    event.recipientUserIds.map(userId => limit(() => dispatchToUser(userId, event, now, options))),
+    resolvedEvent.recipientUserIds.map(userId =>
+      limit(() => dispatchToUser(userId, resolvedEvent, now, options)),
+    ),
   );
 
   // Channel alert dispatch (org-level, not per-user)
-  await dispatchChannelAlerts(event);
+  await dispatchChannelAlerts(resolvedEvent);
+}
+
+// ---------------------------------------------------------------------------
+// i18n-key resolution
+// ---------------------------------------------------------------------------
+
+const I18N_KEY_RE = /^[A-Za-z][\w$]*(\.[A-Za-z][\w$]*)+$/;
+
+/**
+ * Resolve a producer-supplied copy field: if it looks like a dotted i18n
+ * key AND resolves to a different string in the bundle, return the
+ * resolved value (interpolated with `params`); otherwise return the
+ * original string. Anything that isn't a string passes through as `''`.
+ */
+function resolveCopy(
+  value: string | null | undefined,
+  locale: EmailLocale,
+  params: Record<string, unknown> | undefined,
+): string {
+  if (!value) return '';
+  if (!I18N_KEY_RE.test(value)) return value;
+  const resolved = resolveMessage(value, locale, params);
+  return resolved === value ? value : resolved;
+}
+
+/**
+ * Resolve the `title`/`body` strings on an incoming `NotificationEvent`
+ * against the originating org's locale. Returns a shallow-cloned event
+ * with the resolved copy so downstream side channels (Notification row,
+ * email body, Slack/Teams alert) all see the same final strings.
+ */
+async function resolveEventCopy(event: NotificationEvent): Promise<NotificationEvent> {
+  const org = await prisma.organization.findUnique({
+    where: { id: event.organizationId },
+    select: { language: true },
+  });
+  const locale = normalizeLocale(org?.language ?? null);
+  const title = resolveCopy(event.title, locale, event.metadata);
+  const body = resolveCopy(event.body, locale, event.metadata);
+  if (title === event.title && body === event.body) return event;
+  return { ...event, title, body };
 }
 
 // ---------------------------------------------------------------------------
