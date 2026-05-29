@@ -3,7 +3,7 @@
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { STEUERNUMMER_FORMATS } from '@contractor-ops/validators';
-import { useId, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 
 import { cn } from '../../../lib/utils.js';
 
@@ -35,6 +35,14 @@ export function BundeslandSelect({
     [],
   );
 
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const next = e.target.value as BundeslandCode | '';
+      if (next !== '') onChange(next);
+    },
+    [onChange],
+  );
+
   return (
     <div className="space-y-2">
       <Label htmlFor={selectId} className="text-sm font-medium">
@@ -55,11 +63,7 @@ export function BundeslandSelect({
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
         disabled={disabled}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={e => {
-          const next = e.target.value as BundeslandCode | '';
-          if (next !== '') onChange(next);
-        }}
+        onChange={handleChange}
         className={cn(
           'h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50',
           error && 'border-destructive ring-2 ring-destructive/20',

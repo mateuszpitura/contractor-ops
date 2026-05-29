@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import React, { useId } from 'react';
+import React, { useCallback, useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { tKey } from '../../../i18n/typed-keys.js';
@@ -66,7 +66,7 @@ export function StepBilling({ form }: StepBillingProps) {
     });
   }, [rateMinor]);
 
-  const handleRateBlur = () => {
+  const handleRateBlur = useCallback(() => {
     const value = parseFloat(rateLocal);
     if (!Number.isNaN(value) && value >= 0) {
       setValue('rateValueMinor', Math.round(value * 100), {
@@ -81,7 +81,30 @@ export function StepBilling({ form }: StepBillingProps) {
       });
       setRateLocal('');
     }
-  };
+  }, [rateLocal, setValue]);
+
+  const handleBillingModelChange = useCallback(
+    (value: string | null) =>
+      setValue('billingModel', value ?? '', {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleCurrencyChange = useCallback(
+    (value: string | null) =>
+      setValue('currency', value ?? 'PLN', {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleRateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRateLocal(e.target.value),
+    [],
+  );
 
   return (
     <div className="space-y-4">
@@ -90,13 +113,7 @@ export function StepBilling({ form }: StepBillingProps) {
         <Label className="text-[13px]">{t('billingModel')}</Label>
         <Select
           value={watch('billingModel') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('billingModel', value ?? '', {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleBillingModelChange}
           items={billingModelItems}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('billingModel')} />
@@ -117,15 +134,7 @@ export function StepBilling({ form }: StepBillingProps) {
       {/* Currency */}
       <div className="space-y-2">
         <Label className="text-[13px]">{t('currency')}</Label>
-        <Select
-          value={watch('currency') ?? 'PLN'}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('currency', value ?? 'PLN', {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }>
+        <Select value={watch('currency') ?? 'PLN'} onValueChange={handleCurrencyChange}>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -153,9 +162,7 @@ export function StepBilling({ form }: StepBillingProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setRateLocal(e.target.value)}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onChange={handleRateChange}
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">

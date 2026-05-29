@@ -111,6 +111,13 @@ export function ClassificationDisclaimerDialogView(props: ClassificationDisclaim
     [],
   );
 
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, []);
+
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent
@@ -118,13 +125,7 @@ export function ClassificationDisclaimerDialogView(props: ClassificationDisclaim
         aria-labelledby={titleId}
         aria-describedby={descId}
         className="max-w-lg"
-        // biome-ignore lint/nursery/noJsxPropsBind: native DOM handler, no unnecessary re-renders
-        onKeyDown={event => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-        }}>
+        onKeyDown={handleKeyDown}>
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-warning/10 text-warning">
             <AlertTriangle aria-hidden="true" />

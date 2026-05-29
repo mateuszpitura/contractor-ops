@@ -1,7 +1,7 @@
 // Step 11 codemod port from apps/web/src/components/contractors/compliance/entity-type-select.tsx.
 
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import { cn } from '../../../lib/utils.js';
 
@@ -30,6 +30,14 @@ export function EntityTypeSelect<T extends string>({
   const selectId = id ?? `entity-type-${reactId}`;
   const errorId = `${selectId}-error`;
 
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const next = e.target.value;
+      if (next !== '') onChange(next as T);
+    },
+    [onChange],
+  );
+
   return (
     <div className="space-y-2">
       <Label htmlFor={selectId} className="text-sm font-medium">
@@ -47,11 +55,7 @@ export function EntityTypeSelect<T extends string>({
         aria-required={required ? 'true' : undefined}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={error ? errorId : undefined}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={e => {
-          const next = e.target.value;
-          if (next !== '') onChange(next as T);
-        }}
+        onChange={handleChange}
         className={cn(
           'h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50',
           error && 'border-destructive ring-2 ring-destructive/20',

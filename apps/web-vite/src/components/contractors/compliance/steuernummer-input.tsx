@@ -5,7 +5,7 @@ import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import type { BundeslandCode } from '@contractor-ops/validators';
 import { getSteuernummerFormat, getSteuernummerRegex } from '@contractor-ops/validators';
 import { Check } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
@@ -55,6 +55,26 @@ export function SteuernummerInput({
   const describedBy =
     [hint ? hintId : null, displayError ? errorId : null].filter(Boolean).join(' ') || undefined;
 
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLocalError(undefined);
+      onChange(e.target.value);
+    },
+    [onChange],
+  );
+
+  const handleBlur = useCallback(() => {
+    setTouched(true);
+    if (bundesland && value) {
+      const ok = getSteuernummerRegex(bundesland).test(value);
+      if (!ok && format) {
+        setLocalError(
+          t('formatMismatch', { stateName: format.germanName, example: format.example }),
+        );
+      }
+    }
+  }, [bundesland, value, format, t]);
+
   return (
     <div className="space-y-2">
       <Label htmlFor={inputId} className="text-sm font-medium">
@@ -77,23 +97,8 @@ export function SteuernummerInput({
           aria-describedby={describedBy}
           placeholder={placeholder}
           value={value ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => {
-            setLocalError(undefined);
-            onChange(e.target.value);
-          }}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onBlur={() => {
-            setTouched(true);
-            if (bundesland && value) {
-              const ok = getSteuernummerRegex(bundesland).test(value);
-              if (!ok && format) {
-                setLocalError(
-                  t('formatMismatch', { stateName: format.germanName, example: format.example }),
-                );
-              }
-            }
-          }}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
           className={cn(showValid && 'pe-8')}
         />
         {showValid ? (

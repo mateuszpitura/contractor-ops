@@ -1,4 +1,5 @@
 import { Check, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 import { z } from 'zod';
 
 import { isValidNip } from '../../../lib/nip-validator.js';
@@ -23,10 +24,19 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
+  DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+
+function preventEnterSubmit(e: React.KeyboardEvent<HTMLDivElement>) {
+  if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+    e.preventDefault();
+  }
+}
 
 const wizardSchema = z.object({
   legalName: z.string().min(1, 'Legal name is required').max(255),
@@ -167,6 +177,8 @@ export function WizardDialogView({
   handleBack,
   handleDialogOpenChange,
 }: WizardDialogViewProps) {
+  const handleCloseClick = useCallback(() => handleClose(), [handleClose]);
+
   return (
     <>
       <Dialog open={open} onOpenChange={handleDialogOpenChange}>
@@ -176,40 +188,31 @@ export function WizardDialogView({
           </DialogHeader>
 
           {/* Step indicator */}
-          <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          <DialogSection>
+            <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          </DialogSection>
 
-          {/* Step content — prevent Enter from advancing steps */}
-          {/* biome-ignore lint/a11y/noStaticElementInteractions: onKeyDown only prevents Enter on inputs, not interactive */}
-          <div
+          <DialogBody
             className="min-h-[320px] px-1"
             role="presentation"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onKeyDown={e => {
-              if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-                e.preventDefault();
-              }
-            }}>
+            onKeyDown={preventEnterSubmit}>
             {currentStep === 0 && <StepCompanyContainer form={form} />}
             {currentStep === 1 && <StepBilling form={form} />}
             {currentStep === 2 && <StepAssignmentContainer form={form} />}
-          </div>
+          </DialogBody>
 
-          {/* Footer */}
-          <div className="flex items-center justify-between border-t pt-4 mt-2">
+          <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between">
             <div>
               {currentStep > 0 ? (
-                // biome-ignore lint/nursery/noJsxPropsBind: inline callback
                 <Button type="button" variant="outline" onClick={handleBack}>
                   {t('back')}
                 </Button>
               ) : (
-                // biome-ignore lint/nursery/noJsxPropsBind: callback wrapping named handler
-                <Button type="button" variant="ghost" onClick={() => handleClose()}>
+                <Button type="button" variant="ghost" onClick={handleCloseClick}>
                   {isDirty ? t('discardChanges') : t('close')}
                 </Button>
               )}
             </div>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
             <Button type="button" onClick={handleNext} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
@@ -220,7 +223,7 @@ export function WizardDialogView({
                 nextLabels[currentStep]
               )}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       {/* Discard confirmation */}
@@ -232,7 +235,6 @@ export function WizardDialogView({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('discardConfirm.keep')}</AlertDialogCancel>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: inline callback */}
             <AlertDialogAction onClick={handleDiscard} variant="destructive">
               {t('discardConfirm.discard')}
             </AlertDialogAction>

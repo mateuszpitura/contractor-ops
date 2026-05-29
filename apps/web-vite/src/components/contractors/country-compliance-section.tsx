@@ -14,7 +14,7 @@ import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import type { DeCountryFields, UkCountryFields } from '@contractor-ops/validators';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
-import { useId } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ClassificationTileContainer } from './classification/classification-tile-container.js';
@@ -67,6 +67,23 @@ export function CountryComplianceSectionView({
   const { configQuery, fieldsQuery, contractorQuery, updateMutation, saveFields, isLoading } =
     compliance;
 
+  const handleFieldChange = useCallback(
+    (key: string, val: unknown) => onFormDataChange(prev => ({ ...prev, [key]: val })),
+    [onFormDataChange],
+  );
+
+  const countryCode = configQuery.data?.countryCode;
+  const fieldsData = fieldsQuery.data;
+  const merged = useMemo(
+    () => ({ ...((fieldsData ?? {}) as Record<string, unknown>), ...formData }),
+    [fieldsData, formData],
+  );
+
+  const handleSave = useCallback(() => {
+    if (!countryCode) return;
+    saveFields(countryCode, merged);
+  }, [countryCode, saveFields, merged]);
+
   // Lifted to CountryComplianceSectionContainer; retained here as a defensive
   // guard for direct view usage (tests + legacy callers). Container is the
   // single source of variant decisions; this branch should not fire in prod.
@@ -78,10 +95,7 @@ export function CountryComplianceSectionView({
     return null;
   }
 
-  const { countryCode } = configQuery.data;
   if (!countryCode) return null;
-  const existingFields = (fieldsQuery.data ?? {}) as Record<string, unknown>;
-  const merged = { ...existingFields, ...formData };
 
   const COUNTRY_LABELS: Record<string, string> = {
     AE: t('countries.AE'),
@@ -90,11 +104,6 @@ export function CountryComplianceSectionView({
     DE: t('countries.DE'),
   };
   const countryLabel = COUNTRY_LABELS[countryCode] ?? countryCode;
-
-  function handleSave() {
-    if (!countryCode) return;
-    saveFields(countryCode, merged);
-  }
 
   const missingCount = configQuery.data.fields
     ? configQuery.data.fields.filter((f: string) => !merged[f]).length
@@ -117,8 +126,7 @@ export function CountryComplianceSectionView({
         <CountryFieldsDispatch
           countryCode={countryCode}
           values={merged}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={(key, val) => onFormDataChange(prev => ({ ...prev, [key]: val }))}
+          onChange={handleFieldChange}
         />
         {(countryCode === 'GB' || countryCode === 'DE') && (
           <div
@@ -139,7 +147,6 @@ export function CountryComplianceSectionView({
             <RevalidateVatButtonContainer contractorId={contractorId} />
           </div>
         )}
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button onClick={handleSave} disabled={updateMutation.isPending} className="mt-4">
           {updateMutation.isPending ? (
             <Loader2 className="me-2 h-4 w-4 animate-spin" />
@@ -244,6 +251,27 @@ function UaeFields({
 }) {
   const tUae = useTranslations('Contractors.countryCompliance.uae');
   const id = useId();
+
+  const handlePermitChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('freelancePermitNumber', e.target.value || undefined),
+    [onChange],
+  );
+  const handleTradeLicenseChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('tradeLicenseNumber', e.target.value || undefined),
+    [onChange],
+  );
+  const handleFreeZoneChange = useCallback(
+    (checked: boolean) => onChange('freeZone', checked),
+    [onChange],
+  );
+  const handleExpiryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('tradeLicenseExpiry', e.target.value || undefined),
+    [onChange],
+  );
+
   return (
     <>
       <div className="space-y-2">
@@ -253,8 +281,7 @@ function UaeFields({
         <Input
           id={`${id}-freelancePermitNumber`}
           value={(values.freelancePermitNumber as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('freelancePermitNumber', e.target.value || undefined)}
+          onChange={handlePermitChange}
           placeholder={tUae('freelancePermitNumberPlaceholder')}
         />
       </div>
@@ -265,8 +292,7 @@ function UaeFields({
         <Input
           id={`${id}-tradeLicenseNumber`}
           value={(values.tradeLicenseNumber as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('tradeLicenseNumber', e.target.value || undefined)}
+          onChange={handleTradeLicenseChange}
           placeholder={tUae('tradeLicenseNumberPlaceholder')}
         />
       </div>
@@ -274,8 +300,7 @@ function UaeFields({
         <Switch
           id={`${id}-freeZone`}
           checked={(values.freeZone as boolean) ?? false}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onCheckedChange={checked => onChange('freeZone', checked)}
+          onCheckedChange={handleFreeZoneChange}
         />
         <Label htmlFor={`${id}-freeZone`} className="text-sm font-medium">
           {tUae('freeZoneLabel')}
@@ -289,8 +314,7 @@ function UaeFields({
           id={`${id}-tradeLicenseExpiry`}
           type="date"
           value={(values.tradeLicenseExpiry as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('tradeLicenseExpiry', e.target.value || undefined)}
+          onChange={handleExpiryChange}
         />
       </div>
     </>
@@ -306,6 +330,23 @@ function SaudiFields({
 }) {
   const tSaudi = useTranslations('Contractors.countryCompliance.saudi');
   const id = useId();
+
+  const handleLicenseChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('freelanceSaLicense', e.target.value || undefined),
+    [onChange],
+  );
+  const handleCommercialRegChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('commercialRegistration', e.target.value || undefined),
+    [onChange],
+  );
+  const handleCrExpiryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      onChange('commercialRegistrationExpiry', e.target.value || undefined),
+    [onChange],
+  );
+
   return (
     <>
       <div className="space-y-2">
@@ -315,8 +356,7 @@ function SaudiFields({
         <Input
           id={`${id}-freelanceSaLicense`}
           value={(values.freelanceSaLicense as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('freelanceSaLicense', e.target.value || undefined)}
+          onChange={handleLicenseChange}
           placeholder={tSaudi('freelanceSaLicensePlaceholder')}
         />
       </div>
@@ -327,8 +367,7 @@ function SaudiFields({
         <Input
           id={`${id}-commercialRegistration`}
           value={(values.commercialRegistration as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('commercialRegistration', e.target.value || undefined)}
+          onChange={handleCommercialRegChange}
           placeholder={tSaudi('commercialRegistrationPlaceholder')}
         />
       </div>
@@ -340,8 +379,7 @@ function SaudiFields({
           id={`${id}-commercialRegistrationExpiry`}
           type="date"
           value={(values.commercialRegistrationExpiry as string) ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => onChange('commercialRegistrationExpiry', e.target.value || undefined)}
+          onChange={handleCrExpiryChange}
         />
       </div>
     </>

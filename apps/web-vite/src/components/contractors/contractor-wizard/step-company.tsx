@@ -3,7 +3,7 @@ import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
 import { Loader2 } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -38,9 +38,18 @@ export function StepCompanyView({ form, lookup, isLookupLoading }: StepCompanyVi
 
   const nipValue = watch('taxId');
 
-  const handleCompanyLookup = () => {
+  const handleCompanyLookup = useCallback(() => {
     void lookup(nipValue ?? '', setValue);
-  };
+  }, [lookup, nipValue, setValue]);
+
+  const handleTypeChange = useCallback(
+    (value: string) =>
+      setValue('type', value as WizardFormValues['type'], {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
 
   return (
     <div className="space-y-4">
@@ -61,7 +70,6 @@ export function StepCompanyView({ form, lookup, isLookupLoading }: StepCompanyVi
             variant="outline"
             size="sm"
             className="whitespace-nowrap"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleCompanyLookup}
             disabled={isLookupLoading}>
             {isLookupLoading ? (
@@ -91,15 +99,7 @@ export function StepCompanyView({ form, lookup, isLookupLoading }: StepCompanyVi
       {/* Contractor type */}
       <div className="space-y-2">
         <Label className="text-[13px]">{t('type')}</Label>
-        <RadioGroup
-          value={watch('type') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('type', value as WizardFormValues['type'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }>
+        <RadioGroup value={watch('type') ?? ''} onValueChange={handleTypeChange}>
           {CONTRACTOR_TYPES.map(type => (
             <label
               key={type}

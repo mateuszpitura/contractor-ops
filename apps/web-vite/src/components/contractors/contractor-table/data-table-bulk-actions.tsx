@@ -23,7 +23,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import type { HTMLAttributes } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -73,11 +74,69 @@ export function DataTableBulkActions({
   const ArchiveIcon = archiveAction?.icon;
   const LaunchWorkflowIcon = launchWorkflowAction?.icon;
 
-  const finish = () => {
+  const finish = useCallback(() => {
     onComplete();
     setShowArchiveDialog(false);
     setOwnerPopoverOpen(false);
-  };
+  }, [onComplete]);
+
+  const renderAssignOwnerTrigger = useCallback(
+    (props: HTMLAttributes<HTMLButtonElement>) => {
+      // Render only invoked when parent guards `assignOwnerAction` + icon truthy.
+      const Icon = AssignOwnerIcon;
+      const action = assignOwnerAction;
+      if (!(Icon && action)) return <Button {...props} />;
+      return (
+        <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
+          <Icon className={iconSize.sm} />
+          {tKey(t, action.labelKey)}
+        </Button>
+      );
+    },
+    [AssignOwnerIcon, assignOwnerAction, t],
+  );
+
+  const renderExportTrigger = useCallback(
+    (props: HTMLAttributes<HTMLButtonElement>) => {
+      const Icon = ExportIcon;
+      const action = exportAction;
+      if (!(Icon && action)) return <Button {...props} />;
+      return (
+        <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
+          {bulkActions.isExporting ? (
+            <Loader2 className={`${iconSize.sm} animate-spin`} />
+          ) : (
+            <Icon className={iconSize.sm} />
+          )}
+          {tKey(t, action.labelKey)}
+        </Button>
+      );
+    },
+    [ExportIcon, exportAction, bulkActions.isExporting, t],
+  );
+
+  const handleExportCsv = useCallback(() => {
+    bulkActions.onExport(selectedIds, 'csv');
+    finish();
+  }, [bulkActions, selectedIds, finish]);
+
+  const handleExportXlsx = useCallback(() => {
+    bulkActions.onExport(selectedIds, 'xlsx');
+    finish();
+  }, [bulkActions, selectedIds, finish]);
+
+  const handleOpenArchiveDialog = useCallback(() => {
+    setShowArchiveDialog(true);
+  }, []);
+
+  const handleOpenWorkflowPicker = useCallback(() => {
+    setWorkflowPickerOpen(true);
+  }, []);
+
+  const handleConfirmArchive = useCallback(() => {
+    bulkActions.onBulkArchive(selectedIds);
+    finish();
+  }, [bulkActions, selectedIds, finish]);
 
   if (count === 0) return null;
 
@@ -88,32 +147,21 @@ export function DataTableBulkActions({
 
         {!!assignOwnerAction && !!AssignOwnerIcon && (
           <Popover open={ownerPopoverOpen} onOpenChange={setOwnerPopoverOpen}>
-            <PopoverTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
-                  <AssignOwnerIcon className={iconSize.sm} />
-                  {tKey(t, assignOwnerAction.labelKey)}
-                </Button>
-              )}
-            />
+            <PopoverTrigger render={renderAssignOwnerTrigger} />
             <PopoverContent className="w-56 p-2" align="start">
               <div className="space-y-1">
                 {users.map(user => {
                   const userId = user.userId ?? user.id ?? '';
                   return (
-                    <button
+                    <AssignOwnerOptionButton
                       key={userId}
-                      type="button"
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-accent"
-                      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                      onClick={() => {
-                        bulkActions.onBulkAssignOwner(selectedIds, userId);
-                        finish();
-                      }}
-                      disabled={bulkActions.isAssigningOwner}>
-                      <span className="truncate">{user.name ?? user.email ?? userId}</span>
-                    </button>
+                      userId={userId}
+                      label={user.name ?? user.email ?? userId}
+                      disabled={bulkActions.isAssigningOwner}
+                      selectedIds={selectedIds}
+                      onAssign={bulkActions.onBulkAssignOwner}
+                      onComplete={finish}
+                    />
                   );
                 })}
               </div>
@@ -123,36 +171,12 @@ export function DataTableBulkActions({
 
         {!!exportAction && !!ExportIcon && (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
-                  {bulkActions.isExporting ? (
-                    <Loader2 className={`${iconSize.sm} animate-spin`} />
-                  ) : (
-                    <ExportIcon className={iconSize.sm} />
-                  )}
-                  {tKey(t, exportAction.labelKey)}
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderExportTrigger} />
             <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  bulkActions.onExport(selectedIds, 'csv');
-                  finish();
-                }}
-                disabled={bulkActions.isExporting}>
+              <DropdownMenuItem onClick={handleExportCsv} disabled={bulkActions.isExporting}>
                 {t('exportCsv')}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  bulkActions.onExport(selectedIds, 'xlsx');
-                  finish();
-                }}
-                disabled={bulkActions.isExporting}>
+              <DropdownMenuItem onClick={handleExportXlsx} disabled={bulkActions.isExporting}>
                 {t('exportXlsx')}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -164,8 +188,7 @@ export function DataTableBulkActions({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5 text-destructive hover:text-destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setShowArchiveDialog(true)}>
+            onClick={handleOpenArchiveDialog}>
             <ArchiveIcon className={iconSize.sm} />
             {tKey(t, archiveAction.labelKey)}
           </Button>
@@ -176,8 +199,7 @@ export function DataTableBulkActions({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setWorkflowPickerOpen(true)}>
+            onClick={handleOpenWorkflowPicker}>
             <LaunchWorkflowIcon className={iconSize.sm} />
             {tKey(t, launchWorkflowAction.labelKey)}
           </Button>
@@ -200,11 +222,7 @@ export function DataTableBulkActions({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                bulkActions.onBulkArchive(selectedIds);
-                finish();
-              }}
+              onClick={handleConfirmArchive}
               disabled={bulkActions.isArchiving}
               variant="destructive">
               {bulkActions.isArchiving ? (
@@ -218,3 +236,35 @@ export function DataTableBulkActions({
     </>
   );
 }
+
+interface AssignOwnerOptionButtonProps {
+  userId: string;
+  label: string;
+  disabled: boolean;
+  selectedIds: string[];
+  onAssign: (contractorIds: string[], userId: string) => void;
+  onComplete: () => void;
+}
+
+const AssignOwnerOptionButton = memo(function AssignOwnerOptionButton({
+  userId,
+  label,
+  disabled,
+  selectedIds,
+  onAssign,
+  onComplete,
+}: AssignOwnerOptionButtonProps) {
+  const handleClick = useCallback(() => {
+    onAssign(selectedIds, userId);
+    onComplete();
+  }, [onAssign, selectedIds, userId, onComplete]);
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-accent"
+      onClick={handleClick}
+      disabled={disabled}>
+      <span className="truncate">{label}</span>
+    </button>
+  );
+});

@@ -93,6 +93,30 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
     [props],
   );
 
+  const handleEntityTypeChange = useCallback(
+    (v: UkEntityType) => handleChange('entityType', v),
+    [handleChange],
+  );
+  const renderEntityOption = useCallback((v: UkEntityType) => UK_ENTITY_LABELS[v], []);
+  const handleUtrChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange('utr', e.target.value || undefined),
+    [handleChange],
+  );
+  const handleCompaniesHouseChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      handleChange('companiesHouseNumber', e.target.value || undefined),
+    [handleChange],
+  );
+  const handleVatRegisteredChange = useCallback(
+    (v: boolean) => handleChange('isVatRegistered', v),
+    [handleChange],
+  );
+  const handleVatNumberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      handleChange('vatRegistrationNumber', e.target.value || undefined),
+    [handleChange],
+  );
+
   const entityType = merged.entityType;
   const isVatRegistered = merged.isVatRegistered ?? false;
   const errors = props.errors ?? {};
@@ -116,13 +140,11 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
       <EntityTypeSelect<UkEntityType>
         values={ukEntityTypeEnum.options}
         value={entityType}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={v => handleChange('entityType', v)}
+        onChange={handleEntityTypeChange}
         label={t('entityTypeLabel')}
         required
         error={errors.entityType}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        renderOption={v => UK_ENTITY_LABELS[v]}
+        renderOption={renderEntityOption}
       />
 
       <div className="space-y-2">
@@ -138,8 +160,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
           aria-describedby={errors.utr ? `${id}-utr-error` : undefined}
           placeholder={t('utrPlaceholder')}
           value={merged.utr ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => handleChange('utr', e.target.value || undefined)}
+          onChange={handleUtrChange}
         />
         <FieldError id={`${id}-utr-error`} message={errors.utr} />
       </div>
@@ -157,8 +178,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             aria-describedby={errors.companiesHouseNumber ? `${id}-ch-error` : undefined}
             placeholder={t('companiesHousePlaceholder')}
             value={merged.companiesHouseNumber ?? ''}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleChange('companiesHouseNumber', e.target.value || undefined)}
+            onChange={handleCompaniesHouseChange}
           />
           <FieldError id={`${id}-ch-error`} message={errors.companiesHouseNumber} />
         </div>
@@ -166,8 +186,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
 
       <VatRegisteredToggle
         checked={isVatRegistered}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={v => handleChange('isVatRegistered', v)}
+        onChange={handleVatRegisteredChange}
         label={t('vatRegisteredLabel')}
       />
 
@@ -183,8 +202,7 @@ export function UkComplianceFields(props: UkComplianceFieldsProps) {
             aria-describedby={errors.vatRegistrationNumber ? `${id}-vat-error` : undefined}
             placeholder={t('vatNumberPlaceholder')}
             value={merged.vatRegistrationNumber ?? ''}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleChange('vatRegistrationNumber', e.target.value || undefined)}
+            onChange={handleVatNumberChange}
           />
           <FieldError id={`${id}-vat-error`} message={errors.vatRegistrationNumber} />
         </div>

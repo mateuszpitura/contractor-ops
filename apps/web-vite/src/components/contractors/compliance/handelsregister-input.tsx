@@ -20,7 +20,7 @@ import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn
 import type { HandelsregisterCourt } from '@contractor-ops/validators';
 import { HANDELSREGISTER_COURTS } from '@contractor-ops/validators';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { useId, useMemo, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
@@ -65,10 +65,30 @@ export function HandelsregisterInput({
     [],
   );
 
-  function patch(next: Partial<HandelsregisterValue>) {
-    const merged = { ...current, ...next };
-    onChange(merged);
-  }
+  const patch = useCallback(
+    (next: Partial<HandelsregisterValue>) => {
+      const merged = { ...current, ...next };
+      onChange(merged);
+    },
+    [current, onChange],
+  );
+
+  const handleTypeChange = useCallback(
+    (v: string) => {
+      if (v === 'HRB' || v === 'HRA') {
+        patch({ type: v });
+      }
+    },
+    [patch],
+  );
+
+  const handleNumberChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
+      patch({ number: digits });
+    },
+    [patch],
+  );
 
   const describedBy = [hintId, error ? errorId : null].filter(Boolean).join(' ');
 
@@ -120,23 +140,13 @@ export function HandelsregisterInput({
                   <CommandEmpty>{t('noCourtFound')}</CommandEmpty>
                   <CommandGroup>
                     {sortedCourts.map(court => (
-                      <CommandItem
+                      <CourtCommandItem
                         key={court.code}
-                        value={`${court.name} ${court.city}`}
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        onSelect={() => {
-                          patch({ court: court.code });
-                          setOpen(false);
-                        }}>
-                        <Check
-                          className={cn(
-                            'me-2 size-4',
-                            courtCode === court.code ? 'opacity-100' : 'opacity-0',
-                          )}
-                          aria-hidden="true"
-                        />
-                        <span className="truncate">{court.name}</span>
-                      </CommandItem>
+                        court={court}
+                        selected={courtCode === court.code}
+                        onSelect={patch}
+                        onClose={setOpen}
+                      />
                     ))}
                   </CommandGroup>
                 </CommandList>
@@ -149,12 +159,7 @@ export function HandelsregisterInput({
           <Label className="sr-only">{t('registerTypeLabel')}</Label>
           <RadioGroup
             value={current.type ?? 'HRB'}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={(v: string) => {
-              if (v === 'HRB' || v === 'HRA') {
-                patch({ type: v });
-              }
-            }}
+            onValueChange={handleTypeChange}
             aria-label={t('registerTypeAriaLabel')}
             className="grid-cols-2 sm:grid-cols-2">
             <label
@@ -186,11 +191,7 @@ export function HandelsregisterInput({
             aria-invalid={error ? 'true' : undefined}
             placeholder="123456"
             value={current.number ?? ''}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => {
-              const digits = e.target.value.replace(/\D/g, '').slice(0, 7);
-              patch({ number: digits });
-            }}
+            onChange={handleNumberChange}
           />
         </div>
       </div>
@@ -206,3 +207,31 @@ export function HandelsregisterInput({
     </fieldset>
   );
 }
+
+interface CourtCommandItemProps {
+  court: HandelsregisterCourt;
+  selected: boolean;
+  onSelect: (next: Partial<HandelsregisterValue>) => void;
+  onClose: (open: boolean) => void;
+}
+
+const CourtCommandItem = memo(function CourtCommandItem({
+  court,
+  selected,
+  onSelect,
+  onClose,
+}: CourtCommandItemProps) {
+  const handleSelect = useCallback(() => {
+    onSelect({ court: court.code });
+    onClose(false);
+  }, [court.code, onSelect, onClose]);
+  return (
+    <CommandItem value={`${court.name} ${court.city}`} onSelect={handleSelect}>
+      <Check
+        className={cn('me-2 size-4', selected ? 'opacity-100' : 'opacity-0')}
+        aria-hidden="true"
+      />
+      <span className="truncate">{court.name}</span>
+    </CommandItem>
+  );
+});

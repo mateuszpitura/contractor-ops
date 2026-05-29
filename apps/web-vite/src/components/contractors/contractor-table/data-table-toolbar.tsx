@@ -8,7 +8,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Filter, Loader2, Plus, Search, Upload, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { HTMLAttributes } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -89,7 +90,7 @@ export function DataTableToolbar({
     [onSearchChange],
   );
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     onFiltersChange({
       lifecycleStage: [],
       type: [],
@@ -98,17 +99,88 @@ export function DataTableToolbar({
       billingModel: [],
       health: [],
     });
-  };
+  }, [onFiltersChange]);
 
-  const toggleFilterValue = (key: keyof FilterState, value: string) => {
-    const current = filters[key];
-    const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
-    onFiltersChange({ [key]: next });
-  };
+  const toggleFilterValue = useCallback(
+    (key: keyof FilterState, value: string) => {
+      const current = filters[key];
+      const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+      onFiltersChange({ [key]: next });
+    },
+    [filters, onFiltersChange],
+  );
 
-  const removeFilter = (key: keyof FilterState, value: string) => {
-    onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
-  };
+  const removeFilter = useCallback(
+    (key: keyof FilterState, value: string) => {
+      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value),
+    [handleSearchInput],
+  );
+
+  const handleToggleType = useCallback(
+    (value: string) => toggleFilterValue('type', value),
+    [toggleFilterValue],
+  );
+  const handleToggleOwner = useCallback(
+    (value: string) => toggleFilterValue('owner', value),
+    [toggleFilterValue],
+  );
+  const handleToggleBillingModel = useCallback(
+    (value: string) => toggleFilterValue('billingModel', value),
+    [toggleFilterValue],
+  );
+  const handleToggleHealth = useCallback(
+    (value: string) => toggleFilterValue('health', value),
+    [toggleFilterValue],
+  );
+
+  const userOptions = useMemo(
+    () =>
+      (
+        users as Array<{
+          id?: string;
+          userId?: string;
+          name?: string | null;
+          email?: string | null;
+        }>
+      ).map(user => ({
+        value: user.userId ?? user.id ?? '',
+        label: user.name ?? user.email ?? 'Unknown',
+      })),
+    [users],
+  );
+
+  const typeOptions = useMemo(
+    () =>
+      CONTRACTOR_TYPES.map(ct => ({
+        value: ct,
+        label: tDynLoose(t, 'type', enumKey(ct)),
+      })),
+    [t],
+  );
+
+  const billingOptions = useMemo(
+    () =>
+      BILLING_MODELS.map(model => ({
+        value: model,
+        label: tDynLoose(t, 'billingModel', enumKey(model)),
+      })),
+    [t],
+  );
+
+  const healthOptions = useMemo(
+    () =>
+      HEALTH_OPTIONS.map(health => ({
+        value: health,
+        label: tDynLoose(t, 'health', enumKey(health)),
+      })),
+    [t],
+  );
 
   // Secondary filters (everything except lifecycleStage which is rendered as
   // the dedicated dropdown to the left of the Filters popover).
@@ -119,6 +191,36 @@ export function DataTableToolbar({
     filters.billingModel.length +
     filters.health.length;
   const hasSecondaryFilters = secondaryFilterCount > 0;
+  const hasActiveFilters = filters.lifecycleStage.length > 0 || hasSecondaryFilters;
+
+  const renderLifecycleTrigger = useCallback(
+    (props: HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        {t('columns.lifecycleStage')}
+        {filters.lifecycleStage.length > 0 && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {filters.lifecycleStage.length}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [filtersDisabled, t, filters.lifecycleStage.length],
+  );
+
+  const renderFiltersTrigger = useCallback(
+    (props: HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        <Filter className="h-3.5 w-3.5" />
+        {t('filters')}
+        {hasSecondaryFilters && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {secondaryFilterCount}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [filtersDisabled, t, hasSecondaryFilters, secondaryFilterCount],
+  );
 
   return (
     <div className="space-y-3">
@@ -131,8 +233,7 @@ export function DataTableToolbar({
             placeholder={t('searchPlaceholder')}
             value={localSearch}
             disabled={filtersDisabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (
@@ -142,19 +243,7 @@ export function DataTableToolbar({
 
         {/* Status multi-select */}
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-                {t('columns.lifecycleStage')}
-                {filters.lifecycleStage.length > 0 && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {filters.lifecycleStage.length}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderLifecycleTrigger} />
           <PopoverContent className="w-52 p-0" align="start">
             <div className="p-4 space-y-2">
               <h4 className="text-[13px] font-medium text-foreground">
@@ -162,18 +251,13 @@ export function DataTableToolbar({
               </h4>
               <div className="space-y-1">
                 {LIFECYCLE_STAGE_CHIPS.map(chip => (
-                  <label
+                  <LifecycleChipRow
                     key={chip.key}
-                    htmlFor={`lifecycle-${chip.key}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                    <Checkbox
-                      id={`lifecycle-${chip.key}`}
-                      checked={filters.lifecycleStage.includes(chip.key)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onCheckedChange={() => toggleFilterValue('lifecycleStage', chip.key)}
-                    />
-                    <span>{t(chip.labelKey)}</span>
-                  </label>
+                    chipKey={chip.key}
+                    label={t(chip.labelKey)}
+                    checked={filters.lifecycleStage.includes(chip.key)}
+                    onToggle={toggleFilterValue}
+                  />
                 ))}
               </div>
             </div>
@@ -182,76 +266,40 @@ export function DataTableToolbar({
 
         {/* Advanced filters popover (no lifecycle — that lives in chip bar) */}
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-                <Filter className="h-3.5 w-3.5" />
-                {t('filters')}
-                {hasSecondaryFilters && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {secondaryFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderFiltersTrigger} />
           <PopoverContent className="w-72 p-0" align="start">
             <div className="max-h-[400px] overflow-y-auto p-4 space-y-4">
               {/* Type */}
               <FilterSection
                 title={t('columns.type')}
-                options={CONTRACTOR_TYPES.map(ct => ({
-                  value: ct,
-                  label: tDynLoose(t, 'type', enumKey(ct)),
-                }))}
+                options={typeOptions}
                 selected={filters.type}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('type', value)}
+                onToggle={handleToggleType}
               />
 
               {/* Owner */}
               <FilterSection
                 title={t('columns.owner')}
-                options={(
-                  users as Array<{
-                    id?: string;
-                    userId?: string;
-                    name?: string | null;
-                    email?: string | null;
-                  }>
-                ).map(user => ({
-                  value: user.userId ?? user.id ?? '',
-                  label: user.name ?? user.email ?? 'Unknown',
-                }))}
+                options={userOptions}
                 selected={filters.owner}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('owner', value)}
+                onToggle={handleToggleOwner}
                 searchable
               />
 
               {/* Billing model */}
               <FilterSection
                 title={t('columns.billingModel')}
-                options={BILLING_MODELS.map(model => ({
-                  value: model,
-                  label: tDynLoose(t, 'billingModel', enumKey(model)),
-                }))}
+                options={billingOptions}
                 selected={filters.billingModel}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('billingModel', value)}
+                onToggle={handleToggleBillingModel}
               />
 
               {/* Compliance health */}
               <FilterSection
                 title={t('columns.health')}
-                options={HEALTH_OPTIONS.map(health => ({
-                  value: health,
-                  label: tDynLoose(t, 'health', enumKey(health)),
-                }))}
+                options={healthOptions}
                 selected={filters.health}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onToggle={value => toggleFilterValue('health', value)}
+                onToggle={handleToggleHealth}
               />
             </div>
           </PopoverContent>
@@ -285,15 +333,25 @@ export function DataTableToolbar({
         </Button>
       </div>
 
-      {/* Active filter badges (lifecycle handled by chip bar, so skipped here) */}
-      {hasSecondaryFilters && (
+      {/* Active filter badges */}
+      {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5">
+          {filters.lifecycleStage.map(stage => (
+            <RemovableFilterBadge
+              key={`lifecycle-${stage}`}
+              filterKey="lifecycleStage"
+              value={stage}
+              label={tDynLoose(t, 'lifecycle', enumKey(stage))}
+              onRemove={removeFilter}
+            />
+          ))}
           {filters.type.map(ct => (
-            <FilterBadge
+            <RemovableFilterBadge
               key={`type-${ct}`}
+              filterKey="type"
+              value={ct}
               label={tDynLoose(t, 'type', enumKey(ct))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('type', ct)}
+              onRemove={removeFilter}
             />
           ))}
           {filters.owner.map(ownerId => {
@@ -306,34 +364,36 @@ export function DataTableToolbar({
               }>
             ).find(u => (u.userId ?? u.id) === ownerId);
             return (
-              <FilterBadge
+              <RemovableFilterBadge
                 key={`owner-${ownerId}`}
+                filterKey="owner"
+                value={ownerId}
                 label={user?.name ?? user?.email ?? ownerId}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onRemove={() => removeFilter('owner', ownerId)}
+                onRemove={removeFilter}
               />
             );
           })}
           {filters.billingModel.map(model => (
-            <FilterBadge
+            <RemovableFilterBadge
               key={`billing-${model}`}
+              filterKey="billingModel"
+              value={model}
               label={tDynLoose(t, 'billingModel', enumKey(model))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('billingModel', model)}
+              onRemove={removeFilter}
             />
           ))}
           {filters.health.map(health => (
-            <FilterBadge
+            <RemovableFilterBadge
               key={`health-${health}`}
+              filterKey="health"
+              value={health}
               label={tDynLoose(t, 'health', enumKey(health))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('health', health)}
+              onRemove={removeFilter}
             />
           ))}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={clearAllFilters}>
             {t('clearAll')}
           </button>
@@ -346,6 +406,58 @@ export function DataTableToolbar({
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
+
+interface LifecycleChipRowProps {
+  chipKey: (typeof LIFECYCLE_STAGE_CHIPS)[number]['key'];
+  label: string;
+  checked: boolean;
+  onToggle: (key: keyof FilterState, value: string) => void;
+}
+
+const LifecycleChipRow = memo(function LifecycleChipRow({
+  chipKey,
+  label,
+  checked,
+  onToggle,
+}: LifecycleChipRowProps) {
+  const handleChange = useCallback(() => onToggle('lifecycleStage', chipKey), [onToggle, chipKey]);
+  return (
+    <label
+      htmlFor={`lifecycle-${chipKey}`}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={`lifecycle-${chipKey}`} checked={checked} onCheckedChange={handleChange} />
+      <span>{label}</span>
+    </label>
+  );
+});
+
+interface FilterOptionRowProps {
+  title: string;
+  option: { value: string; label: string };
+  checked: boolean;
+  onToggle: (value: string) => void;
+}
+
+const FilterOptionRow = memo(function FilterOptionRow({
+  title,
+  option,
+  checked,
+  onToggle,
+}: FilterOptionRowProps) {
+  const handleChange = useCallback(() => onToggle(option.value), [onToggle, option.value]);
+  return (
+    <label
+      htmlFor={`filter-${title}-${option.value}`}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox
+        id={`filter-${title}-${option.value}`}
+        checked={checked}
+        onCheckedChange={handleChange}
+      />
+      <span>{option.label}</span>
+    </label>
+  );
+});
 
 function FilterSection({
   title,
@@ -363,6 +475,11 @@ function FilterSection({
   maxVisible?: number;
 }) {
   const [query, setQuery] = useState('');
+
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value),
+    [],
+  );
 
   if (options.length === 0) return null;
 
@@ -386,8 +503,7 @@ function FilterSection({
           <Input
             placeholder={`Search ${title.toLowerCase()}...`}
             value={query}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             className="h-7 text-xs"
           />
           {!query && unselectedOptions.length > maxVisible && (
@@ -399,37 +515,44 @@ function FilterSection({
       )}
       <div className="space-y-1">
         {visibleOptions.map(option => (
-          <label
+          <FilterOptionRow
             key={option.value}
-            htmlFor={`filter-${title}-${option.value}`}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-            <Checkbox
-              id={`filter-${title}-${option.value}`}
-              checked={selected.includes(option.value)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={() => onToggle(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
+            title={title}
+            option={option}
+            checked={selected.includes(option.value)}
+            onToggle={onToggle}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
-  const tAria = useTranslations('Common.aria');
+interface RemovableFilterBadgeProps {
+  filterKey: keyof FilterState;
+  value: string;
+  label: string;
+  onRemove: (key: keyof FilterState, value: string) => void;
+}
 
+const RemovableFilterBadge = memo(function RemovableFilterBadge({
+  filterKey,
+  value,
+  label,
+  onRemove,
+}: RemovableFilterBadgeProps) {
+  const tAria = useTranslations('Common.aria');
+  const handleRemove = useCallback(() => onRemove(filterKey, value), [onRemove, filterKey, value]);
   return (
     <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
       <span className="text-xs">{label}</span>
       <button
         type="button"
         className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-        onClick={onRemove}
+        onClick={handleRemove}
         aria-label={tAria('removeFilter', { label })}>
         <X className="h-3 w-3" />
       </button>
     </Badge>
   );
-}
+});
