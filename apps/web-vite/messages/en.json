@@ -7219,8 +7219,6 @@
     "Start": {
       "heading": "Start offboarding for {contractor}",
       "templateLabel": "Knowledge-transfer template",
-      "autoSelectHint": "Auto-selected from contractor role: {roleName}",
-      "manualOverrideHint": "Choose a different template…",
       "cta": "Start offboarding"
     }
   },
@@ -7841,22 +7839,12 @@
   "contractor": {
     "vatValidation": {
       "valid": "Valid",
-      "invalid": "Invalid",
-      "stale": "Stale",
-      "unavailable": "Unavailable",
-      "notValidated": "Not validated",
-      "revalidateButton": "Revalidate VAT",
-      "tooltipStale": "Last validated {relativeTime} ago; live check unavailable",
-      "tooltipUnavailable": "Live VAT check is temporarily unavailable"
+      "invalid": "Invalid"
     }
   },
   "invoice": {
     "reverseCharge": {
-      "autoDetectedChip": "RC auto-detected",
-      "toggleOffPromptTitle": "Override auto-detected reverse charge?",
-      "reasonLabel": "Reason",
-      "reasonPlaceholder": "e.g. Customer prefers standard rate per contract clause 4.2",
-      "reasonRequiredError": "Please provide a business reason (minimum 5 characters)"
+      "reasonPlaceholder": "e.g. Customer prefers standard rate per contract clause 4.2"
     }
   },
   "ksef": {
@@ -7982,21 +7970,8 @@
     "noResultsCta": "Clear search"
   },
   "commandPalette": {
-    "open": "Search…",
-    "placeholder": "Type a command or search…",
-    "empty": "No results.",
     "groups": {
-      "navigate": "Navigate",
-      "team": "Team",
-      "finance": "Finance",
-      "preferences": "Preferences"
-    },
-    "theme": {
-      "light": "Switch to light mode",
-      "dark": "Switch to dark mode"
-    },
-    "locale": {
-      "switchTo": "Switch language to {locale}"
+      "navigate": "Navigate"
     }
   }
 }

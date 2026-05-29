@@ -7219,8 +7219,6 @@
     "Start": {
       "heading": "Offboarding für {contractor} starten",
       "templateLabel": "Wissenstransfer-Vorlage",
-      "autoSelectHint": "Automatisch ausgewählt nach Auftragnehmerrolle: {roleName}",
-      "manualOverrideHint": "Andere Vorlage wählen…",
       "cta": "Offboarding starten"
     }
   },
@@ -7841,22 +7839,12 @@
   "contractor": {
     "vatValidation": {
       "valid": "Gültig",
-      "invalid": "Ungültig",
-      "stale": "Veraltet",
-      "unavailable": "Nicht verfügbar",
-      "notValidated": "Nicht geprüft",
-      "revalidateButton": "USt-Nummer erneut prüfen",
-      "tooltipStale": "Zuletzt geprüft vor {relativeTime}; Live-Prüfung nicht verfügbar",
-      "tooltipUnavailable": "Live-USt-Prüfung vorübergehend nicht verfügbar"
+      "invalid": "Ungültig"
     }
   },
   "invoice": {
     "reverseCharge": {
-      "autoDetectedChip": "RC automatisch erkannt",
-      "toggleOffPromptTitle": "Automatische Reverse-Charge-Erkennung überschreiben?",
-      "reasonLabel": "Begründung",
-      "reasonPlaceholder": "z. B. Kunde bevorzugt Standardsatz laut Vertrag Ziff. 4.2",
-      "reasonRequiredError": "Bitte geben Sie eine betriebliche Begründung an (mindestens 5 Zeichen)"
+      "reasonPlaceholder": "z. B. Kunde bevorzugt Standardsatz laut Vertrag Ziff. 4.2"
     }
   },
   "ksef": {
@@ -7933,21 +7921,8 @@
     }
   },
   "commandPalette": {
-    "open": "Suchen…",
-    "placeholder": "Befehl eingeben oder suchen…",
-    "empty": "Keine Ergebnisse.",
     "groups": {
-      "navigate": "Navigation",
-      "team": "Team",
-      "finance": "Finanzen",
-      "preferences": "Einstellungen"
-    },
-    "theme": {
-      "light": "Heller Modus",
-      "dark": "Dunkler Modus"
-    },
-    "locale": {
-      "switchTo": "Sprache wechseln zu {locale}"
+      "navigate": "Navigation"
     }
   },
   "Organization": {

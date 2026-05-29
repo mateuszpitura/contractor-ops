@@ -7219,8 +7219,6 @@
     "Start": {
       "heading": "Rozpocznij offboarding dla {contractor}",
       "templateLabel": "Szablon przekazania wiedzy",
-      "autoSelectHint": "Wybrano automatycznie na podstawie roli kontraktora: {roleName}",
-      "manualOverrideHint": "Wybierz inny szablon…",
       "cta": "Rozpocznij offboarding"
     }
   },
@@ -7841,22 +7839,12 @@
   "contractor": {
     "vatValidation": {
       "valid": "Prawidłowy",
-      "invalid": "Nieprawidłowy",
-      "stale": "Nieaktualny",
-      "unavailable": "Niedostępne",
-      "notValidated": "Niezweryfikowany",
-      "revalidateButton": "Zweryfikuj ponownie VAT",
-      "tooltipStale": "Ostatnia weryfikacja {relativeTime} temu; bieżąca weryfikacja niedostępna",
-      "tooltipUnavailable": "Bieżąca weryfikacja VAT jest chwilowo niedostępna"
+      "invalid": "Nieprawidłowy"
     }
   },
   "invoice": {
     "reverseCharge": {
-      "autoDetectedChip": "RC wykryte automatycznie",
-      "toggleOffPromptTitle": "Nadpisać automatycznie wykryte odwrotne obciążenie?",
-      "reasonLabel": "Uzasadnienie",
-      "reasonPlaceholder": "np. Klient preferuje stawkę standardową zgodnie z klauzulą 4.2 umowy",
-      "reasonRequiredError": "Proszę podać uzasadnienie biznesowe (minimum 5 znaków)"
+      "reasonPlaceholder": "np. Klient preferuje stawkę standardową zgodnie z klauzulą 4.2 umowy"
     }
   },
   "ksef": {
@@ -7933,21 +7921,8 @@
     }
   },
   "commandPalette": {
-    "open": "Szukaj…",
-    "placeholder": "Wpisz komendę lub szukaj…",
-    "empty": "Brak wyników.",
     "groups": {
-      "navigate": "Nawigacja",
-      "team": "Zespół",
-      "finance": "Finanse",
-      "preferences": "Preferencje"
-    },
-    "theme": {
-      "light": "Przełącz na jasny",
-      "dark": "Przełącz na ciemny"
-    },
-    "locale": {
-      "switchTo": "Zmień język na {locale}"
+      "navigate": "Nawigacja"
     }
   },
   "Organization": {

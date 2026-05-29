@@ -7219,8 +7219,6 @@
     "Start": {
       "heading": "بدء عملية إنهاء التعاقد مع {contractor}",
       "templateLabel": "قالب نقل المعرفة",
-      "autoSelectHint": "تم التحديد تلقائيًا من دور المقاول: {roleName}",
-      "manualOverrideHint": "اختر قالبًا مختلفًا…",
       "cta": "بدء عملية إنهاء التعاقد"
     }
   },
@@ -7841,22 +7839,12 @@
   "contractor": {
     "vatValidation": {
       "valid": "صالح",
-      "invalid": "غير صالح",
-      "stale": "قديم",
-      "unavailable": "غير متوفر",
-      "notValidated": "لم يتم التحقق",
-      "revalidateButton": "إعادة التحقق من ضريبة القيمة المضافة",
-      "tooltipStale": "آخر تحقق منذ {relativeTime}؛ التحقق المباشر غير متاح",
-      "tooltipUnavailable": "التحقق المباشر من ضريبة القيمة المضافة غير متاح حالياً"
+      "invalid": "غير صالح"
     }
   },
   "invoice": {
     "reverseCharge": {
-      "autoDetectedChip": "RC تم اكتشافه تلقائياً",
-      "toggleOffPromptTitle": "تجاوز الرسوم العكسية المكتشفة تلقائياً؟",
-      "reasonLabel": "السبب",
-      "reasonPlaceholder": "مثال: يفضل العميل المعدل القياسي وفق البند 4.2 من العقد",
-      "reasonRequiredError": "يرجى تقديم سبب تجاري (5 أحرف على الأقل)"
+      "reasonPlaceholder": "مثال: يفضل العميل المعدل القياسي وفق البند 4.2 من العقد"
     }
   },
   "ksef": {
@@ -7933,21 +7921,8 @@
     }
   },
   "commandPalette": {
-    "open": "بحث…",
-    "placeholder": "اكتب أمرًا أو ابحث…",
-    "empty": "لا توجد نتائج.",
     "groups": {
-      "navigate": "تنقل",
-      "team": "الفريق",
-      "finance": "المالية",
-      "preferences": "التفضيلات"
-    },
-    "theme": {
-      "light": "الوضع الفاتح",
-      "dark": "الوضع الداكن"
-    },
-    "locale": {
-      "switchTo": "تغيير اللغة إلى {locale}"
+      "navigate": "تنقل"
     }
   },
   "Organization": {
