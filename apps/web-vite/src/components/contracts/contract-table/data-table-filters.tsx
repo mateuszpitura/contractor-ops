@@ -9,7 +9,8 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { CalendarIcon, Filter, X } from 'lucide-react';
-import { useCallback, useId, useState } from 'react';
+import { memo, useCallback, useId, useMemo, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -49,6 +50,8 @@ interface FilterState {
   endDateTo: string;
   complianceRiskLevel: string[];
 }
+
+type ToggleKey = 'status' | 'type' | 'billingModel' | 'ownerUserId' | 'complianceRiskLevel';
 
 interface DataTableFiltersProps {
   filters: FilterState;
@@ -121,25 +124,8 @@ export function DataTableFilters({
 
   const hasActiveFilters = activeFilterCount > 0;
 
-  const clearAllFilters = useCallback(() => {
-    onFiltersChange({
-      status: [],
-      type: [],
-      billingModel: [],
-      ownerUserId: [],
-      startDateFrom: '',
-      startDateTo: '',
-      endDateFrom: '',
-      endDateTo: '',
-      complianceRiskLevel: [],
-    });
-  }, [onFiltersChange]);
-
   const toggleFilterValue = useCallback(
-    (
-      key: 'status' | 'type' | 'billingModel' | 'ownerUserId' | 'complianceRiskLevel',
-      value: string,
-    ) => {
+    (key: ToggleKey, value: string) => {
       const current = filters[key];
       const next = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
       onFiltersChange({ [key]: next });
@@ -147,96 +133,157 @@ export function DataTableFilters({
     [filters, onFiltersChange],
   );
 
-  const removeFilter = useCallback(
-    (
-      key: 'status' | 'type' | 'billingModel' | 'ownerUserId' | 'complianceRiskLevel',
-      value: string,
-    ) => {
-      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
+  const toggleStatus = useCallback(
+    (value: string) => toggleFilterValue('status', value),
+    [toggleFilterValue],
+  );
+  const toggleType = useCallback(
+    (value: string) => toggleFilterValue('type', value),
+    [toggleFilterValue],
+  );
+  const toggleBillingModel = useCallback(
+    (value: string) => toggleFilterValue('billingModel', value),
+    [toggleFilterValue],
+  );
+  const toggleOwnerUserId = useCallback(
+    (value: string) => toggleFilterValue('ownerUserId', value),
+    [toggleFilterValue],
+  );
+  const toggleComplianceRiskLevel = useCallback(
+    (value: string) => toggleFilterValue('complianceRiskLevel', value),
+    [toggleFilterValue],
+  );
+
+  const renderFilterTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        <Filter className="h-3.5 w-3.5" />
+        {t('filters')}
+        {hasActiveFilters && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {activeFilterCount}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [activeFilterCount, filtersDisabled, hasActiveFilters, t],
+  );
+
+  const statusOptions = useMemo(
+    () =>
+      CONTRACT_STATUSES.map(s => ({
+        value: s as string,
+        label: tDynLoose(t, 'status', enumKey(s)),
+      })),
+    [t],
+  );
+  const typeOptions = useMemo(
+    () =>
+      CONTRACT_TYPES.map(ct => ({
+        value: ct as string,
+        label: tDynLoose(t, 'type', enumKey(ct)),
+      })),
+    [t],
+  );
+  const billingOptions = useMemo(
+    () =>
+      BILLING_MODELS.map(bm => ({
+        value: bm as string,
+        label: tDynLoose(t, 'billingModel', enumKey(bm)),
+      })),
+    [t],
+  );
+  const ownerOptions = useMemo(
+    () =>
+      (
+        users as Array<{
+          id?: string;
+          userId?: string;
+          name?: string | null;
+          email?: string | null;
+        }>
+      ).map(user => ({
+        value: user.userId ?? user.id ?? '',
+        label: user.name ?? user.email ?? 'Unknown',
+      })),
+    [users],
+  );
+  const riskOptions = useMemo(
+    () =>
+      RISK_LEVELS.map(rl => ({
+        value: rl as string,
+        label: tDynLoose(t, 'risk', enumKey(rl)),
+      })),
+    [t],
+  );
+
+  const handleStartDateRange = useCallback(
+    (range: DateRange | undefined) => {
+      onFiltersChange({
+        startDateFrom: range?.from ? toLocalDateString(range.from) : '',
+        startDateTo: range?.to ? toLocalDateString(range.to) : '',
+      });
     },
-    [filters, onFiltersChange],
+    [onFiltersChange],
+  );
+  const handleEndDateRange = useCallback(
+    (range: DateRange | undefined) => {
+      onFiltersChange({
+        endDateFrom: range?.from ? toLocalDateString(range.from) : '',
+        endDateTo: range?.to ? toLocalDateString(range.to) : '',
+      });
+    },
+    [onFiltersChange],
+  );
+  const handleClearStartDate = useCallback(
+    () => onFiltersChange({ startDateFrom: '', startDateTo: '' }),
+    [onFiltersChange],
+  );
+  const handleClearEndDate = useCallback(
+    () => onFiltersChange({ endDateFrom: '', endDateTo: '' }),
+    [onFiltersChange],
   );
 
   return (
     <>
       <Popover>
-        <PopoverTrigger
-          // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-          render={props => (
-            <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-              <Filter className="h-3.5 w-3.5" />
-              {t('filters')}
-              {hasActiveFilters && (
-                <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                  {activeFilterCount}
-                </Badge>
-              )}
-            </Button>
-          )}
-        />
+        <PopoverTrigger render={renderFilterTrigger} />
         <PopoverContent className="w-auto p-0" align="start">
           <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
             <FilterSection
               title={t('columns.status')}
-              options={CONTRACT_STATUSES.map(s => ({
-                value: s,
-                label: tDynLoose(t, 'status', enumKey(s)),
-              }))}
+              options={statusOptions}
               selected={filters.status}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onToggle={value => toggleFilterValue('status', value)}
+              onToggle={toggleStatus}
             />
 
             <FilterSection
               title={t('columns.type')}
-              options={CONTRACT_TYPES.map(ct => ({
-                value: ct,
-                label: tDynLoose(t, 'type', enumKey(ct)),
-              }))}
+              options={typeOptions}
               selected={filters.type}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onToggle={value => toggleFilterValue('type', value)}
+              onToggle={toggleType}
             />
 
             <FilterSection
               title={t('columns.billingCycle')}
-              options={BILLING_MODELS.map(bm => ({
-                value: bm,
-                label: tDynLoose(t, 'billingModel', enumKey(bm)),
-              }))}
+              options={billingOptions}
               selected={filters.billingModel}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onToggle={value => toggleFilterValue('billingModel', value)}
+              onToggle={toggleBillingModel}
             />
 
             <FilterSection
               title={t('columns.owner')}
-              options={(
-                users as Array<{
-                  id?: string;
-                  userId?: string;
-                  name?: string | null;
-                  email?: string | null;
-                }>
-              ).map(user => ({
-                value: user.userId ?? user.id ?? '',
-                label: user.name ?? user.email ?? 'Unknown',
-              }))}
+              options={ownerOptions}
               selected={filters.ownerUserId}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onToggle={value => toggleFilterValue('ownerUserId', value)}
+              onToggle={toggleOwnerUserId}
               searchable
             />
 
             <FilterSection
               title={t('columns.complianceRisk')}
-              options={RISK_LEVELS.map(rl => ({
-                value: rl,
-                label: tDynLoose(t, 'risk', enumKey(rl)),
-              }))}
+              options={riskOptions}
               selected={filters.complianceRiskLevel}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onToggle={value => toggleFilterValue('complianceRiskLevel', value)}
+              onToggle={toggleComplianceRiskLevel}
             />
           </div>
         </PopoverContent>
@@ -259,41 +306,13 @@ export function DataTableFilters({
           </span>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
-          <div className="p-3">
-            <Calendar
-              mode="range"
-              selected={
-                filters.startDateFrom || filters.startDateTo
-                  ? {
-                      from: filters.startDateFrom
-                        ? parseLocalDate(filters.startDateFrom)
-                        : undefined,
-                      to: filters.startDateTo ? parseLocalDate(filters.startDateTo) : undefined,
-                    }
-                  : undefined
-              }
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onSelect={range => {
-                onFiltersChange({
-                  startDateFrom: range?.from ? toLocalDateString(range.from) : '',
-                  startDateTo: range?.to ? toLocalDateString(range.to) : '',
-                });
-              }}
-              numberOfMonths={2}
-            />
-          </div>
-          {!!(filters.startDateFrom || filters.startDateTo) && (
-            <div className="border-t px-3 py-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => onFiltersChange({ startDateFrom: '', startDateTo: '' })}>
-                {t('clearAll')}
-              </Button>
-            </div>
-          )}
+          <DateRangeCalendarPanel
+            fromValue={filters.startDateFrom}
+            toValue={filters.startDateTo}
+            onApply={handleStartDateRange}
+            onClear={handleClearStartDate}
+            clearLabel={t('clearAll')}
+          />
         </PopoverContent>
       </Popover>
 
@@ -314,123 +333,228 @@ export function DataTableFilters({
           </span>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
-          <div className="p-3">
-            <Calendar
-              mode="range"
-              selected={
-                filters.endDateFrom || filters.endDateTo
-                  ? {
-                      from: filters.endDateFrom ? parseLocalDate(filters.endDateFrom) : undefined,
-                      to: filters.endDateTo ? parseLocalDate(filters.endDateTo) : undefined,
-                    }
-                  : undefined
-              }
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onSelect={range => {
-                onFiltersChange({
-                  endDateFrom: range?.from ? toLocalDateString(range.from) : '',
-                  endDateTo: range?.to ? toLocalDateString(range.to) : '',
-                });
-              }}
-              numberOfMonths={2}
-            />
-          </div>
-          {!!(filters.endDateFrom || filters.endDateTo) && (
-            <div className="border-t px-3 py-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 text-xs"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => onFiltersChange({ endDateFrom: '', endDateTo: '' })}>
-                {t('clearAll')}
-              </Button>
-            </div>
-          )}
+          <DateRangeCalendarPanel
+            fromValue={filters.endDateFrom}
+            toValue={filters.endDateTo}
+            onApply={handleEndDateRange}
+            onClear={handleClearEndDate}
+            clearLabel={t('clearAll')}
+          />
         </PopoverContent>
       </Popover>
-
-      {hasActiveFilters && (
-        <div className="flex flex-wrap items-center gap-1.5">
-          {filters.status.map(s => (
-            <FilterBadge
-              key={`status-${s}`}
-              label={tDynLoose(t, 'status', enumKey(s))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('status', s)}
-            />
-          ))}
-          {filters.type.map(ct => (
-            <FilterBadge
-              key={`type-${ct}`}
-              label={tDynLoose(t, 'type', enumKey(ct))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('type', ct)}
-            />
-          ))}
-          {filters.billingModel.map(bm => (
-            <FilterBadge
-              key={`billing-${bm}`}
-              label={tDynLoose(t, 'billingModel', enumKey(bm))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('billingModel', bm)}
-            />
-          ))}
-          {filters.ownerUserId.map(ownerId => {
-            const user = (
-              users as Array<{
-                id?: string;
-                userId?: string;
-                name?: string | null;
-                email?: string | null;
-              }>
-            ).find(u => (u.userId ?? u.id) === ownerId);
-            return (
-              <FilterBadge
-                key={`owner-${ownerId}`}
-                label={user?.name ?? user?.email ?? ownerId}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onRemove={() => removeFilter('ownerUserId', ownerId)}
-              />
-            );
-          })}
-          {filters.complianceRiskLevel.map(rl => (
-            <FilterBadge
-              key={`risk-${rl}`}
-              label={tDynLoose(t, 'risk', enumKey(rl))}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => removeFilter('complianceRiskLevel', rl)}
-            />
-          ))}
-          {!!filters.endDateFrom && (
-            <FilterBadge
-              label={`${t('dateFrom')}: ${filters.endDateFrom}`}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => onFiltersChange({ endDateFrom: '' })}
-            />
-          )}
-          {!!filters.endDateTo && (
-            <FilterBadge
-              label={`${t('dateTo')}: ${filters.endDateTo}`}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onRemove={() => onFiltersChange({ endDateTo: '' })}
-            />
-          )}
-          <button
-            type="button"
-            className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
-            onClick={clearAllFilters}>
-            {t('clearAll')}
-          </button>
-        </div>
-      )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Active filter badges — rendered below the toolbar row (not inline with the
+// filter controls) so removable pills stack under the search/filter bar,
+// matching the contractors/invoices toolbars.
+// ---------------------------------------------------------------------------
+
+export function ActiveFilterBadges({
+  filters,
+  onFiltersChange,
+  users,
+}: {
+  filters: FilterState;
+  onFiltersChange: (filters: Partial<FilterState>) => void;
+  users: ContractUserOption[];
+}) {
+  const t = useTranslations('Contracts');
+
+  const hasActiveFilters =
+    filters.status.length +
+      filters.type.length +
+      filters.billingModel.length +
+      filters.ownerUserId.length +
+      filters.complianceRiskLevel.length +
+      (filters.startDateFrom ? 1 : 0) +
+      (filters.startDateTo ? 1 : 0) +
+      (filters.endDateFrom ? 1 : 0) +
+      (filters.endDateTo ? 1 : 0) >
+    0;
+
+  const removeFilter = useCallback(
+    (key: ToggleKey, value: string) => {
+      onFiltersChange({ [key]: filters[key].filter(v => v !== value) });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const clearEndDateField = useCallback(
+    (field: 'endDateFrom' | 'endDateTo') => onFiltersChange({ [field]: '' }),
+    [onFiltersChange],
+  );
+
+  const clearAllFilters = useCallback(() => {
+    onFiltersChange({
+      status: [],
+      type: [],
+      billingModel: [],
+      ownerUserId: [],
+      startDateFrom: '',
+      startDateTo: '',
+      endDateFrom: '',
+      endDateTo: '',
+      complianceRiskLevel: [],
+    });
+  }, [onFiltersChange]);
+
+  if (!hasActiveFilters) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {filters.status.map(s => (
+        <RemovableFilterBadgeMemo
+          key={`status-${s}`}
+          label={tDynLoose(t, 'status', enumKey(s))}
+          filterKey="status"
+          filterValue={s}
+          onRemove={removeFilter}
+        />
+      ))}
+      {filters.type.map(ct => (
+        <RemovableFilterBadgeMemo
+          key={`type-${ct}`}
+          label={tDynLoose(t, 'type', enumKey(ct))}
+          filterKey="type"
+          filterValue={ct}
+          onRemove={removeFilter}
+        />
+      ))}
+      {filters.billingModel.map(bm => (
+        <RemovableFilterBadgeMemo
+          key={`billing-${bm}`}
+          label={tDynLoose(t, 'billingModel', enumKey(bm))}
+          filterKey="billingModel"
+          filterValue={bm}
+          onRemove={removeFilter}
+        />
+      ))}
+      {filters.ownerUserId.map(ownerId => {
+        const user = (
+          users as Array<{
+            id?: string;
+            userId?: string;
+            name?: string | null;
+            email?: string | null;
+          }>
+        ).find(u => (u.userId ?? u.id) === ownerId);
+        return (
+          <RemovableFilterBadgeMemo
+            key={`owner-${ownerId}`}
+            label={user?.name ?? user?.email ?? ownerId}
+            filterKey="ownerUserId"
+            filterValue={ownerId}
+            onRemove={removeFilter}
+          />
+        );
+      })}
+      {filters.complianceRiskLevel.map(rl => (
+        <RemovableFilterBadgeMemo
+          key={`risk-${rl}`}
+          label={tDynLoose(t, 'risk', enumKey(rl))}
+          filterKey="complianceRiskLevel"
+          filterValue={rl}
+          onRemove={removeFilter}
+        />
+      ))}
+      {!!filters.endDateFrom && (
+        <DateBadge
+          label={`${t('dateFrom')}: ${filters.endDateFrom}`}
+          field="endDateFrom"
+          onClear={clearEndDateField}
+        />
+      )}
+      {!!filters.endDateTo && (
+        <DateBadge
+          label={`${t('dateTo')}: ${filters.endDateTo}`}
+          field="endDateTo"
+          onClear={clearEndDateField}
+        />
+      )}
+      <button
+        type="button"
+        className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"
+        onClick={clearAllFilters}>
+        {t('clearAll')}
+      </button>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
+
+function DateRangeCalendarPanel({
+  fromValue,
+  toValue,
+  onApply,
+  onClear,
+  clearLabel,
+}: {
+  fromValue: string;
+  toValue: string;
+  onApply: (range: DateRange | undefined) => void;
+  onClear: () => void;
+  clearLabel: string;
+}) {
+  const selected = useMemo<DateRange | undefined>(() => {
+    if (!(fromValue || toValue)) return;
+    return {
+      from: fromValue ? parseLocalDate(fromValue) : undefined,
+      to: toValue ? parseLocalDate(toValue) : undefined,
+    };
+  }, [fromValue, toValue]);
+
+  const hasValue = Boolean(fromValue || toValue);
+
+  return (
+    <>
+      <div className="p-3">
+        <Calendar mode="range" selected={selected} onSelect={onApply} numberOfMonths={2} />
+      </div>
+      {!!hasValue && (
+        <div className="border-t px-3 py-2">
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onClear}>
+            {clearLabel}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
+function FilterCheckboxRow({
+  filterId,
+  option,
+  isSelected,
+  onToggle,
+}: {
+  filterId: string;
+  option: { value: string; label: string };
+  isSelected: boolean;
+  onToggle: (value: string) => void;
+}) {
+  const handleCheckedChange = useCallback(() => onToggle(option.value), [onToggle, option.value]);
+
+  return (
+    <label
+      htmlFor={`${filterId}-filter-${option.value}`}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox
+        id={`${filterId}-filter-${option.value}`}
+        checked={isSelected}
+        onCheckedChange={handleCheckedChange}
+      />
+      <span>{option.label}</span>
+    </label>
+  );
+}
+
+const FilterCheckboxRowMemo = memo(FilterCheckboxRow);
 
 function FilterSection({
   title,
@@ -449,6 +573,11 @@ function FilterSection({
 }) {
   const filterId = useId();
   const [query, setQuery] = useState('');
+
+  const handleQueryChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value),
+    [],
+  );
 
   if (options.length === 0) return null;
 
@@ -471,8 +600,7 @@ function FilterSection({
           <Input
             placeholder={`Search ${title.toLowerCase()}...`}
             value={query}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setQuery(e.target.value)}
+            onChange={handleQueryChange}
             className="h-7 text-xs"
           />
           {!query && unselectedOptions.length > maxVisible && (
@@ -484,18 +612,13 @@ function FilterSection({
       )}
       <div className="space-y-1">
         {visibleOptions.map(option => (
-          <label
+          <FilterCheckboxRowMemo
             key={option.value}
-            htmlFor={`${filterId}-filter-${option.value}`}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-            <Checkbox
-              id={`${filterId}-filter-${option.value}`}
-              checked={selected.includes(option.value)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={() => onToggle(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
+            filterId={filterId}
+            option={option}
+            isSelected={selected.includes(option.value)}
+            onToggle={onToggle}
+          />
         ))}
       </div>
     </div>
@@ -517,4 +640,37 @@ function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void 
       </button>
     </Badge>
   );
+}
+
+function RemovableFilterBadge({
+  label,
+  filterKey,
+  filterValue,
+  onRemove,
+}: {
+  label: string;
+  filterKey: ToggleKey;
+  filterValue: string;
+  onRemove: (key: ToggleKey, value: string) => void;
+}) {
+  const handleRemove = useCallback(
+    () => onRemove(filterKey, filterValue),
+    [filterKey, filterValue, onRemove],
+  );
+  return <FilterBadge label={label} onRemove={handleRemove} />;
+}
+
+const RemovableFilterBadgeMemo = memo(RemovableFilterBadge);
+
+function DateBadge({
+  label,
+  field,
+  onClear,
+}: {
+  label: string;
+  field: 'endDateFrom' | 'endDateTo';
+  onClear: (field: 'endDateFrom' | 'endDateTo') => void;
+}) {
+  const handleRemove = useCallback(() => onClear(field), [field, onClear]);
+  return <FilterBadge label={label} onRemove={handleRemove} />;
 }

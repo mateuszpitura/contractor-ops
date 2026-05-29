@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ContractUserOption } from '../hooks/use-contract-list.js';
-import { DataTableFilters } from './data-table-filters.js';
+import { ActiveFilterBadges, DataTableFilters } from './data-table-filters.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,6 +71,11 @@ export function DataTableToolbar({
     [onSearchChange],
   );
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value),
+    [handleSearchInput],
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -80,8 +85,7 @@ export function DataTableToolbar({
             placeholder={t('searchPlaceholder')}
             value={localSearch}
             disabled={filtersDisabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (
@@ -119,6 +123,8 @@ export function DataTableToolbar({
           <span className="hidden sm:inline">{t('newContract')}</span>
         </Button>
       </div>
+
+      <ActiveFilterBadges filters={filters} onFiltersChange={onFiltersChange} users={users} />
     </div>
   );
 }

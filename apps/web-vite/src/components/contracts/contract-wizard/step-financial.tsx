@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import React, { useId } from 'react';
+import React, { useCallback, useId } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -91,7 +91,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
     });
   }, [rateValueMinor]);
 
-  const handleRateBlur = () => {
+  const handleRateBlur = useCallback(() => {
     const value = parseFloat(rateLocal);
     if (!Number.isNaN(value) && value >= 0) {
       setValue('rateValueMinor', Math.round(value * 100), {
@@ -106,7 +106,48 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
       });
       setRateLocal('');
     }
-  };
+  }, [rateLocal, setValue]);
+
+  const handleRateChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setRateLocal(e.target.value),
+    [],
+  );
+
+  const handleCurrencyChange = useCallback(
+    (value: string | null) =>
+      setValue('currency', value ?? 'PLN', {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleBillingModelChange = useCallback(
+    (value: string | null) =>
+      setValue('billingModel', (value ?? '') as ContractWizardFormValues['billingModel'], {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleRateTypeChange = useCallback(
+    (value: string | null) =>
+      setValue('rateType', (value ?? '') as ContractWizardFormValues['rateType'], {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleInvoiceCycleChange = useCallback(
+    (value: string | null) =>
+      setValue('invoiceCycle', (value ?? '') as ContractWizardFormValues['invoiceCycle'], {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
 
   const isPreFilled = (field: string) => preFilledFields?.has(field);
 
@@ -124,9 +165,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
             min="0"
             className="font-mono pe-16"
             value={rateLocal}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setRateLocal(e.target.value)}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onChange={handleRateChange}
             onBlur={handleRateBlur}
           />
           <span className="absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
@@ -143,15 +182,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
 
       <div className="space-y-2">
         <Label className="text-[13px]">{t('fields.currency')}</Label>
-        <Select
-          value={currency}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('currency', value ?? 'PLN', {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }>
+        <Select value={currency} onValueChange={handleCurrencyChange}>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -173,13 +204,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.billingModel')}</Label>
         <Select
           value={watch('billingModel') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('billingModel', (value ?? '') as ContractWizardFormValues['billingModel'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleBillingModelChange}
           items={billingModelItems}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('fields.billingModelPlaceholder')} />
@@ -204,13 +229,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.rateType')}</Label>
         <Select
           value={watch('rateType') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('rateType', (value ?? '') as ContractWizardFormValues['rateType'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleRateTypeChange}
           items={rateTypeItems}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('fields.rateTypePlaceholder')} />
@@ -246,13 +265,7 @@ export function StepFinancial({ form, preFilledFields }: StepFinancialProps) {
         <Label className="text-[13px]">{t('fields.invoiceCycle')}</Label>
         <Select
           value={watch('invoiceCycle') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('invoiceCycle', (value ?? '') as ContractWizardFormValues['invoiceCycle'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleInvoiceCycleChange}
           items={invoiceCycleItems}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('fields.invoiceCyclePlaceholder')} />

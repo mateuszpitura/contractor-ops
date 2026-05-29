@@ -18,7 +18,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { Table } from '@tanstack/react-table';
 import { Loader2, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { tKey } from '../../../i18n/typed-keys.js';
@@ -60,10 +60,31 @@ export function DataTableBulkActions({
   const ExportIcon = exportAction?.icon;
   const TerminateIcon = terminateAction?.icon;
 
-  const finish = () => {
+  const finish = useCallback(() => {
     onComplete();
     setShowTerminateDialog(false);
-  };
+  }, [onComplete]);
+
+  const renderExportTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
+        {!!ExportIcon && <ExportIcon className={iconSize.sm} />}
+        {exportAction ? tKey(t, exportAction.labelKey) : null}
+      </Button>
+    ),
+    [ExportIcon, exportAction, t],
+  );
+
+  const handleExportComingSoon = useCallback(() => {
+    toast.info(tc('exportComingSoon'));
+  }, [tc]);
+
+  const openTerminateDialog = useCallback(() => setShowTerminateDialog(true), []);
+
+  const handleConfirmTerminate = useCallback(() => {
+    bulkActions.onBulkTerminate(selectedIds);
+    finish();
+  }, [bulkActions, selectedIds, finish]);
 
   if (count === 0) return null;
 
@@ -74,28 +95,10 @@ export function DataTableBulkActions({
 
         {!!exportAction && !!ExportIcon && (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5">
-                  <ExportIcon className={iconSize.sm} />
-                  {tKey(t, exportAction.labelKey)}
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderExportTrigger} />
             <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  toast.info(tc('exportComingSoon'));
-                }}>
-                {t('exportCsv')}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => {
-                  toast.info(tc('exportComingSoon'));
-                }}>
+              <DropdownMenuItem onClick={handleExportComingSoon}>{t('exportCsv')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportComingSoon}>
                 {t('exportXlsx')}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -107,8 +110,7 @@ export function DataTableBulkActions({
             variant="outline"
             size="sm"
             className="h-8 gap-1.5 text-destructive hover:text-destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setShowTerminateDialog(true)}>
+            onClick={openTerminateDialog}>
             <TerminateIcon className={iconSize.sm} />
             {tKey(t, terminateAction.labelKey)}
           </Button>
@@ -127,11 +129,7 @@ export function DataTableBulkActions({
           <AlertDialogFooter>
             <AlertDialogCancel>{tc('cancel')}</AlertDialogCancel>
             <AlertDialogAction
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => {
-                bulkActions.onBulkTerminate(selectedIds);
-                finish();
-              }}
+              onClick={handleConfirmTerminate}
               disabled={bulkActions.isTerminating}
               variant="destructive">
               {bulkActions.isTerminating ? (

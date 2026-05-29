@@ -6,6 +6,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { PenLine } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useSendForSignatureButton } from '../hooks/use-send-for-signature-button.js';
 import { SendForSignatureDialogContainer } from './send-for-signature-dialog-container.js';
@@ -37,21 +38,23 @@ export function SendForSignatureButton({
   const { isVisible, isDisabled, tooltipMessage, dialogOpen, setDialogOpen, openDialog, label } =
     useSendForSignatureButton({ contractStatus, hasDocument, hasConnectedProvider });
 
+  const renderDisabledTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="default" size="sm" disabled>
+        <PenLine className="me-1.5 size-4" />
+        {label}
+      </Button>
+    ),
+    [label],
+  );
+
   if (!isVisible) return null;
 
   if (isDisabled && tooltipMessage) {
     return (
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button {...props} variant="default" size="sm" disabled>
-                <PenLine className="me-1.5 size-4" />
-                {label}
-              </Button>
-            )}
-          />
+          <TooltipTrigger render={renderDisabledTrigger} />
           <TooltipContent>{tooltipMessage}</TooltipContent>
         </Tooltip>
       </TooltipProvider>

@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { Ban, Check, MoreVertical, RefreshCw, X } from 'lucide-react';
+import { memo, useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { cn } from '../../../lib/utils.js';
@@ -73,6 +74,28 @@ function ConnectorLine({ completed }: { completed: boolean }) {
   return <div className={cn('h-0.5 w-6 flex-shrink-0', completed ? 'bg-green-600' : 'bg-muted')} />;
 }
 
+function ResendMenuItem({
+  email,
+  disabled,
+  onResend,
+  label,
+}: {
+  email: string;
+  disabled: boolean;
+  onResend: (email: string) => void;
+  label: string;
+}) {
+  const handleClick = useCallback(() => onResend(email), [email, onResend]);
+  return (
+    <DropdownMenuItem onClick={handleClick} disabled={disabled}>
+      <RefreshCw className="me-2 size-3.5" />
+      {label}
+    </DropdownMenuItem>
+  );
+}
+
+const ResendMenuItemMemo = memo(ResendMenuItem);
+
 /**
  * Horizontal progress indicator for signing envelopes.
  */
@@ -107,6 +130,17 @@ export function SigningProgressBar({
     r => !['SIGNED', 'DECLINED'].includes(r.status),
   );
 
+  const handleOpenAudit = useCallback(() => onAuditOpenChange(true), [onAuditOpenChange]);
+  const renderActionsTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="ghost" size="icon-sm">
+        <MoreVertical className="size-4" />
+        <span className="sr-only">{tCommon('srOnly.signingActions')}</span>
+      </Button>
+    ),
+    [tCommon],
+  );
+
   return (
     <Card className="p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -124,33 +158,22 @@ export function SigningProgressBar({
         <div className="flex items-center gap-3">
           <p className="text-sm text-muted-foreground">{statusText}</p>
 
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button variant="ghost" size="sm" onClick={() => onAuditOpenChange(true)}>
+          <Button variant="ghost" size="sm" onClick={handleOpenAudit}>
             {t('viewHistory')}
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button {...props} variant="ghost" size="icon-sm">
-                  <MoreVertical className="size-4" />
-                  <span className="sr-only">{tCommon('srOnly.signingActions')}</span>
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderActionsTrigger} />
             <DropdownMenuContent align="end">
               {pendingRecipients.map(r => (
-                <DropdownMenuItem
+                <ResendMenuItemMemo
                   key={r.id}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => signing.resendToRecipient(r.email)}
-                  disabled={signing.isResendPending}>
-                  <RefreshCw className="me-2 size-3.5" />
-                  {t('resendTo', { name: r.name })}
-                </DropdownMenuItem>
+                  email={r.email}
+                  disabled={signing.isResendPending}
+                  onResend={signing.resendToRecipient}
+                  label={t('resendTo', { name: r.name })}
+                />
               ))}
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
               <DropdownMenuItem variant="destructive" onClick={onVoidOpen}>
                 <Ban className="me-2 size-3.5" />
                 {t('voidEnvelope')}

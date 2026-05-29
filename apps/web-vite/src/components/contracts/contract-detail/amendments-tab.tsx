@@ -18,7 +18,8 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
-import { useId, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate } from '../../../lib/format-date.js';
@@ -90,6 +91,20 @@ export function AddAmendmentDialog({
     title,
   } = addDialog;
 
+  const handleTitleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setTitle(e.target.value),
+    [setTitle],
+  );
+  const handleEffectiveDateChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setEffectiveDate(e.target.value),
+    [setEffectiveDate],
+  );
+  const handleDescriptionChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value),
+    [setDescription],
+  );
+  const handleCancel = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -108,8 +123,7 @@ export function AddAmendmentDialog({
               id={`${id}-amendment-title`}
               type="text"
               value={title}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder={t('fields.titlePlaceholder')}
               required
@@ -123,8 +137,7 @@ export function AddAmendmentDialog({
               id={`${id}-amendment-effective-date`}
               type="date"
               value={effectiveDate}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setEffectiveDate(e.target.value)}
+              onChange={handleEffectiveDateChange}
               className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               required
             />
@@ -136,16 +149,14 @@ export function AddAmendmentDialog({
             <textarea
               id={`${id}-amendment-description`}
               value={description}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               rows={3}
               placeholder={t('fields.descriptionPlaceholder')}
             />
           </div>
           <DialogFooter>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={handleCancel}>
               {t('cancel')}
             </Button>
             <Button type="submit" disabled={isPending || !title.trim() || !effectiveDate}>
@@ -161,6 +172,7 @@ export function AddAmendmentDialog({
 function TimelineNode({ amendment, step }: { amendment: Amendment; step: number }) {
   const t = useTranslations('ContractDetail.amendments');
   const [expanded, setExpanded] = useState(false);
+  const toggleExpanded = useCallback(() => setExpanded(prev => !prev), []);
 
   return (
     <TimelineItem step={step} className="group/timeline-item flex gap-4 pb-6">
@@ -170,8 +182,7 @@ function TimelineNode({ amendment, step }: { amendment: Amendment; step: number 
         <TimelineHeader>
           <button
             type="button"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setExpanded(!expanded)}
+            onClick={toggleExpanded}
             className="flex items-center gap-2 text-start">
             {expanded ? (
               <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />

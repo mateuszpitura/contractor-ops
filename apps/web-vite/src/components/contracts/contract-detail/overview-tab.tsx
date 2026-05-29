@@ -8,7 +8,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Check, Pencil, X } from 'lucide-react';
 
-import type { ReactNode } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
+import { useCallback } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
@@ -95,7 +96,6 @@ export function ExpiryRemindersDisplay({
             })
           : t('reminders.none')}
       </span>
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="ghost" size="icon-sm" onClick={onStartEditing}>
         <Pencil className="size-3" />
         <span className="sr-only">{t('reminders.edit')}</span>
@@ -118,17 +118,19 @@ export function ExpiryRemindersEditing({
   isPending: boolean;
 }) {
   const t = useTranslations('ContractDetail.overview');
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setReminders(e.target.value),
+    [setReminders],
+  );
   return (
     <div className="flex items-center gap-2">
       <input
         type="text"
         value={remindersText}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={e => setReminders(e.target.value)}
+        onChange={handleChange}
         className="h-7 w-40 rounded-md border bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         placeholder={t('remindersPlaceholder')}
       />
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button variant="ghost" size="icon-sm" onClick={handleSave} disabled={isPending}>
         <Check className="size-3" />
       </Button>

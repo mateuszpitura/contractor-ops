@@ -7,6 +7,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import type { inferRouterOutputs } from '@trpc/server';
 
+import { useCallback } from 'react';
+
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useContractDetailTabs } from '../hooks/use-contract-detail-tabs.js';
@@ -31,9 +33,13 @@ export function ContractDetailTabs({ contract, contractParties }: ContractDetail
   const t = useTranslations('ContractDetail');
   const { tabKeys, currentTab, setTab, taskRunIds } = useContractDetailTabs(contract);
 
+  const handleTabChange = useCallback(
+    (value: string | null) => setTab((value ?? '') as string),
+    [setTab],
+  );
+
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-    <Tabs value={currentTab} onValueChange={value => setTab(value as string)} className="w-full">
+    <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full justify-start">
         {tabKeys.map(key => (
           <TabsTrigger key={key} value={key}>

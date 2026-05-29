@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { differenceInDays, isPast } from 'date-fns';
+import type { MouseEvent } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
@@ -17,6 +18,10 @@ import { enumKey } from '../../lib/enum-key.js';
 import { formatAmount } from '../../lib/format-currency.js';
 import { formatDate } from '../../lib/format-date.js';
 import type { ContractRow } from './contract-table/columns.js';
+
+function stopPropagation(e: MouseEvent) {
+  e.stopPropagation();
+}
 
 // ---------------------------------------------------------------------------
 // Status badge colors (same as columns.tsx)
@@ -78,8 +83,7 @@ export function ContractSidePanel({ contract, open, onOpenChange }: ContractSide
                 <Link
                   href={`/contractors/${contract.contractor.id}`}
                   className="text-sm text-primary hover:underline"
-                  // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-                  onClick={e => e.stopPropagation()}>
+                  onClick={stopPropagation}>
                   {contract.contractor.displayName ?? contract.contractor.legalName}
                 </Link>
               </div>

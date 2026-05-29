@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { ExternalLink, Loader2, X } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useEmbeddedSigningModal } from '../hooks/use-embedded-signing-modal.js';
@@ -66,6 +67,8 @@ export function SigningBodyRedirect({
 }) {
   const t = useTranslations('ContractDetail.signing.modal');
   const providerLabel = provider === 'AUTENTI' ? 'Autenti' : provider;
+  const openProvider = useCallback(() => window.open(url, '_blank', 'noopener,noreferrer'), [url]);
+  const handleReturn = useCallback(() => onOpenChange(false), [onOpenChange]);
   return (
     <div className="flex h-full items-center justify-center">
       <Card className="max-w-[480px]">
@@ -77,13 +80,11 @@ export function SigningBodyRedirect({
             {t('redirectMessage', { provider: providerLabel })}
           </p>
           <div className="flex gap-3">
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <Button onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}>
+            <Button onClick={openProvider}>
               <ExternalLink className="me-1.5 size-4" />
               {t('continueToProvider', { provider: providerLabel })}
             </Button>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={handleReturn}>
               {t('returnToContract')}
             </Button>
           </div>
@@ -95,12 +96,12 @@ export function SigningBodyRedirect({
 
 export function SigningBodyError({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
   const t = useTranslations('ContractDetail.signing.modal');
+  const handleReturn = useCallback(() => onOpenChange(false), [onOpenChange]);
   return (
     <div className="flex h-full items-center justify-center">
       <div className="flex flex-col items-center gap-3 text-center">
         <p className="text-sm text-muted-foreground">{t('loadError')}</p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button variant="outline" onClick={handleReturn}>
           {t('returnToContract')}
         </Button>
       </div>
@@ -118,6 +119,7 @@ export function EmbeddedSigningModalShell({
   children: React.ReactNode;
 }) {
   const tAria = useTranslations('Common.aria');
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
   return (
     <div className="fixed inset-0 z-50 bg-background">
       <div className="flex h-14 items-center justify-between border-b px-4">
@@ -126,8 +128,7 @@ export function EmbeddedSigningModalShell({
           variant="ghost"
           size="icon"
           className="size-8"
-          // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-          onClick={() => onOpenChange(false)}
+          onClick={handleClose}
           aria-label={tAria('closeSigningModal')}>
           <X className="size-4" />
         </Button>

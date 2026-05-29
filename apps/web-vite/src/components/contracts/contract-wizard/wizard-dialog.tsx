@@ -20,11 +20,15 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
+  DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { AlertTriangle, Loader2, Sparkles } from 'lucide-react';
+import { useCallback } from 'react';
 import { z } from 'zod';
 
 import type { useContractWizardDialog } from '../hooks/use-contract-wizard-dialog.js';
@@ -130,15 +134,14 @@ export function WizardFooter({
   t: Wizard['t'];
 }) {
   return (
-    <div className="flex items-center justify-between border-t pt-4 mt-2">
+    <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between">
       <div>
         {currentStep > 0 ? (
           <Button type="button" variant="outline" onClick={handleBack}>
             {t('back')}
           </Button>
         ) : (
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          <Button type="button" variant="ghost" onClick={() => handleClose()}>
+          <Button type="button" variant="ghost" onClick={handleClose}>
             {isDirty ? t('discardChanges') : t('close')}
           </Button>
         )}
@@ -153,7 +156,7 @@ export function WizardFooter({
           nextLabels[currentStep]
         )}
       </Button>
-    </div>
+    </DialogFooter>
   );
 }
 
@@ -216,10 +219,16 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
     handleSkipDocuments,
   } = wizard;
 
+  const handleDialogOpenChange = useCallback(
+    (o: boolean) => {
+      if (!o) handleClose();
+    },
+    [handleClose],
+  );
+
   return (
     <>
-      {/* biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler */}
-      <Dialog open={open} onOpenChange={o => !o && handleClose()}>
+      <Dialog open={open} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="sm:max-w-[640px]" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -228,9 +237,11 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
             </DialogTitle>
           </DialogHeader>
 
-          <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          <DialogSection>
+            <StepIndicator steps={stepLabels} currentStep={currentStep} />
+          </DialogSection>
 
-          <div className="min-h-[320px] px-1">
+          <DialogBody className="min-h-[320px] px-1">
             <WizardStepBody
               currentStep={currentStep}
               form={form}
@@ -240,7 +251,7 @@ export function ContractWizardDialog({ open, wizard }: ContractWizardDialogProps
               stepDocuments={stepDocuments}
               handleSkipDocuments={handleSkipDocuments}
             />
-          </div>
+          </DialogBody>
 
           <WizardFooter
             currentStep={currentStep}

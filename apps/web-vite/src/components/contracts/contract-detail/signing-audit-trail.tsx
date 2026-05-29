@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
 import { Ban, CheckCircle2, Eye, FileDown, PenLine, Send, XCircle } from 'lucide-react';
+import { memo, useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { formatDate, formatDateTime } from '../../../lib/format-date.js';
@@ -28,6 +29,27 @@ const EVENT_CONFIG: Record<string, { icon: typeof Send; className: string }> = {
   ENVELOPE_EXPIRED: { icon: XCircle, className: 'text-red-500' },
   SIGNED_PDF_SAVED: { icon: FileDown, className: 'text-muted-foreground' },
 };
+
+function RelativeTimeTooltip({ relative, absolute }: { relative: string; absolute: string }) {
+  const renderTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLParagraphElement>) => (
+      <p {...props} className="text-sm text-muted-foreground">
+        {relative}
+      </p>
+    ),
+    [relative],
+  );
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger render={renderTrigger} />
+        <TooltipContent>{absolute}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+const RelativeTimeTooltipMemo = memo(RelativeTimeTooltip);
 
 type SigningAuditTrailProps = {
   open: boolean;
@@ -100,19 +122,10 @@ export function SigningAuditTrail({ open, onOpenChange, audit }: SigningAuditTra
                     <Icon className={`mt-0.5 size-4 shrink-0 ${config.className}`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm">{event.description}</p>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger
-                            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                            render={props => (
-                              <p {...props} className="text-sm text-muted-foreground">
-                                {formatRelativeTime(event.occurredAt)}
-                              </p>
-                            )}
-                          />
-                          <TooltipContent>{formatDateTime(event.occurredAt)}</TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <RelativeTimeTooltipMemo
+                        relative={formatRelativeTime(event.occurredAt)}
+                        absolute={formatDateTime(event.occurredAt)}
+                      />
                     </div>
                     {!!event.actorName && (
                       <span className="shrink-0 text-sm text-muted-foreground">

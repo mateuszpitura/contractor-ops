@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { MoreHorizontal, Trash2 } from 'lucide-react';
-import { Fragment } from 'react';
+import { Fragment, useCallback } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -56,6 +56,27 @@ type DetailHeaderProps = {
   header: ReturnType<typeof useContractDetailHeader>;
 };
 
+function ActionMenuItem({
+  action,
+  label,
+  disabled,
+  onDispatch,
+}: {
+  action: ContractAction;
+  label: string;
+  disabled: boolean;
+  onDispatch: (action: ContractAction) => void;
+}) {
+  const Icon = action.icon;
+  const handleSelect = useCallback(() => onDispatch(action), [action, onDispatch]);
+  return (
+    <DropdownMenuItem disabled={disabled} variant={action.variant} onSelect={handleSelect}>
+      <Icon className={`me-2 ${iconSize.sm}`} />
+      {label}
+    </DropdownMenuItem>
+  );
+}
+
 export function DetailHeader({ contract, header }: DetailHeaderProps) {
   const t = useTranslations('ContractDetail');
   const tEnum = useTranslations('Contracts');
@@ -77,6 +98,16 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
     terminateMutation,
     terminateOpen,
   } = header;
+
+  const renderActionsTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="sm">
+        <MoreHorizontal className={`me-1.5 ${iconSize.sm}`} />
+        {t('actions.label')}
+      </Button>
+    ),
+    [t],
+  );
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -112,18 +143,9 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
         />
         {menuActions.length > 0 && (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <Button {...props} variant="outline" size="sm">
-                  <MoreHorizontal className={`me-1.5 ${iconSize.sm}`} />
-                  {t('actions.label')}
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderActionsTrigger} />
             <DropdownMenuContent align="end">
               {menuActions.map(action => {
-                const Icon = action.icon;
                 const isFirstDestructive: boolean =
                   hasNonDestructive &&
                   hasDestructive &&
@@ -132,14 +154,12 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
                 return (
                   <Fragment key={action.key}>
                     {!!isFirstDestructive && <DropdownMenuSeparator />}
-                    <DropdownMenuItem
+                    <ActionMenuItem
+                      action={action as ContractAction}
+                      label={getActionLabel(action as ContractAction)}
                       disabled={isPending || notImplemented.has(action.key)}
-                      variant={action.variant}
-                      // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                      onSelect={() => dispatchMenuAction(action as ContractAction)}>
-                      <Icon className={`me-2 ${iconSize.sm}`} />
-                      {getActionLabel(action as ContractAction)}
-                    </DropdownMenuItem>
+                      onDispatch={dispatchMenuAction}
+                    />
                   </Fragment>
                 );
               })}
@@ -161,7 +181,6 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
             <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={confirmDelete}
               disabled={deleteMutation.isPending}>
               {t('actions.deleteConfirm')}
@@ -183,7 +202,6 @@ export function DetailHeader({ contract, header }: DetailHeaderProps) {
             <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
               onClick={confirmTerminate}
               disabled={terminateMutation.isPending}>
               {t('actions.terminateConfirm')}

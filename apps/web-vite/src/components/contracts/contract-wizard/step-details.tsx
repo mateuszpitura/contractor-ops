@@ -55,6 +55,24 @@ function ContractorTaxLabel({ taxId, showPii }: { taxId: string | null; showPii:
   );
 }
 
+function ContractorPickerOption({
+  contractor,
+  showPii,
+  onSelect,
+}: {
+  contractor: ContractorListItem;
+  showPii: boolean;
+  onSelect: (id: string) => void;
+}) {
+  const handleSelect = useCallback(() => onSelect(contractor.id), [contractor.id, onSelect]);
+  return (
+    <CommandItem value={contractor.id} onSelect={handleSelect}>
+      <span>{contractor.displayName}</span>
+      <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
+    </CommandItem>
+  );
+}
+
 function formatDateOrPlaceholder(isoDate: string | undefined, placeholder: string) {
   if (isoDate) return format(new Date(isoDate), 'PPP');
   return <span className="text-muted-foreground">{placeholder}</span>;
@@ -93,6 +111,14 @@ function ContractorPickerField({
 }: ContractorPickerFieldProps) {
   const [open, setOpen] = useState(false);
 
+  const handleContractorSelect = useCallback(
+    (id: string) => {
+      onPick(id);
+      setOpen(false);
+    },
+    [onPick],
+  );
+
   const inputBlock = (() => {
     if (lockedContractorId) {
       if (contractorsLoading) {
@@ -120,17 +146,12 @@ function ContractorPickerField({
               <CommandEmpty>{noResultsLabel}</CommandEmpty>
               <CommandGroup>
                 {contractors.map(contractor => (
-                  <CommandItem
+                  <ContractorPickerOption
                     key={contractor.id}
-                    value={contractor.id}
-                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                    onSelect={() => {
-                      onPick(contractor.id);
-                      setOpen(false);
-                    }}>
-                    <span>{contractor.displayName}</span>
-                    <ContractorTaxLabel taxId={contractor.taxId} showPii={showPii} />
-                  </CommandItem>
+                    contractor={contractor}
+                    showPii={showPii}
+                    onSelect={handleContractorSelect}
+                  />
                 ))}
               </CommandGroup>
             </CommandList>
@@ -235,6 +256,26 @@ export function StepDetails({
     [setValue],
   );
 
+  const handleTypeChange = useCallback(
+    (value: string | null) =>
+      setValue('type', (value ?? '') as ContractWizardFormValues['type'], {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+    [setValue],
+  );
+
+  const handleAutoRenewalChange = useCallback(
+    (checked: boolean | 'indeterminate') =>
+      setValue('autoRenewal', checked === true, { shouldDirty: true }),
+    [setValue],
+  );
+
+  const isEndDateDisabled = useCallback(
+    (date: Date) => (startDate ? date < new Date(startDate) : false),
+    [startDate],
+  );
+
   return (
     <div className="space-y-4">
       <ContractorPickerField
@@ -265,13 +306,7 @@ export function StepDetails({
         <Label className="text-[13px]">{t('fields.type')}</Label>
         <Select
           value={watch('type') ?? ''}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onValueChange={value =>
-            setValue('type', (value ?? '') as ContractWizardFormValues['type'], {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleTypeChange}
           items={contractTypeItems}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('fields.typePlaceholder')} />
@@ -319,8 +354,7 @@ export function StepDetails({
               mode="single"
               selected={endDate ? new Date(endDate) : undefined}
               onSelect={handleEndDateSelect}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              disabled={date => (startDate ? date < new Date(startDate) : false)}
+              disabled={isEndDateDisabled}
             />
           </PopoverContent>
         </Popover>
@@ -347,10 +381,7 @@ export function StepDetails({
         <Checkbox
           id={`${id}-autoRenewal`}
           checked={autoRenewal}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onCheckedChange={checked =>
-            setValue('autoRenewal', checked === true, { shouldDirty: true })
-          }
+          onCheckedChange={handleAutoRenewalChange}
         />
         <Label htmlFor={`${id}-autoRenewal`} className="text-[13px] cursor-pointer">
           {t('fields.autoRenewal')}

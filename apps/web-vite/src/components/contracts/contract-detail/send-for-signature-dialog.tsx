@@ -34,6 +34,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { FileText, GripVertical, Loader2, Plus, Send } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
@@ -132,6 +133,23 @@ export function SendForSignatureDialog({
     }),
   );
 
+  const handleConnectionChange = useCallback(
+    (val: string | null) => setSelectedConnectionId(val ?? ''),
+    [setSelectedConnectionId],
+  );
+  const handleMessageChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(e.target.value),
+    [setMessage],
+  );
+  const handleExpiresChange = useCallback(
+    (val: string | null) => setExpiresInDays(val ?? '14'),
+    [setExpiresInDays],
+  );
+  const handleReminderChange = useCallback(
+    (val: string | null) => setReminderInterval(val ?? '7'),
+    [setReminderInterval],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] p-0">
@@ -150,10 +168,7 @@ export function SendForSignatureDialog({
               {connectionsLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
-                <Select
-                  value={selectedConnectionId}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onValueChange={val => setSelectedConnectionId(val ?? '')}>
+                <Select value={selectedConnectionId} onValueChange={handleConnectionChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={tSend('providerPlaceholder')} />
                   </SelectTrigger>
@@ -211,8 +226,7 @@ export function SendForSignatureDialog({
                 rows={3}
                 placeholder={tSend('messagePlaceholder')}
                 value={message}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => setMessage(e.target.value)}
+                onChange={handleMessageChange}
               />
             </div>
 
@@ -233,8 +247,7 @@ export function SendForSignatureDialog({
             <div className="flex gap-2">
               <div className="flex-1 space-y-2">
                 <Label>{tSend('expiresLabel')}</Label>
-                {/* biome-ignore lint/nursery/noJsxPropsBind: controlled component handler */}
-                <Select value={expiresInDays} onValueChange={val => setExpiresInDays(val ?? '14')}>
+                <Select value={expiresInDays} onValueChange={handleExpiresChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -249,10 +262,7 @@ export function SendForSignatureDialog({
 
               <div className="flex-1 space-y-2">
                 <Label>{tSend('remindersLabel')}</Label>
-                <Select
-                  value={reminderInterval}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onValueChange={val => setReminderInterval(val ?? '7')}>
+                <Select value={reminderInterval} onValueChange={handleReminderChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>

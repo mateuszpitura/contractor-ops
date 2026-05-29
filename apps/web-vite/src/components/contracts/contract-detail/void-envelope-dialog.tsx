@@ -11,7 +11,7 @@ import {
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2, Trash2 } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useVoidEnvelopeDialog } from '../hooks/use-void-envelope-dialog.js';
@@ -27,6 +27,11 @@ export function VoidEnvelopeDialog({ open, onOpenChange, voidDialog }: VoidEnvel
   const t = useTranslations('ContractDetail.signing.voidDialog');
 
   const { handleConfirm, isPending, reason, setReason } = voidDialog;
+
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [setReason],
+  );
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -46,18 +51,13 @@ export function VoidEnvelopeDialog({ open, onOpenChange, voidDialog }: VoidEnvel
             rows={2}
             placeholder={t('reasonPlaceholder')}
             value={reason}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => setReason(e.target.value)}
+            onChange={handleReasonChange}
           />
         </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel>{t('keepActive')}</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={handleConfirm}
-            disabled={isPending}>
+          <AlertDialogAction variant="destructive" onClick={handleConfirm} disabled={isPending}>
             {isPending ? (
               <>
                 <Loader2 className="me-1.5 size-4 animate-spin" />

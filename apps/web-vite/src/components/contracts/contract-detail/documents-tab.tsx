@@ -1,5 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { PenLine } from 'lucide-react';
+import { memo, useCallback } from 'react';
+
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DocumentListContainer } from '../../documents/document-list-container.js';
 import { DropZoneContainer } from '../../documents/drop-zone-container.js';
@@ -15,6 +17,26 @@ type DocumentsTabProps = {
   documents: ReturnType<typeof useContractDocumentsTab>;
 };
 
+function SignableDocumentButton({
+  documentId,
+  label,
+  onSend,
+}: {
+  documentId: string;
+  label: string;
+  onSend: (documentId: string) => void;
+}) {
+  const handleClick = useCallback(() => onSend(documentId), [documentId, onSend]);
+  return (
+    <Button variant="outline" size="sm" onClick={handleClick}>
+      <PenLine className="me-1.5 size-3.5" />
+      {label}
+    </Button>
+  );
+}
+
+const SignableDocumentButtonMemo = memo(SignableDocumentButton);
+
 export function SignableDocumentButtons({
   documents,
   onSend,
@@ -26,15 +48,12 @@ export function SignableDocumentButtons({
   return (
     <div className="flex flex-wrap gap-2">
       {documents.map(doc => (
-        <Button
+        <SignableDocumentButtonMemo
           key={doc.id}
-          variant="outline"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => onSend(doc.id)}>
-          <PenLine className="me-1.5 size-3.5" />
-          {t('sendForSignature', { name: doc.originalFileName })}
-        </Button>
+          documentId={doc.id}
+          label={t('sendForSignature', { name: doc.originalFileName })}
+          onSend={onSend}
+        />
       ))}
     </div>
   );

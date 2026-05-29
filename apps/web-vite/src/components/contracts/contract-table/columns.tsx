@@ -7,8 +7,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef, Row, Table } from '@tanstack/react-table';
 import { differenceInDays, isPast } from 'date-fns';
+import { memo, useCallback } from 'react';
 
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -54,6 +55,60 @@ const riskBadgeColors: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Column cell helpers
+// ---------------------------------------------------------------------------
+
+function SelectAllHeaderCheckbox({
+  table,
+  ariaLabel,
+}: {
+  table: Table<ContractRow>;
+  ariaLabel: string;
+}) {
+  const handleChange = useCallback(
+    (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
+    [table],
+  );
+  return (
+    <Checkbox
+      checked={table.getIsAllPageRowsSelected()}
+      indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+      onCheckedChange={handleChange}
+      aria-label={ariaLabel}
+    />
+  );
+}
+
+function SelectRowCheckbox({ row, ariaLabel }: { row: Row<ContractRow>; ariaLabel: string }) {
+  const handleChange = useCallback(
+    (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+    [row],
+  );
+  return (
+    <Checkbox checked={row.getIsSelected()} onCheckedChange={handleChange} aria-label={ariaLabel} />
+  );
+}
+
+function EndDateTooltipCell({ label, tooltipText }: { label: string; tooltipText: string }) {
+  const renderTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLSpanElement>) => (
+      <span {...props} className="text-sm cursor-default">
+        {label}
+      </span>
+    ),
+    [label],
+  );
+  return (
+    <Tooltip>
+      <TooltipTrigger render={renderTrigger} />
+      <TooltipContent>{tooltipText}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+const EndDateTooltipCellMemo = memo(EndDateTooltipCell);
+
+// ---------------------------------------------------------------------------
 // Column factory
 // ---------------------------------------------------------------------------
 
@@ -73,24 +128,9 @@ export function getColumns(
     {
       id: 'select',
       header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={t('columns.selectAll')}
-        />
+        <SelectAllHeaderCheckbox table={table} ariaLabel={t('columns.selectAll')} />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label={t('columns.selectRow')}
-          // biome-ignore lint/nursery/noJsxPropsBind: column definition
-          onClick={e => e.stopPropagation()}
-        />
-      ),
+      cell: ({ row }) => <SelectRowCheckbox row={row} ariaLabel={t('columns.selectRow')} />,
       enableSorting: false,
       enableHiding: false,
       size: 40,
@@ -171,19 +211,7 @@ export function getColumns(
             ? t('daysExpired', { count: Math.abs(daysRemaining) })
             : t('daysRemaining', { count: daysRemaining });
 
-          return (
-            <Tooltip>
-              <TooltipTrigger
-                // biome-ignore lint/nursery/noJsxPropsBind: column definition
-                render={props => (
-                  <span {...props} className="text-sm cursor-default">
-                    {fmtDate(date)}
-                  </span>
-                )}
-              />
-              <TooltipContent>{tooltipText}</TooltipContent>
-            </Tooltip>
-          );
+          return <EndDateTooltipCellMemo label={fmtDate(date)} tooltipText={tooltipText} />;
         } catch {
           return <span className="text-muted-foreground">&mdash;</span>;
         }
