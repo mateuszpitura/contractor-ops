@@ -3,7 +3,7 @@
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { RecomputeComplianceDialogContainer } from './recompute-compliance-dialog-container.js';
@@ -20,12 +20,14 @@ export function RecomputeComplianceButton({
   const t = useTranslations('Contractors.Compliance.Recompute');
   const [open, setOpen] = useState(false);
 
+  const handleOpen = useCallback(() => setOpen(true), []);
+
   return (
     <>
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         aria-label={t('buttonAriaLabel')}
         data-testid="recompute-compliance-button">
         <RefreshCw className="size-3.5" aria-hidden />

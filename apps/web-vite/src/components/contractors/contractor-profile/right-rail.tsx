@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import { Clock, RefreshCw, UserPlus } from 'lucide-react';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useContractorNotes } from '../hooks/use-contractor-profile.js';
@@ -119,6 +120,11 @@ export function RightRailView({
 }: RightRailViewProps) {
   const t = useTranslations('ContractorProfile.rightRail');
 
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => updateNotes(e.target.value),
+    [updateNotes],
+  );
+
   return (
     <div className="sticky top-[80px] space-y-0 rounded-xl border bg-card">
       <div className="p-4">
@@ -139,7 +145,7 @@ export function RightRailView({
           rows={3}
           placeholder={t('notesPlaceholder')}
           value={notes}
-          onChange={e => updateNotes(e.target.value)}
+          onChange={handleNotesChange}
         />
         {isDirty ? (
           <Button

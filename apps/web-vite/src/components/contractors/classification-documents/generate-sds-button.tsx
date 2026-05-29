@@ -58,6 +58,13 @@ export function GenerateSdsButtonView({
     );
   }, [approveSdsMutation, classificationAssessmentId, clientName]);
 
+  const handleClientNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setClientName(e.target.value),
+    [],
+  );
+
+  const handleApprovalCheckedChange = useCallback((c: boolean) => setChecked(c === true), []);
+
   return (
     <div>
       {/* Phase 64 D-22 — SDS approval gate */}
@@ -70,7 +77,7 @@ export function GenerateSdsButtonView({
             <Input
               id="sds-client-name"
               value={clientName}
-              onChange={e => setClientName(e.target.value)}
+              onChange={handleClientNameChange}
               placeholder={tApproval('clientNamePlaceholder')}
               maxLength={500}
               className="bg-white"
@@ -81,7 +88,7 @@ export function GenerateSdsButtonView({
             <Checkbox
               id="sds-approval-checkbox"
               checked={checked}
-              onCheckedChange={c => setChecked(c === true)}
+              onCheckedChange={handleApprovalCheckedChange}
             />
             <Label
               htmlFor="sds-approval-checkbox"

@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { useRecomputeCompliance } from '../hooks/use-recompute-compliance.js';
@@ -46,7 +46,7 @@ export function RecomputeComplianceDialogView({
   const t = useTranslations('Contractors.Compliance.Recompute');
   const [reason, setReason] = useState<RecomputeReason | null>(null);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     if (!reason) return;
     mutation.mutate(
       { contractorIds, reason },
@@ -58,12 +58,20 @@ export function RecomputeComplianceDialogView({
         },
       },
     );
-  };
+  }, [reason, mutation, contractorIds, onOpenChange, onSuccess]);
 
-  const handleOpenChange = (next: boolean) => {
-    if (!next) setReason(null);
-    onOpenChange(next);
-  };
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) setReason(null);
+      onOpenChange(next);
+    },
+    [onOpenChange],
+  );
+
+  const handleReasonChange = useCallback(
+    (value: string | null) => setReason(value ? (value as RecomputeReason) : null),
+    [],
+  );
 
   const isBulk = contractorIds.length > 1;
 
@@ -81,7 +89,7 @@ export function RecomputeComplianceDialogView({
           <label htmlFor="recompute-reason" className="text-sm font-medium">
             {t('reasonLabel')}
           </label>
-          <Select value={reason ?? ''} onValueChange={value => setReason(value as RecomputeReason)}>
+          <Select value={reason ?? ''} onValueChange={handleReasonChange}>
             <SelectTrigger id="recompute-reason" aria-label={t('reasonLabel')}>
               <SelectValue placeholder={t('reasonPlaceholder')} />
             </SelectTrigger>

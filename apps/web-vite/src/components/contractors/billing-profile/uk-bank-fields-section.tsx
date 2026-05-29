@@ -60,15 +60,15 @@ export function UkBankFieldsSection({
   const accountInputId = `${id}-account-number`;
 
   const handleSortCodeChange = useCallback(
-    (raw: string) => {
-      onChange({ ...value, sortCode: digitsOnly(raw, 6) });
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange({ ...value, sortCode: digitsOnly(e.target.value, 6) });
     },
     [onChange, value],
   );
 
   const handleAccountChange = useCallback(
-    (raw: string) => {
-      onChange({ ...value, accountNumber: digitsOnly(raw, 8) });
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange({ ...value, accountNumber: digitsOnly(e.target.value, 8) });
     },
     [onChange, value],
   );
@@ -107,7 +107,7 @@ export function UkBankFieldsSection({
             placeholder="123456"
             maxLength={9}
             value={displaySortCode(value.sortCode)}
-            onChange={e => handleSortCodeChange(e.target.value)}
+            onChange={handleSortCodeChange}
             className="tabular-nums font-mono"
           />
           <p className="text-xs text-muted-foreground">{t('sortCodeHelper')}</p>
@@ -127,7 +127,7 @@ export function UkBankFieldsSection({
             placeholder="12345678"
             maxLength={8}
             value={value.accountNumber}
-            onChange={e => handleAccountChange(e.target.value)}
+            onChange={handleAccountChange}
             className="tabular-nums font-mono"
           />
           <p className="text-xs text-muted-foreground">{t('accountNumberHelper')}</p>

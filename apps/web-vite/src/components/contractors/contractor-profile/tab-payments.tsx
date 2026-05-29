@@ -17,7 +17,7 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { CreditCard } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
@@ -132,6 +132,12 @@ export function TabPaymentsView({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
+  const handleNextPage = useCallback(
+    () => setPage(p => Math.min(totalPages, p + 1)),
+    [setPage, totalPages],
+  );
+
   if (!isLoading && allItems.length === 0) {
     return (
       <AtelierEmptyState
@@ -206,7 +212,7 @@ export function TabPaymentsView({
             variant="outline"
             size="sm"
             disabled={isLoading || page <= 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}>
+            onClick={handlePrevPage}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -216,7 +222,7 @@ export function TabPaymentsView({
             variant="outline"
             size="sm"
             disabled={isLoading || page >= totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+            onClick={handleNextPage}>
             &raquo;
           </Button>
         </div>

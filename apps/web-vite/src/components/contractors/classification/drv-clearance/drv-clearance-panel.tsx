@@ -112,6 +112,7 @@ export function StatusfeststellungsverfahrenPanelView({
   const handleEditOpenChange = useCallback((open: boolean) => {
     if (!open) setEditingInitial(null);
   }, []);
+  const handleUploadButtonClick = useCallback(() => fileInputRef.current?.click(), []);
 
   const clearanceRows: DrvClearanceRowData[] = (rows ?? []) as DrvClearanceRowData[];
 
@@ -151,7 +152,7 @@ export function StatusfeststellungsverfahrenPanelView({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleUploadButtonClick}
                   disabled={uploadPending}>
                   <Upload className="mr-2 h-4 w-4" aria-hidden />
                   {uploadPending ? tDrv('uploading') : tDrv('uploadDecisionLetter')}

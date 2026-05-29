@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { MoreHorizontal, Play, RefreshCcw, X } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { ReassessmentTriggerDismissDialog } from './dismiss-dialog.js';
@@ -32,6 +32,15 @@ export function ReassessmentTriggerCta({
   const t = useTranslations('Classification.polish.reassessmentTrigger');
   const tCommon = useTranslations('Common');
   const [dismissOpen, setDismissOpen] = useState(false);
+
+  const handleOpenDismiss = useCallback(() => setDismissOpen(true), []);
+  const handleDismissConfirm = useCallback(
+    async (reason: string) => {
+      await onConfirmDismiss(reason);
+      setDismissOpen(false);
+    },
+    [onConfirmDismiss],
+  );
 
   return (
     <div className={className} data-slot="reassessment-trigger-cta">
@@ -60,7 +69,7 @@ export function ReassessmentTriggerCta({
               <RefreshCcw aria-hidden="true" className="size-4" /> {t('ctaSecondary')}
             </DropdownMenuItem>
           ) : null}
-          <DropdownMenuItem onSelect={() => setDismissOpen(true)}>
+          <DropdownMenuItem onSelect={handleOpenDismiss}>
             <X aria-hidden="true" className="size-4" /> {t('dismissAction')}
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -68,10 +77,7 @@ export function ReassessmentTriggerCta({
       <ReassessmentTriggerDismissDialog
         open={dismissOpen}
         onOpenChange={setDismissOpen}
-        onConfirm={async reason => {
-          await onConfirmDismiss(reason);
-          setDismissOpen(false);
-        }}
+        onConfirm={handleDismissConfirm}
         isSubmitting={isDismissing}
       />
     </div>

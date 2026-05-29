@@ -1,3 +1,4 @@
+import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
 import {
   AtelierEmptyState,
   AtelierTableShell,
@@ -16,7 +17,7 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { FileText, Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useRouter } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -50,12 +51,31 @@ export type TabContractsEmptyProps = Pick<
   'contractorId' | 'wizardOpen' | 'setWizardOpen'
 >;
 
+function renderEmptyStateAction(action: AtelierEmptyStateAction, variant: 'primary' | 'secondary') {
+  const Icon = action.icon;
+  return (
+    <Button variant={variant === 'secondary' ? 'outline' : 'default'} onClick={action.onClick}>
+      {Icon ? <Icon className="h-4 w-4" /> : null}
+      {action.label}
+    </Button>
+  );
+}
+
 export function TabContractsEmpty({
   contractorId,
   wizardOpen,
   setWizardOpen,
 }: TabContractsEmptyProps) {
   const t = useTranslations('Contracts');
+  const handleOpenWizard = useCallback(() => setWizardOpen(true), [setWizardOpen]);
+  const primaryAction = useMemo(
+    () => ({
+      label: t('contractorTab.emptyCTA'),
+      onClick: handleOpenWizard,
+      icon: Plus,
+    }),
+    [t, handleOpenWizard],
+  );
   return (
     <>
       <AtelierEmptyState
@@ -63,22 +83,8 @@ export function TabContractsEmpty({
         illustration={ContractsIllustration}
         heading={t('contractorTab.emptyHeading')}
         body={t('contractorTab.emptyBody')}
-        primaryAction={{
-          label: t('contractorTab.emptyCTA'),
-          onClick: () => setWizardOpen(true),
-          icon: Plus,
-        }}
-        renderAction={(action, variant) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              variant={variant === 'secondary' ? 'outline' : 'default'}
-              onClick={action.onClick}>
-              {Icon ? <Icon className="h-4 w-4" /> : null}
-              {action.label}
-            </Button>
-          );
-        }}
+        primaryAction={primaryAction}
+        renderAction={renderEmptyStateAction}
       />
       <ContractWizardDialogContainer
         open={wizardOpen}
@@ -171,13 +177,24 @@ export function TabContractsView({
     pageCount: totalPages,
   });
 
+  const handleOpenWizard = useCallback(() => setWizardOpen(true), [setWizardOpen]);
+  const handleRowClick = useCallback(
+    (row: ContractorTabContractRow) => router.push(`/contracts/${row.id}`),
+    [router],
+  );
+  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
+  const handleNextPage = useCallback(
+    () => setPage(p => Math.min(totalPages, p + 1)),
+    [setPage, totalPages],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <SectionLabel icon={FileText}>{t('contractorTab.heading')}</SectionLabel>
         </div>
-        <Button size="sm" disabled={isLoading} onClick={() => setWizardOpen(true)}>
+        <Button size="sm" disabled={isLoading} onClick={handleOpenWizard}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorTab.addCTA')}
         </Button>
@@ -217,7 +234,7 @@ export function TabContractsView({
             emptyDescription={t('contractorTab.emptyBody')}
             noResultsTitle={t('contractorTab.emptyHeading')}
             skeletonRows={5}
-            onRowClick={row => router.push(`/contracts/${row.id}`)}
+            onRowClick={handleRowClick}
           />
         </Table>
       </AtelierTableShell>
@@ -228,7 +245,7 @@ export function TabContractsView({
             variant="outline"
             size="sm"
             disabled={isLoading || page <= 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}>
+            onClick={handlePrevPage}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -238,7 +255,7 @@ export function TabContractsView({
             variant="outline"
             size="sm"
             disabled={isLoading || page >= totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+            onClick={handleNextPage}>
             &raquo;
           </Button>
         </div>

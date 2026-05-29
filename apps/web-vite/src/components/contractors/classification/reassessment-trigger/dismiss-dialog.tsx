@@ -12,7 +12,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 
@@ -36,24 +36,34 @@ export function ReassessmentTriggerDismissDialog({
   const [attempted, setAttempted] = useState(false);
   const isValid = reason.length >= MIN_REASON_LENGTH;
 
-  async function handleConfirm() {
+  const handleConfirm = useCallback(async () => {
     setAttempted(true);
     if (!isValid) return;
     await onConfirm(reason);
     setReason('');
     setAttempted(false);
-  }
+  }, [isValid, onConfirm, reason]);
+
+  const handleDialogOpenChange = useCallback(
+    (next: boolean) => {
+      if (!next) {
+        setReason('');
+        setAttempted(false);
+      }
+      onOpenChange(next);
+    },
+    [onOpenChange],
+  );
+
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [],
+  );
+
+  const handleCancelClick = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={next => {
-        if (!next) {
-          setReason('');
-          setAttempted(false);
-        }
-        onOpenChange(next);
-      }}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent data-slot="reassessment-trigger-dismiss-dialog">
         <DialogHeader>
           <DialogTitle>{t('dismissHeading')}</DialogTitle>
@@ -64,7 +74,7 @@ export function ReassessmentTriggerDismissDialog({
           <Textarea
             id="rt-dismiss-reason"
             value={reason}
-            onChange={e => setReason(e.target.value)}
+            onChange={handleReasonChange}
             minLength={MIN_REASON_LENGTH}
             maxLength={1000}
             rows={4}
@@ -81,7 +91,7 @@ export function ReassessmentTriggerDismissDialog({
           <Button
             type="button"
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleCancelClick}
             disabled={isSubmitting}>
             {t('dismissCancel')}
           </Button>

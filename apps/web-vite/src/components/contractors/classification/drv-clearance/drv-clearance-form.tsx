@@ -124,6 +124,32 @@ export function DrvClearanceFormView({
     ],
   );
 
+  const handleFiledAtChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setFiledAt(e.target.value),
+    [],
+  );
+  const handleDrvReferenceChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setDrvReference(e.target.value),
+    [],
+  );
+  const handleOutcomeChange = useCallback(
+    (v: string | null) => setOutcome((v ?? 'PENDING') as Outcome),
+    [],
+  );
+  const handleValidFromChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValidFrom(e.target.value),
+    [],
+  );
+  const handleValidToChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValidTo(e.target.value),
+    [],
+  );
+  const handleNotesChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value),
+    [],
+  );
+  const handleCancelClick = useCallback(() => onOpenChange(false), [onOpenChange]);
+
   const showValidityDates = outcome === 'SELBSTANDIG' || outcome === 'ABHANGIG';
 
   return (
@@ -140,7 +166,7 @@ export function DrvClearanceFormView({
               id={`${formId}-filedAt`}
               type="date"
               value={filedAt}
-              onChange={e => setFiledAt(e.target.value)}
+              onChange={handleFiledAtChange}
               aria-invalid={Boolean(errors.filedAt)}
               aria-describedby={errors.filedAt ? `${formId}-filedAt-error` : undefined}
               required
@@ -157,7 +183,7 @@ export function DrvClearanceFormView({
             <Input
               id={`${formId}-drvReference`}
               value={drvReference}
-              onChange={e => setDrvReference(e.target.value)}
+              onChange={handleDrvReferenceChange}
               maxLength={100}
               aria-invalid={Boolean(errors.drvReference)}
               aria-describedby={`${formId}-drvReference-helper ${
@@ -187,7 +213,7 @@ export function DrvClearanceFormView({
 
           <div className="grid gap-2">
             <Label htmlFor={`${formId}-outcome`}>{t('outcomeLabel')}</Label>
-            <Select value={outcome} onValueChange={v => setOutcome(v as Outcome)}>
+            <Select value={outcome} onValueChange={handleOutcomeChange}>
               <SelectTrigger id={`${formId}-outcome`}>
                 <SelectValue />
               </SelectTrigger>
@@ -208,7 +234,7 @@ export function DrvClearanceFormView({
                   id={`${formId}-validFrom`}
                   type="date"
                   value={validFrom}
-                  onChange={e => setValidFrom(e.target.value)}
+                  onChange={handleValidFromChange}
                   aria-invalid={Boolean(errors.validFrom)}
                   aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
                 />
@@ -227,7 +253,7 @@ export function DrvClearanceFormView({
                   id={`${formId}-validTo`}
                   type="date"
                   value={validTo}
-                  onChange={e => setValidTo(e.target.value)}
+                  onChange={handleValidToChange}
                   aria-invalid={Boolean(errors.validTo)}
                   aria-describedby={errors.validTo ? `${formId}-validTo-error` : undefined}
                 />
@@ -248,14 +274,14 @@ export function DrvClearanceFormView({
             <Textarea
               id={`${formId}-notes`}
               value={notes}
-              onChange={e => setNotes(e.target.value)}
+              onChange={handleNotesChange}
               maxLength={2000}
               rows={3}
             />
           </div>
         </form>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button type="button" variant="outline" onClick={handleCancelClick}>
             {t('cancelAction')}
           </Button>
           <Button

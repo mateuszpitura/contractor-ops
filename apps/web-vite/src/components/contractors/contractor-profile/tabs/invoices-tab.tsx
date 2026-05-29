@@ -21,12 +21,13 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Receipt, Upload } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../../lib/format/use-date-formatter.js';
 import type { InvoiceRow } from '../../../invoices/invoice-table/columns.js';
 import { getColumns } from '../../../invoices/invoice-table/columns.js';
 import { InvoiceUploadAreaContainer } from '../../../invoices/invoice-upload-area-container.js';
+import { renderEmptyStateAction } from '../../../shared/atelier-bridges.js';
 import { DataTableBody } from '../../../shared/data-table-body.js';
 import type { useContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
 
@@ -45,6 +46,15 @@ export function InvoicesTabEmpty({
   handleUploadComplete,
 }: InvoicesTabEmptyProps) {
   const t = useTranslations('Invoices');
+  const handleOpenUpload = useCallback(() => setUploadOpen(true), [setUploadOpen]);
+  const primaryAction = useMemo(
+    () => ({
+      label: t('tab.uploadInvoice'),
+      onClick: handleOpenUpload,
+      icon: Upload,
+    }),
+    [t, handleOpenUpload],
+  );
   return (
     <>
       <AtelierEmptyState
@@ -52,22 +62,8 @@ export function InvoicesTabEmpty({
         illustration={InvoicesIllustration}
         heading={t('tab.noInvoicesHeading')}
         body={t('tab.noInvoicesBody')}
-        primaryAction={{
-          label: t('tab.uploadInvoice'),
-          onClick: () => setUploadOpen(true),
-          icon: Upload,
-        }}
-        renderAction={(action, variant) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              variant={variant === 'secondary' ? 'outline' : 'default'}
-              onClick={action.onClick}>
-              {Icon ? <Icon className="h-4 w-4" /> : null}
-              {action.label}
-            </Button>
-          );
-        }}
+        primaryAction={primaryAction}
+        renderAction={renderEmptyStateAction}
       />
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -110,13 +106,20 @@ export function InvoicesTabView({
     getRowId: row => row.id,
   });
 
+  const handleOpenUpload = useCallback(() => setUploadOpen(true), [setUploadOpen]);
+  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
+  const handleNextPage = useCallback(
+    () => setPage(p => Math.min(totalPages, p + 1)),
+    [setPage, totalPages],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <SectionLabel icon={Receipt}>{t('tab.heading')}</SectionLabel>
         </div>
-        <Button size="sm" disabled={isLoading} onClick={() => setUploadOpen(true)}>
+        <Button size="sm" disabled={isLoading} onClick={handleOpenUpload}>
           <Upload className="me-1.5 size-3.5" />
           {t('tab.uploadInvoice')}
         </Button>
@@ -166,7 +169,7 @@ export function InvoicesTabView({
             variant="outline"
             size="sm"
             disabled={isLoading || page <= 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}>
+            onClick={handlePrevPage}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -176,7 +179,7 @@ export function InvoicesTabView({
             variant="outline"
             size="sm"
             disabled={isLoading || page >= totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+            onClick={handleNextPage}>
             &raquo;
           </Button>
         </div>

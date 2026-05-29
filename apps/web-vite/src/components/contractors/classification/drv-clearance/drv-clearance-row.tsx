@@ -4,7 +4,7 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
-import { useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../i18n/navigation.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 
@@ -48,7 +48,11 @@ function daysBetween(a: Date, b: Date): number {
   return Math.round(ms / (24 * 60 * 60 * 1000));
 }
 
-export function DrvClearanceRow({ clearance, onEdit }: DrvClearanceRowProps) {
+// memo: rendered per row in DRV clearance table — re-renders driven only by row data + parent panel state
+export const DrvClearanceRow = memo(function DrvClearanceRow({
+  clearance,
+  onEdit,
+}: DrvClearanceRowProps) {
   const t = useTranslations('Classification.polish.drvClearance');
   const locale = useLocale();
   const visual = OUTCOME_VISUALS[clearance.outcome];
@@ -76,6 +80,8 @@ export function DrvClearanceRow({ clearance, onEdit }: DrvClearanceRowProps) {
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(validToDate);
   }, [validToDate, locale]);
 
+  const handleEditClick = useCallback(() => onEdit(clearance), [onEdit, clearance]);
+
   return (
     <tr className="border-b">
       <td className="py-3 pr-4 text-sm">{filedAtLabel}</td>
@@ -99,11 +105,11 @@ export function DrvClearanceRow({ clearance, onEdit }: DrvClearanceRowProps) {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => onEdit(clearance)}
+          onClick={handleEditClick}
           aria-label={t('editAction')}>
           {t('editAction')}
         </Button>
       </td>
     </tr>
   );
-}
+});

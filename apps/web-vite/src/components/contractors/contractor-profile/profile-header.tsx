@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { MoreHorizontal, Play } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { tDynLoose, tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -60,6 +60,62 @@ const LIFECYCLE_TRANSITION_TARGETS: Record<string, LifecycleStage> = {
 
 const PRIMARY_BUTTON_KEYS = new Set(['edit', 'addContract']);
 
+function PrimaryActionButton({
+  action,
+  label,
+  onClick,
+}: {
+  action: ContractorAction;
+  label: string;
+  onClick: (action: ContractorAction) => void;
+}) {
+  const Icon = action.icon;
+  const handleClick = useCallback(() => onClick(action), [onClick, action]);
+  return (
+    <Button variant="outline" size="sm" onClick={handleClick}>
+      <Icon className={`me-1.5 ${iconSize.sm}`} />
+      {label}
+    </Button>
+  );
+}
+
+function WorkflowLauncherButton({
+  pickerType,
+  label,
+  onStart,
+}: {
+  pickerType: string | undefined;
+  label: string;
+  onStart: (pickerType: string | undefined) => void;
+}) {
+  const handleClick = useCallback(() => onStart(pickerType), [onStart, pickerType]);
+  return (
+    <Button variant="outline" size="sm" onClick={handleClick}>
+      <Play className={`me-1.5 ${iconSize.sm}`} />
+      {label}
+    </Button>
+  );
+}
+
+function MenuActionItem({
+  action,
+  label,
+  disabled,
+  onSelect,
+}: {
+  action: ContractorAction;
+  label: string;
+  disabled: boolean;
+  onSelect: (action: ContractorAction) => void;
+}) {
+  const handleSelect = useCallback(() => onSelect(action), [onSelect, action]);
+  return (
+    <DropdownMenuItem disabled={disabled} variant={action.variant} onSelect={handleSelect}>
+      {label}
+    </DropdownMenuItem>
+  );
+}
+
 export function ProfileHeaderView({
   contractor,
   transitionLifecycle,
@@ -89,35 +145,64 @@ export function ProfileHeaderView({
     a => !(PRIMARY_BUTTON_KEYS.has(a.key) || ROUTED_ELSEWHERE.has(a.key)),
   );
 
-  function getActionLabel(action: ContractorAction): string {
-    if (action.i18nNamespace === 'ContractorProfile') return tKey(t, action.labelKey);
-    if (action.i18nNamespace === 'Contractors.bulkActions') return tKey(tBulk, action.labelKey);
-    return tKey(tc, action.labelKey);
-  }
+  const getActionLabel = useCallback(
+    (action: ContractorAction): string => {
+      if (action.i18nNamespace === 'ContractorProfile') return tKey(t, action.labelKey);
+      if (action.i18nNamespace === 'Contractors.bulkActions') return tKey(tBulk, action.labelKey);
+      return tKey(tc, action.labelKey);
+    },
+    [t, tBulk, tc],
+  );
 
-  function dispatchPrimaryAction(action: ContractorAction) {
-    switch (action.key) {
-      case 'edit':
-        toast.info(t('actions.editComingSoon'));
-        return;
-      case 'addContract':
-        setWizardOpen(true);
-        return;
-      default:
-        return;
-    }
-  }
+  const dispatchPrimaryAction = useCallback(
+    (action: ContractorAction) => {
+      switch (action.key) {
+        case 'edit':
+          toast.info(t('actions.editComingSoon'));
+          return;
+        case 'addContract':
+          setWizardOpen(true);
+          return;
+        default:
+          return;
+      }
+    },
+    [t],
+  );
 
-  function dispatchMenuAction(action: ContractorAction) {
-    if (action.key === 'profile.archive') {
-      setArchiveConfirmOpen(true);
-      return;
-    }
-    const target = LIFECYCLE_TRANSITION_TARGETS[action.key];
-    if (target) {
-      transitionLifecycle(target);
-    }
-  }
+  const dispatchMenuAction = useCallback(
+    (action: ContractorAction) => {
+      if (action.key === 'profile.archive') {
+        setArchiveConfirmOpen(true);
+        return;
+      }
+      const target = LIFECYCLE_TRANSITION_TARGETS[action.key];
+      if (target) {
+        transitionLifecycle(target);
+      }
+    },
+    [transitionLifecycle],
+  );
+
+  const handleStartWorkflow = useCallback((nextType: string | undefined) => {
+    setPickerType(nextType);
+    setPickerOpen(true);
+  }, []);
+
+  const handleArchiveConfirm = useCallback(() => {
+    archive();
+    setArchiveConfirmOpen(false);
+  }, [archive]);
+
+  const renderMoreActionsTrigger = useCallback(
+    (props: React.ComponentProps<typeof Button>) => (
+      <Button {...props} variant="outline" size="icon-sm">
+        <MoreHorizontal className={iconSize.md} />
+        <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
+      </Button>
+    ),
+    [tCommon],
+  );
 
   const workflowLauncher = (() => {
     if (stage === 'DRAFT' || stage === 'ONBOARDING') {
@@ -171,52 +256,35 @@ export function ProfileHeaderView({
       </div>
 
       <div className="flex items-center gap-2">
-        {primaryActions.map(action => {
-          const Icon = action.icon;
-          return (
-            <Button
-              key={action.key}
-              variant="outline"
-              size="sm"
-              onClick={() => dispatchPrimaryAction(action)}>
-              <Icon className={`me-1.5 ${iconSize.sm}`} />
-              {getActionLabel(action)}
-            </Button>
-          );
-        })}
+        {primaryActions.map(action => (
+          <PrimaryActionButton
+            key={action.key}
+            action={action}
+            label={getActionLabel(action)}
+            onClick={dispatchPrimaryAction}
+          />
+        ))}
 
         {workflowLauncher ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setPickerType(workflowLauncher.pickerType);
-              setPickerOpen(true);
-            }}>
-            <Play className={`me-1.5 ${iconSize.sm}`} />
-            {tKey(t, workflowLauncher.labelKey)}
-          </Button>
+          <WorkflowLauncherButton
+            pickerType={workflowLauncher.pickerType}
+            label={tKey(t, workflowLauncher.labelKey)}
+            onStart={handleStartWorkflow}
+          />
         ) : null}
 
         {menuActions.length > 0 ? (
           <DropdownMenu>
-            <DropdownMenuTrigger
-              render={props => (
-                <Button {...props} variant="outline" size="icon-sm">
-                  <MoreHorizontal className={iconSize.md} />
-                  <span className="sr-only">{tCommon('srOnly.moreActions')}</span>
-                </Button>
-              )}
-            />
+            <DropdownMenuTrigger render={renderMoreActionsTrigger} />
             <DropdownMenuContent align="end">
               {menuActions.map(action => (
-                <DropdownMenuItem
+                <MenuActionItem
                   key={action.key}
+                  action={action}
+                  label={getActionLabel(action)}
                   disabled={isPending}
-                  variant={action.variant}
-                  onSelect={() => dispatchMenuAction(action)}>
-                  {getActionLabel(action)}
-                </DropdownMenuItem>
+                  onSelect={dispatchMenuAction}
+                />
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -245,10 +313,7 @@ export function ProfileHeaderView({
           <AlertDialogFooter>
             <AlertDialogCancel>{tCommon('cancel')}</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                archive();
-                setArchiveConfirmOpen(false);
-              }}
+              onClick={handleArchiveConfirm}
               disabled={isPending}
               variant="destructive">
               {t('lifecycle.archiveConfirm')}

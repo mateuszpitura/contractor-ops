@@ -103,16 +103,19 @@ export function DefaultSkontoSectionView({
     return !(newErrors.discountPercent || newErrors.discountDays || newErrors.netDays);
   }, [form, validateField, t]);
 
-  const handleBlur = (name: keyof FormState) => {
-    const error = validateField(name, form[name]);
-    setErrors(prev => ({ ...prev, [name]: error }));
-  };
+  const handleBlur = useCallback(
+    (name: keyof FormState) => {
+      const error = validateField(name, form[name]);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    },
+    [form, validateField],
+  );
 
-  const handleChange = (name: keyof FormState, value: string) => {
+  const handleChange = useCallback((name: keyof FormState, value: string) => {
     setForm(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (!validateAll()) return;
     upsertMutation.mutate({
       billingProfileId,
@@ -120,13 +123,13 @@ export function DefaultSkontoSectionView({
       discountDays: Number(form.discountDays),
       netDays: Number(form.netDays),
     });
-  };
+  }, [validateAll, upsertMutation, billingProfileId, form]);
 
-  const handleDeleteRequest = () => {
+  const handleDeleteRequest = useCallback(() => {
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     deleteMutation.mutate(
       { billingProfileId },
       {
@@ -136,7 +139,23 @@ export function DefaultSkontoSectionView({
         },
       },
     );
-  };
+  }, [deleteMutation, billingProfileId]);
+
+  const handleDiscountPercentChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange('discountPercent', e.target.value),
+    [handleChange],
+  );
+  const handleDiscountPercentBlur = useCallback(() => handleBlur('discountPercent'), [handleBlur]);
+  const handleDiscountDaysChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange('discountDays', e.target.value),
+    [handleChange],
+  );
+  const handleDiscountDaysBlur = useCallback(() => handleBlur('discountDays'), [handleBlur]);
+  const handleNetDaysChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange('netDays', e.target.value),
+    [handleChange],
+  );
+  const handleNetDaysBlur = useCallback(() => handleBlur('netDays'), [handleBlur]);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -155,8 +174,8 @@ export function DefaultSkontoSectionView({
               max="50"
               step="0.01"
               value={form.discountPercent}
-              onChange={e => handleChange('discountPercent', e.target.value)}
-              onBlur={() => handleBlur('discountPercent')}
+              onChange={handleDiscountPercentChange}
+              onBlur={handleDiscountPercentBlur}
               className="tabular-nums"
               aria-invalid={!!errors.discountPercent}
             />
@@ -173,8 +192,8 @@ export function DefaultSkontoSectionView({
               min="1"
               step="1"
               value={form.discountDays}
-              onChange={e => handleChange('discountDays', e.target.value)}
-              onBlur={() => handleBlur('discountDays')}
+              onChange={handleDiscountDaysChange}
+              onBlur={handleDiscountDaysBlur}
               className="tabular-nums"
               aria-invalid={!!errors.discountDays}
             />
@@ -191,8 +210,8 @@ export function DefaultSkontoSectionView({
               min="1"
               step="1"
               value={form.netDays}
-              onChange={e => handleChange('netDays', e.target.value)}
-              onBlur={() => handleBlur('netDays')}
+              onChange={handleNetDaysChange}
+              onBlur={handleNetDaysBlur}
               className="tabular-nums"
               aria-invalid={!!errors.netDays}
             />

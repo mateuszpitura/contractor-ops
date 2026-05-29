@@ -4,7 +4,7 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { CheckCircle2, ShieldAlert, XCircle } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { SortCodeValidationOutcome } from '../hooks/use-sort-code-validation.js';
@@ -22,7 +22,7 @@ export function SortCodeValidator({ sortCode, accountNumber }: SortCodeValidator
   const [pending, setPending] = useState(false);
   const requestIdRef = useRef(0);
 
-  const handleValidate = async () => {
+  const handleValidate = useCallback(async () => {
     const myId = requestIdRef.current + 1;
     requestIdRef.current = myId;
 
@@ -38,7 +38,7 @@ export function SortCodeValidator({ sortCode, accountNumber }: SortCodeValidator
         setPending(false);
       }
     }
-  };
+  }, [validate, sortCode, accountNumber]);
 
   const canValidate = sortCode.length === 6 && accountNumber.length === 8;
 

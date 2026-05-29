@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
+import { useCallback } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -37,6 +38,31 @@ export function StepAssignmentView({
     formState: { errors },
   } = form;
 
+  const handleOwnerChange = useCallback(
+    (value: string | null) => {
+      setValue('ownerUserId', value ?? '', { shouldDirty: true, shouldValidate: true });
+    },
+    [setValue],
+  );
+  const handleTeamChange = useCallback(
+    (value: string | null) => {
+      setValue('primaryTeamId', value ?? '', { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleProjectChange = useCallback(
+    (value: string | null) => {
+      setValue('primaryProjectId', value ?? '', { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleCostCenterChange = useCallback(
+    (value: string | null) => {
+      setValue('defaultCostCenterId', value ?? '', { shouldDirty: true });
+    },
+    [setValue],
+  );
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -44,12 +70,7 @@ export function StepAssignmentView({
         <Combobox
           options={ownerItems}
           value={watch('ownerUserId') ?? null}
-          onValueChange={value =>
-            setValue('ownerUserId', value ?? '', {
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-          }
+          onValueChange={handleOwnerChange}
           placeholder={t('owner')}
         />
         {!!errors.ownerUserId && (
@@ -61,7 +82,7 @@ export function StepAssignmentView({
         <Label className="text-[13px]">{t('team')}</Label>
         <Select
           value={watch('primaryTeamId') ?? ''}
-          onValueChange={value => setValue('primaryTeamId', value ?? '', { shouldDirty: true })}
+          onValueChange={handleTeamChange}
           items={teams.map(team => ({ value: team.id, label: team.name }))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('team')} />
@@ -80,7 +101,7 @@ export function StepAssignmentView({
         <Label className="text-[13px]">{t('project')}</Label>
         <Select
           value={watch('primaryProjectId') ?? ''}
-          onValueChange={value => setValue('primaryProjectId', value ?? '', { shouldDirty: true })}
+          onValueChange={handleProjectChange}
           items={projects.map(p => ({ value: p.id, label: p.name }))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('project')} />
@@ -99,9 +120,7 @@ export function StepAssignmentView({
         <Label className="text-[13px]">{t('costCenter')}</Label>
         <Select
           value={watch('defaultCostCenterId') ?? ''}
-          onValueChange={value =>
-            setValue('defaultCostCenterId', value ?? '', { shouldDirty: true })
-          }
+          onValueChange={handleCostCenterChange}
           items={costCenters.map(cc => ({ value: cc.id, label: `${cc.name} (${cc.code})` }))}>
           <SelectTrigger className="w-full">
             <SelectValue placeholder={t('costCenter')} />

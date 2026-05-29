@@ -3,11 +3,13 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { GitBranch, Plus } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
 import { JiraActivitySummary } from '../../integrations/jira-activity-summary-container.js';
+import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
 import { TemplatePickerContainer } from '../../workflows/template-picker-container.js';
 import type { useContractorTabWorkflows } from '../hooks/use-contractor-tab-workflows.js';
 
@@ -57,6 +59,15 @@ export function WorkflowsTabEmpty({
   setPickerOpen,
 }: WorkflowsTabEmptyProps) {
   const t = useTranslations('Workflows');
+  const handleOpenPicker = useCallback(() => setPickerOpen(true), [setPickerOpen]);
+  const primaryAction = useMemo(
+    () => ({
+      label: t('contractorNoWorkflowsCta'),
+      onClick: handleOpenPicker,
+      icon: Plus,
+    }),
+    [t, handleOpenPicker],
+  );
   return (
     <>
       <AtelierEmptyState
@@ -64,22 +75,8 @@ export function WorkflowsTabEmpty({
         illustration={WorkflowsIllustration}
         heading={t('contractorNoWorkflows')}
         body={t('contractorNoWorkflowsBody')}
-        primaryAction={{
-          label: t('contractorNoWorkflowsCta'),
-          onClick: () => setPickerOpen(true),
-          icon: Plus,
-        }}
-        renderAction={(action, variant) => {
-          const Icon = action.icon;
-          return (
-            <Button
-              variant={variant === 'secondary' ? 'outline' : 'default'}
-              onClick={action.onClick}>
-              {Icon ? <Icon className="h-4 w-4" /> : null}
-              {action.label}
-            </Button>
-          );
-        }}
+        primaryAction={primaryAction}
+        renderAction={renderEmptyStateAction}
       />
       <JiraActivitySummary contractorId={contractorId} />
       <TemplatePickerContainer
@@ -102,13 +99,20 @@ export function WorkflowsTabView({
 }: WorkflowsTabViewProps) {
   const t = useTranslations('Workflows');
 
+  const handleOpenPicker = useCallback(() => setPickerOpen(true), [setPickerOpen]);
+  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
+  const handleNextPage = useCallback(
+    () => setPage(p => Math.min(totalPages, p + 1)),
+    [setPage, totalPages],
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <SectionLabel icon={GitBranch}>{t('contractorWorkflowsTab')}</SectionLabel>
         </div>
-        <Button size="sm" onClick={() => setPickerOpen(true)}>
+        <Button size="sm" onClick={handleOpenPicker}>
           <Plus className="me-1.5 size-3.5" />
           {t('contractorStartWorkflow')}
         </Button>
@@ -142,11 +146,7 @@ export function WorkflowsTabView({
 
       {totalPages > 1 ? (
         <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={handlePrevPage}>
             &laquo;
           </Button>
           <span className="text-sm text-muted-foreground">
@@ -156,7 +156,7 @@ export function WorkflowsTabView({
             variant="outline"
             size="sm"
             disabled={page >= totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}>
+            onClick={handleNextPage}>
             &raquo;
           </Button>
         </div>

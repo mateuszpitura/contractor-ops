@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { useCallback } from 'react';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { enumKey } from '../../../lib/enum-key.js';
@@ -108,6 +109,32 @@ function FieldRow({
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className={`text-sm ${mono ? 'font-mono text-[13px]' : ''}`}>{value}</span>
     </div>
+  );
+}
+
+function HealthFactorButton({
+  factor,
+  onSwitchTab,
+  children,
+}: {
+  factor: HealthFactor;
+  onSwitchTab: (tab: string) => void;
+  children: React.ReactNode;
+}) {
+  const Icon = healthStatusIcons[factor.status];
+  const colorClass = healthStatusColors[factor.status];
+  const targetTab = healthFactorTabMap[factor.key];
+  const handleClick = useCallback(() => {
+    if (targetTab) onSwitchTab(targetTab);
+  }, [targetTab, onSwitchTab]);
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-muted">
+      <Icon className={`size-4 shrink-0 ${colorClass}`} />
+      <span className="text-sm">{children}</span>
+    </button>
   );
 }
 
@@ -234,30 +261,17 @@ export function TabOverviewView({ contractor, showPii, onSwitchTab }: TabOvervie
           </CardAction>
         </CardHeader>
         <CardContent className="grid gap-2">
-          {contractor.complianceHealth.factors.map(factor => {
-            const Icon = healthStatusIcons[factor.status];
-            const colorClass = healthStatusColors[factor.status];
-            const targetTab = healthFactorTabMap[factor.key];
-
-            return (
-              <button
-                key={factor.key}
-                type="button"
-                onClick={() => targetTab && onSwitchTab(targetTab)}
-                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-start transition-colors hover:bg-muted">
-                <Icon className={`size-4 shrink-0 ${colorClass}`} />
-                <span className="text-sm">
-                  {t(
-                    `healthChecks.${factor.key}` as
-                      | 'healthChecks.documents'
-                      | 'healthChecks.contract'
-                      | 'healthChecks.tasks'
-                      | 'healthChecks.invoices',
-                  )}
-                </span>
-              </button>
-            );
-          })}
+          {contractor.complianceHealth.factors.map(factor => (
+            <HealthFactorButton key={factor.key} factor={factor} onSwitchTab={onSwitchTab}>
+              {t(
+                `healthChecks.${factor.key}` as
+                  | 'healthChecks.documents'
+                  | 'healthChecks.contract'
+                  | 'healthChecks.tasks'
+                  | 'healthChecks.invoices',
+              )}
+            </HealthFactorButton>
+          ))}
         </CardContent>
       </Card>
 

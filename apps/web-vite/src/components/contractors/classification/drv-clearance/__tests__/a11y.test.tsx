@@ -21,12 +21,14 @@ function makeMutation(): MutationMock {
 type CreateMutationProp = Parameters<typeof DrvClearanceFormView>[0]['createMutation'];
 type UpdateMutationProp = Parameters<typeof DrvClearanceFormView>[0]['updateMutation'];
 
+const noop = () => undefined;
+
 describe('DrvClearanceFormView — accessibility', () => {
   it('associates every labelled field with an input', () => {
     render(
       <DrvClearanceFormView
         open
-        onOpenChange={() => undefined}
+        onOpenChange={noop}
         contractorAssignmentId="ca-1"
         createMutation={makeMutation() as unknown as CreateMutationProp}
         updateMutation={makeMutation() as unknown as UpdateMutationProp}
@@ -42,7 +44,7 @@ describe('DrvClearanceFormView — accessibility', () => {
     const { user } = setup(
       <DrvClearanceFormView
         open
-        onOpenChange={() => undefined}
+        onOpenChange={noop}
         contractorAssignmentId="ca-1"
         createMutation={createMutation as unknown as CreateMutationProp}
         updateMutation={makeMutation() as unknown as UpdateMutationProp}
@@ -62,7 +64,7 @@ describe('DrvClearanceFormView — accessibility', () => {
     render(
       <DrvClearanceFormView
         open
-        onOpenChange={() => undefined}
+        onOpenChange={noop}
         contractorAssignmentId="ca-1"
         createMutation={makeMutation() as unknown as CreateMutationProp}
         updateMutation={makeMutation() as unknown as UpdateMutationProp}
@@ -94,7 +96,7 @@ describe('DrvClearanceRow — accessibility', () => {
     const { container } = render(
       <table>
         <tbody>
-          <DrvClearanceRow clearance={clearance} onEdit={() => undefined} />
+          <DrvClearanceRow clearance={clearance} onEdit={noop} />
         </tbody>
       </table>,
     );
@@ -117,7 +119,7 @@ describe('DrvClearanceRow — accessibility', () => {
     render(
       <table>
         <tbody>
-          <DrvClearanceRow clearance={clearance} onEdit={() => undefined} />
+          <DrvClearanceRow clearance={clearance} onEdit={noop} />
         </tbody>
       </table>,
     );
