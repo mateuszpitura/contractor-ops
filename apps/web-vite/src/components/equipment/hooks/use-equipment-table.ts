@@ -38,6 +38,7 @@ export function useEquipmentTable(parentLoading?: boolean) {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   const queryInput = useMemo<EquipmentTableQueryInput>(
     () => ({
@@ -128,5 +129,7 @@ export function useEquipmentTable(parentLoading?: boolean) {
     hasFiltersOrSearch,
     totalPages,
     parentLoading,
+    rowSelection,
+    setRowSelection,
   } as const;
 }

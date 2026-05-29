@@ -66,6 +66,15 @@ function makeViewProps(overrides: Partial<ViewProps> = {}): ViewProps {
     activeFilterCount: 0,
     hasFiltersOrSearch: false,
     totalPages: 1,
+    rowSelection: {},
+    setRowSelection: vi.fn(),
+    bulkActions: {
+      onBulkRetire: vi.fn(async () => undefined),
+      onBulkUnassign: vi.fn(async () => undefined),
+      onExportCsv: vi.fn(),
+      isRetiring: false,
+      isUnassigning: false,
+    },
     ...overrides,
   } as ViewProps;
 }

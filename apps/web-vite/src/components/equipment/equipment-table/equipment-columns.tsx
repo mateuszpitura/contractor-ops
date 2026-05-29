@@ -1,5 +1,6 @@
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -58,6 +59,29 @@ export function getEquipmentColumns(
   actions: ColumnActions,
 ): ColumnDef<EquipmentRow>[] {
   return [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
+          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t('list.columns.selectAll')}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          // biome-ignore lint/nursery/noJsxPropsBind: column definition
+          onCheckedChange={value => row.toggleSelected(!!value)}
+          aria-label={t('list.columns.selectRow')}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 40,
+    },
     {
       accessorKey: 'name',
       header: t('list.columns.name'),

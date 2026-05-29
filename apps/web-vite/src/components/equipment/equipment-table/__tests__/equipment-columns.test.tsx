@@ -96,7 +96,15 @@ describe('getEquipmentColumns (web-vite)', () => {
   it('returns expected column count', () => {
     let cols: ReturnType<typeof getEquipmentColumns> | undefined;
     render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
-    expect(cols).toHaveLength(6);
+    expect(cols).toHaveLength(7);
+  });
+
+  it('has a select column as first', () => {
+    let cols: ReturnType<typeof getEquipmentColumns> | undefined;
+    render(<ColumnsHarness actions={makeActions()} onReady={c => (cols = c)} />);
+    expect(cols?.[0]?.id).toBe('select');
+    expect(cols?.[0]?.enableSorting).toBe(false);
+    expect(cols?.[0]?.enableHiding).toBe(false);
   });
 
   it('name column has enableHiding false', () => {

@@ -37,6 +37,8 @@ describe('useEquipmentTable', () => {
     expect(result.current.isLoading).toBe(true);
     expect(result.current.activeFilterCount).toBe(0);
     expect(result.current.hasFiltersOrSearch).toBe(false);
+    expect(result.current.rowSelection).toEqual({});
+    expect(typeof result.current.setRowSelection).toBe('function');
   });
 
   it('maps successful list response into data + totalRows + totalPages', async () => {

@@ -7,13 +7,15 @@ import {
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DataTableBody } from '../../shared/data-table-body.js';
 import { DataTablePagination } from '../../shared/data-table-pagination.js';
 import { SortableTableHead } from '../../shared/sortable-table-head.js';
+import type { EquipmentBulkActionsHandlers } from '../hooks/use-equipment-bulk-actions.js';
 import type { useEquipmentTable } from '../hooks/use-equipment-table.js';
+import { DataTableBulkActions } from './data-table-bulk-actions.js';
 import type { EquipmentRow } from './equipment-columns.js';
 import { getEquipmentColumns } from './equipment-columns.js';
 import { EquipmentToolbar } from './equipment-toolbar.js';
@@ -25,6 +27,7 @@ type EquipmentTableViewProps = {
   onCreateShipment: (equipment: EquipmentRow) => void;
   onRetire: (equipment: EquipmentRow) => void;
   onAddEquipment: () => void;
+  bulkActions: EquipmentBulkActionsHandlers;
 } & ReturnType<typeof useEquipmentTable>;
 
 /**
@@ -58,6 +61,9 @@ export function EquipmentTableView({
   activeFilterCount,
   hasFiltersOrSearch,
   totalPages,
+  rowSelection,
+  setRowSelection,
+  bulkActions,
 }: EquipmentTableViewProps) {
   const t = useTranslations('Equipment');
   const tCommon = useTranslations('Common');
@@ -80,8 +86,10 @@ export function EquipmentTableView({
     columns,
     pageCount: totalPages,
     state: {
+      rowSelection,
       sorting: [{ id: sortBy, desc: sortOrder === 'desc' }],
     },
+    onRowSelectionChange: setRowSelection,
     onSortingChange: updater => {
       const next =
         typeof updater === 'function'
@@ -95,12 +103,17 @@ export function EquipmentTableView({
       }
     },
     enableSortingRemoval: true,
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     manualSorting: true,
     manualFiltering: true,
     getRowId: row => row.id,
   });
+
+  const deselectAll = useCallback(() => {
+    table.toggleAllPageRowsSelected(false);
+  }, [table]);
 
   return (
     <div className={WORKBENCH_DATA_TABLE_CLASS}>
@@ -113,6 +126,10 @@ export function EquipmentTableView({
         disabled={isLoading || parentLoading === true}
         onAddEquipment={onAddEquipment}
       />
+
+      <div className="shrink-0">
+        <DataTableBulkActions table={table} bulkActions={bulkActions} onComplete={deselectAll} />
+      </div>
 
       <AtelierTableShell
         isLoading={isLoading || isRefetching || parentLoading === true}
