@@ -366,7 +366,7 @@ describe('einvoice.send', () => {
 
     await expect(caller.einvoice.send({ invoiceId: INVOICE_ID })).rejects.toMatchObject({
       code: 'PRECONDITION_FAILED',
-      message: 'KOSIT_VALIDATION_FAILED',
+      message: 'kositValidationFailed',
     });
 
     expect(mockAdapter.transmitInvoice).not.toHaveBeenCalled();
@@ -427,7 +427,7 @@ describe('einvoice.send', () => {
 
     await expect(caller.einvoice.send({ invoiceId: INVOICE_ID })).rejects.toMatchObject({
       code: 'BAD_GATEWAY',
-      message: 'STORECOVE_TRANSMISSION_FAILED',
+      message: 'storecoveTransmissionFailed',
     });
 
     // Lifecycle gets FAILED state.
@@ -449,7 +449,7 @@ describe('einvoice.send', () => {
 
     await expect(caller.einvoice.send({ invoiceId: INVOICE_ID })).rejects.toMatchObject({
       code: 'NOT_FOUND',
-      message: 'EINVOICE_LIFECYCLE_NOT_FOUND',
+      message: 'einvoiceLifecycleNotFound',
     });
 
     expect(mockAdapter.transmitInvoice).not.toHaveBeenCalled();
