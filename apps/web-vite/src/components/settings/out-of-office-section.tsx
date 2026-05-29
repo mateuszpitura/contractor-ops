@@ -11,6 +11,8 @@ import { DateTimeRangePicker } from '@contractor-ops/ui/components/shadcn/date-t
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { Loader2, Save } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import type { useOutOfOfficeSection } from './hooks/use-out-of-office-section.js';
 
 export type OutOfOfficeSectionProps = ReturnType<typeof useOutOfOfficeSection>;
@@ -29,6 +31,10 @@ export function OutOfOfficeSection({
   isClearPending,
   isSavePending,
 }: OutOfOfficeSectionProps) {
+  const handleReasonChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [setReason],
+  );
   return (
     <Card>
       <CardHeader>
@@ -58,7 +64,7 @@ export function OutOfOfficeSection({
             id="ooo-reason"
             rows={2}
             value={reason}
-            onChange={e => setReason(e.target.value)}
+            onChange={handleReasonChange}
             disabled={isPending}
             maxLength={500}
             placeholder={t('reasonPlaceholder')}

@@ -13,7 +13,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2, Unlink } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { FeatureGateContainer } from '../billing/feature-gate-container';
 import { GoogleCalendarIcon, OutlookCalendarIcon } from '../integrations/provider-icons';
@@ -46,6 +46,14 @@ function CalendarProviderCard({
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
   const isConnected = connection?.status === 'CONNECTED';
+
+  const handleOpenDisconnect = useCallback(() => setDisconnectDialogOpen(true), []);
+  const handleConfirmDisconnect = useCallback(() => {
+    if (connection) {
+      onDisconnect(connection.id);
+      setDisconnectDialogOpen(false);
+    }
+  }, [connection, onDisconnect]);
 
   return (
     <>
@@ -87,7 +95,7 @@ function CalendarProviderCard({
               <Button
                 variant="outline"
                 className="text-destructive hover:text-destructive"
-                onClick={() => setDisconnectDialogOpen(true)}>
+                onClick={handleOpenDisconnect}>
                 {t('disconnectCalendar')}
               </Button>
             </div>
@@ -115,12 +123,7 @@ function CalendarProviderCard({
             <AlertDialogAction
               variant="destructive"
               disabled={isDisconnecting}
-              onClick={() => {
-                if (connection) {
-                  onDisconnect(connection.id);
-                  setDisconnectDialogOpen(false);
-                }
-              }}>
+              onClick={handleConfirmDisconnect}>
               {!!isDisconnecting && <Loader2 className="me-1.5 size-3.5 animate-spin" />}
               {t('disconnectCalendar')}
             </AlertDialogAction>

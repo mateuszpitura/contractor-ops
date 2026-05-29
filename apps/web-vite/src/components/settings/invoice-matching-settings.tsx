@@ -9,6 +9,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ClipboardCopy, Loader2, Save } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import type { useInvoiceMatchingSettings } from './hooks/use-invoice-matching-settings.js';
 
 export type InvoiceMatchingSettingsProps = ReturnType<typeof useInvoiceMatchingSettings>;
@@ -24,6 +26,10 @@ export function InvoiceMatchingSettings({
   handleSave,
   isPending,
 }: InvoiceMatchingSettingsProps) {
+  const handleThresholdChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setThreshold(Number(e.target.value)),
+    [setThreshold],
+  );
   return (
     <Card>
       <CardHeader>
@@ -64,7 +70,7 @@ export function InvoiceMatchingSettings({
             min={1}
             max={100}
             value={threshold}
-            onChange={e => setThreshold(Number(e.target.value))}
+            onChange={handleThresholdChange}
             className="max-w-[120px]"
           />
           <p className="text-xs text-muted-foreground">{t('deviationThresholdHelp')}</p>

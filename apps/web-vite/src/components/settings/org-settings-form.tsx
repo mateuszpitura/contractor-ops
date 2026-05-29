@@ -17,6 +17,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Loader2, Save } from 'lucide-react';
+import { useCallback } from 'react';
 import { tDyn } from '../../i18n/typed-keys';
 import type { DateFormatKey, TimeFormatKey } from '../../lib/format-date';
 import {
@@ -64,6 +65,49 @@ export function OrgSettingsForm({
   isDirty,
   isPending,
 }: OrgSettingsFormProps) {
+  const handleCountryChange = useCallback(
+    (value: string) => {
+      if (value) setValue('country', value, { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleCurrencyChange = useCallback(
+    (value: string) => {
+      if (value) setValue('currency', value, { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleTimezoneChange = useCallback(
+    (value: string) => {
+      if (value) setValue('timezone', value, { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleLanguageChange = useCallback(
+    (value: string) => {
+      if (value) setValue('language', value as 'pl' | 'en' | 'ar' | 'de', { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleDateFormatChange = useCallback(
+    (value: string) => {
+      if (value) setValue('dateFormat', value as DateFormatKey, { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleTimeFormatChange = useCallback(
+    (value: string) => {
+      if (value) setValue('timeFormat', value as TimeFormatKey, { shouldDirty: true });
+    },
+    [setValue],
+  );
+  const handleFiscalYearMonthChange = useCallback(
+    (value: string) => {
+      if (!value) return;
+      setValue('fiscalYearStartMonth', Number.parseInt(value, 10), { shouldDirty: true });
+    },
+    [setValue],
+  );
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card>
@@ -96,9 +140,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('country')}
-              onValueChange={value => {
-                if (value) setValue('country', value, { shouldDirty: true });
-              }}
+              onValueChange={handleCountryChange}
               disabled={isPending}
               items={countries}>
               <SelectTrigger id={`${id}-country`} className="w-full">
@@ -121,9 +163,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('currency')}
-              onValueChange={value => {
-                if (value) setValue('currency', value, { shouldDirty: true });
-              }}
+              onValueChange={handleCurrencyChange}
               disabled={isPending}
               items={currencies}>
               <SelectTrigger id={`${id}-currency`} className="w-full">
@@ -146,9 +186,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('timezone')}
-              onValueChange={value => {
-                if (value) setValue('timezone', value, { shouldDirty: true });
-              }}
+              onValueChange={handleTimezoneChange}
               disabled={isPending}
               items={timezones}>
               <SelectTrigger id={`${id}-timezone`} className="w-full">
@@ -171,10 +209,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('language')}
-              onValueChange={value => {
-                if (value)
-                  setValue('language', value as 'pl' | 'en' | 'ar' | 'de', { shouldDirty: true });
-              }}
+              onValueChange={handleLanguageChange}
               disabled={isPending}
               items={[
                 { value: 'pl', label: t('fields.languagePolish') },
@@ -201,9 +236,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('dateFormat')}
-              onValueChange={value => {
-                if (value) setValue('dateFormat', value as DateFormatKey, { shouldDirty: true });
-              }}
+              onValueChange={handleDateFormatChange}
               disabled={isPending}
               items={DATE_FORMATS.map(fmt => ({
                 value: fmt,
@@ -230,9 +263,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={watch('timeFormat')}
-              onValueChange={value => {
-                if (value) setValue('timeFormat', value as TimeFormatKey, { shouldDirty: true });
-              }}
+              onValueChange={handleTimeFormatChange}
               disabled={isPending}
               items={TIME_FORMATS.map(fmt => ({
                 value: fmt,
@@ -259,10 +290,7 @@ export function OrgSettingsForm({
             </Label>
             <Select
               value={String(watch('fiscalYearStartMonth'))}
-              onValueChange={value => {
-                if (!value) return;
-                setValue('fiscalYearStartMonth', Number.parseInt(value, 10), { shouldDirty: true });
-              }}
+              onValueChange={handleFiscalYearMonthChange}
               disabled={isPending}
               items={months.map(m => ({ value: String(m.value), label: m.label }))}>
               <SelectTrigger id={`${id}-fiscalYearStartMonth`} className="w-full">

@@ -28,6 +28,7 @@ import {
 import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
 import { Loader2, Unlink } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import type { useProviderDetailSheet } from './hooks/use-provider-detail-sheet.js';
@@ -149,6 +150,11 @@ export function ProviderDetailSheet({
     STATUS_BADGE_CLASSES[connectionStatus] ?? STATUS_BADGE_CLASSES.DISCONNECTED;
   const statusLabelKey = STATUS_LABEL_KEYS[connectionStatus] ?? 'statusDisconnected';
 
+  const handleOpenDisconnect = useCallback(
+    () => setDisconnectDialogOpen(true),
+    [setDisconnectDialogOpen],
+  );
+
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
@@ -175,7 +181,7 @@ export function ProviderDetailSheet({
                   variant="outline"
                   size="sm"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setDisconnectDialogOpen(true)}>
+                  onClick={handleOpenDisconnect}>
                   {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
               )}

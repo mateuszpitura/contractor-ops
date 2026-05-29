@@ -20,7 +20,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Bell, Loader2, Save } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId, useMemo } from 'react';
+import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import type { useReminderRuleEditor } from './hooks/use-reminder-rule-editor.js';
 import { REMINDER_ROLE_LABELS, REMINDER_ROLE_OPTIONS } from './hooks/use-reminder-rule-editor.js';
@@ -35,6 +36,87 @@ type ReminderRuleEditorShellProps = {
 
 export type ReminderRuleEditorProps = ReminderRuleEditorShellProps &
   ReturnType<typeof useReminderRuleEditor>;
+
+interface SelectItemOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+interface SelectControlFieldProps {
+  control: ReminderRuleEditorProps['form']['control'];
+  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
+  name: any;
+  items: readonly SelectItemOption[];
+  placeholder?: string;
+  allowNull?: boolean;
+}
+
+function SelectControlField({
+  control,
+  name,
+  items,
+  placeholder,
+  allowNull,
+}: SelectControlFieldProps) {
+  const renderSelect = useCallback(
+    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
+    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+      <Select
+        value={allowNull ? (field.value ?? undefined) : field.value}
+        onValueChange={field.onChange}
+        items={items}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {items.map(item => (
+            <SelectItem key={item.value} value={item.value} disabled={item.disabled}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    ),
+    [items, placeholder, allowNull],
+  );
+  return <Controller control={control} name={name} render={renderSelect} />;
+}
+
+interface SwitchControlFieldProps {
+  control: ReminderRuleEditorProps['form']['control'];
+  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
+  name: any;
+  id: string;
+}
+
+function SwitchControlField({ control, name, id }: SwitchControlFieldProps) {
+  const renderSwitch = useCallback(
+    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
+    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+      <Switch id={id} checked={field.value} onCheckedChange={field.onChange} />
+    ),
+    [id],
+  );
+  return <Controller control={control} name={name} render={renderSwitch} />;
+}
+
+interface UserPickerControlFieldProps {
+  control: ReminderRuleEditorProps['form']['control'];
+  // biome-ignore lint/suspicious/noExplicitAny: Controller name spans many union members; runtime safe through react-hook-form.
+  name: any;
+}
+
+function UserPickerControlField({ control, name }: UserPickerControlFieldProps) {
+  const renderUserPicker = useCallback(
+    // biome-ignore lint/suspicious/noExplicitAny: react-hook-form Controller render expects strict form-shape types; widened intentionally for reuse.
+    ({ field }: { field: ControllerRenderProps<any, any> }) => (
+      <ReminderRuleUserPickerContainer value={field.value} onChange={field.onChange} />
+    ),
+    [],
+  );
+  return <Controller control={control} name={name} render={renderUserPicker} />;
+}
 
 export function ReminderRuleEditor({
   open,
@@ -54,6 +136,25 @@ export function ReminderRuleEditor({
   onSubmit,
 }: ReminderRuleEditorProps) {
   const id = useId();
+
+  const channelItemsWithDisabled = useMemo(
+    () =>
+      channelItems.map(item => ({
+        ...item,
+        disabled: item.value === 'SLACK' && !isSlackConnected,
+      })),
+    [channelItems, isSlackConnected],
+  );
+  const roleItems = useMemo(
+    () =>
+      REMINDER_ROLE_OPTIONS.map(r => ({
+        value: r,
+        label: REMINDER_ROLE_LABELS[r] ?? r,
+      })),
+    [],
+  );
+
+  const handleClose = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,23 +189,11 @@ export function ReminderRuleEditor({
 
             <div className="space-y-2">
               <Label>{t('reminderRules.editor.triggerType')}</Label>
-              <Controller
+              <SelectControlField
                 control={form.control}
                 name="triggerType"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} items={triggerItems}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t('reminderRules.editor.triggerType')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {triggerItems.map(item => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                items={triggerItems}
+                placeholder={t('reminderRules.editor.triggerType')}
               />
               {!!form.formState.errors.triggerType && (
                 <p className="text-xs text-destructive">
@@ -140,48 +229,15 @@ export function ReminderRuleEditor({
 
             <div className="space-y-2">
               <Label>{t('reminderRules.editor.entityType')}</Label>
-              <Controller
-                control={form.control}
-                name="entityType"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} items={entityItems}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {entityItems.map(item => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+              <SelectControlField control={form.control} name="entityType" items={entityItems} />
             </div>
 
             <div className="space-y-2">
               <Label>{t('reminderRules.editor.channel')}</Label>
-              <Controller
+              <SelectControlField
                 control={form.control}
                 name="channel"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} items={channelItems}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {channelItems.map(item => (
-                        <SelectItem
-                          key={item.value}
-                          value={item.value}
-                          disabled={item.value === 'SLACK' && !isSlackConnected}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                items={channelItemsWithDisabled}
               />
               {!!form.formState.errors.channel && (
                 <p className="text-xs text-destructive">{form.formState.errors.channel.message}</p>
@@ -190,23 +246,10 @@ export function ReminderRuleEditor({
 
             <div className="space-y-2">
               <Label>{t('reminderRules.editor.recipientMode')}</Label>
-              <Controller
+              <SelectControlField
                 control={form.control}
                 name="recipientMode"
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange} items={recipientItems}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {recipientItems.map(item => (
-                        <SelectItem key={item.value} value={item.value}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                items={recipientItems}
               />
               {!!form.formState.errors.recipientMode && (
                 <p className="text-xs text-destructive">
@@ -217,70 +260,30 @@ export function ReminderRuleEditor({
 
             {watchedRecipientMode === 'SPECIFIC_USER' && (
               <div className="space-y-2">
-                <Controller
-                  control={form.control}
-                  name="configUserId"
-                  render={({ field }) => (
-                    <ReminderRuleUserPickerContainer
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  )}
-                />
+                <UserPickerControlField control={form.control} name="configUserId" />
               </div>
             )}
 
             {watchedRecipientMode === 'ROLE' && (
               <div className="space-y-2">
-                <Controller
+                <SelectControlField
                   control={form.control}
                   name="configRole"
-                  render={({ field }) => (
-                    <Select
-                      value={field.value ?? undefined}
-                      onValueChange={field.onChange}
-                      items={REMINDER_ROLE_OPTIONS.map(r => ({
-                        value: r,
-                        label: REMINDER_ROLE_LABELS[r] ?? r,
-                      }))}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('reminderRules.editor.rolePlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {REMINDER_ROLE_OPTIONS.map(role => (
-                          <SelectItem key={role} value={role}>
-                            {REMINDER_ROLE_LABELS[role] ?? role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                  items={roleItems}
+                  placeholder={t('reminderRules.editor.rolePlaceholder')}
+                  allowNull
                 />
               </div>
             )}
 
             <div className="flex items-center justify-between">
               <Label htmlFor={`${id}-rule-active`}>{t('reminderRules.editor.activeToggle')}</Label>
-              <Controller
-                control={form.control}
-                name="active"
-                render={({ field }) => (
-                  <Switch
-                    id={`${id}-rule-active`}
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
+              <SwitchControlField control={form.control} name="active" id={`${id}-rule-active`} />
             </div>
           </DialogBody>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={isPending}>
+            <Button type="button" variant="ghost" onClick={handleClose} disabled={isPending}>
               {t('reminderRules.editor.discard')}
             </Button>
             <Button type="submit" disabled={isPending}>

@@ -9,6 +9,8 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Loader2, Save } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import type { usePortalSubdomainSection } from './hooks/use-portal-subdomain-section.js';
 
 export type PortalSubdomainSectionProps = ReturnType<typeof usePortalSubdomainSection>;
@@ -25,6 +27,10 @@ export function PortalSubdomainSection({
   handleSaveSubdomain,
   isPending,
 }: PortalSubdomainSectionProps) {
+  const handleInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => handleSubdomainChange(e.target.value),
+    [handleSubdomainChange],
+  );
   return (
     <Card>
       <CardHeader>
@@ -41,7 +47,7 @@ export function PortalSubdomainSection({
         <div className="flex items-center gap-2">
           <Input
             value={portalSubdomain}
-            onChange={e => handleSubdomainChange(e.target.value)}
+            onChange={handleInputChange}
             placeholder={t('subdomainPlaceholder')}
             className="max-w-[200px]"
             aria-label={tAria('portalSubdomain')}

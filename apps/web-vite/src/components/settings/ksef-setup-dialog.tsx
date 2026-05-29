@@ -16,6 +16,8 @@ import {
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
 import { Loader2, ShieldCheck, Upload } from 'lucide-react';
+import type { ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import type { useKsefSetupDialog } from './hooks/use-ksef-setup-dialog.js';
 
 interface KsefSetupDialogBaseProps {
@@ -46,6 +48,22 @@ export function KsefSetupDialog({
   handleSave,
   isPending,
 }: KsefSetupDialogProps) {
+  const handleAuthMethodChange = useCallback(
+    (v: string) => setAuthMethod(v as 'token' | 'certificate'),
+    [setAuthMethod],
+  );
+  const handleTokenChange = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => setToken(e.target.value),
+    [setToken],
+  );
+  const handleCertificateFileChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setCertificateFile(e.target.files?.[0] ?? null),
+    [setCertificateFile],
+  );
+  const handleCertificatePasswordChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => setCertificatePassword(e.target.value),
+    [setCertificatePassword],
+  );
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -74,7 +92,7 @@ export function KsefSetupDialog({
             )}
           </div>
 
-          <Tabs value={authMethod} onValueChange={v => setAuthMethod(v as 'token' | 'certificate')}>
+          <Tabs value={authMethod} onValueChange={handleAuthMethodChange}>
             <TabsList>
               <TabsTrigger value="token" disabled={isFormDisabled}>
                 {t('tokenLabel')}
@@ -91,7 +109,7 @@ export function KsefSetupDialog({
                   id={`${id}-ksef-token`}
                   rows={4}
                   value={token}
-                  onChange={e => setToken(e.target.value)}
+                  onChange={handleTokenChange}
                   disabled={isFormDisabled}
                   placeholder={t('tokenPlaceholder')}
                   className="flex w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -120,7 +138,7 @@ export function KsefSetupDialog({
                       type="file"
                       accept=".p12,.pem"
                       disabled={isFormDisabled}
-                      onChange={e => setCertificateFile(e.target.files?.[0] ?? null)}
+                      onChange={handleCertificateFileChange}
                       className="sr-only"
                     />
                   </label>
@@ -134,7 +152,7 @@ export function KsefSetupDialog({
                     id={`${id}-ksef-cert-password`}
                     type="password"
                     value={certificatePassword}
-                    onChange={e => setCertificatePassword(e.target.value)}
+                    onChange={handleCertificatePasswordChange}
                     disabled={isFormDisabled}
                     placeholder={t('certificatePasswordPlaceholder')}
                   />

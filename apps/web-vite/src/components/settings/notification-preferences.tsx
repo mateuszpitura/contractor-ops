@@ -32,10 +32,15 @@ import {
   Save,
   UserCheck,
 } from 'lucide-react';
+import { useCallback } from 'react';
+import type { ControllerRenderProps } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { useTranslations } from '../../i18n/useTranslations.js';
-import type { useNotificationPreferences } from './hooks/use-notification-preferences.js';
+import type {
+  PreferenceFormValues,
+  useNotificationPreferences,
+} from './hooks/use-notification-preferences.js';
 import { NOTIFICATION_TYPES } from './hooks/use-notification-preferences.js';
 
 export type NotificationPreferencesProps = ReturnType<typeof useNotificationPreferences>;
@@ -151,6 +156,29 @@ export function NotificationPreferencesSkeleton() {
   );
 }
 
+type BooleanChannelFieldName =
+  | `preferences.${number}.channelEmail`
+  | `preferences.${number}.channelSlack`
+  | `preferences.${number}.channelTeams`;
+
+interface ChannelSwitchFieldProps {
+  control: NotificationPreferencesProps['form']['control'];
+  name: BooleanChannelFieldName;
+  ariaLabel: string;
+}
+
+function ChannelSwitchField({ control, name, ariaLabel }: ChannelSwitchFieldProps) {
+  const renderSwitch = useCallback(
+    ({
+      field,
+    }: {
+      field: ControllerRenderProps<PreferenceFormValues, BooleanChannelFieldName>;
+    }) => <Switch checked={field.value} onCheckedChange={field.onChange} aria-label={ariaLabel} />,
+    [ariaLabel],
+  );
+  return <Controller control={control} name={name} render={renderSwitch} />;
+}
+
 export function NotificationPreferences({
   t,
   form,
@@ -209,32 +237,20 @@ export function NotificationPreferences({
 
                     {/* Email */}
                     <TableCell className="text-center">
-                      <Controller
+                      <ChannelSwitchField
                         control={form.control}
                         name={`preferences.${index}.channelEmail`}
-                        render={({ field }) => (
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            aria-label={tAria('email')}
-                          />
-                        )}
+                        ariaLabel={tAria('email')}
                       />
                     </TableCell>
 
                     {/* Slack */}
                     <TableCell className="text-center">
                       {isSlackConnected ? (
-                        <Controller
+                        <ChannelSwitchField
                           control={form.control}
                           name={`preferences.${index}.channelSlack`}
-                          render={({ field }) => (
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              aria-label={tAria('slack')}
-                            />
-                          )}
+                          ariaLabel={tAria('slack')}
                         />
                       ) : (
                         <Tooltip>
@@ -249,16 +265,10 @@ export function NotificationPreferences({
                     {/* Teams */}
                     <TableCell className="text-center">
                       {isTeamsConnected ? (
-                        <Controller
+                        <ChannelSwitchField
                           control={form.control}
                           name={`preferences.${index}.channelTeams`}
-                          render={({ field }) => (
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              aria-label={tAria('teams')}
-                            />
-                          )}
+                          ariaLabel={tAria('teams')}
                         />
                       ) : (
                         <Tooltip>

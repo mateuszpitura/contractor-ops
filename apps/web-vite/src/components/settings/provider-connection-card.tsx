@@ -15,6 +15,7 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { addHours, formatDistanceToNow, isBefore } from 'date-fns';
 import { Loader2, Unlink } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useCallback } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import type { useProviderConnectionCard } from './hooks/use-provider-connection-card.js';
 import { ProviderDetailSheetContainer } from './provider-detail-sheet-container.js';
@@ -94,6 +95,12 @@ export function ProviderConnectionCard({
   handleDisconnectConfirm,
   isDisconnectPending,
 }: ProviderConnectionCardProps) {
+  const handleOpenDetailSheet = useCallback(() => setDetailSheetOpen(true), [setDetailSheetOpen]);
+  const handleOpenDisconnect = useCallback(
+    () => setDisconnectDialogOpen(true),
+    [setDisconnectDialogOpen],
+  );
+
   if (isLoading) {
     return (
       <Card>
@@ -161,13 +168,13 @@ export function ProviderConnectionCard({
                 )}
               </div>
               <div className="mt-auto flex gap-2 pt-3">
-                <Button variant="outline" onClick={() => setDetailSheetOpen(true)}>
+                <Button variant="outline" onClick={handleOpenDetailSheet}>
                   {t('provider.manageCta')}
                 </Button>
                 <Button
                   variant="outline"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => setDisconnectDialogOpen(true)}>
+                  onClick={handleOpenDisconnect}>
                   {t('provider.disconnectCta', { provider: displayName })}
                 </Button>
               </div>
@@ -190,7 +197,7 @@ export function ProviderConnectionCard({
                   <Button
                     variant="outline"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => setDisconnectDialogOpen(true)}>
+                    onClick={handleOpenDisconnect}>
                     {t('provider.disconnectCta', { provider: displayName })}
                   </Button>
                 )}
