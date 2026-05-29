@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Calculator, Loader2 } from 'lucide-react';
+import { useCallback } from 'react';
 
 import type { useReconciliationSpotCheck } from './hooks/use-reconciliation-spot-check.js';
 
@@ -58,9 +59,23 @@ export function ReconciliationSpotCheckView({
   handleRun,
   result,
   hasResult,
+  runCompleted,
   handleContractorChange,
   handleContractChange,
 }: ReturnType<typeof useReconciliationSpotCheck>) {
+  const handleInvoicedChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setInvoicedInput(e.target.value),
+    [setInvoicedInput],
+  );
+  const handlePeriodStartChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setPeriodStart(e.target.value),
+    [setPeriodStart],
+  );
+  const handlePeriodEndChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setPeriodEnd(e.target.value),
+    [setPeriodEnd],
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -68,6 +83,8 @@ export function ReconciliationSpotCheckView({
         <CardDescription>{t('description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
+        {runCompleted ? null : <p className="text-sm text-muted-foreground">{t('emptyState')}</p>}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="spotcheck-contractor">{t('contractorLabel')}</Label>
@@ -141,7 +158,7 @@ export function ReconciliationSpotCheckView({
               type="text"
               inputMode="decimal"
               value={invoicedInput}
-              onChange={e => setInvoicedInput(e.target.value)}
+              onChange={handleInvoicedChange}
               placeholder="0.00"
               autoComplete="off"
             />
@@ -154,7 +171,7 @@ export function ReconciliationSpotCheckView({
               id="spotcheck-from"
               type="date"
               value={periodStart}
-              onChange={e => setPeriodStart(e.target.value)}
+              onChange={handlePeriodStartChange}
               max={periodEnd || undefined}
             />
           </div>
@@ -165,7 +182,7 @@ export function ReconciliationSpotCheckView({
               id="spotcheck-to"
               type="date"
               value={periodEnd}
-              onChange={e => setPeriodEnd(e.target.value)}
+              onChange={handlePeriodEndChange}
               min={periodStart || undefined}
             />
           </div>
@@ -181,12 +198,6 @@ export function ReconciliationSpotCheckView({
             {t('runCta')}
           </Button>
         </div>
-
-        {!(hasResult || contractId) && (
-          <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
-            {t('emptyState')}
-          </div>
-        )}
 
         {hasResult && result === null && (
           <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">

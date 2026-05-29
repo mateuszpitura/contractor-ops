@@ -1,6 +1,5 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   PaymentsIllustration,
   SectionLabel,
   WORKBENCH_DATA_TABLE_CLASS,
@@ -10,10 +9,11 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { CreditCard, FileText, Plus, Users } from 'lucide-react';
 import { useCallback, useState } from 'react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { BankStatementDialogContainer } from './bank-statement-dialog-container.js';
 import { usePaymentsList } from './hooks/use-payments-list.js';
 import { NewPaymentRunDialogContainer } from './new-payment-run-dialog/index.js';
@@ -36,6 +36,10 @@ export function PaymentsContainer() {
   }, []);
 
   const list = usePaymentsList({ onOpenSidePanel: handleOpenSidePanel });
+  const controlsDisabled = isListControlsDisabled({
+    isLoading: list.isLoading,
+    isFetching: list.isFetching,
+  });
 
   const handleSidePanelOpenChange = useCallback((open: boolean) => {
     setSidePanelOpen(open);
@@ -47,14 +51,24 @@ export function PaymentsContainer() {
     setSidePanelOpen(true);
   }, []);
 
+  const handleOpenDialog = useCallback(() => setDialogOpen(true), []);
+
+  const handleBankStatementOpenChange = useCallback((open: boolean) => {
+    if (!open) setBankStatementRunId(null);
+  }, []);
+
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('title')}
           description={t('pageDescription')}
           actions={
-            <Button size="sm" className="gap-1.5" onClick={() => setDialogOpen(true)}>
+            <Button
+              size="sm"
+              className="gap-1.5"
+              disabled={controlsDisabled}
+              onClick={handleOpenDialog}>
               <Plus className="h-3.5 w-3.5" />
               {t('newPaymentRun')}
             </Button>
@@ -63,7 +77,7 @@ export function PaymentsContainer() {
       </AnimateIn>
 
       {list.showEmptyState ? (
-        <AnimateIn delay={1}>
+        <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
           <AtelierEmptyState
             illustration={PaymentsIllustration}
             heading={te('payments.heading')}
@@ -108,9 +122,7 @@ export function PaymentsContainer() {
         <BankStatementDialogContainer
           runId={bankStatementRunId}
           open={!!bankStatementRunId}
-          onOpenChange={open => {
-            if (!open) setBankStatementRunId(null);
-          }}
+          onOpenChange={handleBankStatementOpenChange}
         />
       )}
     </div>

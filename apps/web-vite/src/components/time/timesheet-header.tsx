@@ -6,6 +6,7 @@
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import {
   Popover,
   PopoverContent,
@@ -13,7 +14,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { addWeeks, endOfISOWeek, format, startOfISOWeek, subWeeks } from 'date-fns';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { TimeEntryStatusBadge } from './time-entry-status-badge.js';
@@ -45,25 +46,27 @@ export function TimesheetHeader({
 
   const canSubmit = totalMinutes > 0 && (status === 'DRAFT' || status === 'REJECTED');
 
-  const handlePrevWeek = () => {
+  const handlePrevWeek = useCallback(() => {
     onWeekChange(subWeeks(weekStartDate, 1));
-  };
+  }, [onWeekChange, weekStartDate]);
 
-  const handleNextWeek = () => {
+  const handleNextWeek = useCallback(() => {
     onWeekChange(addWeeks(weekStartDate, 1));
-  };
+  }, [onWeekChange, weekStartDate]);
 
-  const handleCalendarSelect = (date: Date | undefined) => {
-    if (date) {
-      onWeekChange(startOfISOWeek(date));
-      setCalendarOpen(false);
-    }
-  };
+  const handleCalendarSelect = useCallback(
+    (date: Date | undefined) => {
+      if (date) {
+        onWeekChange(startOfISOWeek(date));
+        setCalendarOpen(false);
+      }
+    },
+    [onWeekChange],
+  );
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button
           variant="ghost"
           size="icon"
@@ -73,7 +76,7 @@ export function TimesheetHeader({
         </Button>
 
         <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-          <PopoverTrigger render={<Button variant="outline" className="gap-2 font-normal" />}>
+          <PopoverTrigger render={formControlPopoverRender('gap-2')}>
             <CalendarDays className="h-4 w-4" />
             {weekLabel}
           </PopoverTrigger>
@@ -81,14 +84,12 @@ export function TimesheetHeader({
             <Calendar
               mode="single"
               selected={weekStartDate}
-              // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
               onSelect={handleCalendarSelect}
               defaultMonth={weekStartDate}
             />
           </PopoverContent>
         </Popover>
 
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button
           variant="ghost"
           size="icon"

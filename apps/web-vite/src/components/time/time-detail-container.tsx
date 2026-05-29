@@ -10,7 +10,7 @@ import { AtelierEmptyState, TimeTrackingIllustration } from '@contractor-ops/ui'
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { ArrowLeft } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
@@ -71,16 +71,16 @@ function ContractorReviewContent() {
     isRejecting,
   } = useTimeDetail(contractorId, week);
 
+  const handleRetry = useCallback(() => {
+    void listQuery.refetch();
+    if (timesheetId) void detailQuery.refetch();
+  }, [listQuery, detailQuery, timesheetId]);
+
   if (listQuery.isError || detailQuery.isError) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3 text-center">
         <h2 className="text-lg font-medium">{tCommon('networkError')}</h2>
-        <Button
-          variant="outline"
-          onClick={() => {
-            void listQuery.refetch();
-            if (timesheetId) void detailQuery.refetch();
-          }}>
+        <Button variant="outline" onClick={handleRetry}>
           {tProfile('error.retry')}
         </Button>
       </div>

@@ -9,12 +9,14 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+import { formControlPopoverRender } from '@contractor-ops/ui/components/shadcn/form-control-trigger';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
@@ -32,7 +34,7 @@ import {
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { format } from 'date-fns';
 import { CalendarDays } from 'lucide-react';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { cn } from '../../lib/utils.js';
@@ -71,15 +73,15 @@ export function SingleEntryForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setDate(new Date());
     setContractId('');
     setHours('');
     setDescription('');
     setErrors({});
-  };
+  }, []);
 
-  const validate = (): boolean => {
+  const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!date) {
@@ -98,9 +100,9 @@ export function SingleEntryForm({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [date, contractId, hours, description, t]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!validate()) return;
 
     const hoursVal = parseFloat(hours);
@@ -114,12 +116,29 @@ export function SingleEntryForm({
     });
 
     resetForm();
-  };
+  }, [validate, hours, onSubmit, contractId, date, description, resetForm]);
 
-  const handleDiscard = () => {
+  const handleDiscard = useCallback(() => {
     resetForm();
     onOpenChange(false);
-  };
+  }, [resetForm, onOpenChange]);
+
+  const handleCalendarSelect = useCallback((d: Date | undefined) => {
+    setDate(d);
+    setCalendarOpen(false);
+  }, []);
+
+  const handleContractChange = useCallback((value: string | null) => {
+    if (value) setContractId(value);
+  }, []);
+
+  const handleHoursChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setHours(e.target.value);
+  }, []);
+
+  const handleDescriptionChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(e.target.value);
+  }, []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,21 +148,13 @@ export function SingleEntryForm({
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor={`${id}-entry-date`}>{t('dateLabel')}</Label>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger
-                render={
-                  <Button
-                    id={`${id}-entry-date`}
-                    variant="outline"
-                    className={cn(
-                      'w-full justify-start font-normal',
-                      !date && 'text-muted-foreground',
-                    )}
-                  />
-                }>
+                id={`${id}-entry-date`}
+                render={formControlPopoverRender(date ? undefined : 'text-muted-foreground')}>
                 <CalendarDays className="me-2 h-4 w-4" />
                 {date ? format(date, 'MMM d, yyyy') : t('datePlaceholder')}
               </PopoverTrigger>
@@ -151,11 +162,7 @@ export function SingleEntryForm({
                 <Calendar
                   mode="single"
                   selected={date}
-                  // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                  onSelect={d => {
-                    setDate(d);
-                    setCalendarOpen(false);
-                  }}
+                  onSelect={handleCalendarSelect}
                   defaultMonth={date}
                 />
               </PopoverContent>
@@ -165,11 +172,7 @@ export function SingleEntryForm({
 
           <div className="space-y-2">
             <Label htmlFor={`${id}-entry-project`}>{t('projectLabel')}</Label>
-            <Select
-              value={contractId}
-              onValueChange={value => {
-                if (value) setContractId(value);
-              }}>
+            <Select value={contractId} onValueChange={handleContractChange}>
               <SelectTrigger id={`${id}-entry-project`}>
                 <SelectValue placeholder={t('projectPlaceholder')} />
               </SelectTrigger>
@@ -194,8 +197,7 @@ export function SingleEntryForm({
               max="24"
               placeholder={t('hoursPlaceholder')}
               value={hours}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setHours(e.target.value)}
+              onChange={handleHoursChange}
               className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
             {!!errors.hours && <p className="text-sm text-destructive">{errors.hours}</p>}
@@ -212,8 +214,7 @@ export function SingleEntryForm({
               maxLength={500}
               placeholder={t('descriptionPlaceholder')}
               value={description}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
             />
             {!!errors.description && (
               <p className="text-sm text-destructive">{errors.description}</p>
@@ -222,14 +223,12 @@ export function SingleEntryForm({
               <p className="text-xs text-muted-foreground text-end">{description.length}/500</p>
             )}
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button variant="outline" onClick={handleDiscard}>
             {t('discardCta')}
           </Button>
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
           <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? t('addingCta') : t('addCta')}
           </Button>

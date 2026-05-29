@@ -41,13 +41,15 @@ function makeFooter(overrides: Partial<Parameters<typeof StepSelect>[0]['footer'
   };
 }
 
+const formatDateRange = (d: Date, t?: Date) => `${String(d)}-${t ? String(t) : ''}`;
+
 describe('StepSelect shell', () => {
   it('renders the contractor search input', () => {
     render(
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter()}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={null}>
         <div>middle</div>
       </StepSelect>,
@@ -61,7 +63,7 @@ describe('StepSelect shell', () => {
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter({ onCancel })}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={null}>
         <div />
       </StepSelect>,
@@ -75,7 +77,7 @@ describe('StepSelect shell', () => {
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter()}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={null}>
         <div />
       </StepSelect>,
@@ -88,7 +90,7 @@ describe('StepSelect shell', () => {
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter({ selectedInvoiceIds: ['inv-1'] })}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={null}>
         <div />
       </StepSelect>,
@@ -102,7 +104,7 @@ describe('StepSelect shell', () => {
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter({ selectedInvoiceIds: ['inv-1'], onNext })}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={null}>
         <div />
       </StepSelect>,
@@ -117,7 +119,7 @@ describe('StepSelect shell', () => {
       <StepSelect
         filters={makeFilters()}
         footer={makeFooter()}
-        formatDateRange={(d, t) => `${d}-${t ?? ''}`}
+        formatDateRange={formatDateRange}
         selectAllMatching={{ count: 4, onClick }}>
         <div />
       </StepSelect>,

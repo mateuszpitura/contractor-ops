@@ -14,7 +14,7 @@ import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { SimpleDataTable } from '../shared/simple-data-table.js';
@@ -65,6 +65,85 @@ function toDateStr(d: string | Date): string {
   if (typeof d === 'string') return d.split('T')[0] ?? d;
   return format(d, 'yyyy-MM-dd');
 }
+
+interface SelectCellProps {
+  id: string;
+  checked: boolean;
+  label: string;
+  onToggle: (id: string) => void;
+}
+
+const SelectCell = memo(function SelectCell({ id, checked, label, onToggle }: SelectCellProps) {
+  const handleChange = useCallback(() => onToggle(id), [id, onToggle]);
+  return <Checkbox checked={checked} onCheckedChange={handleChange} aria-label={label} />;
+});
+
+interface ContractorCellProps {
+  contractorId: string;
+  weekStartDate: string;
+  name: string;
+  onNavigate: (contractorId: string, weekStartDate: string) => void;
+}
+
+const ContractorCell = memo(function ContractorCell({
+  contractorId,
+  weekStartDate,
+  name,
+  onNavigate,
+}: ContractorCellProps) {
+  const handleClick = useCallback(
+    () => onNavigate(contractorId, weekStartDate),
+    [contractorId, weekStartDate, onNavigate],
+  );
+  return (
+    <button
+      type="button"
+      className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+      onClick={handleClick}>
+      {name}
+    </button>
+  );
+});
+
+interface RowActionsProps {
+  id: string;
+  approveLabel: string;
+  rejectLabel: string;
+  isApproving: boolean;
+  isRejecting: boolean;
+  onApprove: (id: string) => void;
+  onSelectReject: (id: string) => void;
+}
+
+const RowActions = memo(function RowActions({
+  id,
+  approveLabel,
+  rejectLabel,
+  isApproving,
+  isRejecting,
+  onApprove,
+  onSelectReject,
+}: RowActionsProps) {
+  const handleApprove = useCallback(() => onApprove(id), [id, onApprove]);
+  const handleReject = useCallback(() => onSelectReject(id), [id, onSelectReject]);
+  return (
+    <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
+      <Button size="sm" variant="default" disabled={isApproving} onClick={handleApprove}>
+        <CheckCircle className="me-1.5 h-3.5 w-3.5" />
+        {approveLabel}
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        className="text-destructive hover:bg-destructive/10"
+        disabled={isRejecting}
+        onClick={handleReject}>
+        <XCircle className="me-1.5 h-3.5 w-3.5" />
+        {rejectLabel}
+      </Button>
+    </div>
+  );
+});
 
 export function ApprovalQueueTable({
   timesheets,
@@ -137,6 +216,19 @@ export function ApprovalQueueTable({
 
   const selectedArray = useMemo(() => Array.from(selectedIds), [selectedIds]);
 
+  const rowClassName = useCallback(
+    (row: TimesheetRow) => `group ${selectedIds.has(row.id) ? 'bg-muted/50' : ''}`,
+    [selectedIds],
+  );
+
+  const handleClearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const handleOpenBulkReject = useCallback(() => setBulkRejectOpen(true), []);
+  const handleOpenBulkApprove = useCallback(() => setBulkApproveOpen(true), []);
+
+  const handleRejectionDialogOpenChange = useCallback((open: boolean) => {
+    if (!open) setRejectingId(null);
+  }, []);
+
   const columns = useMemo<ColumnDef<TimesheetRow, unknown>[]>(
     () => [
       {
@@ -150,11 +242,11 @@ export function ApprovalQueueTable({
         ),
         enableSorting: false,
         cell: ({ row }) => (
-          <Checkbox
+          <SelectCell
+            id={row.original.id}
             checked={selectedIds.has(row.original.id)}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onCheckedChange={() => toggleRow(row.original.id)}
-            aria-label={`Select timesheet for ${row.original.contractor.legalName}`}
+            label={`Select timesheet for ${row.original.contractor.legalName}`}
+            onToggle={toggleRow}
           />
         ),
         size: 48,
@@ -164,15 +256,12 @@ export function ApprovalQueueTable({
         accessorFn: row => row.contractor.legalName,
         header: t('columns.contractor'),
         cell: ({ row }) => (
-          <button
-            type="button"
-            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() =>
-              onNavigateToReview(row.original.contractor.id, toDateStr(row.original.weekStartDate))
-            }>
-            {row.original.contractor.legalName}
-          </button>
+          <ContractorCell
+            contractorId={row.original.contractor.id}
+            weekStartDate={toDateStr(row.original.weekStartDate)}
+            name={row.original.contractor.legalName}
+            onNavigate={onNavigateToReview}
+          />
         ),
       },
       {
@@ -216,27 +305,15 @@ export function ApprovalQueueTable({
         header: () => <span className="block text-end">{t('columns.actions')}</span>,
         enableSorting: false,
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100 sm:opacity-100">
-            <Button
-              size="sm"
-              variant="default"
-              disabled={isApproving}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onApprove(row.original.id)}>
-              <CheckCircle className="me-1.5 h-3.5 w-3.5" />
-              {t('approvalQueue.approve')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-destructive hover:bg-destructive/10"
-              disabled={isRejecting}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => setRejectingId(row.original.id)}>
-              <XCircle className="me-1.5 h-3.5 w-3.5" />
-              {t('approvalQueue.reject')}
-            </Button>
-          </div>
+          <RowActions
+            id={row.original.id}
+            approveLabel={t('approvalQueue.approve')}
+            rejectLabel={t('approvalQueue.reject')}
+            isApproving={isApproving}
+            isRejecting={isRejecting}
+            onApprove={onApprove}
+            onSelectReject={setRejectingId}
+          />
         ),
       },
     ],
@@ -267,8 +344,7 @@ export function ApprovalQueueTable({
             variant="outline"
             size="sm"
             className="ms-auto h-8 gap-1.5"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setSelectedIds(new Set())}>
+            onClick={handleClearSelection}>
             {t('approvalQueue.clear')}
           </Button>
           <Button
@@ -276,8 +352,7 @@ export function ApprovalQueueTable({
             size="sm"
             className="h-8 gap-1.5 text-destructive hover:text-destructive"
             disabled={isBulkRejecting}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setBulkRejectOpen(true)}>
+            onClick={handleOpenBulkReject}>
             <XCircle className={iconSize.sm} />
             {t('approvalQueue.rejectAll')}
           </Button>
@@ -286,8 +361,7 @@ export function ApprovalQueueTable({
             size="sm"
             className="h-8 gap-1.5"
             disabled={isBulkApproving}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => setBulkApproveOpen(true)}>
+            onClick={handleOpenBulkApprove}>
             <CheckCircle className={iconSize.sm} />
             {t('approvalQueue.approveAll')}
           </Button>
@@ -303,15 +377,12 @@ export function ApprovalQueueTable({
         emptyDescription={t('approvalQueue.empty.body')}
         noResultsTitle={t('approvalQueue.empty.heading')}
         noResultsDescription={t('approvalQueue.empty.body')}
-        rowClassName={row => `group ${selectedIds.has(row.id) ? 'bg-muted/50' : ''}`}
+        rowClassName={rowClassName}
       />
 
       <RejectionReasonDialog
         open={rejectingId !== null}
-        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-        onOpenChange={open => {
-          if (!open) setRejectingId(null);
-        }}
+        onOpenChange={handleRejectionDialogOpenChange}
         onConfirm={handleSingleReject}
         isSubmitting={isSubmitting}
       />

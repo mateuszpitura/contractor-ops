@@ -15,7 +15,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useId, useState } from 'react';
+import { useCallback, useId, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 
@@ -46,7 +46,7 @@ export function RejectionReasonDialog({
     ? t('rejectionDialog.bulkDescription')
     : t('rejectionDialog.description');
 
-  function handleSubmit() {
+  const handleSubmit = useCallback(() => {
     const trimmed = reason.trim();
     if (trimmed.length < 10) {
       setError(t('rejectionDialog.minLengthError'));
@@ -54,15 +54,28 @@ export function RejectionReasonDialog({
     }
     setError(null);
     onConfirm(trimmed);
-  }
+  }, [reason, t, onConfirm]);
 
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) {
-      setReason('');
-      setError(null);
-    }
-    onOpenChange(nextOpen);
-  }
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen) {
+        setReason('');
+        setError(null);
+      }
+      onOpenChange(nextOpen);
+    },
+    [onOpenChange],
+  );
+
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setReason(e.target.value);
+      if (error) setError(null);
+    },
+    [error],
+  );
+
+  const handleCancelClick = useCallback(() => handleOpenChange(false), [handleOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -77,11 +90,7 @@ export function RejectionReasonDialog({
           <Textarea
             id={`${id}-rejection-reason`}
             value={reason}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => {
-              setReason(e.target.value);
-              if (error) setError(null);
-            }}
+            onChange={handleReasonChange}
             placeholder={t('rejectionDialog.reasonPlaceholder')}
             maxLength={500}
             rows={4}
@@ -94,13 +103,11 @@ export function RejectionReasonDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
+          <Button variant="outline" onClick={handleCancelClick} disabled={isSubmitting}>
             {t('rejectionDialog.keepReviewing')}
           </Button>
           <Button
             variant="destructive"
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
             onClick={handleSubmit}
             disabled={isSubmitting || reason.trim().length < 10}>
             {isSubmitting ? t('rejectionDialog.rejecting') : t('rejectionDialog.rejectButton')}

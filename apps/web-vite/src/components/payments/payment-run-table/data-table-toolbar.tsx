@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { CalendarIcon, X } from 'lucide-react';
-import { useCallback, useId, useMemo } from 'react';
+import { memo, useCallback, useId, useMemo } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -21,6 +21,60 @@ const STATUS_OPTIONS = [
   { value: 'COMPLETED', labelKey: 'filters.completed' },
   { value: 'CANCELLED', labelKey: 'filters.cancelled' },
 ] as const;
+
+interface StatusFilterOptionProps {
+  value: string;
+  inputId: string;
+  label: string;
+  checked: boolean;
+  onToggle: (value: string) => void;
+}
+
+const StatusFilterOption = memo(function StatusFilterOption({
+  value,
+  inputId,
+  label,
+  checked,
+  onToggle,
+}: StatusFilterOptionProps) {
+  const handleChange = useCallback(() => onToggle(value), [value, onToggle]);
+  return (
+    <label
+      htmlFor={inputId}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={inputId} checked={checked} onCheckedChange={handleChange} />
+      <span>{label}</span>
+    </label>
+  );
+});
+
+interface FilterChipProps {
+  value: string;
+  label: string;
+  ariaLabel: string;
+  onRemove: (value: string) => void;
+}
+
+const FilterChip = memo(function FilterChip({
+  value,
+  label,
+  ariaLabel,
+  onRemove,
+}: FilterChipProps) {
+  const handleClick = useCallback(() => onRemove(value), [value, onRemove]);
+  return (
+    <Badge variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
+      <span className="text-xs">{label}</span>
+      <button
+        type="button"
+        className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
+        onClick={handleClick}
+        aria-label={ariaLabel}>
+        <X className="h-3 w-3" />
+      </button>
+    </Badge>
+  );
+});
 
 interface DataTableToolbarProps {
   activeStatuses: string[];
@@ -92,63 +146,67 @@ export function DataTableToolbar({
     return t('filters.dateRange');
   }, [dateFrom, dateTo, formatDate, t]);
 
-  const toggleFilter = (value: string) => {
-    if (activeStatuses.includes(value)) {
+  const toggleFilter = useCallback(
+    (value: string) => {
+      if (activeStatuses.includes(value)) {
+        onStatusChange(activeStatuses.filter(s => s !== value));
+      } else {
+        onStatusChange([...activeStatuses, value]);
+      }
+    },
+    [activeStatuses, onStatusChange],
+  );
+
+  const removeFilter = useCallback(
+    (value: string) => {
       onStatusChange(activeStatuses.filter(s => s !== value));
-    } else {
-      onStatusChange([...activeStatuses, value]);
-    }
-  };
+    },
+    [activeStatuses, onStatusChange],
+  );
 
-  const removeFilter = (value: string) => {
-    onStatusChange(activeStatuses.filter(s => s !== value));
-  };
-
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     onStatusChange([]);
-  };
+  }, [onStatusChange]);
+
+  const handleClearDates = useCallback(() => {
+    onDateFromChange(undefined);
+    onDateToChange(undefined);
+  }, [onDateFromChange, onDateToChange]);
 
   const activeFilterCount = activeStatuses.length;
+
+  const renderStatusTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLButtonElement>) => (
+      <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5" disabled={isLoading}>
+        {t('filters.status')}
+        {activeFilterCount > 0 && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {activeFilterCount}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [isLoading, t, activeFilterCount],
+  );
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Popover>
-          <PopoverTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <Button
-                {...props}
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5"
-                disabled={isLoading}>
-                {t('filters.status')}
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </Button>
-            )}
-          />
+          <PopoverTrigger render={renderStatusTrigger} />
           <PopoverContent className="w-52 p-0" align="start">
             <div className="p-4 space-y-2">
               <h4 className="text-[13px] font-medium text-foreground">{t('filters.status')}</h4>
               <div className="space-y-1">
                 {STATUS_OPTIONS.map(option => (
-                  <label
+                  <StatusFilterOption
                     key={option.value}
-                    htmlFor={`${reactId}-filter-${option.value}`}
-                    className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-                    <Checkbox
-                      id={`${reactId}-filter-${option.value}`}
-                      checked={activeStatuses.includes(option.value)}
-                      // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                      onCheckedChange={() => toggleFilter(option.value)}
-                    />
-                    <span>{t(option.labelKey)}</span>
-                  </label>
+                    value={option.value}
+                    inputId={`${reactId}-filter-${option.value}`}
+                    label={t(option.labelKey)}
+                    checked={activeStatuses.includes(option.value)}
+                    onToggle={toggleFilter}
+                  />
                 ))}
               </div>
             </div>
@@ -179,11 +237,7 @@ export function DataTableToolbar({
                   variant="ghost"
                   size="sm"
                   className="h-7 text-xs"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => {
-                    onDateFromChange(undefined);
-                    onDateToChange(undefined);
-                  }}>
+                  onClick={handleClearDates}>
                   {t('filters.clearDates')}
                 </Button>
               </div>
@@ -196,21 +250,18 @@ export function DataTableToolbar({
 
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          {activeStatuses.map(s => (
-            <Badge key={s} variant="secondary" className="gap-1 ps-2 pe-1 py-0.5">
-              <span className="text-xs">{tDynLoose(t, 'filters', s.toLowerCase())}</span>
-              <button
-                type="button"
-                className="ms-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => removeFilter(s)}
-                aria-label={tAria('removeFilter', {
-                  label: tDynLoose(t, 'filters', s.toLowerCase()),
-                })}>
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          ))}
+          {activeStatuses.map(s => {
+            const label = tDynLoose(t, 'filters', s.toLowerCase());
+            return (
+              <FilterChip
+                key={s}
+                value={s}
+                label={label}
+                ariaLabel={tAria('removeFilter', { label })}
+                onRemove={removeFilter}
+              />
+            );
+          })}
           <button
             type="button"
             className="ms-1 text-xs text-muted-foreground hover:text-foreground underline"

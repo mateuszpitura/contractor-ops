@@ -30,6 +30,8 @@ const t = (key: string, vars?: Record<string, unknown>) => {
   return `${key}:${JSON.stringify(vars)}`;
 };
 
+const formatDate = (v: Date | string) => String(v ?? '');
+
 const baseItems = [
   {
     id: 'item-1',
@@ -101,7 +103,6 @@ function renderPanel(
   const panel = makePanel(panelOverrides);
   const onOpenChange = vi.fn();
   const onImportStatement = vi.fn();
-  const formatDate = (v: Date | string) => String(v ?? '');
   const result = render(
     <PaymentRunSidePanel
       open
@@ -202,7 +203,7 @@ describe('PaymentRunSidePanel', () => {
         showBacsPreview={false}
         t={t}
         locale="en"
-        formatDate={(v: Date | string) => String(v ?? '')}
+        formatDate={formatDate}
         skontoEnabled={false}
       />,
     );
@@ -225,7 +226,7 @@ describe('PaymentRunSidePanel', () => {
         showBacsPreview={false}
         t={t}
         locale="en"
-        formatDate={(v: Date | string) => String(v ?? '')}
+        formatDate={formatDate}
         skontoEnabled={false}
       />,
     );
@@ -249,7 +250,7 @@ describe('PaymentRunSidePanel', () => {
         showBacsPreview={false}
         t={t}
         locale="en"
-        formatDate={(v: Date | string) => String(v ?? '')}
+        formatDate={formatDate}
         skontoEnabled={false}
       />,
     );
