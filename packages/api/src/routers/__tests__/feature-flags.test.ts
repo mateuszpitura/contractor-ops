@@ -316,7 +316,7 @@ describe('featureFlags.list', () => {
 
     await expect(orgAdminCaller.featureFlags.list()).rejects.toMatchObject({
       code: 'FORBIDDEN',
-      message: 'PLATFORM_ADMIN_REQUIRED',
+      message: 'platformAdminRequired',
     });
   });
 });

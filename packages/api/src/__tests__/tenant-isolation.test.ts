@@ -829,7 +829,7 @@ describe('Approval flow isolation', () => {
       page: 1,
       pageSize: 25,
       tab: 'all',
-      status: 'pending',
+      status: 'PENDING',
     });
     const ids = result.items.map((s: { id: string }) => s.id);
     expect(ids).toContain(APPROVAL_STEP_A_ID);
@@ -862,7 +862,7 @@ describe('Approval flow isolation', () => {
       page: 1,
       pageSize: 10,
       tab: 'all',
-      status: 'all',
+      status: 'ALL',
     });
     const call = mockPrisma.approvalStep.findMany.mock.calls[0]?.[0];
     expect(call?.where).toHaveProperty('organizationId', ORG_B_ID);

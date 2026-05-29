@@ -282,9 +282,7 @@ describe('requireFeatureFlag', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(TRPCError);
       expect((e as TRPCError).code).toBe('INTERNAL_SERVER_ERROR');
-      expect((e as TRPCError).message).toContain(
-        'requireFeatureFlag used on a procedure without ctx.flags',
-      );
+      expect((e as TRPCError).message).toBe('featureFlagUnavailable');
     }
   });
 });
