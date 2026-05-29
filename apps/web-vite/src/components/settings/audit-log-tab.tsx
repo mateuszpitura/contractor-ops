@@ -61,11 +61,13 @@ export function AuditLogTab({
   auditSort,
   dateRangeValue,
   currentPage,
+  currentPageSize,
   items,
   totalCount,
   expandedRows,
   handleToggleRow,
   handlePageChange,
+  handlePageSizeChange,
   handleSortOrderChange,
   handleExport,
   exportMutation,
@@ -401,8 +403,9 @@ export function AuditLogTab({
           data={items}
           totalCount={totalCount}
           page={currentPage}
-          pageSize={AUDIT_LOG_PAGE_SIZE}
+          pageSize={currentPageSize}
           onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
           sortOrder={(auditSort as 'asc' | 'desc') || 'desc'}
           onSortOrderChange={handleSortOrderChange}
           expandedRows={expandedRows}

@@ -19,6 +19,7 @@ export function useSpendTeamReport(dateFrom: string, dateTo: string) {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [sortBy, setSortBy] = useState('totalSpend');
   const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownTeamId, setDrillDownTeamId] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export function useSpendTeamReport(dateFrom: string, dateTo: string) {
       dateFrom,
       dateTo,
       page,
-      pageSize: 20,
+      pageSize,
       sortBy: sortBy as 'totalSpend' | 'invoiceCount' | 'teamName',
       sortOrder: sortOrder as 'asc' | 'desc',
     }),
@@ -107,9 +108,16 @@ export function useSpendTeamReport(dateFrom: string, dateTo: string) {
     exportMutation.mutate({ dateFrom, dateTo });
   }, [exportMutation, dateFrom, dateTo]);
 
+  const handlePageSizeChange = useCallback((next: number) => {
+    setPageSize(next);
+    setPage(1);
+  }, []);
+
   return {
     page,
     setPage,
+    pageSize,
+    handlePageSizeChange,
     sortBy,
     sortOrder,
     drillDownTeamId,

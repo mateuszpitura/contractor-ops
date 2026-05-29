@@ -59,6 +59,7 @@ interface AuditLogTableProps {
   page: number;
   pageSize: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange?: (size: number) => void;
   sortOrder: 'asc' | 'desc';
   onSortOrderChange: (order: 'asc' | 'desc') => void;
   expandedRows: Record<string, boolean>;
@@ -100,6 +101,7 @@ export function AuditLogTable({
   page,
   pageSize,
   onPageChange,
+  onPageSizeChange,
   sortOrder,
   onSortOrderChange,
   expandedRows,
@@ -254,6 +256,7 @@ export function AuditLogTable({
         pageSize={pageSize}
         currentPage={page}
         onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
       />
     ) : null;
 

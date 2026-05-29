@@ -10,6 +10,7 @@ import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { AuditLogEntry } from '../audit-log-table.js';
 
 export const AUDIT_LOG_PAGE_SIZE = 25;
+const AUDIT_LOG_PAGE_SIZE_OPTIONS = [10, 25, 50];
 const DEBOUNCE_MS = 300;
 
 /** Format a local Date to `YYYY-MM-DD` without UTC shift. */
@@ -47,6 +48,10 @@ export function useAuditLogTab() {
   const [dateFrom, setDateFrom] = useQueryState('dateFrom', parseAsString.withDefault(''));
   const [dateTo, setDateTo] = useQueryState('dateTo', parseAsString.withDefault(''));
   const [auditPage, setAuditPage] = useQueryState('auditPage', parseAsString.withDefault('1'));
+  const [auditPageSize, setAuditPageSize] = useQueryState(
+    'auditPageSize',
+    parseAsString.withDefault(String(AUDIT_LOG_PAGE_SIZE)),
+  );
   const [auditSort, setAuditSort] = useQueryState('auditSort', parseAsString.withDefault('desc'));
 
   const dateRangeValue = useMemo<DateRange | undefined>(() => {
@@ -73,13 +78,17 @@ export function useAuditLogTab() {
   }, [search]);
 
   const currentPage = Math.max(1, parseInt(auditPage, 10) || 1);
+  const parsedPageSize = parseInt(auditPageSize, 10);
+  const currentPageSize = AUDIT_LOG_PAGE_SIZE_OPTIONS.includes(parsedPageSize)
+    ? parsedPageSize
+    : AUDIT_LOG_PAGE_SIZE;
   const apiAction = actions.length === 1 ? actions[0] : undefined;
   const apiResourceType = resourceTypes.length === 1 ? resourceTypes[0] : undefined;
 
   const queryInput = useMemo(
     () => ({
       page: currentPage,
-      pageSize: AUDIT_LOG_PAGE_SIZE,
+      pageSize: currentPageSize,
       search: search || undefined,
       actorId: actorId || undefined,
       action: apiAction,
@@ -88,7 +97,17 @@ export function useAuditLogTab() {
       dateTo: dateTo || undefined,
       sortOrder: (auditSort as 'asc' | 'desc') || 'desc',
     }),
-    [currentPage, search, actorId, apiAction, apiResourceType, dateFrom, dateTo, auditSort],
+    [
+      currentPage,
+      currentPageSize,
+      search,
+      actorId,
+      apiAction,
+      apiResourceType,
+      dateFrom,
+      dateTo,
+      auditSort,
+    ],
   );
 
   const listQuery = useQuery({
@@ -124,6 +143,14 @@ export function useAuditLogTab() {
       void setAuditPage(String(page));
     },
     [setAuditPage],
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      void setAuditPageSize(String(size));
+      void setAuditPage('1');
+    },
+    [setAuditPageSize, setAuditPage],
   );
 
   const handleSortOrderChange = useCallback(
@@ -332,11 +359,13 @@ export function useAuditLogTab() {
     auditSort,
     dateRangeValue,
     currentPage,
+    currentPageSize,
     items,
     totalCount,
     expandedRows,
     handleToggleRow,
     handlePageChange,
+    handlePageSizeChange,
     handleSortOrderChange,
     handleExport,
     exportMutation,

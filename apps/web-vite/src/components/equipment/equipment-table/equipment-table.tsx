@@ -50,6 +50,7 @@ export function EquipmentTableView({
   onSearchChange,
   onFiltersChange,
   onPageChange,
+  onPageSizeChange,
   onSortChange,
   onClearFilters,
   isLoading,
@@ -136,6 +137,7 @@ export function EquipmentTableView({
               pageSize={pageSize}
               currentPage={page}
               onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
             />
           ) : undefined
         }>
