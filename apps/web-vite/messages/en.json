@@ -275,6 +275,11 @@
       "heading": "No pending approvals",
       "body": "All caught up! New invoices will appear here when they need your review."
     },
+    "noResults": {
+      "heading": "No approvals match your filters",
+      "body": "Try clearing some filters or adjusting your search.",
+      "cta": "Clear filters"
+    },
     "pagination": {
       "rowsPerPage": "Rows per page",
       "pageOf": "Page {current} of {total}",

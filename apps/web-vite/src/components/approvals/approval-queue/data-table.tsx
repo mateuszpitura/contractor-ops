@@ -1,19 +1,13 @@
 import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { DataTableBody } from '../../shared/data-table-body.js';
+import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { ApprovalQueueRow } from './columns.js';
 
 interface ApprovalQueueTableProps {
@@ -86,6 +80,7 @@ export function ApprovalQueueTable({
   });
 
   const totalPages = pageCount;
+  const resolvedTotal = totalCount ?? data.length;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -93,8 +88,8 @@ export function ApprovalQueueTable({
         isLoading={isLoading}
         chrome={
           <TableChrome
-            totalCount={totalCount ?? data.length}
-            entityLabel={t('entityLabel', { count: totalCount ?? data.length })}
+            totalCount={resolvedTotal}
+            entityLabel={t('entityLabel', { count: resolvedTotal })}
             hasActiveFilters={hasActiveFilters}
             clearFiltersLabel={t('clearFiltersChip', { count: activeFilterCount })}
             onClearFilters={onClearFilters}
@@ -106,7 +101,7 @@ export function ApprovalQueueTable({
         }
         footer={
           !isLoading && totalPages > 0 ? (
-            <div className="flex items-center justify-between px-2 py-4">
+            <div className="flex flex-wrap items-center justify-end gap-4 px-2 py-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
                 <select
@@ -151,55 +146,24 @@ export function ApprovalQueueTable({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead
-                    key={header.id}
-                    className="whitespace-nowrap text-[12px]"
-                    style={
-                      header.column.getSize() === 150
-                        ? undefined
-                        : { width: header.column.getSize() }
-                    }>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
+                  <SortableTableHead key={header.id} header={header} />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading
-              ? Array.from({ length: 8 }).map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                  <TableRow key={`skeleton-${i}`}>
-                    {columns.map((_, colIdx) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                      <TableCell key={colIdx}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : table.getRowModel().rows.length > 0
-                ? table.getRowModel().rows.map(row => {
-                    const overdue = isOverdue(row.original);
-                    return (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() ? 'selected' : undefined}
-                        className={`group cursor-pointer ${overdue ? 'bg-destructive/5' : ''}`}
-                        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                        onClick={() => onRowClick(row.original)}>
-                        {row.getVisibleCells().map(cell => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    );
-                  })
-                : null}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading ?? false}
+            hasFiltersOrSearch={Boolean(hasActiveFilters)}
+            onRowClick={onRowClick}
+            rowClassName={row => `group ${isOverdue(row) ? 'bg-destructive/5' : ''}`}
+            emptyTitle={t('empty.heading')}
+            emptyDescription={t('empty.body')}
+            noResultsTitle={t('noResults.heading')}
+            noResultsDescription={t('noResults.body')}
+            noResultsCta={t('noResults.cta')}
+            onClearFilters={onClearFilters}
+          />
         </Table>
       </AtelierTableShell>
     </div>

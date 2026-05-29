@@ -1,20 +1,13 @@
-import { AtelierTableShell, NoResultsIllustration, TableChrome } from '@contractor-ops/ui';
+import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { DataTableBody } from '../../shared/data-table-body.js';
+import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { PaymentRunRow } from './columns.js';
 
 interface PaymentRunDataTableProps {
@@ -54,8 +47,6 @@ export function PaymentRunDataTable({
     manualPagination: true,
     getRowId: row => row.id,
   });
-
-  const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -97,56 +88,22 @@ export function PaymentRunDataTable({
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
+                  <SortableTableHead key={header.id} header={header} />
                 ))}
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  {visibleColumns.map(col => (
-                    <TableCell key={col.id}>
-                      <Skeleton className="h-4 w-full max-w-[120px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer"
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onRowClick(row.original)}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={visibleColumns.length}>
-                  <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-                    <NoResultsIllustration
-                      className="h-16 w-16 text-primary/60"
-                      aria-hidden="true"
-                    />
-                    <p className="text-sm font-medium">{t('noResults.heading')}</p>
-                    <p className="max-w-sm text-xs text-muted-foreground">{t('noResults.body')}</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
+          <DataTableBody
+            table={table}
+            isLoading={isLoading}
+            hasFiltersOrSearch={Boolean(hasActiveFilters)}
+            onRowClick={onRowClick}
+            emptyTitle={t('emptyHeading')}
+            emptyDescription={t('emptyBody')}
+            noResultsTitle={t('emptyHeading')}
+            noResultsDescription={t('emptyBody')}
+            onClearFilters={onClearFilters}
+          />
         </Table>
       </AtelierTableShell>
     </div>

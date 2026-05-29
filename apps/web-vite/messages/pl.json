@@ -275,6 +275,11 @@
       "heading": "Brak oczekujących akceptacji",
       "body": "Wszystko załatwione! Nowe faktury pojawią się tutaj, gdy będą wymagały Twojej akceptacji."
     },
+    "noResults": {
+      "heading": "Brak akceptacji pasujących do filtrów",
+      "body": "Spróbuj wyczyścić filtry lub zmienić wyszukiwanie.",
+      "cta": "Wyczyść filtry"
+    },
     "pagination": {
       "rowsPerPage": "Wierszy na stronie",
       "pageOf": "Strona {current} z {total}",

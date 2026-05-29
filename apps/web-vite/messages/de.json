@@ -275,6 +275,11 @@
       "heading": "Keine ausstehenden Freigaben",
       "body": "Alles erledigt! Neue Rechnungen erscheinen hier, sobald sie Ihre Prüfung benötigen."
     },
+    "noResults": {
+      "heading": "Keine Freigaben passen zu Ihren Filtern",
+      "body": "Versuchen Sie, einige Filter zu entfernen oder die Suche anzupassen.",
+      "cta": "Filter zurücksetzen"
+    },
     "pagination": {
       "rowsPerPage": "Zeilen pro Seite",
       "pageOf": "Seite {current} von {total}",

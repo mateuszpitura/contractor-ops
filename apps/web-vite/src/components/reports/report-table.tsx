@@ -1,6 +1,5 @@
 import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import {
   Table,
   TableBody,
@@ -9,10 +8,12 @@ import {
   TableRow,
 } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { RefreshCw } from 'lucide-react';
 import { useMemo } from 'react';
+
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { DataTableBody } from '../shared/data-table-body.js';
 import { SortableTableHead } from '../shared/sortable-table-head.js';
 
 interface ReportTableProps<TData> {
@@ -145,8 +146,8 @@ export function ReportTable<TData>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
-          {isError ? (
+        {isError ? (
+          <TableBody>
             <TableRow>
               <TableCell colSpan={columns.length} className="py-16 text-center">
                 <p className="text-sm text-muted-foreground">{tCommon('networkError')}</p>
@@ -163,54 +164,32 @@ export function ReportTable<TData>({
                 ) : null}
               </TableCell>
             </TableRow>
-          ) : isLoading ? (
-            Array.from({ length: 8 }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-              <TableRow key={`skeleton-${i}`}>
-                {columns.map((_, colIdx) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                  <TableCell key={colIdx}>
-                    <Skeleton className="h-4 w-full max-w-[120px]" />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : data.length > 0 ? (
-            <>
-              {table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  className={onRowClick ? 'cursor-pointer' : ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onRowClick?.(row.original)}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-              {!!grandTotalLabel && !!grandTotalValue && (
+          </TableBody>
+        ) : (
+          <>
+            <DataTableBody
+              table={table}
+              isLoading={isLoading ?? false}
+              hasFiltersOrSearch={false}
+              onRowClick={onRowClick}
+              emptyIcon={emptyIcon}
+              emptyTitle={emptyTitle ?? tCommon('noData')}
+              emptyDescription={emptyDescription}
+              noResultsTitle={emptyTitle ?? tCommon('noData')}
+              noResultsDescription={emptyDescription}
+            />
+            {!isLoading && data.length > 0 && grandTotalLabel && grandTotalValue ? (
+              <TableBody>
                 <TableRow className="border-t-2">
                   <TableCell colSpan={columns.length - 1} className="text-[14px] font-semibold">
                     {grandTotalLabel}
                   </TableCell>
                   <TableCell className="text-[14px] font-semibold">{grandTotalValue}</TableCell>
                 </TableRow>
-              )}
-            </>
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="py-16 text-center">
-                {emptyIcon}
-                <h3 className="mt-3 text-[16px] font-medium">{emptyTitle ?? tCommon('noData')}</h3>
-                {!!emptyDescription && (
-                  <p className="mt-1 text-sm text-muted-foreground">{emptyDescription}</p>
-                )}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
+              </TableBody>
+            ) : null}
+          </>
+        )}
       </Table>
     </AtelierTableShell>
   );
