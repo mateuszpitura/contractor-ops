@@ -1,3 +1,4 @@
+import { iconSize } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -254,6 +255,45 @@ export function ApprovalQueueTable({
 
   return (
     <>
+      {someSelected ? (
+        <div
+          aria-live="polite"
+          className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+          <span className="text-sm font-medium">
+            {t('approvalQueue.selected', { count: selectedArray.length })}
+          </span>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="ms-auto h-8 gap-1.5"
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => setSelectedIds(new Set())}>
+            {t('approvalQueue.clear')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-destructive hover:text-destructive"
+            disabled={isBulkRejecting}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => setBulkRejectOpen(true)}>
+            <XCircle className={iconSize.sm} />
+            {t('approvalQueue.rejectAll')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5"
+            disabled={isBulkApproving}
+            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
+            onClick={() => setBulkApproveOpen(true)}>
+            <CheckCircle className={iconSize.sm} />
+            {t('approvalQueue.approveAll')}
+          </Button>
+        </div>
+      ) : null}
+
       <SimpleDataTable
         columns={columns}
         data={timesheets}
@@ -265,38 +305,6 @@ export function ApprovalQueueTable({
         noResultsDescription={t('approvalQueue.empty.body')}
         rowClassName={row => `group ${selectedIds.has(row.id) ? 'bg-muted/50' : ''}`}
       />
-
-      {someSelected && (
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-card px-6 py-3 shadow-lg animate-in slide-in-from-bottom-4">
-          <div className="mx-auto flex max-w-7xl items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {t('approvalQueue.selected', { count: selectedArray.length })}
-            </p>
-            <div className="flex items-center gap-2">
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
-                {t('approvalQueue.clear')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:bg-destructive/10"
-                disabled={isBulkRejecting}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setBulkRejectOpen(true)}>
-                {t('approvalQueue.rejectAll')}
-              </Button>
-              <Button
-                size="sm"
-                disabled={isBulkApproving}
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => setBulkApproveOpen(true)}>
-                {t('approvalQueue.approveAll')}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <RejectionReasonDialog
         open={rejectingId !== null}
