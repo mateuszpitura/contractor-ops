@@ -1,5 +1,4 @@
 import { AtelierTableShell, TableChrome } from '@contractor-ops/ui';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Table, TableHeader, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
@@ -7,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DataTableBody } from '../../shared/data-table-body.js';
+import { DataTablePagination } from '../../shared/data-table-pagination.js';
 import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { ApprovalQueueRow } from './columns.js';
 
@@ -26,8 +26,6 @@ interface ApprovalQueueTableProps {
   onSelectionChange?: (ids: string[]) => void;
   isLoading?: boolean;
 }
-
-const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 function isOverdue(row: ApprovalQueueRow): boolean {
   if (row.status !== 'PENDING' || !row.slaDeadline) return false;
@@ -101,44 +99,14 @@ export function ApprovalQueueTable({
         }
         footer={
           !isLoading && totalPages > 0 ? (
-            <div className="flex flex-wrap items-center justify-end gap-4 px-2 py-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{t('pagination.rowsPerPage')}</span>
-                <select
-                  value={pageSize}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                  onChange={e => onPageSizeChange(Number(e.target.value))}
-                  className="h-8 w-16 rounded-md border bg-background px-2 text-sm">
-                  {PAGE_SIZE_OPTIONS.map(size => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {t('pagination.pageOf', { current: page, total: totalPages })}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onPageChange(page - 1)}>
-                  {t('pagination.previous')}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                  onClick={() => onPageChange(page + 1)}>
-                  {t('pagination.next')}
-                </Button>
-              </div>
-            </div>
+            <DataTablePagination
+              table={table}
+              totalRows={resolvedTotal}
+              pageSize={pageSize}
+              currentPage={page}
+              onPageChange={onPageChange}
+              onPageSizeChange={onPageSizeChange}
+            />
           ) : undefined
         }>
         <Table>
