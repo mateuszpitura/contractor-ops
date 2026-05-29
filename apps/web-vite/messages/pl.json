@@ -478,13 +478,11 @@
   "Classification": {
     "_NOTE": "Frazy prawne (legal-locked) znajdują się w packages/validators/src/legal/{de,disclaimers}.ts. Nie duplikuj wartości CLASSIFICATION_* ani DISCLAIMER_* w tym pliku.",
     "pageTitle": "Ocena klasyfikacji",
-    "pageSubtitle": "Oceń ryzyko statusu zatrudnienia dla tego zlecenia.",
     "start": "Uruchom ocenę klasyfikacji",
     "previous": "Wstecz",
     "next": "Dalej",
     "submitAssessment": "Prześlij ocenę",
     "cancelDraft": "Anuluj wersję roboczą",
-    "backToEngagement": "Powrót do zlecenia",
     "engagement": {
       "notFound": "Nie znaleziono zlecenia",
       "backToContractor": "Powrót do wykonawcy"
@@ -542,13 +540,11 @@
       "startNew": "Rozpocznij nową ocenę",
       "ratioOutOfRange": "Współczynnik przychodu musi mieścić się w zakresie 0-100. Wprowadź procent całkowitych przychodów wykonawcy pochodzący od Twojej organizacji.",
       "nonNumeric": "Wprowadź liczbę z zakresu 0-100.",
-      "rationaleTooLong": "Uzasadnienie jest ograniczone do 1000 znaków. Skróć notatkę, aby kontynuować.",
       "autosaveNetwork": "Nie udało się zapisać wersji roboczej. Sprawdź połączenie; ponowimy próbę automatycznie.",
       "submitFailed": "Przesłanie nie powiodło się. Spróbuj ponownie. Jeśli problem się powtórzy, skontaktuj się z pomocą."
     },
     "emptyState": {
       "noAssessment": "Brak oceny klasyfikacji",
-      "noAssessmentBody": "Uruchom ocenę IR35/Scheinselbständigkeit dla tego zlecenia, aby uchwycić status ryzyka. Możesz zapisać wersję roboczą i wznowić później.",
       "notSupported": "Klasyfikacja niedostępna",
       "notSupportedBody": "Zestawy reguł klasyfikacji są obecnie dostępne dla zleceń w Wielkiej Brytanii (IR35) i w Niemczech (Scheinselbständigkeit). Kraj wykonawcy ({countryCode}) nie jest jeszcze obsługiwany."
     },
@@ -590,7 +586,6 @@
       "printSubtitle": "Nieoficjalny podgląd — nie stanowi prawnego rozstrzygnięcia",
       "print": "Drukuj / zapisz jako PDF",
       "rerun": "Uruchom ocenę ponownie",
-      "printedOn": "Wydrukowano {date}",
       "ir35": {
         "verdict": {
           "outside": "Poza IR35",
@@ -617,7 +612,6 @@
         "totalScore": "Całkowity wynik {score} z {max}",
         "categoryScore": "{weighted} z {max}",
         "categoryAriaLabel": "{category}: {weighted} z {max}. Poziom ryzyka {level}.",
-        "thresholds": "Progi",
         "criterionBreakdown": "Szczegóły kryteriów",
         "criterion": "Kryterium",
         "answer": "Odpowiedź",
@@ -632,8 +626,7 @@
       "loading": "Ładowanie klasyfikacji…",
       "viewDetails": "Zobacz szczegóły",
       "rerun": "Uruchom ocenę ponownie",
-      "ruleSetVersion": "Zestaw reguł {version}",
-      "completedLabel": "Ukończono"
+      "ruleSetVersion": "Zestaw reguł {version}"
     },
     "list": {
       "heading": "Historia klasyfikacji",
@@ -669,9 +662,6 @@
         "chipTooltip": "Wykryto istotne zmiany od ostatniego oświadczenia IR35 (SDS).",
         "ctaPrimary": "Rozpocznij nową ocenę",
         "ctaSecondary": "Pokaż poprzednie SDS",
-        "reasonLine": "{field} zmieniono z {oldValue} na {newValue} dnia {date}",
-        "notificationTitle": "Zalecana ponowna ocena: {engagementName}",
-        "notificationBody": "Wykryto {N} istotną(-ych) zmianę(-y). Poprzednie SDS zostało zakończone {priorDate}. Otwórz zaangażowanie, aby przejrzeć.",
         "dismissAction": "Odrzuć wyzwalacz",
         "dismissHeading": "Odrzucić ten wyzwalacz ponownej oceny?",
         "dismissBody": "System nie uruchomi się ponownie dla tych zmian. Nadal możesz ręcznie rozpocząć nową ocenę.",
@@ -750,11 +740,7 @@
         "alertsEconomicWarning": "{count} ostrzeżenie zależności ekonomicznej",
         "alertsEconomicCritical": "{count} krytyczna zależność ekonomiczna",
         "alertsDrvExpiring": "{count} zaświadczenie DRV wygasa w ≤90 dni",
-        "alertsEmpty": "Brak aktywnych ostrzeżeń.",
-        "emptyNoEngagementsHeading": "Brak aktywnych zaangażowań",
-        "emptyNoEngagementsBody": "Dodaj współpracownika i utwórz zaangażowanie, aby wypełnić pulpit zgodności.",
-        "emptyNoAssessmentsHeading": "Brak ukończonych ocen",
-        "emptyNoAssessmentsBody": "Przeprowadź ocenę IR35 lub Scheinselbständigkeit dla zaangażowania, aby wypełnić ten widok."
+        "alertsEmpty": "Brak aktywnych ostrzeżeń."
       }
     },
     "documents": {
@@ -775,9 +761,6 @@
       "errorGenericTitle": "Nie udało się wygenerować dokumentu",
       "kindSds": "Oświadczenie o statusie (SDS)",
       "kindDrvDefenseBundle": "Pakiet obrony audytowej DRV"
-    },
-    "AdvisoryBanner": {
-      "label": "Informacja prawna"
     },
     "ExpertHelp": {
       "title": "Uzyskaj pomoc eksperta",
@@ -846,9 +829,7 @@
     "appearanceLight": "Jasny",
     "appearanceDark": "Ciemny",
     "appearanceSystem": "Systemowy",
-    "darkMode": "Tryb ciemny",
     "density": "Tryb kompaktowy",
-    "language": "Język",
     "editName": "Zmień imię",
     "editNamePrompt": "Wpisz swoje imię",
     "nameUpdated": "Imię zaktualizowane",
@@ -856,19 +837,11 @@
     "signOutFailed": "Nie udało się wylogować. Spróbuj ponownie.",
     "save": "Zapisz",
     "cancel": "Anuluj",
-    "appName": "Contractor Ops",
-    "appTagline": "Platforma do zarządzania wykonawcami i przetwarzania faktur",
     "aria": {
       "previousPage": "Poprzednia strona",
       "nextPage": "Następna strona",
-      "closeDialog": "Zamknij okno dialogowe",
-      "closePanel": "Zamknij panel",
-      "toggleSidebar": "Przełącz pasek boczny",
-      "breadcrumb": "Nawigacja okruszkowa",
       "sortBy": "Sortuj według {column}",
       "removeFilter": "Usuń filtr: {label}",
-      "dateFrom": "Data od",
-      "dateTo": "Data do",
       "portalSubdomain": "Subdomena portalu",
       "inApp": "W aplikacji",
       "email": "E-mail",
@@ -906,7 +879,6 @@
       "profileMenu": "Menu profilu"
     },
     "srOnly": {
-      "more": "Więcej",
       "actions": "Akcje",
       "moreActions": "Więcej akcji",
       "remove": "Usuń",
@@ -934,7 +906,6 @@
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
     },
-    "switchToLanguage": "Zmień język na {name}",
     "commandPalette": {
       "title": "Paleta poleceń",
       "description": "Wyszukaj polecenie do wykonania...",
@@ -963,8 +934,6 @@
       "rowsPerPage": "Wierszy na stronę"
     },
     "clearDates": "Wyczyść daty",
-    "filterFrom": "Od {date}",
-    "filterTo": "Do {date}",
     "emailLabel": "E-mail"
   },
   "Consent": {
@@ -2165,7 +2134,6 @@
       "invalidType": "{filename} nie jest obsługiwanym typem pliku.",
       "tooLarge": "{filename} przekracza limit 25 MB."
     },
-    "uploadCTA": "Prześlij dokument",
     "uploadNewVersion": "Prześlij nowa wersję",
     "download": "Pobierz",
     "preview": "Podgląd",
@@ -2176,8 +2144,6 @@
     "deleteCancel": "Anuluj",
     "deleteConfirm": "Usuń dokument",
     "version": "Wersja {n}",
-    "versionLabel": "Wersja {n}",
-    "currentVersion": "Aktualna",
     "versionHistory": "Historia wersji",
     "empty": {
       "title": "Brak dokumentów",
@@ -2185,7 +2151,6 @@
     },
     "emptyHeading": "Brak dokumentów",
     "emptyBody": "Prześlij dokumenty umowy, aby je uporządkować.",
-    "emptyCTA": "Prześlij dokument",
     "threatDetected": "Wykryto zagrożenie - plik poddany kwarantannie",
     "scan": {
       "scanning": "Skanowanie w poszukiwaniu zagrożeń...",
@@ -2197,26 +2162,14 @@
     "scanStatus": {
       "failed": "Nie udało się zakończyć skanowania"
     },
-    "metadata": {
-      "uploadedBy": "Przesłane przez {name}",
-      "uploadedOn": "{date}",
-      "size": "{size}"
-    },
     "contractorTab": {
       "heading": "Dokumenty",
-      "uploadCTA": "Prześlij dokument",
       "emptyHeading": "Brak dokumentów",
       "emptyBody": "Prześlij dokumenty dla tego kontrahenta.",
       "emptyCTA": "Prześlij dokument"
     },
-    "compliance": {
-      "requiredDocuments": "Wymagane dokumenty",
-      "uploadCompliance": "Prześlij dokument zgodności",
-      "complianceTypes": "Zaświadczenie podatkowe, rejestracja firmy, ubezpieczenie"
-    },
     "errors": {
       "uploadFailed": "Nie udało się przesłać dokumentu. Sprawdź plik i spróbuj ponownie.",
-      "downloadFailed": "Nie udało się wygenerować linku pobierania. Spróbuj ponownie.",
       "retry": "Spróbuj ponownie"
     },
     "loading": "Ładowanie…",
@@ -2235,20 +2188,13 @@
       "subline": "Zarządzaj rejestracją uczestnika Peppol, identyfikatorami Leitweg-ID dla niemieckich faktur sektora publicznego oraz ustawieniami zgodności e-faktur.",
       "PeppolCard": {
         "ctaNotRegistered": "Zarejestruj uczestnika Peppol",
-        "ctaRegistered": "Zarządzaj uczestnikiem",
         "emptyHeading": "Brak rejestracji w Peppol",
         "emptyBody": "Zarejestruj organizację jednorazowo, aby wysyłać e-faktury XRechnung do brytyjskich nabywców z sektora publicznego i odbierać potwierdzenia dostarczenia.",
-        "pendingHeading": "Rejestracja w toku",
         "labelParticipant": "Uczestnik",
         "labelStatus": "Status",
         "labelAsp": "ASP",
         "labelLastCapabilityCheck": "Ostatnie sprawdzenie możliwości",
-        "neverChecked": "Nigdy",
-        "statusActive": "Aktywny",
-        "statusRegistered": "Zarejestrowany",
-        "statusSuspended": "Zawieszony",
-        "statusDeregistered": "Wyrejestrowany",
-        "statusNotRegistered": "Niezarejestrowany"
+        "neverChecked": "Nigdy"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Utwórz Leitweg-ID",
@@ -2369,9 +2315,6 @@
       "valueHelper": "Numer Companies House, GLN lub DUNS — zgodnie z wybranym schematem.",
       "registerButton": "Zarejestruj uczestnika",
       "pendingHeading": "Rejestracja w toku",
-      "pendingBody": "Storecove rejestruje Twojego uczestnika w Peppol SML. Zwykle trwa to kilka minut. Status zaktualizujemy automatycznie.",
-      "activeHeading": "Zarejestrowano w Peppol",
-      "activeBodyPattern": "Uczestnik {schemeId}:{value} · Status {status} · Zarejestrowano {relativeTime}",
       "deregisterButton": "Wyrejestruj uczestnika",
       "peppolIdentifierLegend": "Identyfikator Peppol",
       "pairError": "Oba pola są wymagane albo oba muszą być puste."
@@ -2397,7 +2340,6 @@
       "uploadTryAnother": "Wypróbuj inny plik",
       "uploadSuccessToast": "Zaimportowano — przejrzyj w /invoices/intake/{id}",
       "uploadDedupToast": "Już zaimportowano — otwieram istniejący import",
-      "uploadNetworkError": "Przesyłanie nie powiodło się. Sprawdź połączenie i spróbuj ponownie.",
       "uploadWrongType": "Akceptowane są wyłącznie pliki .xml lub .pdf.",
       "ctaConvert": "Konwertuj na fakturę",
       "ctaConfirmMatch": "Potwierdź dopasowanie",
@@ -2495,8 +2437,6 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       },
-      "sendCta": "Wyślij e-fakturę",
-      "xmlPreviewTitle": "Podgląd XML",
       "pdfPreviewTitle": "Podgląd PDF",
       "xmlLoadError": "Nie udało się załadować XML."
     },
@@ -2665,7 +2605,6 @@
         "search": "Szukaj sprzetu...",
         "type": "Typ",
         "status": "Status",
-        "assignee": "Przypisany",
         "clearAll": "Wyczyść wszystko",
         "removeFilter": "Usuń filtr: {label}"
       },
@@ -2673,8 +2612,7 @@
       "pagination": {
         "previous": "Poprzednia",
         "next": "Następna",
-        "pageOf": "{page} / {total}",
-        "itemCount": "{count, plural, one {# wpis} few {# wpisy} many {# wpisów} other {# wpisu}}"
+        "pageOf": "{page} / {total}"
       }
     },
     "detail": {
@@ -2832,13 +2770,9 @@
       "emptyDescription": "Ten wykonawca nie ma przypisanego sprzetu. Przypisz sprzet z rejestru sprzetu."
     },
     "inpost": {
-      "createShipment": "Utworz przesylke InPost",
       "selectPaczkomat": "Wybierz Paczkomat",
       "recipient": "Odbiorca",
-      "destinationPaczkomat": "Paczkomat docelowy",
-      "parcelSize": "Rozmiar paczki",
-      "shipmentCreated": "Przesylka InPost utworzona",
-      "shipmentError": "Nie udalo sie utworzyc przesylki InPost. Sprobuj ponownie."
+      "destinationPaczkomat": "Paczkomat docelowy"
     },
     "paczkomat": {
       "selectPaczkomat": "Wybierz Paczkomat",
@@ -2847,15 +2781,10 @@
       "cancel": "Anuluj",
       "retry": "Sprobuj ponownie",
       "loadError": "Nie udalo sie zaladowac mapy Paczkomatow. Sprawdz polaczenie i sprobuj ponownie.",
-      "noSelection": "Nie wybrano Paczkomatu",
-      "noSelectionDescription": "Wybierz Paczkomat na mapie, aby ustawic miejsce dostawy.",
       "paczkomatTitle": "Mapa paczkomatów InPost"
     },
     "label": {
       "download": "Pobierz etykiete",
-      "print": "Drukuj",
-      "notAvailable": "Etykieta jeszcze niedostepna",
-      "notAvailableDescription": "Etykieta pojawi sie tutaj po utworzeniu przesylki w InPost.",
       "downloadError": "Nie udalo sie pobrac etykiety. Sprobuj ponownie."
     },
     "shipmentLabel": {
@@ -2905,8 +2834,7 @@
       "deliveryAddress": "Adres dostawy",
       "street": "Ulica",
       "city": "Miasto",
-      "postalCode": "Kod pocztowy",
-      "countryCode": "Kod kraju"
+      "postalCode": "Kod pocztowy"
     },
     "ups": {
       "deliveryAddress": "Adres dostawy",
@@ -3283,7 +3211,6 @@
     }
   },
   "Import": {
-    "dialogTitle": "Importuj dane",
     "steps": {
       "upload": "Wgraj plik",
       "mapping": "Dopasuj kolumny",
@@ -3295,8 +3222,6 @@
       "heading": "Upusc plik tutaj",
       "body": "Plik CSV lub Excel z danymi kontrahentów lub umów",
       "browse": "Przeglądaj pliki",
-      "entityContractors": "Kontrahenci",
-      "entityContracts": "Umowy",
       "removeFile": "Usuń",
       "dropHeading": "Upusc plik tutaj",
       "dropBody": "Plik CSV lub Excel z danymi kontrahentów lub umów",
@@ -3310,13 +3235,8 @@
       "remove": "Usuń"
     },
     "mapping": {
-      "yourColumns": "Kolumny z pliku",
-      "mapsTo": "Dopasowane do",
-      "autoMatched": "Dopasowane automatycznie",
       "notMapped": "Niedopasowane",
-      "unmappedNote": "Niedopasowane kolumny zostaną pominięte",
       "skip": "Pomiń (nie importuj)",
-      "required": "Wymagane",
       "description": "Dopasuj kolumny z pliku do odpowiednich pol. Wymagane pola oznaczone są gwiazdka.",
       "note": "Niedopasowane kolumny zostaną pominięte podczas importu."
     },
@@ -3343,14 +3263,6 @@
     },
     "confirm": {
       "heading": "Gotowe do importu {count} {entity}",
-      "newRecords": "{count} nowych rekordów",
-      "updates": "{count} aktualizacji istniejących",
-      "skippedDuplicates": "{count} pominiętych duplikatów",
-      "skippedErrors": "{count} pominiętych błędów",
-      "importCta": "Importuj",
-      "processing": "Importowanie... {current}/{total}",
-      "completeHeading": "Import zakończony",
-      "viewCta": "Zobacz {entity}",
       "contractors": "kontrahentów",
       "contracts": "umów",
       "complete": "Import zakończony",
@@ -3369,15 +3281,6 @@
       "skippedDuplicatesLabel": "Pominiete duplikaty",
       "skippedErrorsLabel": "Pominiete błędy",
       "importButton": "Importuj {count} rekordów"
-    },
-    "errors": {
-      "invalidFile": "Nieobsługiwany format pliku. Wgraj plik CSV lub XLSX.",
-      "emptyFile": "Plik nie zawiera wierszy z danymi.",
-      "tooManyRows": "Plik przekracza 5000 wierszy. Podziel na mniejsze pliki.",
-      "importFailed": "Import nie powiódł się. Niektóre wiersze nie mogły być przetworzone. Spróbuj ponownie lub skontaktuj się z pomoca."
-    },
-    "toast": {
-      "importComplete": "Pomyślnie zaimportowano {count} {entity}"
     },
     "title": "Importuj dane",
     "parseError": "Nie udało się przetworzyć pliku. Sprawdź format i spróbuj ponownie.",
@@ -3837,21 +3740,7 @@
     },
     "privacyIndex": {
       "heading": "Informacja o prywatności",
-      "description": "Wybierz jurysdykcję, która Cię dotyczy. Jeśli jesteś zalogowany(-a), kierujemy Cię automatycznie na podstawie kraju Twojej organizacji.",
-      "jurisdictions": {
-        "gb": {
-          "label": "Wielka Brytania",
-          "subtitle": "UK RODO · DPA 2018"
-        },
-        "de": {
-          "label": "Niemcy",
-          "subtitle": "RODO · BDSG"
-        },
-        "eu": {
-          "label": "Unia Europejska",
-          "subtitle": "RODO · ogólny fallback"
-        }
-      }
+      "description": "Wybierz jurysdykcję, która Cię dotyczy. Jeśli jesteś zalogowany(-a), kierujemy Cię automatycznie na podstawie kraju Twojej organizacji."
     },
     "privacy": {
       "title": "Polityka Prywatności",
@@ -4113,14 +4002,12 @@
       "clientNameLabel": "Nazwa klienta",
       "clientNamePlaceholder": "Wprowadź nazwę firmy końcowego zleceniodawcy",
       "confirmApproval": "Potwierdź zatwierdzenie i kontynuuj",
-      "confirmingApproval": "Potwierdzanie...",
-      "approved": "Zatwierdzone — możesz teraz wygenerować SDS"
+      "confirmingApproval": "Potwierdzanie..."
     },
     "DrvUpload": {
       "uploadDecisionLetter": "Prześlij pismo decyzyjne DRV",
       "uploading": "Przesyłanie...",
       "uploadedAt": "Przesłano {date} przez {user}",
-      "downloadLetter": "Pobierz pismo decyzyjne",
       "fileTooLarge": "Plik za duży (maks. 10 MB)"
     }
   },
@@ -5193,7 +5080,6 @@
   "Peppol": {
     "statusCard": {
       "title": "Sieć Peppol",
-      "notConnected": "Brak połączenia z Peppol",
       "connectDescription": "Połącz się z siecią Peppol, aby wysyłać i odbierać e-faktury z partnerami handlowymi w ZEA. Potrzebne będą dane TRN oraz uwierzytelniające ASP.",
       "connect": "Połącz z Peppol",
       "participantId": "ID uczestnika",
@@ -5260,9 +5146,7 @@
       "caption": "Kod QR UAE FTA — Zeskanuj, aby zweryfikować"
     },
     "capabilities": {
-      "recheckCapabilities": "Sprawdź zdolności ponownie",
       "recheckFailed": "Nie udało się odświeżyć zdolności",
-      "rechecking": "Sprawdzanie…",
       "xrechnungCiiSupported": "Format XRechnung CII obsługiwany",
       "xrechnungCiiUnsupported": "Format XRechnung CII nieobsługiwany"
     },
@@ -5291,7 +5175,6 @@
       "title": "Twoj sprzet",
       "emptyTitle": "Brak przypisanego sprzetu",
       "emptyDescription": "Nie masz jeszcze przypisanego sprzetu. Skontaktuj sie z przelozonym, jesli oczekujesz na sprzet.",
-      "returnButton": "Zwroc",
       "returnAll": "Zwroc sprzet",
       "deliveredOn": "Dostarczono {date}",
       "pendingApproval": "Zwrot oczekuje na zatwierdzenie",
@@ -5311,7 +5194,6 @@
       "approvalNotice": "Ten zwrot wymaga zatwierdzenia przez administratora. Etykiete otrzymasz po zatwierdzeniu.",
       "returnRequested": "Zwrot zgloszony",
       "dropOffAt": "Nadaj w: {name}",
-      "dropOffBy": "do: {date}",
       "cancelConfirmTitle": "Anuluj zwrot",
       "cancelConfirmDescription": "Twoja prosba o zwrot zostanie anulowana. Mozesz zlozyc ja ponownie pozniej. Kontynuowac?",
       "cancelledToast": "Zwrot anulowany"
@@ -5462,7 +5344,6 @@
       "yes": "Tak",
       "no": "Nie",
       "noticePeriod": "Okres wypowiedzenia",
-      "noticePeriodDays": "{days} dni",
       "ratePeriods": "Okresy stawek",
       "documents": "Dokumenty",
       "noDocuments": "Brak dokumentów dołączonych do tej umowy.",
@@ -5532,8 +5413,6 @@
       "subtitle": "Zarządzaj swoim profilem i preferencjami",
       "personalInfo": "Dane osobowe",
       "financialDetails": "Dane finansowe",
-      "profileUpdated": "Profil zaktualizowany",
-      "changeRequestSubmitted": "Wniosek o zmianę przesłany do zatwierdzenia",
       "fields": {
         "displayName": "Nazwa wyświetlana",
         "emailAddress": "Adres e-mail",
@@ -5651,8 +5530,7 @@
       "magicLinkSent": "Sprawdź skrzynkę odbiorczą.",
       "uploadReady": "Plik gotowy.",
       "scanComplete": "Skanowanie zakończone.",
-      "invoiceSubmitted": "Faktura wysłana.",
-      "preferenceUpdated": "Zaktualizowano."
+      "invoiceSubmitted": "Faktura wysłana."
     }
   },
   "Reports": {
@@ -6905,18 +6783,7 @@
     "passwordTooShort": "Hasło musi mieć co najmniej 8 znaków",
     "orgNameTooShort": "Nazwa organizacji musi mieć co najmniej 2 znaki",
     "contractor": {
-      "legalNameRequired": "Nazwa prawna jest wymagana",
-      "nipRequired": "NIP jest wymagany",
-      "nipFormat": "NIP musi składać się z 10 cyfr",
-      "nipChecksum": "Nieprawidłowy numer NIP",
-      "emailRequired": "Email kontaktowy jest wymagany",
-      "emailFormat": "Podaj prawidłowy adres email",
-      "billingModelRequired": "Wybierz model rozliczeń",
-      "currencyRequired": "Wybierz walutę",
-      "rateRequired": "Stawka domyślna jest wymagana",
-      "ratePositive": "Stawka musi być liczba dodatnia",
-      "ownerRequired": "Wybierz opiekuna",
-      "ibanFormat": "Podaj prawidłowy numer IBAN"
+      "nipFormat": "NIP musi składać się z 10 cyfr"
     },
     "invoice": {
       "invoiceNumberRequired": "Numer faktury jest wymagany",
@@ -7737,16 +7604,10 @@
     "syncNow": "Synchronizuj teraz",
     "syncing": "Synchronizacja z KSeF...",
     "syncSuccessToast": "Pobrano {count} nowych faktur z KSeF",
-    "syncNoNewToast": "Nie znaleziono nowych faktur w KSeF",
     "syncFailedToast": "Synchronizacja KSeF nie powiodła się. Sprawdź status połączenia w Ustawieniach.",
-    "disconnectTitle": "Odłącz KSeF",
-    "disconnectBody": "Spowoduje to zatrzymanie automatycznego pobierania faktur z KSeF. Istniejące faktury z KSeF nie zostaną usunięte.",
-    "disconnectConfirm": "Odłącz",
-    "disconnectCancel": "Zachowaj połączenie",
     "syncHistoryTitle": "Historia synchronizacji",
     "syncHistoryEmpty": "Brak historii synchronizacji. Kliknij Synchronizuj teraz, aby pobrać faktury z KSeF.",
     "syncStatusSuccess": "Sukces",
-    "syncStatusPartial": "Częściowy",
     "syncStatusFailed": "Niepowodzenie",
     "syncStatusNoNew": "Brak nowych faktur",
     "syncInvoiceCount": "{count} faktur",
@@ -7756,8 +7617,6 @@
     "fetchedLabel": "Pobrano",
     "viewInKsef": "Zobacz w KSeF",
     "sourceBadge": "KSeF",
-    "sourceBadgeTooltip": "Pobrano z KSeF dnia {date}",
-    "sourceBadgeTooltipNoDate": "Pobrano z KSeF",
     "duplicateHeading": "Znaleziono duplikat KSeF",
     "duplicateBody": "Znaleziono pasującą fakturę w KSeF (numer faktury {invoiceNumber}, NIP sprzedawcy {sellerNip}). Wersja KSeF jest walidowana przez rząd.",
     "duplicateViewKsef": "Zobacz fakturę KSeF",

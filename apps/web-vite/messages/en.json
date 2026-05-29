@@ -478,13 +478,11 @@
   "Classification": {
     "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here.",
     "pageTitle": "Classification assessment",
-    "pageSubtitle": "Assess the employment status risk for this engagement.",
     "start": "Run classification assessment",
     "previous": "Previous",
     "next": "Next",
     "submitAssessment": "Submit assessment",
     "cancelDraft": "Cancel draft",
-    "backToEngagement": "Back to engagement",
     "engagement": {
       "notFound": "Engagement not found",
       "backToContractor": "Back to contractor"
@@ -542,13 +540,11 @@
       "startNew": "Start a new assessment",
       "ratioOutOfRange": "Billing ratio must be between 0 and 100. Enter the percentage of this contractor's total billings that come from your organization.",
       "nonNumeric": "Enter a number between 0 and 100.",
-      "rationaleTooLong": "Rationale is limited to 1000 characters. Shorten your note to continue.",
       "autosaveNetwork": "Couldn't save draft. Check your connection; we'll retry automatically.",
       "submitFailed": "Submission failed. Please try again. If the problem persists, contact support."
     },
     "emptyState": {
       "noAssessment": "No classification assessment yet",
-      "noAssessmentBody": "Run an IR35/Scheinselbständigkeit assessment for this engagement to capture risk status. You can save a draft and resume later.",
       "notSupported": "Classification not available",
       "notSupportedBody": "Classification rule sets are currently available for UK (IR35) and Germany (Scheinselbständigkeit) engagements. Your contractor's country ({countryCode}) is not yet supported."
     },
@@ -609,7 +605,6 @@
       "printSubtitle": "Unofficial preview — not a legal determination",
       "print": "Print / Save as PDF",
       "rerun": "Re-run assessment",
-      "printedOn": "Printed {date}",
       "ir35": {
         "verdict": {
           "outside": "Outside IR35",
@@ -636,7 +631,6 @@
         "totalScore": "Total score {score} of {max}",
         "categoryScore": "{weighted} of {max}",
         "categoryAriaLabel": "{category}: {weighted} of {max}. Risk level {level}.",
-        "thresholds": "Thresholds",
         "criterionBreakdown": "Criterion breakdown",
         "criterion": "Criterion",
         "answer": "Answer",
@@ -651,8 +645,7 @@
       "loading": "Loading classification…",
       "viewDetails": "View details",
       "rerun": "Re-run assessment",
-      "ruleSetVersion": "Rule set {version}",
-      "completedLabel": "Completed"
+      "ruleSetVersion": "Rule set {version}"
     },
     "list": {
       "heading": "Classification history",
@@ -688,9 +681,6 @@
         "chipTooltip": "Material changes were detected since the last IR35 Status Determination Statement.",
         "ctaPrimary": "Start new assessment",
         "ctaSecondary": "View prior SDS",
-        "reasonLine": "{field} changed from {oldValue} to {newValue} on {date}",
-        "notificationTitle": "Reassessment recommended: {engagementName}",
-        "notificationBody": "{N} material change(s) detected. The prior SDS was completed on {priorDate}. Open the engagement to review.",
         "dismissAction": "Dismiss trigger",
         "dismissHeading": "Dismiss this reassessment trigger?",
         "dismissBody": "The system will not re-fire on these field changes. You can still start a new assessment manually.",
@@ -769,15 +759,8 @@
         "alertsEconomicWarning": "{count} economic-dependency warning",
         "alertsEconomicCritical": "{count} economic-dependency critical",
         "alertsDrvExpiring": "{count} DRV clearance expiring in ≤90 days",
-        "alertsEmpty": "No active alerts.",
-        "emptyNoEngagementsHeading": "No active engagements",
-        "emptyNoEngagementsBody": "Add a contractor and create an engagement to populate the compliance dashboard.",
-        "emptyNoAssessmentsHeading": "No completed assessments yet",
-        "emptyNoAssessmentsBody": "Run an IR35 or Scheinselbständigkeit assessment from any engagement to populate this view."
+        "alertsEmpty": "No active alerts."
       }
-    },
-    "AdvisoryBanner": {
-      "label": "Legal notice"
     },
     "ExpertHelp": {
       "title": "Get Expert Help",
@@ -846,9 +829,7 @@
     "appearanceLight": "Light",
     "appearanceDark": "Dark",
     "appearanceSystem": "System",
-    "darkMode": "Dark mode",
     "density": "Compact",
-    "language": "Language",
     "editName": "Edit name",
     "editNamePrompt": "Enter your name",
     "nameUpdated": "Name updated",
@@ -856,19 +837,11 @@
     "signOutFailed": "Could not sign out. Try again.",
     "save": "Save",
     "cancel": "Cancel",
-    "appName": "Contractor Ops",
-    "appTagline": "Contractor management and invoice processing platform",
     "aria": {
       "previousPage": "Previous page",
       "nextPage": "Next page",
-      "closeDialog": "Close dialog",
-      "closePanel": "Close panel",
-      "toggleSidebar": "Toggle sidebar",
-      "breadcrumb": "Breadcrumb",
       "sortBy": "Sort by {column}",
       "removeFilter": "Remove filter: {label}",
-      "dateFrom": "Date from",
-      "dateTo": "Date to",
       "portalSubdomain": "Portal subdomain",
       "inApp": "In-app",
       "email": "Email",
@@ -906,7 +879,6 @@
       "profileMenu": "Profile menu"
     },
     "srOnly": {
-      "more": "More",
       "actions": "Actions",
       "moreActions": "More actions",
       "remove": "Remove",
@@ -934,7 +906,6 @@
       "kilobytes": "{size} KB",
       "megabytes": "{size} MB"
     },
-    "switchToLanguage": "Switch to {name}",
     "commandPalette": {
       "title": "Command Palette",
       "description": "Search for a command to run...",
@@ -963,8 +934,6 @@
       "rowsPerPage": "Rows per page"
     },
     "clearDates": "Clear dates",
-    "filterFrom": "From {date}",
-    "filterTo": "To {date}",
     "emailLabel": "Email"
   },
   "Consent": {
@@ -2165,7 +2134,6 @@
       "invalidType": "{filename} is not a supported file type.",
       "tooLarge": "{filename} exceeds the 25 MB limit."
     },
-    "uploadCTA": "Upload document",
     "uploadNewVersion": "Upload new version",
     "download": "Download",
     "preview": "Preview",
@@ -2176,8 +2144,6 @@
     "deleteCancel": "Cancel",
     "deleteConfirm": "Delete document",
     "version": "Version {n}",
-    "versionLabel": "Version {n}",
-    "currentVersion": "Current",
     "versionHistory": "View version history",
     "empty": {
       "title": "No documents yet",
@@ -2185,7 +2151,6 @@
     },
     "emptyHeading": "No documents yet",
     "emptyBody": "Upload contract documents to keep them organized.",
-    "emptyCTA": "Upload document",
     "threatDetected": "Threat detected - file quarantined",
     "scan": {
       "scanning": "Scanning for threats...",
@@ -2197,26 +2162,14 @@
     "scanStatus": {
       "failed": "Scan could not complete"
     },
-    "metadata": {
-      "uploadedBy": "Uploaded by {name}",
-      "uploadedOn": "on {date}",
-      "size": "{size}"
-    },
     "contractorTab": {
       "heading": "Documents",
-      "uploadCTA": "Upload document",
       "emptyHeading": "No documents",
       "emptyBody": "Upload documents for this contractor.",
       "emptyCTA": "Upload document"
     },
-    "compliance": {
-      "requiredDocuments": "Required documents",
-      "uploadCompliance": "Upload compliance document",
-      "complianceTypes": "Tax certificate, business registration, insurance"
-    },
     "errors": {
       "uploadFailed": "Could not upload document. Check the file and try again.",
-      "downloadFailed": "Could not generate download link. Try again.",
       "retry": "Try again"
     },
     "loading": "Loading…",
@@ -2235,20 +2188,13 @@
       "subline": "Manage your Peppol participant registration, Leitweg-IDs for German public-sector invoicing, and e-invoice compliance settings.",
       "PeppolCard": {
         "ctaNotRegistered": "Register Peppol participant",
-        "ctaRegistered": "Manage participant",
         "emptyHeading": "Not registered on Peppol",
         "emptyBody": "Register your organisation once to send XRechnung e-invoices to UK public-sector buyers and receive delivery acknowledgements.",
-        "pendingHeading": "Registration pending",
         "labelParticipant": "Participant",
         "labelStatus": "Status",
         "labelAsp": "ASP",
         "labelLastCapabilityCheck": "Last capability check",
-        "neverChecked": "Never",
-        "statusActive": "Active",
-        "statusRegistered": "Registered",
-        "statusSuspended": "Suspended",
-        "statusDeregistered": "Deregistered",
-        "statusNotRegistered": "Not registered"
+        "neverChecked": "Never"
       },
       "LeitwegIdCard": {
         "ctaCreate": "Create Leitweg-ID",
@@ -2369,9 +2315,6 @@
       "valueHelper": "Companies House number, GLN, or DUNS — whatever your scheme requires.",
       "registerButton": "Register participant",
       "pendingHeading": "Registration pending",
-      "pendingBody": "Storecove is registering your participant with the Peppol SML. This typically takes a few minutes. We'll update the status automatically.",
-      "activeHeading": "Registered on Peppol",
-      "activeBodyPattern": "Participant {schemeId}:{value} · Status {status} · Registered {relativeTime}",
       "deregisterButton": "Deregister participant",
       "peppolIdentifierLegend": "Peppol identifier",
       "pairError": "Both fields are required, or leave both empty."
@@ -2397,7 +2340,6 @@
       "uploadTryAnother": "Try another file",
       "uploadSuccessToast": "Imported — review at /invoices/intake/{id}",
       "uploadDedupToast": "Already imported — opening existing intake",
-      "uploadNetworkError": "Upload failed. Check your connection and try again.",
       "uploadWrongType": "Only .xml or .pdf files are accepted.",
       "ctaConvert": "Convert to invoice",
       "ctaConfirmMatch": "Confirm match",
@@ -2495,8 +2437,6 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       },
-      "sendCta": "Send e-invoice",
-      "xmlPreviewTitle": "XML preview",
       "pdfPreviewTitle": "PDF preview",
       "xmlLoadError": "Failed to load XML."
     },
@@ -2665,7 +2605,6 @@
         "search": "Search equipment...",
         "type": "Type",
         "status": "Status",
-        "assignee": "Assignee",
         "clearAll": "Clear all",
         "removeFilter": "Remove filter: {label}"
       },
@@ -2673,8 +2612,7 @@
       "pagination": {
         "previous": "Previous",
         "next": "Next",
-        "pageOf": "{page} / {total}",
-        "itemCount": "{count, plural, one {# item} other {# items}}"
+        "pageOf": "{page} / {total}"
       }
     },
     "detail": {
@@ -2832,13 +2770,9 @@
       "emptyDescription": "This contractor has no equipment assigned. Assign equipment from the equipment registry."
     },
     "inpost": {
-      "createShipment": "Create InPost shipment",
       "selectPaczkomat": "Select Paczkomat",
       "recipient": "Recipient",
-      "destinationPaczkomat": "Destination Paczkomat",
-      "parcelSize": "Parcel size",
-      "shipmentCreated": "InPost shipment created",
-      "shipmentError": "Could not create the InPost shipment. Please try again."
+      "destinationPaczkomat": "Destination Paczkomat"
     },
     "paczkomat": {
       "selectPaczkomat": "Select Paczkomat",
@@ -2847,15 +2781,10 @@
       "cancel": "Cancel",
       "retry": "Try again",
       "loadError": "Could not load the Paczkomat map. Check your connection and try again.",
-      "noSelection": "No Paczkomat selected",
-      "noSelectionDescription": "Select a Paczkomat locker on the map to set the delivery destination.",
       "paczkomatTitle": "InPost Paczkomat locker map"
     },
     "label": {
       "download": "Download label",
-      "print": "Print",
-      "notAvailable": "Label not yet available",
-      "notAvailableDescription": "The shipping label will appear here once the shipment is created with InPost.",
       "downloadError": "Could not download the label. Please try again."
     },
     "shipmentLabel": {
@@ -2905,8 +2834,7 @@
       "deliveryAddress": "Delivery address",
       "street": "Street",
       "city": "City",
-      "postalCode": "Postal code",
-      "countryCode": "Country code"
+      "postalCode": "Postal code"
     },
     "ups": {
       "deliveryAddress": "Delivery address",
@@ -3283,7 +3211,6 @@
     }
   },
   "Import": {
-    "dialogTitle": "Import data",
     "steps": {
       "upload": "Upload file",
       "mapping": "Map columns",
@@ -3295,8 +3222,6 @@
       "heading": "Drop your file here",
       "body": "CSV or Excel file with contractor or contract data",
       "browse": "Browse files",
-      "entityContractors": "Contractors",
-      "entityContracts": "Contracts",
       "removeFile": "Remove",
       "dropHeading": "Drop your file here",
       "dropBody": "CSV or Excel file with contractor or contract data",
@@ -3310,13 +3235,8 @@
       "remove": "Remove"
     },
     "mapping": {
-      "yourColumns": "Your file columns",
-      "mapsTo": "Maps to",
-      "autoMatched": "Auto-matched",
       "notMapped": "Not mapped",
-      "unmappedNote": "Unmapped columns will be ignored",
       "skip": "Skip (do not import)",
-      "required": "Required",
       "description": "Map your file columns to the corresponding fields. Required fields are marked with an asterisk.",
       "note": "Unmapped columns will be ignored during import."
     },
@@ -3343,14 +3263,6 @@
     },
     "confirm": {
       "heading": "Ready to import {count} {entity}",
-      "newRecords": "{count} new records",
-      "updates": "{count} updates to existing",
-      "skippedDuplicates": "{count} skipped duplicates",
-      "skippedErrors": "{count} skipped errors",
-      "importCta": "Import",
-      "processing": "Importing... {current}/{total}",
-      "completeHeading": "Import complete",
-      "viewCta": "View {entity}",
       "contractors": "contractors",
       "contracts": "contracts",
       "complete": "Import complete",
@@ -3369,15 +3281,6 @@
       "skippedDuplicatesLabel": "Skipped duplicates",
       "skippedErrorsLabel": "Skipped errors",
       "importButton": "Import {count} records"
-    },
-    "errors": {
-      "invalidFile": "Unsupported file format. Please upload a CSV or XLSX file.",
-      "emptyFile": "The file contains no data rows.",
-      "tooManyRows": "File exceeds 5000 rows. Please split into smaller files.",
-      "importFailed": "Import failed. Some rows could not be processed. Try again or contact support."
-    },
-    "toast": {
-      "importComplete": "Successfully imported {count} {entity}"
     },
     "title": "Import data",
     "parseError": "Failed to parse file. Please check the format and try again.",
@@ -3837,21 +3740,7 @@
     },
     "privacyIndex": {
       "heading": "Privacy Notice",
-      "description": "Select the jurisdiction that applies to you. If you're signed in, we route you automatically based on your organisation's country.",
-      "jurisdictions": {
-        "gb": {
-          "label": "United Kingdom",
-          "subtitle": "UK GDPR · DPA 2018"
-        },
-        "de": {
-          "label": "Deutschland",
-          "subtitle": "DSGVO · BDSG"
-        },
-        "eu": {
-          "label": "European Union",
-          "subtitle": "GDPR · general fallback"
-        }
-      }
+      "description": "Select the jurisdiction that applies to you. If you're signed in, we route you automatically based on your organisation's country."
     },
     "privacy": {
       "title": "Privacy Policy",
@@ -4105,14 +3994,12 @@
       "clientNameLabel": "Client name",
       "clientNamePlaceholder": "Enter the end-hirer company name",
       "confirmApproval": "Confirm approval and proceed",
-      "confirmingApproval": "Confirming...",
-      "approved": "Approved — you can now generate the SDS"
+      "confirmingApproval": "Confirming..."
     },
     "DrvUpload": {
       "uploadDecisionLetter": "Upload DRV decision letter",
       "uploading": "Uploading...",
       "uploadedAt": "Uploaded {date} by {user}",
-      "downloadLetter": "Download decision letter",
       "fileTooLarge": "File too large (max 10 MB)"
     },
     "TermsModal": {
@@ -5193,7 +5080,6 @@
   "Peppol": {
     "statusCard": {
       "title": "Peppol Network",
-      "notConnected": "Not connected to Peppol",
       "connectDescription": "Connect to the Peppol network to send and receive e-invoices with UAE trading partners. You will need your TRN and ASP credentials.",
       "connect": "Connect to Peppol",
       "participantId": "Participant ID",
@@ -5266,8 +5152,6 @@
       "aspRef": "ASP reference"
     },
     "capabilities": {
-      "recheckCapabilities": "Re-check capabilities",
-      "rechecking": "Re-checking…",
       "xrechnungCiiSupported": "Peppol participant supports XRechnung (CII)",
       "xrechnungCiiUnsupported": "Peppol participant does not advertise XRechnung (CII) support",
       "recheckFailed": "Capability re-check failed"
@@ -5291,7 +5175,6 @@
       "title": "Your equipment",
       "emptyTitle": "No equipment assigned",
       "emptyDescription": "You don't have any equipment assigned to you yet. Contact your manager if you expect to receive equipment.",
-      "returnButton": "Return",
       "returnAll": "Return equipment",
       "deliveredOn": "Delivered {date}",
       "pendingApproval": "Return pending approval",
@@ -5311,7 +5194,6 @@
       "approvalNotice": "This return requires admin approval. You will receive the shipping label once approved.",
       "returnRequested": "Return requested",
       "dropOffAt": "Drop off at: {name}",
-      "dropOffBy": "by: {date}",
       "cancelConfirmTitle": "Cancel return",
       "cancelConfirmDescription": "This will cancel your return request. You can request a return again later. Continue?",
       "cancelledToast": "Return cancelled"
@@ -5484,7 +5366,6 @@
       "yes": "Yes",
       "no": "No",
       "noticePeriod": "Notice Period",
-      "noticePeriodDays": "{days} days",
       "ratePeriods": "Rate Periods",
       "documents": "Documents",
       "noDocuments": "No documents attached to this contract.",
@@ -5554,8 +5435,6 @@
       "subtitle": "Manage your profile and preferences",
       "personalInfo": "Personal Information",
       "financialDetails": "Financial Details",
-      "profileUpdated": "Profile updated",
-      "changeRequestSubmitted": "Change request submitted for approval",
       "fields": {
         "displayName": "Display Name",
         "emailAddress": "Email Address",
@@ -5651,8 +5530,7 @@
       "magicLinkSent": "Check your inbox for the sign-in link.",
       "uploadReady": "Upload ready.",
       "scanComplete": "Scan complete.",
-      "invoiceSubmitted": "Invoice submitted.",
-      "preferenceUpdated": "Preference updated."
+      "invoiceSubmitted": "Invoice submitted."
     }
   },
   "Reports": {
@@ -6905,18 +6783,7 @@
     "passwordTooShort": "Password must be at least 8 characters",
     "orgNameTooShort": "Organization name must be at least 2 characters",
     "contractor": {
-      "legalNameRequired": "Legal name is required",
-      "nipRequired": "NIP is required",
-      "nipFormat": "NIP must be 10 digits",
-      "nipChecksum": "Invalid NIP number",
-      "emailRequired": "Contact email is required",
-      "emailFormat": "Enter a valid email address",
-      "billingModelRequired": "Select a billing model",
-      "currencyRequired": "Select a currency",
-      "rateRequired": "Default rate is required",
-      "ratePositive": "Rate must be a positive number",
-      "ownerRequired": "Select an owner",
-      "ibanFormat": "Enter a valid IBAN"
+      "nipFormat": "NIP must be 10 digits"
     },
     "invoice": {
       "invoiceNumberRequired": "Invoice number is required",
@@ -7737,16 +7604,10 @@
     "syncNow": "Sync Now",
     "syncing": "Syncing with KSeF...",
     "syncSuccessToast": "{count} new invoices fetched from KSeF",
-    "syncNoNewToast": "No new invoices found in KSeF",
     "syncFailedToast": "KSeF sync failed. Check connection status in Settings.",
-    "disconnectTitle": "Disconnect KSeF",
-    "disconnectBody": "This will stop auto-fetching invoices from KSeF. Existing KSeF invoices will not be affected.",
-    "disconnectConfirm": "Disconnect",
-    "disconnectCancel": "Keep Connection",
     "syncHistoryTitle": "Sync History",
     "syncHistoryEmpty": "No sync history yet. Click Sync Now to fetch invoices from KSeF.",
     "syncStatusSuccess": "Success",
-    "syncStatusPartial": "Partial",
     "syncStatusFailed": "Failed",
     "syncStatusNoNew": "No new invoices",
     "syncInvoiceCount": "{count} invoices",
@@ -7756,8 +7617,6 @@
     "fetchedLabel": "Fetched",
     "viewInKsef": "View in KSeF",
     "sourceBadge": "KSeF",
-    "sourceBadgeTooltip": "Fetched from KSeF on {date}",
-    "sourceBadgeTooltipNoDate": "Fetched from KSeF",
     "duplicateHeading": "KSeF Duplicate Found",
     "duplicateBody": "A matching invoice was found in KSeF (invoice number {invoiceNumber}, seller NIP {sellerNip}). The KSeF version is government-validated.",
     "duplicateViewKsef": "View KSeF Invoice",

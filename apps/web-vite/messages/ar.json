@@ -478,13 +478,11 @@
   "Classification": {
     "_NOTE": "Legal-locked phrases live in packages/validators/src/legal/{de,disclaimers}.ts. Do NOT duplicate CLASSIFICATION_* or DISCLAIMER_* values here. Arabic is out of scope for Phase 58; strings carry REVIEW:AR tokens pending native review.",
     "pageTitle": "تقييم التصنيف",
-    "pageSubtitle": "قيّم مخاطر حالة التوظيف لهذا التعاقد.",
     "start": "بدء تقييم التصنيف",
     "previous": "السابق",
     "next": "التالي",
     "submitAssessment": "إرسال التقييم",
     "cancelDraft": "إلغاء المسودة",
-    "backToEngagement": "العودة إلى التعاقد",
     "engagement": {
       "notFound": "لم يتم العثور على التعاقد",
       "backToContractor": "العودة إلى المقاول"
@@ -542,13 +540,11 @@
       "startNew": "بدء تقييم جديد",
       "ratioOutOfRange": "يجب أن تكون نسبة الفوترة بين 0 و 100. أدخل نسبة إجمالي فواتير المقاول الصادرة إلى مؤسستك.",
       "nonNumeric": "أدخل رقماً بين 0 و 100.",
-      "rationaleTooLong": "المبرر محدود بـ 1000 حرف. قم بتقصير الملاحظة للمتابعة.",
       "autosaveNetwork": "تعذر حفظ المسودة. تحقق من اتصالك؛ سنحاول تلقائياً.",
       "submitFailed": "فشل الإرسال. يرجى المحاولة مرة أخرى. إذا استمرت المشكلة فاتصل بالدعم."
     },
     "emptyState": {
       "noAssessment": "لا يوجد تقييم تصنيف بعد",
-      "noAssessmentBody": "قم بتشغيل تقييم IR35 أو تقييم الحالة الألماني لهذا التعاقد لالتقاط حالة المخاطر. يمكنك حفظ مسودة واستئنافها لاحقاً.",
       "notSupported": "التصنيف غير متاح",
       "notSupportedBody": "مجموعات قواعد التصنيف متاحة حالياً للتعاقدات في المملكة المتحدة (IR35) وألمانيا. بلد المقاول ({countryCode}) غير مدعوم بعد."
     },
@@ -590,7 +586,6 @@
       "printSubtitle": "معاينة غير رسمية — ليست قراراً قانونياً",
       "print": "طباعة / حفظ كـ PDF",
       "rerun": "إعادة تشغيل التقييم",
-      "printedOn": "طُبع في {date}",
       "ir35": {
         "verdict": {
           "outside": "خارج IR35",
@@ -617,7 +612,6 @@
         "totalScore": "النتيجة الإجمالية {score} من {max}",
         "categoryScore": "{weighted} من {max}",
         "categoryAriaLabel": "{category}: {weighted} من {max}. مستوى المخاطر {level}.",
-        "thresholds": "العتبات",
         "criterionBreakdown": "تفصيل المعايير",
         "criterion": "المعيار",
         "answer": "الإجابة",
@@ -632,8 +626,7 @@
       "loading": "جارٍ تحميل التصنيف…",
       "viewDetails": "عرض التفاصيل",
       "rerun": "إعادة تشغيل التقييم",
-      "ruleSetVersion": "مجموعة القواعد {version}",
-      "completedLabel": "مكتمل"
+      "ruleSetVersion": "مجموعة القواعد {version}"
     },
     "list": {
       "heading": "سجل التصنيف",
@@ -669,9 +662,6 @@
         "chipTooltip": "تم رصد تغييرات جوهرية منذ بيان تحديد الحالة IR35 الأخير.",
         "ctaPrimary": "بدء تقييم جديد",
         "ctaSecondary": "عرض SDS السابق",
-        "reasonLine": "تم تغيير {field} من {oldValue} إلى {newValue} في {date}",
-        "notificationTitle": "يوصى بإعادة التقييم: {engagementName}",
-        "notificationBody": "تم رصد {N} تغيير(ات) جوهرية. تم إكمال بيان SDS السابق في {priorDate}. افتح الارتباط للمراجعة.",
         "dismissAction": "تجاهل المشغل",
         "dismissHeading": "هل تريد تجاهل مشغل إعادة التقييم هذا؟",
         "dismissBody": "لن يعيد النظام إطلاق التنبيه لهذه التغييرات. يمكنك دائمًا بدء تقييم جديد يدويًا.",
@@ -750,11 +740,7 @@
         "alertsEconomicWarning": "{count} تحذير تبعية اقتصادية",
         "alertsEconomicCritical": "{count} تبعية اقتصادية حرجة",
         "alertsDrvExpiring": "{count} تصريح DRV ينتهي خلال ≤90 يومًا",
-        "alertsEmpty": "لا توجد تنبيهات نشطة.",
-        "emptyNoEngagementsHeading": "لا توجد ارتباطات نشطة",
-        "emptyNoEngagementsBody": "أضف متعاقدًا وأنشئ ارتباطًا لملء لوحة الامتثال.",
-        "emptyNoAssessmentsHeading": "لا توجد تقييمات مكتملة بعد",
-        "emptyNoAssessmentsBody": "أجرِ تقييم IR35 أو Scheinselbständigkeit من أي ارتباط لملء هذا العرض."
+        "alertsEmpty": "لا توجد تنبيهات نشطة."
       }
     },
     "documents": {
@@ -775,9 +761,6 @@
       "errorGenericTitle": "تعذّر توليد المستند",
       "kindSds": "بيان تحديد الحالة (Status Determination Statement)",
       "kindDrvDefenseBundle": "حزمة دفاع تدقيق DRV"
-    },
-    "AdvisoryBanner": {
-      "label": "إشعار قانوني"
     },
     "ExpertHelp": {
       "title": "احصل على مساعدة متخصصة",
@@ -846,9 +829,7 @@
     "appearanceLight": "فاتح",
     "appearanceDark": "داكن",
     "appearanceSystem": "النظام",
-    "darkMode": "الوضع الداكن",
     "density": "Compact",
-    "language": "اللغة",
     "editName": "تعديل name",
     "editNamePrompt": "أدخل اسمك",
     "nameUpdated": "تم تحديث Name",
@@ -856,19 +837,11 @@
     "signOutFailed": "تعذر تسجيل الخروج. حاول مجددًا.",
     "save": "حفظ",
     "cancel": "إلغاء",
-    "appName": "Contractor Ops",
-    "appTagline": "منصة لإدارة المقاولين ومعالجة الفواتير",
     "aria": {
       "previousPage": "الصفحة السابقة",
       "nextPage": "الصفحة التالية",
-      "closeDialog": "إغلاق مربع الحوار",
-      "closePanel": "إغلاق اللوحة",
-      "toggleSidebar": "تبديل الشريط الجانبي",
-      "breadcrumb": "مسار التنقل",
       "sortBy": "ترتيب حسب {column}",
       "removeFilter": "إزالة filter: {label}",
-      "dateFrom": "التاريخ من",
-      "dateTo": "التاريخ إلى",
       "portalSubdomain": "النطاق الفرعي للبوابة",
       "inApp": "In-app",
       "email": "البريد الإلكتروني",
@@ -906,7 +879,6 @@
       "profileMenu": "قائمة الملف الشخصي"
     },
     "srOnly": {
-      "more": "المزيد",
       "actions": "الإجراءات",
       "moreActions": "المزيد من الإجراءات",
       "remove": "إزالة",
@@ -934,7 +906,6 @@
       "kilobytes": "{size} كيلوبايت",
       "megabytes": "{size} ميغابايت"
     },
-    "switchToLanguage": "تغيير اللغة إلى {name}",
     "commandPalette": {
       "title": "لوحة الأوامر",
       "description": "ابحث عن أمر لتشغيله...",
@@ -963,8 +934,6 @@
       "rowsPerPage": "صفوف لكل صفحة"
     },
     "clearDates": "مسح التواريخ",
-    "filterFrom": "من {date}",
-    "filterTo": "إلى {date}",
     "emailLabel": "البريد الإلكتروني"
   },
   "Consent": {
@@ -2165,7 +2134,6 @@
       "invalidType": "{filename} ليس من نوع ملف مدعوم.",
       "tooLarge": "{filename} يتجاوز حد 25 ميغابايت."
     },
-    "uploadCTA": "رفع مستند",
     "uploadNewVersion": "رفع new version",
     "download": "Download",
     "preview": "معاينة",
@@ -2176,8 +2144,6 @@
     "deleteCancel": "إلغاء",
     "deleteConfirm": "حذف المستند",
     "version": "النسخة {n}",
-    "versionLabel": "النسخة {n}",
-    "currentVersion": "Current",
     "versionHistory": "عرض version history",
     "empty": {
       "title": "لا يوجد documents بعد",
@@ -2185,7 +2151,6 @@
     },
     "emptyHeading": "لا يوجد documents بعد",
     "emptyBody": "رفع contract documents to keep them organized.",
-    "emptyCTA": "رفع مستند",
     "threatDetected": "تم اكتشاف تهديد - تم حجر الملف",
     "scan": {
       "scanning": "جارٍ الفحص بحثًا عن التهديدات...",
@@ -2197,26 +2162,14 @@
     "scanStatus": {
       "failed": "تعذّر اكتمال الفحص"
     },
-    "metadata": {
-      "uploadedBy": "رُفع بواسطة {name}",
-      "uploadedOn": "في {date}",
-      "size": "{size}"
-    },
     "contractorTab": {
       "heading": "المستندات",
-      "uploadCTA": "رفع مستند",
       "emptyHeading": "لا توجد مستندات",
       "emptyBody": "رفع documents for this contractor.",
       "emptyCTA": "رفع مستند"
     },
-    "compliance": {
-      "requiredDocuments": "المستندات المطلوبة",
-      "uploadCompliance": "رفع مستند الامتثال",
-      "complianceTypes": "شهادة ضريبية، تسجيل تجاري، تأمين"
-    },
     "errors": {
       "uploadFailed": "تعذّر رفع المستند. تحقّق من الملف وأعد المحاولة.",
-      "downloadFailed": "تعذر generate download link. حاول مجددًا.",
       "retry": "حاول مجددًا"
     },
     "loading": "Loading…",
@@ -2235,20 +2188,13 @@
       "subline": "أدر تسجيل مشاركتك في Peppol ومُعرّفات Leitweg-ID للفوترة الحكومية الألمانية وإعدادات الامتثال للفوترة الإلكترونية.",
       "PeppolCard": {
         "ctaNotRegistered": "تسجيل مشارك Peppol",
-        "ctaRegistered": "إدارة المشارك",
         "emptyHeading": "غير مسجّل في Peppol",
         "emptyBody": "سجّل مؤسستك لمرّة واحدة لإرسال فواتير XRechnung الإلكترونية إلى المشترين الحكوميين في المملكة المتحدة وتلقّي إقرارات التسليم.",
-        "pendingHeading": "التسجيل قيد الانتظار",
         "labelParticipant": "المشارك",
         "labelStatus": "الحالة",
         "labelAsp": "ASP",
         "labelLastCapabilityCheck": "آخر فحص للقدرات",
-        "neverChecked": "لم يتم قط",
-        "statusActive": "نشط",
-        "statusRegistered": "مسجل",
-        "statusSuspended": "معلق",
-        "statusDeregistered": "تم إلغاء التسجيل",
-        "statusNotRegistered": "غير مسجل"
+        "neverChecked": "لم يتم قط"
       },
       "LeitwegIdCard": {
         "ctaCreate": "إنشاء Leitweg-ID",
@@ -2369,9 +2315,6 @@
       "valueHelper": "رقم Companies House أو GLN أو DUNS — حسب ما يتطلّبه نظامك.",
       "registerButton": "تسجيل المشارك",
       "pendingHeading": "التسجيل معلّق",
-      "pendingBody": "تقوم Storecove بتسجيل مشاركك في SML الخاص بـ Peppol. عادةً ما يستغرق ذلك بضع دقائق. سنحدّث الحالة تلقائيًا.",
-      "activeHeading": "مسجّل في Peppol",
-      "activeBodyPattern": "المشارك {schemeId}:{value} · الحالة {status} · تم التسجيل {relativeTime}",
       "deregisterButton": "إلغاء تسجيل المشارك",
       "peppolIdentifierLegend": "معرّف Peppol",
       "pairError": "كلا الحقلين مطلوبان، أو اتركهما فارغَين."
@@ -2397,7 +2340,6 @@
       "uploadTryAnother": "جرّب ملفًا آخر",
       "uploadSuccessToast": "تم الاستيراد — راجع في /invoices/intake/{id}",
       "uploadDedupToast": "تم الاستيراد مسبقًا — جارٍ فتح الاستيراد الموجود",
-      "uploadNetworkError": "فشل الرفع. تحقّق من الاتصال وأعد المحاولة.",
       "uploadWrongType": "تُقبل فقط ملفات .xml أو .pdf.",
       "ctaConvert": "تحويل إلى فاتورة",
       "ctaConfirmMatch": "تأكيد التطابق",
@@ -2495,8 +2437,6 @@
         "BASICWL": "BASICWL",
         "MINIMUM": "MINIMUM"
       },
-      "sendCta": "إرسال الفاتورة الإلكترونية",
-      "xmlPreviewTitle": "معاينة XML",
       "pdfPreviewTitle": "معاينة PDF",
       "xmlLoadError": "فشل تحميل ملف XML."
     },
@@ -2665,7 +2605,6 @@
         "search": "البحث عن equipment...",
         "type": "النوع",
         "status": "الحالة",
-        "assignee": "المكلف",
         "clearAll": "مسح الكل",
         "removeFilter": "إزالة الفلتر: {label}"
       },
@@ -2673,8 +2612,7 @@
       "pagination": {
         "previous": "السابق",
         "next": "التالي",
-        "pageOf": "{page} / {total}",
-        "itemCount": "{count, plural, zero {لا عناصر} one {عنصر واحد} two {عنصران} few {# عناصر} many {# عنصرًا} other {# عنصر}}"
+        "pageOf": "{page} / {total}"
       }
     },
     "detail": {
@@ -2832,13 +2770,9 @@
       "emptyDescription": "لا توجد لهذا المقاول معدّات مُسنَدة. أسند معدّات من سجل المعدّات."
     },
     "inpost": {
-      "createShipment": "إنشاء InPost shipment",
       "selectPaczkomat": "اختر Paczkomat",
       "recipient": "Recipient",
-      "destinationPaczkomat": "Paczkomat الوجهة",
-      "parcelSize": "حجم الطرد",
-      "shipmentCreated": "تم إنشاء InPost shipment",
-      "shipmentError": "تعذر create the InPost shipment. يرجى المحاولة مجددًا."
+      "destinationPaczkomat": "Paczkomat الوجهة"
     },
     "paczkomat": {
       "selectPaczkomat": "اختر Paczkomat",
@@ -2847,15 +2781,10 @@
       "cancel": "إلغاء",
       "retry": "حاول مجددًا",
       "loadError": "تعذّر تحميل خريطة Paczkomat. تحقّق من اتصالك وأعد المحاولة.",
-      "noSelection": "لم يُختر Paczkomat",
-      "noSelectionDescription": "اختر خزانة Paczkomat على الخريطة لتحديد وجهة التوصيل.",
       "paczkomatTitle": "خريطة خزائن InPost Paczkomat"
     },
     "label": {
       "download": "تحميل label",
-      "print": "Print",
-      "notAvailable": "الملصق غير متوفر بعد",
-      "notAvailableDescription": "سيظهر ملصق الشحن هنا بمجرد إنشاء الشحنة عبر InPost.",
       "downloadError": "تعذر download the label. يرجى المحاولة مجددًا."
     },
     "shipmentLabel": {
@@ -2905,8 +2834,7 @@
       "deliveryAddress": "عنوان التسليم",
       "street": "Street",
       "city": "المدينة",
-      "postalCode": "الرمز البريدي",
-      "countryCode": "رمز الدولة"
+      "postalCode": "الرمز البريدي"
     },
     "ups": {
       "deliveryAddress": "عنوان التسليم",
@@ -3283,7 +3211,6 @@
     }
   },
   "Import": {
-    "dialogTitle": "استيراد data",
     "steps": {
       "upload": "رفع file",
       "mapping": "ربط الأعمدة",
@@ -3295,8 +3222,6 @@
       "heading": "أفلت ملفك هنا",
       "body": "ملف CSV أو Excel يحتوي على بيانات مقاولين أو عقود",
       "browse": "تصفّح الملفات",
-      "entityContractors": "المقاولون",
-      "entityContracts": "العقود",
       "removeFile": "إزالة",
       "dropHeading": "أفلت ملفك هنا",
       "dropBody": "ملف CSV أو Excel يحتوي على بيانات مقاولين أو عقود",
@@ -3310,13 +3235,8 @@
       "remove": "إزالة"
     },
     "mapping": {
-      "yourColumns": "أعمدة ملفك",
-      "mapsTo": "يُربط بـ",
-      "autoMatched": "Auto-matched",
       "notMapped": "غير مربوط",
-      "unmappedNote": "ستُتجاهل الأعمدة غير المربوطة",
       "skip": "تخطٍّ (لا تُستورَد)",
-      "required": "مطلوب",
       "description": "اربط أعمدة ملفك بالحقول المقابلة. الحقول المطلوبة موسومة بنجمة.",
       "note": "ستُتجاهل الأعمدة غير المربوطة أثناء الاستيراد."
     },
@@ -3343,14 +3263,6 @@
     },
     "confirm": {
       "heading": "جاهز لاستيراد {count} {entity}",
-      "newRecords": "{count} سجلات جديدة",
-      "updates": "{count} تحديثات على السجلات الموجودة",
-      "skippedDuplicates": "{count} تكرارات متخطّاة",
-      "skippedErrors": "{count} أخطاء متخطّاة",
-      "importCta": "استيراد",
-      "processing": "جارٍ الاستيراد... {current}/{total}",
-      "completeHeading": "استيراد complete",
-      "viewCta": "عرض {entity}",
       "contractors": "contractors",
       "contracts": "contracts",
       "complete": "استيراد complete",
@@ -3369,15 +3281,6 @@
       "skippedDuplicatesLabel": "التكرارات المتخطّاة",
       "skippedErrorsLabel": "الأخطاء المتخطّاة",
       "importButton": "استيراد {count} records"
-    },
-    "errors": {
-      "invalidFile": "تنسيق ملف غير مدعوم. يرجى رفع ملف CSV أو XLSX.",
-      "emptyFile": "لا يحتوي الملف على صفوف بيانات.",
-      "tooManyRows": "يتجاوز الملف 5000 صف. يرجى التقسيم إلى ملفات أصغر.",
-      "importFailed": "استيراد failed. Some rows could not be processed. Try again or contact support."
-    },
-    "toast": {
-      "importComplete": "تم استيراد {count} {entity} بنجاح"
     },
     "title": "استيراد data",
     "parseError": "فشل تحليل الملف. يرجى التحقّق من التنسيق والمحاولة مجددًا.",
@@ -3837,21 +3740,7 @@
     },
     "privacyIndex": {
       "heading": "إشعار الخصوصية",
-      "description": "اختر الاختصاص القضائي المنطبق عليك. إذا كنت مسجّل الدخول، فسنوجّهك تلقائيًا بناءً على بلد مؤسستك.",
-      "jurisdictions": {
-        "gb": {
-          "label": "المملكة المتحدة",
-          "subtitle": "UK GDPR · DPA 2018"
-        },
-        "de": {
-          "label": "ألمانيا",
-          "subtitle": "DSGVO · BDSG"
-        },
-        "eu": {
-          "label": "الاتحاد الأوروبي",
-          "subtitle": "GDPR · الاحتياطي العام"
-        }
-      }
+      "description": "اختر الاختصاص القضائي المنطبق عليك. إذا كنت مسجّل الدخول، فسنوجّهك تلقائيًا بناءً على بلد مؤسستك."
     },
     "privacy": {
       "title": "سياسة الخصوصية",
@@ -4105,14 +3994,12 @@
       "clientNameLabel": "اسم العميل",
       "clientNamePlaceholder": "أدخل اسم الشركة المتعاقِدة النهائية",
       "confirmApproval": "تأكيد الموافقة والمتابعة",
-      "confirmingApproval": "جارٍ التأكيد...",
-      "approved": "تمت الموافقة — يمكنك الآن توليد SDS"
+      "confirmingApproval": "جارٍ التأكيد..."
     },
     "DrvUpload": {
       "uploadDecisionLetter": "رفع خطاب قرار DRV",
       "uploading": "جارٍ الرفع...",
       "uploadedAt": "تم الرفع في {date} بواسطة {user}",
-      "downloadLetter": "تنزيل خطاب القرار",
       "fileTooLarge": "الملف كبير جدًا (بحد أقصى 10 ميغابايت)"
     },
     "TermsModal": {
@@ -5193,7 +5080,6 @@
   "Peppol": {
     "statusCard": {
       "title": "شبكة Peppol",
-      "notConnected": "غير متصل بـ Peppol",
       "connectDescription": "اتصل بشبكة Peppol لإرسال واستقبال الفواتير الإلكترونية مع الشركاء التجاريين في الإمارات. ستحتاج إلى TRN وبيانات اعتماد ASP الخاصة بك.",
       "connect": "الاتصال بـ Peppol",
       "participantId": "مُعرّف المشارك",
@@ -5266,8 +5152,6 @@
       "aspRef": "مرجع ASP"
     },
     "capabilities": {
-      "recheckCapabilities": "إعادة فحص القدرات",
-      "rechecking": "جارٍ الفحص…",
       "xrechnungCiiSupported": "مشارك Peppol يدعم XRechnung (CII)",
       "xrechnungCiiUnsupported": "مشارك Peppol لا يُعلن عن دعم XRechnung (CII)",
       "recheckFailed": "تعذّر إعادة فحص القدرات"
@@ -5291,7 +5175,6 @@
       "title": "معداتك",
       "emptyTitle": "لا توجد معدات مخصّصة",
       "emptyDescription": "لم تُخصَّص لك أي معدات بعد. تواصل مع المسؤول إذا كنت تتوقّع استلام معدات.",
-      "returnButton": "Return",
       "returnAll": "إرجاع المعدات",
       "deliveredOn": "تم التسليم في {date}",
       "pendingApproval": "الإرجاع بانتظار الموافقة",
@@ -5311,7 +5194,6 @@
       "approvalNotice": "يتطلب هذا الإرجاع موافقة المسؤول. ستحصل على ملصق الشحن فور الموافقة.",
       "returnRequested": "تم طلب الإرجاع",
       "dropOffAt": "نقطة الاستلام: {name}",
-      "dropOffBy": "بحلول: {date}",
       "cancelConfirmTitle": "إلغاء الإرجاع",
       "cancelConfirmDescription": "سيؤدي ذلك إلى إلغاء طلب الإرجاع. يمكنك طلب الإرجاع مجددًا لاحقًا. هل تريد المتابعة؟",
       "cancelledToast": "تم إلغاء الإرجاع"
@@ -5462,7 +5344,6 @@
       "yes": "نعم",
       "no": "لا",
       "noticePeriod": "فترة الإشعار",
-      "noticePeriodDays": "{days} يوم",
       "ratePeriods": "فترات السعر",
       "documents": "المستندات",
       "noDocuments": "لا توجد مستندات مرفقة بهذا العقد.",
@@ -5532,8 +5413,6 @@
       "subtitle": "إدارة your profile and preferences",
       "personalInfo": "المعلومات الشخصية",
       "financialDetails": "التفاصيل المالية",
-      "profileUpdated": "تم تحديث Profile",
-      "changeRequestSubmitted": "تم إرسال طلب التعديل للاعتماد",
       "fields": {
         "displayName": "الاسم المعروض",
         "emailAddress": "البريد الإلكتروني",
@@ -5651,8 +5530,7 @@
       "magicLinkSent": "تحقق من بريدك الإلكتروني.",
       "uploadReady": "تم تجهيز الملف.",
       "scanComplete": "اكتمل الفحص.",
-      "invoiceSubmitted": "تم إرسال الفاتورة.",
-      "preferenceUpdated": "تم تحديث التفضيل."
+      "invoiceSubmitted": "تم إرسال الفاتورة."
     }
   },
   "Reports": {
@@ -6905,18 +6783,7 @@
     "passwordTooShort": "يجب أن ��كون كلمة المرور 8 أحرف على الأقل",
     "orgNameTooShort": "يجب أن يكون اسم المؤسسة حرفين على الأقل",
     "contractor": {
-      "legalNameRequired": "Legal name مطلوب",
-      "nipRequired": "NIP مطلوب",
-      "nipFormat": "يجب أن يتألف NIP من 10 أرقام",
-      "nipChecksum": "رقم NIP غير صالح",
-      "emailRequired": "Contact email مطلوب",
-      "emailFormat": "أدخل عنوان بريد إلكتروني صالح",
-      "billingModelRequired": "اختر نموذج فوترة",
-      "currencyRequired": "اختر عملة",
-      "rateRequired": "Default rate مطلوب",
-      "ratePositive": "يجب أن يكون السعر رقمًا موجبًا",
-      "ownerRequired": "اختر مالكًا",
-      "ibanFormat": "أدخل IBAN صالحًا"
+      "nipFormat": "يجب أن يتألف NIP من 10 أرقام"
     },
     "invoice": {
       "invoiceNumberRequired": "Invoice number مطلوب",
@@ -7737,16 +7604,10 @@
     "syncNow": "مزامنة الآن",
     "syncing": "جارٍ المزامنة مع KSeF...",
     "syncSuccessToast": "تم جلب {count} فواتير جديدة من KSeF",
-    "syncNoNewToast": "لم تُعثَر على فواتير جديدة في KSeF",
     "syncFailedToast": "فشلت مزامنة KSeF. تحقّق من حالة الاتصال في الإعدادات.",
-    "disconnectTitle": "فصل KSeF",
-    "disconnectBody": "سيؤدي ذلك إلى إيقاف جلب الفواتير تلقائيًا من KSeF. لن تتأثر فواتير KSeF الموجودة.",
-    "disconnectConfirm": "Disconnect",
-    "disconnectCancel": "الإبقاء على الاتصال",
     "syncHistoryTitle": "سجل المزامنة",
     "syncHistoryEmpty": "لا يوجد سجل مزامنة بعد. انقر على \"مزامنة الآن\" لجلب الفواتير من KSeF.",
     "syncStatusSuccess": "نجاح",
-    "syncStatusPartial": "Partial",
     "syncStatusFailed": "Failed",
     "syncStatusNoNew": "لا توجد فواتير جديدة",
     "syncInvoiceCount": "{count} فواتير",
@@ -7756,8 +7617,6 @@
     "fetchedLabel": "Fetched",
     "viewInKsef": "عرض in KSeF",
     "sourceBadge": "KSeF",
-    "sourceBadgeTooltip": "تم الجلب من KSeF في {date}",
-    "sourceBadgeTooltipNoDate": "تم الجلب من KSeF",
     "duplicateHeading": "تم العثور على تكرار في KSeF",
     "duplicateBody": "تم العثور على فاتورة مطابقة في KSeF (رقم الفاتورة {invoiceNumber}، NIP البائع {sellerNip}). نسخة KSeF مُصدّقة من الحكومة.",
     "duplicateViewKsef": "عرض KSeF Invoice",
