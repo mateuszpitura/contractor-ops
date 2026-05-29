@@ -20,7 +20,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Archive, Copy, GitBranch, MoreHorizontal, Pencil, Power, Trash2 } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { tDynLoose } from '../../i18n/typed-keys.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
@@ -29,6 +29,8 @@ import { formatDate } from '../../lib/format-date.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { SimpleDataTable } from '../shared/simple-data-table.js';
 import type { TemplateRow, useTemplatesTable } from './hooks/use-templates-table.js';
+
+const stopMouseEventPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
 const templateStatusBadgeColors: Record<string, string> = {
   DRAFT: 'bg-muted text-muted-foreground border border-border',
@@ -45,6 +47,89 @@ const templateTypeBadgeColors: Record<string, string> = {
 };
 
 type TemplatesTableProps = ReturnType<typeof useTemplatesTable>;
+
+interface TemplateActionsCellProps {
+  template: TemplateRow;
+  t: ReturnType<typeof useTranslations>;
+  onEdit: (id: string) => void;
+  onDuplicate: (template: TemplateRow) => Promise<unknown> | unknown;
+  onActivate: (template: TemplateRow) => Promise<unknown> | unknown;
+  onArchive: (template: TemplateRow) => Promise<unknown> | unknown;
+  onDelete: (template: TemplateRow) => void;
+}
+
+const TemplateActionsCell = memo(function TemplateActionsCell({
+  template,
+  t,
+  onEdit,
+  onDuplicate,
+  onActivate,
+  onArchive,
+  onDelete,
+}: TemplateActionsCellProps) {
+  const handleEdit = useCallback(() => onEdit(template.id), [onEdit, template.id]);
+  const handleDuplicate = useCallback(() => void onDuplicate(template), [onDuplicate, template]);
+  const handleActivate = useCallback(() => void onActivate(template), [onActivate, template]);
+  const handleArchive = useCallback(() => void onArchive(template), [onArchive, template]);
+  const handleDelete = useCallback(() => onDelete(template), [onDelete, template]);
+
+  const renderTrigger = useCallback(
+    (props: React.ComponentPropsWithoutRef<typeof Button>) => (
+      <Button
+        {...props}
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={stopMouseEventPropagation}>
+        <MoreHorizontal className="h-4 w-4" />
+        <span className="sr-only">{t('templates.actions')}</span>
+      </Button>
+    ),
+    [t],
+  );
+
+  return (
+    <div className="text-end">
+      <DropdownMenu>
+        <DropdownMenuTrigger render={renderTrigger} />
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={handleEdit}>
+            <Pencil className="me-2 h-4 w-4" />
+            {t('templates.actionEdit')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={handleDuplicate}>
+            <Copy className="me-2 h-4 w-4" />
+            {t('templates.actionDuplicate')}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          {template.status === 'DRAFT' && (
+            <DropdownMenuItem onSelect={handleActivate}>
+              <Power className="me-2 h-4 w-4" />
+              {t('templates.actionActivate')}
+            </DropdownMenuItem>
+          )}
+          {template.status === 'ACTIVE' && (
+            <DropdownMenuItem onSelect={handleArchive}>
+              <Archive className="me-2 h-4 w-4" />
+              {t('templates.actionArchive')}
+            </DropdownMenuItem>
+          )}
+          {template.status === 'DRAFT' && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={handleDelete}>
+                <Trash2 className="me-2 h-4 w-4" />
+                {t('templates.actionDelete')}
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+});
 
 export function TemplatesTable({
   templates,
@@ -112,70 +197,17 @@ export function TemplatesTable({
         id: 'actions',
         header: () => <span className="sr-only">{t('templates.actions')}</span>,
         enableSorting: false,
-        cell: ({ row }) => {
-          const template = row.original;
-          return (
-            <div className="text-end">
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                  render={props => (
-                    <Button
-                      {...props}
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      // biome-ignore lint/nursery/noJsxPropsBind: stopPropagation handler
-                      onClick={e => e.stopPropagation()}>
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">{t('templates.actions')}</span>
-                    </Button>
-                  )}
-                />
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                    onSelect={() => handleRowNavigate(template.id)}>
-                    <Pencil className="me-2 h-4 w-4" />
-                    {t('templates.actionEdit')}
-                  </DropdownMenuItem>
-                  {/* biome-ignore lint/nursery/noJsxPropsBind: menu item handler */}
-                  <DropdownMenuItem onSelect={() => void handleDuplicate(template)}>
-                    <Copy className="me-2 h-4 w-4" />
-                    {t('templates.actionDuplicate')}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {template.status === 'DRAFT' && (
-                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                    <DropdownMenuItem onSelect={() => void handleActivate(template)}>
-                      <Power className="me-2 h-4 w-4" />
-                      {t('templates.actionActivate')}
-                    </DropdownMenuItem>
-                  )}
-                  {template.status === 'ACTIVE' && (
-                    // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                    <DropdownMenuItem onSelect={() => void handleArchive(template)}>
-                      <Archive className="me-2 h-4 w-4" />
-                      {t('templates.actionArchive')}
-                    </DropdownMenuItem>
-                  )}
-                  {template.status === 'DRAFT' && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        // biome-ignore lint/nursery/noJsxPropsBind: menu item handler
-                        onSelect={() => setDeleteTarget(template)}>
-                        <Trash2 className="me-2 h-4 w-4" />
-                        {t('templates.actionDelete')}
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          );
-        },
+        cell: ({ row }) => (
+          <TemplateActionsCell
+            template={row.original}
+            t={t}
+            onEdit={handleRowNavigate}
+            onDuplicate={handleDuplicate}
+            onActivate={handleActivate}
+            onArchive={handleArchive}
+            onDelete={setDeleteTarget}
+          />
+        ),
       },
     ],
     [t, handleRowNavigate, handleDuplicate, handleActivate, handleArchive, setDeleteTarget],
@@ -185,6 +217,15 @@ export function TemplatesTable({
     (template: TemplateRow) => handleRowNavigate(template.id),
     [handleRowNavigate],
   );
+
+  const handleDeleteDialogOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setDeleteTarget(null);
+    },
+    [setDeleteTarget],
+  );
+
+  const handleDeleteConfirm = useCallback(() => void handleDelete(), [handleDelete]);
 
   if (!isLoading && templates.length === 0) {
     return (
@@ -220,10 +261,7 @@ export function TemplatesTable({
         onRowClick={handleRowClickTemplate}
       />
 
-      <AlertDialog
-        open={deleteTarget !== null}
-        // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-        onOpenChange={open => !open && setDeleteTarget(null)}>
+      <AlertDialog open={deleteTarget !== null} onOpenChange={handleDeleteDialogOpenChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
@@ -234,8 +272,7 @@ export function TemplatesTable({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('templates.deleteCancel')}</AlertDialogCancel>
-            {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-            <AlertDialogAction variant="destructive" onClick={() => void handleDelete()}>
+            <AlertDialogAction variant="destructive" onClick={handleDeleteConfirm}>
               {t('templates.deleteConfirm')}
             </AlertDialogAction>
           </AlertDialogFooter>

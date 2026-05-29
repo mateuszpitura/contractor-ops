@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Plus, X } from 'lucide-react';
+import { memo, useCallback } from 'react';
 
 import { tDynLoose, tKey } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -79,10 +80,133 @@ const ENUM_VALUE_FIELDS: Record<string, string[]> = {
   'contract.currency': ['PLN', 'EUR', 'USD', 'GBP', 'CHF', 'CZK'],
 };
 
+interface RuleRowProps {
+  index: number;
+  rule: ConditionRule;
+  combinator: ConditionGroup['combinator'];
+  showCombinator: boolean;
+  t: ReturnType<typeof useTranslations>;
+  onToggleCombinator: () => void;
+  onUpdate: (index: number, partial: Partial<ConditionRule>) => void;
+  onRemove: (index: number) => void;
+}
+
+const RuleRow = memo(function RuleRow({
+  index,
+  rule,
+  combinator,
+  showCombinator,
+  t,
+  onToggleCombinator,
+  onUpdate,
+  onRemove,
+}: RuleRowProps) {
+  const handleFieldChange = useCallback(
+    (val: string | null) => onUpdate(index, { field: val ?? '', value: '' }),
+    [index, onUpdate],
+  );
+  const handleOperatorChange = useCallback(
+    (val: string | null) => {
+      if (val) onUpdate(index, { operator: val as ConditionRule['operator'] });
+    },
+    [index, onUpdate],
+  );
+  const handleValueSelectChange = useCallback(
+    (val: string | null) => onUpdate(index, { value: val ?? '' }),
+    [index, onUpdate],
+  );
+  const handleValueInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onUpdate(index, { value: e.target.value }),
+    [index, onUpdate],
+  );
+  const handleRemove = useCallback(() => onRemove(index), [index, onRemove]);
+
+  const enumValues = rule.field ? ENUM_VALUE_FIELDS[rule.field] : undefined;
+
+  return (
+    <div>
+      {!!showCombinator && (
+        <div className="flex items-center justify-center py-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs font-medium"
+            onClick={onToggleCombinator}>
+            <Badge variant="outline" className="cursor-pointer text-xs">
+              {combinator === 'AND' ? t('conditionAnd') : t('conditionOr')}
+            </Badge>
+          </Button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2">
+        <Select value={rule.field} onValueChange={handleFieldChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder={t('conditionFieldPlaceholder')} />
+          </SelectTrigger>
+          <SelectContent>
+            {CONDITION_FIELDS.map(field => (
+              <SelectItem key={field} value={field}>
+                {tKey(t, `conditionField.${field}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={rule.operator} onValueChange={handleOperatorChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {OPERATORS.map(op => (
+              <SelectItem key={op} value={op}>
+                {tDynLoose(t, 'operator', enumKey(op))}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {enumValues ? (
+          <Select value={rule.value} onValueChange={handleValueSelectChange}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder={t('conditionValuePlaceholder')} />
+            </SelectTrigger>
+            <SelectContent>
+              {enumValues.map(v => (
+                <SelectItem key={v} value={v}>
+                  {tDynLoose(t, 'conditionValue', enumKey(v))}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input
+            className="w-[160px]"
+            placeholder={t('conditionValuePlaceholder')}
+            value={rule.value}
+            onChange={handleValueInputChange}
+          />
+        )}
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="size-8 p-0 text-muted-foreground hover:text-destructive"
+          onClick={handleRemove}>
+          <X className="size-3.5" />
+          <span className="sr-only">{t('removeCondition')}</span>
+        </Button>
+      </div>
+    </div>
+  );
+});
+
 export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   const t = useTranslations('Workflows');
 
-  const addRule = () => {
+  const addRule = useCallback(() => {
     if (value) {
       onChange({
         ...value,
@@ -94,37 +218,42 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
         rules: [{ field: '', operator: 'equals', value: '' }],
       });
     }
-  };
+  }, [value, onChange]);
 
-  const removeRule = (index: number) => {
-    if (!value) return;
-    const newRules = value.rules.filter((_, i) => i !== index);
-    if (newRules.length === 0) {
-      onChange(null);
-    } else {
+  const removeRule = useCallback(
+    (index: number) => {
+      if (!value) return;
+      const newRules = value.rules.filter((_, i) => i !== index);
+      if (newRules.length === 0) {
+        onChange(null);
+      } else {
+        onChange({ ...value, rules: newRules });
+      }
+    },
+    [value, onChange],
+  );
+
+  const updateRule = useCallback(
+    (index: number, partial: Partial<ConditionRule>) => {
+      if (!value) return;
+      const newRules = value.rules.map((rule, i) => (i === index ? { ...rule, ...partial } : rule));
       onChange({ ...value, rules: newRules });
-    }
-  };
+    },
+    [value, onChange],
+  );
 
-  const updateRule = (index: number, partial: Partial<ConditionRule>) => {
-    if (!value) return;
-    const newRules = value.rules.map((rule, i) => (i === index ? { ...rule, ...partial } : rule));
-    onChange({ ...value, rules: newRules });
-  };
-
-  const toggleCombinator = () => {
+  const toggleCombinator = useCallback(() => {
     if (!value) return;
     onChange({
       ...value,
       combinator: value.combinator === 'AND' ? 'OR' : 'AND',
     });
-  };
+  }, [value, onChange]);
 
   if (!value || value.rules.length === 0) {
     return (
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">{t('noConditions')}</p>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button type="button" variant="outline" size="sm" onClick={addRule}>
           <Plus className="me-1.5 size-3.5" />
           {t('addCondition')}
@@ -136,102 +265,20 @@ export function ConditionBuilder({ value, onChange }: ConditionBuilderProps) {
   return (
     <div className="space-y-2">
       {value.rules.map((rule, index) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, rules have no stable id
-        <div key={`rule-${index}`}>
-          {index > 0 && (
-            <div className="flex items-center justify-center py-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs font-medium"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={toggleCombinator}>
-                <Badge variant="outline" className="cursor-pointer text-xs">
-                  {value.combinator === 'AND' ? t('conditionAnd') : t('conditionOr')}
-                </Badge>
-              </Button>
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
-            <Select
-              value={rule.field}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val => updateRule(index, { field: val as string, value: '' })}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder={t('conditionFieldPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {CONDITION_FIELDS.map(field => (
-                  <SelectItem key={field} value={field}>
-                    {tKey(t, `conditionField.${field}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={rule.operator}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onValueChange={val =>
-                updateRule(index, {
-                  operator: val as ConditionRule['operator'],
-                })
-              }>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {OPERATORS.map(op => (
-                  <SelectItem key={op} value={op}>
-                    {tDynLoose(t, 'operator', enumKey(op))}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {rule.field && ENUM_VALUE_FIELDS[rule.field] ? (
-              <Select
-                value={rule.value}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val => updateRule(index, { value: val as string })}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder={t('conditionValuePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {ENUM_VALUE_FIELDS[rule.field]?.map(v => (
-                    <SelectItem key={v} value={v}>
-                      {tDynLoose(t, 'conditionValue', enumKey(v))}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                className="w-[160px]"
-                placeholder={t('conditionValuePlaceholder')}
-                value={rule.value}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-                onChange={e => updateRule(index, { value: e.target.value })}
-              />
-            )}
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="size-8 p-0 text-muted-foreground hover:text-destructive"
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => removeRule(index)}>
-              <X className="size-3.5" />
-              <span className="sr-only">{t('removeCondition')}</span>
-            </Button>
-          </div>
-        </div>
+        <RuleRow
+          // biome-ignore lint/suspicious/noArrayIndexKey: dynamic form array, rules have no stable id
+          key={`rule-${index}`}
+          index={index}
+          rule={rule}
+          combinator={value.combinator}
+          showCombinator={index > 0}
+          t={t}
+          onToggleCombinator={toggleCombinator}
+          onUpdate={updateRule}
+          onRemove={removeRule}
+        />
       ))}
 
-      {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
       <Button type="button" variant="outline" size="sm" onClick={addRule}>
         <Plus className="me-1.5 size-3.5" />
         {t('addCondition')}

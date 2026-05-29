@@ -10,10 +10,11 @@ import {
   Circle,
   CircleDot,
   Lock,
+  Play,
   SkipForward,
   XCircle,
 } from 'lucide-react';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { formatDate } from '../../lib/format-date.js';
@@ -70,14 +71,17 @@ export function MyTasksListError({ onRetry }: MyTasksListErrorProps) {
   );
 }
 
-export function MyTasksListEmpty() {
+export function MyTasksListEmpty({ onStartWorkflow }: { onStartWorkflow?: () => void }) {
   const tEmpty = useTranslations('EmptyStates.myTasks');
   return (
     <AtelierEmptyState
-      variant="subview"
+      variant="page"
       illustration={MyTasksIllustration}
       heading={tEmpty('heading')}
       body={tEmpty('body')}
+      primaryAction={
+        onStartWorkflow ? { label: tEmpty('cta'), onClick: onStartWorkflow, icon: Play } : undefined
+      }
       renderAction={renderEmptyStateAction}
     />
   );
@@ -92,6 +96,10 @@ interface MyTasksListBodyProps {
 export function MyTasksListBody({ tasks, overdueOnly, setOverdueOnly }: MyTasksListBodyProps) {
   const t = useTranslations('Workflows');
   const reactId = useId();
+  const handleOverdueToggle = useCallback(
+    (checked: boolean) => setOverdueOnly(checked === true),
+    [setOverdueOnly],
+  );
 
   return (
     <div className="space-y-4">
@@ -99,8 +107,7 @@ export function MyTasksListBody({ tasks, overdueOnly, setOverdueOnly }: MyTasksL
         <Switch
           id={`${reactId}-overdue-only-toggle`}
           checked={overdueOnly}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-          onCheckedChange={checked => setOverdueOnly(checked === true)}
+          onCheckedChange={handleOverdueToggle}
         />
         <Label htmlFor={`${reactId}-overdue-only-toggle`} className="text-sm">
           {t('filterOverdueOnly')}

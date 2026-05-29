@@ -21,7 +21,7 @@ import {
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { AlertTriangle, MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
@@ -55,17 +55,31 @@ function OverrideBlockingTaskDialog({
   const [reason, setReason] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
 
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      onOpenChange(isOpen);
+      if (!isOpen) {
+        setReason('');
+        setAcknowledged(false);
+      }
+    },
+    [onOpenChange],
+  );
+
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [],
+  );
+
+  const handleAcknowledgeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setAcknowledged(e.target.checked),
+    [],
+  );
+
+  const handleConfirmClick = useCallback(() => onConfirm(reason.trim()), [onConfirm, reason]);
+
   return (
-    <AlertDialog
-      open={open}
-      // biome-ignore lint/nursery/noJsxPropsBind: AlertDialog onOpenChange resets local form state
-      onOpenChange={isOpen => {
-        onOpenChange(isOpen);
-        if (!isOpen) {
-          setReason('');
-          setAcknowledged(false);
-        }
-      }}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
@@ -87,8 +101,7 @@ function OverrideBlockingTaskDialog({
             <Textarea
               id={`run-${runId}-override-reason`}
               value={reason}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setReason(e.target.value)}
+              onChange={handleReasonChange}
               placeholder={t('reasonPlaceholder')}
               className="min-h-[100px]"
               maxLength={2000}
@@ -103,8 +116,7 @@ function OverrideBlockingTaskDialog({
               type="checkbox"
               className="mt-0.5"
               checked={acknowledged}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-              onChange={e => setAcknowledged(e.target.checked)}
+              onChange={handleAcknowledgeChange}
             />
             <span>{t('acknowledge')}</span>
           </label>
@@ -114,8 +126,7 @@ function OverrideBlockingTaskDialog({
             <AlertDialogAction
               variant="destructive"
               disabled={reason.trim().length < 20 || !acknowledged || isPending}
-              // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-              onClick={() => onConfirm(reason.trim())}>
+              onClick={handleConfirmClick}>
               {t('confirmCta')}
             </AlertDialogAction>
           </div>
@@ -145,6 +156,18 @@ export function RunHeader({
   const tCommon = useTranslations('Common');
   const tOverride = useTranslations('Workflows.overrideBlockingTask');
   const { formatDate } = useDateFormatter();
+
+  const handleOpenOverride = useCallback(() => setOverrideOpen(true), [setOverrideOpen]);
+  const handleOpenCancel = useCallback(() => setCancelOpen(true), [setCancelOpen]);
+  const renderMenuTrigger = useCallback(
+    (props: React.ComponentPropsWithoutRef<typeof Button>) => (
+      <Button {...props} variant="ghost" size="icon">
+        <MoreHorizontal className="size-4" />
+        <span className="sr-only">{tCommon('srOnly.actions')}</span>
+      </Button>
+    ),
+    [tCommon],
+  );
 
   return (
     <div className="space-y-4">
@@ -211,21 +234,12 @@ export function RunHeader({
         {!!showActions && (
           <div className="flex items-center gap-2">
             <DropdownMenu>
-              <DropdownMenuTrigger
-                // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-                render={props => (
-                  <Button {...props} variant="ghost" size="icon">
-                    <MoreHorizontal className="size-4" />
-                    <span className="sr-only">{tCommon('srOnly.actions')}</span>
-                  </Button>
-                )}
-              />
+              <DropdownMenuTrigger render={renderMenuTrigger} />
               <DropdownMenuContent align="end">
                 {!!showOverride && (
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    // biome-ignore lint/nursery/noJsxPropsBind: dropdown item handler
-                    onSelect={() => setOverrideOpen(true)}>
+                    onSelect={handleOpenOverride}>
                     <AlertTriangle className="me-2 size-4" />
                     {tOverride('menuItem')}
                   </DropdownMenuItem>
@@ -233,8 +247,7 @@ export function RunHeader({
                 {!!canCancel && (
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    // biome-ignore lint/nursery/noJsxPropsBind: dropdown item handler
-                    onSelect={() => setCancelOpen(true)}>
+                    onSelect={handleOpenCancel}>
                     {t('cancelWorkflow')}
                   </DropdownMenuItem>
                 )}

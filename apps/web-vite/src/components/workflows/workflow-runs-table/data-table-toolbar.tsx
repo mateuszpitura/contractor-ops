@@ -47,6 +47,11 @@ export function DataTableToolbar({
     [onSearchChange],
   );
 
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value),
+    [handleSearchInput],
+  );
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -56,8 +61,7 @@ export function DataTableToolbar({
             placeholder={t('searchPlaceholder')}
             value={localSearch}
             disabled={filtersDisabled}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-            onChange={e => handleSearchInput(e.target.value)}
+            onChange={handleSearchChange}
             className="h-9 ps-9 pe-8"
           />
           {!!isSearching && (

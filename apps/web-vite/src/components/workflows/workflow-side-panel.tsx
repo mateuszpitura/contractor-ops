@@ -12,7 +12,7 @@ import {
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { workflowTaskSkipReason } from '@contractor-ops/validators';
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { Link } from '../../i18n/navigation.js';
 import { tDynLoose } from '../../i18n/typed-keys.js';
@@ -55,9 +55,15 @@ interface WorkflowSidePanelShellProps {
 }
 
 export function WorkflowSidePanelShell({ open, onClose, children }: WorkflowSidePanelShellProps) {
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) onClose();
+    },
+    [onClose],
+  );
+
   return (
-    // biome-ignore lint/nursery/noJsxPropsBind: dialog/popover state handler
-    <Sheet open={open} onOpenChange={isOpen => !isOpen && onClose()}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="w-[400px] sm:w-[480px] p-0">
         <ScrollArea className="h-full">
           <div className="p-6 space-y-6">{children}</div>

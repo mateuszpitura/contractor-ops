@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
-import { useId } from 'react';
+import { useCallback, useId } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -87,6 +87,17 @@ export function TemplateForm({
     value: type,
     label: tDynLoose(t, 'type', enumKey(type)),
   }));
+
+  const handleTypeChange = useCallback(
+    (val: string | null) => {
+      if (val) {
+        form.setValue('type', val as TemplateFormValues['type'], {
+          shouldDirty: true,
+        });
+      }
+    },
+    [form],
+  );
 
   return (
     <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4">
@@ -180,12 +191,7 @@ export function TemplateForm({
           <Label htmlFor={`${reactId}-template-type`}>{t('columns.templateType')}</Label>
           <Select
             value={form.watch('type')}
-            // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-            onValueChange={val =>
-              form.setValue('type', val as TemplateFormValues['type'], {
-                shouldDirty: true,
-              })
-            }
+            onValueChange={handleTypeChange}
             items={templateTypeItems}>
             <SelectTrigger
               id={`${reactId}-template-type`}

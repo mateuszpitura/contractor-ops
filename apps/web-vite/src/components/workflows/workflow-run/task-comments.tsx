@@ -8,6 +8,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { formatDistanceToNow } from 'date-fns';
+import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../../lib/avatar-initials.js';
@@ -84,27 +85,33 @@ export function TaskCommentsComposer({
   handleSubmit,
 }: TaskCommentsComposerProps) {
   const t = useTranslations('Workflows');
+  const handleBodyChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setBody(e.target.value),
+    [setBody],
+  );
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit],
+  );
+
   return (
     <div className="flex gap-2">
       <Textarea
         placeholder={t('commentPlaceholder')}
         value={body}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-        onChange={e => setBody(e.target.value)}
+        onChange={handleBodyChange}
         rows={2}
         className="flex-1 resize-none"
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-        onKeyDown={e => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            handleSubmit();
-          }
-        }}
+        onKeyDown={handleKeyDown}
       />
       <Button
         size="sm"
         disabled={body.trim().length === 0 || isSubmitting}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onClick={handleSubmit}
         className="self-end">
         {t('postComment')}

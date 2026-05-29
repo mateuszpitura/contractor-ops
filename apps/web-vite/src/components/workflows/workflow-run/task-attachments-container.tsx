@@ -1,5 +1,5 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DropZoneContainer } from '../../documents/drop-zone-container.js';
 import { useTaskAttachmentsSection } from '../hooks/use-task-attachments-section.js';
@@ -17,6 +17,7 @@ export function TaskAttachmentsContainer({ taskRunId }: TaskAttachmentsContainer
   const { documents, isLoading, isError, handleRetry } = useTaskAttachmentsSection(taskRunId);
   const [showDropZone, setShowDropZone] = useState(false);
   const t = useTranslations('Workflows');
+  const handleToggleDropZone = useCallback(() => setShowDropZone(prev => !prev), []);
 
   let body: React.ReactNode;
   if (isError) {
@@ -36,11 +37,7 @@ export function TaskAttachmentsContainer({ taskRunId }: TaskAttachmentsContainer
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">{t('attachmentsHeading')}</h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => setShowDropZone(prev => !prev)}>
+        <Button variant="ghost" size="sm" onClick={handleToggleDropZone}>
           {t('addAttachment')}
         </Button>
       </div>

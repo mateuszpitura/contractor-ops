@@ -6,7 +6,7 @@
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { DropZoneContainer } from '../../documents/drop-zone-container.js';
@@ -30,7 +30,6 @@ function TaskAttachmentsShell({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium">{t('attachmentsHeading')}</h4>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
         <Button variant="ghost" size="sm" onClick={onAddClick}>
           {t('addAttachment')}
         </Button>
@@ -115,6 +114,7 @@ export function TaskAttachments({
   handleRetry,
 }: TaskAttachmentsProps) {
   const [showDropZone, setShowDropZone] = useState(false);
+  const handleAddClick = useCallback(() => setShowDropZone(prev => !prev), []);
 
   let body: React.ReactNode;
   if (isError) {
@@ -132,8 +132,7 @@ export function TaskAttachments({
 
   return (
     <TaskAttachmentsShell
-      // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-      onAddClick={() => setShowDropZone(prev => !prev)}
+      onAddClick={handleAddClick}
       showDropZone={showDropZone}
       taskRunId={taskRunId}>
       {body}

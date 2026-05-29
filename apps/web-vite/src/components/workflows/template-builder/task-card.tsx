@@ -82,6 +82,14 @@ interface FixedUserFieldProps {
 }
 
 function FixedUserField({ index, form, users, isLoading, value, t }: FixedUserFieldProps) {
+  const handleUserChange = useCallback(
+    (val: string | null) =>
+      form.setValue(`tasks.${index}.assigneeUserId`, val ?? '', {
+        shouldDirty: true,
+      }),
+    [form, index],
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-1.5">
@@ -105,15 +113,7 @@ function FixedUserField({ index, form, users, isLoading, value, t }: FixedUserFi
   return (
     <div className="space-y-1.5">
       <Label htmlFor={`task-user-${index}`}>{t('userField')}</Label>
-      <Select
-        value={value}
-        // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-        onValueChange={val =>
-          form.setValue(`tasks.${index}.assigneeUserId`, val as string, {
-            shouldDirty: true,
-          })
-        }
-        items={userItems}>
+      <Select value={value} onValueChange={handleUserChange} items={userItems}>
         <SelectTrigger id={`task-user-${index}`} className="w-full">
           <SelectValue placeholder={t('userPlaceholder')} />
         </SelectTrigger>
@@ -223,6 +223,60 @@ export function TaskCard({
     [form, index],
   );
 
+  const handleTaskTypeChange = useCallback(
+    (val: string | null) => {
+      if (val) {
+        form.setValue(`tasks.${index}.taskType`, val as typeof taskType, {
+          shouldDirty: true,
+        });
+      }
+    },
+    [form, index],
+  );
+
+  const handleAssigneeModeChange = useCallback(
+    (val: string | null) => {
+      if (val) {
+        form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
+          shouldDirty: true,
+        });
+      }
+    },
+    [form, index],
+  );
+
+  const handleAssigneeRoleChange = useCallback(
+    (val: string | null) => {
+      if (val) {
+        form.setValue(`tasks.${index}.assigneeRole`, val as (typeof USER_ROLES)[number], {
+          shouldDirty: true,
+        });
+      }
+    },
+    [form, index],
+  );
+
+  const handleRequiredChange = useCallback(
+    (checked: boolean) =>
+      form.setValue(`tasks.${index}.required`, !!checked, {
+        shouldDirty: true,
+      }),
+    [form, index],
+  );
+
+  const handleDependsOnChange = useCallback(
+    (val: string | null) =>
+      form.setValue(
+        `tasks.${index}.dependsOnTaskTemplateId`,
+        !val || val === '__none__' ? undefined : val,
+        { shouldDirty: true },
+      ),
+    [form, index],
+  );
+
+  const handleRemoveClick = useCallback(() => onRemove(index), [onRemove, index]);
+  const handleCollapse = useCallback(() => setIsOpen(false), []);
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card className="overflow-hidden">
@@ -290,15 +344,7 @@ export function TaskCard({
 
             <div className="space-y-1.5">
               <Label htmlFor={`task-type-${index}`}>{t('taskTypeLabel')}</Label>
-              <Select
-                value={taskType}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val =>
-                  form.setValue(`tasks.${index}.taskType`, val as typeof taskType, {
-                    shouldDirty: true,
-                  })
-                }
-                items={taskTypeItems}>
+              <Select value={taskType} onValueChange={handleTaskTypeChange} items={taskTypeItems}>
                 <SelectTrigger
                   id={`task-type-${index}`}
                   aria-label={t('taskTypeLabel')}
@@ -333,12 +379,7 @@ export function TaskCard({
               <Label htmlFor={`task-assignee-${index}`}>{t('assignedTo')}</Label>
               <Select
                 value={assigneeMode}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onValueChange={val =>
-                  form.setValue(`tasks.${index}.assigneeMode`, val as typeof assigneeMode, {
-                    shouldDirty: true,
-                  })
-                }
+                onValueChange={handleAssigneeModeChange}
                 items={assigneeModeItems}>
                 <SelectTrigger
                   id={`task-assignee-${index}`}
@@ -361,14 +402,7 @@ export function TaskCard({
                 <Label htmlFor={`task-role-${index}`}>{t('roleField')}</Label>
                 <Select
                   value={task?.assigneeRole ?? ''}
-                  // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                  onValueChange={val =>
-                    form.setValue(
-                      `tasks.${index}.assigneeRole`,
-                      val as (typeof USER_ROLES)[number],
-                      { shouldDirty: true },
-                    )
-                  }
+                  onValueChange={handleAssigneeRoleChange}
                   items={userRoleItems}>
                   <SelectTrigger
                     id={`task-role-${index}`}
@@ -434,12 +468,7 @@ export function TaskCard({
               <Switch
                 id={`task-required-${index}`}
                 checked={task?.required ?? false}
-                // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                onCheckedChange={checked =>
-                  form.setValue(`tasks.${index}.required`, !!checked, {
-                    shouldDirty: true,
-                  })
-                }
+                onCheckedChange={handleRequiredChange}
               />
               <Label htmlFor={`task-required-${index}`}>{t('requiredTask')}</Label>
             </div>
@@ -454,14 +483,7 @@ export function TaskCard({
                 return (
                   <Select
                     value={task?.dependsOnTaskTemplateId ?? ''}
-                    // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-                    onValueChange={val =>
-                      form.setValue(
-                        `tasks.${index}.dependsOnTaskTemplateId`,
-                        val === '__none__' ? undefined : (val as string),
-                        { shouldDirty: true },
-                      )
-                    }
+                    onValueChange={handleDependsOnChange}
                     items={depItems}>
                     <SelectTrigger id={`task-depends-${index}`} className="w-full">
                       <SelectValue placeholder={t('dependsOnPlaceholder')} />
@@ -494,12 +516,10 @@ export function TaskCard({
               <button
                 type="button"
                 className="text-sm text-destructive hover:underline"
-                // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-                onClick={() => onRemove(index)}>
+                onClick={handleRemoveClick}>
                 {t('removeTask')}
               </button>
-              {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-              <Button type="button" variant="secondary" size="sm" onClick={() => setIsOpen(false)}>
+              <Button type="button" variant="secondary" size="sm" onClick={handleCollapse}>
                 {t('doneEditing')}
               </Button>
             </div>

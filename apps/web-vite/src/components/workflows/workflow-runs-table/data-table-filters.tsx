@@ -9,7 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/popover';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
 import { Filter, X } from 'lucide-react';
-import { useCallback, useId } from 'react';
+import { memo, useCallback, useId } from 'react';
 
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -73,22 +73,41 @@ export function DataTableFilters({
     [filters, onFiltersChange],
   );
 
+  const handleStatusToggle = useCallback(
+    (value: string) => toggleFilterValue('status', value),
+    [toggleFilterValue],
+  );
+  const handleTemplateToggle = useCallback(
+    (value: string) => toggleFilterValue('templateId', value),
+    [toggleFilterValue],
+  );
+  const handleOverdueChange = useCallback(
+    (checked: boolean) => onFiltersChange({ overdueOnly: checked === true }),
+    [onFiltersChange],
+  );
+  const clearOverdue = useCallback(
+    () => onFiltersChange({ overdueOnly: false }),
+    [onFiltersChange],
+  );
+
+  const renderFilterTrigger = useCallback(
+    (props: React.ComponentPropsWithoutRef<typeof Button>) => (
+      <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
+        <Filter className="h-3.5 w-3.5" />
+        {t('filters')}
+        {!!hasActiveFilters && (
+          <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
+            {activeFilterCount}
+          </Badge>
+        )}
+      </Button>
+    ),
+    [filtersDisabled, t, hasActiveFilters, activeFilterCount],
+  );
+
   const trigger = (
     <Popover>
-      <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button {...props} variant="outline" size="lg" disabled={filtersDisabled}>
-            <Filter className="h-3.5 w-3.5" />
-            {t('filters')}
-            {hasActiveFilters && (
-              <Badge variant="secondary" className="ms-1 h-5 w-5 rounded-full p-0 text-[10px]">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-        )}
-      />
+      <PopoverTrigger render={renderFilterTrigger} />
       <PopoverContent className="w-80 p-0" align="start">
         <div className="max-h-[460px] overflow-y-auto p-4 space-y-4">
           <FilterSection
@@ -98,8 +117,7 @@ export function DataTableFilters({
               label: tDynLoose(t, 'runStatus', enumKey(s)),
             }))}
             selected={filters.status}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onToggle={value => toggleFilterValue('status', value)}
+            onToggle={handleStatusToggle}
           />
 
           <FilterSection
@@ -109,8 +127,7 @@ export function DataTableFilters({
               label: tmpl.name,
             }))}
             selected={filters.templateId}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onToggle={value => toggleFilterValue('templateId', value)}
+            onToggle={handleTemplateToggle}
           />
 
           <div className="flex items-center justify-between">
@@ -122,8 +139,7 @@ export function DataTableFilters({
             <Switch
               id={`${reactId}-overdue-toggle`}
               checked={filters.overdueOnly}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={checked => onFiltersChange({ overdueOnly: checked === true })}
+              onCheckedChange={handleOverdueChange}
             />
           </div>
         </div>
@@ -134,30 +150,26 @@ export function DataTableFilters({
   const badges = hasActiveFilters ? (
     <div className="flex flex-wrap items-center gap-1.5">
       {filters.status.map(s => (
-        <FilterBadge
+        <StatusFilterBadge
           key={`status-${s}`}
+          statusValue={s}
           label={tDynLoose(t, 'runStatus', enumKey(s))}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onRemove={() => removeFilter('status', s)}
+          onRemove={removeFilter}
         />
       ))}
       {filters.templateId.map(tmplId => {
         const tmpl = templates.find(t => t.id === tmplId);
         return (
-          <FilterBadge
+          <TemplateFilterBadge
             key={`template-${tmplId}`}
+            templateValue={tmplId}
             label={tmpl?.name ?? tmplId}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onRemove={() => removeFilter('templateId', tmplId)}
+            onRemove={removeFilter}
           />
         );
       })}
       {!!filters.overdueOnly && (
-        <FilterBadge
-          label={t('filterOverdueOnly')}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onRemove={() => onFiltersChange({ overdueOnly: false })}
-        />
+        <FilterBadge label={t('filterOverdueOnly')} onRemove={clearOverdue} />
       )}
       <button
         type="button"
@@ -197,23 +209,43 @@ function FilterSection({
       <h4 className="text-[13px] font-medium text-foreground">{title}</h4>
       <div className="space-y-1">
         {options.map(option => (
-          <label
+          <FilterSectionOption
             key={option.value}
-            htmlFor={`${filterSectionId}-${option.value}`}
-            className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
-            <Checkbox
-              id={`${filterSectionId}-${option.value}`}
-              checked={selected.includes(option.value)}
-              // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
-              onCheckedChange={() => onToggle(option.value)}
-            />
-            <span>{option.label}</span>
-          </label>
+            optionValue={option.value}
+            label={option.label}
+            checked={selected.includes(option.value)}
+            inputId={`${filterSectionId}-${option.value}`}
+            onToggle={onToggle}
+          />
         ))}
       </div>
     </div>
   );
 }
+
+const FilterSectionOption = memo(function FilterSectionOption({
+  optionValue,
+  label,
+  checked,
+  inputId,
+  onToggle,
+}: {
+  optionValue: string;
+  label: string;
+  checked: boolean;
+  inputId: string;
+  onToggle: (value: string) => void;
+}) {
+  const handleCheckedChange = useCallback(() => onToggle(optionValue), [onToggle, optionValue]);
+  return (
+    <label
+      htmlFor={inputId}
+      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent">
+      <Checkbox id={inputId} checked={checked} onCheckedChange={handleCheckedChange} />
+      <span>{label}</span>
+    </label>
+  );
+});
 
 function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   const tAria = useTranslations('Common.aria');
@@ -231,3 +263,32 @@ function FilterBadge({ label, onRemove }: { label: string; onRemove: () => void 
     </Badge>
   );
 }
+
+const StatusFilterBadge = memo(function StatusFilterBadge({
+  statusValue,
+  label,
+  onRemove,
+}: {
+  statusValue: string;
+  label: string;
+  onRemove: (key: 'status' | 'templateId', value: string) => void;
+}) {
+  const handleRemove = useCallback(() => onRemove('status', statusValue), [onRemove, statusValue]);
+  return <FilterBadge label={label} onRemove={handleRemove} />;
+});
+
+const TemplateFilterBadge = memo(function TemplateFilterBadge({
+  templateValue,
+  label,
+  onRemove,
+}: {
+  templateValue: string;
+  label: string;
+  onRemove: (key: 'status' | 'templateId', value: string) => void;
+}) {
+  const handleRemove = useCallback(
+    () => onRemove('templateId', templateValue),
+    [onRemove, templateValue],
+  );
+  return <FilterBadge label={label} onRemove={handleRemove} />;
+});

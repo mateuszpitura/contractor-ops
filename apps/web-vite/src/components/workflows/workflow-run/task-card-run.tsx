@@ -121,23 +121,29 @@ function SkipPopover({
   skip: ReturnType<typeof useSkipTaskPopover>;
 }) {
   const t = useTranslations('Workflows');
+  const { setReason, handleSkip } = skip;
+  const handleReasonChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => setReason(e.target.value),
+    [setReason],
+  );
+  const handleSkipClick = useCallback(() => handleSkip(taskRunId), [handleSkip, taskRunId]);
+  const renderTrigger = useCallback(
+    (props: React.ComponentPropsWithoutRef<typeof Button>) => (
+      <Button {...props} variant="ghost" size="sm">
+        {t('taskActionSkip')}
+      </Button>
+    ),
+    [t],
+  );
 
   return (
     <Popover open={skip.open} onOpenChange={skip.setOpen}>
-      <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button {...props} variant="ghost" size="sm">
-            {t('taskActionSkip')}
-          </Button>
-        )}
-      />
+      <PopoverTrigger render={renderTrigger} />
       <PopoverContent className="w-72 space-y-3" align="start">
         <Textarea
           placeholder={t('skipReasonPlaceholder')}
           value={skip.reason}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled input handler
-          onChange={e => skip.setReason(e.target.value)}
+          onChange={handleReasonChange}
           rows={3}
         />
         <Button
@@ -145,8 +151,7 @@ function SkipPopover({
           size="sm"
           className="w-full"
           disabled={skip.reason.trim().length < 3 || skip.skipMutation.isPending}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => skip.handleSkip(taskRunId)}>
+          onClick={handleSkipClick}>
           {t('skipConfirm')}
         </Button>
       </PopoverContent>
@@ -162,22 +167,27 @@ function ReassignPopover({
   reassign: ReturnType<typeof useReassignTaskPopover>;
 }) {
   const t = useTranslations('Workflows');
-  const { setSelectedUserId } = reassign;
+  const { setSelectedUserId, handleReassign } = reassign;
   const handleSelectedUserChange = useCallback(
     (val: string | null | undefined) => setSelectedUserId(val ?? ''),
     [setSelectedUserId],
   );
+  const handleReassignClick = useCallback(
+    () => handleReassign(taskRunId),
+    [handleReassign, taskRunId],
+  );
+  const renderTrigger = useCallback(
+    (props: React.ComponentPropsWithoutRef<typeof Button>) => (
+      <Button {...props} variant="ghost" size="sm">
+        {t('taskActionReassign')}
+      </Button>
+    ),
+    [t],
+  );
 
   return (
     <Popover open={reassign.open} onOpenChange={reassign.setOpen}>
-      <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button {...props} variant="ghost" size="sm">
-            {t('taskActionReassign')}
-          </Button>
-        )}
-      />
+      <PopoverTrigger render={renderTrigger} />
       <PopoverContent className="w-72 space-y-3" align="start">
         <Select value={reassign.selectedUserId} onValueChange={handleSelectedUserChange}>
           <SelectTrigger>
@@ -195,8 +205,7 @@ function ReassignPopover({
           size="sm"
           className="w-full"
           disabled={!reassign.selectedUserId || reassign.reassignMutation.isPending}
-          // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-          onClick={() => reassign.handleReassign(taskRunId)}>
+          onClick={handleReassignClick}>
           {t('reassignConfirm')}
         </Button>
       </PopoverContent>
@@ -223,17 +232,24 @@ function TaskActionToolbar({
   reassign: ReturnType<typeof useReassignTaskPopover>;
   t: ReturnType<typeof useTranslations>;
 }) {
+  const handleComplete = useCallback(() => {
+    completeMutation.mutate({ taskRunId: task.id });
+  }, [completeMutation, task.id]);
+
+  const renderBlockedTrigger = useCallback(
+    (props: React.HTMLAttributes<HTMLSpanElement>) => (
+      <span {...props} className="text-xs text-muted-foreground cursor-default">
+        <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
+      </span>
+    ),
+    [],
+  );
+
   return (
     <>
       {!!canAct && (
         <>
-          <Button
-            size="sm"
-            disabled={completeMutation.isPending}
-            // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
-            onClick={() => {
-              completeMutation.mutate({ taskRunId: task.id });
-            }}>
+          <Button size="sm" disabled={completeMutation.isPending} onClick={handleComplete}>
             {t('taskActionComplete')}
           </Button>
           <SkipPopover taskRunId={task.id} skip={skip} />
@@ -241,17 +257,10 @@ function TaskActionToolbar({
         </>
       )}
       {!!canReassignOnly && <ReassignPopover taskRunId={task.id} reassign={reassign} />}
-      {task.status === 'BLOCKED' && dependencyTitle && (
+      {task.status === 'BLOCKED' && !!dependencyTitle && (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger
-              // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-              render={props => (
-                <span {...props} className="text-xs text-muted-foreground cursor-default">
-                  <Lock className="size-3.5 text-amber-600 dark:text-amber-400" />
-                </span>
-              )}
-            />
+            <TooltipTrigger render={renderBlockedTrigger} />
             <TooltipContent>{t('blockedTooltip', { title: dependencyTitle })}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -361,41 +370,43 @@ export function TaskCardRun({
   const canReassignOnly =
     !isAssignedToMe && (task.status === 'TODO' || task.status === 'IN_PROGRESS');
 
+  const renderCollapsibleTrigger = useCallback(
+    (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+      <button
+        {...props}
+        type="button"
+        className="flex flex-1 min-w-0 items-center gap-3 text-start">
+        <StatusIcon className={`size-5 shrink-0 ${statusConfig.className}`} />
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium truncate">{task.title}</span>
+            <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
+              <TypeIcon className="size-3" />
+              {tDynLoose(t, 'taskType', enumKey(task.taskType))}
+            </Badge>
+          </div>
+          <div className="mt-1 flex items-center gap-3 text-[13px] text-muted-foreground">
+            {!!task.assigneeUserId && (
+              <span>{t('assignedToLabel', { name: task.assigneeUserId })}</span>
+            )}
+            {!!task.dueAt && (
+              <span className={isOverdue ? 'text-destructive font-medium' : ''}>
+                {isOverdue ? t('overdue') : t('dueLabel', { date: formatDate(task.dueAt) })}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+    ),
+    [StatusIcon, TypeIcon, formatDate, isOverdue, statusConfig.className, t, task],
+  );
+
   return (
     <Collapsible open={expanded} onOpenChange={setExpanded}>
       <div className="rounded-lg border bg-card">
         <div className="flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors">
-          <CollapsibleTrigger
-            // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-            render={props => (
-              <button
-                {...props}
-                type="button"
-                className="flex flex-1 min-w-0 items-center gap-3 text-start">
-                <StatusIcon className={`size-5 shrink-0 ${statusConfig.className}`} />
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium truncate">{task.title}</span>
-                    <Badge variant="secondary" className="shrink-0 gap-1 text-xs">
-                      <TypeIcon className="size-3" />
-                      {tDynLoose(t, 'taskType', enumKey(task.taskType))}
-                    </Badge>
-                  </div>
-                  <div className="mt-1 flex items-center gap-3 text-[13px] text-muted-foreground">
-                    {!!task.assigneeUserId && (
-                      <span>{t('assignedToLabel', { name: task.assigneeUserId })}</span>
-                    )}
-                    {!!task.dueAt && (
-                      <span className={isOverdue ? 'text-destructive font-medium' : ''}>
-                        {isOverdue ? t('overdue') : t('dueLabel', { date: formatDate(task.dueAt) })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            )}
-          />
+          <CollapsibleTrigger render={renderCollapsibleTrigger} />
           <div
             className="flex items-center gap-1 shrink-0"
             role="toolbar"

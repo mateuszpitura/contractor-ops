@@ -1,7 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Switch } from '@contractor-ops/ui/components/shadcn/switch';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { CalendarEventConfigDialog } from './calendar-event-config-dialog.js';
 import type { useCalendarTaskConfig } from './hooks/use-calendar-task-config.js';
 
@@ -29,13 +29,13 @@ export function CalendarTaskConfigView({
   defaultConfig,
 }: CalendarTaskConfigViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const handleOpenDialog = useCallback(() => setDialogOpen(true), []);
 
   return (
     <>
       <div className="flex items-center gap-3">
         <Switch
           checked={config?.calendarEnabled ?? false}
-          // biome-ignore lint/nursery/noJsxPropsBind: controlled component handler
           onCheckedChange={handleToggle}
           disabled={!isConfigured || saveMutation.isPending}
           aria-label={t('createCalendarEvent')}
@@ -44,8 +44,7 @@ export function CalendarTaskConfigView({
         <span className={`flex-1 text-sm ${isConfigured ? '' : 'text-muted-foreground'}`}>
           {summaryText}
         </span>
-        {/* biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop */}
-        <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
+        <Button variant="ghost" size="sm" onClick={handleOpenDialog}>
           {t('configureButton')}
         </Button>
       </div>
@@ -55,7 +54,6 @@ export function CalendarTaskConfigView({
         config={config ?? defaultConfig}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        // biome-ignore lint/nursery/noJsxPropsBind: callback in JSX prop
         onSave={handleSaveConfig}
       />
     </>
