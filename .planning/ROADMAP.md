@@ -87,7 +87,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [ ] **Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n** — at-risk dashboard, contractor portal compliance tab, one-click upload-replacement, en/pl/de parity
 - [x] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing (completed 2026-04-27)
 - [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex — **PARTIAL (75-01..07 complete; 75-08 UI/templates/i18n done, e-sign signing mutation + webhook IP-ratification atomic flow DEFERRED — STATE.md blocker)** (2026-05-31)
-- [ ] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard
+- [x] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard (completed 2026-05-31)
 - [ ] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue
 - [ ] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag
 - [ ] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard
@@ -201,7 +201,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   6. System enforces minimum-privilege OAuth scopes per provider: GWS `admin.directory.user`, Entra `User.EnableDisableAccount.All` + `User.RevokeSessions.All`, GitHub `admin:org`, Slack `admin.users.session:write` + `scim:write` (org-token), Okta "User Admin" role; CI lint asserts no scope expansion beyond the registry without code-review approval
   7. UI exposes no "reactivate contractor" button anywhere; returning contractors flow through the new-engagement path with fresh provisioning by design (Pitfall 11)
   8. Each deprovisioning step runs as an independent QStash job (no `Promise.allSettled` aggregation per Pitfall 10); aggregate `DeprovisioningRun.status` is computed from per-step states
-**Plans:** 9/10 plans executed
+**Plans:** 10/10 plans complete
 **Research flag:** STANDARD (mirrors v2.0 Jira scope-expansion + v2.0 webhook pipeline + v5.0 saga model)
 **Feature flags:** `idp-deprovisioning` PENDING
 
@@ -386,7 +386,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
-| 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 9/10 | In Progress|  |
+| 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete   | 2026-05-31 |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |
