@@ -237,6 +237,30 @@ export const contractRouter = router({
         },
       });
 
+      // Phase 75 D-01 — fire-and-forget contract health-check QStash job.
+      // Non-fatal: contract creation succeeded; admin can manually re-run from UI.
+      try {
+        const [{ publishJSONWithContext }, { getServerEnv }] = await Promise.all([
+          import('@contractor-ops/integrations/services/qstash-client'),
+          import('@contractor-ops/validators'),
+        ]);
+        await publishJSONWithContext({
+          url: `${getServerEnv().API_URL}/contract-health/_run`,
+          body: {
+            organizationId: ctx.organizationId,
+            contractId: contract.id,
+            triggeredBy: 'UPLOAD',
+            triggeredByUserId: ctx.user?.id ?? null,
+          },
+          retries: 3,
+        });
+      } catch (queueError) {
+        log.warn(
+          { err: queueError, contractId: contract.id },
+          'failed to enqueue contract-health-check',
+        );
+      }
+
       // Phase 60 CLASS-08 — audit contract creation so the reassessment-
       // trigger scan can walk the AuditLog.
       await writeAuditLog({
@@ -747,5 +771,63 @@ export const contractRouter = router({
       }
 
       return { updated: valid.length, failed };
+    }),
+
+  /**
+   * Phase 75 D-05 — admin per-contract / bulk health-check re-run. Enqueues one
+   * fire-and-forget QStash job per contract; emits a single audit row per
+   * invocation (D-15 single-write). Anthropic Tier-2 headroom via 2s QStash delay.
+   */
+  rerunHealthCheck: tenantProcedure
+    .use(requirePermission({ contract: ['update'] }))
+    .input(
+      z.object({
+        contractIds: z.array(z.string().min(1)).min(1).max(1000),
+        force: z.boolean().optional().default(false),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [{ publishJSONWithContext }, { getServerEnv }] = await Promise.all([
+        import('@contractor-ops/integrations/services/qstash-client'),
+        import('@contractor-ops/validators'),
+      ]);
+      const url = `${getServerEnv().API_URL}/contract-health/_run`;
+      const enqueued: string[] = [];
+      for (const contractId of input.contractIds) {
+        try {
+          await publishJSONWithContext({
+            url,
+            body: {
+              organizationId: ctx.organizationId,
+              contractId,
+              triggeredBy: 'MANUAL',
+              triggeredByUserId: ctx.user?.id ?? null,
+              force: input.force,
+            },
+            retries: 3,
+            delay: 2,
+          });
+          enqueued.push(contractId);
+        } catch (error) {
+          log.warn({ err: error, contractId }, 'failed to enqueue manual health-check rerun');
+        }
+      }
+      const isBulk = input.contractIds.length > 1;
+      await writeAuditLog({
+        organizationId: ctx.organizationId,
+        actorType: 'USER',
+        actorId: ctx.user?.id ?? null,
+        action: isBulk
+          ? 'compliance.ip_clause.bulk_rerun_started'
+          : 'compliance.ip_clause.manual_rerun',
+        resourceType: isBulk ? 'ORGANIZATION' : 'CONTRACT',
+        resourceId: isBulk ? ctx.organizationId : (input.contractIds[0] ?? ''),
+        newValues: {
+          contractIds: input.contractIds,
+          force: input.force,
+          enqueuedCount: enqueued.length,
+        },
+      });
+      return { enqueuedCount: enqueued.length, requestedCount: input.contractIds.length };
     }),
 });

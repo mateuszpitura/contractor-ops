@@ -4,6 +4,13 @@ export { AutentiAdapter } from './adapters/autenti-adapter.js';
 // Adapters
 export { BaseAdapter } from './adapters/base-adapter.js';
 export { Bir1CompanyRegistryAdapter } from './adapters/bir1-company-registry-adapter.js';
+// Phase 75 D-13 — contract health-check tool_use schema + Anthropic eval service
+export type { ContractHealthToolInput } from './adapters/contract-health-tools.js';
+export {
+  CONTRACT_HEALTH_PROMPT,
+  CONTRACT_HEALTH_TOOL,
+  CONTRACT_HEALTH_TOOL_NAME,
+} from './adapters/contract-health-tools.js';
 export { DataportCompanyRegistryAdapter } from './adapters/dataport-company-registry-adapter.js';
 export { DocuSignAdapter } from './adapters/docusign-adapter.js';
 export { KsefAdapter } from './adapters/ksef-adapter.js';
@@ -32,6 +39,8 @@ export {
 // Concurrency helpers (F-INT-09)
 export type { LimitFunction } from './services/concurrency.js';
 export { pLimit } from './services/concurrency.js';
+export type { EvaluateContractIpAssignmentParams } from './services/contract-health-service.js';
+export { evaluateContractIpAssignment } from './services/contract-health-service.js';
 // Credential Service
 export {
   decryptCredentials,

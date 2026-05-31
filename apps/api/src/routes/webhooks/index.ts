@@ -27,6 +27,7 @@
  */
 
 import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
+import { registerContractHealthRoute } from '../contract-health.js';
 import { registerExportsProcessRoute } from '../exports.js';
 import { registerGoogleWorkspaceSyncRoute } from '../google-workspace.js';
 import { registerKsefSyncRoute } from '../ksef.js';
@@ -82,6 +83,8 @@ const webhookPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
   registerExportsProcessRoute(app);
   registerGoogleWorkspaceSyncRoute(app);
   registerLateInterestRenderRoute(app);
+  // Phase 75 D-01 — contract health-check QStash callback.
+  registerContractHealthRoute(app);
 };
 
 export const webhookPlugin = webhookPluginImpl;

@@ -126,6 +126,11 @@
       "import": "./src/services/cron-monitor.ts",
       "default": "./src/services/cron-monitor.ts"
     },
+    "./services/contract-health": {
+      "types": "./src/services/contract-health/index.ts",
+      "import": "./src/services/contract-health/index.ts",
+      "default": "./src/services/contract-health/index.ts"
+    },
     "./services/org-definition-sync": {
       "types": "./src/services/org-definition-sync.ts",
       "import": "./src/services/org-definition-sync.ts",

@@ -113,6 +113,12 @@ const EXPECTED_ROUTES = {
     publisher: 'qstash',
     signature: 'guardQStashRequest',
   },
+  // Phase 75 D-01 — contract health-check QStash callback.
+  'POST /contract-health/_run': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
 
   // --- Internal (same-origin SPA / browser beacons) ----------------------
   // Authn is session/CSRF or none-by-design (public report sinks). No
