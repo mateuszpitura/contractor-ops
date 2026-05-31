@@ -414,7 +414,7 @@ describe('ocr.retrigger', () => {
     mockPrisma.ocrExtraction.findFirst.mockResolvedValue(null);
 
     await expect(tenantCaller.ocr.retrigger({ extractionId: 'nonexistent' })).rejects.toThrow(
-      'Extraction not found',
+      'ocrExtractionNotFound',
     );
   });
 });

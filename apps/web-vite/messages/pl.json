@@ -3155,7 +3155,9 @@
     "zatcaComplianceCsidRequired": "Wymagany CSID zgodności.",
     "zatcaCsrRequired": "Wymagany CSR.",
     "zatcaTaxDetailsRequired": "Wymagane dane podatkowe.",
-    "zatcaTaxDetailsRequiredForCompliance": "Wymagane dane podatkowe dla zgodności."
+    "zatcaTaxDetailsRequiredForCompliance": "Wymagane dane podatkowe dla zgodności.",
+    "zatcaInvoiceNotResubmittable": "Nie znaleziono faktury lub nie kwalifikuje się do ponownego przesłania. Ponownie przesłać można tylko faktury odrzucone lub oczekujące.",
+    "ocrExtractionNotFound": "Nie znaleziono ekstrakcji OCR."
   },
   "GoogleWorkspace": {
     "import": {
@@ -3321,7 +3323,10 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Połącz ponownie Google Workspace",
       "bannerBody": "Prosimy ponownie połączyć integrację Google Workspace, aby odblokować nowe funkcje deprowizjonowania IdP. Dotychczasowy odczyt katalogu pozostanie aktywny do momentu zakończenia ponownego połączenia.",
-      "reconnectButton": "Połącz ponownie Google Workspace"
+      "reconnectButton": "Połącz ponownie Google Workspace",
+      "writeAccessTitle": "Wymagana ponowna autoryzacja dla dostępu do zapisu",
+      "writeAccessBody": "Twoje połączenie Google Workspace ma obecnie dostęp tylko do odczytu. Autoryzuj ponownie z uprawnieniami zapisu administratora, aby włączyć dezaktywację kontrahentów. Dotychczasowe importy katalogu w trybie odczytu będą nadal działać.",
+      "writeAccessButton": "Przyznaj dostęp do zapisu"
     },
     "jira": {
       "taskConfig": {

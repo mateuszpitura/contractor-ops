@@ -7,7 +7,9 @@
 // ---------------------------------------------------------------------------
 
 import { zatcaTaxDetailsSchema } from '@contractor-ops/einvoice';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import { cursorClause, paginateByLastKeptUndefined } from '../../lib/pagination';
 import { requirePermission } from '../../middleware/rbac';
@@ -177,9 +179,10 @@ export const zatcaRouter = router({
       });
 
       if (!chain) {
-        throw new Error(
-          'Invoice not found or not eligible for resubmission. Only REJECTED or PENDING invoices can be resubmitted.',
-        );
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: E.ZATCA_INVOICE_NOT_RESUBMITTABLE,
+        });
       }
 
       await queueZatcaSubmission(input.invoiceId, ctx.organizationId);

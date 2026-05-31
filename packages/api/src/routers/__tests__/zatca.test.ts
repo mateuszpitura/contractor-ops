@@ -470,7 +470,7 @@ describe('zatcaRouter', () => {
       mockPrisma.zatcaInvoiceChain.findFirst.mockResolvedValueOnce(null);
 
       await expect(caller.resubmit({ invoiceId: 'nonexistent' })).rejects.toThrow(
-        'Invoice not found or not eligible for resubmission',
+        'zatcaInvoiceNotResubmittable',
       );
     });
   });

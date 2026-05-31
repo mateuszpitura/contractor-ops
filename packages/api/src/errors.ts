@@ -115,6 +115,9 @@ export const DOCUMENT_FILE_TOO_LARGE = 'documentFileTooLarge';
 // F-SEC-18 — sniffed MIME type does not match the declared mimeType.
 export const DOCUMENT_MIME_MISMATCH = 'documentMimeMismatch';
 
+// ─── OCR ─────────────────────────────────────────────────────────
+export const OCR_EXTRACTION_NOT_FOUND = 'ocrExtractionNotFound';
+
 // ─── Import ──────────────────────────────────────────────────────
 export const IMPORT_NO_DATA_ROWS = 'importNoDataRows';
 
@@ -367,6 +370,7 @@ export const ZATCA_COMPLIANCE_CSID_REQUIRED = 'zatcaComplianceCsidRequired';
 export const ZATCA_CSR_REQUIRED = 'zatcaCsrRequired';
 export const ZATCA_TAX_DETAILS_REQUIRED = 'zatcaTaxDetailsRequired';
 export const ZATCA_TAX_DETAILS_REQUIRED_FOR_COMPLIANCE = 'zatcaTaxDetailsRequiredForCompliance';
+export const ZATCA_INVOICE_NOT_RESUBMITTABLE = 'zatcaInvoiceNotResubmittable';
 
 // ─── Validation (import processor) ──────────────────────────────
 export const VALIDATION_LEGAL_NAME_REQUIRED = 'validationLegalNameRequired';

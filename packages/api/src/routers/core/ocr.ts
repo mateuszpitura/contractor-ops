@@ -2,6 +2,7 @@ import { getQStashClient } from '@contractor-ops/integrations/services/qstash-cl
 import { billingCreditDenialReason, getServerEnv } from '@contractor-ops/validators';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import * as E from '../../errors';
 import { router } from '../../init';
 import { portalProcedure } from '../../middleware/portal-auth';
 import { requirePermission } from '../../middleware/rbac';
@@ -120,7 +121,7 @@ export const ocrRouter = router({
       });
 
       if (!existing) {
-        throw new Error('Extraction not found');
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.OCR_EXTRACTION_NOT_FOUND });
       }
 
       // Look up the document to get storageKey
@@ -133,7 +134,7 @@ export const ocrRouter = router({
       });
 
       if (!document?.storageKey) {
-        throw new Error('Document or storage key not found');
+        throw new TRPCError({ code: 'NOT_FOUND', message: E.DOCUMENT_NOT_IN_STORAGE });
       }
 
       // Create a new extraction for the same document

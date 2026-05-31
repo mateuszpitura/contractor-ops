@@ -3155,7 +3155,9 @@
     "zatcaComplianceCsidRequired": "Compliance-CSID erforderlich.",
     "zatcaCsrRequired": "CSR erforderlich.",
     "zatcaTaxDetailsRequired": "Steuerdaten erforderlich.",
-    "zatcaTaxDetailsRequiredForCompliance": "Steuerdaten für die Compliance erforderlich."
+    "zatcaTaxDetailsRequiredForCompliance": "Steuerdaten für die Compliance erforderlich.",
+    "zatcaInvoiceNotResubmittable": "Rechnung nicht gefunden oder nicht für eine erneute Übermittlung berechtigt. Nur abgelehnte oder ausstehende Rechnungen können erneut übermittelt werden.",
+    "ocrExtractionNotFound": "OCR-Extraktion nicht gefunden."
   },
   "GoogleWorkspace": {
     "import": {
@@ -3321,7 +3323,10 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Google Workspace neu verbinden",
       "bannerBody": "Verbinden Sie Ihre Google-Workspace-Integration neu, um neue IdP-Deprovisioning-Funktionen freizuschalten. Ihr bisheriger Lesezugriff auf das Verzeichnis bleibt bis zum Abschluss der Neuverbindung erhalten.",
-      "reconnectButton": "Google Workspace neu verbinden"
+      "reconnectButton": "Google Workspace neu verbinden",
+      "writeAccessTitle": "Erneute Autorisierung für Schreibzugriff erforderlich",
+      "writeAccessBody": "Ihre Google-Workspace-Verbindung hat derzeit nur Lesezugriff. Autorisieren Sie erneut mit Admin-Schreibzugriff, um die Vertragsbeendigung zu aktivieren. Bestehende Verzeichnisimporte mit Lesezugriff funktionieren weiterhin.",
+      "writeAccessButton": "Schreibzugriff gewähren"
     },
     "jira": {
       "taskConfig": {

@@ -3155,7 +3155,9 @@
     "zatcaComplianceCsidRequired": "Compliance CSID is required.",
     "zatcaCsrRequired": "CSR is required.",
     "zatcaTaxDetailsRequired": "Tax details are required.",
-    "zatcaTaxDetailsRequiredForCompliance": "Tax details are required for compliance."
+    "zatcaTaxDetailsRequiredForCompliance": "Tax details are required for compliance.",
+    "zatcaInvoiceNotResubmittable": "Invoice not found or not eligible for resubmission. Only rejected or pending invoices can be resubmitted.",
+    "ocrExtractionNotFound": "OCR extraction not found."
   },
   "GoogleWorkspace": {
     "import": {
@@ -3321,7 +3323,10 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "Reconnect Google Workspace",
       "bannerBody": "Reconnect your Google Workspace integration to unlock new IdP deprovisioning features. Your existing read-only directory import will continue working until you complete the reconnect.",
-      "reconnectButton": "Reconnect Google Workspace"
+      "reconnectButton": "Reconnect Google Workspace",
+      "writeAccessTitle": "Re-authorize for write access",
+      "writeAccessBody": "Your Google Workspace connection currently has read-only access. To enable contractor deprovisioning, re-authorize with admin write access. Existing read-only directory imports will keep working.",
+      "writeAccessButton": "Grant write access"
     },
     "jira": {
       "taskConfig": {

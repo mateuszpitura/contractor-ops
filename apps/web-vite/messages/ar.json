@@ -3155,7 +3155,9 @@
     "zatcaComplianceCsidRequired": "يلزم CSID للامتثال.",
     "zatcaCsrRequired": "يلزم CSR.",
     "zatcaTaxDetailsRequired": "يلزم تفاصيل الضرائب.",
-    "zatcaTaxDetailsRequiredForCompliance": "يلزم تفاصيل الضرائب للامتثال."
+    "zatcaTaxDetailsRequiredForCompliance": "يلزم تفاصيل الضرائب للامتثال.",
+    "zatcaInvoiceNotResubmittable": "لم يتم العثور على الفاتورة أو أنها غير مؤهلة لإعادة الإرسال. يمكن إعادة إرسال الفواتير المرفوضة أو المعلّقة فقط.",
+    "ocrExtractionNotFound": "لم يُعثر على استخراج OCR."
   },
   "GoogleWorkspace": {
     "import": {
@@ -3321,7 +3323,10 @@
     "GoogleWorkspaceReconnect": {
       "bannerTitle": "أعد ربط Google Workspace",
       "bannerBody": "أعد ربط تكامل Google Workspace الخاص بك لتفعيل ميزات إلغاء تفعيل IdP الجديدة. سيستمر عمل استيراد الدليل للقراءة فقط حتى تكتمل عملية إعادة الربط.",
-      "reconnectButton": "أعد ربط Google Workspace"
+      "reconnectButton": "أعد ربط Google Workspace",
+      "writeAccessTitle": "إعادة التفويض مطلوبة للوصول للكتابة",
+      "writeAccessBody": "اتصال Google Workspace الخاص بك لديه حاليًا وصول للقراءة فقط. أعد التفويض بصلاحية الكتابة الإدارية لتمكين إلغاء تفعيل المتعاقدين. ستستمر عمليات استيراد الدليل للقراءة فقط في العمل.",
+      "writeAccessButton": "منح حق الوصول للكتابة"
     },
     "jira": {
       "taskConfig": {
