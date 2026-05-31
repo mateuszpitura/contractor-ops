@@ -60,6 +60,12 @@ vi.mock('../slack-sync-button-container', () => ({
 vi.mock('../slack-user-mapping-container', () => ({
   SlackUserMappingContainer: () => <div data-testid="slack-user-mapping" />,
 }));
+vi.mock('../slack-org-grid-card-container', () => ({
+  SlackOrgGridCardContainer: () => <div data-testid="slack-org-grid" />,
+}));
+vi.mock('../idp-deprovisioning-toggle-table-container', () => ({
+  IdpDeprovisioningToggleTableContainer: () => <div data-testid="idp-toggle-table" />,
+}));
 
 import { render, screen } from '@/test/test-utils';
 import { IntegrationsTab } from '../integrations-tab';

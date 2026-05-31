@@ -9,9 +9,11 @@ import { PeppolStatusCardContainer } from '../peppol/peppol-status-card-containe
 import { ZatcaStatusCard } from '../zatca/zatca-status-card-container.js';
 import { DpdProviderSectionContainer } from './dpd-provider-section-container.js';
 import type { IntegrationsTabProps } from './hooks/use-integrations-tab.js';
+import { IdpDeprovisioningToggleTableContainer } from './idp-deprovisioning-toggle-table-container.js';
 import { KsefProviderSectionContainer } from './ksef-provider-section-container.js';
 import { OrgCalendarSectionContainer } from './org-calendar-section-container.js';
 import { ProviderConnectionCardContainer } from './provider-connection-card-container.js';
+import { SlackOrgGridCardContainer } from './slack-org-grid-card-container.js';
 import { SlackSyncButtonContainer } from './slack-sync-button-container.js';
 import { SlackUserMappingContainer } from './slack-user-mapping-container.js';
 import { UpsProviderSectionContainer } from './ups-provider-section-container.js';
@@ -81,6 +83,9 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
         {/* Google Workspace has directory import wizard */}
         <GoogleWorkspaceProviderSection />
 
+        {/* Phase 77 D-14 — Slack Org-Grid deprovisioning connection (second Slack card) */}
+        <SlackOrgGridCardContainer />
+
         {/* Microsoft Teams integration with channel mapping */}
         <TeamsProviderSection />
 
@@ -108,6 +113,15 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
           })}
         />
       </div>
+
+      {/* Phase 77 D-15 — per-provider IdP deprovisioning enable matrix */}
+      <section className="space-y-3">
+        <div>
+          <h3 className="text-sm font-medium">{t('idpDeprovisioning.heading')}</h3>
+          <p className="text-sm text-muted-foreground">{t('idpDeprovisioning.description')}</p>
+        </div>
+        <IdpDeprovisioningToggleTableContainer />
+      </section>
 
       {/* Organization shared calendar section */}
       <OrgCalendarSectionContainer />
