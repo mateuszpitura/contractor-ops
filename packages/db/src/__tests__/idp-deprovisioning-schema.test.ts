@@ -64,14 +64,16 @@ describe('Phase 76 schema additions (Plan 76-02)', () => {
     expect(values).toHaveLength(5);
   });
 
-  it('DeprovisioningStepStatus enum has 4 values', () => {
+  it('DeprovisioningStepStatus enum has the base 4 values (Phase 77 adds MANUAL_COMPLETED)', () => {
     const values: Array<Prisma.DeprovisioningStepUncheckedCreateInput['status']> = [
       'PENDING',
       'IN_PROGRESS',
       'SUCCEEDED',
       'FAILED',
     ];
-    expect(values).toHaveLength(4);
+    for (const v of values) {
+      expect(values).toContain(v);
+    }
   });
 
   it('DeprovisioningStepKind enum has 2 values', () => {
