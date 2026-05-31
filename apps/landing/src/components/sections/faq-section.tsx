@@ -30,9 +30,9 @@ export function FaqSection({
   }));
 
   return (
-    <section id="faq" className="relative py-24">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-[18rem,1fr] md:items-start">
-        <header className="md:sticky md:top-28">
+    <section id="faq" className="relative bg-background py-24">
+      <div className="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:items-start">
+        <header className="z-10 bg-background/95 pb-4 backdrop-blur-sm md:sticky md:top-28">
           <p className="mb-3 text-xs font-medium uppercase tracking-[0.22em] text-primary">
             {label}
           </p>
@@ -45,7 +45,9 @@ export function FaqSection({
           <p className="mt-3 text-sm text-muted-foreground md:text-base">{description}</p>
         </header>
 
-        <TailarkFaqs items={tailarkItems} defaultOpenId={tailarkItems[0]?.id ?? null} />
+        <div className="min-w-0 w-full">
+          <TailarkFaqs items={tailarkItems} defaultOpenId={tailarkItems[0]?.id ?? null} />
+        </div>
       </div>
     </section>
   );

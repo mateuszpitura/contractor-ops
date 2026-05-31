@@ -17,6 +17,19 @@ interface TestimonialsProps {
   items: readonly TestimonialItem[];
 }
 
+function toCardItem(item: TestimonialItem) {
+  return {
+    quote: item.quote,
+    name: item.author,
+    title: `${item.role} · ${item.company}`,
+  };
+}
+
+/** Repeat items so the marquee track is wide enough to scroll smoothly. */
+function expandForMarquee<T>(items: readonly T[], repeats = 3): T[] {
+  return Array.from({ length: repeats }, () => items).flat();
+}
+
 export function Testimonials({
   label,
   headline,
@@ -25,8 +38,8 @@ export function Testimonials({
   items,
 }: TestimonialsProps) {
   const half = Math.ceil(items.length / 2);
-  const firstRow = items.slice(0, half).map(toCardItem);
-  const secondRow = items.slice(half).map(toCardItem);
+  const firstRow = expandForMarquee(items.slice(0, half).map(toCardItem));
+  const secondRow = expandForMarquee(items.slice(half).map(toCardItem));
 
   return (
     <section className="relative overflow-hidden py-24">
@@ -42,17 +55,21 @@ export function Testimonials({
       </div>
 
       <div className="relative flex flex-col gap-6">
-        <InfiniteMovingCards items={firstRow} direction="left" speed="slow" pauseOnHover />
-        <InfiniteMovingCards items={secondRow} direction="right" speed="slow" pauseOnHover />
+        <InfiniteMovingCards
+          items={firstRow}
+          direction="left"
+          speed="slow"
+          pauseOnHover
+          className="mx-auto"
+        />
+        <InfiniteMovingCards
+          items={secondRow}
+          direction="right"
+          speed="slow"
+          pauseOnHover
+          className="mx-auto"
+        />
       </div>
     </section>
   );
-}
-
-function toCardItem(item: TestimonialItem) {
-  return {
-    quote: item.quote,
-    name: item.author,
-    title: `${item.role} · ${item.company}`,
-  };
 }

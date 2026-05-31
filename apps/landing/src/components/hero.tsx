@@ -9,7 +9,6 @@ import {
   TiltCard,
 } from '@contractor-ops/ui';
 import { Spotlight } from '@contractor-ops/ui/components/ace/spotlight-new';
-import { AuroraText } from '@contractor-ops/ui/components/magic/aurora-text';
 import { BlurFade } from '@contractor-ops/ui/components/magic/blur-fade';
 import { ArrowRight, Play } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
@@ -80,7 +79,6 @@ export function Hero({ market }: HeroProps) {
   const t = reduced ? { duration: 0 } : undefined;
   const messages = useTranslations();
   const heroExperiment = heroExperimentFor(market);
-  const badgeText = messages.hero.badge;
   const controlSubheadline = messages.hero.subheadline;
   const headlineText = messages.hero.headline;
   const headlineHighlight = messages.hero.headlineHighlight;
@@ -98,31 +96,12 @@ export function Hero({ market }: HeroProps) {
       <div className="dot-grid absolute inset-0 opacity-30" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={t ?? { duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-          </span>
-          {badgeText}
-        </motion.div>
-
-        {/* Headline — keyword (locale-specific) rendered through Magic UI AuroraText */}
         <motion.h1
           initial={{ opacity: 0, y: 40, filter: 'blur(16px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={t ?? { duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={t ?? { duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-4xl font-display text-hero leading-[1.05] tracking-[-0.035em]">
-          {headlineText} <br className="hidden sm:block" />
-          {reduced ? (
-            <span className="gradient-text">{headlineHighlight}</span>
-          ) : (
-            <AuroraText className="font-display">{headlineHighlight}</AuroraText>
-          )}
+          {headlineText} <span className="gradient-text">{headlineHighlight}</span>
         </motion.h1>
 
         {/* Subheadline — variant slot per market */}

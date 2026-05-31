@@ -1,7 +1,7 @@
 'use client';
 
 import { Cookie } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { useLocale, useTranslations } from '@/i18n';
 import type { ConsentState } from '@/lib/consent';
 import { readConsent, subscribeConsent, writeConsent } from '@/lib/consent';
@@ -63,10 +63,12 @@ export function CookieConsentBanner() {
   const locale = useLocale();
   const translations = useTranslations();
   const market = localeToMarket(locale);
+  const [consentReady, setConsentReady] = useState(false);
   const [state, setState] = useState<ConsentState>('unknown');
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setState(readConsent());
+    setConsentReady(true);
     return subscribeConsent(setState);
   }, []);
 
@@ -81,6 +83,8 @@ export function CookieConsentBanner() {
   // Markets outside the GDPR-equivalent set (UAE / SA) load analytics by
   // default per local norms; never show the banner there.
   if (!requiresCookieConsent(market)) return null;
+  // Wait until localStorage is read — avoids a flash while state is still 'unknown'.
+  if (!consentReady) return null;
   if (state !== 'unknown') return null;
 
   const copy = readCopy(locale, translations);

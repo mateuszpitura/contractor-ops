@@ -84,6 +84,11 @@ export interface TranslationMessages {
       compliance: { title: string; description: string };
       analytics: { title: string; description: string };
     };
+    spotlight: {
+      title: string;
+      summary: string;
+      bullets: readonly string[];
+    };
   };
   howItWorks: {
     label: string;
@@ -108,6 +113,12 @@ export interface TranslationMessages {
       approvalTime: { value: string; label: string };
       offboarding: { value: string; label: string };
     };
+    testimonials: ReadonlyArray<{
+      quote: string;
+      author: string;
+      role: string;
+      company: string;
+    }>;
   };
   pricing: {
     label: string;
@@ -120,6 +131,10 @@ export interface TranslationMessages {
     startTrial: string;
     talkToSales: string;
     detailedLink: string;
+    /** Shown when Stripe plans are unavailable on the homepage embed. */
+    unavailable?: string;
+    /** Badge on the recommended tier card. */
+    popularBadge?: string;
     /** Optional monthly/annual toggle copy — added per market in wave 1. */
     toggleMonthly?: string;
     toggleAnnual?: string;

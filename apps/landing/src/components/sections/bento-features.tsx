@@ -29,7 +29,7 @@ interface BentoFeaturesProps {
 interface BentoEntry extends BentoCardCopy {
   id: keyof BentoFeaturesProps['cards'];
   icon: LucideIcon;
-  area: string;
+  placement: string;
   variant: 'glare' | 'panel';
 }
 
@@ -45,42 +45,42 @@ export function BentoFeatures({
       id: 'command',
       ...cards.command,
       icon: Command,
-      area: 'md:col-span-2 md:row-span-2',
+      placement: 'md:col-start-1 md:row-start-1 md:col-span-2 md:row-span-2',
       variant: 'glare',
     },
     {
       id: 'vault',
       ...cards.vault,
       icon: FileText,
-      area: 'md:col-span-1 md:row-span-1',
+      placement: 'md:col-start-3 md:row-start-1',
       variant: 'panel',
     },
     {
       id: 'throughput',
       ...cards.throughput,
       icon: Gauge,
-      area: 'md:col-span-1 md:row-span-1',
+      placement: 'md:col-start-3 md:row-start-2',
       variant: 'panel',
     },
     {
       id: 'audit',
       ...cards.audit,
       icon: Scale,
-      area: 'md:col-span-1 md:row-span-2',
+      placement: 'md:col-start-1 md:row-start-3 md:row-span-2',
       variant: 'panel',
     },
     {
       id: 'ledger',
       ...cards.ledger,
       icon: Layers,
-      area: 'md:col-span-1 md:row-span-1',
+      placement: 'md:col-start-2 md:row-start-3',
       variant: 'panel',
     },
     {
       id: 'cadence',
       ...cards.cadence,
       icon: Wallet,
-      area: 'md:col-span-1 md:row-span-1',
+      placement: 'md:col-start-3 md:row-start-3',
       variant: 'panel',
     },
   ];
@@ -101,7 +101,7 @@ export function BentoFeatures({
           <p className="mt-4 text-base text-muted-foreground md:text-lg">{description}</p>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:auto-rows-[14rem]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:grid-rows-4 md:auto-rows-[14rem]">
           {entries.map(entry =>
             entry.variant === 'glare' ? (
               <GlareEntry key={entry.id} entry={entry} />
@@ -118,14 +118,14 @@ export function BentoFeatures({
 function GlareEntry({ entry }: { entry: BentoEntry }) {
   const Icon = entry.icon;
   return (
-    <div className={cn('relative isolate', entry.area)}>
-      <GlareCard className="flex h-full flex-col justify-between p-6">
+    <div className={cn('relative isolate flex h-full min-h-[14rem]', entry.placement)}>
+      <GlareCard fill className="flex h-full w-full flex-col justify-between p-6">
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <Icon aria-hidden className="size-5" />
         </span>
         <div>
-          <h3 className="text-xl font-semibold text-foreground">{entry.title}</h3>
-          <p className="mt-2 text-sm text-muted-foreground">{entry.description}</p>
+          <h3 className="text-xl font-semibold text-white">{entry.title}</h3>
+          <p className="mt-2 text-sm text-white/70">{entry.description}</p>
         </div>
       </GlareCard>
     </div>
@@ -137,8 +137,8 @@ function PanelEntry({ entry }: { entry: BentoEntry }) {
   return (
     <div
       className={cn(
-        'group relative isolate overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-6 backdrop-blur',
-        entry.area,
+        'group relative isolate flex h-full min-h-[14rem] flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-6 backdrop-blur',
+        entry.placement,
       )}>
       <GlowingEffect spread={32} glow={true} disabled={false} proximity={48} inactiveZone={0.2} />
       <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">

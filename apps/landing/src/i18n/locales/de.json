@@ -87,6 +87,16 @@
         "title": "Ausgabenanalyse",
         "description": "Echtzeit-Dashboards mit Auftragnehmer-Ausgaben, Budget-Burnrate und Kostenaufschlüsselung."
       }
+    },
+    "spotlight": {
+      "title": "Warum contractor-ops",
+      "summary": "Eine Quelle der Wahrheit für Verträge, Rechnungen, Genehmigungen und Zahlungen.",
+      "bullets": [
+        "Verträge & E-Sign in einer Timeline",
+        "KSeF-native Rechnungsabstimmung",
+        "Genehmigungsketten mit vollem Audit-Trail",
+        "Zahlungen orchestriert, nicht gejagt"
+      ]
     }
   },
   "howItWorks": {
@@ -138,7 +148,27 @@
         "value": "0",
         "label": "verpasste Offboarding-Schritte"
       }
-    }
+    },
+    "testimonials": [
+      {
+        "quote": "Wir sind von Rechnungsjagd in Slack zu Abgleich und Freigabe in Minuten gewechselt. KSeF allein spart uns 6 Stunden pro Woche.",
+        "author": "Katarzyna M.",
+        "role": "Head of Operations",
+        "company": "Fintech-Startup, 28 Auftragnehmer"
+      },
+      {
+        "quote": "Offboarding war ein Albtraum — monatelang offene Zugänge. Jetzt ist es eine Checkliste, die einfach funktioniert.",
+        "author": "Pawel R.",
+        "role": "CTO",
+        "company": "SaaS-Unternehmen, 40+ Auftragnehmer"
+      },
+      {
+        "quote": "Der Freigabe-Workflow ersetzte unser Slack-System. Jede Rechnung hat Owner, Deadline und Audit-Trail.",
+        "author": "Marta D.",
+        "role": "Finance Manager",
+        "company": "Beratungsfirma, 15 Auftragnehmer"
+      }
+    ]
   },
   "pricing": {
     "label": "Preise",

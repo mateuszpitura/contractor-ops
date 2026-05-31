@@ -14,7 +14,7 @@
     "skipToContent": "Przejdź do treści głównej"
   },
   "hero": {
-    "badge": "Gotowy na KSeF od kwietnia 2026",
+    "badge": "",
     "headline": "Przestań zarządzać kontraktorami w",
     "headlineHighlight": "arkuszach kalkulacyjnych",
     "subheadline": "Umowy, faktury, akceptacje i płatności dla Twoich kontraktorów B2B — jeden system, zero chaosu. Stworzony dla firm z EU.",
@@ -87,6 +87,16 @@
         "title": "Analityka wydatków",
         "description": "Dashboardy real-time z wydatkami na kontraktorów, burn rate budżetu i podziałem kosztów per zespół, projekt i okres."
       }
+    },
+    "spotlight": {
+      "title": "Dlaczego contractor-ops",
+      "summary": "Jedno źródło prawdy dla umów, faktur, akceptacji i płatności.",
+      "bullets": [
+        "Umowy i e-podpis w jednej osi czasu",
+        "Rekoncyliacja faktur natywnie z KSeF",
+        "Łańcuchy akceptacji z pełnym audit trail",
+        "Płatności zorchestrowane, nie ścigane"
+      ]
     }
   },
   "howItWorks": {
@@ -138,7 +148,27 @@
         "value": "0",
         "label": "pominiętych kroków offboardingu"
       }
-    }
+    },
+    "testimonials": [
+      {
+        "quote": "Przeszliśmy od ścigania faktur na Slacku do dopasowania i akceptacji w kilka minut. Samo KSeF oszczędza nam 6 godzin tygodniowo.",
+        "author": "Katarzyna M.",
+        "role": "Head of Operations",
+        "company": "Fintech, 28 kontraktorów"
+      },
+      {
+        "quote": "Offboarding był koszmarem — miesiącami znajdowaliśmy otwarte dostępy. Teraz to checklista, która po prostu działa.",
+        "author": "Paweł R.",
+        "role": "CTO",
+        "company": "Firma SaaS, 40+ kontraktorów"
+      },
+      {
+        "quote": "Workflow akceptacji zastąpił cały system oparty na Slacku. Każda faktura ma właściciela, deadline i audit trail.",
+        "author": "Marta D.",
+        "role": "Finance Manager",
+        "company": "Firma konsultingowa, 15 kontraktorów"
+      }
+    ]
   },
   "pricing": {
     "label": "Cennik",
@@ -150,7 +180,12 @@
     "startFree": "Zacznij za darmo",
     "startTrial": "Rozpocznij 14-dniowy trial",
     "talkToSales": "Porozmawiaj ze sprzedażą",
-    "detailedLink": "Zobacz szczegółowy cennik, kredyty i opcje pay-as-you-go"
+    "detailedLink": "Zobacz szczegółowy cennik, kredyty i opcje pay-as-you-go",
+    "unavailable": "Pełny cennik jest na osobnej stronie — poniżej podgląd ładuje się z systemu płatności.",
+    "popularBadge": "Najpopularniejszy",
+    "toggleMonthly": "Miesięcznie",
+    "toggleAnnual": "Rocznie",
+    "annualSaveBadge": "Oszczędź ~20%"
   },
   "cta": {
     "headline": "Gotowy przejąć",
@@ -177,33 +212,33 @@
   },
   "bento": {
     "label": "Premium",
-    "headline": "A workbench made for",
+    "headline": "Warsztat zbudowany dla",
     "headlineHighlight": "finance ops",
-    "description": "Six panels, one tab. Every contractor touchpoint — from onboarding to offboarding — sits inside a single command surface.",
+    "description": "Sześć paneli, jedna zakładka. Każdy punkt styku z kontraktorem — od onboardingu po offboarding — w jednym miejscu.",
     "cards": {
       "command": {
         "title": "Command palette",
-        "description": "Jump to any contractor, invoice or run with ⌘K. Search across 20+ object types."
+        "description": "Przejdź do kontraktora, faktury lub runu przez ⌘K. Szukaj w 20+ typach obiektów."
       },
       "vault": {
         "title": "Document vault",
-        "description": "Contracts, MSAs and tax docs in one place. Version history and expiry alerts built in."
+        "description": "Umowy, MSA i dokumenty podatkowe w jednym miejscu. Historia wersji i alerty wygaśnięcia."
       },
       "throughput": {
         "title": "Invoice throughput",
-        "description": "OCR + auto-match against POs. Bulk-approve in seconds, not afternoons."
+        "description": "OCR + auto-match do PO. Bulk approve w sekundy, nie popołudnia."
       },
       "audit": {
         "title": "Audit-ready by default",
-        "description": "Every action signed and timestamped. Export to your auditor in two clicks."
+        "description": "Każda akcja podpisana i oznaczona czasem. Eksport dla audytora w dwa kliki."
       },
       "ledger": {
         "title": "Multi-entity ledger",
-        "description": "EU + ME multi-region. Per-jurisdiction tax rules, no manual reconciling."
+        "description": "EU + ME multi-region. Reguły podatkowe per jurysdykcja, bez ręcznej rekoncyliacji."
       },
       "cadence": {
         "title": "Payment cadence",
-        "description": "Build payment runs from filtered invoices. Approve, sign, pay — same flow."
+        "description": "Buduj payment runy z przefiltrowanych faktur. Approve, sign, pay — ten sam flow."
       }
     }
   },
@@ -233,31 +268,31 @@
     }
   },
   "testimonials": {
-    "label": "Voices",
-    "headline": "What operators",
-    "headlineHighlight": "tell us",
-    "description": "Finance leaders running 5–50 contractors who switched from spreadsheets and email.",
+    "label": "Głosy",
+    "headline": "Co mówią",
+    "headlineHighlight": "operatorzy",
+    "description": "Liderzy finansów zarządzający 5–50 kontraktoremi, którzy odeszli od Exceli i maili.",
     "items": [
       {
-        "quote": "Onboarding a new subcontractor went from a half-day spreadsheet ceremony to a five-minute form.",
+        "quote": "Onboarding nowego podwykonawcy skrócił się z pół dnia w Excelu do pięciominutowego formularza.",
         "author": "Anna Kowalska",
         "role": "CFO",
         "company": "Helix Studios"
       },
       {
-        "quote": "Invoice approvals stopped being a Slack thread. We close the month two days earlier.",
+        "quote": "Akceptacje faktur przestały być wątkiem na Slacku. Zamykamy miesiąc dwa dni wcześniej.",
         "author": "Markus Becker",
         "role": "Head of Finance",
         "company": "Nordweg GmbH"
       },
       {
-        "quote": "Every audit since switching has been one export. The Steuerberater stopped emailing back.",
+        "quote": "Każdy audyt od przejścia to jeden eksport. Steuerberater przestał odpisywać maile.",
         "author": "Yousef Al-Rashid",
         "role": "Finance Director",
         "company": "Dunes Procurement"
       },
       {
-        "quote": "Multi-region tax used to need a consultant. Now it is a dropdown.",
+        "quote": "Podatki multi-region wymagały konsultanta. Teraz to dropdown.",
         "author": "Sofia Pereira",
         "role": "COO",
         "company": "Tributo Logistics"
@@ -318,39 +353,39 @@
     ]
   },
   "faq": {
-    "label": "Questions",
-    "headline": "Asked &",
-    "headlineHighlight": "answered",
-    "description": "The clarifications operators tend to want before signing up.",
+    "label": "Pytania",
+    "headline": "Pytania i",
+    "headlineHighlight": "odpowiedzi",
+    "description": "Wyjaśnienia, których operatorzy szukają przed rejestracją.",
     "items": [
       {
-        "question": "Do you support both EU and Middle-East regulations?",
-        "answer": "Yes. The data plane runs in two regions (EU + ME) with per-jurisdiction tax + e-invoicing rules (Peppol, KSeF, ZATCA, German Steuer rules)."
+        "question": "Czy obsługujecie regulacje UE i Bliskiego Wschodu?",
+        "answer": "Tak. Warstwa danych działa w dwóch regionach (EU + ME) z regułami podatkowymi i e-fakturowania per jurysdykcja (Peppol, KSeF, ZATCA, niemieckie Steuer)."
       },
       {
-        "question": "How long does onboarding take?",
-        "answer": "A finance team typically goes live in under a week. Most of that is importing existing contractors via CSV; the system itself sets up in minutes."
+        "question": "Ile trwa onboarding?",
+        "answer": "Zespół finansowy zwykle startuje w mniej niż tydzień. Większość czasu to import kontraktorów z CSV; sam system konfiguruje się w minuty."
       },
       {
-        "question": "Can our auditor get read-only access?",
-        "answer": "Yes. Read-only seats are free. Every action is signed + timestamped, so the export is the audit."
+        "question": "Czy auditor może dostać dostęp read-only?",
+        "answer": "Tak. Miejsca read-only są darmowe. Każda akcja jest podpisana i oznaczona czasem — eksport to audyt."
       },
       {
-        "question": "What happens to my data if we churn?",
-        "answer": "A one-click export gives you every contract, invoice and payment as CSV + PDF. We delete the rest after 30 days."
+        "question": "Co dzieje się z danymi po rezygnacji?",
+        "answer": "Eksport jednym klikiem daje wszystkie umowy, faktury i płatności jako CSV + PDF. Resztę usuwamy po 30 dniach."
       },
       {
-        "question": "Do you really cost less than a spreadsheet?",
-        "answer": "Spreadsheets are free. The hours your finance team spends in them are not. We replace ~6h per finance hire per week — that is the implicit price."
+        "question": "Czy naprawdę jest taniej niż Excel?",
+        "answer": "Excel jest darmowy. Godziny, które zespół finansów w nim spędza, już nie. Zastępujemy ~6h tygodniowo na osobę — to ukryta cena."
       }
     ]
   },
   "ctaBand": {
-    "label": "Ready when you are",
-    "headline": "Stop paying for the",
-    "headlineHighlight": "spreadsheet tax",
-    "description": "Spin up a workspace in two minutes. Bring a CSV, leave with a system of record.",
+    "label": "Gotowi, kiedy Ty",
+    "headline": "Przestań płacić",
+    "headlineHighlight": "podatek od Excela",
+    "description": "Postaw workspace w dwie minuty. Wejdź z CSV, wyjdź z systemem źródłowym.",
     "ctaPrimary": "Zacznij za darmo",
-    "ctaSecondary": "Book a 20-minute walkthrough"
+    "ctaSecondary": "Umów 20-minutowy demo"
   }
 }
