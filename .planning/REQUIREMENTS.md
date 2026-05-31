@@ -48,7 +48,7 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 
 ### IdP Deprovisioning (F2)
 
-- [ ] **IDP-01**: Admin can trigger access revocation for a single contractor via the offboarding workflow's `ACCESS_REVOKE` task; system enumerates connected IdPs and presents a per-IdP impact preview (`describeImpact`) before executing
+- [x] **IDP-01**: Admin can trigger access revocation for a single contractor via the offboarding workflow's `ACCESS_REVOKE` task; system enumerates connected IdPs and presents a per-IdP impact preview (`describeImpact`) before executing
 - [x] **IDP-02**: System enforces a 14-day cooldown gate after `ContractorAssignment.status = ENDED` before allowing IdP deprovisioning to start (final-invoice race protection)
 - [x] **IDP-03**: Admin can deprovision a contractor's Google Workspace identity — system suspends user, revokes all OAuth grants, and signs the user out of all sessions
 - [x] **IDP-04**: Admin can deprovision a contractor's Slack identity — system invalidates active sessions and SCIM-deactivates the user (`active=false`)
@@ -294,7 +294,7 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | COMPL-09 | Phase 71 | Pending |
 | COMPL-10 | Phase 71 | Pending |
 | COMPL-11 | Phase 73 | Pending |
-| IDP-01 | Phase 77 | Pending |
+| IDP-01 | Phase 77 | Complete |
 | IDP-02 | Phase 76 | Complete |
 | IDP-03 | Phase 77 | Complete |
 | IDP-04 | Phase 77 | Complete |

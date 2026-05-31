@@ -216,7 +216,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   3. Admin executes deprovision on a Slack contractor; system invalidates active sessions (`admin.users.session.invalidate`) and SCIM-deactivates the user (`SCIM PATCH active=false` via raw `fetch` with org-token); both steps succeed independently — Slack deactivation success is NOT blocked by GWS partial failure
   4. Admin sees one provider step in `MANUAL_ESCALATION` after final retry exhaustion; admin clicks "Mark complete" with a written reason ("verified-via-vendor-console: GWS user already suspended manually"); failure record preserved, override audit-logged, offboarding workflow unblocks
   5. After deprovisioning, second click of the same `ACCESS_REVOKE` task returns `LIKELY_GONE` per provider (idempotent semantic) without errors; calling deprovision twice is safe
-**Plans:** 3/5 plans executed
+**Plans:** 4/5 plans executed
 **Research flag:** NEEDS RESEARCH — GWS `tokens.delete` behaviour, Slack SCIM `scim:write` org-token requirement, current rate-limits via Context7
 **Feature flags:** `idp-deprovisioning-gws` PENDING, `idp-deprovisioning-slack` PENDING
 **UI hint:** yes
@@ -387,7 +387,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
-| 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 3/5 | In Progress|  |
+| 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 4/5 | In Progress|  |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 0/?            | Not started | -          |
