@@ -1473,6 +1473,20 @@ export type EnumDeprovisioningStepStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
 }
 
+export type EnumErrorClassNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ErrorClass | Prisma.EnumErrorClassFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel> | $Enums.ErrorClass | null
+}
+
+export type EnumManualOverrideCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ManualOverrideCategory | Prisma.EnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel> | $Enums.ManualOverrideCategory | null
+}
+
 export type EnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
   in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
@@ -1501,6 +1515,26 @@ export type EnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel = neve
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+}
+
+export type EnumErrorClassNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ErrorClass | Prisma.EnumErrorClassFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumErrorClassNullableWithAggregatesFilter<$PrismaModel> | $Enums.ErrorClass | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel>
+}
+
+export type EnumManualOverrideCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ManualOverrideCategory | Prisma.EnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumManualOverrideCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.ManualOverrideCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel>
 }
 
 export type EnumIdpProvenanceActionKindFilter<$PrismaModel = never> = {
@@ -3883,6 +3917,20 @@ export type NestedEnumDeprovisioningStepStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
 }
 
+export type NestedEnumErrorClassNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ErrorClass | Prisma.EnumErrorClassFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel> | $Enums.ErrorClass | null
+}
+
+export type NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ManualOverrideCategory | Prisma.EnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel> | $Enums.ManualOverrideCategory | null
+}
+
 export type NestedEnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
   in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
@@ -3911,6 +3959,26 @@ export type NestedEnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumErrorClassNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ErrorClass | Prisma.EnumErrorClassFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ErrorClass[] | Prisma.ListEnumErrorClassFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumErrorClassNullableWithAggregatesFilter<$PrismaModel> | $Enums.ErrorClass | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumErrorClassNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumManualOverrideCategoryNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ManualOverrideCategory | Prisma.EnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ManualOverrideCategory[] | Prisma.ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumManualOverrideCategoryNullableWithAggregatesFilter<$PrismaModel> | $Enums.ManualOverrideCategory | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumManualOverrideCategoryNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumIdpProvenanceActionKindFilter<$PrismaModel = never> = {

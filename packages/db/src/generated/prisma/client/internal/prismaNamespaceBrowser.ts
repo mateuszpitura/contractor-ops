@@ -1330,7 +1330,12 @@ export const DeprovisioningStepScalarFieldEnum = {
   lastErrorMessage: 'lastErrorMessage',
   qstashMessageId: 'qstashMessageId',
   startedAt: 'startedAt',
-  finishedAt: 'finishedAt'
+  finishedAt: 'finishedAt',
+  errorClass: 'errorClass',
+  manualOverrideCategory: 'manualOverrideCategory',
+  manualOverrideNote: 'manualOverrideNote',
+  manualOverriddenByUserId: 'manualOverriddenByUserId',
+  manualOverriddenAt: 'manualOverriddenAt'
 } as const
 
 export type DeprovisioningStepScalarFieldEnum = (typeof DeprovisioningStepScalarFieldEnum)[keyof typeof DeprovisioningStepScalarFieldEnum]

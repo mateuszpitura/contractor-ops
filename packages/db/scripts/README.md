@@ -130,3 +130,40 @@ After merging this PR:
    ```
 
 **On failure:** `migrate-all-regions.ts` logs which region failed and stops. Re-run after fixing the underlying cause; re-running against an already-migrated region is idempotent (Prisma's `_prisma_migrations` table records applied migrations). If EU succeeds and ME fails, fix the ME cause (network/auth/state drift) and re-run — only the unapplied region's migration replays.
+
+## Phase 77 — F2 IdP GWS + Slack adapters (manual-override + error-class schema)
+
+**Migration:** `20260531184805_phase77_idp_manual_override_errorclass`
+
+This migration is **additive** (no data loss):
+
+- 2 new enums: `ErrorClass` (D-07 — 6 closed-enum failure classes) and `ManualOverrideCategory` (D-10 — 5 admin-override reason categories).
+- 1 new enum value: `DeprovisioningStepStatus` gains `MANUAL_COMPLETED` (appended via `ALTER TYPE … ADD VALUE`, D-10).
+- 5 new nullable columns on `DeprovisioningStep`: `errorClass`, `manualOverrideCategory`, `manualOverrideNote`, `manualOverriddenByUserId`, `manualOverriddenAt` (all nullable, no default).
+
+Plan 77-01 is marked `autonomous: false` — the executor SHIPS the schema + migration SQL but does NOT apply it. Multi-region apply is a manual operator action per the Standing Constraint (LOCAL-ONLY).
+
+After merging this PR:
+
+1. **Review the migration SQL:**
+   ```sh
+   cat packages/db/prisma/schema/migrations/20260531184805_phase77_idp_manual_override_errorclass/migration.sql
+   ```
+   Confirm: 2 `CREATE TYPE`, one `ALTER TYPE "DeprovisioningStepStatus" ADD VALUE 'MANUAL_COMPLETED'`, and 5 `ALTER TABLE "DeprovisioningStep" ADD COLUMN`. There must be **no** `DROP TABLE`, `DROP COLUMN`, or destructive `ALTER COLUMN`.
+
+   > NOTE — Postgres does not allow a newly-added enum value to be used in the same transaction that adds it. `prisma migrate deploy` runs each migration in its own transaction, so the `ADD VALUE 'MANUAL_COMPLETED'` lands before any later migration references it. No application write uses `MANUAL_COMPLETED` until 77-04 ships, after this migration is applied.
+
+2. **Apply to all regions** (the runner iterates `DATABASE_URL_EU` + `DATABASE_URL_ME` and runs `prisma migrate deploy`, failing fast on the first region error):
+   ```sh
+   npx tsx packages/db/scripts/migrate-all-regions.ts
+   # or via npm script:
+   cd packages/db && pnpm run db:migrate:all
+   ```
+   To apply against a single region, set the regional URL as `DATABASE_URL` and run `prisma migrate deploy` directly:
+   ```sh
+   DATABASE_URL=$DATABASE_URL_EU pnpm --filter @contractor-ops/db exec prisma migrate deploy --schema prisma/schema
+   ```
+
+**On failure:** identical recovery to Phase 76 above — `migrate-all-regions.ts` logs the failing region and stops; re-running is idempotent.
+
+> NOTE — Plan 77-01 referenced a `push-all-regions.ts` script; the current tree's multi-region runner is `migrate-all-regions.ts`. Usage adapted above (matches the Phase 75 / 76 sections).

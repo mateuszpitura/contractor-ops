@@ -627,10 +627,34 @@ export const DeprovisioningStepStatus = {
   PENDING: 'PENDING',
   IN_PROGRESS: 'IN_PROGRESS',
   SUCCEEDED: 'SUCCEEDED',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  MANUAL_COMPLETED: 'MANUAL_COMPLETED'
 } as const
 
 export type DeprovisioningStepStatus = (typeof DeprovisioningStepStatus)[keyof typeof DeprovisioningStepStatus]
+
+
+export const ErrorClass = {
+  TRANSIENT_RATE_LIMIT: 'TRANSIENT_RATE_LIMIT',
+  TRANSIENT_NETWORK: 'TRANSIENT_NETWORK',
+  PERMANENT_NOT_FOUND: 'PERMANENT_NOT_FOUND',
+  PERMANENT_AUTH_EXPIRED: 'PERMANENT_AUTH_EXPIRED',
+  PERMANENT_FORBIDDEN: 'PERMANENT_FORBIDDEN',
+  PERMANENT_OTHER: 'PERMANENT_OTHER'
+} as const
+
+export type ErrorClass = (typeof ErrorClass)[keyof typeof ErrorClass]
+
+
+export const ManualOverrideCategory = {
+  verified_via_vendor_console: 'verified_via_vendor_console',
+  user_already_inactive: 'user_already_inactive',
+  provider_endpoint_deprecated: 'provider_endpoint_deprecated',
+  transient_provider_issue_resolved: 'transient_provider_issue_resolved',
+  other: 'other'
+} as const
+
+export type ManualOverrideCategory = (typeof ManualOverrideCategory)[keyof typeof ManualOverrideCategory]
 
 
 export const DeprovisioningStepKind = {

@@ -10731,7 +10731,12 @@ export const DeprovisioningStepScalarFieldEnum = {
   lastErrorMessage: 'lastErrorMessage',
   qstashMessageId: 'qstashMessageId',
   startedAt: 'startedAt',
-  finishedAt: 'finishedAt'
+  finishedAt: 'finishedAt',
+  errorClass: 'errorClass',
+  manualOverrideCategory: 'manualOverrideCategory',
+  manualOverrideNote: 'manualOverrideNote',
+  manualOverriddenByUserId: 'manualOverriddenByUserId',
+  manualOverriddenAt: 'manualOverriddenAt'
 } as const
 
 export type DeprovisioningStepScalarFieldEnum = (typeof DeprovisioningStepScalarFieldEnum)[keyof typeof DeprovisioningStepScalarFieldEnum]
@@ -12849,6 +12854,34 @@ export type EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel> = FieldRefIn
  * Reference to a field of type 'DeprovisioningStepStatus[]'
  */
 export type ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningStepStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ErrorClass'
+ */
+export type EnumErrorClassFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ErrorClass'>
+    
+
+
+/**
+ * Reference to a field of type 'ErrorClass[]'
+ */
+export type ListEnumErrorClassFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ErrorClass[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ManualOverrideCategory'
+ */
+export type EnumManualOverrideCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ManualOverrideCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'ManualOverrideCategory[]'
+ */
+export type ListEnumManualOverrideCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ManualOverrideCategory[]'>
     
 
 

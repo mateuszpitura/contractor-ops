@@ -49,6 +49,11 @@ export type DeprovisioningStepMinAggregateOutputType = {
   qstashMessageId: string | null
   startedAt: Date | null
   finishedAt: Date | null
+  errorClass: $Enums.ErrorClass | null
+  manualOverrideCategory: $Enums.ManualOverrideCategory | null
+  manualOverrideNote: string | null
+  manualOverriddenByUserId: string | null
+  manualOverriddenAt: Date | null
 }
 
 export type DeprovisioningStepMaxAggregateOutputType = {
@@ -66,6 +71,11 @@ export type DeprovisioningStepMaxAggregateOutputType = {
   qstashMessageId: string | null
   startedAt: Date | null
   finishedAt: Date | null
+  errorClass: $Enums.ErrorClass | null
+  manualOverrideCategory: $Enums.ManualOverrideCategory | null
+  manualOverrideNote: string | null
+  manualOverriddenByUserId: string | null
+  manualOverriddenAt: Date | null
 }
 
 export type DeprovisioningStepCountAggregateOutputType = {
@@ -83,6 +93,11 @@ export type DeprovisioningStepCountAggregateOutputType = {
   qstashMessageId: number
   startedAt: number
   finishedAt: number
+  errorClass: number
+  manualOverrideCategory: number
+  manualOverrideNote: number
+  manualOverriddenByUserId: number
+  manualOverriddenAt: number
   _all: number
 }
 
@@ -110,6 +125,11 @@ export type DeprovisioningStepMinAggregateInputType = {
   qstashMessageId?: true
   startedAt?: true
   finishedAt?: true
+  errorClass?: true
+  manualOverrideCategory?: true
+  manualOverrideNote?: true
+  manualOverriddenByUserId?: true
+  manualOverriddenAt?: true
 }
 
 export type DeprovisioningStepMaxAggregateInputType = {
@@ -127,6 +147,11 @@ export type DeprovisioningStepMaxAggregateInputType = {
   qstashMessageId?: true
   startedAt?: true
   finishedAt?: true
+  errorClass?: true
+  manualOverrideCategory?: true
+  manualOverrideNote?: true
+  manualOverriddenByUserId?: true
+  manualOverriddenAt?: true
 }
 
 export type DeprovisioningStepCountAggregateInputType = {
@@ -144,6 +169,11 @@ export type DeprovisioningStepCountAggregateInputType = {
   qstashMessageId?: true
   startedAt?: true
   finishedAt?: true
+  errorClass?: true
+  manualOverrideCategory?: true
+  manualOverrideNote?: true
+  manualOverriddenByUserId?: true
+  manualOverriddenAt?: true
   _all?: true
 }
 
@@ -248,6 +278,11 @@ export type DeprovisioningStepGroupByOutputType = {
   qstashMessageId: string | null
   startedAt: Date | null
   finishedAt: Date | null
+  errorClass: $Enums.ErrorClass | null
+  manualOverrideCategory: $Enums.ManualOverrideCategory | null
+  manualOverrideNote: string | null
+  manualOverriddenByUserId: string | null
+  manualOverriddenAt: Date | null
   _count: DeprovisioningStepCountAggregateOutputType | null
   _avg: DeprovisioningStepAvgAggregateOutputType | null
   _sum: DeprovisioningStepSumAggregateOutputType | null
@@ -288,6 +323,11 @@ export type DeprovisioningStepWhereInput = {
   qstashMessageId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
+  errorClass?: Prisma.EnumErrorClassNullableFilter<"DeprovisioningStep"> | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.EnumManualOverrideCategoryNullableFilter<"DeprovisioningStep"> | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenByUserId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   run?: Prisma.XOR<Prisma.DeprovisioningRunScalarRelationFilter, Prisma.DeprovisioningRunWhereInput>
   provenance?: Prisma.IdpChangeProvenanceListRelationFilter
@@ -308,6 +348,11 @@ export type DeprovisioningStepOrderByWithRelationInput = {
   qstashMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  errorClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverrideCategory?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverrideNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverriddenByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverriddenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   organization?: Prisma.OrganizationOrderByWithRelationInput
   run?: Prisma.DeprovisioningRunOrderByWithRelationInput
   provenance?: Prisma.IdpChangeProvenanceOrderByRelationAggregateInput
@@ -332,6 +377,11 @@ export type DeprovisioningStepWhereUniqueInput = Prisma.AtLeast<{
   qstashMessageId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
+  errorClass?: Prisma.EnumErrorClassNullableFilter<"DeprovisioningStep"> | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.EnumManualOverrideCategoryNullableFilter<"DeprovisioningStep"> | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenByUserId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   run?: Prisma.XOR<Prisma.DeprovisioningRunScalarRelationFilter, Prisma.DeprovisioningRunWhereInput>
   provenance?: Prisma.IdpChangeProvenanceListRelationFilter
@@ -352,6 +402,11 @@ export type DeprovisioningStepOrderByWithAggregationInput = {
   qstashMessageId?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  errorClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverrideCategory?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverrideNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverriddenByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  manualOverriddenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.DeprovisioningStepCountOrderByAggregateInput
   _avg?: Prisma.DeprovisioningStepAvgOrderByAggregateInput
   _max?: Prisma.DeprovisioningStepMaxOrderByAggregateInput
@@ -377,6 +432,11 @@ export type DeprovisioningStepScalarWhereWithAggregatesInput = {
   qstashMessageId?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningStep"> | string | null
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeprovisioningStep"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeprovisioningStep"> | Date | string | null
+  errorClass?: Prisma.EnumErrorClassNullableWithAggregatesFilter<"DeprovisioningStep"> | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.EnumManualOverrideCategoryNullableWithAggregatesFilter<"DeprovisioningStep"> | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenByUserId?: Prisma.StringNullableWithAggregatesFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeprovisioningStep"> | Date | string | null
 }
 
 export type DeprovisioningStepCreateInput = {
@@ -392,6 +452,11 @@ export type DeprovisioningStepCreateInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningStepsInput
   run: Prisma.DeprovisioningRunCreateNestedOneWithoutStepsInput
   provenance?: Prisma.IdpChangeProvenanceCreateNestedManyWithoutStepInput
@@ -412,6 +477,11 @@ export type DeprovisioningStepUncheckedCreateInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedCreateNestedManyWithoutStepInput
 }
 
@@ -428,6 +498,11 @@ export type DeprovisioningStepUpdateInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningStepsNestedInput
   run?: Prisma.DeprovisioningRunUpdateOneRequiredWithoutStepsNestedInput
   provenance?: Prisma.IdpChangeProvenanceUpdateManyWithoutStepNestedInput
@@ -448,6 +523,11 @@ export type DeprovisioningStepUncheckedUpdateInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedUpdateManyWithoutStepNestedInput
 }
 
@@ -466,6 +546,11 @@ export type DeprovisioningStepCreateManyInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
 }
 
 export type DeprovisioningStepUpdateManyMutationInput = {
@@ -481,6 +566,11 @@ export type DeprovisioningStepUpdateManyMutationInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DeprovisioningStepUncheckedUpdateManyInput = {
@@ -498,6 +588,11 @@ export type DeprovisioningStepUncheckedUpdateManyInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DeprovisioningStepListRelationFilter = {
@@ -531,6 +626,11 @@ export type DeprovisioningStepCountOrderByAggregateInput = {
   qstashMessageId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  errorClass?: Prisma.SortOrder
+  manualOverrideCategory?: Prisma.SortOrder
+  manualOverrideNote?: Prisma.SortOrder
+  manualOverriddenByUserId?: Prisma.SortOrder
+  manualOverriddenAt?: Prisma.SortOrder
 }
 
 export type DeprovisioningStepAvgOrderByAggregateInput = {
@@ -552,6 +652,11 @@ export type DeprovisioningStepMaxOrderByAggregateInput = {
   qstashMessageId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  errorClass?: Prisma.SortOrder
+  manualOverrideCategory?: Prisma.SortOrder
+  manualOverrideNote?: Prisma.SortOrder
+  manualOverriddenByUserId?: Prisma.SortOrder
+  manualOverriddenAt?: Prisma.SortOrder
 }
 
 export type DeprovisioningStepMinOrderByAggregateInput = {
@@ -569,6 +674,11 @@ export type DeprovisioningStepMinOrderByAggregateInput = {
   qstashMessageId?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
+  errorClass?: Prisma.SortOrder
+  manualOverrideCategory?: Prisma.SortOrder
+  manualOverrideNote?: Prisma.SortOrder
+  manualOverriddenByUserId?: Prisma.SortOrder
+  manualOverriddenAt?: Prisma.SortOrder
 }
 
 export type DeprovisioningStepSumOrderByAggregateInput = {
@@ -632,6 +742,14 @@ export type EnumDeprovisioningStepKindFieldUpdateOperationsInput = {
 
 export type EnumDeprovisioningStepStatusFieldUpdateOperationsInput = {
   set?: $Enums.DeprovisioningStepStatus
+}
+
+export type NullableEnumErrorClassFieldUpdateOperationsInput = {
+  set?: $Enums.ErrorClass | null
+}
+
+export type NullableEnumManualOverrideCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.ManualOverrideCategory | null
 }
 
 export type DeprovisioningStepCreateNestedOneWithoutProvenanceInput = {
@@ -703,6 +821,11 @@ export type DeprovisioningStepCreateWithoutRunInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningStepsInput
   provenance?: Prisma.IdpChangeProvenanceCreateNestedManyWithoutStepInput
 }
@@ -721,6 +844,11 @@ export type DeprovisioningStepUncheckedCreateWithoutRunInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedCreateNestedManyWithoutStepInput
 }
 
@@ -768,6 +896,11 @@ export type DeprovisioningStepScalarWhereInput = {
   qstashMessageId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
   finishedAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
+  errorClass?: Prisma.EnumErrorClassNullableFilter<"DeprovisioningStep"> | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.EnumManualOverrideCategoryNullableFilter<"DeprovisioningStep"> | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenByUserId?: Prisma.StringNullableFilter<"DeprovisioningStep"> | string | null
+  manualOverriddenAt?: Prisma.DateTimeNullableFilter<"DeprovisioningStep"> | Date | string | null
 }
 
 export type DeprovisioningStepCreateWithoutProvenanceInput = {
@@ -783,6 +916,11 @@ export type DeprovisioningStepCreateWithoutProvenanceInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   organization: Prisma.OrganizationCreateNestedOneWithoutDeprovisioningStepsInput
   run: Prisma.DeprovisioningRunCreateNestedOneWithoutStepsInput
 }
@@ -802,6 +940,11 @@ export type DeprovisioningStepUncheckedCreateWithoutProvenanceInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
 }
 
 export type DeprovisioningStepCreateOrConnectWithoutProvenanceInput = {
@@ -833,6 +976,11 @@ export type DeprovisioningStepUpdateWithoutProvenanceInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningStepsNestedInput
   run?: Prisma.DeprovisioningRunUpdateOneRequiredWithoutStepsNestedInput
 }
@@ -852,6 +1000,11 @@ export type DeprovisioningStepUncheckedUpdateWithoutProvenanceInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DeprovisioningStepCreateWithoutOrganizationInput = {
@@ -867,6 +1020,11 @@ export type DeprovisioningStepCreateWithoutOrganizationInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   run: Prisma.DeprovisioningRunCreateNestedOneWithoutStepsInput
   provenance?: Prisma.IdpChangeProvenanceCreateNestedManyWithoutStepInput
 }
@@ -885,6 +1043,11 @@ export type DeprovisioningStepUncheckedCreateWithoutOrganizationInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedCreateNestedManyWithoutStepInput
 }
 
@@ -928,6 +1091,11 @@ export type DeprovisioningStepCreateManyRunInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
 }
 
 export type DeprovisioningStepUpdateWithoutRunInput = {
@@ -943,6 +1111,11 @@ export type DeprovisioningStepUpdateWithoutRunInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutDeprovisioningStepsNestedInput
   provenance?: Prisma.IdpChangeProvenanceUpdateManyWithoutStepNestedInput
 }
@@ -961,6 +1134,11 @@ export type DeprovisioningStepUncheckedUpdateWithoutRunInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedUpdateManyWithoutStepNestedInput
 }
 
@@ -978,6 +1156,11 @@ export type DeprovisioningStepUncheckedUpdateManyWithoutRunInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type DeprovisioningStepCreateManyOrganizationInput = {
@@ -994,6 +1177,11 @@ export type DeprovisioningStepCreateManyOrganizationInput = {
   qstashMessageId?: string | null
   startedAt?: Date | string | null
   finishedAt?: Date | string | null
+  errorClass?: $Enums.ErrorClass | null
+  manualOverrideCategory?: $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: string | null
+  manualOverriddenByUserId?: string | null
+  manualOverriddenAt?: Date | string | null
 }
 
 export type DeprovisioningStepUpdateWithoutOrganizationInput = {
@@ -1009,6 +1197,11 @@ export type DeprovisioningStepUpdateWithoutOrganizationInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   run?: Prisma.DeprovisioningRunUpdateOneRequiredWithoutStepsNestedInput
   provenance?: Prisma.IdpChangeProvenanceUpdateManyWithoutStepNestedInput
 }
@@ -1027,6 +1220,11 @@ export type DeprovisioningStepUncheckedUpdateWithoutOrganizationInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   provenance?: Prisma.IdpChangeProvenanceUncheckedUpdateManyWithoutStepNestedInput
 }
 
@@ -1044,6 +1242,11 @@ export type DeprovisioningStepUncheckedUpdateManyWithoutOrganizationInput = {
   qstashMessageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  errorClass?: Prisma.NullableEnumErrorClassFieldUpdateOperationsInput | $Enums.ErrorClass | null
+  manualOverrideCategory?: Prisma.NullableEnumManualOverrideCategoryFieldUpdateOperationsInput | $Enums.ManualOverrideCategory | null
+  manualOverrideNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  manualOverriddenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -1092,6 +1295,11 @@ export type DeprovisioningStepSelect<ExtArgs extends runtime.Types.Extensions.In
   qstashMessageId?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  errorClass?: boolean
+  manualOverrideCategory?: boolean
+  manualOverrideNote?: boolean
+  manualOverriddenByUserId?: boolean
+  manualOverriddenAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   run?: boolean | Prisma.DeprovisioningRunDefaultArgs<ExtArgs>
   provenance?: boolean | Prisma.DeprovisioningStep$provenanceArgs<ExtArgs>
@@ -1113,6 +1321,11 @@ export type DeprovisioningStepSelectCreateManyAndReturn<ExtArgs extends runtime.
   qstashMessageId?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  errorClass?: boolean
+  manualOverrideCategory?: boolean
+  manualOverrideNote?: boolean
+  manualOverriddenByUserId?: boolean
+  manualOverriddenAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   run?: boolean | Prisma.DeprovisioningRunDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deprovisioningStep"]>
@@ -1132,6 +1345,11 @@ export type DeprovisioningStepSelectUpdateManyAndReturn<ExtArgs extends runtime.
   qstashMessageId?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  errorClass?: boolean
+  manualOverrideCategory?: boolean
+  manualOverrideNote?: boolean
+  manualOverriddenByUserId?: boolean
+  manualOverriddenAt?: boolean
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   run?: boolean | Prisma.DeprovisioningRunDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deprovisioningStep"]>
@@ -1151,9 +1369,14 @@ export type DeprovisioningStepSelectScalar = {
   qstashMessageId?: boolean
   startedAt?: boolean
   finishedAt?: boolean
+  errorClass?: boolean
+  manualOverrideCategory?: boolean
+  manualOverrideNote?: boolean
+  manualOverriddenByUserId?: boolean
+  manualOverriddenAt?: boolean
 }
 
-export type DeprovisioningStepOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "runId" | "provider" | "stepKind" | "status" | "attempts" | "externalUserId" | "requestSha256" | "responseSha256" | "lastErrorMessage" | "qstashMessageId" | "startedAt" | "finishedAt", ExtArgs["result"]["deprovisioningStep"]>
+export type DeprovisioningStepOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "runId" | "provider" | "stepKind" | "status" | "attempts" | "externalUserId" | "requestSha256" | "responseSha256" | "lastErrorMessage" | "qstashMessageId" | "startedAt" | "finishedAt" | "errorClass" | "manualOverrideCategory" | "manualOverrideNote" | "manualOverriddenByUserId" | "manualOverriddenAt", ExtArgs["result"]["deprovisioningStep"]>
 export type DeprovisioningStepInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   run?: boolean | Prisma.DeprovisioningRunDefaultArgs<ExtArgs>
@@ -1191,6 +1414,11 @@ export type $DeprovisioningStepPayload<ExtArgs extends runtime.Types.Extensions.
     qstashMessageId: string | null
     startedAt: Date | null
     finishedAt: Date | null
+    errorClass: $Enums.ErrorClass | null
+    manualOverrideCategory: $Enums.ManualOverrideCategory | null
+    manualOverrideNote: string | null
+    manualOverriddenByUserId: string | null
+    manualOverriddenAt: Date | null
   }, ExtArgs["result"]["deprovisioningStep"]>
   composites: {}
 }
@@ -1631,6 +1859,11 @@ export interface DeprovisioningStepFieldRefs {
   readonly qstashMessageId: Prisma.FieldRef<"DeprovisioningStep", 'String'>
   readonly startedAt: Prisma.FieldRef<"DeprovisioningStep", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"DeprovisioningStep", 'DateTime'>
+  readonly errorClass: Prisma.FieldRef<"DeprovisioningStep", 'ErrorClass'>
+  readonly manualOverrideCategory: Prisma.FieldRef<"DeprovisioningStep", 'ManualOverrideCategory'>
+  readonly manualOverrideNote: Prisma.FieldRef<"DeprovisioningStep", 'String'>
+  readonly manualOverriddenByUserId: Prisma.FieldRef<"DeprovisioningStep", 'String'>
+  readonly manualOverriddenAt: Prisma.FieldRef<"DeprovisioningStep", 'DateTime'>
 }
     
 

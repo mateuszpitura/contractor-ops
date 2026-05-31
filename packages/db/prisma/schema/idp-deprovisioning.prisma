@@ -43,6 +43,16 @@ model DeprovisioningStep {
   startedAt        DateTime?
   finishedAt       DateTime?
 
+  // Phase 77 D-07 — closed-enum failure classification (drives reconcile queue + LIKELY_GONE).
+  errorClass ErrorClass?
+
+  // Phase 77 D-10 — manual-override metadata (set when an admin marks a terminally-failed
+  // step MANUAL_COMPLETED via idp:override_step_failure). All additive nullable, no default.
+  manualOverrideCategory   ManualOverrideCategory?
+  manualOverrideNote       String? // free-text rationale (Zod min(20)); NEVER logged raw
+  manualOverriddenByUserId String?
+  manualOverriddenAt       DateTime?
+
   organization Organization          @relation(fields: [organizationId], references: [id])
   run          DeprovisioningRun     @relation(fields: [runId], references: [id], onDelete: Cascade)
   provenance   IdpChangeProvenance[]
@@ -83,6 +93,31 @@ enum DeprovisioningStepStatus {
   IN_PROGRESS
   SUCCEEDED
   FAILED
+  // Phase 77 D-10 — admin marked a terminally-failed step complete by manual
+  // out-of-band verification. recomputeRunStatus treats this as SUCCEEDED-equivalent (D-11).
+  MANUAL_COMPLETED
+}
+
+// Phase 77 D-07 — closed-enum classification of a deprovision step failure.
+// Mirrors the integrations `ErrorClass` literal union; drives the admin
+// reconcile queue + the LIKELY_GONE (PERMANENT_NOT_FOUND) idempotent-success path.
+enum ErrorClass {
+  TRANSIENT_RATE_LIMIT
+  TRANSIENT_NETWORK
+  PERMANENT_NOT_FOUND
+  PERMANENT_AUTH_EXPIRED
+  PERMANENT_FORBIDDEN
+  PERMANENT_OTHER
+}
+
+// Phase 77 D-10 — closed-enum reason category an admin selects when overriding
+// a terminally-failed step to MANUAL_COMPLETED.
+enum ManualOverrideCategory {
+  verified_via_vendor_console
+  user_already_inactive
+  provider_endpoint_deprecated
+  transient_provider_issue_resolved
+  other
 }
 
 enum DeprovisioningStepKind {
