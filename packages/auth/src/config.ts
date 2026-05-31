@@ -227,6 +227,19 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24, // 24 hours
     updateAge: 60 * 60, // Refresh session every hour on activity
+    // Serve the session from a signed (JWE) data cookie so the common
+    // `getSession` path skips a DB read for up to `maxAge`. Trade-off:
+    // session revocation and `Session`-level field changes lag by up to
+    // `maxAge`; sensitive endpoints (password change, account deletion)
+    // already force a fresh DB read via Better Auth's `disableCookieCache`.
+    // The active-member ROLE is NOT stored in this cookie — `requirePermission`
+    // re-reads `member.role` live on every call, so RBAC/role changes still
+    // take effect immediately. `refreshCache` is intentionally omitted: Better
+    // Auth auto-disables it (and warns) when a `database` is configured.
+    cookieCache: {
+      enabled: true,
+      maxAge: 60 * 5, // 5 minutes — matches the org-meta cache TTL.
+    },
   },
 
   /**
