@@ -33,8 +33,13 @@ import { PII_MASK_PATHS } from './pii-mask.js';
  * the compliance team before merging. CI does not currently enforce closure
  * (the IdpAuditEvent type below is a partial map) but the documented
  * contract is "extras-discouraged".
+ *
+ * Phase 70 D-15 — initial 9 fields (per-action audit).
+ * Phase 76 D-15 — saga + provenance fields (runId, stepId, hashes, attempts, etc.).
+ * All Phase 76 fields are SHA-256 hashes, enum discriminators, or opaque IDs — no PII.
  */
 export const IDP_AUDIT_ALLOWED_FIELDS = [
+  // Phase 70 D-15 (existing) — DO NOT REMOVE
   'auditEvent',
   'externalUserId',
   'actionResult',
@@ -44,6 +49,15 @@ export const IDP_AUDIT_ALLOWED_FIELDS = [
   'organizationId',
   'userId',
   'timestamp',
+  // Phase 76 D-15 / SC#2 — saga audit grade
+  'runId',
+  'stepId',
+  'stepKind',
+  'requestSha256',
+  'responseSha256',
+  'attempts',
+  'failureKind',
+  'matchedProvenanceId',
 ] as const;
 
 export type IdpAuditAllowedField = (typeof IDP_AUDIT_ALLOWED_FIELDS)[number];

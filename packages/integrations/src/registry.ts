@@ -1,5 +1,7 @@
 import { createIntegrationLogger } from '@contractor-ops/logger';
+import type { BaseAdapter } from './adapters/base-adapter.js';
 import type { CompanyRegistryAdapter, CompanyRegistryProvider } from './types/company-registry.js';
+import type { Deprovisionable } from './types/deprovisionable.js';
 import type { OcrAdapter } from './types/ocr.js';
 import type { IntegrationProviderAdapter } from './types/provider.js';
 
@@ -143,4 +145,53 @@ export function getCompanyRegistryAdapterBySlug(
  */
 export function getAllCompanyRegistryAdapters(): CompanyRegistryAdapter[] {
   return Array.from(companyRegistryAdapters.values());
+}
+
+// ---------------------------------------------------------------------------
+// Deprovisionable Adapter Registry (Phase 76 D-13)
+// ---------------------------------------------------------------------------
+//
+// Compile-time enforcement: only `BaseAdapter & Deprovisionable` instances pass
+// the registration signature. A class that implements BaseAdapter but forgets
+// any of the three Deprovisionable methods will not compile at the
+// `registerDeprovisionableAdapter` call site (SC#5).
+//
+// DeprovisioningProviderId is a type-level union duplicated here (it mirrors the
+// Prisma `DeprovisioningProvider` enum + the @contractor-ops/idp-saga union).
+// The duplication is deliberate: packages/integrations cannot circularly depend
+// on @contractor-ops/idp-saga, and the literals are stable.
+
+type DeprovisioningProviderId = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' | 'GITHUB';
+
+const deprovisionableAdapters = new Map<DeprovisioningProviderId, BaseAdapter & Deprovisionable>();
+
+/**
+ * Registers a Deprovisionable adapter for a provider. Throws on double registration.
+ */
+export function registerDeprovisionableAdapter(
+  provider: DeprovisioningProviderId,
+  adapter: BaseAdapter & Deprovisionable,
+): void {
+  if (deprovisionableAdapters.has(provider)) {
+    throw new Error(`Deprovisionable adapter already registered for ${provider}`);
+  }
+  deprovisionableAdapters.set(provider, adapter);
+}
+
+/**
+ * Resolves the Deprovisionable adapter for a provider. Throws if none registered.
+ */
+export function getDeprovisionableAdapter(
+  provider: DeprovisioningProviderId,
+): BaseAdapter & Deprovisionable {
+  const adapter = deprovisionableAdapters.get(provider);
+  if (!adapter) {
+    throw new Error(`No Deprovisionable adapter registered for provider: ${provider}`);
+  }
+  return adapter;
+}
+
+/** Internal — for tests only. Resets the registered Deprovisionable adapters. */
+export function _resetDeprovisionableAdapters(): void {
+  deprovisionableAdapters.clear();
 }
