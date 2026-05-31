@@ -319,6 +319,7 @@ Items acknowledged and deferred at v5.0 milestone close on 2026-04-26:
 |----------|-------|------|--------|-------------|
 | migration_apply | 70 | 70-09-SUMMARY.md | code shipped (`9212adf1`) — multi-region apply pending | post-deploy: `tsx packages/db/scripts/backfill-scope-capabilities.ts` against `$DATABASE_URL_EU` then `$DATABASE_URL_ME` (idempotent, dry-run-supported) |
 | migration_apply | 74 | 74-04-SUMMARY.md | code shipped (`21e998cc`) — multi-region apply pending | post-deploy: `tsx packages/db/scripts/push-all-regions.ts` against `$DATABASE_URL_EU` then `$DATABASE_URL_ME`. Migration: `20260427105536_phase_74_offboarding_foundation`. Additive-only (0 DROP/RENAME). |
+| migration_apply | 76 | 76-02-SUMMARY.md | code shipped (`45a7c742`) — multi-region apply pending | post-deploy: `npx tsx packages/db/scripts/migrate-all-regions.ts` (or `pnpm db:migrate:all`) against `$DATABASE_URL_EU` then `$DATABASE_URL_ME`. Migration: `20260531164549_phase76_idp_deprovisioning`. Additive-only (3 CREATE TABLE + 5 CREATE TYPE + 1 ADD COLUMN, 0 DROP). Idempotent via `_prisma_migrations`. |
 | uat_gap | 60 | 60-HUMAN-UAT.md | partial — 4 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 61 | 61-UAT.md | partial — 12 pending scenarios | post-deploy manual UI verification |
 | uat_gap | 62 | 62-HUMAN-UAT.md | partial — 3 pending scenarios | post-deploy manual UI verification |
