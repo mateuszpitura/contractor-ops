@@ -20,7 +20,10 @@ import {
   bulkRejectTimesheets,
   rejectTimesheet,
 } from '../../services/time-entry';
-import { computeTimeReconciliation } from '../../services/time-reconciliation';
+import {
+  computeTimeReconciliation,
+  computeTimeReconciliationBatch,
+} from '../../services/time-reconciliation';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -441,49 +444,58 @@ export const timeRouter = router({
 
       const { items: invoices, nextCursor } = paginateByExtraRowUndefined(rawInvoices, input, 20);
 
-      // Compute reconciliation for each invoice
-      const items = await Promise.all(
-        invoices.map(async inv => {
-          if (!inv.contractId) return null;
+      // Compute reconciliation for the whole page in a fixed number of queries.
+      // Contract terms come from the `include` above, so no per-invoice query.
+      const batchItems = invoices.flatMap(inv => {
+        if (!inv.contractId || !inv.contract) return [];
 
-          const issueDate = inv.issueDate;
-          const periodStart =
-            inv.servicePeriodStart ??
-            new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1));
-          const periodEnd =
-            inv.servicePeriodEnd ??
-            new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
+        const issueDate = inv.issueDate;
+        const periodStart =
+          inv.servicePeriodStart ??
+          new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth(), 1));
+        const periodEnd =
+          inv.servicePeriodEnd ??
+          new Date(Date.UTC(issueDate.getUTCFullYear(), issueDate.getUTCMonth() + 1, 0));
 
-          const reconciliation = await computeTimeReconciliation(
-            ctx.db,
-            ctx.organizationId,
-            inv.contractId,
+        return [
+          {
+            invoice: inv,
+            contractId: inv.contractId,
+            rateType: inv.contract.rateType,
+            rateValueMinor: inv.contract.rateValueMinor,
             periodStart,
             periodEnd,
-            inv.totalMinor,
-          );
+            invoicedAmountMinor: inv.totalMinor,
+          },
+        ];
+      });
 
-          if (!reconciliation) return null;
-
-          return {
-            invoice: {
-              id: inv.id,
-              invoiceNumber: inv.invoiceNumber,
-              issueDate: inv.issueDate,
-              totalMinor: inv.totalMinor,
-              currency: inv.currency,
-              servicePeriodStart: inv.servicePeriodStart,
-              servicePeriodEnd: inv.servicePeriodEnd,
-            },
-            contractor: inv.contractor,
-            reconciliation,
-          };
-        }),
+      const reconciled = await computeTimeReconciliationBatch(
+        ctx.db,
+        ctx.organizationId,
+        batchItems,
       );
 
-      // Filter out nulls and sort by deviation percent descending
-      const filtered = items
-        .filter((item): item is NonNullable<typeof item> => item !== null)
+      // Drop invoices without applicable reconciliation, then sort by deviation desc.
+      const filtered = reconciled
+        .flatMap(({ invoice: inv, reconciliation }) => {
+          if (!reconciliation) return [];
+          return [
+            {
+              invoice: {
+                id: inv.id,
+                invoiceNumber: inv.invoiceNumber,
+                issueDate: inv.issueDate,
+                totalMinor: inv.totalMinor,
+                currency: inv.currency,
+                servicePeriodStart: inv.servicePeriodStart,
+                servicePeriodEnd: inv.servicePeriodEnd,
+              },
+              contractor: inv.contractor,
+              reconciliation,
+            },
+          ];
+        })
         .sort((a, b) => b.reconciliation.deviationPercent - a.reconciliation.deviationPercent);
 
       return { items: filtered, nextCursor };
