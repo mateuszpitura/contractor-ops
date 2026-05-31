@@ -68,3 +68,94 @@ describe('classifyError (Phase 77 D-07 closed-enum classifier)', () => {
     expect(result).toBe('TRANSIENT_RATE_LIMIT');
   });
 });
+
+// Phase 78 D-13 — per-provider classification for the three new IdPs. The
+// classifier is signal-driven (status/headers/body/code), not provider-keyed,
+// so the `provider` hint is passed for documentation; behavior is asserted.
+describe.each([
+  { provider: 'ENTRA_ID' as const },
+  { provider: 'OKTA' as const },
+  { provider: 'GITHUB' as const },
+])('classifyError per-provider HTTP-status mapping ($provider)', ({ provider }) => {
+  it('401 → PERMANENT_AUTH_EXPIRED', () => {
+    expect(classifyError({ provider, httpStatus: 401 })).toBe('PERMANENT_AUTH_EXPIRED');
+  });
+
+  it('403 (plain forbidden) → PERMANENT_FORBIDDEN', () => {
+    expect(classifyError({ provider, httpStatus: 403 })).toBe('PERMANENT_FORBIDDEN');
+  });
+
+  it('404 → PERMANENT_NOT_FOUND', () => {
+    expect(classifyError({ provider, httpStatus: 404 })).toBe('PERMANENT_NOT_FOUND');
+  });
+
+  it('429 → TRANSIENT_RATE_LIMIT', () => {
+    expect(classifyError({ provider, httpStatus: 429 })).toBe('TRANSIENT_RATE_LIMIT');
+  });
+
+  it('default 4xx (400 / 422) → PERMANENT_OTHER', () => {
+    expect(classifyError({ provider, httpStatus: 400 })).toBe('PERMANENT_OTHER');
+    expect(classifyError({ provider, httpStatus: 422 })).toBe('PERMANENT_OTHER');
+  });
+
+  it('network / timeout cause → TRANSIENT_NETWORK', () => {
+    const timeout = Object.assign(new Error('connect ETIMEDOUT'), { code: 'ETIMEDOUT' });
+    expect(classifyError({ provider, cause: timeout })).toBe('TRANSIENT_NETWORK');
+  });
+});
+
+describe('classifyError provider-specific cases (Phase 78 D-13)', () => {
+  it('Entra 403 Authorization_RequestDenied → PERMANENT_FORBIDDEN (no retry)', () => {
+    expect(
+      classifyError({
+        provider: 'ENTRA_ID',
+        httpStatus: 403,
+        providerErrorCode: 'Authorization_RequestDenied',
+      }),
+    ).toBe('PERMANENT_FORBIDDEN');
+  });
+
+  it('GitHub 403 with x-ratelimit-remaining:0 → TRANSIENT_RATE_LIMIT (not forbidden)', () => {
+    expect(
+      classifyError({
+        provider: 'GITHUB',
+        httpStatus: 403,
+        responseHeaders: { 'x-ratelimit-remaining': '0' },
+      }),
+    ).toBe('TRANSIENT_RATE_LIMIT');
+  });
+
+  it('GitHub 403 with retry-after header → TRANSIENT_RATE_LIMIT', () => {
+    expect(
+      classifyError({
+        provider: 'GITHUB',
+        httpStatus: 403,
+        responseHeaders: { 'retry-after': '60' },
+      }),
+    ).toBe('TRANSIENT_RATE_LIMIT');
+  });
+
+  it('GitHub 403 with "secondary rate limit" body → TRANSIENT_RATE_LIMIT', () => {
+    expect(
+      classifyError({
+        provider: 'GITHUB',
+        httpStatus: 403,
+        responseBody: 'You have exceeded a secondary rate limit',
+      }),
+    ).toBe('TRANSIENT_RATE_LIMIT');
+  });
+
+  it('GitHub 403 require_two_factor_authentication → PERMANENT_FORBIDDEN', () => {
+    expect(
+      classifyError({
+        provider: 'GITHUB',
+        httpStatus: 403,
+        providerErrorCode: 'require_two_factor_authentication',
+      }),
+    ).toBe('PERMANENT_FORBIDDEN');
+  });
+
+  it('GitHub plain 403 (no rate-limit signal) stays PERMANENT_FORBIDDEN', () => {
+    expect(classifyError({ provider: 'GITHUB', httpStatus: 403 })).toBe('PERMANENT_FORBIDDEN');
+  });
+});
