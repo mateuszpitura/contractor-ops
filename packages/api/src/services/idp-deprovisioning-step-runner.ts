@@ -1,8 +1,11 @@
 import type { createTenantClientFrom, PrismaClient } from '@contractor-ops/db';
 import { insertProvenance, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-ops/idp-saga';
 import { getDeprovisionableAdapter } from '@contractor-ops/integrations';
+import { GoogleWorkspaceAdapter } from '@contractor-ops/integrations/adapters/google-workspace-adapter';
+import { SlackAdapter } from '@contractor-ops/integrations/adapters/slack-adapter';
 import { getIdpAuditLogger } from '@contractor-ops/logger';
 import { z } from 'zod';
+import { resolveDeprovisionToken } from './idp-token-resolver.js';
 
 /**
  * The region-aware tenant-scoped Prisma client passed by the QStash route. It is a
@@ -87,15 +90,23 @@ export async function runDeprovisioningStep(
     deprovisioningStepId: step.id,
   });
 
-  const adapter = getDeprovisionableAdapter(body.provider);
+  // Resolve + configure the provider connection token before the adapter call
+  // (GWS connection token, or the SLACK_ORG_GRID token — never the workspace token).
+  const adapter = await resolveAdapter(sagaDb, body);
+
+  // Adapters re-throw on TRANSIENT_* failures so the QStash route returns 500 and the
+  // job is retried; the head-of-job MAX_ATTEMPTS guard caps total attempts.
   const result =
     body.stepKind === 'SUSPEND_ACCOUNT'
       ? await adapter.suspendAccount(body.externalUserId)
       : await adapter.revokeAllSessions(body.externalUserId);
 
-  // USER_NOT_FOUND → success-equivalent (goal state met).
+  // Phase 77 D-06/D-11 — LIKELY_GONE (user already absent) + SUCCEEDED are
+  // success-equivalent; USER_NOT_FOUND failureKind kept for back-compat.
   const finalStatus =
-    result.status === 'SUCCEEDED' || result.failureKind === 'USER_NOT_FOUND'
+    result.status === 'SUCCEEDED' ||
+    result.status === 'LIKELY_GONE' ||
+    result.failureKind === 'USER_NOT_FOUND'
       ? 'SUCCEEDED'
       : 'FAILED';
 
@@ -103,12 +114,34 @@ export async function runDeprovisioningStep(
     where: { id: step.id },
     data: {
       status: finalStatus,
+      errorClass: result.errorClass ?? null,
       finishedAt: new Date(),
       requestSha256: result.requestSha256,
       responseSha256: result.responseSha256,
       lastErrorMessage: result.errorMessage ? result.errorMessage.slice(0, 1024) : null,
     },
   });
+
+  // D-05 three-audit-row mapping: a GWS revokeAllSessions returns two sub-action
+  // hash pairs (OAuth-grant revoke + sign-out). Emit each as its own audit row so a
+  // full GWS run produces three rows (suspend + 2 revoke sub-actions).
+  for (const sub of result.subActions ?? []) {
+    auditLog.info(
+      {
+        auditEvent: 'deprovision_step_subaction',
+        organizationId: body.organizationId,
+        runId: body.runId,
+        stepId: body.stepId,
+        stepKind: body.stepKind,
+        provider: body.provider,
+        externalUserId: body.externalUserId,
+        actionResult: finalStatus,
+        requestSha256: sub.requestSha256,
+        responseSha256: sub.responseSha256,
+      },
+      `Deprovisioning sub-action ${sub.kind}`,
+    );
+  }
 
   auditLog.info(
     {
@@ -124,10 +157,28 @@ export async function runDeprovisioningStep(
       requestSha256: result.requestSha256,
       responseSha256: result.responseSha256,
       failureKind: result.failureKind,
+      errorClass: result.errorClass,
     },
     'Deprovisioning step completed',
   );
 
   await recomputeRunStatus(sagaDb, step.runId);
   return { ok: finalStatus === 'SUCCEEDED' };
+}
+
+/**
+ * Resolves the Deprovisionable adapter for a step, configured with the decrypted
+ * connection token. Falls back to the bare registry adapter if no token resolver
+ * applies (defensive — every supported provider has a resolver).
+ */
+async function resolveAdapter(db: PrismaClient, body: StepRunnerBody) {
+  if (body.provider === 'GOOGLE_WORKSPACE' || body.provider === 'SLACK') {
+    const token = await resolveDeprovisionToken(db, body.organizationId, body.provider);
+    if (token.ok) {
+      return body.provider === 'GOOGLE_WORKSPACE'
+        ? new GoogleWorkspaceAdapter().withAccessToken(token.accessToken)
+        : new SlackAdapter().withOrgGridToken(token.accessToken);
+    }
+  }
+  return getDeprovisionableAdapter(body.provider);
 }

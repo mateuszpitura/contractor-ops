@@ -306,6 +306,9 @@ export const CacheKeys = {
   orgSettingsJson: (orgId: string, sub: string) => cacheKey(orgId, 'settings', 'json', sub),
   orgBranding: (orgId: string) => cacheKey(orgId, 'settings', 'branding'),
   approvalChains: (orgId: string) => cacheKey(orgId, 'approval', 'chains'),
+  // Phase 77 D-02 — IdP impact preview (org-scoped; provider + external user id).
+  idpPreview: (orgId: string, provider: string, externalUserId: string) =>
+    cacheKey(orgId, 'idp', 'preview', provider, externalUserId),
 
   // Prefix patterns for broad invalidation (match all keys for an org+domain)
   dashboardPrefix: (orgId: string) => cacheKey(orgId, 'dash'),
@@ -345,4 +348,6 @@ export const CacheTTL = {
   ORG_BRANDING: 30 * 60,
   /** Approval chain configs — stable, invalidated on CRUD */
   APPROVAL_CHAINS: 10 * 60,
+  /** IdP impact preview — 5 min staleness; "Refresh" button force-invalidates (D-02). */
+  IDP_PREVIEW: 5 * 60,
 } as const;
