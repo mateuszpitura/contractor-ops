@@ -47,8 +47,64 @@ export interface SlackImpactCustomMetrics {
 }
 
 /**
+ * Microsoft Entra ID-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ *
+ * `conditionalAccessPolicies` is the headline gate: a policy with session
+ * controls that applies to the user can override a sign-out, so the impact
+ * panel surfaces it as a non-blocking warning. `onPremisesSyncEnabled` is the
+ * hybrid-AD signal the adapter HARD BLOCKS on before any mutation.
+ */
+export interface EntraImpactCustomMetrics {
+  conditionalAccessPolicies: Array<{
+    displayName: string;
+    state: string;
+    appliesToUser: boolean;
+    hasSessionControls: boolean;
+  }>;
+  assignedLicenseSkus: string[];
+  groupMembershipCount: number;
+  onPremisesSyncEnabled: boolean;
+  registeredDeviceCount: number;
+  appRoleAssignmentCount: number;
+}
+
+/**
+ * Okta-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ */
+export interface OktaImpactCustomMetrics {
+  assignedAppCount: number;
+  enrolledFactorTypes: string[];
+  groupMembershipCount: number;
+  adminRoles: string[];
+  linkedIdpCount: number;
+}
+
+/**
+ * GitHub org-specific impact metrics (Phase 78 CONTEXT.md D-10).
+ *
+ * `outsideCollaboratorRepoCount` is the "back-door" signal: repos the user
+ * keeps access to even after org-member removal. `authorizedPatCount` is `null`
+ * when the org is NOT on SAML SSO (the per-PAT credential-authorizations API is
+ * unavailable), distinct from `0` (SAML SSO org with zero authorized PATs).
+ */
+export interface GitHubImpactCustomMetrics {
+  repositoryCount: number;
+  teamMembershipCount: number;
+  outsideCollaboratorRepoCount: number;
+  pendingOrgInvitations: number;
+  /** `null` when the org is not on SAML SSO (credential-authorizations API unavailable). */
+  authorizedPatCount: number | null;
+  isOrgOwner: boolean;
+}
+
+/**
  * Discriminated union returned by `Deprovisionable.describeImpact`. Narrow on
  * `provider` to access the provider-specific `customMetrics`.
+ *
+ * Phase 78 adds the `ENTRA`, `OKTA`, and `GITHUB` members WITHOUT modifying the
+ * existing `GOOGLE_WORKSPACE` / `SLACK` ones. The `provider` discriminants are a
+ * subset of the Prisma `DeprovisioningProvider` enum (`ENTRA`, NOT `ENTRA_ID`)
+ * so the saga resolves adapters and the D-01 CI subset assertion stays green.
  */
 export type ImpactPreview =
   | {
@@ -64,6 +120,27 @@ export type ImpactPreview =
       provider: 'SLACK';
       commonMetrics: ImpactCommonMetrics;
       customMetrics: SlackImpactCustomMetrics;
+      fetchedAt: string;
+      cacheKey: string;
+    }
+  | {
+      provider: 'ENTRA';
+      commonMetrics: ImpactCommonMetrics;
+      customMetrics: EntraImpactCustomMetrics;
+      fetchedAt: string;
+      cacheKey: string;
+    }
+  | {
+      provider: 'OKTA';
+      commonMetrics: ImpactCommonMetrics;
+      customMetrics: OktaImpactCustomMetrics;
+      fetchedAt: string;
+      cacheKey: string;
+    }
+  | {
+      provider: 'GITHUB';
+      commonMetrics: ImpactCommonMetrics;
+      customMetrics: GitHubImpactCustomMetrics;
       fetchedAt: string;
       cacheKey: string;
     };

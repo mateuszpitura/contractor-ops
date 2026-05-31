@@ -10,7 +10,13 @@ import type { ImpactPreview, ImpactPreviewProvider } from '../idp/impact-preview
 // One representative value per current union member. Adding a member to the
 // union without adding it here is a compile error (the array is typed against
 // the discriminant union), so the runtime subset assertion stays exhaustive.
-const UNION_PROVIDERS: readonly ImpactPreviewProvider[] = ['GOOGLE_WORKSPACE', 'SLACK'];
+const UNION_PROVIDERS: readonly ImpactPreviewProvider[] = [
+  'GOOGLE_WORKSPACE',
+  'SLACK',
+  'ENTRA',
+  'OKTA',
+  'GITHUB',
+];
 
 describe('ImpactPreview union ↔ DeprovisioningProvider enum (Phase 77 D-01)', () => {
   const enumValues = Object.values(DeprovisioningProvider) as string[];
