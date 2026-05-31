@@ -107,6 +107,18 @@ const { mockPrisma } = vi.hoisted(() => {
     member: {
       findFirst: vi.fn(async () => ({ role: 'admin' })),
     },
+    // Phase 72 payment-block gate queries this; default to no BLOCKING/EXPIRED
+    // items so contractors are eligible and payment flows proceed.
+    contractorComplianceItem: {
+      findMany: vi.fn(async () => []),
+    },
+    // Phase 72 COMPL-07 — atomic compliance snapshot rows on lockAndExport.
+    paymentRunComplianceCheck: {
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'compliance-check-1', ...opts.data })),
+    },
+    skontoApplication: {
+      create: vi.fn(async (opts: { data: Rec }) => ({ id: 'skonto-1', ...opts.data })),
+    },
     $transaction: vi.fn(async (fn: (tx: Rec) => Promise<unknown>) => fn(mockPrisma)),
     // Advisory lock used by payment.create to serialise runNumber allocation.
     // Safe no-op in unit tests; real behaviour is PG-level and exercised in
@@ -137,6 +149,7 @@ vi.mock('@contractor-ops/db', () => ({
   withRlsTransactions: <T>(c: T) => c,
   withRlsReads: <T>(c: T) => c,
   prisma: mockPrisma,
+  prismaRaw: mockPrisma,
   tenantStore: {
     run: (_ctx: unknown, fn: () => unknown) => fn(),
     getStore: vi.fn(() => ({ region: 'EU' })),
@@ -317,6 +330,12 @@ vi.mock('@contractor-ops/logger', () => ({
     debug: vi.fn(),
   })),
   createCronLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
+  getIdpAuditLogger: vi.fn(() => ({
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  })),
   createIntegrationLogger: vi.fn(() => ({
     info: vi.fn(),
     warn: vi.fn(),
@@ -459,6 +478,22 @@ beforeEach(() => {
   mockPrisma.$transaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) =>
     fn(mockPrisma),
   );
+  // `vi.clearAllMocks()` clears call history but NOT pending `mockResolvedValueOnce`
+  // queues or persistent `mockResolvedValue` overrides. A test that queues a value
+  // its procedure never consumes (e.g. a `create` that throws before allocating a
+  // run number) would leak that value into the next test's `findFirst`/`findMany`.
+  // Reset the per-test-configured mocks and re-seed their defaults so each test
+  // starts from a clean queue. (Phase 72 added a second `invoice.findMany` call in
+  // `create` for the payment-block eligibility gate, which made these leaks bite.)
+  mockPrisma.invoice.findMany.mockReset().mockResolvedValue([]);
+  mockPrisma.invoice.findFirst.mockReset().mockResolvedValue(null);
+  mockPrisma.paymentRun.findFirst.mockReset().mockResolvedValue(null);
+  mockPrisma.paymentRun.findUnique.mockReset().mockResolvedValue(null);
+  mockPrisma.paymentRunItem.findFirst.mockReset().mockResolvedValue(null);
+  mockPrisma.paymentRunItem.findMany.mockReset().mockResolvedValue([]);
+  mockPrisma.paymentRunItem.count.mockReset().mockResolvedValue(0);
+  mockPrisma.paymentRunItem.aggregate.mockReset().mockResolvedValue({ _sum: { amountMinor: 0 } });
+  mockPrisma.member.findFirst.mockReset().mockResolvedValue({ role: 'admin' });
 });
 
 // ===========================================================================
@@ -521,7 +556,10 @@ describe('payment router', () => {
         amountToPayMinor: 200000,
       });
 
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice1, invoice2]);
+      // Phase 72 payment-block gate adds a FIRST invoice.findMany (eligibility
+      // fetch) before the main loadEligibleInvoices fetch — persistent mock
+      // serves both calls.
+      mockPrisma.invoice.findMany.mockResolvedValue([invoice1, invoice2]);
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null); // no existing runs
 
       await caller.payment.create({
@@ -547,7 +585,7 @@ describe('payment router', () => {
 
     it('generates run number with year prefix PR-{year}-{seq}', async () => {
       const invoice = makeInvoice();
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce({
         runNumber: `PR-${new Date().getFullYear()}-005`,
       });
@@ -565,7 +603,7 @@ describe('payment router', () => {
       // The DB unique index is the ultimate backstop; the lock avoids
       // rollback churn under contention.
       const invoice = makeInvoice();
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
 
       await caller.payment.create({ invoiceIds: [INVOICE_ID_1] });
@@ -586,7 +624,7 @@ describe('payment router', () => {
       // test locks in that the error path surfaces as CONFLICT rather
       // than an opaque 500.
       const invoice = makeInvoice();
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null);
 
       const p2002 = Object.assign(new Error('Unique constraint failed'), {
@@ -602,7 +640,7 @@ describe('payment router', () => {
 
     it('rejects invoices not in READY status', async () => {
       const invoice = makeInvoice({ paymentStatus: 'IN_RUN' });
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoice]);
+      mockPrisma.invoice.findMany.mockResolvedValue([invoice]);
 
       await expect(caller.payment.create({ invoiceIds: [INVOICE_ID_1] })).rejects.toMatchObject({
         code: 'BAD_REQUEST',
@@ -619,7 +657,7 @@ describe('payment router', () => {
         billingProfile: { id: 'bp-2', preferredCurrency: 'EUR' },
       });
 
-      mockPrisma.invoice.findMany.mockResolvedValueOnce([invoicePLN, invoiceEUR]);
+      mockPrisma.invoice.findMany.mockResolvedValue([invoicePLN, invoiceEUR]);
       // First findFirst for PLN run number, second for EUR run number
       mockPrisma.paymentRun.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(null);
 

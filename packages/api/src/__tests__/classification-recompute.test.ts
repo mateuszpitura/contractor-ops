@@ -193,8 +193,9 @@ describe('classification.recreateComplianceAssessment — per-contractor superse
       reason: 'admin_correction',
     });
     expect(result.waivedCount).toBe(1);
-    // For outcome.kind === 'IR35' (not 'IR35-INSIDE'), uk.sds@v1 doesn't fire — 3 rules apply.
-    expect(result.insertedCount).toBe(3);
+    // For outcome.kind === 'IR35' (not 'IR35-INSIDE'), uk.sds@v1 doesn't fire;
+    // with the UK IP-assignment rule (Phase 75) now in the set, 4 rules apply.
+    expect(result.insertedCount).toBe(4);
     expect(result.carriedForwardCount).toBe(1); // RTW had a doc
   });
 
