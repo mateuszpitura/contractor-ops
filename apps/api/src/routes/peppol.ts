@@ -123,26 +123,60 @@ async function handlerInner(
   const { organizationId } = parsed.data;
 
   try {
-    const participants = organizationId
-      ? await prisma.peppolParticipant.findMany({
-          where: { organizationId, status: 'ACTIVE' },
-        })
-      : await prisma.peppolParticipant.findMany({
-          where: { status: 'ACTIVE' },
-        });
+    const orgFilter = organizationId ? { organizationId } : {};
+
+    const activeParticipants = await prisma.peppolParticipant.findMany({
+      where: { ...orgFilter, status: 'ACTIVE' },
+      select: { organizationId: true },
+    });
+
+    // Sweep every org reachable for Peppol inbound: ACTIVE participants PLUS
+    // any CONNECTED Peppol connection that has no ACTIVE participant row.
+    // Iterating ACTIVE participants alone would silently skip a tenant whose
+    // connection is CONNECTED but whose participant row is missing/inactive,
+    // dropping its inbound deliveries. Union the two and warn on the gap so
+    // the data drift stays visible.
+    const connectedConnections = await prisma.integrationConnection.findMany({
+      where: { ...orgFilter, provider: 'PEPPOL', status: 'CONNECTED' },
+      select: { organizationId: true },
+    });
+
+    const orgIds = new Set<string>();
+    for (const participant of activeParticipants) orgIds.add(participant.organizationId);
+
+    const connectedWithoutActiveParticipant: string[] = [];
+    for (const connection of connectedConnections) {
+      if (!orgIds.has(connection.organizationId)) {
+        orgIds.add(connection.organizationId);
+        connectedWithoutActiveParticipant.push(connection.organizationId);
+      }
+    }
+    if (connectedWithoutActiveParticipant.length > 0) {
+      log.warn(
+        {
+          organizationIds: connectedWithoutActiveParticipant,
+          count: connectedWithoutActiveParticipant.length,
+        },
+        'peppol poll: CONNECTED Peppol connections with no ACTIVE participant row — included via fallback sweep',
+      );
+    }
 
     // F-ASYNC-17 — gauge tagged `queue:peppol-poll-participants` so it's
     // distinct from outbox / webhook depths on the dashboard.
-    recordQueueDepth('peppol-poll-participants', participants.length);
+    recordQueueDepth('peppol-poll-participants', orgIds.size);
 
     const results: Array<{ organizationId: string; processed: number }> = [];
 
-    for (const participant of participants) {
-      const result = await pollParticipant(participant.organizationId);
+    for (const orgId of orgIds) {
+      const result = await pollParticipant(orgId);
       if (result) results.push(result);
     }
 
-    return reply.code(200).send({ polled: results.length, results });
+    return reply.code(200).send({
+      polled: results.length,
+      results,
+      fallbackSwept: connectedWithoutActiveParticipant.length,
+    });
   } catch (error) {
     log.error({ err: error }, 'global poll failure');
     return reply.code(500).send({ error: 'Poll failed' });
@@ -191,9 +225,19 @@ async function inboundHandler(
   const { deliveryId, organizationId } = parsed.data;
 
   try {
-    const delivery = await prisma.webhookDelivery.findUniqueOrThrow({
+    const delivery = await prisma.webhookDelivery.findUnique({
       where: { id: deliveryId },
     });
+    // Tenant isolation: the deliveryId comes from the (QStash-signed) body,
+    // but a forged/replayed signature could carry another org's id. Bind the
+    // row to the org from the same payload before doing any work on it.
+    if (!delivery || delivery.organizationId !== organizationId) {
+      inboundLog.error(
+        { deliveryId, organizationId },
+        'peppol inbound rejected: delivery missing or belongs to another org',
+      );
+      return reply.code(404).send({ error: 'Delivery not found' });
+    }
 
     const connection = await prisma.integrationConnection.findFirst({
       where: { organizationId, provider: 'PEPPOL', status: 'CONNECTED' },
