@@ -41,6 +41,10 @@ function matchOrgBySignature(
   for (const config of configs) {
     const configJson = config.configJson as CourierConfigJson;
     const secret = configJson.webhookSecret ?? '';
+    // An empty secret can never produce a valid signature, so it must not
+    // match an org (fail closed — prevents unauthenticated event injection
+    // against a misconfigured org).
+    if (!secret) continue;
     if (verifyInPostSignature(rawBody, headers, secret)) {
       return config.organizationId;
     }
@@ -101,11 +105,13 @@ export function registerInPostWebhookRoute(app: FastifyInstance): void {
 
     const signatureOrgId = matchOrgBySignature(configs, rawBody, headers);
 
-    // F-SEC-06: production rejects unsigned webhooks outright. Non-prod
-    // can fall back to a tracking-id payload match for sandbox testing.
-    const { NODE_ENV } = loadEnv();
+    // F-SEC-06: production rejects unsigned webhooks outright. Non-prod can
+    // fall back to a tracking-id payload match for sandbox testing — unless
+    // STRICT_INPOST_SIGNATURE is set, which enforces signature-only in every
+    // environment (lets staging mirror the production posture).
+    const { NODE_ENV, STRICT_INPOST_SIGNATURE } = loadEnv();
     let matchedOrgId: string | null = signatureOrgId;
-    if (!matchedOrgId && NODE_ENV !== 'production') {
+    if (!matchedOrgId && NODE_ENV !== 'production' && !STRICT_INPOST_SIGNATURE) {
       matchedOrgId = await matchOrgByShipmentPayload(rawBody);
       if (matchedOrgId) {
         log.warn(

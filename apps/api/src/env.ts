@@ -86,6 +86,17 @@ const envSchema = z.object({
   STORECOVE_WEBHOOK_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   STRIPE_WEBHOOK_SECRET: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
 
+  // InPost ShipX webhook — when `true`, reject unsigned payloads in EVERY
+  // environment (disables the dev/staging shipment-id payload fallback). Prod
+  // already rejects unsigned outright; this lets staging mirror prod posture.
+  STRICT_INPOST_SIGNATURE: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .optional()
+      .transform(v => v === 'true'),
+  ),
+
   // Microsoft Teams Bot Framework / Azure Bot Service credentials.
   // Empty in dev → `authorizeJWT` enters anonymous mode (non-production only).
   AZURE_BOT_APP_ID: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
