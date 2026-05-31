@@ -358,7 +358,7 @@ describe('approval router — queue', () => {
   });
 
   it('listPending overdue sets PENDING and slaDeadline lt now', async () => {
-    await caller.listPending({ status: 'overdue', tab: 'all' });
+    await caller.listPending({ status: 'OVERDUE', tab: 'all' });
 
     expect(mockPrisma.approvalStep.findMany).toHaveBeenCalledWith(
       expect.objectContaining({

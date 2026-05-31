@@ -92,19 +92,19 @@ describe('SHIPMENT_TO_EQUIPMENT_STATUS', () => {
 describe('NOTIFICATION_KEYS', () => {
   it('exposes equipment.returnApproved i18n keys', () => {
     expect(NOTIFICATION_KEYS.equipment.returnApproved.title).toBe(
-      'notifications.equipment.returnApproved.title',
+      'Notifications.equipment.returnApproved.title',
     );
     expect(NOTIFICATION_KEYS.equipment.returnApproved.body).toBe(
-      'notifications.equipment.returnApproved.body',
+      'Notifications.equipment.returnApproved.body',
     );
   });
 
   it('exposes equipment.returnRejected i18n keys', () => {
     expect(NOTIFICATION_KEYS.equipment.returnRejected.title).toBe(
-      'notifications.equipment.returnRejected.title',
+      'Notifications.equipment.returnRejected.title',
     );
     expect(NOTIFICATION_KEYS.equipment.returnRejected.body).toBe(
-      'notifications.equipment.returnRejected.body',
+      'Notifications.equipment.returnRejected.body',
     );
   });
 });

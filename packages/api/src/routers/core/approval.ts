@@ -1,3 +1,4 @@
+import { authApi } from '@contractor-ops/auth';
 import type { Prisma } from '@contractor-ops/db';
 import { Prisma as PrismaClient } from '@contractor-ops/db/generated/prisma/client';
 import {
@@ -288,14 +289,14 @@ function approvalQueueSqlConditions(
     conditions.push(PrismaClient.sql`s."approverUserId" = ${approverUserId}`);
   }
   const now = new Date();
-  if (input.status === 'pending') {
+  if (input.status === 'PENDING') {
     conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
-  } else if (input.status === 'overdue') {
+  } else if (input.status === 'OVERDUE') {
     conditions.push(PrismaClient.sql`s."status" = 'PENDING'::"ApprovalStatus"`);
     conditions.push(PrismaClient.sql`s."slaDeadline" < ${now}`);
-  } else if (input.status === 'approved') {
+  } else if (input.status === 'APPROVED') {
     conditions.push(PrismaClient.sql`s."status" = 'APPROVED'::"ApprovalStatus"`);
-  } else if (input.status === 'rejected') {
+  } else if (input.status === 'REJECTED') {
     conditions.push(PrismaClient.sql`s."status" = 'REJECTED'::"ApprovalStatus"`);
   }
   return conditions;
@@ -656,17 +657,17 @@ export const approvalRouter = router({
 
       // Status filter
       const now = new Date();
-      if (input.status === 'pending') {
+      if (input.status === 'PENDING') {
         where.status = 'PENDING';
-      } else if (input.status === 'overdue') {
+      } else if (input.status === 'OVERDUE') {
         where.status = 'PENDING';
         where.slaDeadline = { lt: now };
-      } else if (input.status === 'approved') {
+      } else if (input.status === 'APPROVED') {
         where.status = 'APPROVED';
-      } else if (input.status === 'rejected') {
+      } else if (input.status === 'REJECTED') {
         where.status = 'REJECTED';
       }
-      // "all" — no additional status filter
+      // "ALL" — no additional status filter
 
       let steps: ApprovalQueueStepRow[];
       let total: number;
@@ -786,6 +787,47 @@ export const approvalRouter = router({
         page: input.page,
         pageSize: input.pageSize,
       };
+    }),
+
+  /**
+   * Sidebar badge: pending steps assigned to the current user plus pending
+   * contractor change requests when the user can review them (settings read).
+   */
+  actionableCount: tenantProcedure
+    .use(requirePermission({ invoice: ['approve'] }))
+    .query(async ({ ctx }) => {
+      const userId = ctx.user?.id;
+      if (!userId) return { count: 0 };
+
+      const countPromises: Promise<number>[] = [
+        ctx.db.approvalStep.count({
+          where: {
+            organizationId: ctx.organizationId,
+            approverUserId: userId,
+            status: 'PENDING',
+          },
+        }),
+      ];
+
+      if (ctx.authMode !== 'apiKey') {
+        const settingsPerm = await authApi.hasPermission({
+          headers: ctx.headers,
+          body: { permissions: { settings: ['read'] } },
+        });
+        if (settingsPerm?.success) {
+          countPromises.push(
+            ctx.db.contractorChangeRequest.count({
+              where: {
+                organizationId: ctx.organizationId,
+                status: 'PENDING',
+              },
+            }),
+          );
+        }
+      }
+
+      const parts = await Promise.all(countPromises);
+      return { count: parts.reduce((sum, n) => sum + n, 0) };
     }),
 
   // =========================================================================

@@ -69,6 +69,21 @@ export const timeRouter = router({
   }),
 
   /**
+   * Count submitted timesheets awaiting manager review (sidebar badge).
+   */
+  pendingReviewCount: tenantProcedure
+    .use(requirePermission({ time: ['read'] }))
+    .query(async ({ ctx }) => {
+      const count = await ctx.db.timesheet.count({
+        where: {
+          organizationId: ctx.organizationId,
+          status: 'SUBMITTED',
+        },
+      });
+      return { count };
+    }),
+
+  /**
    * List all timesheets with optional filters (status, contractor, date range).
    * Cursor-based pagination, ordered by weekStartDate DESC.
    */

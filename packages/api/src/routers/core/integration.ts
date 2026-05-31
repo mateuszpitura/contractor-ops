@@ -2,6 +2,7 @@ import {
   getAdapter,
   getAllProviderHealth,
   getProviderHealth,
+  loadHeavyAdapters,
   registerAllAdapters,
 } from '@contractor-ops/integrations';
 import {
@@ -280,6 +281,12 @@ export const integrationRouter = router({
     .use(requirePermission({ organization: ['update'] }))
     .input(providerSlugSchema)
     .query(async ({ input }) => {
+      // Every OAuth provider except Slack is a HEAVY adapter that registers
+      // lazily after registerAllAdapters() kicks off its background load. A
+      // cold first request can reach getAdapter() before that resolves, so
+      // await it here — otherwise an unregistered-yet adapter is reported as
+      // a false `integrationNoOauth` 400.
+      await loadHeavyAdapters();
       const adapter = getAdapter(input.provider);
       if (!(adapter?.supportsOAuth && adapter.getOAuthConfig)) {
         throw new TRPCError({
