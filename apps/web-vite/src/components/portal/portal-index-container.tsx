@@ -6,6 +6,7 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { usePortalIndex } from './hooks/use-portal-index.js';
+import { PortalHomeComplianceBanner } from './portal-home-compliance-banner.js';
 import { PortalPendingSignaturesContainer } from './portal-pending-signatures-container.js';
 import { SummaryCard, SummaryCardSkeleton } from './summary-card.js';
 
@@ -45,6 +46,7 @@ export function PortalIndexContainer() {
   return (
     <div className="space-y-6">
       <PortalPendingSignaturesContainer />
+      <PortalHomeComplianceBanner />
 
       <h1 className="text-[28px] font-semibold leading-[1.2]">
         {isLoading ? (

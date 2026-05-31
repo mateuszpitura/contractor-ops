@@ -18,6 +18,10 @@ const PortalTimePage = lazy(() => import('../pages/portal/time.js'));
 const PortalInvoiceDetailPage = lazy(() => import('../pages/portal/invoice-detail.js'));
 const PortalContractDetailPage = lazy(() => import('../pages/portal/contract-detail.js'));
 const PortalSignaturesPage = lazy(() => import('../pages/portal/signatures.js'));
+const PortalCompliancePage = lazy(() => import('../pages/portal/compliance.js'));
+const PortalComplianceUploadReplacementPage = lazy(
+  () => import('../pages/portal/compliance-upload-replacement.js'),
+);
 
 function page(element: ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>;
@@ -36,4 +40,9 @@ export const portalRoutes = [
   { path: 'portal/invoices/:id', element: page(<PortalInvoiceDetailPage />) },
   { path: 'portal/contracts/:id', element: page(<PortalContractDetailPage />) },
   { path: 'portal/signatures', element: page(<PortalSignaturesPage />) },
+  { path: 'portal/compliance', element: page(<PortalCompliancePage />) },
+  {
+    path: 'portal/compliance/upload-replacement',
+    element: page(<PortalComplianceUploadReplacementPage />),
+  },
 ];

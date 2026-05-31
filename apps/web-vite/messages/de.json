@@ -5634,6 +5634,28 @@
       "uploadReady": "Upload bereit.",
       "scanComplete": "Scan abgeschlossen.",
       "invoiceSubmitted": "Rechnung eingereicht."
+    },
+    "compliance": {
+      "listHeading": "Compliance-Dokumente",
+      "listError": "Ihre Compliance-Dokumente konnten nicht geladen werden",
+      "emptyHeading": "Nichts zu erneuern",
+      "emptyBody": "Alle Ihre Compliance-Dokumente sind aktuell.",
+      "renewNow": "Jetzt erneuern",
+      "upload": {
+        "heading": "{document} erneuern",
+        "fileLabel": "Ersatzdokument hochladen",
+        "expiresAtLabel": "Ablaufdatum",
+        "submit": "Zur Prüfung einreichen",
+        "success": "Hochgeladen — wartet auf Admin-Prüfung",
+        "error": "Upload fehlgeschlagen",
+        "missingItem": "Kein Compliance-Eintrag ausgewählt",
+        "fallbackDocument": "Dokument"
+      },
+      "banner": {
+        "title": "Compliance erfordert Aufmerksamkeit",
+        "body": "{count, plural, one {# Dokument benötigt} other {# Dokumente benötigen}} Ihre Aufmerksamkeit.",
+        "cta": "Compliance-Dokumente prüfen"
+      }
     }
   },
   "Reports": {

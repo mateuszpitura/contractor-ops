@@ -5634,6 +5634,28 @@
       "uploadReady": "Plik gotowy.",
       "scanComplete": "Skanowanie zakończone.",
       "invoiceSubmitted": "Faktura wysłana."
+    },
+    "compliance": {
+      "listHeading": "Dokumenty zgodności",
+      "listError": "Nie udało się załadować Twoich dokumentów zgodności",
+      "emptyHeading": "Nic do odnowienia",
+      "emptyBody": "Wszystkie Twoje dokumenty zgodności są aktualne.",
+      "renewNow": "Odnów teraz",
+      "upload": {
+        "heading": "Odnów {document}",
+        "fileLabel": "Prześlij dokument zastępczy",
+        "expiresAtLabel": "Data ważności",
+        "submit": "Wyślij do weryfikacji",
+        "success": "Przesłano — oczekuje na weryfikację administratora",
+        "error": "Przesyłanie nie powiodło się",
+        "missingItem": "Nie wybrano pozycji zgodności",
+        "fallbackDocument": "dokument"
+      },
+      "banner": {
+        "title": "Wymagana uwaga dot. zgodności",
+        "body": "{count, plural, one {# dokument wymaga} few {# dokumenty wymagają} many {# dokumentów wymaga} other {# dokumentu wymaga}} Twojej uwagi.",
+        "cta": "Przejrzyj dokumenty zgodności"
+      }
     }
   },
   "Reports": {

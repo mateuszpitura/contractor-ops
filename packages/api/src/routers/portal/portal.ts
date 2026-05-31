@@ -1675,4 +1675,96 @@ export const portalRouter = router({
         filename: `return-label-${shipment.trackingNumber ?? shipment.externalId}.pdf`,
       };
     }),
+
+  /**
+   * Phase 73 COMPL-04 / D-06 — the logged-in contractor's own compliance items,
+   * driving the portal self-service list + the home attention banner. Strictly
+   * scoped to the portal-session contractor; no client-supplied id is trusted.
+   */
+  complianceItems: portalProcedure.query(async ({ ctx }) => {
+    return ctx.db.contractorComplianceItem.findMany({
+      where: { contractorId: ctx.contractorId, organizationId: ctx.organizationId },
+      select: {
+        id: true,
+        name: true,
+        documentType: true,
+        policyRuleId: true,
+        status: true,
+        severity: true,
+        expiresAt: true,
+      },
+      orderBy: [{ status: 'asc' }, { expiresAt: 'asc' }],
+    });
+  }),
+
+  /**
+   * Phase 73 COMPL-04 / D-06 — contractor self-service upload-replacement.
+   *
+   * The contractor uploads a replacement document; we flip the Document to
+   * PENDING_REVIEW and emit a forensic audit row, but DO NOT touch the
+   * ContractorComplianceItem status — the SATISFIED flip is admin-only
+   * (Plan 73-08, compliance:override). Strictly scoped to the portal-session
+   * contractor: a cross-contractor itemId/documentId is rejected NOT_FOUND
+   * (T-73-07-01). `suggestedExpiresAt` is the contractor's hint for the admin
+   * reviewer only; the authoritative expiresAt is written on approve
+   * (T-73-07-04). Lives on the portalRouter (not classification) because the
+   * portal client only reaches portalAppRouter.
+   */
+  submitUploadReplacement: portalProcedure
+    .input(
+      z.object({
+        itemId: z.string().min(1),
+        documentId: z.string().min(1),
+        suggestedExpiresAt: z.string().date().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async tx => {
+        const item = await tx.contractorComplianceItem.findFirst({
+          where: {
+            id: input.itemId,
+            contractorId: ctx.contractorId,
+            organizationId: ctx.organizationId,
+          },
+          select: { id: true, contractorId: true, status: true },
+        });
+        if (!item) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.COMPLIANCE_ITEM_NOT_FOUND });
+        }
+        // Document has no contractorId column — ownership is asserted via the
+        // DocumentLink join (entityType CONTRACTOR + entityId = portal contractor).
+        const ownLink = await tx.documentLink.findFirst({
+          where: {
+            documentId: input.documentId,
+            organizationId: ctx.organizationId,
+            entityType: 'CONTRACTOR',
+            entityId: ctx.contractorId,
+          },
+          select: { id: true },
+        });
+        if (!ownLink) {
+          throw new TRPCError({ code: 'NOT_FOUND', message: E.COMPLIANCE_ITEM_NOT_FOUND });
+        }
+        await tx.document.update({
+          where: { id: input.documentId },
+          data: { status: 'PENDING_REVIEW' },
+        });
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'CONTRACTOR',
+          actorId: ctx.contractorId,
+          action: 'compliance.upload.submitted',
+          resourceType: 'CONTRACTOR',
+          resourceId: item.contractorId,
+          metadata: {
+            itemId: input.itemId,
+            documentId: input.documentId,
+            suggestedExpiresAt: input.suggestedExpiresAt ?? null,
+          },
+        });
+        // Item status intentionally unchanged (D-06) — admin review flips it.
+        return { itemId: item.id, documentId: input.documentId, status: item.status };
+      });
+    }),
 });

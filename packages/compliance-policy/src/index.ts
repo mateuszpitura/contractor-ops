@@ -11,7 +11,12 @@ import './policies/us';
 import './policies/ksa';
 import './policies/uae';
 
-export { daysUntilExpiryInTz, isExpired, jurisdictionDate } from './expiry';
+export {
+  daysUntilExpiryInTz,
+  defaultExpiryFromUploadDate,
+  isExpired,
+  jurisdictionDate,
+} from './expiry';
 
 export {
   listPolicyRules,

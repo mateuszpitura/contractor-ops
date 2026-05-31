@@ -5634,6 +5634,28 @@
       "uploadReady": "Upload ready.",
       "scanComplete": "Scan complete.",
       "invoiceSubmitted": "Invoice submitted."
+    },
+    "compliance": {
+      "listHeading": "Compliance documents",
+      "listError": "Failed to load your compliance documents",
+      "emptyHeading": "Nothing to renew",
+      "emptyBody": "All your compliance documents are up to date.",
+      "renewNow": "Renew now",
+      "upload": {
+        "heading": "Renew {document}",
+        "fileLabel": "Upload replacement document",
+        "expiresAtLabel": "Expiry date",
+        "submit": "Submit for review",
+        "success": "Uploaded — pending admin review",
+        "error": "Upload failed",
+        "missingItem": "No compliance item selected",
+        "fallbackDocument": "document"
+      },
+      "banner": {
+        "title": "Compliance attention needed",
+        "body": "{count, plural, one {# document needs} other {# documents need}} your attention.",
+        "cta": "Review compliance documents"
+      }
     }
   },
   "Reports": {

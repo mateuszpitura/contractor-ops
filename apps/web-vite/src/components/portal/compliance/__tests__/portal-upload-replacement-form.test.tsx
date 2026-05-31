@@ -1,50 +1,160 @@
-// Phase 73 Wave 0 — Nyquist failing scaffold (web-vite)
-// Maps to COMPL-04 portal one-click upload-replacement; form view lives in
-// apps/web-vite/src/components/portal/compliance/portal-upload-replacement-form.tsx (Plan 73-07).
+// Phase 73 · Plan 07 — portal upload-replacement form + home banner tests (COMPL-04).
+// Evolved from the Wave 0 scaffold. The DropZone is stubbed to a file input so
+// the form test focuses on auto-fill + submit; the banner test mocks the portal
+// compliance hook to drive the attention-items branch.
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
-// Vite resolves a static `await import('literal')` at transform time, which would
-// fail the whole suite (collection error) instead of the assertion. Indirecting the
-// specifier through a variable + `@vite-ignore` keeps the failure at runtime so the
-// named test case fails as a deterministic Nyquist RED until Plan 73-07 lands the views.
-const FORM_PATH = '../portal-upload-replacement-form';
-const BANNER_PATH = '../../portal-home-compliance-banner';
+import { applyLocale, initI18n } from '../../../../i18n/index.js';
+import { mount } from './_render.js';
+
+// Stub the DropZone to a plain file input so we can drive file selection.
+vi.mock('../../../documents/drop-zone-container.js', () => ({
+  DropZone: ({ onFilesAccepted }: { onFilesAccepted?: (f: File[]) => void }) => (
+    <input
+      type="file"
+      data-testid="dropzone"
+      onChange={e => {
+        const f = (e.target as HTMLInputElement).files?.[0];
+        if (f) onFilesAccepted?.([f]);
+      }}
+    />
+  ),
+}));
+// useComplDocName reads i18n + the validators registry — stub to a stable label.
+vi.mock('../../../compliance/hooks/use-compl-doc-name.js', () => ({
+  useComplDocName: () => ({ label: 'UK Right-to-Work Share Code', isPending: true }),
+}));
+vi.mock('../../../../i18n/navigation.js', () => ({
+  Link: ({ children }: { children?: unknown }) => children,
+}));
+
+const usePortalComplianceMock = vi.fn();
+vi.mock('../hooks/use-portal-compliance.js', () => ({
+  usePortalCompliance: () => usePortalComplianceMock(),
+}));
+
+import { PortalHomeComplianceBanner } from '../../portal-home-compliance-banner.js';
+import { PortalUploadReplacementForm } from '../portal-upload-replacement-form.js';
+
+beforeAll(async () => {
+  initI18n();
+  await applyLocale('en');
+});
+
+afterEach(() => {
+  document.body.innerHTML = '';
+  vi.clearAllMocks();
+});
 
 describe('portal-compliance-upload-replacement render', () => {
-  it('exports a PortalUploadReplacementForm view', async () => {
-    const mod = await import(/* @vite-ignore */ FORM_PATH);
-    expect(mod.PortalUploadReplacementForm).toBeTypeOf('function');
-    throw new Error('PortalUploadReplacementForm not yet implemented');
+  it('exports a PortalUploadReplacementForm view', () => {
+    expect(typeof PortalUploadReplacementForm).toBe('function');
   });
 
-  it('auto-derives the DropZone documentType from the deep-link policyRuleId', async () => {
-    throw new Error('auto-derived documentType not yet implemented');
+  it('auto-fills the expiresAt input from the computed default and lets the contractor edit it', async () => {
+    const onSubmit = vi.fn();
+    const { container } = await mount(
+      <PortalUploadReplacementForm
+        itemId="item_1"
+        documentLabel="UK Right-to-Work Share Code"
+        defaultExpiresAt="2026-07-26"
+        isSubmitting={false}
+        onSubmit={onSubmit}
+      />,
+    );
+    const dateInput = container.querySelector<HTMLInputElement>('#upload-expires-at');
+    expect(dateInput?.value).toBe('2026-07-26');
+    const { act } = await import('react');
+    await act(async () => {
+      if (dateInput) {
+        const setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value',
+        )?.set;
+        setter?.call(dateInput, '2027-01-01');
+        dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    expect(container.querySelector<HTMLInputElement>('#upload-expires-at')?.value).toBe(
+      '2027-01-01',
+    );
   });
 
-  it('auto-fills expiresAt input from defaultExpiryFromUploadDate(policyRule, today)', async () => {
-    throw new Error('auto-filled expiresAt not yet implemented');
-  });
-
-  it('contractor can override the auto-filled expiresAt via the editable date picker', async () => {
-    throw new Error('expiresAt editable not yet implemented');
+  it('disables submit until a file is chosen, then enables it', async () => {
+    const onSubmit = vi.fn();
+    const { container } = await mount(
+      <PortalUploadReplacementForm
+        itemId="item_1"
+        documentLabel="Doc"
+        defaultExpiresAt="2026-07-26"
+        isSubmitting={false}
+        onSubmit={onSubmit}
+      />,
+    );
+    const submitBtn = container.querySelector<HTMLButtonElement>('button[type="submit"]');
+    expect(submitBtn?.disabled).toBe(true);
+    const fileInput = container.querySelector<HTMLInputElement>('[data-testid="dropzone"]');
+    const { act } = await import('react');
+    await act(async () => {
+      const file = new File(['x'], 'rtw.pdf', { type: 'application/pdf' });
+      Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+      fileInput?.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(
+      false,
+    );
   });
 });
 
 describe('portal-compliance-upload-replacement submit', () => {
-  it('invokes the upload-replacement hook on submit (trpc.classification.submitUploadReplacement)', async () => {
-    throw new Error('mutation call not yet implemented');
-  });
-
-  it('shows success message + navigates to /portal/compliance on success', async () => {
-    throw new Error('success-redirect not yet implemented');
+  it('invokes onSubmit with the itemId + chosen file + suggestedExpiresAt', async () => {
+    const onSubmit = vi.fn();
+    const { container } = await mount(
+      <PortalUploadReplacementForm
+        itemId="item_42"
+        documentLabel="Doc"
+        defaultExpiresAt="2026-07-26"
+        isSubmitting={false}
+        onSubmit={onSubmit}
+      />,
+    );
+    const fileInput = container.querySelector<HTMLInputElement>('[data-testid="dropzone"]');
+    const { act } = await import('react');
+    await act(async () => {
+      const file = new File(['x'], 'rtw.pdf', { type: 'application/pdf' });
+      Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+      fileInput?.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await act(async () => {
+      container
+        .querySelector<HTMLFormElement>('form')
+        ?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: 'item_42', suggestedExpiresAt: '2026-07-26' }),
+    );
   });
 });
 
 describe('portal-home-compliance-banner', () => {
-  it('exports a PortalHomeComplianceBanner that renders when any MISSING/EXPIRED/30d-band item exists', async () => {
-    const mod = await import(/* @vite-ignore */ BANNER_PATH);
-    expect(mod.PortalHomeComplianceBanner).toBeTypeOf('function');
-    throw new Error('PortalHomeComplianceBanner not yet implemented');
+  it('exports a PortalHomeComplianceBanner', () => {
+    expect(typeof PortalHomeComplianceBanner).toBe('function');
+  });
+
+  it('renders an alert when attention items exist', async () => {
+    usePortalComplianceMock.mockReturnValue({
+      isPending: false,
+      error: null,
+      attentionItems: [{ id: 'i1', status: 'EXPIRED' }],
+    });
+    const { container } = await mount(<PortalHomeComplianceBanner />);
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it('renders nothing when there are no attention items', async () => {
+    usePortalComplianceMock.mockReturnValue({ isPending: false, error: null, attentionItems: [] });
+    const { container } = await mount(<PortalHomeComplianceBanner />);
+    expect(container.querySelector('[role="alert"]')).toBeNull();
   });
 });
