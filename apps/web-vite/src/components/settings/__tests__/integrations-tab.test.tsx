@@ -66,6 +66,15 @@ vi.mock('../slack-org-grid-card-container', () => ({
 vi.mock('../idp-deprovisioning-toggle-table-container', () => ({
   IdpDeprovisioningToggleTableContainer: () => <div data-testid="idp-toggle-table" />,
 }));
+vi.mock('../../integrations/entra-provider-section-container', () => ({
+  EntraProviderSection: () => <div data-testid="entra-section" />,
+}));
+vi.mock('../../integrations/okta-provider-section-container', () => ({
+  OktaProviderSection: () => <div data-testid="okta-section" />,
+}));
+vi.mock('../../integrations/github-provider-section-container', () => ({
+  GitHubProviderSection: () => <div data-testid="github-section" />,
+}));
 
 import { render, screen } from '@/test/test-utils';
 import { IntegrationsTab } from '../integrations-tab';
