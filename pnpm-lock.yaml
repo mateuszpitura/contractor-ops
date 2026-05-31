@@ -255,6 +255,9 @@ importers:
       '@contractor-ops/feature-flags':
         specifier: workspace:*
         version: link:../../packages/feature-flags
+      '@contractor-ops/idp-saga':
+        specifier: workspace:*
+        version: link:../../packages/idp-saga
       '@contractor-ops/integrations':
         specifier: workspace:*
         version: link:../../packages/integrations

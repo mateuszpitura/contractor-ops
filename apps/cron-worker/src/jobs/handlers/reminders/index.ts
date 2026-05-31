@@ -20,6 +20,7 @@
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
+import { gcExpiredProvenance } from '@contractor-ops/idp-saga';
 import { metrics } from '@contractor-ops/logger/metrics';
 import { Sentry } from '../../../lib/sentry.js';
 import type { JobHandler } from '../../runner.js';
@@ -320,6 +321,31 @@ async function detectOverdueTasks(): Promise<number> {
   return notified;
 }
 
+/**
+ * Phase 76 D-12 — IdpChangeProvenance 90-day GC. Isolated try/catch so a GC failure
+ * never aborts the other reminder sub-tasks (T-76-10-02). Cross-org retention sweep —
+ * uses the non-tenant raw client and deletes purely by `initiatedAt < now - 90d`.
+ */
+async function gcIdpProvenance(log: {
+  info: (o: unknown, m: string) => void;
+  error: (o: unknown, m: string) => void;
+}): Promise<number> {
+  try {
+    const result = await gcExpiredProvenance(prismaRaw);
+    log.info(
+      { deleted: result.deleted, sub_task: 'idp_provenance_gc' },
+      'IdpChangeProvenance GC completed',
+    );
+    return result.deleted;
+  } catch (err) {
+    log.error(
+      { err: err instanceof Error ? err.message : String(err), sub_task: 'idp_provenance_gc' },
+      'IdpChangeProvenance GC failed — other cron sub-tasks unaffected',
+    );
+    return 0;
+  }
+}
+
 export const remindersHandler: JobHandler = async ctx => {
   const start = performance.now();
   try {
@@ -335,14 +361,18 @@ export const remindersHandler: JobHandler = async ctx => {
             sent: 0,
             overdueTasksNotified: 0,
             drvExpiriesNotified: 0,
+            idpProvenanceGced: 0,
           };
         }
 
-        const [ruleResults, overdueTasksNotified, drvExpiriesNotified] = await Promise.all([
-          evaluateReminderRules(),
-          detectOverdueTasks(),
-          detectDrvClearanceExpiries(),
-        ]);
+        const [ruleResults, overdueTasksNotified, drvExpiriesNotified, idpProvenanceGced] =
+          await Promise.all([
+            evaluateReminderRules(),
+            detectOverdueTasks(),
+            detectDrvClearanceExpiries(),
+            // Phase 76 D-12 — never rejects (internal try/catch), so it can't abort the others.
+            gcIdpProvenance(ctx.log),
+          ]);
 
         return {
           skipped: false as const,
@@ -350,6 +380,7 @@ export const remindersHandler: JobHandler = async ctx => {
           sent: ruleResults.sent,
           overdueTasksNotified,
           drvExpiriesNotified,
+          idpProvenanceGced,
         };
       },
       { timeout: 60_000, maxWait: 10_000 },
@@ -360,6 +391,7 @@ export const remindersHandler: JobHandler = async ctx => {
       metrics.gauge('cron.reminders.sent', result.sent);
       metrics.gauge('cron.reminders.overdue_tasks', result.overdueTasksNotified);
       metrics.gauge('cron.reminders.drv_expiries', result.drvExpiriesNotified);
+      metrics.gauge('cron.reminders.idp_provenance_gced', result.idpProvenanceGced);
     }
 
     return {

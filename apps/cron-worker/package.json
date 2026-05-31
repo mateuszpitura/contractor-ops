@@ -18,6 +18,7 @@
     "@contractor-ops/api": "workspace:*",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
+    "@contractor-ops/idp-saga": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/validators": "workspace:*",

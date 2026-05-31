@@ -1,3 +1,23 @@
+/**
+ * Phase 76 D-16 — Per-provider Deprovisionable adapter integration-test STUB TEMPLATE.
+ *
+ * This file is the canonical template for Phases 77 (Slack) and 78 (Entra, Okta, GitHub).
+ * When implementing a new Deprovisionable adapter:
+ *
+ *   1. Copy this file to `packages/integrations/src/adapters/__tests__/{provider}-deprovision.test.ts`.
+ *   2. Replace `GoogleWorkspaceAdapter` with the new adapter class.
+ *   3. Replace the MSW URL predicates (isUserPath / isSignOutPath) with the provider's API endpoints.
+ *   4. Adapt the credential shape (withAccessToken vs workspace token vs OAuth bearer).
+ *   5. Keep the case structure: interface-shape sanity, suspend, revoke, mocked-clock 5-min
+ *      verifyDeprovisioned, USER_NOT_FOUND→SUCCEEDED, 5xx→PROVIDER_ERROR, 429→RATE_LIMITED.
+ *
+ * The `vi.useFakeTimers()` + `vi.advanceTimersByTime(5 * 60 * 1000)` is the SC#5 contract:
+ * revocation must be verifiable within 5 minutes — do not omit. Provider-specific URL
+ * patterns and credential shapes may differ; adapt the MSW handlers, keep the contract.
+ *
+ * LOCAL-ONLY constraint: tests run against MSW handlers, never live provider sandboxes.
+ */
+
 import { createMockServer, HttpResponse, http } from '@contractor-ops/test-utils';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { GoogleWorkspaceAdapter } from '../google-workspace-adapter.js';
