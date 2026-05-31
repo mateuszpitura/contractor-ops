@@ -1985,6 +1985,27 @@
     "terminated": "Rozwiązano {count} umów",
     "error": {
       "loadFailed": "Nie udało się wykonać operacji. Spróbuj ponownie."
+    },
+    "healthCheck": {
+      "title": "Kontrola przeniesienia praw IP",
+      "verdict": {
+        "LIKELY_PRESENT": "Prawdopodobnie obecne",
+        "LIKELY_MISSING": "Prawdopodobnie brakujące",
+        "MANUAL_REVIEW_REQUIRED": "Wymagana weryfikacja ręczna"
+      },
+      "rerunButton": "Uruchom ponownie kontrolę",
+      "noCitedClauses": "Nie znaleziono w umowie klauzuli przeniesienia praw IP.",
+      "confidence": "Pewność {value}%",
+      "source": {
+        "regexAndLlm": "regex + LLM",
+        "llmOnly": "Tylko LLM"
+      },
+      "crossJurisdictionMismatch": {
+        "title": "Niezgodność jurysdykcji",
+        "description": "Znaleziono sformułowanie {found} w umowie {expected} — wymagana weryfikacja ręczna."
+      },
+      "pendingPhraseFooter": "¹ Wynik opiera się na sformułowaniach oczekujących na weryfikację prawną.",
+      "schemaUnsupported": "Dane kontroli używają nieobsługiwanego formatu. Uruchom kontrolę ponownie, aby je odświeżyć."
     }
   },
   "CookieConsent": {
@@ -6970,6 +6991,52 @@
       "heading": "Rozpocznij offboarding dla {contractor}",
       "templateLabel": "Szablon przekazania wiedzy",
       "cta": "Rozpocznij offboarding"
+    },
+    "credentials": {
+      "tabName": "Poświadczenia",
+      "columns": {
+        "label": "Etykieta",
+        "vaultProvider": "Dostawca sejfu",
+        "accessType": "Typ dostępu",
+        "successor": "Następca",
+        "status": "Status"
+      },
+      "actions": {
+        "add": "Dodaj poświadczenie",
+        "edit": "Edytuj",
+        "markRotated": "Oznacz jako zrotowane",
+        "remove": "Usuń"
+      },
+      "empty": "Nie zarejestrowano jeszcze żadnych odniesień do poświadczeń dla tego offboardingu.",
+      "dialog": {
+        "addTitle": "Dodaj odniesienie do poświadczenia",
+        "fields": {
+          "label": "Etykieta",
+          "vaultProvider": "Dostawca sejfu",
+          "vaultUrl": "URL sejfu (tylko wskaźnik)",
+          "accessType": "Typ dostępu",
+          "successor": "Następca",
+          "notes": "Notatki"
+        },
+        "submit": "Dodaj poświadczenie",
+        "cancel": "Anuluj"
+      },
+      "secretPasteHint": "To wygląda jak wartość poświadczenia ({hint}). Podaj tylko URL sejfu lub opis wskaźnika — nigdy nie wklejaj rzeczywistych sekretów."
+    },
+    "ipVerification": {
+      "esignButton": "Podpisz ratyfikację przeniesienia praw IP",
+      "routingHelper": {
+        "docusign": "Przez DocuSign",
+        "autenti": "Przez Autenti (DE)"
+      }
+    },
+    "pendingCredentialsDialog": {
+      "title": "{count} poświadczeń wciąż oczekuje na rotację",
+      "description": "Te poświadczenia są zarejestrowane, ale jeszcze nie zrotowane. Możesz mimo to zakończyć offboarding — czynność zostanie zapisana w dzienniku audytu wraz z podanym powodem.",
+      "reasonLabel": "Powód zakończenia bez rotacji (≥20 znaków)",
+      "acknowledgeLabel": "Przyjmuję do wiadomości, że oczekujące poświadczenia nie zostaną automatycznie zrotowane",
+      "confirmButton": "Potwierdź i zakończ",
+      "cancelButton": "Anuluj"
     }
   },
   "Workflows": {

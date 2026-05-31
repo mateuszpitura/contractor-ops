@@ -1985,6 +1985,27 @@
     "terminated": "تم إنهاء {count} عقود",
     "error": {
       "loadFailed": "تعذر complete operation. حاول مجددًا."
+    },
+    "healthCheck": {
+      "title": "فحص سلامة إسناد الملكية الفكرية",
+      "verdict": {
+        "LIKELY_PRESENT": "موجود على الأرجح",
+        "LIKELY_MISSING": "مفقود على الأرجح",
+        "MANUAL_REVIEW_REQUIRED": "مطلوب مراجعة يدوية"
+      },
+      "rerunButton": "إعادة تشغيل الفحص",
+      "noCitedClauses": "لم يُعثر على صياغة إسناد الملكية الفكرية في العقد.",
+      "confidence": "ثقة {value}%",
+      "source": {
+        "regexAndLlm": "تعبير نمطي + نموذج لغوي",
+        "llmOnly": "نموذج لغوي فقط"
+      },
+      "crossJurisdictionMismatch": {
+        "title": "عدم تطابق الاختصاص القضائي",
+        "description": "تم العثور على صياغة {found} في عقد {expected} — مطلوب مراجعة يدوية."
+      },
+      "pendingPhraseFooter": "¹ يعتمد الحكم على صياغة قيد المراجعة القانونية.",
+      "schemaUnsupported": "تستخدم بيانات الفحص تنسيقًا غير مدعوم. أعد تشغيل الفحص للتحديث."
     }
   },
   "CookieConsent": {
@@ -6970,6 +6991,52 @@
       "heading": "بدء عملية إنهاء التعاقد مع {contractor}",
       "templateLabel": "قالب نقل المعرفة",
       "cta": "بدء عملية إنهاء التعاقد"
+    },
+    "credentials": {
+      "tabName": "بيانات الاعتماد",
+      "columns": {
+        "label": "التسمية",
+        "vaultProvider": "مزود الخزنة",
+        "accessType": "نوع الوصول",
+        "successor": "الخلف",
+        "status": "الحالة"
+      },
+      "actions": {
+        "add": "إضافة بيانات اعتماد",
+        "edit": "تعديل",
+        "markRotated": "وضع علامة مُدوّرة",
+        "remove": "إزالة"
+      },
+      "empty": "لم تُسجَّل أي مراجع بيانات اعتماد لعملية إنهاء الخدمة هذه بعد.",
+      "dialog": {
+        "addTitle": "إضافة مرجع بيانات اعتماد",
+        "fields": {
+          "label": "التسمية",
+          "vaultProvider": "مزود الخزنة",
+          "vaultUrl": "رابط الخزنة (مؤشر فقط)",
+          "accessType": "نوع الوصول",
+          "successor": "الخلف",
+          "notes": "ملاحظات"
+        },
+        "submit": "إضافة بيانات اعتماد",
+        "cancel": "إلغاء"
+      },
+      "secretPasteHint": "يبدو هذا كقيمة بيانات اعتماد ({hint}). قدّم رابط خزنة أو وصف مؤشر فقط — لا تلصق الأسرار الفعلية أبدًا."
+    },
+    "ipVerification": {
+      "esignButton": "توقيع التصديق على إسناد الملكية الفكرية",
+      "routingHelper": {
+        "docusign": "عبر DocuSign",
+        "autenti": "عبر Autenti (DE)"
+      }
+    },
+    "pendingCredentialsDialog": {
+      "title": "{count} بيانات اعتماد لا تزال بانتظار التدوير",
+      "description": "بيانات الاعتماد هذه مُسجَّلة لكن لم تُدوَّر بعد. يمكنك إكمال سير عمل إنهاء الخدمة على أي حال — وسيُسجَّل الإجراء في سجل التدقيق مع السبب الذي تذكره.",
+      "reasonLabel": "سبب الإكمال دون تدوير (≥20 حرفًا)",
+      "acknowledgeLabel": "أقر بأن بيانات الاعتماد المعلقة لن تُدوَّر تلقائيًا",
+      "confirmButton": "تأكيد وإكمال",
+      "cancelButton": "إلغاء"
     }
   },
   "Workflows": {

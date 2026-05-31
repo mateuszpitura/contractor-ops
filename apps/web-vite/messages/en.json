@@ -1985,6 +1985,27 @@
     "terminated": "{count} contracts terminated",
     "error": {
       "loadFailed": "Could not complete operation. Try again."
+    },
+    "healthCheck": {
+      "title": "IP-assignment health check",
+      "verdict": {
+        "LIKELY_PRESENT": "Likely present",
+        "LIKELY_MISSING": "Likely missing",
+        "MANUAL_REVIEW_REQUIRED": "Manual review required"
+      },
+      "rerunButton": "Re-run health check",
+      "noCitedClauses": "No IP-assignment language found in the contract.",
+      "confidence": "{value}% confidence",
+      "source": {
+        "regexAndLlm": "regex + LLM",
+        "llmOnly": "LLM only"
+      },
+      "crossJurisdictionMismatch": {
+        "title": "Cross-jurisdiction mismatch",
+        "description": "Found {found} phrasing in a {expected} contract — manual review required."
+      },
+      "pendingPhraseFooter": "¹ Verdict relies on phrasing pending legal review.",
+      "schemaUnsupported": "Health-check data uses an unsupported format. Re-run the health check to refresh."
     }
   },
   "CookieConsent": {
@@ -6970,6 +6991,52 @@
       "heading": "Start offboarding for {contractor}",
       "templateLabel": "Knowledge-transfer template",
       "cta": "Start offboarding"
+    },
+    "credentials": {
+      "tabName": "Credentials",
+      "columns": {
+        "label": "Label",
+        "vaultProvider": "Vault provider",
+        "accessType": "Access type",
+        "successor": "Successor",
+        "status": "Status"
+      },
+      "actions": {
+        "add": "Add credential",
+        "edit": "Edit",
+        "markRotated": "Mark rotated",
+        "remove": "Remove"
+      },
+      "empty": "No credential references recorded for this offboarding yet.",
+      "dialog": {
+        "addTitle": "Add credential reference",
+        "fields": {
+          "label": "Label",
+          "vaultProvider": "Vault provider",
+          "vaultUrl": "Vault URL (pointer only)",
+          "accessType": "Access type",
+          "successor": "Successor",
+          "notes": "Notes"
+        },
+        "submit": "Add credential",
+        "cancel": "Cancel"
+      },
+      "secretPasteHint": "This looks like a credential value ({hint}). Provide a vault URL or pointer description only — never paste actual secrets."
+    },
+    "ipVerification": {
+      "esignButton": "Sign IP-assignment ratification",
+      "routingHelper": {
+        "docusign": "Routes via DocuSign",
+        "autenti": "Routes via Autenti (DE)"
+      }
+    },
+    "pendingCredentialsDialog": {
+      "title": "{count} credentials still pending rotation",
+      "description": "These credentials are recorded but not yet rotated. You can complete the offboarding workflow anyway — the action will be audit-logged with your reason.",
+      "reasonLabel": "Reason for completing without rotation (≥20 chars)",
+      "acknowledgeLabel": "I acknowledge the pending credentials will not be auto-rotated",
+      "confirmButton": "Confirm and complete",
+      "cancelButton": "Cancel"
     }
   },
   "Workflows": {

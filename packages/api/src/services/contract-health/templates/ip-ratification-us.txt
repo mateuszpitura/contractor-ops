@@ -1,0 +1,13 @@
+DRAFT — PENDING legal review by US tax/IP adviser per Phase 75 Standing Project Constraints.
+
+I, [SIGNER NAME], on behalf of [COMPANY NAME], hereby ratify and confirm the
+intellectual property assignment language contained in the engagement contract
+dated [CONTRACT DATE] with [CONTRACTOR NAME]. I acknowledge that the works
+created during the engagement are treated as "work made for hire" under
+17 U.S.C. §201(b) to the extent permissible, and otherwise are assigned in
+writing under 17 U.S.C. §204(a), with the Contractor agreeing to execute any
+further documents required to perfect the assignment. This ratification supports
+the offboarding completion under Phase 75 F4 Offboarding workflow.
+
+Signed: [SIGNER NAME]
+Date: [SIGNING DATE]

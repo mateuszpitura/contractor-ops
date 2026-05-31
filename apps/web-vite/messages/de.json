@@ -1985,6 +1985,27 @@
     "terminated": "{count} Verträge gekündigt",
     "error": {
       "loadFailed": "Aktion fehlgeschlagen: complete operation. Versuchen Sie es erneut."
+    },
+    "healthCheck": {
+      "title": "IP-Übertragung — Gesundheitsprüfung",
+      "verdict": {
+        "LIKELY_PRESENT": "Wahrscheinlich vorhanden",
+        "LIKELY_MISSING": "Wahrscheinlich fehlend",
+        "MANUAL_REVIEW_REQUIRED": "Manuelle Prüfung erforderlich"
+      },
+      "rerunButton": "Prüfung erneut ausführen",
+      "noCitedClauses": "Keine IP-Übertragungsklausel im Vertrag gefunden.",
+      "confidence": "{value}% Konfidenz",
+      "source": {
+        "regexAndLlm": "Regex + LLM",
+        "llmOnly": "Nur LLM"
+      },
+      "crossJurisdictionMismatch": {
+        "title": "Jurisdiktions-Konflikt",
+        "description": "{found}-Formulierung in einem {expected}-Vertrag gefunden — manuelle Prüfung erforderlich."
+      },
+      "pendingPhraseFooter": "¹ Das Ergebnis stützt sich auf Formulierungen, die der rechtlichen Prüfung unterliegen.",
+      "schemaUnsupported": "Die Prüfdaten verwenden ein nicht unterstütztes Format. Führen Sie die Prüfung erneut aus."
     }
   },
   "CookieConsent": {
@@ -6970,6 +6991,52 @@
       "heading": "Offboarding für {contractor} starten",
       "templateLabel": "Wissenstransfer-Vorlage",
       "cta": "Offboarding starten"
+    },
+    "credentials": {
+      "tabName": "Zugangsdaten",
+      "columns": {
+        "label": "Bezeichnung",
+        "vaultProvider": "Vault-Anbieter",
+        "accessType": "Zugriffstyp",
+        "successor": "Nachfolger",
+        "status": "Status"
+      },
+      "actions": {
+        "add": "Zugangsdaten hinzufügen",
+        "edit": "Bearbeiten",
+        "markRotated": "Als rotiert markieren",
+        "remove": "Entfernen"
+      },
+      "empty": "Für dieses Offboarding wurden noch keine Zugangsdaten-Referenzen erfasst.",
+      "dialog": {
+        "addTitle": "Zugangsdaten-Referenz hinzufügen",
+        "fields": {
+          "label": "Bezeichnung",
+          "vaultProvider": "Vault-Anbieter",
+          "vaultUrl": "Vault-URL (nur Zeiger)",
+          "accessType": "Zugriffstyp",
+          "successor": "Nachfolger",
+          "notes": "Notizen"
+        },
+        "submit": "Zugangsdaten hinzufügen",
+        "cancel": "Abbrechen"
+      },
+      "secretPasteHint": "Dies sieht wie ein Zugangsdaten-Wert aus ({hint}). Geben Sie nur eine Vault-URL oder eine Beschreibung an — fügen Sie niemals echte Geheimnisse ein."
+    },
+    "ipVerification": {
+      "esignButton": "IP-Übertragungs-Ratifizierung unterschreiben",
+      "routingHelper": {
+        "docusign": "Über DocuSign",
+        "autenti": "Über Autenti (DE)"
+      }
+    },
+    "pendingCredentialsDialog": {
+      "title": "{count} Zugangsdaten noch nicht rotiert",
+      "description": "Diese Zugangsdaten sind erfasst, aber noch nicht rotiert. Sie können das Offboarding trotzdem abschließen — die Aktion wird mit Ihrer Begründung im Audit-Log erfasst.",
+      "reasonLabel": "Begründung für den Abschluss ohne Rotation (≥20 Zeichen)",
+      "acknowledgeLabel": "Ich bestätige, dass die ausstehenden Zugangsdaten nicht automatisch rotiert werden",
+      "confirmButton": "Bestätigen und abschließen",
+      "cancelButton": "Abbrechen"
     }
   },
   "Workflows": {
