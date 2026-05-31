@@ -58,14 +58,14 @@ describe('verifyInPostSignature', () => {
     expect(result).toBe(false);
   });
 
-  it('returns true when no secret is configured (graceful degradation)', () => {
+  it('returns false when no secret is configured (fail closed)', () => {
     const result = verifyInPostSignature(
       '{"test":"data"}',
       { 'x-inpost-signature': 'anything' },
       '',
     );
 
-    expect(result).toBe(true);
+    expect(result).toBe(false);
   });
 });
 

@@ -25,8 +25,12 @@ type PrismaClient = DbClient;
 /**
  * Verify an InPost webhook signature using HMAC-SHA256.
  *
- * If no secret is configured (empty string), logs a warning and returns true
- * for graceful degradation (per research open question 1).
+ * Fails closed: with no secret configured (empty string) the signature cannot
+ * be verified, so this returns false. An empty secret must never validate a
+ * request — otherwise any caller could inject events against a misconfigured
+ * org. Non-production environments can still match an org via the shipment-id
+ * payload fallback in the webhook route; production rejects unsigned /
+ * empty-secret webhooks outright (F-SEC-06).
  */
 export function verifyInPostSignature(
   rawBody: string,
@@ -34,8 +38,8 @@ export function verifyInPostSignature(
   secret: string,
 ): boolean {
   if (!secret) {
-    log.warn({}, 'no webhook secret configured — skipping signature verification');
-    return true;
+    log.warn({}, 'no webhook secret configured — signature verification fails closed');
+    return false;
   }
 
   const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
