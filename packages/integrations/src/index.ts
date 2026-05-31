@@ -19,15 +19,18 @@ export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
 // Provider Registry
 export {
+  _resetDeprovisionableAdapters,
   clearAdapters,
   getAdapter,
   getAllAdapters,
   getAllCompanyRegistryAdapters,
   getAllOcrAdapters,
   getCompanyRegistryAdapterBySlug,
+  getDeprovisionableAdapter,
   getOcrAdapterBySlug,
   registerAdapter,
   registerCompanyRegistryAdapter,
+  registerDeprovisionableAdapter,
   registerOcrAdapter,
 } from './registry.js';
 // Phase 76 D-14 — per-provider deprovision scope/capability typed-consts

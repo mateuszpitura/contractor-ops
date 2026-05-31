@@ -181,6 +181,11 @@
       "import": "./src/services/audit-writer.ts",
       "default": "./src/services/audit-writer.ts"
     },
+    "./services/idp-deprovisioning-step-runner": {
+      "types": "./src/services/idp-deprovisioning-step-runner.ts",
+      "import": "./src/services/idp-deprovisioning-step-runner.ts",
+      "default": "./src/services/idp-deprovisioning-step-runner.ts"
+    },
     "./services/reassessment-trigger-scan": {
       "types": "./src/services/reassessment-trigger-scan.ts",
       "import": "./src/services/reassessment-trigger-scan.ts",

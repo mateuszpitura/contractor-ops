@@ -30,6 +30,7 @@ import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import { registerContractHealthRoute } from '../contract-health.js';
 import { registerExportsProcessRoute } from '../exports.js';
 import { registerGoogleWorkspaceSyncRoute } from '../google-workspace.js';
+import { registerIdpDeprovisioningStepRunnerRoute } from '../idp-deprovisioning.js';
 import { registerKsefSyncRoute } from '../ksef.js';
 import { registerLateInterestRenderRoute } from '../late-interest.js';
 import { registerOcrProcessRoute } from '../ocr.js';
@@ -85,6 +86,8 @@ const webhookPluginImpl: FastifyPluginAsync = async (app: FastifyInstance) => {
   registerLateInterestRenderRoute(app);
   // Phase 75 D-01 — contract health-check QStash callback.
   registerContractHealthRoute(app);
+  // Phase 76 D-03 — IdP deprovisioning saga step runner.
+  registerIdpDeprovisioningStepRunnerRoute(app);
 };
 
 export const webhookPlugin = webhookPluginImpl;

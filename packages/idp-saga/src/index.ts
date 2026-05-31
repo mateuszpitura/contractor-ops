@@ -5,5 +5,5 @@
 export { canStartDeprovisioning } from './cooldown.js';
 export { gcExpiredProvenance } from './gc.js';
 export { insertProvenance, provenanceLookup } from './provenance.js';
-export { deriveRunStatus } from './run-status.js';
+export { deriveRunStatus, recomputeRunStatus } from './run-status.js';
 export * from './types.js';

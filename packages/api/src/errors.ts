@@ -390,3 +390,9 @@ export const CREDENTIAL_REFERENCE_NOT_FOUND = 'credentialReferenceNotFound';
 export const CREDENTIAL_REFERENCE_OFFBOARDING_ONLY = 'credentialReferenceOffboardingOnly';
 export const WORKFLOW_IP_VERIFICATION_OPEN = 'workflowIpVerificationOpen';
 export const WORKFLOW_CREDENTIALS_PENDING = 'workflowCredentialsPending';
+
+// ─── Phase 76 — F2 IdP deprovisioning saga + cooldown gate ─────────
+export const DEPROVISIONING_ASSIGNMENT_NOT_FOUND = 'deprovisioningAssignmentNotFound';
+export const DEPROVISIONING_STEP_NOT_FOUND = 'deprovisioningStepNotFound';
+export const DEPROVISIONING_COOLDOWN_ACTIVE = 'deprovisioningCooldownActive';
+export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
