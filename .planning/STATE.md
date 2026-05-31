@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: ready_to_plan
-stopped_at: Phase 72 complete (8/8) — ready to discuss Phase 73
-last_updated: 2026-05-31T17:28:39.001Z
+status: executing
+stopped_at: context exhaustion at 75% (2026-05-31)
+last_updated: "2026-05-31T18:59:29.782Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 6
   total_plans: 71
-  completed_plans: 51
+  completed_plans: 52
   percent: 55
 ---
 
@@ -74,7 +74,7 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 
 **Phase:** 78 — F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)
 **Workflow:** `gsd:plan-phase 78 --auto`
-**Status:** Ready to plan
+**Status:** Ready to execute
 
 **What happened:** Identical root cause to the Phase 75 blocker below. `gsd:plan-phase` step 1 (`gsd-sdk query init.plan-phase 78`) crashes at module load:
 
@@ -189,16 +189,16 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 73 — f1 compliance admin dashboard portal self service i18n
+**Current focus:** Phase 77 — f2-idp-gws-slack-adapters-the-wedge
 
 ## Current Position
 
-Phase: 72 (f1-compliance-reminder-cascade-payment-block) — EXECUTING
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 77 (f2-idp-gws-slack-adapters-the-wedge) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-05-31
 
-Progress: [███████░░░] 72%
+Progress: [███████░░░] 73%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
