@@ -16,6 +16,7 @@
 
 import { useEffect } from 'react';
 import { isRouteErrorResponse, useLocation, useRouteError } from 'react-router-dom';
+import { Sentry } from '../../sentry.js';
 
 interface NormalizedError {
   kind: 'response' | 'error' | 'unknown';
@@ -74,7 +75,16 @@ export function RouteErrorBoundary() {
       stack: normalized.stack,
       data: normalized.data,
     });
-  }, [normalized, location.pathname, location.search]);
+
+    // Report genuine render/loader failures to Sentry so production crashes
+    // are visible to on-call. Skip expected routing responses (404 and other
+    // loader-thrown HTTP responses) — those are not exceptions worth alerting on.
+    if (normalized.kind !== 'response') {
+      Sentry.captureException(error, {
+        tags: { 'react.boundary': 'route', pathname: location.pathname },
+      });
+    }
+  }, [error, normalized, location.pathname, location.search]);
 
   return (
     <main
