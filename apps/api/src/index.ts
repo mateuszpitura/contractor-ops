@@ -5,6 +5,10 @@ import { initSentry, Sentry } from './lib/sentry.js';
 
 initSentry();
 
+import {
+  loadHeavyAdapters,
+  registerAllAdapters,
+} from '@contractor-ops/integrations/adapters/register-all';
 import { createLogger } from '@contractor-ops/logger';
 import { loadEnv } from './env.js';
 import { buildServer } from './server.js';
@@ -35,6 +39,19 @@ process.on('unhandledRejection', reason => {
 
 async function main(): Promise<void> {
   const env = loadEnv();
+
+  // Warm the integration adapter registry at the top of boot. ESSENTIAL
+  // adapters register synchronously; the HEAVY (lazy, dynamic-import) OAuth
+  // adapters start loading here so they finish during startup — overlapping
+  // buildServer (Prisma/auth init) — instead of racing the first request.
+  // Per-procedure callers still `await loadHeavyAdapters()` for correctness;
+  // this just shrinks the window. Fire-and-forget: a heavy-load failure must
+  // not abort boot, so we log it rather than reject main().
+  registerAllAdapters();
+  void loadHeavyAdapters()
+    .then(() => log.info('integration heavy adapters registered'))
+    .catch(err => log.error({ err }, 'integration heavy adapter load failed'));
+
   const app = await buildServer({ envOverride: env });
 
   await app.listen({ host: env.HOST, port: env.PORT });
