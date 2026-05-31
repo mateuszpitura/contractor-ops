@@ -17,6 +17,17 @@ export { KsefAdapter } from './adapters/ksef-adapter.js';
 export { loadHeavyAdapters, registerAllAdapters } from './adapters/register-all.js';
 export { ResendAdapter } from './adapters/resend-adapter.js';
 export { SlackAdapter } from './adapters/slack-adapter.js';
+// Phase 77 — IdP impact-preview + error-classifier public surface
+export type {
+  ClassifyErrorInput,
+  ErrorClass,
+  GwsImpactCustomMetrics,
+  ImpactCommonMetrics,
+  ImpactPreview,
+  ImpactPreviewProvider,
+  SlackImpactCustomMetrics,
+} from './idp/index.js';
+export { classifyError } from './idp/index.js';
 // Provider Registry
 export {
   _resetDeprovisionableAdapters,

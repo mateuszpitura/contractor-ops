@@ -119,6 +119,11 @@
       "import": "./dist/adapters/google-workspace-adapter.js",
       "default": "./dist/adapters/google-workspace-adapter.js"
     },
+    "./adapters/slack-adapter": {
+      "types": "./dist/adapters/slack-adapter.d.ts",
+      "import": "./dist/adapters/slack-adapter.js",
+      "default": "./dist/adapters/slack-adapter.js"
+    },
     "./services/boe-base-rate-poller": {
       "types": "./dist/services/boe-base-rate-poller.d.ts",
       "import": "./dist/services/boe-base-rate-poller.js",
