@@ -74,6 +74,14 @@ jobs:
       - name: Build packages
         run: pnpm run build
 
+      # Typecheck the whole workspace with tsc (CI-canonical). This is the
+      # first CI gate on apps/web-vite — `vite build` strips types via esbuild,
+      # so without this step ~217k LOC of the largest app ships unchecked.
+      # Depends on the turbo `i18n:types` task (generated SPA message types),
+      # which the Build step above has already produced + cached.
+      - name: Typecheck (tsc — CI-canonical)
+        run: pnpm run typecheck
+
       - name: Test
         run: pnpm run test
 

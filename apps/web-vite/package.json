@@ -7,6 +7,7 @@
     "dev": "node ../../scripts/wait-for-api.mjs && vite",
     "build": "vite build",
     "build:analyze": "ANALYZE=1 vite build",
+    "i18n:types": "tsx ../../scripts/generate-i18n-types.ts",
     "preview": "vite preview",
     "size": "size-limit",
     "lint": "biome check .",
