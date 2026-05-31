@@ -125,3 +125,38 @@ export function ZatcaBrandIcon({ className }: BrandIconProps) {
 export function PeppolBrandIcon({ className }: BrandIconProps) {
   return <LogoImg src="/logos/peppol.svg" alt="Peppol" className={className} />;
 }
+
+/** Microsoft Entra ID — inline brand mark (four-segment ring, Entra teal). */
+export function EntraBrandIcon({ className }: BrandIconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={cn(base, 'text-[oklch(0.62_0.13_220)]', className)}>
+      <path d="M12 2 2 21h4.2L12 9.6 17.8 21H22L12 2Zm0 8.9L7.6 19.4h8.8L12 10.9Z" />
+    </svg>
+  );
+}
+
+/** Okta — inline brand mark (ring, Okta blue). */
+export function OktaBrandIcon({ className }: BrandIconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={cn(base, 'text-[oklch(0.5_0.16_255)]', className)}>
+      <path d="M12 5.25a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5Zm0 3.4a3.35 3.35 0 1 1 0 6.7 3.35 3.35 0 0 1 0-6.7Z" />
+    </svg>
+  );
+}
+
+/** GitHub — inline Octocat mark (currentColor; adapts to light/dark). */
+export function GitHubBrandIcon({ className }: BrandIconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={cn(base, className)}>
+      <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.21 3.44 9.63 8.2 11.19.6.11.82-.25.82-.56v-2.16c-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.34-1.72-1.34-1.72-1.09-.73.08-.72.08-.72 1.2.08 1.84 1.21 1.84 1.21 1.07 1.8 2.81 1.28 3.5.98.11-.76.42-1.28.76-1.58-2.67-.3-5.47-1.31-5.47-5.83 0-1.29.47-2.34 1.24-3.17-.13-.3-.54-1.52.11-3.18 0 0 1.01-.32 3.3 1.21a11.6 11.6 0 0 1 3-.4c1.02 0 2.05.13 3 .4 2.29-1.53 3.3-1.21 3.3-1.21.65 1.66.24 2.88.12 3.18.77.83 1.23 1.88 1.23 3.17 0 4.53-2.81 5.53-5.49 5.82.43.37.81 1.1.81 2.22v3.29c0 .31.22.68.83.56A12.01 12.01 0 0 0 24 12.29C24 5.78 18.63.5 12 .5Z" />
+    </svg>
+  );
+}

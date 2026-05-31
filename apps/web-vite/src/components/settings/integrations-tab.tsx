@@ -1,8 +1,11 @@
 import { KsefBrandIcon, SlackBrandIcon } from '../integrations/brand-icons';
+import { EntraProviderSection } from '../integrations/entra-provider-section-container.js';
+import { GitHubProviderSection } from '../integrations/github-provider-section-container.js';
 import { GoogleWorkspaceProviderSection } from '../integrations/google-workspace-provider-section-container.js';
 import { JiraLogo } from '../integrations/jira-logo.js';
 import { JiraProviderSection } from '../integrations/jira-provider-section-container.js';
 import { LinearProviderSection } from '../integrations/linear-provider-section-container.js';
+import { OktaProviderSection } from '../integrations/okta-provider-section-container.js';
 import { ConfluenceIcon, NotionIcon } from '../integrations/provider-icons.js';
 import { TeamsProviderSection } from '../integrations/teams-provider-section-container.js';
 import { PeppolStatusCardContainer } from '../peppol/peppol-status-card-container';
@@ -114,12 +117,20 @@ export function IntegrationsTab({ t, isSlackConnected }: IntegrationsTabProps) {
         />
       </div>
 
-      {/* Phase 77 D-15 — per-provider IdP deprovisioning enable matrix */}
+      {/* Phase 77 D-15 / Phase 78 D-12 — per-provider IdP deprovisioning */}
       <section className="space-y-3">
         <div>
           <h3 className="text-sm font-medium">{t('idpDeprovisioning.heading')}</h3>
           <p className="text-sm text-muted-foreground">{t('idpDeprovisioning.description')}</p>
         </div>
+
+        {/* Phase 78 — Entra ID / Okta / GitHub deprovisioning provider cards */}
+        <div className="grid gap-4 md:grid-cols-1">
+          <EntraProviderSection />
+          <OktaProviderSection />
+          <GitHubProviderSection />
+        </div>
+
         <IdpDeprovisioningToggleTableContainer />
       </section>
 
