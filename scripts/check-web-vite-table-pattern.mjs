@@ -105,6 +105,8 @@ const FORM_STYLE_ALLOWLIST = new Set([
   'components/settings/e-invoicing/leitweg-id-row.tsx',
   // Feature flag rows — key/value toggle table inside the settings sheet.
   'components/settings/feature-flags-tab.tsx',
+  // Phase 77 — per-provider IdP-deprovisioning enable matrix (2 rows + switch).
+  'components/settings/idp-deprovisioning-toggle-table.tsx',
   // Notification preferences — channel × event matrix (form-style).
   'components/settings/notification-preferences.tsx',
   // Provider detail sheet — key/value field grid for a single provider.

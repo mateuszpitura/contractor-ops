@@ -321,6 +321,48 @@ export const deprovisioningRouter = router({
     }),
 
   /**
+   * Phase 77 — read a deprovisioning run with its steps (saga run view, 77-05).
+   * Org-scoped; surfaces the per-step status (incl. LIKELY_GONE-equivalent
+   * SUCCEEDED + MANUAL_COMPLETED), errorClass, attempts, and manual-override
+   * metadata so the UI can render the override badge + the per-failed-step button.
+   */
+  getDeprovisioningRun: tenantProcedure
+    .use(requirePermission({ integration: ['read'] }))
+    .input(z.object({ runId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      return findOrThrow(
+        () =>
+          ctx.db.deprovisioningRun.findFirst({
+            where: { id: input.runId, organizationId: ctx.organizationId },
+            select: {
+              id: true,
+              status: true,
+              startedAt: true,
+              finishedAt: true,
+              steps: {
+                select: {
+                  id: true,
+                  provider: true,
+                  stepKind: true,
+                  status: true,
+                  attempts: true,
+                  errorClass: true,
+                  lastErrorMessage: true,
+                  manualOverrideCategory: true,
+                  manualOverrideNote: true,
+                  manualOverriddenByUserId: true,
+                  manualOverriddenAt: true,
+                  finishedAt: true,
+                },
+                orderBy: [{ provider: 'asc' }, { stepKind: 'asc' }],
+              },
+            },
+          }),
+        DEPROVISIONING_STEP_NOT_FOUND,
+      );
+    }),
+
+  /**
    * Phase 77 D-01/D-02/D-03 — pre-flight impact preview for an assignment + provider.
    * Cache-fronted (5 min) in getImpactPreview; forceRefresh bypasses. On adapter
    * failure returns a structured outcome the admin-choice flow renders. When the admin
@@ -481,6 +523,51 @@ export const deprovisioningRouter = router({
         });
       }
       return { url: `${apiUrl}/api/oauth/slack-org-grid/start` };
+    }),
+
+  /**
+   * Phase 77 D-15 — per-provider toggle-table state for the settings UI: each
+   * supported provider's connection status, signoff-flag approval, and current
+   * per-org enabled flag. Drives the enable table (disabled when flag != APPROVED).
+   */
+  getProviderToggleState: tenantProcedure
+    .use(requirePermission({ settings: ['read'] }))
+    .query(async ({ ctx }) => {
+      const [org, connections] = await Promise.all([
+        ctx.db.organization.findUnique({
+          where: { id: ctx.organizationId },
+          select: { settingsJson: true },
+        }),
+        ctx.db.integrationConnection.findMany({
+          where: {
+            organizationId: ctx.organizationId,
+            provider: { in: ['GOOGLE_WORKSPACE', 'SLACK'] },
+            status: 'CONNECTED',
+          },
+          select: { provider: true, configJson: true },
+        }),
+      ]);
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const enabledMap = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
+
+      const providers = (['GOOGLE_WORKSPACE', 'SLACK'] as const).map(provider => ({
+        provider,
+        connected:
+          provider === 'SLACK'
+            ? connections.some(
+                c =>
+                  c.provider === 'SLACK' &&
+                  !!c.configJson &&
+                  typeof c.configJson === 'object' &&
+                  (c.configJson as { connectionSubKind?: unknown }).connectionSubKind ===
+                    'SLACK_ORG_GRID',
+              )
+            : connections.some(c => c.provider === 'GOOGLE_WORKSPACE'),
+        flagApproved: isProviderSignoffSatisfied(provider),
+        enabled: enabledMap[provider] === true,
+      }));
+
+      return { providers };
     }),
 
   /**
