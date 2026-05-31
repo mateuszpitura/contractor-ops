@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-27)
-last_updated: "2026-05-31T13:00:37.669Z"
+last_updated: "2026-05-31T13:06:15.625Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 71
-  completed_plans: 27
+  completed_plans: 28
   percent: 27
 ---
 
@@ -192,11 +192,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 75 (f4-offboarding-contract-health-check-ip-verification-credent) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-05-31
 
-Progress: [████░░░░░░] 38%
+Progress: [████░░░░░░] 39%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
@@ -413,6 +413,8 @@ Recent decisions affecting current work:
 - VIES REST API production stability in 2026 unconfirmed — may need soap fallback
 - BACS Standard 18 full spec requires procurement from Vocalink/Pay.UK via BACS bureau
 - [BLOCKER — 2026-04-14] Phase 62 execute-phase workflow cannot spawn subagents. The /gsd:execute-phase 62 run was invoked as a background autonomous agent session. In that context the Task() subagent API is NOT available — not in the tool set and not discoverable via ToolSearch. Per execute-phase.md <runtime_compatibility>, the documented fallback is sequential inline execution, but the scope of Phase 62 exceeds what a single inline context can reliably complete: 7 plans across 6 waves touching ~90+ files (Prisma schema + forward-only migration with [BLOCKING] live Neon push, full zugferd-de profile with CII/XRechnung parsers + PDF asset bundle, PDF/A-3 generator pipeline with veraPDF CI gate, intake matcher/service, two tRPC routers, all web UI surfaces per 62-UI-SPEC.md including intake pages/upload dialog/split-button/locale strings across en/de/gb, and Playwright E2E coverage for both EINV-02 + EINV-03). Plan artifacts total ~3,400 lines before implementation. Attempting inline would exhaust context before Wave 3 and produce partial uncommitted work — matching the pattern previously documented for Phases 56, 57, 58, 60 nested-agent blockers. Execution stopped BEFORE any code changes (STATE.md begin-phase ran but no Prisma edits, no migrations, no parser code, no UI). Current branch: v2 @ 378407dc. STATE.md frontmatter was advanced to "Phase 62 execution started" via state begin-phase — manager may want to roll that back to "Phase 63 context gathered" if restarting from a clean slate. Resolution options: (1) re-run /gsd:execute-phase 62 from an interactive top-level session where Task() subagent spawning is available — the recommended path since 7 plans deserve fresh context each; (2) run each plan individually at top-level: /gsd:execute-plan 62-01 ... /gsd:execute-plan 62-07 one at a time, each as a fresh top-level invocation, respecting wave dependencies (62-01 first, then 62-02, then 62-03 and 62-04 in parallel, then 62-05, then 62-06, then 62-07); (3) use interactive flag: /gsd:execute-phase 62 --interactive at top-level for pair-programming-style sequential inline execution with user checkpoints. Note that Plan 62-01 Task 4 is [BLOCKING] — it requires `pnpm --filter @contractor-ops/db prisma db push --accept-data-loss` against the live Neon DB; this must NOT be bypassed since downstream Prisma client types depend on the push completing. Reset chain flag before re-run if needed: `node .claude/get-shit-done/bin/gsd-tools.cjs config-set workflow._auto_chain_active false` (already reset by this session's init step).
+
+- **[REPLAN COMPLETE / COMMIT BLOCKED — 2026-05-31] Phase 72 path-fix replan done on disk; commit blocked by an in-progress cherry-pick owned by another process.** Ran `gsd-plan-phase 72 --auto` as a REPLAN to fix stale file paths after the web migration on `audit/post-migration-parity`. All edits are COMPLETE and intact on disk (verified): 8 PLAN.md (72-01..08) + CONTEXT/RESEARCH/PATTERNS/VALIDATION migration banners + new `72-REPLAN-DRIFT-MAP.md` (authoritative path-correction reference). Corrections applied: `apps/web` → `apps/web-vite` (Vite SPA; the "wizard" is `components/payments/new-payment-run-dialog/` + `hooks/use-payment-run-step-review.ts`; i18n is flat `apps/web-vite/messages/{en,de,pl,ar}.json` via custom `useTranslations`, NOT next-intl/next-link); cron reminders → `apps/cron-worker/src/jobs/handlers/reminders/index.ts` (4th `Promise.all` member; test `apps/cron-worker/src/__tests__/reminders.test.ts`); dedup helper home → `packages/api/src/services/cron-dedup.ts` (cron-worker `shared.ts` re-exports — the old "move out of apps/web" task was obsolete); payment router → `routers/finance/payment.ts` (`payment.create` + `payment.lockAndExport`, NOT `paymentRun.*`); approval router → `routers/core/approval.ts` (`resumeFromCompliance` gated by `invoice:['approve']` — no `approval`/`override` perm exists in `@contractor-ops/auth`); classification router → `routers/compliance/classification.ts`; `approval-engine/operators/` to be created beside the existing `approval-engine.ts`; lint-guard → per-guard subdir `lint-guards/src/payment-gate-guard/run-guard.ts` (`runPaymentGateGuard`) surfaced via `index.ts` barrel; logger `createServiceLogger` (nonexistent) → `createLogger({ service })`; `getCurrentPolicyVersion()` (nonexistent) → `POLICY_RULE_SET_VERSION` const; feature-flags import from package barrel (no `/registry` subpath); multi-region `push-all-regions.ts` → `migrate-all-regions.ts` (`db:migrate:all`); and `packages/api/package.json` `exports` must gain `./services/cron-dedup` + `./services/compliance-reminder-scan` (explicit allowlist, no wildcard). All 19 corrected target paths verified to exist in-tree. Decisions D-01..D-19 unchanged. **COMMIT BLOCKER:** the repo is mid-`git cherry-pick` (`.git/sequencer/todo` lists 2 pending `test(api,classification)` commits — `7df2a620`, `72934061` — NOT created by this session; HEAD `5223b324`, branch `audit/post-migration-parity`). The `lint-staged` pre-commit hook + sequencer state cleared the index when I tried to commit, so `git commit` failed with "could not find any staged files". Per Git safety rules I did NOT run `cherry-pick --abort/--continue/--skip`, `reset`, or any destructive recovery (a shared tree — that could destroy another agent's in-flight work). Resolution: once the in-progress cherry-pick is resolved by its owner, re-stage and commit the phase 72 docs: `git add .planning/milestones/v6.0-phases/72-f1-compliance-reminder-cascade-payment-block/ && git commit` (suggested message in the aborted attempt). The replan content needs no further work — only the commit is pending. (`.planning/config.json` shows `_auto_chain_active: true→false`, a harness side-effect, intentionally left unstaged.)
 
 ## Session Continuity
 
