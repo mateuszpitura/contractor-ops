@@ -36,6 +36,7 @@ import {
   generateSwiftXml,
   resolveTransferTitle,
 } from '../../services/payment-export';
+import { buildSnapshotForContractor } from '../../services/payment-export-compliance-snapshot';
 import { detectFormat } from '../../services/payment-format-detection';
 import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto';
 import { calculateWht } from '../../services/tax-rate.service';
@@ -885,64 +886,147 @@ export const paymentRouter = router({
         prepared.run.runNumber ?? prepared.run.id,
       );
 
-      // ── tx-2: transition + paymentExport ───────────────────────────────
-      const updatedRun = await ctx.db.$transaction(async tx => {
-        // Re-fetch under the lock to detect concurrent state mutations.
-        const current = await tx.paymentRun.findFirst({
-          where: { id: prepared.run.id, organizationId: ctx.organizationId },
-          select: { status: true },
-        });
-        if (!current) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: E.PAYMENT_RUN_NOT_FOUND,
+      // Phase 72 — distinct contractors on this run; the compliance gate is
+      // re-asserted at export time (TOCTOU defence) and snapshotted per D-16/D-17.
+      const distinctContractorIds = Array.from(
+        new Set(prepared.run.items.map(i => i.contractorId).filter((x): x is string => Boolean(x))),
+      );
+      const jurisdictionDate = new Date().toISOString().slice(0, 10);
+      let toctouFailureContext: { contractorIds: string[]; jurisdictionDate: string } | null = null;
+
+      // ── tx-2: TOCTOU re-assert + PaymentRunComplianceCheck PASS rows + transition ──
+      let updatedRun: Awaited<ReturnType<typeof ctx.db.paymentRun.update>> | typeof prepared.run;
+      try {
+        updatedRun = await ctx.db.$transaction(async tx => {
+          // Re-fetch under the lock to detect concurrent state mutations.
+          const current = await tx.paymentRun.findFirst({
+            where: { id: prepared.run.id, organizationId: ctx.organizationId },
+            select: { status: true },
           });
-        }
-        // Concurrent finalize won — return idempotent result.
-        if (current.status === 'EXPORTED' || current.status === 'LOCKED') {
-          return prepared.run;
-        }
-        const updated = await tx.paymentRun.update({
-          where: { id: prepared.run.id },
-          data: {
-            status: 'EXPORTED',
-            exportFormat: input.exportFormat,
-            exportedAt: new Date(),
-            totalMinor: prepared.freshTotalMinor,
-            invoiceCount: prepared.freshInvoiceCount,
-          },
-        });
+          if (!current) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: E.PAYMENT_RUN_NOT_FOUND,
+            });
+          }
+          // Concurrent finalize won — return idempotent result.
+          if (current.status === 'EXPORTED' || current.status === 'LOCKED') {
+            return prepared.run;
+          }
 
-        await tx.paymentExport.create({
-          data: {
+          // Phase 72 D-09 — TOCTOU re-assertion. Throws PRECONDITION_FAILED if any
+          // contractor newly fails between run-create and export; the export aborts.
+          try {
+            await assertContractorPaymentEligibility(distinctContractorIds, {
+              tx,
+              organizationId: ctx.organizationId,
+            });
+          } catch (err) {
+            if (err instanceof TRPCError && err.code === 'PRECONDITION_FAILED') {
+              toctouFailureContext = { contractorIds: distinctContractorIds, jurisdictionDate };
+            }
+            throw err;
+          }
+
+          const updated = await tx.paymentRun.update({
+            where: { id: prepared.run.id },
+            data: {
+              status: 'EXPORTED',
+              exportFormat: input.exportFormat,
+              exportedAt: new Date(),
+              totalMinor: prepared.freshTotalMinor,
+              invoiceCount: prepared.freshInvoiceCount,
+            },
+          });
+
+          const exportRow = await tx.paymentExport.create({
+            data: {
+              organizationId: ctx.organizationId,
+              paymentRunId: prepared.run.id,
+              format: input.exportFormat,
+              status: 'GENERATED',
+              generatedByUserId: ctx.user.id,
+            },
+          });
+
+          // Phase 72 D-16 / D-18 — PASS-verdict compliance audit rows, atomic with
+          // the PaymentExport row (one frozen snapshot per contractor on the run).
+          for (const contractorId of distinctContractorIds) {
+            const snap = await buildSnapshotForContractor(tx, contractorId, jurisdictionDate);
+            await tx.paymentRunComplianceCheck.create({
+              data: {
+                organizationId: ctx.organizationId,
+                paymentRunId: prepared.run.id,
+                paymentExportId: exportRow.id,
+                contractorId,
+                snapshotJson: snap.snapshotJson as unknown as Prisma.InputJsonValue,
+                eligibilityVerdict: 'PASS',
+                policyRuleSetVersion: snap.policyRuleSetVersion,
+              },
+            });
+          }
+
+          await writeAuditLog({
+            tx,
             organizationId: ctx.organizationId,
-            paymentRunId: prepared.run.id,
-            format: input.exportFormat,
-            status: 'GENERATED',
-            generatedByUserId: ctx.user.id,
-          },
-        });
+            actorType: 'USER',
+            actorId: ctx.user.id,
+            action: 'payment_run.lock_and_export',
+            resourceType: 'PAYMENT_RUN',
+            resourceId: prepared.run.id,
+            resourceName: prepared.run.runNumber ?? prepared.run.id,
+            oldValues: { status: prepared.run.status },
+            newValues: {
+              status: 'EXPORTED',
+              exportFormat: input.exportFormat,
+              totalMinor: prepared.freshTotalMinor,
+              invoiceCount: prepared.freshInvoiceCount,
+            },
+          });
 
-        await writeAuditLog({
-          tx,
-          organizationId: ctx.organizationId,
-          actorType: 'USER',
-          actorId: ctx.user.id,
-          action: 'payment_run.lock_and_export',
-          resourceType: 'PAYMENT_RUN',
-          resourceId: prepared.run.id,
-          resourceName: prepared.run.runNumber ?? prepared.run.id,
-          oldValues: { status: prepared.run.status },
-          newValues: {
-            status: 'EXPORTED',
-            exportFormat: input.exportFormat,
-            totalMinor: prepared.freshTotalMinor,
-            invoiceCount: prepared.freshInvoiceCount,
-          },
+          return updated;
         });
-
-        return updated;
-      });
+      } catch (err) {
+        // Phase 72 D-19 — the parent tx rolled back; record FAIL-verdict rows
+        // (paymentExportId = null) in a SEPARATE small tx so every export attempt
+        // leaves a forensic trail. Best-effort: never masks the original throw.
+        if (toctouFailureContext) {
+          const failCtx = toctouFailureContext as {
+            contractorIds: string[];
+            jurisdictionDate: string;
+          };
+          try {
+            await ctx.db.$transaction(async tx2 => {
+              for (const contractorId of failCtx.contractorIds) {
+                const snap = await buildSnapshotForContractor(
+                  tx2,
+                  contractorId,
+                  failCtx.jurisdictionDate,
+                );
+                if (snap.eligibilityVerdict !== 'FAIL') continue;
+                await tx2.paymentRunComplianceCheck.create({
+                  data: {
+                    organizationId: ctx.organizationId,
+                    paymentRunId: input.runId,
+                    paymentExportId: null,
+                    contractorId,
+                    snapshotJson: snap.snapshotJson as unknown as Prisma.InputJsonValue,
+                    eligibilityVerdict: 'FAIL',
+                    failureReasons: snap.failureReasons as unknown as Prisma.InputJsonValue,
+                    policyRuleSetVersion: snap.policyRuleSetVersion,
+                  },
+                });
+              }
+            });
+          } catch (writeErr) {
+            log.error(
+              { err: writeErr, runId: input.runId },
+              'payment.lockAndExport FAIL-verdict separate-tx write failed (non-blocking)',
+            );
+          }
+        }
+        throw err;
+      }
 
       return {
         run: updatedRun,
