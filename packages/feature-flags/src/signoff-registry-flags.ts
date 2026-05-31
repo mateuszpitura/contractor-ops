@@ -31,14 +31,16 @@ try {
  * before the app boots. Phase 70 D-11.
  *
  * Mapping to v6.0 features:
- *   - 'compliance-'        → F1 Compliance Document Lifecycle (Phases 71–73)
- *   - 'idp-deprovisioning' → F2 IdP Deprovisioning (Phases 76–78)
- *   - 'gulf-'              → F3 Gulf Operational Polish (Phase 79)
- *   - 'offboarding-ip-'    → F4 Offboarding Hardening (Phases 74–75)
+ *   - 'compliance-'             → F1 Compliance Document Lifecycle (Phases 71–73)
+ *   - 'idp-deprovisioning'      → F2 IdP Deprovisioning saga signoff (Phase 76)
+ *   - 'module.idp-deprovisioning' → F2 per-provider FLAGS gating (Phase 77)
+ *   - 'gulf-'                   → F3 Gulf Operational Polish (Phase 79)
+ *   - 'offboarding-ip-'         → F4 Offboarding Hardening (Phases 74–75)
  */
 export const GATED_FLAG_NAMESPACE_PREFIXES = [
   'compliance-',
   'idp-deprovisioning',
+  'module.idp-deprovisioning',
   'gulf-',
   'offboarding-ip-',
 ] as const satisfies readonly string[];

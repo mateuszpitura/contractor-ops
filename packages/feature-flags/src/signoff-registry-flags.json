@@ -3,6 +3,14 @@
     "status": "PENDING",
     "notes": "F2 IdP deprovisioning rollout — flip to APPROVED post-deploy after legal review of cooldown semantics + cross-border data-handling implications of suspendAccount + revokeAllSessions"
   },
+  "module.idp-deprovisioning-gws": {
+    "status": "PENDING",
+    "notes": "F2 Phase 77 — per-provider FLAGS gate for Google Workspace deprovisioning (suspend + OAuth-grant revoke + sign-out-all-sessions). Ship dark; flip to APPROVED post-deploy after legal review of cross-border data-handling. Engineers develop with FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.idp-deprovisioning-slack": {
+    "status": "PENDING",
+    "notes": "F2 Phase 77 — per-provider FLAGS gate for Slack deprovisioning (session-invalidate + SCIM-deactivate, Enterprise Grid). Ship dark; flip to APPROVED post-deploy after legal review. Independent of the GWS gate (D-15). Engineers develop with FLAG_SIGNOFF_BYPASS=local."
+  },
   "offboarding-ip-foundation": {
     "status": "PENDING",
     "notes": "F4 Offboarding workflow foundation + KT templates + override permission. Werkvertrag wording deferred to Phase 75; this flag gates the workflow:override_blocking_task permission and PTO-aware fallback routing. Needs verification by legal entity before production deploy (override-dialog acknowledgement copy)."

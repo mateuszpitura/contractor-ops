@@ -150,6 +150,34 @@ export const FLAGS = deepFreeze({
     jurisdiction: 'ANY',
     owner: 'legal-platform',
   },
+  // Phase 77 D-15 — F2 IdP deprovisioning, gated per provider so GWS can enable
+  // independently of Slack. Both ship dark (default false); both require their
+  // signoff-registry entry to flip PENDING→APPROVED before enabling per-org.
+  //
+  // Keys are dot-namespaced under `module.idp-deprovisioning-*` to satisfy the
+  // `flagDefinitionSchema` key regex (first segment must be alphanumeric, no
+  // hyphen). The signoff boot-gate prefix `module.idp-deprovisioning` (added to
+  // GATED_FLAG_NAMESPACE_PREFIXES) keeps them gated; the unrelated Phase 76
+  // `idp-deprovisioning` signoff-registry key (a saga-level entry, not a FLAGS
+  // key) is untouched.
+  'module.idp-deprovisioning-gws': {
+    key: 'module.idp-deprovisioning-gws',
+    description:
+      'Google Workspace deprovisioning (suspend + OAuth-grant revoke + sign-out-all-sessions). Ship dark — gates GWS deprovisioning independently of Slack; requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'idp-platform',
+  },
+  'module.idp-deprovisioning-slack': {
+    key: 'module.idp-deprovisioning-slack',
+    description:
+      'Slack deprovisioning (session-invalidate + SCIM-deactivate, Enterprise Grid). Ship dark — gates Slack deprovisioning independently of GWS; requires signoff PENDING→APPROVED before enabling per-org.',
+    default: false,
+    category: 'module',
+    jurisdiction: 'ANY',
+    owner: 'idp-platform',
+  },
 } as const satisfies Record<string, FlagDefinition>);
 
 export type FlagKey = keyof typeof FLAGS;
