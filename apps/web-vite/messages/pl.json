@@ -3164,6 +3164,47 @@
     "approvalCannotResolveContractor": "Nie można ustalić wykonawcy dla tego zatwierdzenia.",
     "approvalStillComplianceBlocked": "Wykonawca nadal ma wygasły, blokujący dokument zgodności; nie można wznowić zatwierdzenia."
   },
+  "Compliance": {
+    "paymentBlockModal": {
+      "title": "[pl] Compliance EXPIRED — payment blocked",
+      "subtitle": "[pl] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
+      "noReasonsTitle": "[pl] Payment blocked",
+      "noReasonsDescription": "[pl] The payment run cannot proceed. Contact the compliance team for details.",
+      "itemCountSuffix": "[pl] {count, plural, one {# document} other {# documents}}",
+      "expiredOn": "[pl] expired on {date} ({tz})",
+      "deepLinkAriaLabel": "[pl] Open {label} compliance details",
+      "close": "[pl] Close",
+      "wouldBlockBannerTitle": "[pl] Compliance check would block this payment when the feature is enabled",
+      "wouldBlockBannerDescription": "[pl] Feature flag compliance-payment-block is OFF. Engineering may force-enable it with FLAG_SIGNOFF_BYPASS=local."
+    },
+    "documentType": {
+      "compliance-policy-engine": {
+        "uk": {
+          "right_to_work": "[pl] UK Right-to-Work share code",
+          "utr": "[pl] HMRC UTR",
+          "business_registration": "[pl] Companies House registration",
+          "sds": "[pl] Status Determination Statement"
+        },
+        "de": {
+          "a1": "[pl] A1-Bescheinigung",
+          "aufenthaltstitel": "[pl] Aufenthaltstitel residence permit",
+          "eight_b_estg": "[pl] §48b EStG Freistellungsbescheinigung"
+        },
+        "pl": {
+          "zus_a1": "[pl] ZUS A1",
+          "udt": "[pl] UDT certification"
+        },
+        "ksa": {
+          "iqama": "[pl] Iqama residency permit",
+          "work_permit_qiwa": "[pl] Work permit + Qiwa authorisation"
+        },
+        "uae": {
+          "emirates_id": "[pl] Emirates ID",
+          "free_zone_license": "[pl] Free-zone trade license"
+        }
+      }
+    }
+  },
   "GoogleWorkspace": {
     "import": {
       "title": "Importuj użytkowników z Google Workspace",

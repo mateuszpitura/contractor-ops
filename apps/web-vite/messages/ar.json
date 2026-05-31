@@ -3164,6 +3164,47 @@
     "approvalCannotResolveContractor": "تعذّر تحديد المقاول لهذه الموافقة.",
     "approvalStillComplianceBlocked": "لا يزال لدى المقاول مستند امتثال منتهٍ يمنع الدفع؛ لا يمكن استئناف الموافقة."
   },
+  "Compliance": {
+    "paymentBlockModal": {
+      "title": "[ar] Compliance EXPIRED — payment blocked",
+      "subtitle": "[ar] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
+      "noReasonsTitle": "[ar] Payment blocked",
+      "noReasonsDescription": "[ar] The payment run cannot proceed. Contact the compliance team for details.",
+      "itemCountSuffix": "[ar] {count, plural, one {# document} other {# documents}}",
+      "expiredOn": "[ar] expired on {date} ({tz})",
+      "deepLinkAriaLabel": "[ar] Open {label} compliance details",
+      "close": "[ar] Close",
+      "wouldBlockBannerTitle": "[ar] Compliance check would block this payment when the feature is enabled",
+      "wouldBlockBannerDescription": "[ar] Feature flag compliance-payment-block is OFF. Engineering may force-enable it with FLAG_SIGNOFF_BYPASS=local."
+    },
+    "documentType": {
+      "compliance-policy-engine": {
+        "uk": {
+          "right_to_work": "[ar] UK Right-to-Work share code",
+          "utr": "[ar] HMRC UTR",
+          "business_registration": "[ar] Companies House registration",
+          "sds": "[ar] Status Determination Statement"
+        },
+        "de": {
+          "a1": "[ar] A1-Bescheinigung",
+          "aufenthaltstitel": "[ar] Aufenthaltstitel residence permit",
+          "eight_b_estg": "[ar] §48b EStG Freistellungsbescheinigung"
+        },
+        "pl": {
+          "zus_a1": "[ar] ZUS A1",
+          "udt": "[ar] UDT certification"
+        },
+        "ksa": {
+          "iqama": "[ar] Iqama residency permit",
+          "work_permit_qiwa": "[ar] Work permit + Qiwa authorisation"
+        },
+        "uae": {
+          "emirates_id": "[ar] Emirates ID",
+          "free_zone_license": "[ar] Free-zone trade license"
+        }
+      }
+    }
+  },
   "GoogleWorkspace": {
     "import": {
       "title": "استيراد Google Workspace Users",

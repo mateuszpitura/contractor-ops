@@ -4,6 +4,24 @@ import { useCallback, useMemo, useState } from 'react';
 import { useResourceMutation } from '../../../hooks/use-resource-mutation.js';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
+import type { ContractorReason } from '../payment-block-modal.js';
+
+interface PaymentBlockState {
+  open: boolean;
+  reasons: ContractorReason[];
+}
+
+/**
+ * Phase 72 D-10 — detects the structured PRECONDITION_FAILED compliance block.
+ * tRPC v11 surfaces the procedure error code at `error.data.code`; the
+ * `contractorReasons` payload rides on the serialised `cause`.
+ */
+function isPaymentBlock(
+  err: unknown,
+): err is { data?: { code?: string }; cause?: { contractorReasons: ContractorReason[] } } {
+  const e = err as { data?: { code?: string }; cause?: { contractorReasons?: unknown } };
+  return e?.data?.code === 'PRECONDITION_FAILED' && Array.isArray(e?.cause?.contractorReasons);
+}
 
 export function usePaymentRunStepReview(options: {
   selectedInvoiceIds: string[];
@@ -27,6 +45,11 @@ export function usePaymentRunStepReview(options: {
   const [notes, setNotes] = useState('');
   const [exportFormat, setExportFormat] = useState<string>('CSV');
   const [isLocking, setIsLocking] = useState(false);
+  const [paymentBlock, setPaymentBlock] = useState<PaymentBlockState>({ open: false, reasons: [] });
+
+  const dismissPaymentBlock = useCallback(() => {
+    setPaymentBlock({ open: false, reasons: [] });
+  }, []);
 
   const invoicesQuery = useQuery(trpc.payment.readyForPayment.queryOptions({ limit: 100 }));
 
@@ -77,6 +100,7 @@ export function usePaymentRunStepReview(options: {
   const handleLockAndExport = useCallback(async () => {
     if (isLocking) return;
     setIsLocking(true);
+    setPaymentBlock({ open: false, reasons: [] });
 
     try {
       const runs = await createMutation.mutateAsync({
@@ -106,7 +130,12 @@ export function usePaymentRunStepReview(options: {
         currency: currencies.join(', '),
         exportFormat,
       });
-    } catch {
+    } catch (err) {
+      // Phase 72 D-10 — a PRECONDITION_FAILED compliance block from payment.create
+      // or payment.lockAndExport opens the block modal instead of a generic toast.
+      if (isPaymentBlock(err)) {
+        setPaymentBlock({ open: true, reasons: err.cause?.contractorReasons ?? [] });
+      }
       setIsLocking(false);
     }
   }, [
@@ -136,5 +165,7 @@ export function usePaymentRunStepReview(options: {
     hasPLN,
     hasEUR,
     handleLockAndExport,
+    paymentBlock,
+    dismissPaymentBlock,
   } as const;
 }

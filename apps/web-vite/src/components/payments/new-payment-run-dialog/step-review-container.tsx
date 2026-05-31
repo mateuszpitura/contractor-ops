@@ -1,4 +1,5 @@
 import { usePaymentRunStepReview } from '../hooks/use-payment-run-step-review.js';
+import { PaymentBlockModal } from '../payment-block-modal.js';
 import { StepReview } from './step-review.js';
 
 interface StepReviewContainerProps {
@@ -26,5 +27,14 @@ export function StepReviewContainer(props: StepReviewContainerProps) {
     groupByCurrency: props.groupByCurrency,
     onComplete: props.onComplete,
   });
-  return <StepReview {...props} review={review} />;
+  return (
+    <>
+      <StepReview {...props} review={review} />
+      <PaymentBlockModal
+        open={review.paymentBlock.open}
+        onClose={review.dismissPaymentBlock}
+        contractorReasons={review.paymentBlock.reasons}
+      />
+    </>
+  );
 }

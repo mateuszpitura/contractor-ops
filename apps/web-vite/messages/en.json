@@ -3164,6 +3164,47 @@
     "approvalCannotResolveContractor": "Cannot resolve the contractor for this approval.",
     "approvalStillComplianceBlocked": "Contractor still has an expired blocking compliance document; cannot resume the approval."
   },
+  "Compliance": {
+    "paymentBlockModal": {
+      "title": "Compliance EXPIRED — payment blocked",
+      "subtitle": "{contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
+      "noReasonsTitle": "Payment blocked",
+      "noReasonsDescription": "The payment run cannot proceed. Contact the compliance team for details.",
+      "itemCountSuffix": "{count, plural, one {# document} other {# documents}}",
+      "expiredOn": "expired on {date} ({tz})",
+      "deepLinkAriaLabel": "Open {label} compliance details",
+      "close": "Close",
+      "wouldBlockBannerTitle": "Compliance check would block this payment when the feature is enabled",
+      "wouldBlockBannerDescription": "Feature flag compliance-payment-block is OFF. Engineering may force-enable it with FLAG_SIGNOFF_BYPASS=local."
+    },
+    "documentType": {
+      "compliance-policy-engine": {
+        "uk": {
+          "right_to_work": "UK Right-to-Work share code",
+          "utr": "HMRC UTR",
+          "business_registration": "Companies House registration",
+          "sds": "Status Determination Statement"
+        },
+        "de": {
+          "a1": "A1-Bescheinigung",
+          "aufenthaltstitel": "Aufenthaltstitel residence permit",
+          "eight_b_estg": "§48b EStG Freistellungsbescheinigung"
+        },
+        "pl": {
+          "zus_a1": "ZUS A1",
+          "udt": "UDT certification"
+        },
+        "ksa": {
+          "iqama": "Iqama residency permit",
+          "work_permit_qiwa": "Work permit + Qiwa authorisation"
+        },
+        "uae": {
+          "emirates_id": "Emirates ID",
+          "free_zone_license": "Free-zone trade license"
+        }
+      }
+    }
+  },
   "GoogleWorkspace": {
     "import": {
       "title": "Import Google Workspace Users",

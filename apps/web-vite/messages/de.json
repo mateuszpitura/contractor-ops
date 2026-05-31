@@ -3164,6 +3164,47 @@
     "approvalCannotResolveContractor": "Der Auftragnehmer für diese Genehmigung kann nicht ermittelt werden.",
     "approvalStillComplianceBlocked": "Der Auftragnehmer hat weiterhin ein abgelaufenes, blockierendes Compliance-Dokument; die Genehmigung kann nicht fortgesetzt werden."
   },
+  "Compliance": {
+    "paymentBlockModal": {
+      "title": "[de] Compliance EXPIRED — payment blocked",
+      "subtitle": "[de] {contractorCount, plural, one {# contractor} other {# contractors}}, {itemCount, plural, one {# expired document} other {# expired documents}} prevent this payment run.",
+      "noReasonsTitle": "[de] Payment blocked",
+      "noReasonsDescription": "[de] The payment run cannot proceed. Contact the compliance team for details.",
+      "itemCountSuffix": "[de] {count, plural, one {# document} other {# documents}}",
+      "expiredOn": "[de] expired on {date} ({tz})",
+      "deepLinkAriaLabel": "[de] Open {label} compliance details",
+      "close": "[de] Close",
+      "wouldBlockBannerTitle": "[de] Compliance check would block this payment when the feature is enabled",
+      "wouldBlockBannerDescription": "[de] Feature flag compliance-payment-block is OFF. Engineering may force-enable it with FLAG_SIGNOFF_BYPASS=local."
+    },
+    "documentType": {
+      "compliance-policy-engine": {
+        "uk": {
+          "right_to_work": "[de] UK Right-to-Work share code",
+          "utr": "[de] HMRC UTR",
+          "business_registration": "[de] Companies House registration",
+          "sds": "[de] Status Determination Statement"
+        },
+        "de": {
+          "a1": "[de] A1-Bescheinigung",
+          "aufenthaltstitel": "[de] Aufenthaltstitel residence permit",
+          "eight_b_estg": "[de] §48b EStG Freistellungsbescheinigung"
+        },
+        "pl": {
+          "zus_a1": "[de] ZUS A1",
+          "udt": "[de] UDT certification"
+        },
+        "ksa": {
+          "iqama": "[de] Iqama residency permit",
+          "work_permit_qiwa": "[de] Work permit + Qiwa authorisation"
+        },
+        "uae": {
+          "emirates_id": "[de] Emirates ID",
+          "free_zone_license": "[de] Free-zone trade license"
+        }
+      }
+    }
+  },
   "GoogleWorkspace": {
     "import": {
       "title": "Google-Workspace-Benutzer importieren",
