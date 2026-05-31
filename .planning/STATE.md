@@ -4,8 +4,8 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-27)
-last_updated: "2026-05-27T09:44:57.289Z"
-last_activity: 2026-04-27 -- Phase 75 planning complete
+last_updated: "2026-05-31T12:33:06.473Z"
+last_activity: 2026-05-31 -- Phase 75 execution started
 progress:
   total_phases: 11
   completed_phases: 3
@@ -17,6 +17,121 @@ progress:
 # Project State
 
 ## Blockers
+
+### BLOCKER (2026-05-31): Phase 77 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
+
+**Phase:** 77 — F2 IdP — GWS + Slack Adapters (the wedge)
+**Workflow:** `gsd:plan-phase 77 --auto`
+**Status:** Executing Phase 75
+
+**What happened:**
+
+`gsd:plan-phase 77 --auto` could not start. Step 1 (Initialize) runs `gsd-sdk query init.plan-phase 77` plus follow-up `gsd-sdk query` calls (agent-skills, config-get). Two failures:
+
+1. **`gsd-sdk` is not on PATH** — not a binary, npm global, shell alias, or function (checked PATH, `~/.config/zsh/`, `~/.zshrc`, npm `-g`).
+2. **The fallback `gsd-tools.cjs` crashes at module load** — identical signature to the Phase 75 / 78 blockers:
+
+```
+Error: Cannot find module '/Users/mateusz.pitura/.claude/sdk/shared/model-catalog.json'
+Require stack:
+
+- ~/.claude/get-shit-done/bin/lib/model-catalog.cjs
+- ~/.claude/get-shit-done/bin/lib/model-profiles.cjs
+- ~/.claude/get-shit-done/bin/lib/core.cjs
+- ~/.claude/get-shit-done/bin/gsd-tools.cjs
+
+```
+
+**Root cause (same as Phase 75 / 78):**
+
+- `bin/lib/model-catalog.cjs` line 4 does `require(path.join(__dirname,'..','..','..','sdk','shared','model-catalog.json'))` → `~/.claude/sdk/shared/model-catalog.json`.
+- The entire `~/.claude/sdk/` directory is absent; `find ~/.claude -iname 'model-catalog*'` returns only the `.cjs`. `gsd-file-manifest.json` lists the `.cjs` but no `sdk/` entry — the installed GSD package (VERSION 1.41.1, files dated 10 May) shipped a `.cjs` requiring a data file the installer never placed.
+- `core.cjs` transitively requires this chain, so it fails for *every* query verb (confirmed: `init.plan-phase` crashes identically).
+
+**Why this is a hard blocker (not worked around):**
+
+The entire plan-phase pipeline routes through `gsd-sdk query`: init context + model selection, research/nyquist/pattern-mapper/UI-gate/schema-push config reads, validation-strategy creation, decision/requirements coverage gates, `state.planned-phase`, `roadmap.annotate-dependencies`, and `commit`. Hand-rolling these bypasses the workflow's state-integrity guarantees and risks corrupting STATE.md / ROADMAP.md / REQUIREMENTS.md tracking. Per execution policy, environment/access failures are surfaced as blockers rather than silently worked around.
+
+**To unblock — pick one of:**
+
+1. **Restore the missing SDK asset (recommended):** Repair the GSD install so `~/.claude/sdk/shared/model-catalog.json` exists (re-run the GSD installer/updater, or `/gsd-update`), and confirm `gsd-sdk` lands on PATH.
+2. **Place the file manually** at `~/.claude/sdk/shared/model-catalog.json` (must contain keys: `profiles`, `phaseTypes`, `adaptiveTierMap`, `agents`).
+3. After either fix, confirm with `node ~/.claude/get-shit-done/bin/gsd-tools.cjs query find-phase 77` returning JSON, then re-run `gsd:plan-phase 77 --auto`.
+
+**No `.planning/` files were modified** beyond this blocker note. Phase 77 CONTEXT.md and DISCUSSION-LOG.md remain intact and ready for planning once the tooling is repaired.
+
+---
+
+### BLOCKER (2026-05-31): Phase 78 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
+
+**Phase:** 78 — F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)
+**Workflow:** `gsd:plan-phase 78 --auto`
+**Status:** Discuss-phase complete (`78-CONTEXT.md` + `78-DISCUSSION-LOG.md` present). No RESEARCH.md / VALIDATION.md / PLAN.md yet — ready to plan, but BLOCKED on environment.
+
+**What happened:** Identical root cause to the Phase 75 blocker below. `gsd:plan-phase` step 1 (`gsd-sdk query init.plan-phase 78`) crashes at module load:
+
+```
+Error: Cannot find module '/Users/mateusz.pitura/.claude/sdk/shared/model-catalog.json'
+Require stack:
+
+- ~/.claude/get-shit-done/bin/lib/model-catalog.cjs
+- ~/.claude/get-shit-done/bin/lib/model-profiles.cjs
+- ~/.claude/get-shit-done/bin/lib/core.cjs
+- ~/.claude/get-shit-done/bin/gsd-tools.cjs
+
+```
+
+`~/.claude/sdk/` is still entirely absent; `find ~/.claude -name 'model-catalog*.json'` still returns nothing. GSD VERSION still 1.41.1. Confirmed `query init.plan-phase` and `query config-get` both crash identically.
+
+**Why this is a hard blocker (not worked around):** plan-phase depends on `gsd-sdk` for init context + agent model assignment, phase validation (`roadmap.get-phase`), MVP/security/UI/schema gates, Nyquist VALIDATION.md creation, planner/checker subagent model selection, requirement & decision coverage gates (`check.decision-coverage-plan`), `state.planned-phase`, `roadmap.annotate-dependencies`, and `commit`. Hand-rolling these bypasses the workflow's correctness and STATE.md/ROADMAP.md integrity guarantees. Per policy, environment failures are surfaced, not worked around.
+
+**To unblock:** same fix as the Phase 75 blocker below — restore `~/.claude/sdk/shared/model-catalog.json` (re-run the GSD installer/`/gsd-update`, or place the file from the GSD package; required keys: `profiles`, `phaseTypes`, `adaptiveTierMap`, `agents`). Verify with `node ~/.claude/get-shit-done/bin/gsd-tools.cjs query roadmap.get-phase 78` returning JSON, then re-run `gsd:plan-phase 78 --auto`.
+
+**No phase 78 planning artifacts were created or modified** (no RESEARCH.md, VALIDATION.md, PLAN.md). `78-CONTEXT.md` and `78-DISCUSSION-LOG.md` remain intact. No subagents were spawned. Only this blocker note was added to STATE.md.
+
+---
+
+### BLOCKER (2026-05-31): Phase 75 execution aborted — GSD tooling broken (missing model-catalog.json)
+
+**Phase:** 75 — F4 Offboarding — Contract Health Check + IP Verification + Credential Vault
+**Workflow:** `gsd:execute-phase 75`
+**Status:** Ready to execute (8 plans present, none executed — no SUMMARY.md files), but BLOCKED on environment.
+
+**What happened:**
+
+`gsd:execute-phase 75` could not start. The workflow's first action is to load init context via the GSD SDK CLI (`gsd-sdk query init.execute-phase 75`). That CLI is the `gsd-tools.cjs` script at `~/.claude/get-shit-done/bin/gsd-tools.cjs` (GSD VERSION 1.41.1). **Every** `gsd-tools.cjs query ...` invocation crashes at module-load time:
+
+```
+Error: Cannot find module '/Users/mateusz.pitura/.claude/sdk/shared/model-catalog.json'
+Require stack:
+
+- ~/.claude/get-shit-done/bin/lib/model-catalog.cjs
+- ~/.claude/get-shit-done/bin/lib/model-profiles.cjs
+- ~/.claude/get-shit-done/bin/lib/core.cjs
+- ~/.claude/get-shit-done/bin/gsd-tools.cjs
+
+```
+
+**Root cause:**
+
+- `bin/lib/model-catalog.cjs` line 4 does `require(path.join(__dirname,'..','..','..','sdk','shared','model-catalog.json'))`, resolving to `~/.claude/sdk/shared/model-catalog.json`.
+- That file does not exist. The entire `~/.claude/sdk/` directory is absent (`ls ~/.claude/sdk` → No such file or directory).
+- `find ~/.claude -name 'model-catalog*.json'` returns nothing — there is no copy anywhere to symlink or point at.
+- `core.cjs` transitively requires this chain, so it fails for *all* query verbs, not just model-resolution ones (confirmed: `init.execute-phase`, `find-phase`, `config-get` all crash identically).
+
+**Why this is a hard blocker (not worked around):**
+
+The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/parallelization/branching config, `phase-plan-index` (wave grouping + files_modified overlap), `state.begin-phase`, per-plan worktree gate, `roadmap.update-plan-progress`, `commit`, `verify.key-links` / `verify.schema-drift`, `phase.complete`, and learnings/todo closing. Hand-rolling all of this would bypass the workflow's correctness and state-integrity guarantees and risks corrupting STATE.md / ROADMAP.md / REQUIREMENTS.md tracking. Per execution policy, environment/access failures are surfaced as blockers rather than worked around.
+
+**To unblock — pick one of:**
+
+1. **Restore the missing SDK asset (recommended):** Reinstall / repair the GSD install so `~/.claude/sdk/shared/model-catalog.json` exists (e.g. re-run the GSD updater/installer, or `/gsd-update`). The package that ships `bin/lib/model-catalog.cjs` should also ship the `sdk/shared/model-catalog.json` it requires — verify the install copied the `sdk/` tree.
+2. **Locate the file from the GSD source/package** and place it at `~/.claude/sdk/shared/model-catalog.json` (must contain keys: `profiles`, `phaseTypes`, `adaptiveTierMap`, `agents`).
+3. After either fix, confirm with `node ~/.claude/get-shit-done/bin/gsd-tools.cjs query find-phase 75` returning JSON, then re-run `gsd:execute-phase 75`.
+
+**No `.planning/` plan files were modified** beyond this blocker note. No phase 75 commits exist; `state.begin-phase` was never called (CLI is down). Phase 75 plans, CONTEXT.md, RESEARCH.md, VALIDATION.md remain intact and ready.
+
+---
 
 ### BLOCKER (2026-04-27): Phase 72 execution aborted — dirty working tree
 
@@ -66,14 +181,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 74 — F4 Offboarding — Workflow Foundation + KT Templates + Override Permission
+**Current focus:** Phase 75 — f4-offboarding-contract-health-check-ip-verification-credent
 
 ## Current Position
 
-Phase: 76
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-27 -- Phase 75 planning complete
+Phase: 75 (f4-offboarding-contract-health-check-ip-verification-credent) — EXECUTING
+Plan: 1 of 8
+Status: Executing Phase 75
+Last activity: 2026-05-31 -- Phase 75 execution started
 
 Progress: [███████░░░] 71%
 
