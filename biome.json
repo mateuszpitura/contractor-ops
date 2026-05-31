@@ -158,10 +158,12 @@
         "packages/*/src/index.ts",
         "packages/*/src/*/index.ts",
         "packages/*/src/*/*/index.ts",
+        "packages/*/src/*/*/*/index.ts",
         "packages/test-utils/src/msw/*/index.ts",
         "apps/landing/src/i18n/index.ts",
         "packages/api/src/routers/workflow/workflow.ts",
         "packages/api/src/routers/**/index.ts",
+        "packages/ui/src/components/workbench/data-table/row-click.ts",
         "packages/validators/src/zatca.ts"
       ],
       "linter": {
@@ -188,13 +190,43 @@
           },
           "suspicious": {
             "noConsole": "off",
-            "noExplicitAny": "off"
+            "noExplicitAny": "off",
+            "noEmptyBlockStatements": "off"
           },
           "style": {
             "noNonNullAssertion": "off"
           },
           "complexity": {
             "noExcessiveCognitiveComplexity": "off"
+          },
+          "nursery": {
+            "noJsxPropsBind": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ui/src/components/workbench/empty-state-illustrations.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/cms/migrations/**", "apps/cms/src/payload-types.ts"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedFunctionParameters": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "complexity": {
+            "noBannedTypes": "off"
           }
         }
       }
@@ -217,6 +249,52 @@
           }
         }
       }
+    },
+    {
+      "includes": [
+        "packages/ui/src/components/ace/**",
+        "packages/ui/src/components/atelier/**",
+        "packages/ui/src/components/cult/**",
+        "packages/ui/src/components/magic/**",
+        "packages/ui/src/components/origin/**",
+        "packages/ui/src/components/reui/**",
+        "packages/ui/src/components/shadcn/**",
+        "packages/ui/src/components/shadcnio/**",
+        "packages/ui/src/components/tailark/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off",
+            "noArrayIndexKey": "off"
+          },
+          "performance": {
+            "noImgElement": "off"
+          },
+          "correctness": {
+            "noUnusedFunctionParameters": "off",
+            "useUniqueElementIds": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off",
+            "useConsistentArrayType": "off"
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off"
+          },
+          "a11y": {
+            "noSvgWithoutTitle": "off",
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useAriaPropsSupportedByRole": "off",
+            "useSemanticElements": "off"
+          },
+          "nursery": {
+            "noLeakedRender": "off",
+            "noInlineStyles": "off"
+          }
+        }
+      }
     }
   ],
   "files": {
@@ -233,7 +311,9 @@
       "!**/out",
       "!**/coverage",
       "!**/playwright-report",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!apps/cms/migrations/**",
+      "!apps/cms/src/payload-types.ts"
     ]
   }
 }
