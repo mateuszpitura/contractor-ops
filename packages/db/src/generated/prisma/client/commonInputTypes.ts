@@ -1129,6 +1129,40 @@ export type EnumWaivedReasonNullableWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
 }
 
+export type EnumReminderBandFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderBandFilter<$PrismaModel> | $Enums.ReminderBand
+}
+
+export type EnumReminderBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel> | $Enums.ReminderBand | null
+}
+
+export type EnumReminderBandWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderBandWithAggregatesFilter<$PrismaModel> | $Enums.ReminderBand
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderBandFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderBandFilter<$PrismaModel>
+}
+
+export type EnumReminderBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReminderBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.ReminderBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel>
+}
+
 export type EnumEInvoiceValidationStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.EInvoiceValidationStatus | Prisma.EnumEInvoiceValidationStatusFieldRefInput<$PrismaModel>
   in?: $Enums.EInvoiceValidationStatus[] | Prisma.ListEnumEInvoiceValidationStatusFieldRefInput<$PrismaModel>
@@ -2106,6 +2140,23 @@ export type EnumExportStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumExportStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumExportStatusFilter<$PrismaModel>
+}
+
+export type EnumEligibilityVerdictFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityVerdict | Prisma.EnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel> | $Enums.EligibilityVerdict
+}
+
+export type EnumEligibilityVerdictWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityVerdict | Prisma.EnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityVerdictWithAggregatesFilter<$PrismaModel> | $Enums.EligibilityVerdict
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
 }
 
 export type EnumPeppolParticipantStatusFilter<$PrismaModel = never> = {
@@ -3488,6 +3539,40 @@ export type NestedEnumWaivedReasonNullableWithAggregatesFilter<$PrismaModel = ne
   _max?: Prisma.NestedEnumWaivedReasonNullableFilter<$PrismaModel>
 }
 
+export type NestedEnumReminderBandFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderBandFilter<$PrismaModel> | $Enums.ReminderBand
+}
+
+export type NestedEnumReminderBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel> | $Enums.ReminderBand | null
+}
+
+export type NestedEnumReminderBandWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel>
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReminderBandWithAggregatesFilter<$PrismaModel> | $Enums.ReminderBand
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderBandFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderBandFilter<$PrismaModel>
+}
+
+export type NestedEnumReminderBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReminderBand | Prisma.EnumReminderBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ReminderBand[] | Prisma.ListEnumReminderBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumReminderBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.ReminderBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReminderBandNullableFilter<$PrismaModel>
+}
+
 export type NestedEnumEInvoiceValidationStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.EInvoiceValidationStatus | Prisma.EnumEInvoiceValidationStatusFieldRefInput<$PrismaModel>
   in?: $Enums.EInvoiceValidationStatus[] | Prisma.ListEnumEInvoiceValidationStatusFieldRefInput<$PrismaModel>
@@ -4465,6 +4550,23 @@ export type NestedEnumExportStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumExportStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumExportStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumEligibilityVerdictFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityVerdict | Prisma.EnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel> | $Enums.EligibilityVerdict
+}
+
+export type NestedEnumEligibilityVerdictWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EligibilityVerdict | Prisma.EnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  in?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EligibilityVerdict[] | Prisma.ListEnumEligibilityVerdictFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEligibilityVerdictWithAggregatesFilter<$PrismaModel> | $Enums.EligibilityVerdict
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEligibilityVerdictFilter<$PrismaModel>
 }
 
 export type NestedEnumPeppolParticipantStatusFilter<$PrismaModel = never> = {

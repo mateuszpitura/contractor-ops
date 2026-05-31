@@ -218,6 +218,7 @@ export type PaymentExportWhereInput = {
   paymentRun?: Prisma.XOR<Prisma.PaymentRunScalarRelationFilter, Prisma.PaymentRunWhereInput>
   document?: Prisma.XOR<Prisma.DocumentNullableScalarRelationFilter, Prisma.DocumentWhereInput> | null
   generatedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  complianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
 }
 
 export type PaymentExportOrderByWithRelationInput = {
@@ -234,6 +235,7 @@ export type PaymentExportOrderByWithRelationInput = {
   paymentRun?: Prisma.PaymentRunOrderByWithRelationInput
   document?: Prisma.DocumentOrderByWithRelationInput
   generatedBy?: Prisma.UserOrderByWithRelationInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckOrderByRelationAggregateInput
 }
 
 export type PaymentExportWhereUniqueInput = Prisma.AtLeast<{
@@ -253,6 +255,7 @@ export type PaymentExportWhereUniqueInput = Prisma.AtLeast<{
   paymentRun?: Prisma.XOR<Prisma.PaymentRunScalarRelationFilter, Prisma.PaymentRunWhereInput>
   document?: Prisma.XOR<Prisma.DocumentNullableScalarRelationFilter, Prisma.DocumentWhereInput> | null
   generatedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  complianceChecks?: Prisma.PaymentRunComplianceCheckListRelationFilter
 }, "id">
 
 export type PaymentExportOrderByWithAggregationInput = {
@@ -295,6 +298,7 @@ export type PaymentExportCreateInput = {
   paymentRun: Prisma.PaymentRunCreateNestedOneWithoutExportsInput
   document?: Prisma.DocumentCreateNestedOneWithoutPaymentExportsInput
   generatedBy: Prisma.UserCreateNestedOneWithoutPaymentExportsInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUncheckedCreateInput = {
@@ -307,6 +311,7 @@ export type PaymentExportUncheckedCreateInput = {
   generatedByUserId: string
   generatedAt?: Date | string
   downloadedAt?: Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUpdateInput = {
@@ -319,6 +324,7 @@ export type PaymentExportUpdateInput = {
   paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutExportsNestedInput
   document?: Prisma.DocumentUpdateOneWithoutPaymentExportsNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutPaymentExportsNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateInput = {
@@ -331,6 +337,7 @@ export type PaymentExportUncheckedUpdateInput = {
   generatedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportCreateManyInput = {
@@ -409,6 +416,11 @@ export type PaymentExportMinOrderByAggregateInput = {
   generatedByUserId?: Prisma.SortOrder
   generatedAt?: Prisma.SortOrder
   downloadedAt?: Prisma.SortOrder
+}
+
+export type PaymentExportNullableScalarRelationFilter = {
+  is?: Prisma.PaymentExportWhereInput | null
+  isNot?: Prisma.PaymentExportWhereInput | null
 }
 
 export type PaymentExportCreateNestedManyWithoutGeneratedByInput = {
@@ -587,6 +599,22 @@ export type EnumExportStatusFieldUpdateOperationsInput = {
   set?: $Enums.ExportStatus
 }
 
+export type PaymentExportCreateNestedOneWithoutComplianceChecksInput = {
+  create?: Prisma.XOR<Prisma.PaymentExportCreateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedCreateWithoutComplianceChecksInput>
+  connectOrCreate?: Prisma.PaymentExportCreateOrConnectWithoutComplianceChecksInput
+  connect?: Prisma.PaymentExportWhereUniqueInput
+}
+
+export type PaymentExportUpdateOneWithoutComplianceChecksNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentExportCreateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedCreateWithoutComplianceChecksInput>
+  connectOrCreate?: Prisma.PaymentExportCreateOrConnectWithoutComplianceChecksInput
+  upsert?: Prisma.PaymentExportUpsertWithoutComplianceChecksInput
+  disconnect?: Prisma.PaymentExportWhereInput | boolean
+  delete?: Prisma.PaymentExportWhereInput | boolean
+  connect?: Prisma.PaymentExportWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentExportUpdateToOneWithWhereWithoutComplianceChecksInput, Prisma.PaymentExportUpdateWithoutComplianceChecksInput>, Prisma.PaymentExportUncheckedUpdateWithoutComplianceChecksInput>
+}
+
 export type PaymentExportCreateWithoutGeneratedByInput = {
   id?: string
   format: $Enums.PaymentExportFormat
@@ -596,6 +624,7 @@ export type PaymentExportCreateWithoutGeneratedByInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentExportsInput
   paymentRun: Prisma.PaymentRunCreateNestedOneWithoutExportsInput
   document?: Prisma.DocumentCreateNestedOneWithoutPaymentExportsInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUncheckedCreateWithoutGeneratedByInput = {
@@ -607,6 +636,7 @@ export type PaymentExportUncheckedCreateWithoutGeneratedByInput = {
   status?: $Enums.ExportStatus
   generatedAt?: Date | string
   downloadedAt?: Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportCreateOrConnectWithoutGeneratedByInput = {
@@ -659,6 +689,7 @@ export type PaymentExportCreateWithoutDocumentInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentExportsInput
   paymentRun: Prisma.PaymentRunCreateNestedOneWithoutExportsInput
   generatedBy: Prisma.UserCreateNestedOneWithoutPaymentExportsInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUncheckedCreateWithoutDocumentInput = {
@@ -670,6 +701,7 @@ export type PaymentExportUncheckedCreateWithoutDocumentInput = {
   generatedByUserId: string
   generatedAt?: Date | string
   downloadedAt?: Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportCreateOrConnectWithoutDocumentInput = {
@@ -707,6 +739,7 @@ export type PaymentExportCreateWithoutOrganizationInput = {
   paymentRun: Prisma.PaymentRunCreateNestedOneWithoutExportsInput
   document?: Prisma.DocumentCreateNestedOneWithoutPaymentExportsInput
   generatedBy: Prisma.UserCreateNestedOneWithoutPaymentExportsInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUncheckedCreateWithoutOrganizationInput = {
@@ -718,6 +751,7 @@ export type PaymentExportUncheckedCreateWithoutOrganizationInput = {
   generatedByUserId: string
   generatedAt?: Date | string
   downloadedAt?: Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportCreateOrConnectWithoutOrganizationInput = {
@@ -755,6 +789,7 @@ export type PaymentExportCreateWithoutPaymentRunInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutPaymentExportsInput
   document?: Prisma.DocumentCreateNestedOneWithoutPaymentExportsInput
   generatedBy: Prisma.UserCreateNestedOneWithoutPaymentExportsInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportUncheckedCreateWithoutPaymentRunInput = {
@@ -766,6 +801,7 @@ export type PaymentExportUncheckedCreateWithoutPaymentRunInput = {
   generatedByUserId: string
   generatedAt?: Date | string
   downloadedAt?: Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedCreateNestedManyWithoutPaymentExportInput
 }
 
 export type PaymentExportCreateOrConnectWithoutPaymentRunInput = {
@@ -794,6 +830,70 @@ export type PaymentExportUpdateManyWithWhereWithoutPaymentRunInput = {
   data: Prisma.XOR<Prisma.PaymentExportUpdateManyMutationInput, Prisma.PaymentExportUncheckedUpdateManyWithoutPaymentRunInput>
 }
 
+export type PaymentExportCreateWithoutComplianceChecksInput = {
+  id?: string
+  format: $Enums.PaymentExportFormat
+  status?: $Enums.ExportStatus
+  generatedAt?: Date | string
+  downloadedAt?: Date | string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutPaymentExportsInput
+  paymentRun: Prisma.PaymentRunCreateNestedOneWithoutExportsInput
+  document?: Prisma.DocumentCreateNestedOneWithoutPaymentExportsInput
+  generatedBy: Prisma.UserCreateNestedOneWithoutPaymentExportsInput
+}
+
+export type PaymentExportUncheckedCreateWithoutComplianceChecksInput = {
+  id?: string
+  organizationId: string
+  paymentRunId: string
+  documentId?: string | null
+  format: $Enums.PaymentExportFormat
+  status?: $Enums.ExportStatus
+  generatedByUserId: string
+  generatedAt?: Date | string
+  downloadedAt?: Date | string | null
+}
+
+export type PaymentExportCreateOrConnectWithoutComplianceChecksInput = {
+  where: Prisma.PaymentExportWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentExportCreateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedCreateWithoutComplianceChecksInput>
+}
+
+export type PaymentExportUpsertWithoutComplianceChecksInput = {
+  update: Prisma.XOR<Prisma.PaymentExportUpdateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedUpdateWithoutComplianceChecksInput>
+  create: Prisma.XOR<Prisma.PaymentExportCreateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedCreateWithoutComplianceChecksInput>
+  where?: Prisma.PaymentExportWhereInput
+}
+
+export type PaymentExportUpdateToOneWithWhereWithoutComplianceChecksInput = {
+  where?: Prisma.PaymentExportWhereInput
+  data: Prisma.XOR<Prisma.PaymentExportUpdateWithoutComplianceChecksInput, Prisma.PaymentExportUncheckedUpdateWithoutComplianceChecksInput>
+}
+
+export type PaymentExportUpdateWithoutComplianceChecksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  format?: Prisma.EnumPaymentExportFormatFieldUpdateOperationsInput | $Enums.PaymentExportFormat
+  status?: Prisma.EnumExportStatusFieldUpdateOperationsInput | $Enums.ExportStatus
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentExportsNestedInput
+  paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutExportsNestedInput
+  document?: Prisma.DocumentUpdateOneWithoutPaymentExportsNestedInput
+  generatedBy?: Prisma.UserUpdateOneRequiredWithoutPaymentExportsNestedInput
+}
+
+export type PaymentExportUncheckedUpdateWithoutComplianceChecksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentRunId?: Prisma.StringFieldUpdateOperationsInput | string
+  documentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  format?: Prisma.EnumPaymentExportFormatFieldUpdateOperationsInput | $Enums.PaymentExportFormat
+  status?: Prisma.EnumExportStatusFieldUpdateOperationsInput | $Enums.ExportStatus
+  generatedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
 export type PaymentExportCreateManyGeneratedByInput = {
   id?: string
   organizationId: string
@@ -814,6 +914,7 @@ export type PaymentExportUpdateWithoutGeneratedByInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentExportsNestedInput
   paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutExportsNestedInput
   document?: Prisma.DocumentUpdateOneWithoutPaymentExportsNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateWithoutGeneratedByInput = {
@@ -825,6 +926,7 @@ export type PaymentExportUncheckedUpdateWithoutGeneratedByInput = {
   status?: Prisma.EnumExportStatusFieldUpdateOperationsInput | $Enums.ExportStatus
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateManyWithoutGeneratedByInput = {
@@ -858,6 +960,7 @@ export type PaymentExportUpdateWithoutDocumentInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentExportsNestedInput
   paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutExportsNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutPaymentExportsNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateWithoutDocumentInput = {
@@ -869,6 +972,7 @@ export type PaymentExportUncheckedUpdateWithoutDocumentInput = {
   generatedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateManyWithoutDocumentInput = {
@@ -902,6 +1006,7 @@ export type PaymentExportUpdateWithoutOrganizationInput = {
   paymentRun?: Prisma.PaymentRunUpdateOneRequiredWithoutExportsNestedInput
   document?: Prisma.DocumentUpdateOneWithoutPaymentExportsNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutPaymentExportsNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateWithoutOrganizationInput = {
@@ -913,6 +1018,7 @@ export type PaymentExportUncheckedUpdateWithoutOrganizationInput = {
   generatedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateManyWithoutOrganizationInput = {
@@ -946,6 +1052,7 @@ export type PaymentExportUpdateWithoutPaymentRunInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutPaymentExportsNestedInput
   document?: Prisma.DocumentUpdateOneWithoutPaymentExportsNestedInput
   generatedBy?: Prisma.UserUpdateOneRequiredWithoutPaymentExportsNestedInput
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateWithoutPaymentRunInput = {
@@ -957,6 +1064,7 @@ export type PaymentExportUncheckedUpdateWithoutPaymentRunInput = {
   generatedByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   generatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  complianceChecks?: Prisma.PaymentRunComplianceCheckUncheckedUpdateManyWithoutPaymentExportNestedInput
 }
 
 export type PaymentExportUncheckedUpdateManyWithoutPaymentRunInput = {
@@ -970,6 +1078,35 @@ export type PaymentExportUncheckedUpdateManyWithoutPaymentRunInput = {
   downloadedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
+
+/**
+ * Count Type PaymentExportCountOutputType
+ */
+
+export type PaymentExportCountOutputType = {
+  complianceChecks: number
+}
+
+export type PaymentExportCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  complianceChecks?: boolean | PaymentExportCountOutputTypeCountComplianceChecksArgs
+}
+
+/**
+ * PaymentExportCountOutputType without action
+ */
+export type PaymentExportCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentExportCountOutputType
+   */
+  select?: Prisma.PaymentExportCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * PaymentExportCountOutputType without action
+ */
+export type PaymentExportCountOutputTypeCountComplianceChecksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentRunComplianceCheckWhereInput
+}
 
 
 export type PaymentExportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -986,6 +1123,8 @@ export type PaymentExportSelect<ExtArgs extends runtime.Types.Extensions.Interna
   paymentRun?: boolean | Prisma.PaymentRunDefaultArgs<ExtArgs>
   document?: boolean | Prisma.PaymentExport$documentArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  complianceChecks?: boolean | Prisma.PaymentExport$complianceChecksArgs<ExtArgs>
+  _count?: boolean | Prisma.PaymentExportCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["paymentExport"]>
 
 export type PaymentExportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1038,6 +1177,8 @@ export type PaymentExportInclude<ExtArgs extends runtime.Types.Extensions.Intern
   paymentRun?: boolean | Prisma.PaymentRunDefaultArgs<ExtArgs>
   document?: boolean | Prisma.PaymentExport$documentArgs<ExtArgs>
   generatedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  complianceChecks?: boolean | Prisma.PaymentExport$complianceChecksArgs<ExtArgs>
+  _count?: boolean | Prisma.PaymentExportCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PaymentExportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1059,6 +1200,7 @@ export type $PaymentExportPayload<ExtArgs extends runtime.Types.Extensions.Inter
     paymentRun: Prisma.$PaymentRunPayload<ExtArgs>
     document: Prisma.$DocumentPayload<ExtArgs> | null
     generatedBy: Prisma.$UserPayload<ExtArgs>
+    complianceChecks: Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1468,6 +1610,7 @@ export interface Prisma__PaymentExportClient<T, Null = never, ExtArgs extends ru
   paymentRun<T extends Prisma.PaymentRunDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentRunDefaultArgs<ExtArgs>>): Prisma.Prisma__PaymentRunClient<runtime.Types.Result.GetResult<Prisma.$PaymentRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   document<T extends Prisma.PaymentExport$documentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentExport$documentArgs<ExtArgs>>): Prisma.Prisma__DocumentClient<runtime.Types.Result.GetResult<Prisma.$DocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   generatedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  complianceChecks<T extends Prisma.PaymentExport$complianceChecksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentExport$complianceChecksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1923,6 +2066,30 @@ export type PaymentExport$documentArgs<ExtArgs extends runtime.Types.Extensions.
    */
   include?: Prisma.DocumentInclude<ExtArgs> | null
   where?: Prisma.DocumentWhereInput
+}
+
+/**
+ * PaymentExport.complianceChecks
+ */
+export type PaymentExport$complianceChecksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentRunComplianceCheck
+   */
+  select?: Prisma.PaymentRunComplianceCheckSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentRunComplianceCheck
+   */
+  omit?: Prisma.PaymentRunComplianceCheckOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentRunComplianceCheckInclude<ExtArgs> | null
+  where?: Prisma.PaymentRunComplianceCheckWhereInput
+  orderBy?: Prisma.PaymentRunComplianceCheckOrderByWithRelationInput | Prisma.PaymentRunComplianceCheckOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentRunComplianceCheckWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentRunComplianceCheckScalarFieldEnum | Prisma.PaymentRunComplianceCheckScalarFieldEnum[]
 }
 
 /**

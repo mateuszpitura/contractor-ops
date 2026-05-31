@@ -74,6 +74,7 @@ export type ApprovalFlowCountAggregateOutputType = {
   chainConfigId: number
   status: number
   currentStepOrder: number
+  complianceHoldsJson: number
   startedAt: number
   completedAt: number
   cancelledAt: number
@@ -132,6 +133,7 @@ export type ApprovalFlowCountAggregateInputType = {
   chainConfigId?: true
   status?: true
   currentStepOrder?: true
+  complianceHoldsJson?: true
   startedAt?: true
   completedAt?: true
   cancelledAt?: true
@@ -235,6 +237,7 @@ export type ApprovalFlowGroupByOutputType = {
   chainConfigId: string | null
   status: $Enums.ApprovalStatus
   currentStepOrder: number | null
+  complianceHoldsJson: runtime.JsonValue | null
   startedAt: Date
   completedAt: Date | null
   cancelledAt: Date | null
@@ -274,6 +277,7 @@ export type ApprovalFlowWhereInput = {
   chainConfigId?: Prisma.StringNullableFilter<"ApprovalFlow"> | string | null
   status?: Prisma.EnumApprovalStatusFilter<"ApprovalFlow"> | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.IntNullableFilter<"ApprovalFlow"> | number | null
+  complianceHoldsJson?: Prisma.JsonNullableFilter<"ApprovalFlow">
   startedAt?: Prisma.DateTimeFilter<"ApprovalFlow"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
@@ -293,6 +297,7 @@ export type ApprovalFlowOrderByWithRelationInput = {
   chainConfigId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   currentStepOrder?: Prisma.SortOrderInput | Prisma.SortOrder
+  complianceHoldsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -315,6 +320,7 @@ export type ApprovalFlowWhereUniqueInput = Prisma.AtLeast<{
   chainConfigId?: Prisma.StringNullableFilter<"ApprovalFlow"> | string | null
   status?: Prisma.EnumApprovalStatusFilter<"ApprovalFlow"> | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.IntNullableFilter<"ApprovalFlow"> | number | null
+  complianceHoldsJson?: Prisma.JsonNullableFilter<"ApprovalFlow">
   startedAt?: Prisma.DateTimeFilter<"ApprovalFlow"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
@@ -334,6 +340,7 @@ export type ApprovalFlowOrderByWithAggregationInput = {
   chainConfigId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   currentStepOrder?: Prisma.SortOrderInput | Prisma.SortOrder
+  complianceHoldsJson?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -358,6 +365,7 @@ export type ApprovalFlowScalarWhereWithAggregatesInput = {
   chainConfigId?: Prisma.StringNullableWithAggregatesFilter<"ApprovalFlow"> | string | null
   status?: Prisma.EnumApprovalStatusWithAggregatesFilter<"ApprovalFlow"> | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.IntNullableWithAggregatesFilter<"ApprovalFlow"> | number | null
+  complianceHoldsJson?: Prisma.JsonNullableWithAggregatesFilter<"ApprovalFlow">
   startedAt?: Prisma.DateTimeWithAggregatesFilter<"ApprovalFlow"> | Date | string
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ApprovalFlow"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ApprovalFlow"> | Date | string | null
@@ -373,6 +381,7 @@ export type ApprovalFlowCreateInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -391,6 +400,7 @@ export type ApprovalFlowUncheckedCreateInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -407,6 +417,7 @@ export type ApprovalFlowUpdateInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -425,6 +436,7 @@ export type ApprovalFlowUncheckedUpdateInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -442,6 +454,7 @@ export type ApprovalFlowCreateManyInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -457,6 +470,7 @@ export type ApprovalFlowUpdateManyMutationInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -472,6 +486,7 @@ export type ApprovalFlowUncheckedUpdateManyInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -488,6 +503,7 @@ export type ApprovalFlowCountOrderByAggregateInput = {
   chainConfigId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   currentStepOrder?: Prisma.SortOrder
+  complianceHoldsJson?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
@@ -676,6 +692,7 @@ export type ApprovalFlowCreateWithoutStepsInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -693,6 +710,7 @@ export type ApprovalFlowUncheckedCreateWithoutStepsInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -724,6 +742,7 @@ export type ApprovalFlowUpdateWithoutStepsInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -741,6 +760,7 @@ export type ApprovalFlowUncheckedUpdateWithoutStepsInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -756,6 +776,7 @@ export type ApprovalFlowCreateWithoutCreatedByInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -773,6 +794,7 @@ export type ApprovalFlowUncheckedCreateWithoutCreatedByInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -818,6 +840,7 @@ export type ApprovalFlowScalarWhereInput = {
   chainConfigId?: Prisma.StringNullableFilter<"ApprovalFlow"> | string | null
   status?: Prisma.EnumApprovalStatusFilter<"ApprovalFlow"> | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.IntNullableFilter<"ApprovalFlow"> | number | null
+  complianceHoldsJson?: Prisma.JsonNullableFilter<"ApprovalFlow">
   startedAt?: Prisma.DateTimeFilter<"ApprovalFlow"> | Date | string
   completedAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"ApprovalFlow"> | Date | string | null
@@ -833,6 +856,7 @@ export type ApprovalFlowCreateWithoutOrganizationInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -849,6 +873,7 @@ export type ApprovalFlowUncheckedCreateWithoutOrganizationInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -892,6 +917,7 @@ export type ApprovalFlowCreateManyCreatedByInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -906,6 +932,7 @@ export type ApprovalFlowUpdateWithoutCreatedByInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -923,6 +950,7 @@ export type ApprovalFlowUncheckedUpdateWithoutCreatedByInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -939,6 +967,7 @@ export type ApprovalFlowUncheckedUpdateManyWithoutCreatedByInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -953,6 +982,7 @@ export type ApprovalFlowCreateManyOrganizationInput = {
   chainConfigId?: string | null
   status?: $Enums.ApprovalStatus
   currentStepOrder?: number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Date | string
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
@@ -968,6 +998,7 @@ export type ApprovalFlowUpdateWithoutOrganizationInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -984,6 +1015,7 @@ export type ApprovalFlowUncheckedUpdateWithoutOrganizationInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1000,6 +1032,7 @@ export type ApprovalFlowUncheckedUpdateManyWithoutOrganizationInput = {
   chainConfigId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumApprovalStatusFieldUpdateOperationsInput | $Enums.ApprovalStatus
   currentStepOrder?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  complianceHoldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1047,6 +1080,7 @@ export type ApprovalFlowSelect<ExtArgs extends runtime.Types.Extensions.Internal
   chainConfigId?: boolean
   status?: boolean
   currentStepOrder?: boolean
+  complianceHoldsJson?: boolean
   startedAt?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
@@ -1067,6 +1101,7 @@ export type ApprovalFlowSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   chainConfigId?: boolean
   status?: boolean
   currentStepOrder?: boolean
+  complianceHoldsJson?: boolean
   startedAt?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
@@ -1085,6 +1120,7 @@ export type ApprovalFlowSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   chainConfigId?: boolean
   status?: boolean
   currentStepOrder?: boolean
+  complianceHoldsJson?: boolean
   startedAt?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
@@ -1103,6 +1139,7 @@ export type ApprovalFlowSelectScalar = {
   chainConfigId?: boolean
   status?: boolean
   currentStepOrder?: boolean
+  complianceHoldsJson?: boolean
   startedAt?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
@@ -1111,7 +1148,7 @@ export type ApprovalFlowSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ApprovalFlowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "resourceType" | "resourceId" | "chainConfigId" | "status" | "currentStepOrder" | "startedAt" | "completedAt" | "cancelledAt" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["approvalFlow"]>
+export type ApprovalFlowOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "resourceType" | "resourceId" | "chainConfigId" | "status" | "currentStepOrder" | "complianceHoldsJson" | "startedAt" | "completedAt" | "cancelledAt" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["approvalFlow"]>
 export type ApprovalFlowInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1142,6 +1179,7 @@ export type $ApprovalFlowPayload<ExtArgs extends runtime.Types.Extensions.Intern
     chainConfigId: string | null
     status: $Enums.ApprovalStatus
     currentStepOrder: number | null
+    complianceHoldsJson: runtime.JsonValue | null
     startedAt: Date
     completedAt: Date | null
     cancelledAt: Date | null
@@ -1581,6 +1619,7 @@ export interface ApprovalFlowFieldRefs {
   readonly chainConfigId: Prisma.FieldRef<"ApprovalFlow", 'String'>
   readonly status: Prisma.FieldRef<"ApprovalFlow", 'ApprovalStatus'>
   readonly currentStepOrder: Prisma.FieldRef<"ApprovalFlow", 'Int'>
+  readonly complianceHoldsJson: Prisma.FieldRef<"ApprovalFlow", 'Json'>
   readonly startedAt: Prisma.FieldRef<"ApprovalFlow", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ApprovalFlow", 'DateTime'>
   readonly cancelledAt: Prisma.FieldRef<"ApprovalFlow", 'DateTime'>

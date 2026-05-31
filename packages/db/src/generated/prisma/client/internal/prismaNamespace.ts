@@ -425,6 +425,7 @@ export const ModelName = {
   ContractorTagLink: 'ContractorTagLink',
   ComplianceRequirementTemplate: 'ComplianceRequirementTemplate',
   ContractorComplianceItem: 'ContractorComplianceItem',
+  ContractorComplianceReminderState: 'ContractorComplianceReminderState',
   LeitwegId: 'LeitwegId',
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
@@ -481,6 +482,7 @@ export const ModelName = {
   PaymentRun: 'PaymentRun',
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
+  PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
   PortalSession: 'PortalSession',
@@ -519,7 +521,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "contractorComplianceReminderState" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "paymentRunComplianceCheck" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3554,6 +3556,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ContractorComplianceItemCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ContractorComplianceItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    ContractorComplianceReminderState: {
+      payload: Prisma.$ContractorComplianceReminderStatePayload<ExtArgs>
+      fields: Prisma.ContractorComplianceReminderStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ContractorComplianceReminderStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ContractorComplianceReminderStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        findFirst: {
+          args: Prisma.ContractorComplianceReminderStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ContractorComplianceReminderStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        findMany: {
+          args: Prisma.ContractorComplianceReminderStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>[]
+        }
+        create: {
+          args: Prisma.ContractorComplianceReminderStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        createMany: {
+          args: Prisma.ContractorComplianceReminderStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ContractorComplianceReminderStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>[]
+        }
+        delete: {
+          args: Prisma.ContractorComplianceReminderStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        update: {
+          args: Prisma.ContractorComplianceReminderStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.ContractorComplianceReminderStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ContractorComplianceReminderStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ContractorComplianceReminderStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.ContractorComplianceReminderStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ContractorComplianceReminderStatePayload>
+        }
+        aggregate: {
+          args: Prisma.ContractorComplianceReminderStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateContractorComplianceReminderState>
+        }
+        groupBy: {
+          args: Prisma.ContractorComplianceReminderStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContractorComplianceReminderStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ContractorComplianceReminderStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ContractorComplianceReminderStateCountAggregateOutputType> | number
         }
       }
     }
@@ -7701,6 +7777,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PaymentRunComplianceCheck: {
+      payload: Prisma.$PaymentRunComplianceCheckPayload<ExtArgs>
+      fields: Prisma.PaymentRunComplianceCheckFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PaymentRunComplianceCheckFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PaymentRunComplianceCheckFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        findFirst: {
+          args: Prisma.PaymentRunComplianceCheckFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PaymentRunComplianceCheckFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        findMany: {
+          args: Prisma.PaymentRunComplianceCheckFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>[]
+        }
+        create: {
+          args: Prisma.PaymentRunComplianceCheckCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        createMany: {
+          args: Prisma.PaymentRunComplianceCheckCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PaymentRunComplianceCheckCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>[]
+        }
+        delete: {
+          args: Prisma.PaymentRunComplianceCheckDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        update: {
+          args: Prisma.PaymentRunComplianceCheckUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        deleteMany: {
+          args: Prisma.PaymentRunComplianceCheckDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PaymentRunComplianceCheckUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PaymentRunComplianceCheckUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>[]
+        }
+        upsert: {
+          args: Prisma.PaymentRunComplianceCheckUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PaymentRunComplianceCheckPayload>
+        }
+        aggregate: {
+          args: Prisma.PaymentRunComplianceCheckAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePaymentRunComplianceCheck>
+        }
+        groupBy: {
+          args: Prisma.PaymentRunComplianceCheckGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentRunComplianceCheckGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PaymentRunComplianceCheckCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PaymentRunComplianceCheckCountAggregateOutputType> | number
+        }
+      }
+    }
     PeppolParticipant: {
       payload: Prisma.$PeppolParticipantPayload<ExtArgs>
       fields: Prisma.PeppolParticipantFieldRefs
@@ -9484,6 +9634,7 @@ export const ApprovalFlowScalarFieldEnum = {
   chainConfigId: 'chainConfigId',
   status: 'status',
   currentStepOrder: 'currentStepOrder',
+  complianceHoldsJson: 'complianceHoldsJson',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   cancelledAt: 'cancelledAt',
@@ -10194,6 +10345,20 @@ export const ContractorComplianceItemScalarFieldEnum = {
 } as const
 
 export type ContractorComplianceItemScalarFieldEnum = (typeof ContractorComplianceItemScalarFieldEnum)[keyof typeof ContractorComplianceItemScalarFieldEnum]
+
+
+export const ContractorComplianceReminderStateScalarFieldEnum = {
+  itemId: 'itemId',
+  organizationId: 'organizationId',
+  currentBand: 'currentBand',
+  lastBandFired: 'lastBandFired',
+  lastBandFiredAt: 'lastBandFiredAt',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContractorComplianceReminderStateScalarFieldEnum = (typeof ContractorComplianceReminderStateScalarFieldEnum)[keyof typeof ContractorComplianceReminderStateScalarFieldEnum]
 
 
 export const LeitwegIdScalarFieldEnum = {
@@ -11226,6 +11391,23 @@ export const PaymentExportScalarFieldEnum = {
 } as const
 
 export type PaymentExportScalarFieldEnum = (typeof PaymentExportScalarFieldEnum)[keyof typeof PaymentExportScalarFieldEnum]
+
+
+export const PaymentRunComplianceCheckScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paymentRunId: 'paymentRunId',
+  paymentExportId: 'paymentExportId',
+  contractorId: 'contractorId',
+  snapshottedAt: 'snapshottedAt',
+  snapshotJson: 'snapshotJson',
+  eligibilityVerdict: 'eligibilityVerdict',
+  failureReasons: 'failureReasons',
+  policyRuleSetVersion: 'policyRuleSetVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentRunComplianceCheckScalarFieldEnum = (typeof PaymentRunComplianceCheckScalarFieldEnum)[keyof typeof PaymentRunComplianceCheckScalarFieldEnum]
 
 
 export const PeppolParticipantScalarFieldEnum = {
@@ -12377,6 +12559,20 @@ export type ListEnumWaivedReasonFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'ReminderBand'
+ */
+export type EnumReminderBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderBand'>
+    
+
+
+/**
+ * Reference to a field of type 'ReminderBand[]'
+ */
+export type ListEnumReminderBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ReminderBand[]'>
+    
+
+
+/**
  * Reference to a field of type 'EInvoiceValidationStatus'
  */
 export type EnumEInvoiceValidationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EInvoiceValidationStatus'>
@@ -13133,6 +13329,20 @@ export type ListEnumExportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'EligibilityVerdict'
+ */
+export type EnumEligibilityVerdictFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EligibilityVerdict'>
+    
+
+
+/**
+ * Reference to a field of type 'EligibilityVerdict[]'
+ */
+export type ListEnumEligibilityVerdictFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EligibilityVerdict[]'>
+    
+
+
+/**
  * Reference to a field of type 'PeppolParticipantStatus'
  */
 export type EnumPeppolParticipantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PeppolParticipantStatus'>
@@ -13534,6 +13744,7 @@ export type GlobalOmitConfig = {
   contractorTagLink?: Prisma.ContractorTagLinkOmit
   complianceRequirementTemplate?: Prisma.ComplianceRequirementTemplateOmit
   contractorComplianceItem?: Prisma.ContractorComplianceItemOmit
+  contractorComplianceReminderState?: Prisma.ContractorComplianceReminderStateOmit
   leitwegId?: Prisma.LeitwegIdOmit
   eInvoiceLifecycle?: Prisma.EInvoiceLifecycleOmit
   eInvoiceLifecycleEvent?: Prisma.EInvoiceLifecycleEventOmit
@@ -13590,6 +13801,7 @@ export type GlobalOmitConfig = {
   paymentRun?: Prisma.PaymentRunOmit
   paymentRunItem?: Prisma.PaymentRunItemOmit
   paymentExport?: Prisma.PaymentExportOmit
+  paymentRunComplianceCheck?: Prisma.PaymentRunComplianceCheckOmit
   peppolParticipant?: Prisma.PeppolParticipantOmit
   peppolTransmission?: Prisma.PeppolTransmissionOmit
   portalSession?: Prisma.PortalSessionOmit

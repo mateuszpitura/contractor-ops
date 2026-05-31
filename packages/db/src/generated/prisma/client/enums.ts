@@ -12,6 +12,7 @@
 export const ApprovalStatus = {
   NOT_STARTED: 'NOT_STARTED',
   PENDING: 'PENDING',
+  PENDING_COMPLIANCE: 'PENDING_COMPLIANCE',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
   CANCELLED: 'CANCELLED'
@@ -427,6 +428,19 @@ export const WaivedReason = {
 } as const
 
 export type WaivedReason = (typeof WaivedReason)[keyof typeof WaivedReason]
+
+
+export const ReminderBand = {
+  NONE: 'NONE',
+  D90: 'D90',
+  D60: 'D60',
+  D30: 'D30',
+  D15: 'D15',
+  D7: 'D7',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type ReminderBand = (typeof ReminderBand)[keyof typeof ReminderBand]
 
 
 export const EInvoiceValidationStatus = {
@@ -1009,6 +1023,14 @@ export const ExportStatus = {
 } as const
 
 export type ExportStatus = (typeof ExportStatus)[keyof typeof ExportStatus]
+
+
+export const EligibilityVerdict = {
+  PASS: 'PASS',
+  FAIL: 'FAIL'
+} as const
+
+export type EligibilityVerdict = (typeof EligibilityVerdict)[keyof typeof EligibilityVerdict]
 
 
 export const PeppolParticipantStatus = {

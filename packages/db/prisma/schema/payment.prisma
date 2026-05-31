@@ -23,8 +23,9 @@ model PaymentRun {
   createdBy    User         @relation("PaymentRunCreator", fields: [createdByUserId], references: [id])
   approvedBy   User?        @relation("PaymentRunApprover", fields: [approvedByUserId], references: [id])
 
-  items   PaymentRunItem[]
-  exports PaymentExport[]
+  items            PaymentRunItem[]
+  exports          PaymentExport[]
+  complianceChecks PaymentRunComplianceCheck[] // Phase 72 D-16
 
   @@unique([organizationId, runNumber])
   @@index([organizationId])
@@ -85,8 +86,39 @@ model PaymentExport {
   document     Document?    @relation(fields: [documentId], references: [id])
   generatedBy  User         @relation(fields: [generatedByUserId], references: [id])
 
+  complianceChecks PaymentRunComplianceCheck[] // Phase 72 D-16
+
   @@index([organizationId])
   @@index([organizationId, paymentRunId])
+}
+
+// Phase 72 D-16 — One row per (PaymentRun × Contractor × export attempt).
+// snapshotJson is a frozen full copy of the contractor's BLOCKING-severity
+// ContractorComplianceItem rows at the moment of export — replay-ready audit.
+// FAIL-verdict rows have paymentExportId = null (export aborted) and are written
+// in a separate small tx after the parent tx rolls back (D-19). Append-only (no updatedAt).
+model PaymentRunComplianceCheck {
+  id                   String             @id @default(cuid())
+  organizationId       String
+  paymentRunId         String
+  paymentExportId      String?
+  contractorId         String
+  snapshottedAt        DateTime           @default(now())
+  snapshotJson         Json
+  eligibilityVerdict   EligibilityVerdict
+  failureReasons       Json?
+  policyRuleSetVersion String
+  createdAt            DateTime           @default(now())
+
+  organization  Organization   @relation(fields: [organizationId], references: [id])
+  paymentRun    PaymentRun     @relation(fields: [paymentRunId], references: [id])
+  paymentExport PaymentExport? @relation(fields: [paymentExportId], references: [id], onDelete: SetNull)
+  contractor    Contractor     @relation(fields: [contractorId], references: [id])
+
+  @@index([organizationId])
+  @@index([paymentRunId])
+  @@index([contractorId, snapshottedAt(sort: Desc)])
+  @@index([paymentExportId])
 }
 
 // --- Enums ---
@@ -132,4 +164,10 @@ enum ExportStatus {
   GENERATED
   DOWNLOADED
   FAILED
+}
+
+// Phase 72 D-16 — Verdict enum for the atomic compliance audit row.
+enum EligibilityVerdict {
+  PASS
+  FAIL
 }

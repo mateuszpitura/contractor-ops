@@ -289,6 +289,7 @@ export type ContractorComplianceItemWhereInput = {
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   contract?: Prisma.XOR<Prisma.ContractNullableScalarRelationFilter, Prisma.ContractWhereInput> | null
+  reminderState?: Prisma.XOR<Prisma.ContractorComplianceReminderStateNullableScalarRelationFilter, Prisma.ContractorComplianceReminderStateWhereInput> | null
 }
 
 export type ContractorComplianceItemOrderByWithRelationInput = {
@@ -313,6 +314,7 @@ export type ContractorComplianceItemOrderByWithRelationInput = {
   organization?: Prisma.OrganizationOrderByWithRelationInput
   contractor?: Prisma.ContractorOrderByWithRelationInput
   contract?: Prisma.ContractOrderByWithRelationInput
+  reminderState?: Prisma.ContractorComplianceReminderStateOrderByWithRelationInput
 }
 
 export type ContractorComplianceItemWhereUniqueInput = Prisma.AtLeast<{
@@ -340,6 +342,7 @@ export type ContractorComplianceItemWhereUniqueInput = Prisma.AtLeast<{
   organization?: Prisma.XOR<Prisma.OrganizationScalarRelationFilter, Prisma.OrganizationWhereInput>
   contractor?: Prisma.XOR<Prisma.ContractorScalarRelationFilter, Prisma.ContractorWhereInput>
   contract?: Prisma.XOR<Prisma.ContractNullableScalarRelationFilter, Prisma.ContractWhereInput> | null
+  reminderState?: Prisma.XOR<Prisma.ContractorComplianceReminderStateNullableScalarRelationFilter, Prisma.ContractorComplianceReminderStateWhereInput> | null
 }, "id">
 
 export type ContractorComplianceItemOrderByWithAggregationInput = {
@@ -409,6 +412,7 @@ export type ContractorComplianceItemCreateInput = {
   organization: Prisma.OrganizationCreateNestedOneWithoutComplianceItemsInput
   contractor: Prisma.ContractorCreateNestedOneWithoutComplianceItemsInput
   contract?: Prisma.ContractCreateNestedOneWithoutComplianceItemsInput
+  reminderState?: Prisma.ContractorComplianceReminderStateCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemUncheckedCreateInput = {
@@ -430,6 +434,7 @@ export type ContractorComplianceItemUncheckedCreateInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemUpdateInput = {
@@ -451,6 +456,7 @@ export type ContractorComplianceItemUpdateInput = {
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutComplianceItemsNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutComplianceItemsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutComplianceItemsNestedInput
+  reminderState?: Prisma.ContractorComplianceReminderStateUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateInput = {
@@ -472,6 +478,7 @@ export type ContractorComplianceItemUncheckedUpdateInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemCreateManyInput = {
@@ -607,6 +614,11 @@ export type ContractorComplianceItemMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type ContractorComplianceItemScalarRelationFilter = {
+  is?: Prisma.ContractorComplianceItemWhereInput
+  isNot?: Prisma.ContractorComplianceItemWhereInput
+}
+
 export type ContractorComplianceItemCreateNestedManyWithoutContractInput = {
   create?: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutContractInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutContractInput> | Prisma.ContractorComplianceItemCreateWithoutContractInput[] | Prisma.ContractorComplianceItemUncheckedCreateWithoutContractInput[]
   connectOrCreate?: Prisma.ContractorComplianceItemCreateOrConnectWithoutContractInput | Prisma.ContractorComplianceItemCreateOrConnectWithoutContractInput[]
@@ -703,6 +715,20 @@ export type NullableEnumWaivedReasonFieldUpdateOperationsInput = {
   set?: $Enums.WaivedReason | null
 }
 
+export type ContractorComplianceItemCreateNestedOneWithoutReminderStateInput = {
+  create?: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutReminderStateInput>
+  connectOrCreate?: Prisma.ContractorComplianceItemCreateOrConnectWithoutReminderStateInput
+  connect?: Prisma.ContractorComplianceItemWhereUniqueInput
+}
+
+export type ContractorComplianceItemUpdateOneRequiredWithoutReminderStateNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutReminderStateInput>
+  connectOrCreate?: Prisma.ContractorComplianceItemCreateOrConnectWithoutReminderStateInput
+  upsert?: Prisma.ContractorComplianceItemUpsertWithoutReminderStateInput
+  connect?: Prisma.ContractorComplianceItemWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorComplianceItemUpdateToOneWithWhereWithoutReminderStateInput, Prisma.ContractorComplianceItemUpdateWithoutReminderStateInput>, Prisma.ContractorComplianceItemUncheckedUpdateWithoutReminderStateInput>
+}
+
 export type ContractorComplianceItemCreateNestedManyWithoutOrganizationInput = {
   create?: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutOrganizationInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutOrganizationInput> | Prisma.ContractorComplianceItemCreateWithoutOrganizationInput[] | Prisma.ContractorComplianceItemUncheckedCreateWithoutOrganizationInput[]
   connectOrCreate?: Prisma.ContractorComplianceItemCreateOrConnectWithoutOrganizationInput | Prisma.ContractorComplianceItemCreateOrConnectWithoutOrganizationInput[]
@@ -763,6 +789,7 @@ export type ContractorComplianceItemCreateWithoutContractInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutComplianceItemsInput
   contractor: Prisma.ContractorCreateNestedOneWithoutComplianceItemsInput
+  reminderState?: Prisma.ContractorComplianceReminderStateCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemUncheckedCreateWithoutContractInput = {
@@ -783,6 +810,7 @@ export type ContractorComplianceItemUncheckedCreateWithoutContractInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemCreateOrConnectWithoutContractInput = {
@@ -853,6 +881,7 @@ export type ContractorComplianceItemCreateWithoutContractorInput = {
   updatedAt?: Date | string
   organization: Prisma.OrganizationCreateNestedOneWithoutComplianceItemsInput
   contract?: Prisma.ContractCreateNestedOneWithoutComplianceItemsInput
+  reminderState?: Prisma.ContractorComplianceReminderStateCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemUncheckedCreateWithoutContractorInput = {
@@ -873,6 +902,7 @@ export type ContractorComplianceItemUncheckedCreateWithoutContractorInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemCreateOrConnectWithoutContractorInput = {
@@ -901,6 +931,106 @@ export type ContractorComplianceItemUpdateManyWithWhereWithoutContractorInput = 
   data: Prisma.XOR<Prisma.ContractorComplianceItemUpdateManyMutationInput, Prisma.ContractorComplianceItemUncheckedUpdateManyWithoutContractorInput>
 }
 
+export type ContractorComplianceItemCreateWithoutReminderStateInput = {
+  id?: string
+  requirementTemplateId?: string | null
+  name: string
+  documentType: $Enums.DocumentType
+  status?: $Enums.ComplianceStatus
+  severity?: $Enums.Severity | null
+  policyRuleId?: string | null
+  expiryJurisdictionTz?: string | null
+  waivedReason?: $Enums.WaivedReason | null
+  dueDate?: Date | string | null
+  satisfiedByDocumentId?: string | null
+  expiresAt?: Date | string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutComplianceItemsInput
+  contractor: Prisma.ContractorCreateNestedOneWithoutComplianceItemsInput
+  contract?: Prisma.ContractCreateNestedOneWithoutComplianceItemsInput
+}
+
+export type ContractorComplianceItemUncheckedCreateWithoutReminderStateInput = {
+  id?: string
+  organizationId: string
+  contractorId: string
+  contractId?: string | null
+  requirementTemplateId?: string | null
+  name: string
+  documentType: $Enums.DocumentType
+  status?: $Enums.ComplianceStatus
+  severity?: $Enums.Severity | null
+  policyRuleId?: string | null
+  expiryJurisdictionTz?: string | null
+  waivedReason?: $Enums.WaivedReason | null
+  dueDate?: Date | string | null
+  satisfiedByDocumentId?: string | null
+  expiresAt?: Date | string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ContractorComplianceItemCreateOrConnectWithoutReminderStateInput = {
+  where: Prisma.ContractorComplianceItemWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutReminderStateInput>
+}
+
+export type ContractorComplianceItemUpsertWithoutReminderStateInput = {
+  update: Prisma.XOR<Prisma.ContractorComplianceItemUpdateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedUpdateWithoutReminderStateInput>
+  create: Prisma.XOR<Prisma.ContractorComplianceItemCreateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedCreateWithoutReminderStateInput>
+  where?: Prisma.ContractorComplianceItemWhereInput
+}
+
+export type ContractorComplianceItemUpdateToOneWithWhereWithoutReminderStateInput = {
+  where?: Prisma.ContractorComplianceItemWhereInput
+  data: Prisma.XOR<Prisma.ContractorComplianceItemUpdateWithoutReminderStateInput, Prisma.ContractorComplianceItemUncheckedUpdateWithoutReminderStateInput>
+}
+
+export type ContractorComplianceItemUpdateWithoutReminderStateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  requirementTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  documentType?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
+  status?: Prisma.EnumComplianceStatusFieldUpdateOperationsInput | $Enums.ComplianceStatus
+  severity?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutComplianceItemsNestedInput
+  contractor?: Prisma.ContractorUpdateOneRequiredWithoutComplianceItemsNestedInput
+  contract?: Prisma.ContractUpdateOneWithoutComplianceItemsNestedInput
+}
+
+export type ContractorComplianceItemUncheckedUpdateWithoutReminderStateInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requirementTemplateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  documentType?: Prisma.EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
+  status?: Prisma.EnumComplianceStatusFieldUpdateOperationsInput | $Enums.ComplianceStatus
+  severity?: Prisma.NullableEnumSeverityFieldUpdateOperationsInput | $Enums.Severity | null
+  policyRuleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiryJurisdictionTz?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  waivedReason?: Prisma.NullableEnumWaivedReasonFieldUpdateOperationsInput | $Enums.WaivedReason | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  satisfiedByDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ContractorComplianceItemCreateWithoutOrganizationInput = {
   id?: string
   requirementTemplateId?: string | null
@@ -919,6 +1049,7 @@ export type ContractorComplianceItemCreateWithoutOrganizationInput = {
   updatedAt?: Date | string
   contractor: Prisma.ContractorCreateNestedOneWithoutComplianceItemsInput
   contract?: Prisma.ContractCreateNestedOneWithoutComplianceItemsInput
+  reminderState?: Prisma.ContractorComplianceReminderStateCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemUncheckedCreateWithoutOrganizationInput = {
@@ -939,6 +1070,7 @@ export type ContractorComplianceItemUncheckedCreateWithoutOrganizationInput = {
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedCreateNestedOneWithoutItemInput
 }
 
 export type ContractorComplianceItemCreateOrConnectWithoutOrganizationInput = {
@@ -1005,6 +1137,7 @@ export type ContractorComplianceItemUpdateWithoutContractInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutComplianceItemsNestedInput
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutComplianceItemsNestedInput
+  reminderState?: Prisma.ContractorComplianceReminderStateUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateWithoutContractInput = {
@@ -1025,6 +1158,7 @@ export type ContractorComplianceItemUncheckedUpdateWithoutContractInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateManyWithoutContractInput = {
@@ -1085,6 +1219,7 @@ export type ContractorComplianceItemUpdateWithoutContractorInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organization?: Prisma.OrganizationUpdateOneRequiredWithoutComplianceItemsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutComplianceItemsNestedInput
+  reminderState?: Prisma.ContractorComplianceReminderStateUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateWithoutContractorInput = {
@@ -1105,6 +1240,7 @@ export type ContractorComplianceItemUncheckedUpdateWithoutContractorInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateManyWithoutContractorInput = {
@@ -1165,6 +1301,7 @@ export type ContractorComplianceItemUpdateWithoutOrganizationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contractor?: Prisma.ContractorUpdateOneRequiredWithoutComplianceItemsNestedInput
   contract?: Prisma.ContractUpdateOneWithoutComplianceItemsNestedInput
+  reminderState?: Prisma.ContractorComplianceReminderStateUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateWithoutOrganizationInput = {
@@ -1185,6 +1322,7 @@ export type ContractorComplianceItemUncheckedUpdateWithoutOrganizationInput = {
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reminderState?: Prisma.ContractorComplianceReminderStateUncheckedUpdateOneWithoutItemNestedInput
 }
 
 export type ContractorComplianceItemUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1231,6 +1369,7 @@ export type ContractorComplianceItemSelect<ExtArgs extends runtime.Types.Extensi
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
   contract?: boolean | Prisma.ContractorComplianceItem$contractArgs<ExtArgs>
+  reminderState?: boolean | Prisma.ContractorComplianceItem$reminderStateArgs<ExtArgs>
 }, ExtArgs["result"]["contractorComplianceItem"]>
 
 export type ContractorComplianceItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1307,6 +1446,7 @@ export type ContractorComplianceItemInclude<ExtArgs extends runtime.Types.Extens
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
   contract?: boolean | Prisma.ContractorComplianceItem$contractArgs<ExtArgs>
+  reminderState?: boolean | Prisma.ContractorComplianceItem$reminderStateArgs<ExtArgs>
 }
 export type ContractorComplianceItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
@@ -1325,6 +1465,7 @@ export type $ContractorComplianceItemPayload<ExtArgs extends runtime.Types.Exten
     organization: Prisma.$OrganizationPayload<ExtArgs>
     contractor: Prisma.$ContractorPayload<ExtArgs>
     contract: Prisma.$ContractPayload<ExtArgs> | null
+    reminderState: Prisma.$ContractorComplianceReminderStatePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1742,6 +1883,7 @@ export interface Prisma__ContractorComplianceItemClient<T, Null = never, ExtArgs
   organization<T extends Prisma.OrganizationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrganizationDefaultArgs<ExtArgs>>): Prisma.Prisma__OrganizationClient<runtime.Types.Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contractor<T extends Prisma.ContractorDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorDefaultArgs<ExtArgs>>): Prisma.Prisma__ContractorClient<runtime.Types.Result.GetResult<Prisma.$ContractorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   contract<T extends Prisma.ContractorComplianceItem$contractArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorComplianceItem$contractArgs<ExtArgs>>): Prisma.Prisma__ContractClient<runtime.Types.Result.GetResult<Prisma.$ContractPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  reminderState<T extends Prisma.ContractorComplianceItem$reminderStateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorComplianceItem$reminderStateArgs<ExtArgs>>): Prisma.Prisma__ContractorComplianceReminderStateClient<runtime.Types.Result.GetResult<Prisma.$ContractorComplianceReminderStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2206,6 +2348,25 @@ export type ContractorComplianceItem$contractArgs<ExtArgs extends runtime.Types.
    */
   include?: Prisma.ContractInclude<ExtArgs> | null
   where?: Prisma.ContractWhereInput
+}
+
+/**
+ * ContractorComplianceItem.reminderState
+ */
+export type ContractorComplianceItem$reminderStateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContractorComplianceReminderState
+   */
+  select?: Prisma.ContractorComplianceReminderStateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContractorComplianceReminderState
+   */
+  omit?: Prisma.ContractorComplianceReminderStateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContractorComplianceReminderStateInclude<ExtArgs> | null
+  where?: Prisma.ContractorComplianceReminderStateWhereInput
 }
 
 /**

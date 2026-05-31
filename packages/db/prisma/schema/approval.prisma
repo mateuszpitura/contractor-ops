@@ -19,19 +19,20 @@ model ApprovalChainConfig {
 }
 
 model ApprovalFlow {
-  id               String         @id @default(cuid())
-  organizationId   String
-  resourceType     EntityType
-  resourceId       String
-  chainConfigId    String?
-  status           ApprovalStatus @default(NOT_STARTED)
-  currentStepOrder Int?
-  startedAt        DateTime       @default(now())
-  completedAt      DateTime?
-  cancelledAt      DateTime?
-  createdByUserId  String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id                  String         @id @default(cuid())
+  organizationId      String
+  resourceType        EntityType
+  resourceId          String
+  chainConfigId       String?
+  status              ApprovalStatus @default(NOT_STARTED)
+  currentStepOrder    Int?
+  complianceHoldsJson Json? // Phase 72 D-14 — { itemIds: string[], heldAt, heldByOperator }; GIN-indexed for @> containment
+  startedAt           DateTime       @default(now())
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  createdByUserId     String
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])
   createdBy    User         @relation("ApprovalFlowCreator", fields: [createdByUserId], references: [id])
@@ -96,6 +97,7 @@ model ApprovalDecision {
 enum ApprovalStatus {
   NOT_STARTED
   PENDING
+  PENDING_COMPLIANCE // Phase 72 D-12 — held by complianceCritical operator; not approver-actionable
   APPROVED
   REJECTED
   CANCELLED

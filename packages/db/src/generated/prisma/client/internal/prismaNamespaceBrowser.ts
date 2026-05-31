@@ -92,6 +92,7 @@ export const ModelName = {
   ContractorTagLink: 'ContractorTagLink',
   ComplianceRequirementTemplate: 'ComplianceRequirementTemplate',
   ContractorComplianceItem: 'ContractorComplianceItem',
+  ContractorComplianceReminderState: 'ContractorComplianceReminderState',
   LeitwegId: 'LeitwegId',
   EInvoiceLifecycle: 'EInvoiceLifecycle',
   EInvoiceLifecycleEvent: 'EInvoiceLifecycleEvent',
@@ -148,6 +149,7 @@ export const ModelName = {
   PaymentRun: 'PaymentRun',
   PaymentRunItem: 'PaymentRunItem',
   PaymentExport: 'PaymentExport',
+  PaymentRunComplianceCheck: 'PaymentRunComplianceCheck',
   PeppolParticipant: 'PeppolParticipant',
   PeppolTransmission: 'PeppolTransmission',
   PortalSession: 'PortalSession',
@@ -231,6 +233,7 @@ export const ApprovalFlowScalarFieldEnum = {
   chainConfigId: 'chainConfigId',
   status: 'status',
   currentStepOrder: 'currentStepOrder',
+  complianceHoldsJson: 'complianceHoldsJson',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   cancelledAt: 'cancelledAt',
@@ -941,6 +944,20 @@ export const ContractorComplianceItemScalarFieldEnum = {
 } as const
 
 export type ContractorComplianceItemScalarFieldEnum = (typeof ContractorComplianceItemScalarFieldEnum)[keyof typeof ContractorComplianceItemScalarFieldEnum]
+
+
+export const ContractorComplianceReminderStateScalarFieldEnum = {
+  itemId: 'itemId',
+  organizationId: 'organizationId',
+  currentBand: 'currentBand',
+  lastBandFired: 'lastBandFired',
+  lastBandFiredAt: 'lastBandFiredAt',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContractorComplianceReminderStateScalarFieldEnum = (typeof ContractorComplianceReminderStateScalarFieldEnum)[keyof typeof ContractorComplianceReminderStateScalarFieldEnum]
 
 
 export const LeitwegIdScalarFieldEnum = {
@@ -1973,6 +1990,23 @@ export const PaymentExportScalarFieldEnum = {
 } as const
 
 export type PaymentExportScalarFieldEnum = (typeof PaymentExportScalarFieldEnum)[keyof typeof PaymentExportScalarFieldEnum]
+
+
+export const PaymentRunComplianceCheckScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  paymentRunId: 'paymentRunId',
+  paymentExportId: 'paymentExportId',
+  contractorId: 'contractorId',
+  snapshottedAt: 'snapshottedAt',
+  snapshotJson: 'snapshotJson',
+  eligibilityVerdict: 'eligibilityVerdict',
+  failureReasons: 'failureReasons',
+  policyRuleSetVersion: 'policyRuleSetVersion',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentRunComplianceCheckScalarFieldEnum = (typeof PaymentRunComplianceCheckScalarFieldEnum)[keyof typeof PaymentRunComplianceCheckScalarFieldEnum]
 
 
 export const PeppolParticipantScalarFieldEnum = {

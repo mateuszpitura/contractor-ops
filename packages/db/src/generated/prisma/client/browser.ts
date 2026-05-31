@@ -223,6 +223,11 @@ export type ComplianceRequirementTemplate = Prisma.ComplianceRequirementTemplate
  */
 export type ContractorComplianceItem = Prisma.ContractorComplianceItemModel
 /**
+ * Model ContractorComplianceReminderState
+ * 
+ */
+export type ContractorComplianceReminderState = Prisma.ContractorComplianceReminderStateModel
+/**
  * Model LeitwegId
  * 
  */
@@ -503,6 +508,11 @@ export type PaymentRunItem = Prisma.PaymentRunItemModel
  * 
  */
 export type PaymentExport = Prisma.PaymentExportModel
+/**
+ * Model PaymentRunComplianceCheck
+ * 
+ */
+export type PaymentRunComplianceCheck = Prisma.PaymentRunComplianceCheckModel
 /**
  * Model PeppolParticipant
  * 

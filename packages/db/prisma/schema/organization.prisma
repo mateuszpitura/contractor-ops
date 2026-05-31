@@ -82,6 +82,7 @@ model Organization {
   paymentRuns                    PaymentRun[]
   paymentRunItems                PaymentRunItem[]
   paymentExports                 PaymentExport[]
+  paymentComplianceChecks        PaymentRunComplianceCheck[] // Phase 72 D-16
   auditLogs                      AuditLog[]
   outboxEvents                   OutboxEvent[]
   integrationConnections         IntegrationConnection[]

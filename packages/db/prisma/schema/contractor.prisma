@@ -79,6 +79,7 @@ model Contractor {
   leitwegIds                LeitwegId[]
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
   deprovisioningRuns        DeprovisioningRun[]
+  paymentComplianceChecks   PaymentRunComplianceCheck[] // Phase 72 D-16
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -257,10 +258,32 @@ model ContractorComplianceItem {
   contractor   Contractor   @relation(fields: [contractorId], references: [id])
   contract     Contract?    @relation(fields: [contractId], references: [id])
 
+  // Phase 72 D-01 — 1:1 reminder cascade state machine.
+  reminderState ContractorComplianceReminderState?
+
   @@index([organizationId])
   @@index([organizationId, contractorId, status])
   @@index([organizationId, expiresAt])
   @@index([organizationId, policyRuleId]) // Phase 71 — supports drift queries by policyRuleId namespace
+}
+
+// Phase 72 D-01 — 1:1 state machine for compliance reminder cascade.
+// Mirrors v5 EconomicDependencyAlertState shape; upserted per cron tick;
+// version column gates optimistic concurrency against the renewal-reset listener.
+model ContractorComplianceReminderState {
+  itemId          String        @unique
+  organizationId  String
+  currentBand     ReminderBand  @default(NONE)
+  lastBandFired   ReminderBand?
+  lastBandFiredAt DateTime?
+  version         Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  item ContractorComplianceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([organizationId, currentBand])
 }
 
 // --- Enums ---
@@ -317,4 +340,17 @@ enum WaivedReason {
   CLASSIFICATION_OUTCOME_CHANGE // Outcome differs from prior assessment (D-10)
   ADMIN_MANUAL_WAIVE // Admin clicked "Waive this requirement" (existing UX)
   CONTRACTOR_OFFBOARDED // Phase 74/75 fires this on offboarding completion
+}
+
+// Phase 72 D-02 — Reminder cascade band enum.
+// Bands map to ROADMAP 90/60/30/15/7-day cascade; EXPIRED is terminal,
+// fires once on the first cron tick after the jurisdiction-TZ "expires today" boundary.
+enum ReminderBand {
+  NONE
+  D90
+  D60
+  D30
+  D15
+  D7
+  EXPIRED
 }
