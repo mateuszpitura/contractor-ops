@@ -135,7 +135,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. Admin attempting to create a payment run that includes a contractor with an EXPIRED CRITICAL compliance item sees a `PRECONDITION_FAILED` modal "Compliance EXPIRED — payment blocked" listing structured per-contractor reasons (doc name, expired-on date) with a deep link to the affected document; payment run insert never occurs
   3. Admin force-pushing an approval decision on an invoice for a contractor with an EXPIRED CRITICAL doc sees the approval held in `PENDING_COMPLIANCE` state (not auto-`READY`); approval-engine `complianceCritical(EXPIRED)` condition operator evaluated as secondary defence
   4. After a payment-run bank-file export, the database contains a `PaymentRunComplianceCheck` row written in the SAME transaction as the file emission, with the snapshotted compliance state at the moment of export (mid-batch race protection per Pitfall 1)
-**Plans:** 2/8 plans executed
+**Plans:** 3/8 plans executed
 **Research flag:** STANDARD (port of v5.0 `economic-dependency-scan.ts` band-state-machine)
 **Feature flags:** `compliance-payment-block` PENDING (legal-sensitive — admin lockout posture)
 
@@ -382,7 +382,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 69. DE Message-Key Parity Fix                  | v5.0      | 1/1            | Complete    | 2026-04-26 |
 | 70. v6.0 Foundation — CI Guards                | v6.0      | 0/?            | Not started | -          |
 | 71. F1 Compliance — Policy Package + Schema   | v6.0      | 7/7 | Complete   | 2026-04-27 |
-| 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 2/8 | In Progress|  |
+| 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 3/8 | In Progress|  |
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
