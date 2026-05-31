@@ -74,9 +74,11 @@ describe('Deprovisionable interface (Phase 76 D-13)', () => {
     expect(getDeprovisionableAdapter('GOOGLE_WORKSPACE')).toBe(a);
   });
 
-  it('GOOGLE_WORKSPACE_DEPROVISION_SCOPES exports the admin.directory.user scope', () => {
+  it('GOOGLE_WORKSPACE_DEPROVISION_SCOPES exports the directory + user.security scopes', () => {
     expect(GOOGLE_WORKSPACE_DEPROVISION_SCOPES).toEqual([
       'https://www.googleapis.com/auth/admin.directory.user',
+      // Phase 77 D-07 — token revoke + sign-out sub-actions of revokeAllSessions.
+      'https://www.googleapis.com/auth/admin.directory.user.security',
     ]);
   });
 
