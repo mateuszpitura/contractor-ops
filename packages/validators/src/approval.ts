@@ -66,7 +66,11 @@ export type ApprovalChainUpdate = z.infer<typeof approvalChainUpdateSchema>;
 
 export const approvalQueueSchema = z.object({
   tab: z.enum(['my', 'all']).default('my'),
-  status: z.enum(['all', 'pending', 'overdue', 'approved', 'rejected']).default('all'),
+  // UPPERCASE matches the canonical convention used across all list filters
+  // in the app (contracts, contractors, invoices, payments). `OVERDUE` is a
+  // synthesised UI grouping (PENDING + slaDeadline lt now), not a Prisma
+  // enum — kept in the same casing for consistency.
+  status: z.enum(['ALL', 'PENDING', 'OVERDUE', 'APPROVED', 'REJECTED']).default('ALL'),
   search: z.string().optional(),
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(50).default(10),

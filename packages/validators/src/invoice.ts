@@ -165,6 +165,10 @@ export const invoiceListSchema = z.object({
       matchStatus: z.array(invoiceMatchStatusEnum).optional(),
       source: z.array(invoiceSourceEnum).optional(),
       contractorId: z.string().optional(),
+      // `dueDate < now AND status NOT IN ('PAID', 'VOID')`. Matches the
+      // overdue cell badge used by columns.tsx so the chip and table cell
+      // surface the same set of invoices.
+      overdue: z.boolean().optional(),
     })
     .optional(),
 });
