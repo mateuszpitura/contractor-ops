@@ -1,18 +1,47 @@
-import { canStartDeprovisioning } from '@contractor-ops/idp-saga';
+import type { Prisma } from '@contractor-ops/db';
+import { getFlagSignoff } from '@contractor-ops/feature-flags';
+import { canStartDeprovisioning, MAX_ATTEMPTS, recomputeRunStatus } from '@contractor-ops/idp-saga';
 import { getIdpAuditLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import {
   DEPROVISIONING_ASSIGNMENT_NOT_FOUND,
   DEPROVISIONING_COOLDOWN_ACTIVE,
+  DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
   DEPROVISIONING_NO_EXTERNAL_USER,
+  DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
   DEPROVISIONING_STEP_NOT_FOUND,
+  DEPROVISIONING_STEP_NOT_OVERRIDABLE,
 } from '../../errors';
 import { router } from '../../init';
 import { findOrThrow } from '../../lib/find-or-throw';
+import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog } from '../../services/audit-writer';
+import { CacheKeys, invalidateByPrefix } from '../../services/cache';
+import { getImpactPreview } from '../../services/idp-impact-preview';
 
 const auditLog = getIdpAuditLogger();
+
+// Phase 77 D-15 — the two real Deprovisionable providers + their signoff flag keys.
+const PROVIDER_FLAG_KEY: Record<'GOOGLE_WORKSPACE' | 'SLACK', string> = {
+  GOOGLE_WORKSPACE: 'module.idp-deprovisioning-gws',
+  SLACK: 'module.idp-deprovisioning-slack',
+};
+
+/** A provider may be enabled only when its signoff flag is APPROVED (or local bypass). */
+function isProviderSignoffSatisfied(provider: 'GOOGLE_WORKSPACE' | 'SLACK'): boolean {
+  if (process.env.FLAG_SIGNOFF_BYPASS === 'local') return true;
+  return getFlagSignoff(PROVIDER_FLAG_KEY[provider])?.status === 'APPROVED';
+}
+
+const MANUAL_OVERRIDE_CATEGORIES = [
+  'verified_via_vendor_console',
+  'user_already_inactive',
+  'provider_endpoint_deprecated',
+  'transient_provider_issue_resolved',
+  'other',
+] as const;
 
 // Phase 76 ships only Google Workspace as a real Deprovisionable adapter (Plan 76-09).
 // Phases 77-78 add Slack/Entra/Okta/GitHub — each gets two steps (suspend + revoke).
@@ -289,5 +318,220 @@ export const deprovisioningRouter = router({
       );
 
       return { ok: true };
+    }),
+
+  /**
+   * Phase 77 D-01/D-02/D-03 — pre-flight impact preview for an assignment + provider.
+   * Cache-fronted (5 min) in getImpactPreview; forceRefresh bypasses. On adapter
+   * failure returns a structured outcome the admin-choice flow renders. When the admin
+   * proceeds without a preview, an `idp.preview.failed_proceed` audit line is emitted.
+   */
+  describeImpact: tenantProcedure
+    .use(requirePermission({ integration: ['read'] }))
+    .input(
+      z.object({
+        assignmentId: z.string().min(1),
+        provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK']),
+        forceRefresh: z.boolean().optional(),
+        proceedWithoutPreview: z.boolean().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const assignment = await findOrThrow(
+        () =>
+          ctx.db.contractorAssignment.findFirst({
+            where: { id: input.assignmentId, organizationId: ctx.organizationId },
+            select: { id: true, contractor: { select: { email: true } } },
+          }),
+        DEPROVISIONING_ASSIGNMENT_NOT_FOUND,
+      );
+      const externalUserId = assignment.contractor.email;
+      if (!externalUserId) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: DEPROVISIONING_NO_EXTERNAL_USER,
+        });
+      }
+
+      const result = await getImpactPreview({
+        db: ctx.db as unknown as Parameters<typeof getImpactPreview>[0]['db'],
+        organizationId: ctx.organizationId,
+        provider: input.provider,
+        externalUserId,
+        forceRefresh: input.forceRefresh,
+      });
+
+      if (!result.ok && input.proceedWithoutPreview) {
+        auditLog.info(
+          {
+            auditEvent: 'idp.preview.failed_proceed',
+            organizationId: ctx.organizationId,
+            userId: ctx.user.id,
+            provider: input.provider,
+            externalUserId,
+            actionResult: result.kind,
+          },
+          'Admin proceeded without an impact preview',
+        );
+      }
+
+      return result;
+    }),
+
+  /**
+   * Phase 77 D-12/D-13 — mark a terminally-failed step MANUAL_COMPLETED with an
+   * audited written reason. Mirrors Phase 74 overrideBlockingTask: owner/admin only,
+   * single $transaction (columns + status + AuditLog + recomputeRunStatus). The free-text
+   * note is stored in the column only — never logged raw.
+   */
+  overrideStepFailure: tenantProcedure
+    .use(requirePermission({ idp: ['override_step_failure'] }))
+    .input(
+      z.object({
+        stepId: z.string().min(1),
+        category: z.enum(MANUAL_OVERRIDE_CATEGORIES),
+        note: z.string().min(20).max(2000),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const step = await findOrThrow(
+        () =>
+          ctx.db.deprovisioningStep.findFirst({
+            where: { id: input.stepId, run: { organizationId: ctx.organizationId } },
+            select: { id: true, runId: true, status: true, attempts: true, provider: true },
+          }),
+        DEPROVISIONING_STEP_NOT_FOUND,
+      );
+
+      if (!(step.status === 'FAILED' && step.attempts >= MAX_ATTEMPTS)) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: DEPROVISIONING_STEP_NOT_OVERRIDABLE,
+        });
+      }
+
+      const runStatus = await ctx.db.$transaction(async tx => {
+        await tx.deprovisioningStep.update({
+          where: { id: step.id },
+          data: {
+            status: 'MANUAL_COMPLETED',
+            manualOverrideCategory: input.category,
+            manualOverrideNote: input.note,
+            manualOverriddenByUserId: ctx.user.id,
+            manualOverriddenAt: new Date(),
+          },
+        });
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'idp.deprovisioning.step.manual_completed',
+          resourceType: 'WORKFLOW_TASK_RUN',
+          resourceId: step.id,
+          // manualOverrideNote is DELIBERATELY excluded — it lives only in the column.
+          newValues: {
+            runId: step.runId,
+            provider: step.provider,
+            category: input.category,
+            overriddenByUserId: ctx.user.id,
+          },
+          tx: tx as unknown as Parameters<typeof writeAuditLog>[0]['tx'],
+        });
+        return recomputeRunStatus(
+          tx as unknown as Parameters<typeof recomputeRunStatus>[0],
+          step.runId,
+        );
+      });
+
+      // D-12 — when the run reaches terminal status the parent offboarding
+      // ACCESS_REVOKE task auto-completes; capture it as a separate audit entry.
+      if (runStatus === 'COMPLETED' || runStatus === 'PARTIAL_FAILURE') {
+        await writeAuditLog({
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'idp.deprovisioning.run.completed_via_override',
+          resourceType: 'WORKFLOW_RUN',
+          resourceId: step.runId,
+          newValues: { runStatus, triggeredByStepId: step.id },
+        });
+      }
+
+      return { ok: true, runStatus };
+    }),
+
+  /**
+   * Phase 77 D-14 — Slack org-grid OAuth connect entry point. Returns the local
+   * API-host OAuth start URL for the org-grid flow (mirrors getOAuthUrlGeneric's
+   * indirect F-SEC-05 pattern: the /api/oauth/slack-org-grid/start route mints the
+   * single-use OAuthChallenge + cookie, then 302s to Slack with the org-level
+   * scopes from getOrgGridOAuthConfig). The callback creates a distinct
+   * SLACK_ORG_GRID connection (marked via configJson.connectionSubKind) and probes
+   * Enterprise-Grid availability into scopeCapabilities.unavailableReason.
+   */
+  connectSlackOrgGrid: tenantProcedure
+    .use(requirePermission({ integration: ['update'] }))
+    .query(async () => {
+      const [{ getServerEnv }] = await Promise.all([import('@contractor-ops/validators')]);
+      const apiUrl = getServerEnv().API_URL;
+      if (!apiUrl) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: DEPROVISIONING_INTEGRATION_NOT_CONFIGURED,
+        });
+      }
+      return { url: `${apiUrl}/api/oauth/slack-org-grid/start` };
+    }),
+
+  /**
+   * Phase 77 D-15 — per-provider per-org enable toggle. Refuses to enable a provider
+   * whose signoff flag is still PENDING (unless FLAG_SIGNOFF_BYPASS=local). GWS and
+   * Slack are independent. Persisted in Organization.settingsJson.idpDeprovisioningEnabled.
+   */
+  enableProviderForOrg: tenantProcedure
+    .use(requirePermission({ settings: ['update'] }))
+    .input(
+      z.object({
+        provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK']),
+        enabled: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.enabled && !isProviderSignoffSatisfied(input.provider)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
+        });
+      }
+
+      const org = await ctx.db.organization.findUnique({
+        where: { id: ctx.organizationId },
+        select: { settingsJson: true },
+      });
+      const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
+      const current = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
+      const next = {
+        ...settings,
+        idpDeprovisioningEnabled: { ...current, [input.provider]: input.enabled },
+      };
+
+      await ctx.db.organization.update({
+        where: { id: ctx.organizationId },
+        data: { settingsJson: next as Prisma.InputJsonValue },
+      });
+      void invalidateByPrefix(CacheKeys.settingsPrefix(ctx.organizationId));
+
+      auditLog.info(
+        {
+          auditEvent: 'idp.deprovisioning.provider_toggled',
+          organizationId: ctx.organizationId,
+          userId: ctx.user.id,
+          provider: input.provider,
+          actionResult: input.enabled ? 'ENABLED' : 'DISABLED',
+        },
+        'IdP deprovisioning provider toggled for org',
+      );
+
+      return { ok: true, provider: input.provider, enabled: input.enabled };
     }),
 });

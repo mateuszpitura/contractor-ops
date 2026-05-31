@@ -397,6 +397,11 @@ export const DEPROVISIONING_STEP_NOT_FOUND = 'deprovisioningStepNotFound';
 export const DEPROVISIONING_COOLDOWN_ACTIVE = 'deprovisioningCooldownActive';
 export const DEPROVISIONING_NO_EXTERNAL_USER = 'deprovisioningNoExternalUser';
 
+// ─── Phase 77 — F2 IdP override + per-provider enable + org-grid connect ──
+export const DEPROVISIONING_STEP_NOT_OVERRIDABLE = 'deprovisioningStepNotOverridable';
+export const DEPROVISIONING_PROVIDER_SIGNOFF_PENDING = 'deprovisioningProviderSignoffPending';
+export const DEPROVISIONING_INTEGRATION_NOT_CONFIGURED = 'deprovisioningIntegrationNotConfigured';
+
 // ─── Phase 72 — F1 compliance payment block (COMPL-05) ─────────────
 export const COMPLIANCE_PAYMENT_BLOCKED = 'compliancePaymentBlocked';
 

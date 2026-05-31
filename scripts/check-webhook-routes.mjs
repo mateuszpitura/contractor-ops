@@ -119,6 +119,12 @@ const EXPECTED_ROUTES = {
     publisher: 'qstash',
     signature: 'guardQStashRequest',
   },
+  // Phase 77 D-03 — IdP deprovisioning saga step-runner QStash callback.
+  'POST /idp-deprovisioning/_step-runner': {
+    provider: 'qstash',
+    publisher: 'qstash',
+    signature: 'guardQStashRequest',
+  },
 
   // --- Internal (same-origin SPA / browser beacons) ----------------------
   // Authn is session/CSRF or none-by-design (public report sinks). No
