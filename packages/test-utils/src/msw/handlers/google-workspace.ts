@@ -94,5 +94,90 @@ export function googleWorkspaceHandlers(options?: HandlerOptions) {
         ],
       });
     }),
+
+    // --- Phase 77 D-04/D-05 deprovisioning endpoints ---
+    // Path predicates (MSW v2 + path-to-regexp v8 rejects glob/regex path literals).
+    // Suspend (PATCH user).
+    http.patch(
+      ({ request }) => isAdminUserPath(request.url),
+      async () => {
+        const err = await applyNetworkConditions(net);
+        if (err) return err;
+        return HttpResponse.json({ suspended: true });
+      },
+    ),
+    // describeImpact / verify (GET user).
+    http.get(
+      ({ request }) => isAdminUserPath(request.url),
+      async () => {
+        const err = await applyNetworkConditions(net);
+        if (err) return err;
+        return HttpResponse.json({
+          suspended: false,
+          isAdmin: false,
+          name: { fullName: 'Mock User' },
+        });
+      },
+    ),
+    // tokens.list
+    http.get(
+      ({ request }) => isAdminTokensListPath(request.url),
+      async () => {
+        const err = await applyNetworkConditions(net);
+        if (err) return err;
+        return HttpResponse.json({
+          items: [{ clientId: `app-${mockId()}`, displayText: 'Mock App', scopes: ['openid'] }],
+        });
+      },
+    ),
+    // tokens.delete
+    http.delete(
+      ({ request }) => isAdminTokenDeletePath(request.url),
+      async () => {
+        const err = await applyNetworkConditions(net);
+        if (err) return err;
+        return new HttpResponse(null, { status: 204 });
+      },
+    ),
+    // users.signOut
+    http.post(
+      ({ request }) => isAdminSignOutPath(request.url),
+      async () => {
+        const err = await applyNetworkConditions(net);
+        if (err) return err;
+        return new HttpResponse(null, { status: 204 });
+      },
+    ),
+    // drives.list (describeImpact best-effort)
+    http.get('https://www.googleapis.com/drive/v3/drives', async () => {
+      const err = await applyNetworkConditions(net);
+      if (err) return err;
+      return HttpResponse.json({ drives: [] });
+    }),
   ];
+}
+
+const ADMIN_HOST = 'admin.googleapis.com';
+function isAdminUserPath(url: string): boolean {
+  const u = new URL(url);
+  return u.hostname === ADMIN_HOST && /^\/admin\/directory\/v1\/users\/[^/]+$/.test(u.pathname);
+}
+function isAdminTokensListPath(url: string): boolean {
+  const u = new URL(url);
+  return (
+    u.hostname === ADMIN_HOST && /^\/admin\/directory\/v1\/users\/[^/]+\/tokens$/.test(u.pathname)
+  );
+}
+function isAdminTokenDeletePath(url: string): boolean {
+  const u = new URL(url);
+  return (
+    u.hostname === ADMIN_HOST &&
+    /^\/admin\/directory\/v1\/users\/[^/]+\/tokens\/[^/]+$/.test(u.pathname)
+  );
+}
+function isAdminSignOutPath(url: string): boolean {
+  const u = new URL(url);
+  return (
+    u.hostname === ADMIN_HOST && /^\/admin\/directory\/v1\/users\/[^/]+\/signOut$/.test(u.pathname)
+  );
 }
