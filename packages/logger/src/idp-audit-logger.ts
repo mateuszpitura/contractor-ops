@@ -37,6 +37,10 @@ import { PII_MASK_PATHS } from './pii-mask.js';
  * Phase 70 D-15 — initial 9 fields (per-action audit).
  * Phase 76 D-15 — saga + provenance fields (runId, stepId, hashes, attempts, etc.).
  * All Phase 76 fields are SHA-256 hashes, enum discriminators, or opaque IDs — no PII.
+ * Phase 77 D-07/D-10 — error-class + manual-override discriminators. `errorClass`
+ * and `manualOverrideCategory` are closed enums; `manualOverriddenByUserId` is an
+ * opaque id — no PII. The free-text override-rationale column is DELIBERATELY
+ * excluded from this allow-list — it lives only in the DB and is never logged raw.
  */
 export const IDP_AUDIT_ALLOWED_FIELDS = [
   // Phase 70 D-15 (existing) — DO NOT REMOVE
@@ -58,6 +62,10 @@ export const IDP_AUDIT_ALLOWED_FIELDS = [
   'attempts',
   'failureKind',
   'matchedProvenanceId',
+  // Phase 77 D-07 / D-10 — error-class + manual-override (non-PII discriminators/ids)
+  'errorClass',
+  'manualOverrideCategory',
+  'manualOverriddenByUserId',
 ] as const;
 
 export type IdpAuditAllowedField = (typeof IDP_AUDIT_ALLOWED_FIELDS)[number];

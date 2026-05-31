@@ -108,8 +108,9 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
     expect(joined).toContain('"service":"idp-audit"');
   });
 
-  it('IDP_AUDIT_ALLOWED_FIELDS contains the canonical fields', () => {
+  it('IDP_AUDIT_ALLOWED_FIELDS contains the canonical fields (Phase 70 + 76 + 77)', () => {
     expect([...IDP_AUDIT_ALLOWED_FIELDS]).toEqual([
+      // Phase 70 D-15
       'auditEvent',
       'externalUserId',
       'actionResult',
@@ -119,6 +120,19 @@ describe('getIdpAuditLogger (FOUND6-06 — D-15)', () => {
       'organizationId',
       'userId',
       'timestamp',
+      // Phase 76 D-15 / SC#2
+      'runId',
+      'stepId',
+      'stepKind',
+      'requestSha256',
+      'responseSha256',
+      'attempts',
+      'failureKind',
+      'matchedProvenanceId',
+      // Phase 77 D-07 / D-10
+      'errorClass',
+      'manualOverrideCategory',
+      'manualOverriddenByUserId',
     ]);
   });
 });
