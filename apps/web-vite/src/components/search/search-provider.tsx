@@ -41,6 +41,7 @@ function readRecent(): RecentItem[] {
 function writeRecent(items: RecentItem[]): void {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    // safe-swallow: best-effort recent-items persistence; storage full/unavailable is non-fatal
   } catch {
     // Storage full or unavailable — silently ignore
   }

@@ -250,6 +250,7 @@ export class LinearAdapter extends BaseAdapter {
       if (parsed.type && parsed.action) {
         eventType = `${parsed.type}.${parsed.action}`;
       }
+      // safe-swallow: webhook payload parse best-effort; eventType stays undefined and is handled downstream
     } catch {
       // Payload parse failure handled downstream
     }

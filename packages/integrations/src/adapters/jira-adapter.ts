@@ -247,6 +247,7 @@ export class JiraAdapter extends BaseAdapter {
     try {
       const parsed = JSON.parse(rawBody) as { webhookEvent?: string };
       eventType = parsed.webhookEvent;
+      // safe-swallow: webhook payload parse best-effort; eventType stays undefined and is handled downstream
     } catch {
       // Payload parse failure handled downstream
     }

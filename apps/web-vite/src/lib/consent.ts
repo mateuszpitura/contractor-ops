@@ -28,6 +28,7 @@ export function recordCookieConsent(): void {
   if (typeof window === 'undefined') return;
   try {
     window.localStorage.setItem(COOKIE_CONSENT_KEY, new Date().toISOString());
+    // safe-swallow: consent persistence blocked in locked-down browsers; banner re-prompts next visit per spec
   } catch {
     // Same lock-down case as above — accept the click in-memory but skip
     // persistence so the banner doesn't refuse to dismiss. A re-visit will

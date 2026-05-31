@@ -87,6 +87,7 @@ function readPinned(): PinnedItem[] {
 function writePinned(items: PinnedItem[]): void {
   try {
     localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(items));
+    // safe-swallow: best-effort pinned-items persistence; storage full/unavailable is non-fatal
   } catch {
     // Storage full or unavailable — silently ignore (best-effort persistence).
   }

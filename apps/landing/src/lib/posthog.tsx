@@ -88,6 +88,7 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
           const value = url.searchParams.get(key);
           if (value) utm[key] = value;
         }
+        // safe-swallow: UTM capture best-effort; malformed URL just skips campaign attribution
       } catch {
         // URL parsing should not fail on a real visit; ignore.
       }

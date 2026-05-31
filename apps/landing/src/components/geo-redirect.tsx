@@ -76,6 +76,7 @@ async function detectMarket(): Promise<Market> {
       const country = (await response.text()).trim();
       if (country.length >= 2) return marketFromCountry(country);
     }
+    // safe-swallow: geo-IP lookup best-effort (abort/network/non-ok); INTL fallback returned below
   } catch {
     // Geo lookup is best-effort — INTL fallback is acceptable.
   }

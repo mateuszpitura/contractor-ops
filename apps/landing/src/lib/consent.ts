@@ -40,6 +40,7 @@ export function writeConsent(state: Exclude<ConsentState, 'unknown'>): void {
     window.localStorage.setItem(STORAGE_KEY, state);
     window.localStorage.setItem(TIMESTAMP_KEY, String(Date.now()));
     window.dispatchEvent(new CustomEvent<ConsentState>('landing-consent', { detail: state }));
+    // safe-swallow: consent persistence blocked (Safari ITP/private mode); banner re-prompts next visit
   } catch {
     // localStorage may be blocked (Safari ITP, private mode); silently
     // degrade — banner re-prompts next visit.

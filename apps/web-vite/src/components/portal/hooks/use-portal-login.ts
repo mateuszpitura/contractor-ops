@@ -28,6 +28,7 @@ export function usePortalLogin() {
         await requestMagicLink.mutateAsync({ email });
         setSentEmail(email);
         setSent(true);
+        // safe-swallow: error already surfaced to the user via the mutation onError toast; only the sent-state flip is skipped
       } catch {
         // toast emitted by mutation onError
       }

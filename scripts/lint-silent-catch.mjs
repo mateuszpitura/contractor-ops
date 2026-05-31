@@ -15,8 +15,8 @@
 //   still leave a paper trail for code review.
 //
 // Scanned roots:
-// - packages/api/src/**/*.ts(x)
-// - apps/*/src/**/*.ts(x)
+// - packages/{api,integrations,einvoice}/src/**/*.ts(x)
+// - apps/{web-vite,landing,public-api,cron-worker}/src/**/*.ts(x)
 //
 // Skipped:
 // - `__tests__/**`, `*.test.*`, `*.spec.*`, `*.d.ts` — tests routinely
@@ -64,9 +64,12 @@ const repoRoot = resolve(Dirname, '..');
 
 const scanRoots = [
   resolve(repoRoot, 'packages/api/src'),
+  resolve(repoRoot, 'packages/integrations/src'),
+  resolve(repoRoot, 'packages/einvoice/src'),
   resolve(repoRoot, 'apps/web-vite/src'),
   resolve(repoRoot, 'apps/landing/src'),
   resolve(repoRoot, 'apps/public-api/src'),
+  resolve(repoRoot, 'apps/cron-worker/src'),
 ];
 
 const allowPathPatterns = [/\/__tests__\//, /\.(test|spec)\.[tj]sx?$/, /\.d\.ts$/];

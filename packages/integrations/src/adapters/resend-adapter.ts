@@ -112,6 +112,7 @@ export class ResendAdapter extends BaseAdapter {
           break;
         }
       }
+      // safe-swallow: org-slug extraction non-critical; organizationSlug remains undefined on parse failure
     } catch {
       // organizationSlug stays undefined — not a security-critical path
     }

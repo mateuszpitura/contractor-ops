@@ -16,6 +16,7 @@ process.on('uncaughtException', err => {
   log.fatal({ err }, 'uncaughtException');
   try {
     Sentry.captureException(err);
+    // safe-swallow: secondary Sentry capture failure must not mask the original crash
   } catch {
     // ignore secondary failures
   }
@@ -26,6 +27,7 @@ process.on('unhandledRejection', reason => {
   log.error({ err: reason }, 'unhandledRejection');
   try {
     Sentry.captureException(reason);
+    // safe-swallow: secondary Sentry capture failure must not mask the unhandled rejection
   } catch {
     // ignore
   }

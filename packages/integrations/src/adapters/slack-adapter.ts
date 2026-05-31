@@ -212,6 +212,7 @@ export class SlackAdapter extends BaseAdapter {
         const payload = JSON.parse(payloadStr) as { type?: string };
         eventType = payload.type ?? 'unknown';
       }
+      // safe-swallow: Slack payload parse best-effort; eventType defaults to "unknown"
     } catch {
       // If parsing fails, keep eventType as "unknown"
     }

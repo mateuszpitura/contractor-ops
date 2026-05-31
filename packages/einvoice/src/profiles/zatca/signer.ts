@@ -507,6 +507,7 @@ export class ZatcaXAdESSigner implements Signable {
         if (cnMatch) {
           signerName = cnMatch[1]?.trim();
         }
+        // safe-swallow: signer-name CN extraction best-effort; absence is non-fatal
       } catch {
         // Non-critical
       }

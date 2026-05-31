@@ -25,6 +25,7 @@ export function CopyableField({ value, ariaLabel, className }: CopyableFieldProp
       await navigator.clipboard.writeText(value);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      // safe-swallow: clipboard write best-effort; insecure context/locked-down browser leaves value visible to select
     } catch {
       // Clipboard API unavailable (insecure context / locked-down browser) — fail silently.
     }

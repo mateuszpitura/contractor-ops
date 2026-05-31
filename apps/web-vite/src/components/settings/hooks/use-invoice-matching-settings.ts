@@ -50,6 +50,7 @@ export function useInvoiceMatchingSettings() {
     try {
       await navigator.clipboard.writeText(emailAddress);
       toast.success(t('emailCopied'));
+      // safe-swallow: clipboard write best-effort; insecure context/denied permission leaves text for manual copy
     } catch {
       // Fallback: select text for manual copy
     }
