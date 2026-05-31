@@ -1,0 +1,52 @@
+name: integration-smoke
+
+# Live round-trips against real provider sandboxes. NOT part of the PR
+# pipeline — a sandbox outage must never block a merge. Runs nightly and
+# on manual dispatch. Matrixed per provider so one provider's failure (or
+# missing secret) isolates to its own job.
+#
+# Each job exposes only its provider's secrets + RUN_LIVE_SMOKE, then runs
+# the smoke config filtered to that provider's file. Suites for which the
+# secrets are absent self-skip (see tests/integration-smoke/harness.ts).
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC nightly
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-smoke-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [stripe, slack, vies]
+    name: smoke (${{ matrix.provider }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run ${{ matrix.provider }} smoke
+        env:
+          RUN_LIVE_SMOKE: '1'
+          # Per-provider sandbox creds (CI secret group). Absent secrets →
+          # the suite self-skips, leaving a clean pass.
+          STRIPE_SECRET_KEY: ${{ secrets.SMOKE_STRIPE_SECRET_KEY }}
+          SLACK_BOT_TOKEN: ${{ secrets.SMOKE_SLACK_BOT_TOKEN }}
+          SLACK_TEST_CHANNEL_ID: ${{ secrets.SMOKE_SLACK_TEST_CHANNEL_ID }}
+        run: pnpm exec vitest run --config vitest.smoke.config.ts ${{ matrix.provider }}
