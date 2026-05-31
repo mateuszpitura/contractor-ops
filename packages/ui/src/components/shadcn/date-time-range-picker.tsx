@@ -7,6 +7,7 @@ import type { DateRange } from 'react-day-picker';
 import { cn } from '../../lib/utils.js';
 import { Button } from './button.js';
 import { Calendar } from './calendar.js';
+import { formControlPopoverRender } from './form-control-trigger.js';
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js';
 import { TimePicker } from './time-picker.js';
 
@@ -203,26 +204,16 @@ export function DateTimeRangePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        // biome-ignore lint/nursery/noJsxPropsBind: render-prop pattern for headless UI
-        render={props => (
-          <Button
-            {...props}
-            id={id}
-            type="button"
-            variant="outline"
-            disabled={disabled}
-            aria-haspopup="dialog"
-            aria-label={ariaLabel ?? 'Pick a date & time range'}
-            className={cn(
-              'w-full justify-start gap-2 font-normal',
-              !triggerLabel && 'text-muted-foreground',
-              className,
-            )}>
-            <CalendarRange aria-hidden="true" className="size-4 text-muted-foreground" />
-            <span className="truncate">{triggerLabel ?? labels.placeholder}</span>
-          </Button>
-        )}
-      />
+        id={id}
+        disabled={disabled}
+        aria-haspopup="dialog"
+        aria-label={ariaLabel ?? 'Pick a date & time range'}
+        render={formControlPopoverRender(
+          cn('gap-2', !triggerLabel && 'text-muted-foreground', className),
+        )}>
+        <CalendarRange aria-hidden="true" className="size-4 text-muted-foreground" />
+        <span className="truncate">{triggerLabel ?? labels.placeholder}</span>
+      </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
         <div className="flex flex-col">
           {/* Calendar */}

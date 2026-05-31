@@ -7,11 +7,12 @@
  * file list, remove-per-file, total size, optional max size guard.
  */
 
-import { File as FileIcon, Upload, X } from 'lucide-react';
+import { File as FileIcon, X } from 'lucide-react';
 import * as React from 'react';
 
 import { cn } from '../../lib/utils.js';
 import { Button } from '../shadcn/button.js';
+import { DropZoneSurface } from './drop-zone-surface.js';
 
 export interface FileUploadProps {
   files: readonly File[];
@@ -114,7 +115,7 @@ export function FileUpload({
 
   return (
     <div className={cn('space-y-3', className)}>
-      <div
+      <DropZoneSurface
         role="button"
         tabIndex={disabled ? -1 : 0}
         onClick={handleDropzoneClick}
@@ -122,15 +123,10 @@ export function FileUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        aria-disabled={disabled}
-        className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-10 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          isDragging && 'border-primary bg-primary/5',
-          disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-primary/60',
-        )}>
-        <Upload className="size-8 text-muted-foreground" aria-hidden />
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        isDragActive={isDragging}
+        disabled={disabled}
+        label={label}
+        description={description}>
         <input
           ref={inputRef}
           type="file"
@@ -140,7 +136,7 @@ export function FileUpload({
           disabled={disabled}
           onChange={handleInputChange}
         />
-      </div>
+      </DropZoneSurface>
 
       {files.length > 0 ? (
         <ul className="space-y-1.5">

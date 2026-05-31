@@ -1,5 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 
+import { WORKBENCH_EMPTY_STATE_PAGE_CLASS } from './table-page-layout.js';
+
 export interface AtelierEmptyStateAction {
   label: string;
   /** Renders as a Link if provided. */
@@ -13,8 +15,9 @@ export interface AtelierEmptyStateAction {
 /**
  * Layout density for the empty state.
  *
- * - `page`     — full-page empty state. Tall (min-h 40vh), large
- *   illustration, dot-grid backdrop, framed border. Default.
+ * - `page`     — list-page empty state. Fills the flex slot below headers
+ *   (`WORKBENCH_EMPTY_STATE_PAGE_CLASS`, min 60vh when the parent has no
+ *   bounded height). Large illustration, dot-grid backdrop, framed border.
  * - `subview`  — inside a tab/card/section. No min-h, smaller
  *   illustration, no backdrop, no border. Use for empty tabs inside
  *   detail pages or empty sections inside settings.
@@ -72,6 +75,7 @@ export interface AtelierEmptyStateProps {
  * the app's Link component (locale-aware, app-specific). Consumers pass
  * a small wrapper that bridges the action object to <Link>/<Button>.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: variant × CTA × illustration matrix; splitting per-variant would duplicate the action-render wiring across helpers
 export function AtelierEmptyState({
   icon: Icon,
   illustration: Illustration,
@@ -138,24 +142,26 @@ export function AtelierEmptyState({
   }
 
   return (
-    <div className="dot-grid flex min-h-[40vh] flex-col items-center justify-center rounded-2xl border border-border/40 px-6 py-12 text-center">
-      {Illustration ? (
-        <div className="text-primary/70">
-          <Illustration className="h-24 w-24" />
-        </div>
-      ) : Icon ? (
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/8">
-          <Icon className="h-8 w-8 text-primary/70" strokeWidth={1.5} />
-        </div>
-      ) : null}
-      <h2 className="mt-5 font-display text-[20px] font-semibold tracking-tight">{heading}</h2>
-      <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">{body}</p>
-      {effectivePrimary || secondaryAction ? (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {effectivePrimary ? renderAction(effectivePrimary, 'primary') : null}
-          {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
-        </div>
-      ) : null}
+    <div className={WORKBENCH_EMPTY_STATE_PAGE_CLASS} data-slot="workbench-empty-state-page">
+      <div className="dot-grid flex min-h-[60vh] flex-1 flex-col items-center justify-center rounded-2xl border border-border/40 px-6 py-12 text-center">
+        {Illustration ? (
+          <div className="text-primary/70">
+            <Illustration className="h-24 w-24" />
+          </div>
+        ) : Icon ? (
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/8">
+            <Icon className="h-8 w-8 text-primary/70" strokeWidth={1.5} />
+          </div>
+        ) : null}
+        <h2 className="mt-5 font-display text-[20px] font-semibold tracking-tight">{heading}</h2>
+        <p className="mt-2 max-w-[420px] text-sm text-muted-foreground">{body}</p>
+        {effectivePrimary || secondaryAction ? (
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            {effectivePrimary ? renderAction(effectivePrimary, 'primary') : null}
+            {secondaryAction ? renderAction(secondaryAction, 'secondary') : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

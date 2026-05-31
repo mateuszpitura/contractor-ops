@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { cn } from '../../lib/utils.js';
+import { WORKBENCH_TABLE_BODY_MAX_HEIGHT_CLASS } from './table-page-layout.js';
 
 export interface AtelierTableShellProps {
   children: ReactNode;
@@ -15,24 +16,36 @@ export interface AtelierTableShellProps {
   /** Optional pagination row rendered below the scroll area. */
   footer?: ReactNode;
   /**
-   * When true (default), the shell participates in a flex column and the
-   * scroll region grows to fill remaining space (`min-h-0 flex-1`) with
-   * internal overflow and a sticky column header. Set false for dialogs
-   * or compact embeds.
+   * Height behaviour switch. When false, the shell renders full content height
+   * with no cap/fill (dialogs, compact embeds). When true (default), the body
+   * region's height is managed — see {@link fill}.
    */
   constrainHeight?: boolean;
+  /**
+   * Body height mode (only when `constrainHeight`).
+   * - `false` (default): **cap** — body capped at
+   *   {@link WORKBENCH_TABLE_BODY_MAX_HEIGHT_CLASS} (300px), scrolls
+   *   internally, card is content-height; the *page* scrolls. Use on pages
+   *   with pre-table chrome (filters, summary tiles) — e.g. invoices.
+   * - `true`: **fill** — the shell joins the viewport flex chain and the body
+   *   grows to fill remaining space, scrolling internally; the page does not
+   *   scroll. Use on table-only pages — e.g. contractors. Pair with
+   *   `WORKBENCH_TABLE_PAGE_FILL_CLASS` on the page root.
+   */
+  fill?: boolean;
   className?: string;
 }
 
 /**
  * Workbench-tier table shell. Wraps a `<table>` (or any tabular layout)
- * with consistent chrome: rounded border, flex-fill scroll, sticky column
- * headers, and an optional loading overlay that doesn't shift layout.
+ * with consistent chrome: rounded border, sticky column headers, an optional
+ * pagination footer, and a loading overlay that doesn't shift layout.
  *
- * **Viewport discipline:** height is driven by CSS flex (`min-h-0 flex-1`)
- * from the dashboard shell down — not by scroll-triggered JS measurement.
- * Parent chain must include `flex min-h-0 flex-1 flex-col` (see
- * `WORKBENCH_*_CLASS` helpers in `table-page-layout.ts`).
+ * **Height model:** see {@link AtelierTableShellProps.fill}. Cap mode (default)
+ * keeps the card content-height with a 300px scroll body so the page scrolls;
+ * fill mode grows the body to fill the viewport so the table — not the page —
+ * scrolls. Fill mode requires the viewport flex chain (`WORKBENCH_*_FILL`
+ * classes in `table-page-layout.ts`).
  */
 export function AtelierTableShell({
   children,
@@ -41,26 +54,29 @@ export function AtelierTableShell({
   loadingLabel,
   footer,
   constrainHeight = true,
+  fill = false,
   className,
 }: AtelierTableShellProps) {
+  const managed = constrainHeight;
+  // Fill mode grows into the viewport slot (flex-1) but `max-h-max` caps it at
+  // content height, so few-row tables shrink instead of leaving empty space and
+  // the page region is only as tall as it needs to be. Many rows → grows to the
+  // slot and the inner region scrolls.
+  const fillBox = 'min-h-0 max-h-max flex-1';
   return (
-    <div className={cn('flex flex-col gap-2', constrainHeight && 'min-h-0 flex-1', className)}>
+    <div className={cn('flex flex-col gap-2', managed && fill && fillBox, className)}>
       <div
         className={cn(
           'relative flex flex-col overflow-hidden rounded-xl border border-border/50 bg-card',
-          // No min-h-[320px] floor — that forced the bordered box to push its
-          // footer below the parent flex slot on pages where the table region
-          // had < 320 px of vertical room (e.g. /invoices, where the
-          // pre-table compliance summary + filter chips + upload area eat the
-          // page's height budget). The inner [role=region] keeps its own
-          // overflow-auto so short content still renders without ugly collapse.
-          constrainHeight && 'min-h-0 max-h-max flex-1',
+          // Fill mode: grow-to-content into the viewport slot so the inner
+          // region scrolls. Cap mode: content-height card (no flex-1) so the
+          // body's max-height bounds it and the page scrolls instead.
+          managed && fill && fillBox,
         )}>
         {chrome ? (
           <div className="shrink-0 border-b border-border/50 bg-muted/40">{chrome}</div>
         ) : null}
-        <div
-          role="region"
+        <section
           aria-label="Table content"
           className={cn(
             'overflow-auto [scrollbar-gutter:stable] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
@@ -68,10 +84,13 @@ export function AtelierTableShell({
             '[&_[data-slot=table-header]]:bg-transparent [&_[data-slot=table-header]>tr>th]:border-b-0',
             '[&_[data-slot=table-head]]:sticky [&_[data-slot=table-head]]:top-0 [&_[data-slot=table-head]]:z-10',
             '[&_[data-slot=table-head]]:bg-muted [&_[data-slot=table-head]]:shadow-[0_1px_0_0_hsl(var(--border)/0.5)]',
-            constrainHeight && 'min-h-0 flex-1',
+            // min-h-0 lets the flex-item region honour its height bound
+            // (otherwise min-height:auto = content size wins). Fill grows to the
+            // viewport slot; cap clamps at 300px. Both scroll internally.
+            managed && cn('min-h-0', fill ? 'flex-1' : WORKBENCH_TABLE_BODY_MAX_HEIGHT_CLASS),
           )}>
           {children}
-        </div>
+        </section>
         {isLoading ? (
           <div
             aria-busy="true"

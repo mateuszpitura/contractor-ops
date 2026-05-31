@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 export interface AtelierPageHeaderProps {
@@ -7,6 +8,8 @@ export interface AtelierPageHeaderProps {
   description?: string;
   /** Optional eyebrow label above the title (small uppercase tracked text). */
   eyebrow?: string;
+  /** Optional leading icon beside the title (muted, matches sidebar nav icons). */
+  icon?: LucideIcon;
   /** Right-aligned action slot — typically a primary button and a menu. */
   actions?: ReactNode;
 }
@@ -23,6 +26,7 @@ export function AtelierPageHeader({
   title,
   description,
   eyebrow,
+  icon: Icon,
   actions,
 }: AtelierPageHeaderProps) {
   return (
@@ -33,9 +37,12 @@ export function AtelierPageHeader({
             {eyebrow}
           </span>
         ) : null}
-        <h1 className="font-display text-[24px] font-semibold leading-tight tracking-tight">
-          {title}
-        </h1>
+        <div className="flex items-center gap-3">
+          {Icon ? <Icon className="h-6 w-6 shrink-0 text-muted-foreground" aria-hidden /> : null}
+          <h1 className="font-display text-[24px] font-semibold leading-tight tracking-tight">
+            {title}
+          </h1>
+        </div>
         {description ? (
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p>
         ) : null}

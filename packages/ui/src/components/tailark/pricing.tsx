@@ -26,9 +26,10 @@ export interface TailarkPricingTier {
 export interface TailarkPricingProps {
   tiers: readonly TailarkPricingTier[];
   className?: string;
+  popularLabel?: string;
 }
 
-export function TailarkPricing({ tiers, className }: TailarkPricingProps) {
+export function TailarkPricing({ tiers, className, popularLabel }: TailarkPricingProps) {
   return (
     <div
       className={cn(
@@ -41,12 +42,12 @@ export function TailarkPricing({ tiers, className }: TailarkPricingProps) {
           className={cn(
             'relative flex h-full flex-col rounded-2xl border bg-card p-6 transition-colors',
             tier.popular
-              ? 'border-primary shadow-lg ring-1 ring-primary/30'
+              ? 'border-primary/40 pt-8 shadow-md'
               : 'border-border hover:border-border/80',
           )}>
           {tier.popular ? (
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary-foreground">
-              Popular
+            <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
+              {popularLabel ?? 'Most popular'}
             </span>
           ) : null}
           <header className="mb-5">

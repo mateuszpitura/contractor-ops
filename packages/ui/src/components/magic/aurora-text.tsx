@@ -15,18 +15,15 @@ export const AuroraText = memo(
     colors = ['#FF0080', '#7928CA', '#0070F3', '#38bdf8'],
     speed = 1,
   }: AuroraTextProps) => {
-    const _gradientStyle = {
-      backgroundImage: `linear-gradient(135deg, ${colors.join(', ')}, ${colors[0]})`,
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      animationDuration: `${10 / speed}s`,
-    };
-
     return (
       <span className={`relative inline-block ${className}`}>
         <span className="sr-only">{children}</span>
         <span
           className="animate-aurora relative bg-size-[200%_auto] bg-clip-text text-transparent"
+          style={{
+            backgroundImage: `linear-gradient(135deg, ${colors.join(', ')}, ${colors[0]})`,
+            animationDuration: `${10 / speed}s`,
+          }}
           aria-hidden="true">
           {children}
         </span>

@@ -7,6 +7,7 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 import { useIsMobile } from '../../hooks/use-mobile.js';
+import { computeOverflowShadow } from '../../hooks/use-overflow-scroll-shadow.js';
 import { useUITranslations } from '../../i18n/translations-provider.js';
 import { cn } from '../../lib/utils.js';
 import { Button } from './button.js';
@@ -34,6 +35,32 @@ type SidebarContextProps = {
 };
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null);
+
+type SidebarScrollShadowContextValue = {
+  showFooterShadow: boolean;
+  setShowFooterShadow: (show: boolean) => void;
+};
+
+const SidebarScrollShadowContext = React.createContext<SidebarScrollShadowContextValue | null>(
+  null,
+);
+
+function SidebarScrollShadowProvider({ children }: { children: React.ReactNode }) {
+  const [showFooterShadow, setShowFooterShadowState] = React.useState(false);
+  const setShowFooterShadow = React.useCallback((show: boolean) => {
+    setShowFooterShadowState(show);
+  }, []);
+  const value = React.useMemo(
+    () => ({ showFooterShadow, setShowFooterShadow }),
+    [showFooterShadow, setShowFooterShadow],
+  );
+
+  return (
+    <SidebarScrollShadowContext.Provider value={value}>
+      {children}
+    </SidebarScrollShadowContext.Provider>
+  );
+}
 
 function useSidebar() {
   const context = React.useContext(SidebarContext);
@@ -168,7 +195,7 @@ function Sidebar({
           className,
         )}
         {...props}>
-        {children}
+        <SidebarScrollShadowProvider>{children}</SidebarScrollShadowProvider>
       </div>
     );
   }
@@ -192,7 +219,9 @@ function Sidebar({
             <SheetTitle>{t('sidebar.title')}</SheetTitle>
             <SheetDescription>{t('sidebar.description')}</SheetDescription>
           </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col">
+            <SidebarScrollShadowProvider>{children}</SidebarScrollShadowProvider>
+          </div>
         </SheetContent>
       </Sheet>
     );
@@ -234,7 +263,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
           className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border">
-          {children}
+          <SidebarScrollShadowProvider>{children}</SidebarScrollShadowProvider>
         </div>
       </div>
     </div>
@@ -343,11 +372,20 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
+  const scrollShadow = React.useContext(SidebarScrollShadowContext);
+  const showShadow = scrollShadow?.showFooterShadow ?? false;
+
   return (
     <div
       data-slot="sidebar-footer"
       data-sidebar="footer"
-      className={cn('flex flex-col gap-2 p-2', className)}
+      data-scroll-shadow={showShadow ? '' : undefined}
+      className={cn(
+        'relative z-10 flex flex-col gap-2 bg-sidebar p-2',
+        showShadow &&
+          'before:pointer-events-none before:absolute before:inset-x-0 before:bottom-full before:h-8 before:bg-gradient-to-b before:from-transparent before:to-black/[0.07] dark:before:to-black/30',
+        className,
+      )}
       {...props}
     />
   );
@@ -364,9 +402,59 @@ function SidebarSeparator({ className, ...props }: React.ComponentProps<typeof S
   );
 }
 
-function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
+function SidebarContent({ className, ref, ...props }: React.ComponentProps<'div'>) {
+  const scrollShadow = React.useContext(SidebarScrollShadowContext);
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
+
+  const setContentRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      contentRef.current = node;
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    },
+    [ref],
+  );
+
+  const setShowFooterShadow = scrollShadow?.setShowFooterShadow;
+
+  React.useEffect(() => {
+    if (!setShowFooterShadow) return;
+
+    const el = contentRef.current;
+    if (!el) return;
+
+    const update = () => {
+      setShowFooterShadow(computeOverflowShadow(el));
+    };
+
+    update();
+
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(el);
+
+    const mutationObserver = new MutationObserver(update);
+    mutationObserver.observe(el, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+    });
+
+    el.addEventListener('scroll', update, { passive: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      el.removeEventListener('scroll', update);
+      setShowFooterShadow(false);
+    };
+  }, [setShowFooterShadow]);
+
   return (
     <div
+      ref={setContentRef}
       data-slot="sidebar-content"
       data-sidebar="content"
       className={cn(

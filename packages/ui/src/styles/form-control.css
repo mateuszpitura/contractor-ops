@@ -1,0 +1,46 @@
+/*
+ * Form control surfaces — one fill/border/focus for inputs, selects, textareas,
+ * and field-styled triggers (date pickers, comboboxes). Complements Tailwind
+ * utilities on [data-form-control]; wins when variant classes fail to merge.
+ */
+
+:root {
+  --form-control-bg: color-mix(in oklch, var(--muted) 58%, var(--card));
+  --form-control-bg-hover: color-mix(in oklch, var(--muted) 72%, var(--card));
+  --form-control-bg-focus: var(--card);
+  --form-control-bg-disabled: color-mix(in oklch, var(--muted) 85%, var(--card));
+  --form-control-border: var(--input);
+}
+
+.dark {
+  --form-control-bg: color-mix(in oklch, var(--input) 42%, transparent);
+  --form-control-bg-hover: color-mix(in oklch, var(--input) 52%, transparent);
+  --form-control-bg-focus: color-mix(in oklch, var(--input) 55%, transparent);
+  --form-control-bg-disabled: color-mix(in oklch, var(--input) 28%, transparent);
+}
+
+[data-form-control] {
+  border-color: var(--form-control-border);
+  background-color: var(--form-control-bg);
+  box-shadow: none;
+}
+
+[data-form-control]:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--form-control-bg-hover);
+}
+
+[data-form-control]:focus-visible {
+  border-color: var(--ring);
+  background-color: var(--form-control-bg-focus);
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--ring) 28%, transparent),
+    0 0 0 1px var(--ring);
+  outline: none;
+}
+
+[data-form-control]:disabled,
+[data-form-control][aria-disabled="true"] {
+  background-color: var(--form-control-bg-disabled);
+  opacity: 0.65;
+  cursor: not-allowed;
+}

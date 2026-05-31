@@ -11,9 +11,16 @@ export interface TiltCardProps {
   className?: string;
   /**
    * Animated entrance delay, in ms. Mapped to `animation-delay`.
-   * Use for staggered card reveals.
+   * Use for staggered card reveals. Ignored when `entrance` is false.
    */
   delay?: number;
+  /**
+   * Play the `atelier-enter` blur/scale entrance on mount. Default true.
+   * Set false when a parent owns the entrance (e.g. an `AnimateIn` wrapper
+   * in web-vite) so the card does not animate twice — the leftover
+   * glass/tilt/glow/shimmer behaviour is unaffected.
+   */
+  entrance?: boolean;
   /** Apply atelier-border-glow (breathing teal→amber border). */
   glow?: boolean;
   /** Apply atelier-shimmer (metallic sweep on hover). */
@@ -29,14 +36,16 @@ export interface TiltCardProps {
  *   - prefers-reduced-motion: reduce
  *   - !(hover: hover) (touch / coarse pointer)
  *
- * Always renders the atelier-glass surface, atelier-enter entrance,
- * optional border-glow, optional shimmer. The tilt-on-hover is the
- * only behavior gated by capability.
+ * Always renders the atelier-glass surface, optional border-glow,
+ * optional shimmer. The `atelier-enter` entrance plays by default but is
+ * opt-out via `entrance={false}` (when a parent owns the reveal). The
+ * tilt-on-hover is the only behavior gated by capability.
  */
 export function TiltCard({
   children,
   className = '',
   delay = 0,
+  entrance = true,
   glow = false,
   shimmer = false,
   style,
@@ -69,7 +78,8 @@ export function TiltCard({
   }, [tiltActive]);
 
   const classes = [
-    'atelier-enter atelier-glass relative rounded-2xl p-5',
+    entrance ? 'atelier-enter' : '',
+    'atelier-glass relative rounded-2xl p-5',
     tiltActive ? 'transition-transform duration-[400ms]' : '',
     glow ? 'atelier-border-glow' : '',
     shimmer ? 'atelier-shimmer' : '',
@@ -80,7 +90,7 @@ export function TiltCard({
 
   const _composedStyle: CSSProperties = {
     ...style,
-    animationDelay: delay > 0 ? `${delay}ms` : undefined,
+    animationDelay: entrance && delay > 0 ? `${delay}ms` : undefined,
     transitionTimingFunction: tiltActive ? 'var(--ease-atelier-out)' : undefined,
     willChange: tiltActive ? 'transform' : undefined,
   };

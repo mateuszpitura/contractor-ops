@@ -83,6 +83,14 @@
       "types": "./dist/lib/utils.d.ts",
       "import": "./dist/lib/utils.js"
     },
+    "./lib/form-control": {
+      "types": "./dist/lib/form-control.d.ts",
+      "import": "./dist/lib/form-control.js"
+    },
+    "./lib/row-click": {
+      "types": "./dist/lib/row-click.d.ts",
+      "import": "./dist/lib/row-click.js"
+    },
     "./i18n": {
       "types": "./dist/i18n/translations-provider.d.ts",
       "import": "./dist/i18n/translations-provider.js"
@@ -92,6 +100,7 @@
       "import": "./dist/hooks/use-mobile.js"
     },
     "./styles/tokens.css": "./src/styles/tokens.css",
+    "./styles/form-control.css": "./src/styles/form-control.css",
     "./styles/glass.css": "./src/styles/glass.css",
     "./styles/motion.css": "./src/styles/motion.css",
     "./styles/status.css": "./src/styles/status.css",
@@ -99,6 +108,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",

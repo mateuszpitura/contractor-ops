@@ -4,24 +4,65 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 
+import { formControlClassName, formControlHoverClassName } from '../../lib/form-control.js';
 import { cn } from '../../lib/utils.js';
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  cn(
+    'group/button inline-flex shrink-0 items-center justify-center rounded-lg text-sm whitespace-nowrap outline-none select-none transition-all',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  ),
   {
     variants: {
       variant: {
-        default:
-          'btn-shimmer bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 [a]:hover:bg-primary/90',
-        outline:
-          'border border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
-        secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
-        ghost:
-          'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
-        destructive:
-          'bg-destructive text-white shadow-sm hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:bg-destructive dark:hover:bg-destructive/90 dark:focus-visible:ring-destructive/40',
-        link: 'text-primary underline-offset-4 hover:underline',
+        default: cn(
+          'btn-shimmer border border-transparent font-medium shadow-sm active:translate-y-px',
+          'bg-primary text-primary-foreground hover:bg-primary/90 [a]:hover:bg-primary/90',
+          'focus-visible:ring-3 focus-visible:ring-ring/50',
+          'disabled:pointer-events-none disabled:opacity-50',
+          'aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+        ),
+        outline: cn(
+          'border border-border bg-background font-medium active:translate-y-px',
+          'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground',
+          'focus-visible:ring-3 focus-visible:ring-ring/50',
+          'disabled:pointer-events-none disabled:opacity-50',
+          'dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
+          'aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+        ),
+        field: cn(
+          formControlClassName,
+          formControlHoverClassName,
+          'font-normal shadow-none active:translate-y-0',
+          'focus-visible:ring-2 focus-visible:ring-ring/30',
+          'disabled:pointer-events-none disabled:opacity-65',
+          'aria-expanded:bg-[var(--form-control-bg-focus)]',
+          'aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40',
+        ),
+        secondary: cn(
+          'border border-transparent font-medium active:translate-y-px',
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
+          'focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50',
+        ),
+        ghost: cn(
+          'border border-transparent font-medium active:translate-y-px',
+          'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground',
+          'focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50',
+          'dark:hover:bg-muted/50',
+        ),
+        destructive: cn(
+          'border border-transparent font-medium shadow-sm active:translate-y-px',
+          'bg-destructive text-white hover:bg-destructive/90',
+          'focus-visible:ring-destructive/20 dark:bg-destructive dark:hover:bg-destructive/90',
+          'focus-visible:ring-3 dark:focus-visible:ring-destructive/40',
+          'disabled:pointer-events-none disabled:opacity-50',
+        ),
+        link: cn(
+          'border border-transparent font-medium active:translate-y-px',
+          'text-primary underline-offset-4 hover:underline',
+          'disabled:pointer-events-none disabled:opacity-50',
+        ),
       },
       size: {
         default:
@@ -55,6 +96,7 @@ function Button({
   return (
     <ButtonPrimitive
       data-slot="button"
+      data-form-control={variant === 'field' ? '' : undefined}
       className={cn(buttonVariants({ variant, size, className }))}
       nativeButton={nativeButton ?? (render ? false : undefined)}
       render={render}

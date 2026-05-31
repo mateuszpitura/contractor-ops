@@ -49,6 +49,20 @@ const DEFAULT_LABELS: Readonly<Record<string, string>> = Object.freeze({
   'srOnly.more': 'More',
   'commandPalette.title': 'Command palette',
   'commandPalette.description': 'Search and execute commands',
+  // Canonical DataTable
+  'pagination.rowsPerPage': 'Rows per page',
+  'pagination.page': 'Page {page} of {pageCount}',
+  'aria.previousPage': 'Previous page',
+  'aria.nextPage': 'Next page',
+  'aria.sortBy': 'Sort by {column}',
+  'aria.toggleSelectAll': 'Select all rows',
+  'aria.toggleSelectRow': 'Select row',
+  'aria.clearFilters': 'Clear filters',
+  'aria.bulkActions': 'Bulk actions',
+  'aria.clearSelection': 'Clear selection',
+  'dataTable.noResultsTitle': 'No results found',
+  'dataTable.noResultsDescription':
+    'Try adjusting your filters or search to find what you are looking for.',
 });
 
 const UITranslationsContext = createContext<UITranslator | null>(null);

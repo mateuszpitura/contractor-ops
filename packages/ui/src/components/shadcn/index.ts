@@ -14,6 +14,7 @@ export * from './command.js';
 export * from './date-time-range-picker.js';
 export * from './dialog.js';
 export * from './dropdown-menu.js';
+export * from './form-control-trigger.js';
 export * from './i18n-input.js';
 export * from './input.js';
 export * from './input-group.js';
