@@ -78,6 +78,7 @@ model Contractor {
   ir35ChainParticipantLinks Ir35ChainParticipant[]
   leitwegIds                LeitwegId[]
   intakes                   InvoiceIntakeRequest[]             @relation("InvoiceIntakeMatchedContractor")
+  deprovisioningRuns        DeprovisioningRun[]
 
   // InPost preferred Paczkomat (D-03)
   preferredPaczkomatId      String?
@@ -166,6 +167,10 @@ model ContractorAssignment {
   allocationPercent Decimal?         @db.Decimal(5, 2)
   activeFrom        DateTime         @db.Date
   activeTo          DateTime?        @db.Date
+  // Phase 76 D-06 — administrative termination instant; drives the 14-day deprovisioning
+  // cooldown. Distinct from `activeTo` (calendar end-of-engagement date); written by
+  // Phase 74's workflow ACCESS_REVOKE task hook when transitioning to status = ENDED.
+  endedAt           DateTime?
   status            AssignmentStatus @default(ACTIVE)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -182,6 +187,7 @@ model ContractorAssignment {
   economicDependencyAlertState EconomicDependencyAlertState?
   reassessmentTriggers         ReassessmentTrigger[]
   statusfeststellungsverfahren Statusfeststellungsverfahren[]
+  deprovisioningRuns           DeprovisioningRun[]
 
   @@index([organizationId])
   @@index([organizationId, contractorId, status])

@@ -323,6 +323,7 @@ export type UserWhereInput = {
   sdsApprovals?: Prisma.SdsApprovalListRelationFilter
   consentEvents?: Prisma.ConsentEventListRelationFilter
   pinnedViews?: Prisma.UserPinnedViewListRelationFilter
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -379,6 +380,7 @@ export type UserOrderByWithRelationInput = {
   sdsApprovals?: Prisma.SdsApprovalOrderByRelationAggregateInput
   consentEvents?: Prisma.ConsentEventOrderByRelationAggregateInput
   pinnedViews?: Prisma.UserPinnedViewOrderByRelationAggregateInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -438,6 +440,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sdsApprovals?: Prisma.SdsApprovalListRelationFilter
   consentEvents?: Prisma.ConsentEventListRelationFilter
   pinnedViews?: Prisma.UserPinnedViewListRelationFilter
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -536,6 +539,7 @@ export type UserCreateInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -592,6 +596,7 @@ export type UserUncheckedCreateInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUpdateInput = {
@@ -648,6 +653,7 @@ export type UserUpdateInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -704,6 +710,7 @@ export type UserUncheckedUpdateInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1074,6 +1081,20 @@ export type UserUpdateOneRequiredWithoutSentSigningEnvelopesNestedInput = {
   upsert?: Prisma.UserUpsertWithoutSentSigningEnvelopesInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSentSigningEnvelopesInput, Prisma.UserUpdateWithoutSentSigningEnvelopesInput>, Prisma.UserUncheckedUpdateWithoutSentSigningEnvelopesInput>
+}
+
+export type UserCreateNestedOneWithoutTriggeredDeprovisioningRunsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTriggeredDeprovisioningRunsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTriggeredDeprovisioningRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTriggeredDeprovisioningRunsInput
+  upsert?: Prisma.UserUpsertWithoutTriggeredDeprovisioningRunsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUpdateWithoutTriggeredDeprovisioningRunsInput>, Prisma.UserUncheckedUpdateWithoutTriggeredDeprovisioningRunsInput>
 }
 
 export type UserCreateNestedOneWithoutIntegrationConnectionsInput = {
@@ -1459,6 +1480,7 @@ export type UserCreateWithoutApiKeysInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutApiKeysInput = {
@@ -1514,6 +1536,7 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutApiKeysInput = {
@@ -1585,6 +1608,7 @@ export type UserUpdateWithoutApiKeysInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApiKeysInput = {
@@ -1640,6 +1664,7 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutCreatedApprovalFlowsInput = {
@@ -1695,6 +1720,7 @@ export type UserCreateWithoutCreatedApprovalFlowsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
@@ -1750,6 +1776,7 @@ export type UserUncheckedCreateWithoutCreatedApprovalFlowsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedApprovalFlowsInput = {
@@ -1821,6 +1848,7 @@ export type UserUpdateWithoutCreatedApprovalFlowsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
@@ -1876,6 +1904,7 @@ export type UserUncheckedUpdateWithoutCreatedApprovalFlowsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutApprovalStepsInput = {
@@ -1931,6 +1960,7 @@ export type UserCreateWithoutApprovalStepsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovalStepsInput = {
@@ -1986,6 +2016,7 @@ export type UserUncheckedCreateWithoutApprovalStepsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalStepsInput = {
@@ -2057,6 +2088,7 @@ export type UserUpdateWithoutApprovalStepsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalStepsInput = {
@@ -2112,6 +2144,7 @@ export type UserUncheckedUpdateWithoutApprovalStepsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutApprovalDecisionsInput = {
@@ -2167,6 +2200,7 @@ export type UserCreateWithoutApprovalDecisionsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
@@ -2222,6 +2256,7 @@ export type UserUncheckedCreateWithoutApprovalDecisionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovalDecisionsInput = {
@@ -2293,6 +2328,7 @@ export type UserUpdateWithoutApprovalDecisionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
@@ -2348,6 +2384,7 @@ export type UserUncheckedUpdateWithoutApprovalDecisionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutPinnedViewsInput = {
@@ -2403,6 +2440,7 @@ export type UserCreateWithoutPinnedViewsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutPinnedViewsInput = {
@@ -2458,6 +2496,7 @@ export type UserUncheckedCreateWithoutPinnedViewsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutPinnedViewsInput = {
@@ -2529,6 +2568,7 @@ export type UserUpdateWithoutPinnedViewsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPinnedViewsInput = {
@@ -2584,6 +2624,7 @@ export type UserUncheckedUpdateWithoutPinnedViewsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -2639,6 +2680,7 @@ export type UserCreateWithoutSessionsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -2694,6 +2736,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -2765,6 +2808,7 @@ export type UserUpdateWithoutSessionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -2820,6 +2864,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -2875,6 +2920,7 @@ export type UserCreateWithoutAccountsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -2930,6 +2976,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -3001,6 +3048,7 @@ export type UserUpdateWithoutAccountsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -3056,6 +3104,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
@@ -3111,6 +3160,7 @@ export type UserCreateWithoutGeneratedClassificationDocumentsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
@@ -3166,6 +3216,7 @@ export type UserUncheckedCreateWithoutGeneratedClassificationDocumentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutGeneratedClassificationDocumentsInput = {
@@ -3237,6 +3288,7 @@ export type UserUpdateWithoutGeneratedClassificationDocumentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
@@ -3292,6 +3344,7 @@ export type UserUncheckedUpdateWithoutGeneratedClassificationDocumentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3347,6 +3400,7 @@ export type UserCreateWithoutAcknowledgedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3402,6 +3456,7 @@ export type UserUncheckedCreateWithoutAcknowledgedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3462,6 +3517,7 @@ export type UserCreateWithoutDismissedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
@@ -3517,6 +3573,7 @@ export type UserUncheckedCreateWithoutDismissedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutDismissedReassessmentTriggersInput = {
@@ -3588,6 +3645,7 @@ export type UserUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
@@ -3643,6 +3701,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutDismissedReassessmentTriggersInput = {
@@ -3709,6 +3768,7 @@ export type UserUpdateWithoutDismissedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
@@ -3764,6 +3824,7 @@ export type UserUncheckedUpdateWithoutDismissedReassessmentTriggersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutClassificationEscalationEventsInput = {
@@ -3819,6 +3880,7 @@ export type UserCreateWithoutClassificationEscalationEventsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
@@ -3874,6 +3936,7 @@ export type UserUncheckedCreateWithoutClassificationEscalationEventsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutClassificationEscalationEventsInput = {
@@ -3945,6 +4008,7 @@ export type UserUpdateWithoutClassificationEscalationEventsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
@@ -4000,6 +4064,7 @@ export type UserUncheckedUpdateWithoutClassificationEscalationEventsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutSdsApprovalsInput = {
@@ -4055,6 +4120,7 @@ export type UserCreateWithoutSdsApprovalsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutSdsApprovalsInput = {
@@ -4110,6 +4176,7 @@ export type UserUncheckedCreateWithoutSdsApprovalsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutSdsApprovalsInput = {
@@ -4181,6 +4248,7 @@ export type UserUpdateWithoutSdsApprovalsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
@@ -4236,6 +4304,7 @@ export type UserUncheckedUpdateWithoutSdsApprovalsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutConsentRecordsInput = {
@@ -4291,6 +4360,7 @@ export type UserCreateWithoutConsentRecordsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentRecordsInput = {
@@ -4346,6 +4416,7 @@ export type UserUncheckedCreateWithoutConsentRecordsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentRecordsInput = {
@@ -4417,6 +4488,7 @@ export type UserUpdateWithoutConsentRecordsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentRecordsInput = {
@@ -4472,6 +4544,7 @@ export type UserUncheckedUpdateWithoutConsentRecordsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutConsentEventsInput = {
@@ -4527,6 +4600,7 @@ export type UserCreateWithoutConsentEventsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutConsentEventsInput = {
@@ -4582,6 +4656,7 @@ export type UserUncheckedCreateWithoutConsentEventsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutConsentEventsInput = {
@@ -4653,6 +4728,7 @@ export type UserUpdateWithoutConsentEventsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConsentEventsInput = {
@@ -4708,6 +4784,7 @@ export type UserUncheckedUpdateWithoutConsentEventsInput = {
   classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutOwnedContractsInput = {
@@ -4763,6 +4840,7 @@ export type UserCreateWithoutOwnedContractsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedContractsInput = {
@@ -4818,6 +4896,7 @@ export type UserUncheckedCreateWithoutOwnedContractsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedContractsInput = {
@@ -4889,6 +4968,7 @@ export type UserUpdateWithoutOwnedContractsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedContractsInput = {
@@ -4944,6 +5024,7 @@ export type UserUncheckedUpdateWithoutOwnedContractsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutOwnedContractorsInput = {
@@ -4999,6 +5080,7 @@ export type UserCreateWithoutOwnedContractorsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutOwnedContractorsInput = {
@@ -5054,6 +5136,7 @@ export type UserUncheckedCreateWithoutOwnedContractorsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutOwnedContractorsInput = {
@@ -5125,6 +5208,7 @@ export type UserUpdateWithoutOwnedContractorsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
@@ -5180,6 +5264,7 @@ export type UserUncheckedUpdateWithoutOwnedContractorsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutSentSigningEnvelopesInput = {
@@ -5235,6 +5320,7 @@ export type UserCreateWithoutSentSigningEnvelopesInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
@@ -5290,6 +5376,7 @@ export type UserUncheckedCreateWithoutSentSigningEnvelopesInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutSentSigningEnvelopesInput = {
@@ -5361,6 +5448,7 @@ export type UserUpdateWithoutSentSigningEnvelopesInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
@@ -5404,6 +5492,247 @@ export type UserUncheckedUpdateWithoutSentSigningEnvelopesInput = {
   paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
   workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
   reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
+}
+
+export type UserCreateWithoutTriggeredDeprovisioningRunsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput = {
+  id?: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  role?: string | null
+  banned?: boolean | null
+  banReason?: string | null
+  banExpires?: Date | string | null
+  failedLoginAttempts?: number
+  lockedUntil?: Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  members?: Prisma.MemberUncheckedCreateNestedManyWithoutUserInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutInviterInput
+  ownedContractors?: Prisma.ContractorUncheckedCreateNestedManyWithoutOwnerInput
+  managedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutManagerInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedCreateNestedManyWithoutFallbackApproverInput
+  ownedContracts?: Prisma.ContractUncheckedCreateNestedManyWithoutInternalOwnerInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutStartedByInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutAssigneeInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedCreateNestedManyWithoutCompletedByInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutSuccessorInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedCreateNestedManyWithoutRotatedByInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedCreateNestedManyWithoutCreatedByInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedCreateNestedManyWithoutApproverInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedCreateNestedManyWithoutActorInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutCreatedByInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedCreateNestedManyWithoutApprovedByInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutConnectedByInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  paymentExports?: Prisma.PaymentExportUncheckedCreateNestedManyWithoutGeneratedByInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedCreateNestedManyWithoutAuthorInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedCreateNestedManyWithoutSentByInput
+  consentRecords?: Prisma.ConsentRecordUncheckedCreateNestedManyWithoutUserInput
+  reviewedTimesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutReviewedByInput
+  apiKeys?: Prisma.OrganizationApiKeyUncheckedCreateNestedManyWithoutCreatedByInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUncheckedCreateNestedManyWithoutGeneratedByInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutAcknowledgedByUserInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutDismissedByUserInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutUploadedByInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutValidationAcknowledgedByInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUncheckedCreateNestedManyWithoutUserInput
+  sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
+  consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
+  pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTriggeredDeprovisioningRunsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput>
+}
+
+export type UserUpsertWithoutTriggeredDeprovisioningRunsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedUpdateWithoutTriggeredDeprovisioningRunsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedCreateWithoutTriggeredDeprovisioningRunsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTriggeredDeprovisioningRunsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTriggeredDeprovisioningRunsInput, Prisma.UserUncheckedUpdateWithoutTriggeredDeprovisioningRunsInput>
+}
+
+export type UserUpdateWithoutTriggeredDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUpdateManyWithoutSentByNestedInput
+  consentRecords?: Prisma.ConsentRecordUpdateManyWithoutUserNestedInput
+  reviewedTimesheets?: Prisma.TimesheetUpdateManyWithoutReviewedByNestedInput
+  apiKeys?: Prisma.OrganizationApiKeyUpdateManyWithoutCreatedByNestedInput
+  generatedClassificationDocuments?: Prisma.ClassificationDocumentUpdateManyWithoutGeneratedByNestedInput
+  acknowledgedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutAcknowledgedByUserNestedInput
+  dismissedReassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutDismissedByUserNestedInput
+  uploadedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutUploadedByNestedInput
+  acknowledgedIntakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutValidationAcknowledgedByNestedInput
+  classificationEscalationEvents?: Prisma.ClassificationEscalationEventUpdateManyWithoutUserNestedInput
+  sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
+  consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
+  pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTriggeredDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banned?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  banReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  banExpires?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  failedLoginAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  outOfOffice?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  members?: Prisma.MemberUncheckedUpdateManyWithoutUserNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutInviterNestedInput
+  ownedContractors?: Prisma.ContractorUncheckedUpdateManyWithoutOwnerNestedInput
+  managedTeams?: Prisma.TeamUncheckedUpdateManyWithoutManagerNestedInput
+  fallbackApprovedTeams?: Prisma.TeamUncheckedUpdateManyWithoutFallbackApproverNestedInput
+  ownedContracts?: Prisma.ContractUncheckedUpdateManyWithoutInternalOwnerNestedInput
+  startedWorkflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutStartedByNestedInput
+  assignedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutAssigneeNestedInput
+  completedWorkflowTasks?: Prisma.WorkflowTaskRunUncheckedUpdateManyWithoutCompletedByNestedInput
+  credentialReferencesAsSuccessor?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutSuccessorNestedInput
+  credentialReferencesRotated?: Prisma.CredentialReferenceUncheckedUpdateManyWithoutRotatedByNestedInput
+  createdApprovalFlows?: Prisma.ApprovalFlowUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvalSteps?: Prisma.ApprovalStepUncheckedUpdateManyWithoutApproverNestedInput
+  approvalDecisions?: Prisma.ApprovalDecisionUncheckedUpdateManyWithoutActorNestedInput
+  createdPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutCreatedByNestedInput
+  approvedPaymentRuns?: Prisma.PaymentRunUncheckedUpdateManyWithoutApprovedByNestedInput
+  integrationConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutConnectedByNestedInput
+  personalConnections?: Prisma.IntegrationConnectionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  notificationPrefs?: Prisma.UserNotificationPreferenceUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  paymentExports?: Prisma.PaymentExportUncheckedUpdateManyWithoutGeneratedByNestedInput
+  workflowComments?: Prisma.WorkflowCommentUncheckedUpdateManyWithoutAuthorNestedInput
+  reviewedChangeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  sentSigningEnvelopes?: Prisma.SigningEnvelopeUncheckedUpdateManyWithoutSentByNestedInput
   consentRecords?: Prisma.ConsentRecordUncheckedUpdateManyWithoutUserNestedInput
   reviewedTimesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutReviewedByNestedInput
   apiKeys?: Prisma.OrganizationApiKeyUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -5471,6 +5800,7 @@ export type UserCreateWithoutIntegrationConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
@@ -5526,6 +5856,7 @@ export type UserUncheckedCreateWithoutIntegrationConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutIntegrationConnectionsInput = {
@@ -5586,6 +5917,7 @@ export type UserCreateWithoutPersonalConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
@@ -5641,6 +5973,7 @@ export type UserUncheckedCreateWithoutPersonalConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutPersonalConnectionsInput = {
@@ -5712,6 +6045,7 @@ export type UserUpdateWithoutIntegrationConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
@@ -5767,6 +6101,7 @@ export type UserUncheckedUpdateWithoutIntegrationConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutPersonalConnectionsInput = {
@@ -5833,6 +6168,7 @@ export type UserUpdateWithoutPersonalConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
@@ -5888,6 +6224,7 @@ export type UserUncheckedUpdateWithoutPersonalConnectionsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutUploadedIntakesInput = {
@@ -5943,6 +6280,7 @@ export type UserCreateWithoutUploadedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutUploadedIntakesInput = {
@@ -5998,6 +6336,7 @@ export type UserUncheckedCreateWithoutUploadedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutUploadedIntakesInput = {
@@ -6058,6 +6397,7 @@ export type UserCreateWithoutAcknowledgedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
@@ -6113,6 +6453,7 @@ export type UserUncheckedCreateWithoutAcknowledgedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutAcknowledgedIntakesInput = {
@@ -6184,6 +6525,7 @@ export type UserUpdateWithoutUploadedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
@@ -6239,6 +6581,7 @@ export type UserUncheckedUpdateWithoutUploadedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutAcknowledgedIntakesInput = {
@@ -6305,6 +6648,7 @@ export type UserUpdateWithoutAcknowledgedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
@@ -6360,6 +6704,7 @@ export type UserUncheckedUpdateWithoutAcknowledgedIntakesInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -6415,6 +6760,7 @@ export type UserCreateWithoutNotificationsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -6470,6 +6816,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -6541,6 +6888,7 @@ export type UserUpdateWithoutNotificationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -6596,6 +6944,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutNotificationPrefsInput = {
@@ -6651,6 +7000,7 @@ export type UserCreateWithoutNotificationPrefsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationPrefsInput = {
@@ -6706,6 +7056,7 @@ export type UserUncheckedCreateWithoutNotificationPrefsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationPrefsInput = {
@@ -6777,6 +7128,7 @@ export type UserUpdateWithoutNotificationPrefsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
@@ -6832,6 +7184,7 @@ export type UserUncheckedUpdateWithoutNotificationPrefsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutCommentsInput = {
@@ -6887,6 +7240,7 @@ export type UserCreateWithoutCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCommentsInput = {
@@ -6942,6 +7296,7 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCommentsInput = {
@@ -7013,6 +7368,7 @@ export type UserUpdateWithoutCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -7068,6 +7424,7 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutMembersInput = {
@@ -7123,6 +7480,7 @@ export type UserCreateWithoutMembersInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutMembersInput = {
@@ -7178,6 +7536,7 @@ export type UserUncheckedCreateWithoutMembersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutMembersInput = {
@@ -7249,6 +7608,7 @@ export type UserUpdateWithoutMembersInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembersInput = {
@@ -7304,6 +7664,7 @@ export type UserUncheckedUpdateWithoutMembersInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutInvitationsInput = {
@@ -7359,6 +7720,7 @@ export type UserCreateWithoutInvitationsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutInvitationsInput = {
@@ -7414,6 +7776,7 @@ export type UserUncheckedCreateWithoutInvitationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutInvitationsInput = {
@@ -7485,6 +7848,7 @@ export type UserUpdateWithoutInvitationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvitationsInput = {
@@ -7540,6 +7904,7 @@ export type UserUncheckedUpdateWithoutInvitationsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutManagedTeamsInput = {
@@ -7595,6 +7960,7 @@ export type UserCreateWithoutManagedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutManagedTeamsInput = {
@@ -7650,6 +8016,7 @@ export type UserUncheckedCreateWithoutManagedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutManagedTeamsInput = {
@@ -7710,6 +8077,7 @@ export type UserCreateWithoutFallbackApprovedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
@@ -7765,6 +8133,7 @@ export type UserUncheckedCreateWithoutFallbackApprovedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutFallbackApprovedTeamsInput = {
@@ -7836,6 +8205,7 @@ export type UserUpdateWithoutManagedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutManagedTeamsInput = {
@@ -7891,6 +8261,7 @@ export type UserUncheckedUpdateWithoutManagedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutFallbackApprovedTeamsInput = {
@@ -7957,6 +8328,7 @@ export type UserUpdateWithoutFallbackApprovedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
@@ -8012,6 +8384,7 @@ export type UserUncheckedUpdateWithoutFallbackApprovedTeamsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutCreatedPaymentRunsInput = {
@@ -8067,6 +8440,7 @@ export type UserCreateWithoutCreatedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
@@ -8122,6 +8496,7 @@ export type UserUncheckedCreateWithoutCreatedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedPaymentRunsInput = {
@@ -8182,6 +8557,7 @@ export type UserCreateWithoutApprovedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
@@ -8237,6 +8613,7 @@ export type UserUncheckedCreateWithoutApprovedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovedPaymentRunsInput = {
@@ -8308,6 +8685,7 @@ export type UserUpdateWithoutCreatedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
@@ -8363,6 +8741,7 @@ export type UserUncheckedUpdateWithoutCreatedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutApprovedPaymentRunsInput = {
@@ -8429,6 +8808,7 @@ export type UserUpdateWithoutApprovedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
@@ -8484,6 +8864,7 @@ export type UserUncheckedUpdateWithoutApprovedPaymentRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutPaymentExportsInput = {
@@ -8539,6 +8920,7 @@ export type UserCreateWithoutPaymentExportsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutPaymentExportsInput = {
@@ -8594,6 +8976,7 @@ export type UserUncheckedCreateWithoutPaymentExportsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutPaymentExportsInput = {
@@ -8665,6 +9048,7 @@ export type UserUpdateWithoutPaymentExportsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPaymentExportsInput = {
@@ -8720,6 +9104,7 @@ export type UserUncheckedUpdateWithoutPaymentExportsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutReviewedChangeRequestsInput = {
@@ -8775,6 +9160,7 @@ export type UserCreateWithoutReviewedChangeRequestsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
@@ -8830,6 +9216,7 @@ export type UserUncheckedCreateWithoutReviewedChangeRequestsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewedChangeRequestsInput = {
@@ -8901,6 +9288,7 @@ export type UserUpdateWithoutReviewedChangeRequestsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
@@ -8956,6 +9344,7 @@ export type UserUncheckedUpdateWithoutReviewedChangeRequestsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutReviewedTimesheetsInput = {
@@ -9011,6 +9400,7 @@ export type UserCreateWithoutReviewedTimesheetsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
@@ -9066,6 +9456,7 @@ export type UserUncheckedCreateWithoutReviewedTimesheetsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewedTimesheetsInput = {
@@ -9137,6 +9528,7 @@ export type UserUpdateWithoutReviewedTimesheetsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
@@ -9192,6 +9584,7 @@ export type UserUncheckedUpdateWithoutReviewedTimesheetsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutStartedWorkflowRunsInput = {
@@ -9247,6 +9640,7 @@ export type UserCreateWithoutStartedWorkflowRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
@@ -9302,6 +9696,7 @@ export type UserUncheckedCreateWithoutStartedWorkflowRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutStartedWorkflowRunsInput = {
@@ -9373,6 +9768,7 @@ export type UserUpdateWithoutStartedWorkflowRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
@@ -9428,6 +9824,7 @@ export type UserUncheckedUpdateWithoutStartedWorkflowRunsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutAssignedWorkflowTasksInput = {
@@ -9483,6 +9880,7 @@ export type UserCreateWithoutAssignedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
@@ -9538,6 +9936,7 @@ export type UserUncheckedCreateWithoutAssignedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedWorkflowTasksInput = {
@@ -9598,6 +9997,7 @@ export type UserCreateWithoutCompletedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
@@ -9653,6 +10053,7 @@ export type UserUncheckedCreateWithoutCompletedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCompletedWorkflowTasksInput = {
@@ -9724,6 +10125,7 @@ export type UserUpdateWithoutAssignedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
@@ -9779,6 +10181,7 @@ export type UserUncheckedUpdateWithoutAssignedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutCompletedWorkflowTasksInput = {
@@ -9845,6 +10248,7 @@ export type UserUpdateWithoutCompletedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
@@ -9900,6 +10304,7 @@ export type UserUncheckedUpdateWithoutCompletedWorkflowTasksInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutWorkflowCommentsInput = {
@@ -9955,6 +10360,7 @@ export type UserCreateWithoutWorkflowCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
@@ -10010,6 +10416,7 @@ export type UserUncheckedCreateWithoutWorkflowCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutWorkflowCommentsInput = {
@@ -10081,6 +10488,7 @@ export type UserUpdateWithoutWorkflowCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
@@ -10136,6 +10544,7 @@ export type UserUncheckedUpdateWithoutWorkflowCommentsInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserCreateWithoutCredentialReferencesAsSuccessorInput = {
@@ -10191,6 +10600,7 @@ export type UserCreateWithoutCredentialReferencesAsSuccessorInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput = {
@@ -10246,6 +10656,7 @@ export type UserUncheckedCreateWithoutCredentialReferencesAsSuccessorInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCredentialReferencesAsSuccessorInput = {
@@ -10306,6 +10717,7 @@ export type UserCreateWithoutCredentialReferencesRotatedInput = {
   sdsApprovals?: Prisma.SdsApprovalCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserUncheckedCreateWithoutCredentialReferencesRotatedInput = {
@@ -10361,6 +10773,7 @@ export type UserUncheckedCreateWithoutCredentialReferencesRotatedInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedCreateNestedManyWithoutApprovedByInput
   consentEvents?: Prisma.ConsentEventUncheckedCreateNestedManyWithoutUserInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedCreateNestedManyWithoutUserInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutTriggeredByUserInput
 }
 
 export type UserCreateOrConnectWithoutCredentialReferencesRotatedInput = {
@@ -10432,6 +10845,7 @@ export type UserUpdateWithoutCredentialReferencesAsSuccessorInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput = {
@@ -10487,6 +10901,7 @@ export type UserUncheckedUpdateWithoutCredentialReferencesAsSuccessorInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUpsertWithoutCredentialReferencesRotatedInput = {
@@ -10553,6 +10968,7 @@ export type UserUpdateWithoutCredentialReferencesRotatedInput = {
   sdsApprovals?: Prisma.SdsApprovalUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCredentialReferencesRotatedInput = {
@@ -10608,6 +11024,7 @@ export type UserUncheckedUpdateWithoutCredentialReferencesRotatedInput = {
   sdsApprovals?: Prisma.SdsApprovalUncheckedUpdateManyWithoutApprovedByNestedInput
   consentEvents?: Prisma.ConsentEventUncheckedUpdateManyWithoutUserNestedInput
   pinnedViews?: Prisma.UserPinnedViewUncheckedUpdateManyWithoutUserNestedInput
+  triggeredDeprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutTriggeredByUserNestedInput
 }
 
 
@@ -10655,6 +11072,7 @@ export type UserCountOutputType = {
   sdsApprovals: number
   consentEvents: number
   pinnedViews: number
+  triggeredDeprovisioningRuns: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -10697,6 +11115,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sdsApprovals?: boolean | UserCountOutputTypeCountSdsApprovalsArgs
   consentEvents?: boolean | UserCountOutputTypeCountConsentEventsArgs
   pinnedViews?: boolean | UserCountOutputTypeCountPinnedViewsArgs
+  triggeredDeprovisioningRuns?: boolean | UserCountOutputTypeCountTriggeredDeprovisioningRunsArgs
 }
 
 /**
@@ -10982,6 +11401,13 @@ export type UserCountOutputTypeCountPinnedViewsArgs<ExtArgs extends runtime.Type
   where?: Prisma.UserPinnedViewWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTriggeredDeprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeprovisioningRunWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -11037,6 +11463,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sdsApprovals?: boolean | Prisma.User$sdsApprovalsArgs<ExtArgs>
   consentEvents?: boolean | Prisma.User$consentEventsArgs<ExtArgs>
   pinnedViews?: boolean | Prisma.User$pinnedViewsArgs<ExtArgs>
+  triggeredDeprovisioningRuns?: boolean | Prisma.User$triggeredDeprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -11132,6 +11559,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sdsApprovals?: boolean | Prisma.User$sdsApprovalsArgs<ExtArgs>
   consentEvents?: boolean | Prisma.User$consentEventsArgs<ExtArgs>
   pinnedViews?: boolean | Prisma.User$pinnedViewsArgs<ExtArgs>
+  triggeredDeprovisioningRuns?: boolean | Prisma.User$triggeredDeprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -11179,6 +11607,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sdsApprovals: Prisma.$SdsApprovalPayload<ExtArgs>[]
     consentEvents: Prisma.$ConsentEventPayload<ExtArgs>[]
     pinnedViews: Prisma.$UserPinnedViewPayload<ExtArgs>[]
+    triggeredDeprovisioningRuns: Prisma.$DeprovisioningRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -11628,6 +12057,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sdsApprovals<T extends Prisma.User$sdsApprovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sdsApprovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SdsApprovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   consentEvents<T extends Prisma.User$consentEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$consentEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConsentEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pinnedViews<T extends Prisma.User$pinnedViewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pinnedViewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPinnedViewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  triggeredDeprovisioningRuns<T extends Prisma.User$triggeredDeprovisioningRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$triggeredDeprovisioningRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12997,6 +13427,30 @@ export type User$pinnedViewsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.UserPinnedViewScalarFieldEnum | Prisma.UserPinnedViewScalarFieldEnum[]
+}
+
+/**
+ * User.triggeredDeprovisioningRuns
+ */
+export type User$triggeredDeprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeprovisioningRun
+   */
+  select?: Prisma.DeprovisioningRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeprovisioningRun
+   */
+  omit?: Prisma.DeprovisioningRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeprovisioningRunInclude<ExtArgs> | null
+  where?: Prisma.DeprovisioningRunWhereInput
+  orderBy?: Prisma.DeprovisioningRunOrderByWithRelationInput | Prisma.DeprovisioningRunOrderByWithRelationInput[]
+  cursor?: Prisma.DeprovisioningRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeprovisioningRunScalarFieldEnum | Prisma.DeprovisioningRunScalarFieldEnum[]
 }
 
 /**

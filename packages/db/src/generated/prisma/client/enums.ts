@@ -598,6 +598,54 @@ export const SkontoEligibility = {
 export type SkontoEligibility = (typeof SkontoEligibility)[keyof typeof SkontoEligibility]
 
 
+export const DeprovisioningRunStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED',
+  PARTIAL_FAILURE: 'PARTIAL_FAILURE',
+  FAILED: 'FAILED'
+} as const
+
+export type DeprovisioningRunStatus = (typeof DeprovisioningRunStatus)[keyof typeof DeprovisioningRunStatus]
+
+
+export const DeprovisioningStepStatus = {
+  PENDING: 'PENDING',
+  IN_PROGRESS: 'IN_PROGRESS',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED'
+} as const
+
+export type DeprovisioningStepStatus = (typeof DeprovisioningStepStatus)[keyof typeof DeprovisioningStepStatus]
+
+
+export const DeprovisioningStepKind = {
+  SUSPEND_ACCOUNT: 'SUSPEND_ACCOUNT',
+  REVOKE_ALL_SESSIONS: 'REVOKE_ALL_SESSIONS'
+} as const
+
+export type DeprovisioningStepKind = (typeof DeprovisioningStepKind)[keyof typeof DeprovisioningStepKind]
+
+
+export const DeprovisioningProvider = {
+  GOOGLE_WORKSPACE: 'GOOGLE_WORKSPACE',
+  SLACK: 'SLACK',
+  ENTRA: 'ENTRA',
+  OKTA: 'OKTA',
+  GITHUB: 'GITHUB'
+} as const
+
+export type DeprovisioningProvider = (typeof DeprovisioningProvider)[keyof typeof DeprovisioningProvider]
+
+
+export const IdpProvenanceActionKind = {
+  SUSPEND: 'SUSPEND',
+  REVOKE_SESSION: 'REVOKE_SESSION'
+} as const
+
+export type IdpProvenanceActionKind = (typeof IdpProvenanceActionKind)[keyof typeof IdpProvenanceActionKind]
+
+
 export const IntegrationProvider = {
   SLACK: 'SLACK',
   RESEND: 'RESEND',

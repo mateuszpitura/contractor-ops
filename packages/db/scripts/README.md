@@ -98,3 +98,35 @@ This migration is **additive** (5 new nullable columns on Contract; 2 new tables
 - pnpm typecheck: PASS
 - pnpm --filter @contractor-ops/db test phase-75-schema: PASS (was RED in Plan 75-01)
 - All other Phase 75 Wave 0 RED tests: still RED (preserved baseline)
+
+## Phase 76 — F2 IdP deprovisioning saga + self-trigger provenance
+
+**Migration:** `20260531164549_phase76_idp_deprovisioning`
+
+This migration is **additive** (no data loss):
+- 3 new tables: `DeprovisioningRun`, `DeprovisioningStep` (D-01 saga state), `IdpChangeProvenance` (D-09 self-trigger filter)
+- 5 new enums (run/step status, step kind, provider, provenance action kind)
+- 1 new nullable column: `ContractorAssignment.endedAt` (D-06 — administrative termination instant; drives the 14-day cooldown; distinct from `activeTo`)
+
+Plan 76-02 is marked `autonomous: false` — the executor SHIPS the schema + migration SQL but does NOT apply it. Multi-region apply is a manual operator action per the Standing Constraint (LOCAL-ONLY).
+
+After merging this PR:
+
+1. **Review the migration SQL:**
+   ```sh
+   cat packages/db/prisma/schema/migrations/20260531164549_phase76_idp_deprovisioning/migration.sql
+   ```
+   Confirm: 3 `CREATE TABLE`, 5 `CREATE TYPE`, one `ALTER TABLE "ContractorAssignment" ADD COLUMN "endedAt"` (nullable, no default), the `DeprovisioningStep_runId_provider_stepKind_key` unique index, and the `IdpChangeProvenance` lookup/GC indexes. There must be **no** `DROP TABLE`, `DROP COLUMN`, or destructive `ALTER COLUMN`.
+
+2. **Apply to all regions** (the runner iterates `DATABASE_URL_EU` + `DATABASE_URL_ME` and runs `prisma migrate deploy`, failing fast on the first region error):
+   ```sh
+   npx tsx packages/db/scripts/migrate-all-regions.ts
+   # or via npm script:
+   cd packages/db && pnpm run db:migrate:all
+   ```
+   To apply against a single region, set the regional URL as `DATABASE_URL` and run `prisma migrate deploy` directly:
+   ```sh
+   DATABASE_URL=$DATABASE_URL_EU pnpm --filter @contractor-ops/db exec prisma migrate deploy --schema prisma/schema
+   ```
+
+**On failure:** `migrate-all-regions.ts` logs which region failed and stops. Re-run after fixing the underlying cause; re-running against an already-migrated region is idempotent (Prisma's `_prisma_migrations` table records applied migrations). If EU succeeds and ME fails, fix the ME cause (network/auth/state drift) and re-run — only the unapplied region's migration replays.

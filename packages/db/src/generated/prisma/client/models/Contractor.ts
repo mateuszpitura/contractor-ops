@@ -488,6 +488,7 @@ export type ContractorWhereInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantListRelationFilter
   leitwegIds?: Prisma.LeitwegIdListRelationFilter
   intakes?: Prisma.InvoiceIntakeRequestListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }
 
 export type ContractorOrderByWithRelationInput = {
@@ -558,6 +559,7 @@ export type ContractorOrderByWithRelationInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantOrderByRelationAggregateInput
   leitwegIds?: Prisma.LeitwegIdOrderByRelationAggregateInput
   intakes?: Prisma.InvoiceIntakeRequestOrderByRelationAggregateInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunOrderByRelationAggregateInput
 }
 
 export type ContractorWhereUniqueInput = Prisma.AtLeast<{
@@ -631,6 +633,7 @@ export type ContractorWhereUniqueInput = Prisma.AtLeast<{
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantListRelationFilter
   leitwegIds?: Prisma.LeitwegIdListRelationFilter
   intakes?: Prisma.InvoiceIntakeRequestListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }, "id">
 
 export type ContractorOrderByWithAggregationInput = {
@@ -789,6 +792,7 @@ export type ContractorCreateInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateInput = {
@@ -853,6 +857,7 @@ export type ContractorUncheckedCreateInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUpdateInput = {
@@ -917,6 +922,7 @@ export type ContractorUpdateInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateInput = {
@@ -981,6 +987,7 @@ export type ContractorUncheckedUpdateInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateManyInput = {
@@ -1459,6 +1466,20 @@ export type ContractorUpdateOneRequiredWithoutReturnRequestsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutReturnRequestsInput, Prisma.ContractorUpdateWithoutReturnRequestsInput>, Prisma.ContractorUncheckedUpdateWithoutReturnRequestsInput>
 }
 
+export type ContractorCreateNestedOneWithoutDeprovisioningRunsInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutDeprovisioningRunsInput
+  connect?: Prisma.ContractorWhereUniqueInput
+}
+
+export type ContractorUpdateOneRequiredWithoutDeprovisioningRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutDeprovisioningRunsInput
+  upsert?: Prisma.ContractorUpsertWithoutDeprovisioningRunsInput
+  connect?: Prisma.ContractorWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorUpdateToOneWithWhereWithoutDeprovisioningRunsInput, Prisma.ContractorUpdateWithoutDeprovisioningRunsInput>, Prisma.ContractorUncheckedUpdateWithoutDeprovisioningRunsInput>
+}
+
 export type ContractorCreateNestedOneWithoutInvoicesInput = {
   create?: Prisma.XOR<Prisma.ContractorCreateWithoutInvoicesInput, Prisma.ContractorUncheckedCreateWithoutInvoicesInput>
   connectOrCreate?: Prisma.ContractorCreateOrConnectWithoutInvoicesInput
@@ -1876,6 +1897,7 @@ export type ContractorCreateWithoutOwnerInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutOwnerInput = {
@@ -1939,6 +1961,7 @@ export type ContractorUncheckedCreateWithoutOwnerInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutOwnerInput = {
@@ -2075,6 +2098,7 @@ export type ContractorCreateWithoutIr35ChainParticipantLinksInput = {
   taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
@@ -2138,6 +2162,7 @@ export type ContractorUncheckedCreateWithoutIr35ChainParticipantLinksInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutIr35ChainParticipantLinksInput = {
@@ -2217,6 +2242,7 @@ export type ContractorUpdateWithoutIr35ChainParticipantLinksInput = {
   taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
@@ -2280,6 +2306,7 @@ export type ContractorUncheckedUpdateWithoutIr35ChainParticipantLinksInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutContractsInput = {
@@ -2343,6 +2370,7 @@ export type ContractorCreateWithoutContractsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutContractsInput = {
@@ -2406,6 +2434,7 @@ export type ContractorUncheckedCreateWithoutContractsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutContractsInput = {
@@ -2485,6 +2514,7 @@ export type ContractorUpdateWithoutContractsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutContractsInput = {
@@ -2548,6 +2578,7 @@ export type ContractorUncheckedUpdateWithoutContractsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutContactsInput = {
@@ -2611,6 +2642,7 @@ export type ContractorCreateWithoutContactsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutContactsInput = {
@@ -2674,6 +2706,7 @@ export type ContractorUncheckedCreateWithoutContactsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutContactsInput = {
@@ -2753,6 +2786,7 @@ export type ContractorUpdateWithoutContactsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutContactsInput = {
@@ -2816,6 +2850,7 @@ export type ContractorUncheckedUpdateWithoutContactsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutBillingProfilesInput = {
@@ -2879,6 +2914,7 @@ export type ContractorCreateWithoutBillingProfilesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
@@ -2942,6 +2978,7 @@ export type ContractorUncheckedCreateWithoutBillingProfilesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutBillingProfilesInput = {
@@ -3021,6 +3058,7 @@ export type ContractorUpdateWithoutBillingProfilesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
@@ -3084,6 +3122,7 @@ export type ContractorUncheckedUpdateWithoutBillingProfilesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutAssignmentsInput = {
@@ -3147,6 +3186,7 @@ export type ContractorCreateWithoutAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutAssignmentsInput = {
@@ -3210,6 +3250,7 @@ export type ContractorUncheckedCreateWithoutAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutAssignmentsInput = {
@@ -3289,6 +3330,7 @@ export type ContractorUpdateWithoutAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
@@ -3352,6 +3394,7 @@ export type ContractorUncheckedUpdateWithoutAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTagsInput = {
@@ -3415,6 +3458,7 @@ export type ContractorCreateWithoutTagsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTagsInput = {
@@ -3478,6 +3522,7 @@ export type ContractorUncheckedCreateWithoutTagsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTagsInput = {
@@ -3557,6 +3602,7 @@ export type ContractorUpdateWithoutTagsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTagsInput = {
@@ -3620,6 +3666,7 @@ export type ContractorUncheckedUpdateWithoutTagsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutComplianceItemsInput = {
@@ -3683,6 +3730,7 @@ export type ContractorCreateWithoutComplianceItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
@@ -3746,6 +3794,7 @@ export type ContractorUncheckedCreateWithoutComplianceItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutComplianceItemsInput = {
@@ -3825,6 +3874,7 @@ export type ContractorUpdateWithoutComplianceItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
@@ -3888,6 +3938,7 @@ export type ContractorUncheckedUpdateWithoutComplianceItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutLeitwegIdsInput = {
@@ -3951,6 +4002,7 @@ export type ContractorCreateWithoutLeitwegIdsInput = {
   taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
@@ -4014,6 +4066,7 @@ export type ContractorUncheckedCreateWithoutLeitwegIdsInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutLeitwegIdsInput = {
@@ -4093,6 +4146,7 @@ export type ContractorUpdateWithoutLeitwegIdsInput = {
   taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
@@ -4156,6 +4210,7 @@ export type ContractorUncheckedUpdateWithoutLeitwegIdsInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutEquipmentAssignmentsInput = {
@@ -4219,6 +4274,7 @@ export type ContractorCreateWithoutEquipmentAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
@@ -4282,6 +4338,7 @@ export type ContractorUncheckedCreateWithoutEquipmentAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutEquipmentAssignmentsInput = {
@@ -4361,6 +4418,7 @@ export type ContractorUpdateWithoutEquipmentAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
@@ -4424,6 +4482,7 @@ export type ContractorUncheckedUpdateWithoutEquipmentAssignmentsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutReturnRequestsInput = {
@@ -4487,6 +4546,7 @@ export type ContractorCreateWithoutReturnRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
@@ -4550,6 +4610,7 @@ export type ContractorUncheckedCreateWithoutReturnRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutReturnRequestsInput = {
@@ -4629,6 +4690,7 @@ export type ContractorUpdateWithoutReturnRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
@@ -4688,6 +4750,279 @@ export type ContractorUncheckedUpdateWithoutReturnRequestsInput = {
   timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
   timeEntries?: Prisma.TimeEntryUncheckedUpdateManyWithoutContractorNestedInput
   equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
+}
+
+export type ContractorCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  organization: Prisma.OrganizationCreateNestedOneWithoutContractorsInput
+  owner?: Prisma.UserCreateNestedOneWithoutOwnedContractorsInput
+  primaryTeam?: Prisma.TeamCreateNestedOneWithoutContractorsInput
+  primaryProject?: Prisma.ProjectCreateNestedOneWithoutContractorsInput
+  defaultCostCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorsInput
+  workflowRole?: Prisma.WorkflowRoleTemplateCreateNestedOneWithoutContractorsInput
+  contacts?: Prisma.ContractorContactCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+}
+
+export type ContractorUncheckedCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  organizationId: string
+  type: $Enums.ContractorType
+  legalName: string
+  displayName: string
+  taxId?: string | null
+  vatId?: string | null
+  registrationNumber?: string | null
+  countryCode: string
+  currency: string
+  email?: string | null
+  phone?: string | null
+  website?: string | null
+  addressLine1?: string | null
+  addressLine2?: string | null
+  city?: string | null
+  postalCode?: string | null
+  status?: $Enums.ContractorStatus
+  lifecycleStage?: $Enums.ContractorLifecycleStage
+  ownerUserId?: string | null
+  primaryTeamId?: string | null
+  primaryProjectId?: string | null
+  defaultCostCenterId?: string | null
+  workflowRoleId?: string | null
+  notes?: string | null
+  isSensitive?: boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Date | string | null
+  latestVatValidationStatus?: $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: boolean
+  peppolSchemeId?: string | null
+  peppolParticipantValue?: string | null
+  isBusinessCustomer?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  archivedAt?: Date | string | null
+  deletedAt?: Date | string | null
+  preferredPaczkomatId?: string | null
+  preferredPaczkomatName?: string | null
+  preferredPaczkomatAddress?: string | null
+  contacts?: Prisma.ContractorContactUncheckedCreateNestedManyWithoutContractorInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedCreateNestedManyWithoutContractorInput
+  assignments?: Prisma.ContractorAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  contracts?: Prisma.ContractUncheckedCreateNestedManyWithoutContractorInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedCreateNestedManyWithoutContractorInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutContractorInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutContractorInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedCreateNestedManyWithoutContractorInput
+  tags?: Prisma.ContractorTagLinkUncheckedCreateNestedManyWithoutContractorInput
+  portalSessions?: Prisma.PortalSessionUncheckedCreateNestedManyWithoutContractorInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedCreateNestedManyWithoutContractorInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedCreateNestedManyWithoutContractorInput
+  timesheets?: Prisma.TimesheetUncheckedCreateNestedManyWithoutContractorInput
+  timeEntries?: Prisma.TimeEntryUncheckedCreateNestedManyWithoutContractorInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedCreateNestedManyWithoutContractorInput
+  returnRequests?: Prisma.ReturnRequestUncheckedCreateNestedManyWithoutContractorInput
+  taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
+  leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
+  intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+}
+
+export type ContractorCreateOrConnectWithoutDeprovisioningRunsInput = {
+  where: Prisma.ContractorWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
+}
+
+export type ContractorUpsertWithoutDeprovisioningRunsInput = {
+  update: Prisma.XOR<Prisma.ContractorUpdateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedUpdateWithoutDeprovisioningRunsInput>
+  create: Prisma.XOR<Prisma.ContractorCreateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedCreateWithoutDeprovisioningRunsInput>
+  where?: Prisma.ContractorWhereInput
+}
+
+export type ContractorUpdateToOneWithWhereWithoutDeprovisioningRunsInput = {
+  where?: Prisma.ContractorWhereInput
+  data: Prisma.XOR<Prisma.ContractorUpdateWithoutDeprovisioningRunsInput, Prisma.ContractorUncheckedUpdateWithoutDeprovisioningRunsInput>
+}
+
+export type ContractorUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorsNestedInput
+  owner?: Prisma.UserUpdateOneWithoutOwnedContractorsNestedInput
+  primaryTeam?: Prisma.TeamUpdateOneWithoutContractorsNestedInput
+  primaryProject?: Prisma.ProjectUpdateOneWithoutContractorsNestedInput
+  defaultCostCenter?: Prisma.CostCenterUpdateOneWithoutContractorsNestedInput
+  workflowRole?: Prisma.WorkflowRoleTemplateUpdateOneWithoutContractorsNestedInput
+  contacts?: Prisma.ContractorContactUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUpdateManyWithoutContractorNestedInput
+  taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
+  ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
+  leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
+  intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+}
+
+export type ContractorUncheckedUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumContractorTypeFieldUpdateOperationsInput | $Enums.ContractorType
+  legalName?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  taxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  countryCode?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine1?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  addressLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  postalCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumContractorStatusFieldUpdateOperationsInput | $Enums.ContractorStatus
+  lifecycleStage?: Prisma.EnumContractorLifecycleStageFieldUpdateOperationsInput | $Enums.ContractorLifecycleStage
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryTeamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryProjectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultCostCenterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  workflowRoleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isSensitive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  customFieldsJson?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  countryFields?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  latestVatValidatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  latestVatValidationStatus?: Prisma.NullableEnumValidationStatusFieldUpdateOperationsInput | $Enums.ValidationStatus | null
+  isPublicSectorBuyer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  peppolSchemeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  peppolParticipantValue?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isBusinessCustomer?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  archivedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferredPaczkomatId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  preferredPaczkomatAddress?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contacts?: Prisma.ContractorContactUncheckedUpdateManyWithoutContractorNestedInput
+  billingProfiles?: Prisma.ContractorBillingProfileUncheckedUpdateManyWithoutContractorNestedInput
+  assignments?: Prisma.ContractorAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  contracts?: Prisma.ContractUncheckedUpdateManyWithoutContractorNestedInput
+  complianceItems?: Prisma.ContractorComplianceItemUncheckedUpdateManyWithoutContractorNestedInput
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutContractorNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutContractorNestedInput
+  paymentRunItems?: Prisma.PaymentRunItemUncheckedUpdateManyWithoutContractorNestedInput
+  tags?: Prisma.ContractorTagLinkUncheckedUpdateManyWithoutContractorNestedInput
+  portalSessions?: Prisma.PortalSessionUncheckedUpdateManyWithoutContractorNestedInput
+  changeRequests?: Prisma.ContractorChangeRequestUncheckedUpdateManyWithoutContractorNestedInput
+  notificationPreferences?: Prisma.ContractorNotificationPreferenceUncheckedUpdateManyWithoutContractorNestedInput
+  timesheets?: Prisma.TimesheetUncheckedUpdateManyWithoutContractorNestedInput
+  timeEntries?: Prisma.TimeEntryUncheckedUpdateManyWithoutContractorNestedInput
+  equipmentAssignments?: Prisma.EquipmentAssignmentUncheckedUpdateManyWithoutContractorNestedInput
+  returnRequests?: Prisma.ReturnRequestUncheckedUpdateManyWithoutContractorNestedInput
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
@@ -4755,6 +5090,7 @@ export type ContractorCreateWithoutInvoicesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutInvoicesInput = {
@@ -4818,6 +5154,7 @@ export type ContractorUncheckedCreateWithoutInvoicesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutInvoicesInput = {
@@ -4897,6 +5234,7 @@ export type ContractorUpdateWithoutInvoicesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutInvoicesInput = {
@@ -4960,6 +5298,7 @@ export type ContractorUncheckedUpdateWithoutInvoicesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutIntakesInput = {
@@ -5023,6 +5362,7 @@ export type ContractorCreateWithoutIntakesInput = {
   taxIdValidations?: Prisma.TaxIdValidationCreateNestedManyWithoutContractorInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutIntakesInput = {
@@ -5086,6 +5426,7 @@ export type ContractorUncheckedCreateWithoutIntakesInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedCreateNestedManyWithoutContractorInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutIntakesInput = {
@@ -5165,6 +5506,7 @@ export type ContractorUpdateWithoutIntakesInput = {
   taxIdValidations?: Prisma.TaxIdValidationUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutIntakesInput = {
@@ -5228,6 +5570,7 @@ export type ContractorUncheckedUpdateWithoutIntakesInput = {
   taxIdValidations?: Prisma.TaxIdValidationUncheckedUpdateManyWithoutContractorNestedInput
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutOrganizationInput = {
@@ -5291,6 +5634,7 @@ export type ContractorCreateWithoutOrganizationInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutOrganizationInput = {
@@ -5354,6 +5698,7 @@ export type ContractorUncheckedCreateWithoutOrganizationInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutOrganizationInput = {
@@ -5443,6 +5788,7 @@ export type ContractorCreateWithoutPrimaryTeamInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
@@ -5506,6 +5852,7 @@ export type ContractorUncheckedCreateWithoutPrimaryTeamInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPrimaryTeamInput = {
@@ -5595,6 +5942,7 @@ export type ContractorCreateWithoutPrimaryProjectInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
@@ -5658,6 +6006,7 @@ export type ContractorUncheckedCreateWithoutPrimaryProjectInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPrimaryProjectInput = {
@@ -5747,6 +6096,7 @@ export type ContractorCreateWithoutDefaultCostCenterInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
@@ -5810,6 +6160,7 @@ export type ContractorUncheckedCreateWithoutDefaultCostCenterInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutDefaultCostCenterInput = {
@@ -5899,6 +6250,7 @@ export type ContractorCreateWithoutPaymentRunItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
@@ -5962,6 +6314,7 @@ export type ContractorUncheckedCreateWithoutPaymentRunItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPaymentRunItemsInput = {
@@ -6041,6 +6394,7 @@ export type ContractorUpdateWithoutPaymentRunItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
@@ -6104,6 +6458,7 @@ export type ContractorUncheckedUpdateWithoutPaymentRunItemsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutPortalSessionsInput = {
@@ -6167,6 +6522,7 @@ export type ContractorCreateWithoutPortalSessionsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
@@ -6230,6 +6586,7 @@ export type ContractorUncheckedCreateWithoutPortalSessionsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutPortalSessionsInput = {
@@ -6309,6 +6666,7 @@ export type ContractorUpdateWithoutPortalSessionsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
@@ -6372,6 +6730,7 @@ export type ContractorUncheckedUpdateWithoutPortalSessionsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutChangeRequestsInput = {
@@ -6435,6 +6794,7 @@ export type ContractorCreateWithoutChangeRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
@@ -6498,6 +6858,7 @@ export type ContractorUncheckedCreateWithoutChangeRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutChangeRequestsInput = {
@@ -6577,6 +6938,7 @@ export type ContractorUpdateWithoutChangeRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
@@ -6640,6 +7002,7 @@ export type ContractorUncheckedUpdateWithoutChangeRequestsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutNotificationPreferencesInput = {
@@ -6703,6 +7066,7 @@ export type ContractorCreateWithoutNotificationPreferencesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
@@ -6766,6 +7130,7 @@ export type ContractorUncheckedCreateWithoutNotificationPreferencesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutNotificationPreferencesInput = {
@@ -6845,6 +7210,7 @@ export type ContractorUpdateWithoutNotificationPreferencesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
@@ -6908,6 +7274,7 @@ export type ContractorUncheckedUpdateWithoutNotificationPreferencesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTaxIdValidationsInput = {
@@ -6971,6 +7338,7 @@ export type ContractorCreateWithoutTaxIdValidationsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
@@ -7034,6 +7402,7 @@ export type ContractorUncheckedCreateWithoutTaxIdValidationsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTaxIdValidationsInput = {
@@ -7113,6 +7482,7 @@ export type ContractorUpdateWithoutTaxIdValidationsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
@@ -7176,6 +7546,7 @@ export type ContractorUncheckedUpdateWithoutTaxIdValidationsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTimesheetsInput = {
@@ -7239,6 +7610,7 @@ export type ContractorCreateWithoutTimesheetsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTimesheetsInput = {
@@ -7302,6 +7674,7 @@ export type ContractorUncheckedCreateWithoutTimesheetsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTimesheetsInput = {
@@ -7381,6 +7754,7 @@ export type ContractorUpdateWithoutTimesheetsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
@@ -7444,6 +7818,7 @@ export type ContractorUncheckedUpdateWithoutTimesheetsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutTimeEntriesInput = {
@@ -7507,6 +7882,7 @@ export type ContractorCreateWithoutTimeEntriesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
@@ -7570,6 +7946,7 @@ export type ContractorUncheckedCreateWithoutTimeEntriesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutTimeEntriesInput = {
@@ -7649,6 +8026,7 @@ export type ContractorUpdateWithoutTimeEntriesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
@@ -7712,6 +8090,7 @@ export type ContractorUncheckedUpdateWithoutTimeEntriesInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateWithoutWorkflowRoleInput = {
@@ -7775,6 +8154,7 @@ export type ContractorCreateWithoutWorkflowRoleInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
@@ -7838,6 +8218,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRoleInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutWorkflowRoleInput = {
@@ -7927,6 +8308,7 @@ export type ContractorCreateWithoutWorkflowRunsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
@@ -7990,6 +8372,7 @@ export type ContractorUncheckedCreateWithoutWorkflowRunsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutLinkedContractorInput
   leitwegIds?: Prisma.LeitwegIdUncheckedCreateNestedManyWithoutContractorInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedCreateNestedManyWithoutMatchedContractorInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutContractorInput
 }
 
 export type ContractorCreateOrConnectWithoutWorkflowRunsInput = {
@@ -8069,6 +8452,7 @@ export type ContractorUpdateWithoutWorkflowRunsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
@@ -8132,6 +8516,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRunsInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorCreateManyOwnerInput = {
@@ -8238,6 +8623,7 @@ export type ContractorUpdateWithoutOwnerInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutOwnerInput = {
@@ -8301,6 +8687,7 @@ export type ContractorUncheckedUpdateWithoutOwnerInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutOwnerInput = {
@@ -8450,6 +8837,7 @@ export type ContractorUpdateWithoutOrganizationInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutOrganizationInput = {
@@ -8513,6 +8901,7 @@ export type ContractorUncheckedUpdateWithoutOrganizationInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutOrganizationInput = {
@@ -8662,6 +9051,7 @@ export type ContractorUpdateWithoutPrimaryTeamInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
@@ -8725,6 +9115,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryTeamInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutPrimaryTeamInput = {
@@ -8874,6 +9265,7 @@ export type ContractorUpdateWithoutPrimaryProjectInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
@@ -8937,6 +9329,7 @@ export type ContractorUncheckedUpdateWithoutPrimaryProjectInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutPrimaryProjectInput = {
@@ -9086,6 +9479,7 @@ export type ContractorUpdateWithoutDefaultCostCenterInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
@@ -9149,6 +9543,7 @@ export type ContractorUncheckedUpdateWithoutDefaultCostCenterInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutDefaultCostCenterInput = {
@@ -9298,6 +9693,7 @@ export type ContractorUpdateWithoutWorkflowRoleInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
@@ -9361,6 +9757,7 @@ export type ContractorUncheckedUpdateWithoutWorkflowRoleInput = {
   ir35ChainParticipantLinks?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutLinkedContractorNestedInput
   leitwegIds?: Prisma.LeitwegIdUncheckedUpdateManyWithoutContractorNestedInput
   intakes?: Prisma.InvoiceIntakeRequestUncheckedUpdateManyWithoutMatchedContractorNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutContractorNestedInput
 }
 
 export type ContractorUncheckedUpdateManyWithoutWorkflowRoleInput = {
@@ -9432,6 +9829,7 @@ export type ContractorCountOutputType = {
   ir35ChainParticipantLinks: number
   leitwegIds: number
   intakes: number
+  deprovisioningRuns: number
 }
 
 export type ContractorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -9455,6 +9853,7 @@ export type ContractorCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   ir35ChainParticipantLinks?: boolean | ContractorCountOutputTypeCountIr35ChainParticipantLinksArgs
   leitwegIds?: boolean | ContractorCountOutputTypeCountLeitwegIdsArgs
   intakes?: boolean | ContractorCountOutputTypeCountIntakesArgs
+  deprovisioningRuns?: boolean | ContractorCountOutputTypeCountDeprovisioningRunsArgs
 }
 
 /**
@@ -9607,6 +10006,13 @@ export type ContractorCountOutputTypeCountIntakesArgs<ExtArgs extends runtime.Ty
   where?: Prisma.InvoiceIntakeRequestWhereInput
 }
 
+/**
+ * ContractorCountOutputType without action
+ */
+export type ContractorCountOutputTypeCountDeprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeprovisioningRunWhereInput
+}
+
 
 export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -9676,6 +10082,7 @@ export type ContractorSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   ir35ChainParticipantLinks?: boolean | Prisma.Contractor$ir35ChainParticipantLinksArgs<ExtArgs>
   leitwegIds?: boolean | Prisma.Contractor$leitwegIdsArgs<ExtArgs>
   intakes?: boolean | Prisma.Contractor$intakesArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contractor"]>
 
@@ -9851,6 +10258,7 @@ export type ContractorInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   ir35ChainParticipantLinks?: boolean | Prisma.Contractor$ir35ChainParticipantLinksArgs<ExtArgs>
   leitwegIds?: boolean | Prisma.Contractor$leitwegIdsArgs<ExtArgs>
   intakes?: boolean | Prisma.Contractor$intakesArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContractorIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -9899,6 +10307,7 @@ export type $ContractorPayload<ExtArgs extends runtime.Types.Extensions.Internal
     ir35ChainParticipantLinks: Prisma.$Ir35ChainParticipantPayload<ExtArgs>[]
     leitwegIds: Prisma.$LeitwegIdPayload<ExtArgs>[]
     intakes: Prisma.$InvoiceIntakeRequestPayload<ExtArgs>[]
+    deprovisioningRuns: Prisma.$DeprovisioningRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -10362,6 +10771,7 @@ export interface Prisma__ContractorClient<T, Null = never, ExtArgs extends runti
   ir35ChainParticipantLinks<T extends Prisma.Contractor$ir35ChainParticipantLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$ir35ChainParticipantLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$Ir35ChainParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   leitwegIds<T extends Prisma.Contractor$leitwegIdsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$leitwegIdsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LeitwegIdPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   intakes<T extends Prisma.Contractor$intakesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$intakesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceIntakeRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deprovisioningRuns<T extends Prisma.Contractor$deprovisioningRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Contractor$deprovisioningRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11405,6 +11815,30 @@ export type Contractor$intakesArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.InvoiceIntakeRequestScalarFieldEnum | Prisma.InvoiceIntakeRequestScalarFieldEnum[]
+}
+
+/**
+ * Contractor.deprovisioningRuns
+ */
+export type Contractor$deprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeprovisioningRun
+   */
+  select?: Prisma.DeprovisioningRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeprovisioningRun
+   */
+  omit?: Prisma.DeprovisioningRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeprovisioningRunInclude<ExtArgs> | null
+  where?: Prisma.DeprovisioningRunWhereInput
+  orderBy?: Prisma.DeprovisioningRunOrderByWithRelationInput | Prisma.DeprovisioningRunOrderByWithRelationInput[]
+  cursor?: Prisma.DeprovisioningRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeprovisioningRunScalarFieldEnum | Prisma.DeprovisioningRunScalarFieldEnum[]
 }
 
 /**

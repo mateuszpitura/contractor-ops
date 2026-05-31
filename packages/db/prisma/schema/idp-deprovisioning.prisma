@@ -1,0 +1,104 @@
+// Phase 76 — IdP deprovisioning saga + self-trigger provenance
+//
+// D-01 — DeprovisioningRun + DeprovisioningStep (parent/child saga state)
+// D-09 — IdpChangeProvenance (webhook self-trigger filter)
+// Aggregate run status is DERIVED in code (deriveRunStatus in @contractor-ops/idp-saga)
+// — written by recomputeRunStatus(runId) after every step transition.
+
+model DeprovisioningRun {
+  id                String                  @id @default(cuid())
+  organizationId    String // tenantBound — Phase 70 lint:schema requirement
+  contractorId      String
+  assignmentId      String
+  status            DeprovisioningRunStatus @default(PENDING)
+  startedAt         DateTime                @default(now())
+  finishedAt        DateTime?
+  triggeredByUserId String
+  idempotencyKey    String                  @unique // saga-start client-supplied dedup key
+
+  organization    Organization         @relation(fields: [organizationId], references: [id])
+  contractor      Contractor           @relation(fields: [contractorId], references: [id])
+  assignment      ContractorAssignment @relation(fields: [assignmentId], references: [id])
+  triggeredByUser User                 @relation("UserTriggeredDeprovisioningRuns", fields: [triggeredByUserId], references: [id])
+  steps           DeprovisioningStep[]
+
+  @@index([organizationId, status]) // admin reconcile queue: WHERE status = PARTIAL_FAILURE
+  @@index([organizationId, assignmentId]) // contractor-profile audit lookup
+  @@index([startedAt]) // newest-first audit listing
+}
+
+model DeprovisioningStep {
+  id               String                   @id @default(cuid())
+  organizationId   String // tenantBound — derived from parent run; declared for lint:schema policy
+  runId            String
+  provider         DeprovisioningProvider
+  stepKind         DeprovisioningStepKind
+  status           DeprovisioningStepStatus @default(PENDING)
+  attempts         Int                      @default(0)
+  externalUserId   String // captured at run-start; used by step runner + provenance
+  requestSha256    String? // SHA-256 of canonicalised request payload (no PII)
+  responseSha256   String? // SHA-256 of canonicalised response payload
+  lastErrorMessage String? // sanitised; truncated to 1024 chars at write-time
+  qstashMessageId  String? // QStash deduplicationId for the most recent enqueue
+  startedAt        DateTime?
+  finishedAt       DateTime?
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  run          DeprovisioningRun     @relation(fields: [runId], references: [id], onDelete: Cascade)
+  provenance   IdpChangeProvenance[]
+
+  @@unique([runId, provider, stepKind]) // prevents double-fan-out on the same tuple
+  @@index([status, finishedAt]) // GC + retry-eligibility queries
+  @@index([organizationId])
+}
+
+model IdpChangeProvenance {
+  id                   String                  @id @default(cuid())
+  organizationId       String // tenantBound
+  provider             DeprovisioningProvider
+  externalUserId       String // provider-side identifier (e.g., GWS primaryEmail or userId)
+  actionKind           IdpProvenanceActionKind
+  initiatedAt          DateTime                @default(now())
+  matchedAt            DateTime? // populated by webhook handler on hit
+  deprovisioningStepId String // FK back to the saga step that initiated
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  step         DeprovisioningStep @relation(fields: [deprovisioningStepId], references: [id], onDelete: Cascade)
+
+  @@index([provider, externalUserId, actionKind, initiatedAt]) // D-10 webhook lookup
+  @@index([initiatedAt]) // D-12 GC scan
+  @@index([organizationId, initiatedAt]) // tenant-scoped audit listing
+}
+
+enum DeprovisioningRunStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  PARTIAL_FAILURE
+  FAILED
+}
+
+enum DeprovisioningStepStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCEEDED
+  FAILED
+}
+
+enum DeprovisioningStepKind {
+  SUSPEND_ACCOUNT
+  REVOKE_ALL_SESSIONS
+}
+
+enum DeprovisioningProvider {
+  GOOGLE_WORKSPACE
+  SLACK
+  ENTRA
+  OKTA
+  GITHUB
+}
+
+enum IdpProvenanceActionKind {
+  SUSPEND
+  REVOKE_SESSION
+}

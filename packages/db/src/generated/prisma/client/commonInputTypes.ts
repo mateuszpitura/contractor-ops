@@ -1401,6 +1401,91 @@ export type EnumSkontoEligibilityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
 }
 
+export type EnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningRunStatus | Prisma.EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel> | $Enums.DeprovisioningRunStatus
+}
+
+export type EnumDeprovisioningRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningRunStatus | Prisma.EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningRunStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel>
+}
+
+export type EnumDeprovisioningProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel> | $Enums.DeprovisioningProvider
+}
+
+export type EnumDeprovisioningStepKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepKind | Prisma.EnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel> | $Enums.DeprovisioningStepKind
+}
+
+export type EnumDeprovisioningStepStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepStatus | Prisma.EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
+}
+
+export type EnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel>
+}
+
+export type EnumDeprovisioningStepKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepKind | Prisma.EnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepKindWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningStepKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel>
+}
+
+export type EnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepStatus | Prisma.EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+}
+
+export type EnumIdpProvenanceActionKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdpProvenanceActionKind | Prisma.EnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  in?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel> | $Enums.IdpProvenanceActionKind
+}
+
+export type EnumIdpProvenanceActionKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdpProvenanceActionKind | Prisma.EnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  in?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdpProvenanceActionKindWithAggregatesFilter<$PrismaModel> | $Enums.IdpProvenanceActionKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel>
+}
+
 export type EnumIntegrationStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.IntegrationStatus | Prisma.EnumIntegrationStatusFieldRefInput<$PrismaModel>
   in?: $Enums.IntegrationStatus[] | Prisma.ListEnumIntegrationStatusFieldRefInput<$PrismaModel>
@@ -3673,6 +3758,91 @@ export type NestedEnumSkontoEligibilityWithAggregatesFilter<$PrismaModel = never
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumSkontoEligibilityFilter<$PrismaModel>
+}
+
+export type NestedEnumDeprovisioningRunStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningRunStatus | Prisma.EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel> | $Enums.DeprovisioningRunStatus
+}
+
+export type NestedEnumDeprovisioningRunStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningRunStatus | Prisma.EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningRunStatus[] | Prisma.ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningRunStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningRunStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningRunStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumDeprovisioningProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel> | $Enums.DeprovisioningProvider
+}
+
+export type NestedEnumDeprovisioningStepKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepKind | Prisma.EnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel> | $Enums.DeprovisioningStepKind
+}
+
+export type NestedEnumDeprovisioningStepStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepStatus | Prisma.EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
+}
+
+export type NestedEnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningProvider | Prisma.EnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningProvider[] | Prisma.ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningProviderWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningProviderFilter<$PrismaModel>
+}
+
+export type NestedEnumDeprovisioningStepKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepKind | Prisma.EnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepKind[] | Prisma.ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepKindWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningStepKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningStepKindFilter<$PrismaModel>
+}
+
+export type NestedEnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DeprovisioningStepStatus | Prisma.EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DeprovisioningStepStatus[] | Prisma.ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDeprovisioningStepStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeprovisioningStepStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDeprovisioningStepStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumIdpProvenanceActionKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdpProvenanceActionKind | Prisma.EnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  in?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel> | $Enums.IdpProvenanceActionKind
+}
+
+export type NestedEnumIdpProvenanceActionKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.IdpProvenanceActionKind | Prisma.EnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  in?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.IdpProvenanceActionKind[] | Prisma.ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumIdpProvenanceActionKindWithAggregatesFilter<$PrismaModel> | $Enums.IdpProvenanceActionKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumIdpProvenanceActionKindFilter<$PrismaModel>
 }
 
 export type NestedEnumIntegrationStatusFilter<$PrismaModel = never> = {

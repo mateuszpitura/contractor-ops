@@ -45,6 +45,7 @@ export type ContractorAssignmentMinAggregateOutputType = {
   allocationPercent: runtime.Decimal | null
   activeFrom: Date | null
   activeTo: Date | null
+  endedAt: Date | null
   status: $Enums.AssignmentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -61,6 +62,7 @@ export type ContractorAssignmentMaxAggregateOutputType = {
   allocationPercent: runtime.Decimal | null
   activeFrom: Date | null
   activeTo: Date | null
+  endedAt: Date | null
   status: $Enums.AssignmentStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -77,6 +79,7 @@ export type ContractorAssignmentCountAggregateOutputType = {
   allocationPercent: number
   activeFrom: number
   activeTo: number
+  endedAt: number
   status: number
   createdAt: number
   updatedAt: number
@@ -103,6 +106,7 @@ export type ContractorAssignmentMinAggregateInputType = {
   allocationPercent?: true
   activeFrom?: true
   activeTo?: true
+  endedAt?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -119,6 +123,7 @@ export type ContractorAssignmentMaxAggregateInputType = {
   allocationPercent?: true
   activeFrom?: true
   activeTo?: true
+  endedAt?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -135,6 +140,7 @@ export type ContractorAssignmentCountAggregateInputType = {
   allocationPercent?: true
   activeFrom?: true
   activeTo?: true
+  endedAt?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -238,6 +244,7 @@ export type ContractorAssignmentGroupByOutputType = {
   allocationPercent: runtime.Decimal | null
   activeFrom: Date
   activeTo: Date | null
+  endedAt: Date | null
   status: $Enums.AssignmentStatus
   createdAt: Date
   updatedAt: Date
@@ -277,6 +284,7 @@ export type ContractorAssignmentWhereInput = {
   allocationPercent?: Prisma.DecimalNullableFilter<"ContractorAssignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
@@ -291,6 +299,7 @@ export type ContractorAssignmentWhereInput = {
   economicDependencyAlertState?: Prisma.XOR<Prisma.EconomicDependencyAlertStateNullableScalarRelationFilter, Prisma.EconomicDependencyAlertStateWhereInput> | null
   reassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }
 
 export type ContractorAssignmentOrderByWithRelationInput = {
@@ -304,6 +313,7 @@ export type ContractorAssignmentOrderByWithRelationInput = {
   allocationPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrderInput | Prisma.SortOrder
+  endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -318,6 +328,7 @@ export type ContractorAssignmentOrderByWithRelationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateOrderByWithRelationInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerOrderByRelationAggregateInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenOrderByRelationAggregateInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunOrderByRelationAggregateInput
 }
 
 export type ContractorAssignmentWhereUniqueInput = Prisma.AtLeast<{
@@ -334,6 +345,7 @@ export type ContractorAssignmentWhereUniqueInput = Prisma.AtLeast<{
   allocationPercent?: Prisma.DecimalNullableFilter<"ContractorAssignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
@@ -348,6 +360,7 @@ export type ContractorAssignmentWhereUniqueInput = Prisma.AtLeast<{
   economicDependencyAlertState?: Prisma.XOR<Prisma.EconomicDependencyAlertStateNullableScalarRelationFilter, Prisma.EconomicDependencyAlertStateWhereInput> | null
   reassessmentTriggers?: Prisma.ReassessmentTriggerListRelationFilter
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenListRelationFilter
+  deprovisioningRuns?: Prisma.DeprovisioningRunListRelationFilter
 }, "id">
 
 export type ContractorAssignmentOrderByWithAggregationInput = {
@@ -361,6 +374,7 @@ export type ContractorAssignmentOrderByWithAggregationInput = {
   allocationPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrderInput | Prisma.SortOrder
+  endedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -385,6 +399,7 @@ export type ContractorAssignmentScalarWhereWithAggregatesInput = {
   allocationPercent?: Prisma.DecimalNullableWithAggregatesFilter<"ContractorAssignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorAssignment"> | Date | string | null
+  endedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ContractorAssignment"> | Date | string | null
   status?: Prisma.EnumAssignmentStatusWithAggregatesFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ContractorAssignment"> | Date | string
@@ -396,6 +411,7 @@ export type ContractorAssignmentCreateInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -410,6 +426,7 @@ export type ContractorAssignmentCreateInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateInput = {
@@ -423,6 +440,7 @@ export type ContractorAssignmentUncheckedCreateInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -432,6 +450,7 @@ export type ContractorAssignmentUncheckedCreateInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUpdateInput = {
@@ -440,6 +459,7 @@ export type ContractorAssignmentUpdateInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -454,6 +474,7 @@ export type ContractorAssignmentUpdateInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateInput = {
@@ -467,6 +488,7 @@ export type ContractorAssignmentUncheckedUpdateInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -476,6 +498,7 @@ export type ContractorAssignmentUncheckedUpdateInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateManyInput = {
@@ -489,6 +512,7 @@ export type ContractorAssignmentCreateManyInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -500,6 +524,7 @@ export type ContractorAssignmentUpdateManyMutationInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -516,6 +541,7 @@ export type ContractorAssignmentUncheckedUpdateManyInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -547,6 +573,7 @@ export type ContractorAssignmentCountOrderByAggregateInput = {
   allocationPercent?: Prisma.SortOrder
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
+  endedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -567,6 +594,7 @@ export type ContractorAssignmentMaxOrderByAggregateInput = {
   allocationPercent?: Prisma.SortOrder
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
+  endedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -583,6 +611,7 @@ export type ContractorAssignmentMinOrderByAggregateInput = {
   allocationPercent?: Prisma.SortOrder
   activeFrom?: Prisma.SortOrder
   activeTo?: Prisma.SortOrder
+  endedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -720,6 +749,20 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutContractorNestedInput 
 
 export type EnumAssignmentStatusFieldUpdateOperationsInput = {
   set?: $Enums.AssignmentStatus
+}
+
+export type ContractorAssignmentCreateNestedOneWithoutDeprovisioningRunsInput = {
+  create?: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.ContractorAssignmentCreateOrConnectWithoutDeprovisioningRunsInput
+  connect?: Prisma.ContractorAssignmentWhereUniqueInput
+}
+
+export type ContractorAssignmentUpdateOneRequiredWithoutDeprovisioningRunsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput>
+  connectOrCreate?: Prisma.ContractorAssignmentCreateOrConnectWithoutDeprovisioningRunsInput
+  upsert?: Prisma.ContractorAssignmentUpsertWithoutDeprovisioningRunsInput
+  connect?: Prisma.ContractorAssignmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContractorAssignmentUpdateToOneWithWhereWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUpdateWithoutDeprovisioningRunsInput>, Prisma.ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput>
 }
 
 export type ContractorAssignmentCreateNestedManyWithoutOrganizationInput = {
@@ -896,6 +939,7 @@ export type ContractorAssignmentCreateWithoutClassificationAssessmentsInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -909,6 +953,7 @@ export type ContractorAssignmentCreateWithoutClassificationAssessmentsInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutClassificationAssessmentsInput = {
@@ -922,6 +967,7 @@ export type ContractorAssignmentUncheckedCreateWithoutClassificationAssessmentsI
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -930,6 +976,7 @@ export type ContractorAssignmentUncheckedCreateWithoutClassificationAssessmentsI
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutClassificationAssessmentsInput = {
@@ -954,6 +1001,7 @@ export type ContractorAssignmentUpdateWithoutClassificationAssessmentsInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -967,6 +1015,7 @@ export type ContractorAssignmentUpdateWithoutClassificationAssessmentsInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutClassificationAssessmentsInput = {
@@ -980,6 +1029,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutClassificationAssessmentsI
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -988,6 +1038,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutClassificationAssessmentsI
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutIr35ChainParticipantsInput = {
@@ -996,6 +1047,7 @@ export type ContractorAssignmentCreateWithoutIr35ChainParticipantsInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1009,6 +1061,7 @@ export type ContractorAssignmentCreateWithoutIr35ChainParticipantsInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutIr35ChainParticipantsInput = {
@@ -1022,6 +1075,7 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35ChainParticipantsInput
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1030,6 +1084,7 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35ChainParticipantsInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutIr35ChainParticipantsInput = {
@@ -1054,6 +1109,7 @@ export type ContractorAssignmentUpdateWithoutIr35ChainParticipantsInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1067,6 +1123,7 @@ export type ContractorAssignmentUpdateWithoutIr35ChainParticipantsInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutIr35ChainParticipantsInput = {
@@ -1080,6 +1137,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35ChainParticipantsInput
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1088,6 +1146,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35ChainParticipantsInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutIr35OtherClientAttestationInput = {
@@ -1096,6 +1155,7 @@ export type ContractorAssignmentCreateWithoutIr35OtherClientAttestationInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1109,6 +1169,7 @@ export type ContractorAssignmentCreateWithoutIr35OtherClientAttestationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutIr35OtherClientAttestationInput = {
@@ -1122,6 +1183,7 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35OtherClientAttestation
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1130,6 +1192,7 @@ export type ContractorAssignmentUncheckedCreateWithoutIr35OtherClientAttestation
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutIr35OtherClientAttestationInput = {
@@ -1154,6 +1217,7 @@ export type ContractorAssignmentUpdateWithoutIr35OtherClientAttestationInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1167,6 +1231,7 @@ export type ContractorAssignmentUpdateWithoutIr35OtherClientAttestationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutIr35OtherClientAttestationInput = {
@@ -1180,6 +1245,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35OtherClientAttestation
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1188,6 +1254,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutIr35OtherClientAttestation
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutEconomicDependencyAlertStateInput = {
@@ -1196,6 +1263,7 @@ export type ContractorAssignmentCreateWithoutEconomicDependencyAlertStateInput =
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1209,6 +1277,7 @@ export type ContractorAssignmentCreateWithoutEconomicDependencyAlertStateInput =
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutEconomicDependencyAlertStateInput = {
@@ -1222,6 +1291,7 @@ export type ContractorAssignmentUncheckedCreateWithoutEconomicDependencyAlertSta
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1230,6 +1300,7 @@ export type ContractorAssignmentUncheckedCreateWithoutEconomicDependencyAlertSta
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutEconomicDependencyAlertStateInput = {
@@ -1254,6 +1325,7 @@ export type ContractorAssignmentUpdateWithoutEconomicDependencyAlertStateInput =
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1267,6 +1339,7 @@ export type ContractorAssignmentUpdateWithoutEconomicDependencyAlertStateInput =
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutEconomicDependencyAlertStateInput = {
@@ -1280,6 +1353,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutEconomicDependencyAlertSta
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1288,6 +1362,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutEconomicDependencyAlertSta
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutReassessmentTriggersInput = {
@@ -1296,6 +1371,7 @@ export type ContractorAssignmentCreateWithoutReassessmentTriggersInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1309,6 +1385,7 @@ export type ContractorAssignmentCreateWithoutReassessmentTriggersInput = {
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationCreateNestedOneWithoutContractorAssignmentInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutReassessmentTriggersInput = {
@@ -1322,6 +1399,7 @@ export type ContractorAssignmentUncheckedCreateWithoutReassessmentTriggersInput 
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1330,6 +1408,7 @@ export type ContractorAssignmentUncheckedCreateWithoutReassessmentTriggersInput 
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedCreateNestedOneWithoutContractorAssignmentInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutReassessmentTriggersInput = {
@@ -1354,6 +1433,7 @@ export type ContractorAssignmentUpdateWithoutReassessmentTriggersInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1367,6 +1447,7 @@ export type ContractorAssignmentUpdateWithoutReassessmentTriggersInput = {
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUpdateOneWithoutContractorAssignmentNestedInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutReassessmentTriggersInput = {
@@ -1380,6 +1461,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutReassessmentTriggersInput 
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1388,6 +1470,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutReassessmentTriggersInput 
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutStatusfeststellungsverfahrenInput = {
@@ -1396,6 +1479,7 @@ export type ContractorAssignmentCreateWithoutStatusfeststellungsverfahrenInput =
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1409,6 +1493,7 @@ export type ContractorAssignmentCreateWithoutStatusfeststellungsverfahrenInput =
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationCreateNestedOneWithoutContractorAssignmentInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutStatusfeststellungsverfahrenInput = {
@@ -1422,6 +1507,7 @@ export type ContractorAssignmentUncheckedCreateWithoutStatusfeststellungsverfahr
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1430,6 +1516,7 @@ export type ContractorAssignmentUncheckedCreateWithoutStatusfeststellungsverfahr
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedCreateNestedOneWithoutContractorAssignmentInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutStatusfeststellungsverfahrenInput = {
@@ -1454,6 +1541,7 @@ export type ContractorAssignmentUpdateWithoutStatusfeststellungsverfahrenInput =
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1467,6 +1555,7 @@ export type ContractorAssignmentUpdateWithoutStatusfeststellungsverfahrenInput =
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUpdateOneWithoutContractorAssignmentNestedInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutStatusfeststellungsverfahrenInput = {
@@ -1480,6 +1569,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutStatusfeststellungsverfahr
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1488,6 +1578,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutStatusfeststellungsverfahr
   ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutContractorInput = {
@@ -1496,6 +1587,7 @@ export type ContractorAssignmentCreateWithoutContractorInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1509,6 +1601,7 @@ export type ContractorAssignmentCreateWithoutContractorInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutContractorInput = {
@@ -1521,6 +1614,7 @@ export type ContractorAssignmentUncheckedCreateWithoutContractorInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1530,6 +1624,7 @@ export type ContractorAssignmentUncheckedCreateWithoutContractorInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutContractorInput = {
@@ -1572,9 +1667,118 @@ export type ContractorAssignmentScalarWhereInput = {
   allocationPercent?: Prisma.DecimalNullableFilter<"ContractorAssignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   activeTo?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
+  endedAt?: Prisma.DateTimeNullableFilter<"ContractorAssignment"> | Date | string | null
   status?: Prisma.EnumAssignmentStatusFilter<"ContractorAssignment"> | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContractorAssignment"> | Date | string
+}
+
+export type ContractorAssignmentCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  ownerUserId?: string | null
+  allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  activeFrom: Date | string
+  activeTo?: Date | string | null
+  endedAt?: Date | string | null
+  status?: $Enums.AssignmentStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutContractorAssignmentsInput
+  contractor: Prisma.ContractorCreateNestedOneWithoutAssignmentsInput
+  team?: Prisma.TeamCreateNestedOneWithoutContractorAssignmentsInput
+  project?: Prisma.ProjectCreateNestedOneWithoutContractorAssignmentsInput
+  costCenter?: Prisma.CostCenterCreateNestedOneWithoutContractorAssignmentsInput
+  classificationAssessments?: Prisma.ClassificationAssessmentCreateNestedManyWithoutContractorAssignmentInput
+  ir35ChainParticipants?: Prisma.Ir35ChainParticipantCreateNestedManyWithoutContractorAssignmentInput
+  ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationCreateNestedOneWithoutContractorAssignmentInput
+  economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
+  reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
+  statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+}
+
+export type ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput = {
+  id?: string
+  organizationId: string
+  contractorId: string
+  teamId?: string | null
+  projectId?: string | null
+  costCenterId?: string | null
+  ownerUserId?: string | null
+  allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  activeFrom: Date | string
+  activeTo?: Date | string | null
+  endedAt?: Date | string | null
+  status?: $Enums.AssignmentStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  classificationAssessments?: Prisma.ClassificationAssessmentUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  ir35ChainParticipants?: Prisma.Ir35ChainParticipantUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedCreateNestedOneWithoutContractorAssignmentInput
+  economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
+  reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+}
+
+export type ContractorAssignmentCreateOrConnectWithoutDeprovisioningRunsInput = {
+  where: Prisma.ContractorAssignmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput>
+}
+
+export type ContractorAssignmentUpsertWithoutDeprovisioningRunsInput = {
+  update: Prisma.XOR<Prisma.ContractorAssignmentUpdateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput>
+  create: Prisma.XOR<Prisma.ContractorAssignmentCreateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedCreateWithoutDeprovisioningRunsInput>
+  where?: Prisma.ContractorAssignmentWhereInput
+}
+
+export type ContractorAssignmentUpdateToOneWithWhereWithoutDeprovisioningRunsInput = {
+  where?: Prisma.ContractorAssignmentWhereInput
+  data: Prisma.XOR<Prisma.ContractorAssignmentUpdateWithoutDeprovisioningRunsInput, Prisma.ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput>
+}
+
+export type ContractorAssignmentUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutContractorAssignmentsNestedInput
+  contractor?: Prisma.ContractorUpdateOneRequiredWithoutAssignmentsNestedInput
+  team?: Prisma.TeamUpdateOneWithoutContractorAssignmentsNestedInput
+  project?: Prisma.ProjectUpdateOneWithoutContractorAssignmentsNestedInput
+  costCenter?: Prisma.CostCenterUpdateOneWithoutContractorAssignmentsNestedInput
+  classificationAssessments?: Prisma.ClassificationAssessmentUpdateManyWithoutContractorAssignmentNestedInput
+  ir35ChainParticipants?: Prisma.Ir35ChainParticipantUpdateManyWithoutContractorAssignmentNestedInput
+  ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUpdateOneWithoutContractorAssignmentNestedInput
+  economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
+  reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
+  statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+}
+
+export type ContractorAssignmentUncheckedUpdateWithoutDeprovisioningRunsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  contractorId?: Prisma.StringFieldUpdateOperationsInput | string
+  teamId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  projectId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  costCenterId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ownerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  classificationAssessments?: Prisma.ClassificationAssessmentUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  ir35ChainParticipants?: Prisma.Ir35ChainParticipantUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  ir35OtherClientAttestation?: Prisma.Ir35OtherClientAttestationUncheckedUpdateOneWithoutContractorAssignmentNestedInput
+  economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
+  reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
 }
 
 export type ContractorAssignmentCreateWithoutOrganizationInput = {
@@ -1583,6 +1787,7 @@ export type ContractorAssignmentCreateWithoutOrganizationInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1596,6 +1801,7 @@ export type ContractorAssignmentCreateWithoutOrganizationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutOrganizationInput = {
@@ -1608,6 +1814,7 @@ export type ContractorAssignmentUncheckedCreateWithoutOrganizationInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1617,6 +1824,7 @@ export type ContractorAssignmentUncheckedCreateWithoutOrganizationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutOrganizationInput = {
@@ -1651,6 +1859,7 @@ export type ContractorAssignmentCreateWithoutTeamInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1664,6 +1873,7 @@ export type ContractorAssignmentCreateWithoutTeamInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutTeamInput = {
@@ -1676,6 +1886,7 @@ export type ContractorAssignmentUncheckedCreateWithoutTeamInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1685,6 +1896,7 @@ export type ContractorAssignmentUncheckedCreateWithoutTeamInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutTeamInput = {
@@ -1719,6 +1931,7 @@ export type ContractorAssignmentCreateWithoutProjectInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1732,6 +1945,7 @@ export type ContractorAssignmentCreateWithoutProjectInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutProjectInput = {
@@ -1744,6 +1958,7 @@ export type ContractorAssignmentUncheckedCreateWithoutProjectInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1753,6 +1968,7 @@ export type ContractorAssignmentUncheckedCreateWithoutProjectInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutProjectInput = {
@@ -1787,6 +2003,7 @@ export type ContractorAssignmentCreateWithoutCostCenterInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1800,6 +2017,7 @@ export type ContractorAssignmentCreateWithoutCostCenterInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentUncheckedCreateWithoutCostCenterInput = {
@@ -1812,6 +2030,7 @@ export type ContractorAssignmentUncheckedCreateWithoutCostCenterInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1821,6 +2040,7 @@ export type ContractorAssignmentUncheckedCreateWithoutCostCenterInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedCreateNestedOneWithoutContractorAssignmentInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedCreateNestedManyWithoutContractorAssignmentInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedCreateNestedManyWithoutContractorAssignmentInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedCreateNestedManyWithoutAssignmentInput
 }
 
 export type ContractorAssignmentCreateOrConnectWithoutCostCenterInput = {
@@ -1859,6 +2079,7 @@ export type ContractorAssignmentCreateManyContractorInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1870,6 +2091,7 @@ export type ContractorAssignmentUpdateWithoutContractorInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1883,6 +2105,7 @@ export type ContractorAssignmentUpdateWithoutContractorInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutContractorInput = {
@@ -1895,6 +2118,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutContractorInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1904,6 +2128,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutContractorInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateManyWithoutContractorInput = {
@@ -1916,6 +2141,7 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutContractorInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1931,6 +2157,7 @@ export type ContractorAssignmentCreateManyOrganizationInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1942,6 +2169,7 @@ export type ContractorAssignmentUpdateWithoutOrganizationInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1955,6 +2183,7 @@ export type ContractorAssignmentUpdateWithoutOrganizationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutOrganizationInput = {
@@ -1967,6 +2196,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutOrganizationInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1976,6 +2206,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutOrganizationInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1988,6 +2219,7 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutOrganizationInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2003,6 +2235,7 @@ export type ContractorAssignmentCreateManyTeamInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2014,6 +2247,7 @@ export type ContractorAssignmentUpdateWithoutTeamInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2027,6 +2261,7 @@ export type ContractorAssignmentUpdateWithoutTeamInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutTeamInput = {
@@ -2039,6 +2274,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutTeamInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2048,6 +2284,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutTeamInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateManyWithoutTeamInput = {
@@ -2060,6 +2297,7 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutTeamInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2075,6 +2313,7 @@ export type ContractorAssignmentCreateManyProjectInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2086,6 +2325,7 @@ export type ContractorAssignmentUpdateWithoutProjectInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2099,6 +2339,7 @@ export type ContractorAssignmentUpdateWithoutProjectInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutProjectInput = {
@@ -2111,6 +2352,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutProjectInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2120,6 +2362,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutProjectInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateManyWithoutProjectInput = {
@@ -2132,6 +2375,7 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutProjectInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2147,6 +2391,7 @@ export type ContractorAssignmentCreateManyCostCenterInput = {
   allocationPercent?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom: Date | string
   activeTo?: Date | string | null
+  endedAt?: Date | string | null
   status?: $Enums.AssignmentStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2158,6 +2403,7 @@ export type ContractorAssignmentUpdateWithoutCostCenterInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2171,6 +2417,7 @@ export type ContractorAssignmentUpdateWithoutCostCenterInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateWithoutCostCenterInput = {
@@ -2183,6 +2430,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutCostCenterInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2192,6 +2440,7 @@ export type ContractorAssignmentUncheckedUpdateWithoutCostCenterInput = {
   economicDependencyAlertState?: Prisma.EconomicDependencyAlertStateUncheckedUpdateOneWithoutContractorAssignmentNestedInput
   reassessmentTriggers?: Prisma.ReassessmentTriggerUncheckedUpdateManyWithoutContractorAssignmentNestedInput
   statusfeststellungsverfahren?: Prisma.StatusfeststellungsverfahrenUncheckedUpdateManyWithoutContractorAssignmentNestedInput
+  deprovisioningRuns?: Prisma.DeprovisioningRunUncheckedUpdateManyWithoutAssignmentNestedInput
 }
 
 export type ContractorAssignmentUncheckedUpdateManyWithoutCostCenterInput = {
@@ -2204,6 +2453,7 @@ export type ContractorAssignmentUncheckedUpdateManyWithoutCostCenterInput = {
   allocationPercent?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   activeFrom?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activeTo?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2219,6 +2469,7 @@ export type ContractorAssignmentCountOutputType = {
   ir35ChainParticipants: number
   reassessmentTriggers: number
   statusfeststellungsverfahren: number
+  deprovisioningRuns: number
 }
 
 export type ContractorAssignmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2226,6 +2477,7 @@ export type ContractorAssignmentCountOutputTypeSelect<ExtArgs extends runtime.Ty
   ir35ChainParticipants?: boolean | ContractorAssignmentCountOutputTypeCountIr35ChainParticipantsArgs
   reassessmentTriggers?: boolean | ContractorAssignmentCountOutputTypeCountReassessmentTriggersArgs
   statusfeststellungsverfahren?: boolean | ContractorAssignmentCountOutputTypeCountStatusfeststellungsverfahrenArgs
+  deprovisioningRuns?: boolean | ContractorAssignmentCountOutputTypeCountDeprovisioningRunsArgs
 }
 
 /**
@@ -2266,6 +2518,13 @@ export type ContractorAssignmentCountOutputTypeCountStatusfeststellungsverfahren
   where?: Prisma.StatusfeststellungsverfahrenWhereInput
 }
 
+/**
+ * ContractorAssignmentCountOutputType without action
+ */
+export type ContractorAssignmentCountOutputTypeCountDeprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeprovisioningRunWhereInput
+}
+
 
 export type ContractorAssignmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2278,6 +2537,7 @@ export type ContractorAssignmentSelect<ExtArgs extends runtime.Types.Extensions.
   allocationPercent?: boolean
   activeFrom?: boolean
   activeTo?: boolean
+  endedAt?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2292,6 +2552,7 @@ export type ContractorAssignmentSelect<ExtArgs extends runtime.Types.Extensions.
   economicDependencyAlertState?: boolean | Prisma.ContractorAssignment$economicDependencyAlertStateArgs<ExtArgs>
   reassessmentTriggers?: boolean | Prisma.ContractorAssignment$reassessmentTriggersArgs<ExtArgs>
   statusfeststellungsverfahren?: boolean | Prisma.ContractorAssignment$statusfeststellungsverfahrenArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.ContractorAssignment$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorAssignmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contractorAssignment"]>
 
@@ -2306,6 +2567,7 @@ export type ContractorAssignmentSelectCreateManyAndReturn<ExtArgs extends runtim
   allocationPercent?: boolean
   activeFrom?: boolean
   activeTo?: boolean
+  endedAt?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2327,6 +2589,7 @@ export type ContractorAssignmentSelectUpdateManyAndReturn<ExtArgs extends runtim
   allocationPercent?: boolean
   activeFrom?: boolean
   activeTo?: boolean
+  endedAt?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2348,12 +2611,13 @@ export type ContractorAssignmentSelectScalar = {
   allocationPercent?: boolean
   activeFrom?: boolean
   activeTo?: boolean
+  endedAt?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ContractorAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "teamId" | "projectId" | "costCenterId" | "ownerUserId" | "allocationPercent" | "activeFrom" | "activeTo" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorAssignment"]>
+export type ContractorAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizationId" | "contractorId" | "teamId" | "projectId" | "costCenterId" | "ownerUserId" | "allocationPercent" | "activeFrom" | "activeTo" | "endedAt" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["contractorAssignment"]>
 export type ContractorAssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organization?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
   contractor?: boolean | Prisma.ContractorDefaultArgs<ExtArgs>
@@ -2366,6 +2630,7 @@ export type ContractorAssignmentInclude<ExtArgs extends runtime.Types.Extensions
   economicDependencyAlertState?: boolean | Prisma.ContractorAssignment$economicDependencyAlertStateArgs<ExtArgs>
   reassessmentTriggers?: boolean | Prisma.ContractorAssignment$reassessmentTriggersArgs<ExtArgs>
   statusfeststellungsverfahren?: boolean | Prisma.ContractorAssignment$statusfeststellungsverfahrenArgs<ExtArgs>
+  deprovisioningRuns?: boolean | Prisma.ContractorAssignment$deprovisioningRunsArgs<ExtArgs>
   _count?: boolean | Prisma.ContractorAssignmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ContractorAssignmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2397,6 +2662,7 @@ export type $ContractorAssignmentPayload<ExtArgs extends runtime.Types.Extension
     economicDependencyAlertState: Prisma.$EconomicDependencyAlertStatePayload<ExtArgs> | null
     reassessmentTriggers: Prisma.$ReassessmentTriggerPayload<ExtArgs>[]
     statusfeststellungsverfahren: Prisma.$StatusfeststellungsverfahrenPayload<ExtArgs>[]
+    deprovisioningRuns: Prisma.$DeprovisioningRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2409,6 +2675,7 @@ export type $ContractorAssignmentPayload<ExtArgs extends runtime.Types.Extension
     allocationPercent: runtime.Decimal | null
     activeFrom: Date
     activeTo: Date | null
+    endedAt: Date | null
     status: $Enums.AssignmentStatus
     createdAt: Date
     updatedAt: Date
@@ -2817,6 +3084,7 @@ export interface Prisma__ContractorAssignmentClient<T, Null = never, ExtArgs ext
   economicDependencyAlertState<T extends Prisma.ContractorAssignment$economicDependencyAlertStateArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorAssignment$economicDependencyAlertStateArgs<ExtArgs>>): Prisma.Prisma__EconomicDependencyAlertStateClient<runtime.Types.Result.GetResult<Prisma.$EconomicDependencyAlertStatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reassessmentTriggers<T extends Prisma.ContractorAssignment$reassessmentTriggersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorAssignment$reassessmentTriggersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReassessmentTriggerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   statusfeststellungsverfahren<T extends Prisma.ContractorAssignment$statusfeststellungsverfahrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorAssignment$statusfeststellungsverfahrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusfeststellungsverfahrenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deprovisioningRuns<T extends Prisma.ContractorAssignment$deprovisioningRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContractorAssignment$deprovisioningRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeprovisioningRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2856,6 +3124,7 @@ export interface ContractorAssignmentFieldRefs {
   readonly allocationPercent: Prisma.FieldRef<"ContractorAssignment", 'Decimal'>
   readonly activeFrom: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly activeTo: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
+  readonly endedAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly status: Prisma.FieldRef<"ContractorAssignment", 'AssignmentStatus'>
   readonly createdAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"ContractorAssignment", 'DateTime'>
@@ -3448,6 +3717,30 @@ export type ContractorAssignment$statusfeststellungsverfahrenArgs<ExtArgs extend
   take?: number
   skip?: number
   distinct?: Prisma.StatusfeststellungsverfahrenScalarFieldEnum | Prisma.StatusfeststellungsverfahrenScalarFieldEnum[]
+}
+
+/**
+ * ContractorAssignment.deprovisioningRuns
+ */
+export type ContractorAssignment$deprovisioningRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeprovisioningRun
+   */
+  select?: Prisma.DeprovisioningRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeprovisioningRun
+   */
+  omit?: Prisma.DeprovisioningRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeprovisioningRunInclude<ExtArgs> | null
+  where?: Prisma.DeprovisioningRunWhereInput
+  orderBy?: Prisma.DeprovisioningRunOrderByWithRelationInput | Prisma.DeprovisioningRunOrderByWithRelationInput[]
+  cursor?: Prisma.DeprovisioningRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeprovisioningRunScalarFieldEnum | Prisma.DeprovisioningRunScalarFieldEnum[]
 }
 
 /**

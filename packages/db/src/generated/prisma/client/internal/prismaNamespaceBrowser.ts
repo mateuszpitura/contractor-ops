@@ -112,6 +112,9 @@ export const ModelName = {
   SkontoSnapshot: 'SkontoSnapshot',
   SkontoApplication: 'SkontoApplication',
   GovApiAuditLog: 'GovApiAuditLog',
+  DeprovisioningRun: 'DeprovisioningRun',
+  DeprovisioningStep: 'DeprovisioningStep',
+  IdpChangeProvenance: 'IdpChangeProvenance',
   IntegrationConnection: 'IntegrationConnection',
   ExternalLink: 'ExternalLink',
   IntegrationSyncLog: 'IntegrationSyncLog',
@@ -873,6 +876,7 @@ export const ContractorAssignmentScalarFieldEnum = {
   allocationPercent: 'allocationPercent',
   activeFrom: 'activeFrom',
   activeTo: 'activeTo',
+  endedAt: 'endedAt',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -1278,6 +1282,55 @@ export const GovApiAuditLogScalarFieldEnum = {
 } as const
 
 export type GovApiAuditLogScalarFieldEnum = (typeof GovApiAuditLogScalarFieldEnum)[keyof typeof GovApiAuditLogScalarFieldEnum]
+
+
+export const DeprovisioningRunScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  assignmentId: 'assignmentId',
+  status: 'status',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  triggeredByUserId: 'triggeredByUserId',
+  idempotencyKey: 'idempotencyKey'
+} as const
+
+export type DeprovisioningRunScalarFieldEnum = (typeof DeprovisioningRunScalarFieldEnum)[keyof typeof DeprovisioningRunScalarFieldEnum]
+
+
+export const DeprovisioningStepScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  runId: 'runId',
+  provider: 'provider',
+  stepKind: 'stepKind',
+  status: 'status',
+  attempts: 'attempts',
+  externalUserId: 'externalUserId',
+  requestSha256: 'requestSha256',
+  responseSha256: 'responseSha256',
+  lastErrorMessage: 'lastErrorMessage',
+  qstashMessageId: 'qstashMessageId',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type DeprovisioningStepScalarFieldEnum = (typeof DeprovisioningStepScalarFieldEnum)[keyof typeof DeprovisioningStepScalarFieldEnum]
+
+
+export const IdpChangeProvenanceScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  provider: 'provider',
+  externalUserId: 'externalUserId',
+  actionKind: 'actionKind',
+  initiatedAt: 'initiatedAt',
+  matchedAt: 'matchedAt',
+  deprovisioningStepId: 'deprovisioningStepId'
+} as const
+
+export type IdpChangeProvenanceScalarFieldEnum = (typeof IdpChangeProvenanceScalarFieldEnum)[keyof typeof IdpChangeProvenanceScalarFieldEnum]
 
 
 export const IntegrationConnectionScalarFieldEnum = {

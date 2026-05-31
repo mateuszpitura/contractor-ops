@@ -445,6 +445,9 @@ export const ModelName = {
   SkontoSnapshot: 'SkontoSnapshot',
   SkontoApplication: 'SkontoApplication',
   GovApiAuditLog: 'GovApiAuditLog',
+  DeprovisioningRun: 'DeprovisioningRun',
+  DeprovisioningStep: 'DeprovisioningStep',
+  IdpChangeProvenance: 'IdpChangeProvenance',
   IntegrationConnection: 'IntegrationConnection',
   ExternalLink: 'ExternalLink',
   IntegrationSyncLog: 'IntegrationSyncLog',
@@ -516,7 +519,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
+    modelProps: "organizationApiKey" | "approvalChainConfig" | "approvalFlow" | "approvalStep" | "approvalDecision" | "auditLog" | "user" | "userPinnedView" | "session" | "account" | "verification" | "subscription" | "ocrCreditLedger" | "stripeEvent" | "classificationAssessment" | "classificationDocument" | "ir35ChainParticipant" | "ir35OtherClientAttestation" | "economicDependencyAlertState" | "reassessmentTrigger" | "cronScanState" | "statusfeststellungsverfahren" | "classificationEscalationEvent" | "sdsApproval" | "consentRecord" | "privacyNotice" | "consentEvent" | "contract" | "contractAmendment" | "contractRatePeriod" | "document" | "documentLink" | "contractHealthCheckRun" | "contractor" | "contractorContact" | "contractorBillingProfile" | "contractorAssignment" | "contractorTag" | "contractorTagLink" | "complianceRequirementTemplate" | "contractorComplianceItem" | "leitwegId" | "eInvoiceLifecycle" | "eInvoiceLifecycleEvent" | "peppolCapabilityCache" | "equipment" | "equipmentAssignment" | "shipment" | "shipmentEvent" | "returnRequest" | "courierConfig" | "signingEnvelope" | "signingRecipient" | "signingEvent" | "exchangeRate" | "export" | "boEBaseRateHistory" | "skontoTerm" | "skontoSnapshot" | "skontoApplication" | "govApiAuditLog" | "deprovisioningRun" | "deprovisioningStep" | "idpChangeProvenance" | "integrationConnection" | "externalLink" | "integrationSyncLog" | "webhookDelivery" | "invoice" | "invoiceFile" | "invoiceLine" | "invoiceMatchResult" | "invoiceIntakeRequest" | "invoicePayment" | "invoiceInterestCompensation" | "invoiceInterestWaiver" | "invoiceInterestClaim" | "notification" | "userNotificationPreference" | "comment" | "reminderRule" | "reminderInstance" | "notificationCronDedup" | "oAuthChallenge" | "ocrExtraction" | "organization" | "member" | "invitation" | "team" | "project" | "pendingProjectMerge" | "projectExternalLink" | "costCenter" | "outboxEvent" | "paymentRun" | "paymentRunItem" | "paymentExport" | "peppolParticipant" | "peppolTransmission" | "portalSession" | "portalMagicToken" | "contractorChangeRequest" | "contractorNotificationPreference" | "pendingUpload" | "taxRate" | "withholdingTaxRate" | "whtCertificate" | "taxIdValidation" | "timesheet" | "timeEntry" | "workflowTemplate" | "workflowTaskTemplate" | "workflowRoleTemplate" | "workflowRoleTaskTemplate" | "workflowRun" | "workflowTaskRun" | "workflowComment" | "workflowAttachment" | "credentialReference" | "zatcaInvoiceChain"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -5031,6 +5034,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.GovApiAuditLogCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.GovApiAuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
+    DeprovisioningRun: {
+      payload: Prisma.$DeprovisioningRunPayload<ExtArgs>
+      fields: Prisma.DeprovisioningRunFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeprovisioningRunFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeprovisioningRunFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        findFirst: {
+          args: Prisma.DeprovisioningRunFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeprovisioningRunFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        findMany: {
+          args: Prisma.DeprovisioningRunFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>[]
+        }
+        create: {
+          args: Prisma.DeprovisioningRunCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        createMany: {
+          args: Prisma.DeprovisioningRunCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeprovisioningRunCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>[]
+        }
+        delete: {
+          args: Prisma.DeprovisioningRunDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        update: {
+          args: Prisma.DeprovisioningRunUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeprovisioningRunDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeprovisioningRunUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeprovisioningRunUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeprovisioningRunUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningRunPayload>
+        }
+        aggregate: {
+          args: Prisma.DeprovisioningRunAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeprovisioningRun>
+        }
+        groupBy: {
+          args: Prisma.DeprovisioningRunGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeprovisioningRunGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeprovisioningRunCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeprovisioningRunCountAggregateOutputType> | number
+        }
+      }
+    }
+    DeprovisioningStep: {
+      payload: Prisma.$DeprovisioningStepPayload<ExtArgs>
+      fields: Prisma.DeprovisioningStepFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeprovisioningStepFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeprovisioningStepFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        findFirst: {
+          args: Prisma.DeprovisioningStepFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeprovisioningStepFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        findMany: {
+          args: Prisma.DeprovisioningStepFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>[]
+        }
+        create: {
+          args: Prisma.DeprovisioningStepCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        createMany: {
+          args: Prisma.DeprovisioningStepCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeprovisioningStepCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>[]
+        }
+        delete: {
+          args: Prisma.DeprovisioningStepDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        update: {
+          args: Prisma.DeprovisioningStepUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeprovisioningStepDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeprovisioningStepUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeprovisioningStepUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeprovisioningStepUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeprovisioningStepPayload>
+        }
+        aggregate: {
+          args: Prisma.DeprovisioningStepAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeprovisioningStep>
+        }
+        groupBy: {
+          args: Prisma.DeprovisioningStepGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeprovisioningStepGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeprovisioningStepCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeprovisioningStepCountAggregateOutputType> | number
+        }
+      }
+    }
+    IdpChangeProvenance: {
+      payload: Prisma.$IdpChangeProvenancePayload<ExtArgs>
+      fields: Prisma.IdpChangeProvenanceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IdpChangeProvenanceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IdpChangeProvenanceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        findFirst: {
+          args: Prisma.IdpChangeProvenanceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IdpChangeProvenanceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        findMany: {
+          args: Prisma.IdpChangeProvenanceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>[]
+        }
+        create: {
+          args: Prisma.IdpChangeProvenanceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        createMany: {
+          args: Prisma.IdpChangeProvenanceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.IdpChangeProvenanceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>[]
+        }
+        delete: {
+          args: Prisma.IdpChangeProvenanceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        update: {
+          args: Prisma.IdpChangeProvenanceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        deleteMany: {
+          args: Prisma.IdpChangeProvenanceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IdpChangeProvenanceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IdpChangeProvenanceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>[]
+        }
+        upsert: {
+          args: Prisma.IdpChangeProvenanceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IdpChangeProvenancePayload>
+        }
+        aggregate: {
+          args: Prisma.IdpChangeProvenanceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIdpChangeProvenance>
+        }
+        groupBy: {
+          args: Prisma.IdpChangeProvenanceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IdpChangeProvenanceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IdpChangeProvenanceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IdpChangeProvenanceCountAggregateOutputType> | number
         }
       }
     }
@@ -9904,6 +10129,7 @@ export const ContractorAssignmentScalarFieldEnum = {
   allocationPercent: 'allocationPercent',
   activeFrom: 'activeFrom',
   activeTo: 'activeTo',
+  endedAt: 'endedAt',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -10309,6 +10535,55 @@ export const GovApiAuditLogScalarFieldEnum = {
 } as const
 
 export type GovApiAuditLogScalarFieldEnum = (typeof GovApiAuditLogScalarFieldEnum)[keyof typeof GovApiAuditLogScalarFieldEnum]
+
+
+export const DeprovisioningRunScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  contractorId: 'contractorId',
+  assignmentId: 'assignmentId',
+  status: 'status',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  triggeredByUserId: 'triggeredByUserId',
+  idempotencyKey: 'idempotencyKey'
+} as const
+
+export type DeprovisioningRunScalarFieldEnum = (typeof DeprovisioningRunScalarFieldEnum)[keyof typeof DeprovisioningRunScalarFieldEnum]
+
+
+export const DeprovisioningStepScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  runId: 'runId',
+  provider: 'provider',
+  stepKind: 'stepKind',
+  status: 'status',
+  attempts: 'attempts',
+  externalUserId: 'externalUserId',
+  requestSha256: 'requestSha256',
+  responseSha256: 'responseSha256',
+  lastErrorMessage: 'lastErrorMessage',
+  qstashMessageId: 'qstashMessageId',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+} as const
+
+export type DeprovisioningStepScalarFieldEnum = (typeof DeprovisioningStepScalarFieldEnum)[keyof typeof DeprovisioningStepScalarFieldEnum]
+
+
+export const IdpChangeProvenanceScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  provider: 'provider',
+  externalUserId: 'externalUserId',
+  actionKind: 'actionKind',
+  initiatedAt: 'initiatedAt',
+  matchedAt: 'matchedAt',
+  deprovisioningStepId: 'deprovisioningStepId'
+} as const
+
+export type IdpChangeProvenanceScalarFieldEnum = (typeof IdpChangeProvenanceScalarFieldEnum)[keyof typeof IdpChangeProvenanceScalarFieldEnum]
 
 
 export const IntegrationConnectionScalarFieldEnum = {
@@ -12326,6 +12601,76 @@ export type ListEnumSkontoEligibilityFieldRefInput<$PrismaModel> = FieldRefInput
 
 
 /**
+ * Reference to a field of type 'DeprovisioningRunStatus'
+ */
+export type EnumDeprovisioningRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningRunStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningRunStatus[]'
+ */
+export type ListEnumDeprovisioningRunStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningRunStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningProvider'
+ */
+export type EnumDeprovisioningProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningProvider[]'
+ */
+export type ListEnumDeprovisioningProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningProvider[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningStepKind'
+ */
+export type EnumDeprovisioningStepKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningStepKind'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningStepKind[]'
+ */
+export type ListEnumDeprovisioningStepKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningStepKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningStepStatus'
+ */
+export type EnumDeprovisioningStepStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningStepStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'DeprovisioningStepStatus[]'
+ */
+export type ListEnumDeprovisioningStepStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeprovisioningStepStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'IdpProvenanceActionKind'
+ */
+export type EnumIdpProvenanceActionKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdpProvenanceActionKind'>
+    
+
+
+/**
+ * Reference to a field of type 'IdpProvenanceActionKind[]'
+ */
+export type ListEnumIdpProvenanceActionKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IdpProvenanceActionKind[]'>
+    
+
+
+/**
  * Reference to a field of type 'IntegrationStatus'
  */
 export type EnumIntegrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IntegrationStatus'>
@@ -13209,6 +13554,9 @@ export type GlobalOmitConfig = {
   skontoSnapshot?: Prisma.SkontoSnapshotOmit
   skontoApplication?: Prisma.SkontoApplicationOmit
   govApiAuditLog?: Prisma.GovApiAuditLogOmit
+  deprovisioningRun?: Prisma.DeprovisioningRunOmit
+  deprovisioningStep?: Prisma.DeprovisioningStepOmit
+  idpChangeProvenance?: Prisma.IdpChangeProvenanceOmit
   integrationConnection?: Prisma.IntegrationConnectionOmit
   externalLink?: Prisma.ExternalLinkOmit
   integrationSyncLog?: Prisma.IntegrationSyncLogOmit

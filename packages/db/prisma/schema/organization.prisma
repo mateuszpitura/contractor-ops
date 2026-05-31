@@ -146,6 +146,10 @@ model Organization {
   consentEvents                  ConsentEvent[]                     @relation("OrganizationConsentEvents")
   // P2-F (F-SCALE-01) — async export jobs (CSV / PDF off the request path).
   exports                        Export[]
+  // Phase 76 — F2 IdP deprovisioning saga + self-trigger provenance
+  deprovisioningRuns             DeprovisioningRun[]
+  deprovisioningSteps            DeprovisioningStep[]
+  idpChangeProvenances           IdpChangeProvenance[]
 }
 
 model Member {

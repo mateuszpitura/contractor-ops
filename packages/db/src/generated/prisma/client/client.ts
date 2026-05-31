@@ -347,6 +347,21 @@ export type SkontoApplication = Prisma.SkontoApplicationModel
  */
 export type GovApiAuditLog = Prisma.GovApiAuditLogModel
 /**
+ * Model DeprovisioningRun
+ * 
+ */
+export type DeprovisioningRun = Prisma.DeprovisioningRunModel
+/**
+ * Model DeprovisioningStep
+ * 
+ */
+export type DeprovisioningStep = Prisma.DeprovisioningStepModel
+/**
+ * Model IdpChangeProvenance
+ * 
+ */
+export type IdpChangeProvenance = Prisma.IdpChangeProvenanceModel
+/**
  * Model IntegrationConnection
  * 
  */
