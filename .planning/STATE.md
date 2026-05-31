@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: executing
-stopped_at: context exhaustion at 75% (2026-05-31)
-last_updated: "2026-05-31T14:55:17.040Z"
+status: ready_to_plan
+stopped_at: Phase 76 complete (10/10) — ready to discuss Phase 77
+last_updated: 2026-05-31T15:55:28.553Z
 last_activity: 2026-05-31 -- Phase 76 execution started
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 72
-  completed_plans: 36
+  completed_plans: 43
   percent: 36
 ---
 
@@ -20,7 +20,7 @@ progress:
 
 ### RESOLVED (2026-05-31): Phase 77 plan-phase — GSD tooling break (missing model-catalog.json) no longer reproduces
 
-**Phase:** 77 — F2 IdP — GWS + Slack Adapters (the wedge)
+**Phase:** 77
 **Workflow:** `gsd:plan-phase 77 --auto`
 **Resolution:** `gsd-sdk query init.plan-phase 77` and `roadmap.get-phase 77` now return valid JSON in this environment — the `model-catalog.json` crash no longer reproduces. plan-phase 77 ran end-to-end; RESEARCH.md, VALIDATION.md, PATTERNS.md and PLAN.md files were generated. NOTE: subagent (`gsd-phase-researcher` / `gsd-planner` / `gsd-plan-checker`) spawning was unavailable in the background-agent runtime, so the orchestrator performed those roles inline against the live tree (verified paths via semble + Read). Two upstream caveats recorded in 77-RESEARCH.md: (a) Phase 76 is PLANNED but NOT executed — of its infra exists yet, so Phase 77 plans treat it as an upstream dependency; (b) Phase 76 plans + 77-CONTEXT.md reference the now-deleted `apps/web` (Next.js) — Phase 77 anchors all server routes to `apps/api` Fastify routes and all UI to `apps/web-vite` (Page→Container→Hook→Component).
 
@@ -73,7 +73,7 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 
 **Phase:** 78 — F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)
 **Workflow:** `gsd:plan-phase 78 --auto`
-**Status:** Executing Phase 76
+**Status:** Ready to plan
 
 **What happened:** Identical root cause to the Phase 75 blocker below. `gsd:plan-phase` step 1 (`gsd-sdk query init.plan-phase 78`) crashes at module load:
 
@@ -188,14 +188,14 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 76 — f2-idp-capability-mixin-saga-schema-cooldown-gate-gws-scope-
+**Current focus:** Phase 77 — f2 idp gws slack adapters the wedge
 
 ## Current Position
 
 Phase: 76 (f2-idp-capability-mixin-saga-schema-cooldown-gate-gws-scope-) — EXECUTING
-Plan: 1 of 10
+Plan: Not started
 Status: Executing Phase 76
-Last activity: 2026-05-31 -- Phase 76 execution started
+Last activity: 2026-05-31
 
 Progress: [████░░░░░░] 44%
 
@@ -297,7 +297,7 @@ DATABASE_URL=$DATABASE_URL_ME tsx packages/db/scripts/backfill-scope-capabilitie
 
 **Velocity:**
 
-- Total plans completed: 332 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
+- Total plans completed: 342 (51 v1.0 + 52 v2.0 + 47 v3.0 + 55 v4.0 + 70 v5.0 [Phases 56–69] + 10 v6.0 [Phase 70])
 - v6.0 plans completed: 10 (Phase 70: 70-01..70-10)
 - v6.0 phases completed: 1 / 11 (Phase 70)
 - v6.0 phases planned: 11 (70-80)
