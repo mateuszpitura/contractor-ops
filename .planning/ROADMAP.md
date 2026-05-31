@@ -388,6 +388,6 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 5/5 | Complete    | 2026-05-31 |
-| 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete   | 2026-05-31 |
+| 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 7/7 | Complete    | 2026-05-31 |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 0/?            | Not started | -          |
