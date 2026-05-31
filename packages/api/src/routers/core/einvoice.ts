@@ -11,6 +11,7 @@ import {
   XRechnungDEProfile,
   ZugferdLevelUnsupportedForOutput,
 } from '@contractor-ops/einvoice';
+import { createLogger } from '@contractor-ops/logger';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import * as E from '../../errors';
@@ -44,6 +45,7 @@ import {
 } from '../../services/r2';
 import type { SkontoTermData } from '../../services/skonto';
 import { resolveSkontoTerm } from '../../services/skonto';
+import type { DbClient } from '../../services/types';
 
 // ---------------------------------------------------------------------------
 // Types for the Prisma `$transaction` callback — we project onto the
@@ -63,33 +65,7 @@ interface LifecycleTx {
 
 type TxRunner = (fn: (tx: LifecycleTx) => Promise<unknown>) => Promise<unknown>;
 
-// ---------------------------------------------------------------------------
-// Logger — lazy dynamic import so ESM-only package resolution survives
-// test environments that mock `@contractor-ops/logger`.
-// ---------------------------------------------------------------------------
-
-interface RouterLogger {
-  info(obj: unknown, msg?: string): void;
-  warn(obj: unknown, msg?: string): void;
-  error(obj: unknown, msg?: string): void;
-}
-
-const noopLogger: RouterLogger = {
-  info: () => undefined,
-  warn: () => undefined,
-  error: () => undefined,
-};
-
-async function getLogger(): Promise<RouterLogger> {
-  try {
-    const mod = (await import('@contractor-ops/logger')) as {
-      createLogger?: (opts: { service: string }) => RouterLogger;
-    };
-    return mod.createLogger?.({ service: 'api.einvoice-router' }) ?? noopLogger;
-  } catch {
-    return noopLogger;
-  }
-}
+const log = createLogger({ service: 'einvoice-router' });
 
 // ---------------------------------------------------------------------------
 // R2Service adapter — wraps the existing module-level helpers into the
@@ -138,14 +114,10 @@ const finalizeInput = invoiceIdInput.extend({ force: z.boolean().default(false) 
 // (not throws) so callers can map to NOT_FOUND with a specific message.
 // ---------------------------------------------------------------------------
 
-async function loadLifecycleScoped(
-  db: { eInvoiceLifecycle: { findFirst: (args: unknown) => Promise<unknown> } },
-  organizationId: string,
-  lifecycleId: string,
-): Promise<Record<string, unknown> | null> {
-  return (await (db.eInvoiceLifecycle.findFirst as (args: unknown) => Promise<unknown>)({
+async function loadLifecycleScoped(db: DbClient, organizationId: string, lifecycleId: string) {
+  return db.eInvoiceLifecycle.findFirst({
     where: { id: lifecycleId, organizationId },
-  })) as Record<string, unknown> | null;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -239,8 +211,6 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['update'] }))
     .input(z.object({ invoiceId: z.cuid() }))
     .mutation(async ({ ctx, input }) => {
-      const logger = await getLogger();
-
       // 1. Load invoice (org-scoped) + its existing lifecycle row.
       const invoice = (await (ctx.db.invoice.findFirst as (args: unknown) => Promise<unknown>)({
         where: {
@@ -346,7 +316,7 @@ export const einvoiceRouter = router({
             message: E.ZUGFERD_LEVEL_UNSUPPORTED_FOR_OUTPUT,
           });
         }
-        logger.error(
+        log.error(
           {
             invoiceId: input.invoiceId,
             organizationId: ctx.organizationId,
@@ -440,7 +410,7 @@ export const einvoiceRouter = router({
         });
       });
 
-      logger.info(
+      log.info(
         {
           invoiceId: input.invoiceId,
           organizationId: ctx.organizationId,
@@ -474,14 +444,13 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['update'] }))
     .input(finalizeInput)
     .mutation(async ({ ctx, input }): Promise<FinalizeResult> => {
-      const logger = await getLogger();
       try {
         return await finalizeEInvoice(
           {
             db: ctx.db as never,
             r2: r2Service,
             profile: new XRechnungDEProfile(),
-            logger,
+            logger: log,
           },
           {
             organizationId: ctx.organizationId,
@@ -511,15 +480,11 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .mutation(async ({ ctx, input }) => {
-      const lifecycle = (await loadLifecycleScoped(
-        ctx.db as never,
+      const lifecycle = await loadLifecycleScoped(
+        ctx.db,
         ctx.organizationId,
         input.lifecycleId,
-      )) as {
-        id: string;
-        xmlKey: string | null;
-        xmlSha256: string | null;
-      } | null;
+      );
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -592,11 +557,11 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .query(async ({ ctx, input }) => {
-      const lifecycle = (await loadLifecycleScoped(
-        ctx.db as never,
+      const lifecycle = await loadLifecycleScoped(
+        ctx.db,
         ctx.organizationId,
         input.lifecycleId,
-      )) as { id: string; xmlKey: string | null } | null;
+      );
       if (!lifecycle?.xmlKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
@@ -616,11 +581,11 @@ export const einvoiceRouter = router({
     .use(requirePermission({ invoice: ['read'] }))
     .input(lifecycleIdInput)
     .query(async ({ ctx, input }) => {
-      const lifecycle = (await loadLifecycleScoped(
-        ctx.db as never,
+      const lifecycle = await loadLifecycleScoped(
+        ctx.db,
         ctx.organizationId,
         input.lifecycleId,
-      )) as { id: string; validationReportFullKey: string | null } | null;
+      );
       if (!lifecycle?.validationReportFullKey) {
         throw new TRPCError({
           code: 'NOT_FOUND',
