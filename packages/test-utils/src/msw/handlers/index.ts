@@ -6,6 +6,8 @@ import { clockifyHandlers } from './clockify.js';
 import { confluenceHandlers } from './confluence.js';
 import { dataportHandlers } from './dataport.js';
 import { docusignHandlers } from './docusign.js';
+import { entraHandlers } from './entra.js';
+import { githubHandlers } from './github.js';
 import { googleCalendarHandlers } from './google-calendar.js';
 import { googleWorkspaceHandlers } from './google-workspace.js';
 import { hmrcHandlers } from './hmrc.js';
@@ -13,6 +15,7 @@ import { jiraHandlers } from './jira.js';
 import { ksefHandlers } from './ksef.js';
 import { linearHandlers } from './linear.js';
 import { notionHandlers } from './notion.js';
+import { oktaHandlers } from './okta.js';
 import { outlookCalendarHandlers } from './outlook-calendar.js';
 import { qstashHandlers } from './qstash.js';
 import { r2Handlers } from './r2.js';
@@ -48,6 +51,9 @@ export const handlersByProvider = {
   googleWorkspace: googleWorkspaceHandlers,
   hmrc: hmrcHandlers,
   vies: viesHandlers,
+  entra: entraHandlers,
+  okta: oktaHandlers,
+  github: githubHandlers,
 } as const;
 
 export type ProviderName = keyof typeof handlersByProvider;
@@ -85,6 +91,8 @@ export {
   confluenceHandlers,
   dataportHandlers,
   docusignHandlers,
+  entraHandlers,
+  githubHandlers,
   googleCalendarHandlers,
   googleWorkspaceHandlers,
   hmrcHandlers,
@@ -92,6 +100,7 @@ export {
   ksefHandlers,
   linearHandlers,
   notionHandlers,
+  oktaHandlers,
   outlookCalendarHandlers,
   qstashHandlers,
   r2Handlers,
