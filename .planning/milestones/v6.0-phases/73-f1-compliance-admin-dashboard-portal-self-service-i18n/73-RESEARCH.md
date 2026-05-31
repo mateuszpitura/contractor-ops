@@ -1,7 +1,33 @@
 # Phase 73 — Research
 
 **Researched:** 2026-04-27
+**Refreshed:** 2026-05-31 (re-plan vs apps/web-vite — Phase 72 now SHIPPED)
 **Goal:** "What do I need to know to PLAN Phase 73 well?"
+
+> **RE-PLAN NOTE (2026-05-31).** The UI twins below (Twin 1..N) were captured against the
+> Next.js `apps/web` app (now removed). The Phase 71 compliance UI has since been ported to
+> `apps/web-vite` via the Step-11 codemod, so the SAME twins now live in web-vite with adjusted
+> imports (custom `useTranslations` over react-i18next, `Link` from `i18n/navigation`, TanStack
+> Router, Page→Container→Hook→Component). Phase 72 COMPL backend (payment gate, reminder scan,
+> `PaymentRunComplianceCheck` snapshot, supersession) is SHIPPED and committed. The authoritative,
+> verified targets for the re-plan are in `73-CONTEXT.md` `<web_vite_binding>` + `<phase72_binding>`
+> + `<ar_parity_amendment>`. Read those over any `apps/web/...` path mentioned below.
+
+## Verified web-vite twins (2026-05-31)
+
+| Original `apps/web` twin | Live `apps/web-vite` equivalent (verified) |
+|--------------------------|--------------------------------------------|
+| `recompute-compliance-dialog.tsx` (D-12 modal) | `apps/web-vite/src/components/contractors/compliance/recompute-compliance-dialog.tsx` (+ `-container.tsx`, `-button.tsx`, `hooks/use-recompute-compliance.ts` → `trpc.classification.recreateComplianceAssessment`) |
+| Compliance tab | `apps/web-vite/src/components/contractors/contractor-profile/tab-compliance.tsx` |
+| `contractorReasons[]` block-modal | `apps/web-vite/src/components/payments/payment-block-modal.tsx` (defines `ItemReason`/`ContractorReason`) |
+| v1.0 KPI cards + container | `apps/web-vite/src/components/dashboard/{kpi-cards.tsx,dashboard-home-container.tsx,hooks/use-dashboard-home.ts}` |
+| Document upload pipeline | `apps/web-vite/src/components/documents/{drop-zone,drop-zone-container,drop-zone-constants}.tsx` + `hooks/use-upload-new-version.ts`; portal precedent `components/portal/invoice-submit-form-container.tsx` |
+| Portal home | `apps/web-vite/src/pages/portal/index.tsx` → `components/portal/portal-index-container.tsx` |
+| Dashboard/portal routes | `apps/web-vite/src/router/{dashboard,portal}-routes.tsx` (no `[locale]`) |
+| Permissions / flags | `apps/web-vite/src/hooks/use-permissions.ts` · `components/layout/feature-flag-context.ts` |
+| Migration runner `push-all-regions.ts` | `packages/db/scripts/migrate-all-regions.ts` (`pnpm db:migrate:all`) |
+
+ar locale is REQUIRED for the `i18n:parity` guard (peers `[de, pl, ar]`) — see CONTEXT `<ar_parity_amendment>`. The original "Arabic = Phase 79" research framing is superseded for structural key parity.
 
 Phase 73 surfaces the Phase 71 + 72 compliance engine to humans:
 

@@ -1,7 +1,22 @@
 # Phase 73: F1 Compliance — Admin Dashboard + Portal Self-Service + i18n - Context
 
 **Gathered:** 2026-04-27
+**Refreshed:** 2026-05-31 (re-plan against `apps/web-vite`)
 **Status:** Ready for planning
+
+> **RE-PLAN BANNER (2026-05-31).** This CONTEXT was authored against the Next.js `apps/web`
+> app, which was REMOVED on branch `audit/post-migration-parity`. The live UI app is
+> `apps/web-vite` (React + Vite SPA, TanStack Router, custom i18n). Every UI reference below
+> that still names `apps/web/...`, `[locale]` route groups, next-intl (`@/i18n/navigation`,
+> `setRequestLocale`, `getTranslations`), or `--filter @contractor-ops/web` is **stale** — the
+> binding targets are in the **`<web_vite_binding>`** block at the end of this file. Phase 71+72
+> COMPL backend is SHIPPED and committed; bind to it (see `<phase72_binding>`). Three corrections
+> over the original decisions: (1) **ar locale is REQUIRED for i18n:parity** — the guard's peer
+> set is `[de, pl, ar]`, so every new message key + locked-phrase entry MUST ship `ar` too (NOT
+> deferred to Phase 79; D-15/D-17 are amended accordingly below); (2) the multi-region migration
+> runner is **`migrate-all-regions.ts`** (`pnpm db:migrate:all`), NOT `push-all-regions.ts`;
+> (3) the web-vite Phase 71 compliance UI twins (`recompute-compliance-*`, `tab-compliance.tsx`)
+> already exist — bind to them, do not re-port.
 
 <domain>
 ## Phase Boundary
@@ -255,7 +270,73 @@ Phase 73 is purely a surface layer over Phase 71 + 72. No new schema (the Compli
 
 </deferred>
 
+<phase72_binding>
+## SHIPPED Phase 71 + 72 backend (bind to this — verified 2026-05-31)
+
+Phase 72 is fully committed (commits `75b86720`..`0a2650c8`). Phase 73 surfaces these:
+
+- **`packages/api/src/services/compliance-payment-gate.ts`** — `assertContractorPaymentEligibility(contractorIds, opts)` returns `{ blocked, wouldBlock, contractorReasons }`. The `contractorReasons[]` shape (D-10) is: `{ contractorId, contractorName, reasons: ItemReason[] }` where `ItemReason = { itemId, policyRuleId, documentTypeLabelKey, expiredOnDate, jurisdictionTz, deepLinkPath }`. Pass `{ throwOnFail: false }` for the dashboard "Blocked payments" read path. `getDocumentTypeLabelKey(documentType, policyRuleId)` returns `compliance.documentType.<policyRuleId>`.
+- **`packages/api/src/services/compliance-reminder-scan.ts`** — COMPL-03 reminder cascade scanner (cron-side emitter; Phase 73 does NOT touch the cron).
+- **`packages/api/src/services/compliance-supersession.ts`** — Phase 71 supersession; the service-module test shape to mirror for new service tests.
+- **`packages/api/src/services/payment-export-compliance-snapshot.ts`** + **`compliance-recovery.ts`** — Phase 72 `PaymentRunComplianceCheck` snapshot writer (`eligibilityVerdict`) + `PENDING_COMPLIANCE` approval recovery. The historical "Blocked payments" source reads `PaymentRunComplianceCheck WHERE eligibilityVerdict='FAIL' AND snapshottedAt >= now()-7d`.
+- **`apps/cron-worker/src/jobs/handlers/reminders/index.ts`** — the reminder cron lives HERE (NOT `apps/web/.../api/cron`). Phase 73 reads its notification emit, never modifies it.
+- **`packages/compliance-policy/src/expiry.ts`** — `isExpired`, `daysUntilExpiryInTz`, `jurisdictionDate` exist. Phase 73 D-07 adds `defaultExpiryFromUploadDate(rule, uploadDate)` as a sibling.
+- **`packages/compliance-policy/src/{registry,types,version}.ts`** + **`policies/{uk,de,pl,ksa,uae,us}.ts`** — `listPolicyRules()` enumeration; D-07 adds `expirySemantic`/`expiryDays`/`expiryMonths` to `types.ts` `PolicyRule` and backfills the policy files.
+- **`packages/api/src/routers/compliance/classification.ts`** — exports `classificationRouter` (mounted via `routers/compliance/index.ts`), already has `recreateComplianceAssessment`. Namespace is `classification` (UI calls `trpc.classification.*`). Phase 73 adds `overrideItem`, `itemAuditTrail`, `dashboardKpis`/`dashboardAtRisk`/`dashboardUpcomingRenewals`/`dashboardBlockedPayments`, `submitUploadReplacement`, `approveUploadReplacement`, `rejectUploadReplacement` here. **All UI calls are therefore `trpc.classification.<x>`, NOT `trpc.compliance.<x>`** (the original decisions wrote `compliance.overrideItem` etc. as shorthand — the router namespace is `classification`).
+- **`packages/api/src/services/audit-writer.ts`** — `writeAuditLog(args, tx?)`. Use `createLogger({ service })` from `@contractor-ops/logger` (there is NO `createServiceLogger`).
+- **`packages/db/scripts/migrate-all-regions.ts`** (`pnpm db:migrate:all`) — the multi-region apply runner. Migration `autonomous: false` post-merge step uses THIS, not `push-all-regions.ts`.
+- **`packages/feature-flags/src/{registry.ts,signoff-registry-flags.json,signoff-registry-flags-schema.ts}`** — flag registry + Phase 70 D-09 PENDING signoff. `compliance-portal-self-service` PENDING entry lands in `signoff-registry-flags.json`. Import flags from the `@contractor-ops/feature-flags` package barrel.
+</phase72_binding>
+
+<web_vite_binding>
+## Authoritative web-vite UI targets (replaces all `apps/web/...` paths above)
+
+**App:** `apps/web-vite` (React + Vite SPA). Filter: **`--filter @contractor-ops/web-vite`** (there is NO `@contractor-ops/web`). Architecture: **Page → Container → Hook → Component** per `apps/web-vite/ARCHITECTURE.md`. CI gates: `pnpm --filter @contractor-ops/web-vite check:data-layer`, `check:page-shells`, `pnpm check:web-vite-presentational`, `pnpm check:web-vite-table-pattern`, `pnpm check:web-vite-dialog-pattern`.
+
+**Layer rules (binding):**
+- **Page** (`src/pages/**`) — thin shell: `Suspense` + compose `*Container` only. NO `useTRPC`/`useQuery`/`useMutation`/`useTranslations`/`useParams`/`useSearchParams`/`usePermissions`/`useFlag`/`<Navigate>`.
+- **Container** (`src/components/{domain}/*-container.tsx`) — calls domain hook(s); owns loading/empty/error/forbidden branching + Suspense + section skeleton; permission/flag gates; redirects. NO direct tRPC.
+- **Hook** (`src/components/{domain}/hooks/use-*.ts`) — the ONLY tRPC/React-Query boundary for the section.
+- **Component** — presentational, props-in/JSX-out, local UI state only.
+
+**i18n:**
+- Hook: `useTranslations(namespace?)` from `apps/web-vite/src/i18n/useTranslations.ts` (over react-i18next). NOT next-intl.
+- Links: `Link` (locale-aware TanStack Router) from `apps/web-vite/src/i18n/navigation.ts`. NO `next/link`, NO `@/i18n/navigation`.
+- Catalogs: `apps/web-vite/messages/{en,de,pl,ar}.json`. **All four locales required** for the `i18n:parity` guard (peers `[de, pl, ar]`). New namespaces extend existing roots: `Compliance.*` (has `paymentBlockModal`, `documentType`), `ContractorProfile.compliance.*`, `Portal.*`. ar gets real translations where known, otherwise an interim mirror of `en` (parity is structural — keys must exist in all four).
+
+**Routing (TanStack Router — no `[locale]` groups):**
+- Dashboard route registry: `apps/web-vite/src/router/dashboard-routes.tsx`. Add `{ path: 'compliance/dashboard', element: page(<ComplianceDashboardPage />) }` + lazy import. Page: `apps/web-vite/src/pages/dashboard/compliance-dashboard.tsx`.
+- Portal route registry: `apps/web-vite/src/router/portal-routes.tsx`. Add `{ path: 'portal/compliance', ... }` + `{ path: 'portal/compliance/upload-replacement', ... }` + lazy imports. Pages: `apps/web-vite/src/pages/portal/compliance.tsx`, `apps/web-vite/src/pages/portal/compliance-upload-replacement.tsx`.
+- Route chunk prefetch (optional): keep specifiers in sync with `apps/web-vite/src/lib/route-prefetch.ts`.
+
+**Reference twins (read before building):**
+- KPI cards + container pattern: `apps/web-vite/src/components/dashboard/kpi-cards.tsx`, `dashboard-home-container.tsx`, `hooks/use-dashboard-home.ts`.
+- "Blocked payments" rendering (D-10 `contractorReasons[]` consumer): `apps/web-vite/src/components/payments/payment-block-modal.tsx` — already defines `ItemReason`/`ContractorReason`; reuse its `Collapsible` + deep-link `Link` shape.
+- Compliance tab (D-12/D-13 host): `apps/web-vite/src/components/contractors/contractor-profile/tab-compliance.tsx` (renders `complianceItems`; Phase 73 adds Override button + History timeline + WAIVED badge per row).
+- Recompute modal twin (D-12 `<OverrideComplianceItemDialog>` shape): `apps/web-vite/src/components/contractors/compliance/recompute-compliance-{dialog,dialog-container,button}.tsx` + `hooks/use-recompute-compliance.ts` (uses `trpc.classification.recreateComplianceAssessment`). Mirror this exactly for override.
+- Upload pipeline: `apps/web-vite/src/components/documents/drop-zone.tsx` + `drop-zone-container.tsx` + `drop-zone-constants.ts`; `apps/web-vite/src/hooks/use-upload-new-version.ts`; portal precedent `apps/web-vite/src/components/portal/invoice-submit-form-container.tsx` + `invoice-submit-upload.tsx`.
+- Portal home: `apps/web-vite/src/pages/portal/index.tsx` → `apps/web-vite/src/components/portal/portal-index-container.tsx` (+ `hooks/`). Add `PortalHomeComplianceBanner` here.
+- Permissions/flags: `apps/web-vite/src/hooks/use-permissions.ts` (`const { can } = usePermissions(); can('compliance', ['override'])`) and `apps/web-vite/src/components/layout/feature-flag-context.ts` `useFlag('compliance-portal-self-service')`. (The original 73-08 named `use-permission.ts` singular — WRONG; it is `use-permissions.ts`.)
+- Tables: canonical `DataTable` from `@contractor-ops/ui` (`packages/ui/src/components/workbench/data-table/`). NO raw `<Table>`, NO direct `useReactTable`. Dialogs use `DialogBody`/`DialogFooter` from `@contractor-ops/ui/components/shadcn/dialog`. `Tabs`/`Tooltip` from `@contractor-ops/ui/components/shadcn/{tabs,tooltip}`.
+
+**Mandatory UI states:** every container ships loading (section skeleton), empty (`AtelierEmptyState`), and error (role="alert") variants. WCAG: keyboard focus, aria labels, semantic HTML, contrast. Follow the `frontend-design` skill for all web-vite work.
+</web_vite_binding>
+
+<ar_parity_amendment>
+## ar locale amendment (overrides D-15(b), D-17(b), and "ar = Phase 79" in Deferred)
+
+The `i18n:parity` CI guard (Phase 70 FOUND6-03, P29) checks `en` against peers `[de, pl, ar]`. Any
+key present in `en` but missing in `ar` FAILS the guard. Therefore Phase 73 ships **ar** for every
+new key it adds:
+- D-15: `LOCKED_COMPL_NAMES_<JX>` entries carry `en` + `pl` + `de` + **`ar`** (use the romanised/Arabic
+  doc name where known — e.g. Iqama = `الإقامة`; otherwise interim-mirror `en` with a `// TODO ar legal review` note). The parity test (D-17b) asserts all FOUR keys exist.
+- All new web-vite message namespaces (`Compliance.dashboard.*`, `compliance.docName.*`,
+  `Compliance.override.*`, `Compliance.uploadReview.*`, `Portal.compliance.*`) ship `en/de/pl/ar`.
+- Arabic RTL *layout* polish + Gulf-specific terminology refinement remains Phase 79's job; Phase 73
+  only guarantees structural parity (keys exist in all four catalogs) so CI stays green.
+</ar_parity_amendment>
+
 ---
 
 *Phase: 73-f1-compliance-admin-dashboard-portal-self-service-i18n*
-*Context gathered: 2026-04-27*
+*Context gathered: 2026-04-27 · refreshed 2026-05-31 (re-plan vs apps/web-vite)*

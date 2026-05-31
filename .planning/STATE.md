@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: ready_to_plan
-stopped_at: Phase 78 complete (7/7) — ready to discuss Phase 79
-last_updated: 2026-05-31T21:18:58.832Z
-last_activity: 2026-05-31
+status: executing
+stopped_at: context exhaustion at 75% (2026-05-31)
+last_updated: "2026-05-31T21:41:13.659Z"
+last_activity: 2026-05-31 -- Phase 73 planning complete
 progress:
   total_phases: 11
   completed_phases: 8
@@ -35,11 +35,25 @@ progress:
 
 **Next-resume guidance:** Confirm only ONE executor is active before resuming 78-07. Check `git log --grep=78-07` + `ls .planning/phases/78-*/78-07-SUMMARY.md`; if the other session finished it, run phase verification only. 78-07 must follow `apps/web-vite/ARCHITECTURE.md` (Page→Container→Hook→Component), extend the existing `provider-connection-card` + `getProviderToggleState`/`enableProviderForOrg` (5 providers now), i18n en/de/pl/ar parity, loading/empty/error states, WCAG.
 
+### RESOLVED (2026-05-31): Phase 73 RE-PLANNED against `apps/web-vite` — the `apps/web` drift blocker below is cleared; 8 plans regenerated/corrected, all gates pass
+
+**Resolution (`gsd:plan-phase 73 --auto`, background re-plan):** All 8 PLAN.md regenerated/corrected for the current tree. Subagent spawning was unavailable in the background runtime (same as Phase 77 RESOLVED note), so the orchestrator performed researcher/planner/checker roles inline against the live tree (paths verified via semble + Read). Outcome:
+- **CONTEXT.md + RESEARCH.md + PATTERNS.md + VALIDATION.md** refreshed with re-plan banners + authoritative `<web_vite_binding>`/`<phase72_binding>`/`<ar_parity_amendment>` blocks (verified live paths).
+- **Faithful backend (light-touch):** 73-03 (auth + override/audit-trail) unchanged-faithful; 73-04 (validators locked-phrase + parity) amended for **ar parity** (en+pl+de+ar; was "ar=Phase 79"); 73-05 fixed `createServiceLogger`→`createLogger({ service })`.
+- **73-02 (schema, `autonomous: false`):** kept as a FLAG but SOFTENED — multi-region apply (`pnpm db:migrate:all` via `migrate-all-regions.ts`, NOT `push-all-regions.ts`) is a DEFERRED post-deploy item under LOCAL-ONLY (Phase 70/74/76 precedent), NOT a hard gate; downstream Wave 2 runs against a local `prisma db push`. Removed the "Wave 2/3 MUST NOT land" hard-block.
+- **Regenerated UI vs `apps/web-vite`:** 73-01 (UI RED scaffold tasks 07/08/09 → web-vite container/view paths + `--filter @contractor-ops/web-vite`); 73-06 (admin dashboard — Page→Container→Hook→Component, canonical DataTable, payment-block-modal D-10 reuse, 60s polling, drilldown Link); 73-07 (portal — SPLIT backend `portal.complianceItems` + `submitUploadReplacement` from web-vite UI); 73-08 (compliance-tab UX — SPLIT backend approve/reject + notification types + `compliance-portal-self-service` PENDING flag from web-vite override/history/upload-review UI).
+- Bound to SHIPPED Phase 72 (commits 72-01..72-08): `compliance-payment-gate.ts` `assertContractorPaymentEligibility`, `compliance-reminder-scan.ts`, `payment-export-compliance-snapshot.ts`; router namespace is `classification` (UI calls `trpc.classification.*`, not `trpc.compliance.*`); cron lives in `apps/cron-worker/.../reminders`.
+- **Gates:** requirements coverage 3/3 (COMPL-01/04/11); decision coverage 17/17 (D-01..D-17); no stale `apps/web`/`[locale]`/next-intl/`push-all-regions`/`trpc.compliance.`/`@/i18n` references remain in any PLAN. Wave graph 0→1→2→3, deps valid.
+
+**Next:** `/gsd:execute-phase 73` (confirm only ONE executor active first; shared tree). 73-02 stays `autonomous: false` — its DEFERRED multi-region apply is recorded for post-deploy, not a blocker.
+
+<details><summary>Original blocker note (stale — kept for history)</summary>
+
 ### BLOCKER (2026-05-31): Phase 73 execute-phase HALTED — UI plans (3 of 8) + UI test scaffolds target the deleted `apps/web` (Next.js); need re-plan against `apps/web-vite`
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** Ready to plan
+**Status:** RESOLVED — re-planned 2026-05-31 (see above)
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -73,6 +87,8 @@ The 8 plans were authored 2026-04-27 against the Next.js `apps/web` app, which h
 2. **Scope-reduce to backend-only** for this run: a re-plan could carve 73-01(backend)+73-02+73-03+73-04+73-05 into a "Phase 73a — COMPL data/permission/i18n foundation" and defer all UI to a re-planned "Phase 73b". This delivers COMPL-11 fully + COMPL-01/COMPL-04 data layer without guessing UI. Still needs the 73-02 manual-apply decision.
 
 No `--gaps-only`/`--wave`/`--interactive` flags were passed; standard full-phase flow was attempted. CONTEXT.md (`73-CONTEXT.md`, gathered 2026-04-27) is itself written entirely against `apps/web` and needs refresh before/with re-planning.
+
+</details>
 
 ---
 
@@ -253,8 +269,8 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 Phase: 78 (f2-idp-entra-id-okta-github-adapters-the-differentiator) — EXECUTING
 Plan: Not started
-Status: Phase complete — ready for verification
-Last activity: 2026-05-31
+Status: Ready to execute
+Last activity: 2026-05-31 -- Phase 73 planning complete
 
 Progress: [█████████░] 89%
 

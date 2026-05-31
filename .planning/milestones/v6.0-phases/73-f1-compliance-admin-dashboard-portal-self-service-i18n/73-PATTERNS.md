@@ -2,6 +2,14 @@
 
 For each new/modified file, lists the closest in-repo analog and the concrete code shape to mirror. Read this before any plan executes.
 
+> **RE-PLAN BANNER (2026-05-31).** Any `apps/web/...` analog below is STALE (Next.js app removed). The
+> live web-vite analogs are authoritative in `73-CONTEXT.md` `<web_vite_binding>` (recompute-compliance
+> triplet, payment-block-modal, kpi-cards/dashboard-home-container, drop-zone, portal-index-container,
+> dashboard/portal route registries) + `<phase72_binding>` (shipped backend services + router namespace
+> `classification`). The backend analogs below (Prisma schema, validators legal modules, classification
+> router, audit-writer, compliance-policy) are CURRENT — Phase 72 is shipped. Read the CONTEXT binding
+> blocks over any `apps/web` path here.
+
 ---
 
 ## New: `packages/db/prisma/schema/contractor.prisma` (additive — `WaivedReasonCategory` enum + 2 nullable columns + dashboard index)

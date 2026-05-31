@@ -9,6 +9,14 @@ created: 2026-04-27
 
 # Phase 73 — Validation Strategy
 
+> **RE-PLAN BANNER (2026-05-31).** UI validation rows that name `apps/web/...` paths or
+> `--filter @contractor-ops/web` are STALE — the live targets are `apps/web-vite` and the filter is
+> `--filter @contractor-ops/web-vite` (Page->Container->Hook->Component; CI gates check:data-layer /
+> check:page-shells / check:web-vite-presentational / check:web-vite-table-pattern /
+> check:web-vite-dialog-pattern / i18n:parity). ar locale is REQUIRED for i18n:parity. The multi-region
+> migration runner is `migrate-all-regions.ts` (`pnpm db:migrate:all`). See the regenerated PLAN.md
+> `<verification>` blocks for the canonical per-plan commands.
+
 > Per-phase validation contract for feedback sampling during execution.
 
 ---
