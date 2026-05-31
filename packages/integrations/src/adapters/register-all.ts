@@ -83,6 +83,9 @@ function startHeavyLoad(): Promise<void> {
       { LinearAdapter },
       { TeamsAdapter },
       { Bir1CompanyRegistryAdapter },
+      { EntraIdAdapter },
+      { OktaAdapter },
+      { GitHubAdapter },
     ] = await Promise.all([
       import('./docusign-adapter.js'),
       import('./autenti-adapter.js'),
@@ -96,6 +99,9 @@ function startHeavyLoad(): Promise<void> {
       import('./linear-adapter.js'),
       import('./teams-adapter.js'),
       import('./bir1-company-registry-adapter.js'),
+      import('./entra-id-adapter.js'),
+      import('./okta-adapter.js'),
+      import('./github-adapter.js'),
     ]);
     registerAdapter(new DocuSignAdapter());
     registerAdapter(new AutentiAdapter());
@@ -113,6 +119,19 @@ function startHeavyLoad(): Promise<void> {
     registerAdapter(new OutlookCalendarAdapter());
     registerAdapter(new LinearAdapter());
     registerAdapter(new TeamsAdapter());
+    // Phase 78 IDP-05/06/07 — register the SAME adapter instance with both the
+    // provider registry and the Deprovisionable registry (separate Maps). Keys
+    // match the saga DeprovisioningProviderId union + ImpactPreview literals
+    // (ENTRA — NOT ENTRA_ID — per the Prisma DeprovisioningProvider enum).
+    const entraAdapter = new EntraIdAdapter();
+    registerAdapter(entraAdapter);
+    registerDeprovisionableAdapter('ENTRA', entraAdapter);
+    const oktaAdapter = new OktaAdapter();
+    registerAdapter(oktaAdapter);
+    registerDeprovisionableAdapter('OKTA', oktaAdapter);
+    const githubAdapter = new GitHubAdapter();
+    registerAdapter(githubAdapter);
+    registerDeprovisionableAdapter('GITHUB', githubAdapter);
     // Bir1 wraps a SOAP client (`bir1` npm package). Lazy-loaded so the SOAP
     // module graph stays out of cold-start for routes that only ever use the
     // (default) dataport adapter.

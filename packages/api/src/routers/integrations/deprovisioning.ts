@@ -23,14 +23,35 @@ import { getImpactPreview } from '../../services/idp-impact-preview';
 
 const auditLog = getIdpAuditLogger();
 
-// Phase 77 D-15 — the two real Deprovisionable providers + their signoff flag keys.
-const PROVIDER_FLAG_KEY: Record<'GOOGLE_WORKSPACE' | 'SLACK', string> = {
+// Phase 77 D-15 / Phase 78 D-12 — the five Deprovisionable providers + their
+// signoff flag keys. Each provider is independently enable/disable-able for
+// enterprise rollout; the key strings mirror the saga DeprovisioningProvider
+// enum (ENTRA — NOT ENTRA_ID).
+export type DeprovisioningToggleProvider =
+  | 'GOOGLE_WORKSPACE'
+  | 'SLACK'
+  | 'ENTRA'
+  | 'OKTA'
+  | 'GITHUB';
+
+const PROVIDER_FLAG_KEY: Record<DeprovisioningToggleProvider, string> = {
   GOOGLE_WORKSPACE: 'module.idp-deprovisioning-gws',
   SLACK: 'module.idp-deprovisioning-slack',
+  ENTRA: 'module.idp-deprovisioning-entra',
+  OKTA: 'module.idp-deprovisioning-okta',
+  GITHUB: 'module.idp-deprovisioning-github',
 };
 
+const DEPROVISIONING_TOGGLE_PROVIDERS = [
+  'GOOGLE_WORKSPACE',
+  'SLACK',
+  'ENTRA',
+  'OKTA',
+  'GITHUB',
+] as const satisfies readonly DeprovisioningToggleProvider[];
+
 /** A provider may be enabled only when its signoff flag is APPROVED (or local bypass). */
-function isProviderSignoffSatisfied(provider: 'GOOGLE_WORKSPACE' | 'SLACK'): boolean {
+export function isProviderSignoffSatisfied(provider: DeprovisioningToggleProvider): boolean {
   if (process.env.FLAG_SIGNOFF_BYPASS === 'local') return true;
   return getFlagSignoff(PROVIDER_FLAG_KEY[provider])?.status === 'APPROVED';
 }
@@ -541,7 +562,10 @@ export const deprovisioningRouter = router({
         ctx.db.integrationConnection.findMany({
           where: {
             organizationId: ctx.organizationId,
-            provider: { in: ['GOOGLE_WORKSPACE', 'SLACK'] },
+            // Only GWS/SLACK/GITHUB exist in the IntegrationProvider enum; ENTRA
+            // and OKTA have no IntegrationConnection row yet (no enum value), so
+            // their `connected` state is derived from the per-org settings only.
+            provider: { in: ['GOOGLE_WORKSPACE', 'SLACK', 'GITHUB'] },
             status: 'CONNECTED',
           },
           select: { provider: true, configJson: true },
@@ -550,7 +574,7 @@ export const deprovisioningRouter = router({
       const settings = (org?.settingsJson as Record<string, unknown>) ?? {};
       const enabledMap = (settings.idpDeprovisioningEnabled as Record<string, boolean>) ?? {};
 
-      const providers = (['GOOGLE_WORKSPACE', 'SLACK'] as const).map(provider => ({
+      const providers = DEPROVISIONING_TOGGLE_PROVIDERS.map(provider => ({
         provider,
         connected:
           provider === 'SLACK'
@@ -562,7 +586,9 @@ export const deprovisioningRouter = router({
                   (c.configJson as { connectionSubKind?: unknown }).connectionSubKind ===
                     'SLACK_ORG_GRID',
               )
-            : connections.some(c => c.provider === 'GOOGLE_WORKSPACE'),
+            : provider === 'GOOGLE_WORKSPACE' || provider === 'GITHUB'
+              ? connections.some(c => c.provider === provider)
+              : false,
         flagApproved: isProviderSignoffSatisfied(provider),
         enabled: enabledMap[provider] === true,
       }));
@@ -579,7 +605,7 @@ export const deprovisioningRouter = router({
     .use(requirePermission({ settings: ['update'] }))
     .input(
       z.object({
-        provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK']),
+        provider: z.enum(['GOOGLE_WORKSPACE', 'SLACK', 'ENTRA', 'OKTA', 'GITHUB']),
         enabled: z.boolean(),
       }),
     )

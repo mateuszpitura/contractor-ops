@@ -60,10 +60,13 @@ import {
 } from './routers/finance/index';
 import {
   deprovisioningRouter,
+  entraRouter,
+  githubRouter,
   googleWorkspaceRouter,
   jiraRouter,
   ksefRouter,
   linearRouter,
+  oktaRouter,
   peppolRouter,
   teamsRouter,
 } from './routers/integrations/index';
@@ -192,6 +195,9 @@ export const appRouter = router({
   calendar: calendarRouter,
   billing: billingRouter,
   deprovisioning: deprovisioningRouter, // Phase 76 F2 IdP — deprovisioning eligibility (14-day cooldown gate)
+  entra: entraRouter, // Phase 78 F2 IdP — Microsoft Entra ID deprovisioning connection status + per-org enable toggle
+  okta: oktaRouter, // Phase 78 F2 IdP — Okta deprovisioning connection status + per-org enable toggle
+  github: githubRouter, // Phase 78 F2 IdP — GitHub deprovisioning connection status + per-org enable toggle
   equipment: equipmentRouter,
   googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
   gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)

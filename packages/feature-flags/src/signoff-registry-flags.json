@@ -11,6 +11,18 @@
     "status": "PENDING",
     "notes": "F2 Phase 77 — per-provider FLAGS gate for Slack deprovisioning (session-invalidate + SCIM-deactivate, Enterprise Grid). Ship dark; flip to APPROVED post-deploy after legal review. Independent of the GWS gate (D-15). Engineers develop with FLAG_SIGNOFF_BYPASS=local."
   },
+  "module.idp-deprovisioning-entra": {
+    "status": "PENDING",
+    "notes": "F2 Phase 78 — per-provider FLAGS gate for Microsoft Entra ID deprovisioning (account disable + revokeSignInSessions + Conditional Access pre-flight + hybrid-AD hard-block). Independent enterprise rollout (D-12). Legal review deferred per Standing Constraint; dev via FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.idp-deprovisioning-okta": {
+    "status": "PENDING",
+    "notes": "F2 Phase 78 — per-provider FLAGS gate for Okta deprovisioning (deactivateUser + revokeUserSessions). Independent enterprise rollout (D-12). Legal review deferred per Standing Constraint; dev via FLAG_SIGNOFF_BYPASS=local."
+  },
+  "module.idp-deprovisioning-github": {
+    "status": "PENDING",
+    "notes": "F2 Phase 78 — per-provider FLAGS gate for GitHub deprovisioning (org-member removal + per-PAT SAML credential revoke + outside-collaborator manual flag). Independent enterprise rollout (D-12). Legal review deferred per Standing Constraint; dev via FLAG_SIGNOFF_BYPASS=local."
+  },
   "offboarding-ip-foundation": {
     "status": "PENDING",
     "notes": "F4 Offboarding workflow foundation + KT templates + override permission. Werkvertrag wording deferred to Phase 75; this flag gates the workflow:override_blocking_task permission and PTO-aware fallback routing. Needs verification by legal entity before production deploy (override-dialog acknowledgement copy)."
