@@ -203,7 +203,7 @@ function deepMergeMissing(target, source) {
   return target ?? source;
 }
 
-const locales = ['en', 'de', 'pl', 'ar'];
+const locales = ['en', 'en-GB', 'de', 'pl', 'ar', 'ar-SA'];
 
 for (const locale of locales) {
   const file = resolve(localesDir, `${locale}.json`);
