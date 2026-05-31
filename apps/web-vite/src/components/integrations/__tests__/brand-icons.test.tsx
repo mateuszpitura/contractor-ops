@@ -12,7 +12,7 @@ import {
 
 /**
  * Web-vite brand icons are mostly `<img>` from public/logos/. Only
- * LinearBrandIcon uses an inline `<svg>` (react-icons/si SiLinear).
+ * LinearBrandIcon uses an inline `<svg>` (the Linear logo mark).
  */
 describe('BrandIcons', () => {
   it('renders SlackBrandIcon as img with aria-hidden', () => {

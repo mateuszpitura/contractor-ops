@@ -73,7 +73,7 @@ const VENDOR_RULES = [
     test: id => id.includes('@sentry/') || id.includes('@sentry-internal/'),
   },
   { name: 'vendor-validation', test: id => id.includes('/zod/') || id.includes('superjson') },
-  { name: 'vendor-icons', test: id => id.includes('lucide-react') || id.includes('react-icons') },
+  { name: 'vendor-icons', test: id => id.includes('lucide-react') },
   { name: 'vendor-auth', test: id => id.includes('better-auth') },
   { name: 'vendor-date', test: id => id.includes('date-fns') },
   { name: 'vendor-posthog', test: id => id.includes('posthog-js') },

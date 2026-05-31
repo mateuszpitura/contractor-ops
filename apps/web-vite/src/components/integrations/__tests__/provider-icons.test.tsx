@@ -10,7 +10,7 @@ import {
 
 /**
  * Provider icons re-export brand icons. In web-vite most resolve to `<img>`
- * elements (LinearIcon is the svg-based exception, from react-icons/si).
+ * elements (LinearIcon is the svg-based exception — an inline Linear logo svg).
  */
 describe('ProviderIcons (re-exports from brand-icons)', () => {
   it('renders GoogleCalendarIcon as img', () => {
