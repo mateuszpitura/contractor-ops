@@ -52,9 +52,9 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 - [x] **IDP-02**: System enforces a 14-day cooldown gate after `ContractorAssignment.status = ENDED` before allowing IdP deprovisioning to start (final-invoice race protection)
 - [x] **IDP-03**: Admin can deprovision a contractor's Google Workspace identity — system suspends user, revokes all OAuth grants, and signs the user out of all sessions
 - [x] **IDP-04**: Admin can deprovision a contractor's Slack identity — system invalidates active sessions and SCIM-deactivates the user (`active=false`)
-- [ ] **IDP-05**: Admin can deprovision a contractor's Microsoft Entra ID identity — system disables the account and revokes all sign-in sessions, with pre-flight Conditional Access policy enumeration warning when org policies may override the revoke
-- [ ] **IDP-06**: Admin can deprovision a contractor's Okta identity — system deactivates the user and clears active sessions
-- [ ] **IDP-07**: Admin can deprovision a contractor's GitHub org membership — system removes the org member, explicitly revokes per-PAT credentials, and flags outside-collab repos as manual-task with link
+- [x] **IDP-05**: Admin can deprovision a contractor's Microsoft Entra ID identity — system disables the account and revokes all sign-in sessions, with pre-flight Conditional Access policy enumeration warning when org policies may override the revoke
+- [x] **IDP-06**: Admin can deprovision a contractor's Okta identity — system deactivates the user and clears active sessions
+- [x] **IDP-07**: Admin can deprovision a contractor's GitHub org membership — system removes the org member, explicitly revokes per-PAT credentials, and flags outside-collab repos as manual-task with link
 - [x] **IDP-08**: Each IdP adapter implements both `suspendAccount()` and `revokeAllSessions()`; per-provider integration test asserts revocation is verifiable within 5 minutes
 - [x] **IDP-09**: System runs each provider deprovisioning step as an independent QStash job (no `Promise.allSettled` aggregation); aggregate `DeprovisioningRun.status` resolves to `COMPLETED` / `PARTIAL_FAILURE` / `FAILED`
 - [x] **IDP-10**: Admin can view a `DeprovisioningRun` audit trail showing per-step status, retry attempts, request/response hashes (SOC2 evidence-grade), and last-error message; `PARTIAL_FAILURE` runs surface in an admin reconcile queue
@@ -298,9 +298,9 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | IDP-02 | Phase 76 | Complete |
 | IDP-03 | Phase 77 | Complete |
 | IDP-04 | Phase 77 | Complete |
-| IDP-05 | Phase 78 | Pending |
-| IDP-06 | Phase 78 | Pending |
-| IDP-07 | Phase 78 | Pending |
+| IDP-05 | Phase 78 | Complete |
+| IDP-06 | Phase 78 | Complete |
+| IDP-07 | Phase 78 | Complete |
 | IDP-08 | Phase 76 | Complete |
 | IDP-09 | Phase 76 | Complete |
 | IDP-10 | Phase 76 | Complete |

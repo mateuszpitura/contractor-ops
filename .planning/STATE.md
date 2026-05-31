@@ -2,21 +2,62 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
-status: ready_to_plan
-stopped_at: Phase 77 complete (5/5) — ready to discuss Phase 78
-last_updated: 2026-05-31T20:06:50.927Z
+status: executing
+stopped_at: context exhaustion at 75% (2026-05-31)
+last_updated: "2026-05-31T20:27:17.892Z"
 last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 7
   total_plans: 71
-  completed_plans: 56
+  completed_plans: 57
   percent: 64
 ---
 
 # Project State
 
 ## Blockers
+
+### BLOCKER (2026-05-31): Phase 73 execute-phase HALTED — UI plans (3 of 8) + UI test scaffolds target the deleted `apps/web` (Next.js); need re-plan against `apps/web-vite`
+
+**Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
+**Workflow:** `gsd:execute-phase 73` (autonomous background run)
+**Status:** Ready to execute
+
+**Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
+
+The 8 plans were authored 2026-04-27 against the Next.js `apps/web` app, which has since been **removed on this branch** (`audit/post-migration-parity`). The current UI app is `apps/web-vite` (React + Vite SPA) with a fundamentally different architecture. This is the same drift class already recorded for Phases 76/77 in this STATE.md. Verified against the live tree:
+
+- **No `@contractor-ops/web` package exists** — only `@contractor-ops/web-vite`. Every UI plan's commands (`pnpm --filter @contractor-ops/web test|typecheck`) target a nonexistent package and would fail immediately.
+- `apps/web/` directory is **gone**. All UI plan `files_modified` paths (`apps/web/src/app/[locale]/(dashboard|portal)/...`, `apps/web/src/components/...`, `apps/web/messages/{en,pl,de}.json`) are dead.
+- UI plans assume **Next.js 15 server components** (`setRequestLocale`, `getTranslations`, `generateMetadata`, `[locale]` route groups, `redirect from next/navigation`) and **next-intl** (`useTranslations`/`Link`/`useRouter` from `@/i18n/navigation`). `apps/web-vite` uses: custom `useTranslations` (`apps/web-vite/src/i18n/useTranslations.ts`), TanStack Router (no `[locale]` groups, no server components), Page→Container→Hook→Component layering (`apps/web-vite/ARCHITECTURE.md`), and i18n catalogs at `apps/web-vite/messages/{en,de,pl,ar}.json` (note: **ar** is required by the i18n:parity guard peers `[de, pl, ar]`; plans only mention en/pl/de).
+- Adapting these is a **rewrite, not a path rename** (server→SPA, next-intl→custom i18n, route model, +ar locale) = re-planning, not execution.
+
+**Second, independent blocker — `autonomous: false` manual-ops gate cannot be satisfied in a background run:**
+
+- Plan **73-02** (DB schema) is `autonomous: false`. Its verification mandates a manual post-merge step: `npx tsx packages/db/scripts/push-all-regions.ts` against BOTH EU + ME regions, and states *"Downstream Wave 2 / Wave 3 plans MUST NOT land until this manual step is confirmed complete."* No human is present to run/confirm multi-region apply, so Wave 2 backend plans (73-03/73-05) that write to the new `waivedReasonCategory`/`waivedReasonNote` columns + `PENDING_REVIEW` enum value would be landing against an unconfirmed schema.
+
+**Plan-by-plan triage (verified anchors):**
+
+| Plan | Wave | Verdict | Notes |
+|------|------|---------|-------|
+| 73-01 | 0 | PARTIAL | Backend RED scaffolds (tasks 01-06, 10 → api/compliance-policy/validators/auth) are faithful — anchors exist. UI scaffolds (07/08/09 → `apps/web/...`, `--filter @contractor-ops/web`) are DEAD. |
+| 73-02 | 1 | FAITHFUL but `autonomous:false` | `packages/db/prisma/schema/{contractor,contract}.prisma` exist; additive migration + 4 schema tests OK. Blocked on manual multi-region apply (see above). |
+| 73-03 | 2 | FAITHFUL | `packages/auth/src/{permissions,roles}.ts` + `packages/api/src/routers/compliance/classification.ts` (exports `classificationRouter`, mounted via `routers/compliance/index.ts`) all exist. Override mutation + audit-trail query land cleanly. |
+| 73-04 | 1 | FAITHFUL | `packages/validators/src/legal/{gb,de,signoff-registry.json}` + `packages/compliance-policy/src/policies/{uk,de,pl,ksa,uae}.ts` exist. COMPL-11 locked-phrase registry + parity guard fully executable. |
+| 73-05 | 2 | FAITHFUL | `packages/api/src/services/{compliance-payment-gate,compliance-supersession}.ts` + `packages/compliance-policy/src/{expiry,types,registry}.ts` exist. Dashboard query helpers + `defaultExpiryFromUploadDate` + expirySemantic backfill all executable. |
+| 73-06 | 3 | DEAD | Admin `/compliance/dashboard` route — full Next.js server-component + next-intl rewrite required for `apps/web-vite`. |
+| 73-07 | 3 | DEAD (UI) / mixed | Portal surface. Backend bits (`portal.complianceItems` query, `compliance.submitUploadReplacement`) are faithful, but the plan structures them around dead UI + their own RED scaffold (73-01-03) and dead `apps/web` paths in `files_modified`. |
+| 73-08 | 4 | DEAD (UI) / mixed | Compliance-tab UX. Backend bits (`approve/rejectUploadReplacement`, notification types, feature-flags entry) faithful, but plan mixes them with `apps/web-vite` component rewrites + dead test scaffolds in one wave. |
+
+**Recommended remediation (pick one, then re-run execute-phase 73):**
+
+1. **Re-plan the phase** (`gsd:plan-phase 73`) against the current tree: anchor all UI to `apps/web-vite` (Page→Container→Hook→Component per `apps/web-vite/ARCHITECTURE.md`), swap next-intl → `apps/web-vite/src/i18n/useTranslations.ts`, TanStack Router routes (no `[locale]`), i18n catalogs `apps/web-vite/messages/{en,de,pl,ar}.json` (+ ar parity), and `--filter @contractor-ops/web-vite`. Split the mixed backend/UI plans (73-07/73-08) so backend mutations land in their own wave. Decide how to satisfy 73-02's multi-region apply in this environment (or mark it a tracked manual checkpoint).
+2. **Scope-reduce to backend-only** for this run: a re-plan could carve 73-01(backend)+73-02+73-03+73-04+73-05 into a "Phase 73a — COMPL data/permission/i18n foundation" and defer all UI to a re-planned "Phase 73b". This delivers COMPL-11 fully + COMPL-01/COMPL-04 data layer without guessing UI. Still needs the 73-02 manual-apply decision.
+
+No `--gaps-only`/`--wave`/`--interactive` flags were passed; standard full-phase flow was attempted. CONTEXT.md (`73-CONTEXT.md`, gathered 2026-04-27) is itself written entirely against `apps/web` and needs refresh before/with re-planning.
+
+---
 
 ### RESOLVED (2026-05-31): Phase 77 plan-phase — GSD tooling break (missing model-catalog.json) no longer reproduces
 
@@ -189,16 +230,16 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 78 — f2 idp entra id okta github adapters the differentiator
+**Current focus:** Phase 78 — f2-idp-entra-id-okta-github-adapters-the-differentiator
 
 ## Current Position
 
-Phase: 77 (f2-idp-gws-slack-adapters-the-wedge) — EXECUTING
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 78 (f2-idp-entra-id-okta-github-adapters-the-differentiator) — EXECUTING
+Plan: 2 of 7
+Status: Ready to execute
 Last activity: 2026-05-31
 
-Progress: [████████░░] 79%
+Progress: [████████░░] 80%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**
