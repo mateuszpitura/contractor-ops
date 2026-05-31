@@ -64,9 +64,9 @@ describe('ApiKeysTab', () => {
     expect(screen.getAllByText('createKeyButton').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders the loading spinner while isLoading is true', () => {
+  it('renders skeleton rows while isLoading is true', () => {
     const { container } = render(<ApiKeysTab {...buildProps({ isLoading: true })} />);
-    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
+    expect(container.querySelector('.animate-shimmer')).toBeInTheDocument();
   });
 
   it('renders the empty state when no keys are present', () => {

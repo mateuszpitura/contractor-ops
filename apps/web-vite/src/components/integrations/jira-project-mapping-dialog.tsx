@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -67,7 +68,7 @@ export function JiraProjectMappingDialogView({
           <DialogDescription>{t('jira.projectMapping.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label>{t('jira.projectMapping.jiraProject')}</Label>
             <Select value={projectId} onValueChange={handleProjectChange}>
@@ -116,7 +117,7 @@ export function JiraProjectMappingDialogView({
               onCheckedChange={handleEnabledChange}
             />
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleDiscard}>

@@ -16,7 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@contractor-ops/ui/components/shadcn/dropdown-menu';
-import type { Table } from '@tanstack/react-table';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -29,16 +28,19 @@ import type { ContractBulkActionsHandlers } from '../hooks/use-contract-bulk-act
 import type { ContractRow } from './columns.js';
 
 interface DataTableBulkActionsProps {
-  table: Table<ContractRow>;
+  selectedRows: ContractRow[];
   bulkActions: ContractBulkActionsHandlers;
   onComplete: () => void;
 }
 
 /**
- * Presentational bulk action toolbar. Mutations wired via `useContractBulkActions`.
+ * Custom bulk-action bar for the contracts table. Sits above the canonical
+ * DataTable via its `toolbar` slot. Selection state is owned by the canonical
+ * primitive (via `enableRowSelection` + `onSelectionChange`); this component
+ * receives the originals directly.
  */
 export function DataTableBulkActions({
-  table,
+  selectedRows,
   bulkActions,
   onComplete,
 }: DataTableBulkActionsProps) {
@@ -48,8 +50,7 @@ export function DataTableBulkActions({
 
   const [showTerminateDialog, setShowTerminateDialog] = useState(false);
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map(row => row.original.id);
+  const selectedIds = selectedRows.map(row => row.id);
   const count = selectedIds.length;
 
   const actions = getBulkContractActions();

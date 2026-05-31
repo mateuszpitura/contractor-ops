@@ -2,6 +2,7 @@ import { iconSize } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -103,7 +104,7 @@ export function ApprovalBulkActions({
             <DialogTitle>{t('bulkRejectDialog.heading', { count })}</DialogTitle>
             <DialogDescription>{t('bulkRejectDialog.description')}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
+          <DialogBody className="space-y-2">
             <label
               htmlFor={`${reactId}-bulk-reject-comment`}
               className="text-[12px] font-medium text-muted-foreground">
@@ -119,7 +120,7 @@ export function ApprovalBulkActions({
             {rejectComment.length > 0 && rejectComment.length < 10 && (
               <p className="text-[12px] text-destructive">{t('rejectPopover.minChars')}</p>
             )}
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="ghost" onClick={handleDismissReject}>
               {t('bulkRejectDialog.dismiss')}

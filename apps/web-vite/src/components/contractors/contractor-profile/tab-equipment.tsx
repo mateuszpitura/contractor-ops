@@ -1,28 +1,19 @@
 import {
   AtelierEmptyState,
-  AtelierTableShell,
+  DataTable,
   EquipmentIllustration,
   SectionLabel,
-  TableChrome,
   WORKBENCH_DATA_TABLE_CLASS,
 } from '@contractor-ops/ui';
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Package } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { EquipmentStatusBadge } from '../../equipment/equipment-status-badge.js';
 import { EquipmentTypeIcon } from '../../equipment/equipment-type-icon.js';
 import { ShipmentCondensed } from '../../equipment/shipment-condensed.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { DataTableBody } from '../../shared/data-table-body.js';
 import type {
   ContractorTabEquipmentItem,
   useContractorTabEquipment,
@@ -50,7 +41,9 @@ export function TabEquipmentEmpty() {
 
 export function TabEquipmentView({ items, isLoading, isFetching }: TabEquipmentViewProps) {
   const t = useTranslations('Equipment');
-  const tAria = useTranslations('Common.aria');
+
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
 
   const columns: ColumnDef<ContractorTabEquipmentItem>[] = useMemo(
     () => [
@@ -92,58 +85,43 @@ export function TabEquipmentView({ items, isLoading, isFetching }: TabEquipmentV
     [t],
   );
 
-  const table = useReactTable({
-    data: items,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: row => row.assignmentId,
-  });
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
+  const getRowId = useCallback((row: ContractorTabEquipmentItem) => row.assignmentId, []);
 
   return (
     <div className={WORKBENCH_DATA_TABLE_CLASS}>
       <SectionLabel icon={Package}>{t('contractorTab.tabLabel')}</SectionLabel>
-      <AtelierTableShell
-        isLoading={isFetching && !isLoading}
-        chrome={
-          <TableChrome
-            totalCount={items.length}
-            entityLabel={t('entityLabel', { count: items.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(hg => (
-              <TableRow key={hg.id}>
-                {hg.headers.map(h => (
-                  <TableHead key={h.id}>
-                    {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={isLoading}
-            hasFiltersOrSearch={false}
-            emptyIcon={<Package className="h-5 w-5" />}
-            emptyTitle={t('contractorTab.emptyTitle')}
-            emptyDescription={t('contractorTab.emptyDescription')}
-            noResultsTitle={t('contractorTab.emptyTitle')}
-            skeletonRows={5}
-            skeletonColumns={{
-              name: { shape: 'text', width: 'w-40' },
-              serialNumber: { shape: 'text', width: 'w-28' },
-              status: { shape: 'badge' },
-              shipment: { shape: 'text', width: 'w-32' },
-            }}
-          />
-        </Table>
-      </AtelierTableShell>
+      <DataTable
+        columns={columns}
+        data={items}
+        totalRows={items.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={handlePageSizeChange}
+        isLoading={isLoading}
+        isRefetching={isFetching && !isLoading}
+        constrainHeight={false}
+        hideDensityToggle
+        getRowId={getRowId}
+        entityLabel={t('entityLabel', { count: items.length })}
+        emptyIcon={<Package className="h-5 w-5" />}
+        emptyTitle={t('contractorTab.emptyTitle')}
+        emptyDescription={t('contractorTab.emptyDescription')}
+        noResultsTitle={t('contractorTab.emptyTitle')}
+        skeletonRows={5}
+        skeletonColumns={{
+          name: { shape: 'text', width: 'w-40' },
+          serialNumber: { shape: 'text', width: 'w-28' },
+          status: { shape: 'badge' },
+          shipment: { shape: 'text', width: 'w-32' },
+        }}
+      />
     </div>
   );
 }

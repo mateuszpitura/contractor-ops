@@ -9,11 +9,11 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
-import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -21,28 +21,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@contractor-ops/ui/components/shadcn/dropdown-menu';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import {
   Check,
   ClipboardCopy,
   Key,
   Loader2,
-  MoreHorizontal,
   Pencil,
   Plus,
   ShieldAlert,
@@ -51,6 +36,8 @@ import {
 import type * as React from 'react';
 import { useCallback, useState } from 'react';
 import { FeatureGateContainer } from '../billing/feature-gate-container';
+import type { EditTarget, RevokeTarget } from './api-keys/data-table.js';
+import { ApiKeysDataTable } from './api-keys/data-table.js';
 import { CreateKeyDialogContainer } from './create-api-key-dialog-container.js';
 import { EditKeyDialogContainer } from './edit-api-key-dialog-container.js';
 import type {
@@ -65,31 +52,6 @@ import { RevokeKeyDialogContainer } from './revoke-api-key-dialog-container.js';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatDate(date: string | Date | null | undefined): string {
-  if (!date) return '—';
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(date));
-}
-
-function getKeyStatus(key: { revokedAt: string | Date | null; expiresAt: string | Date | null }) {
-  if (key.revokedAt) return 'revoked' as const;
-  if (key.expiresAt && new Date(key.expiresAt) < new Date()) return 'expired' as const;
-  return 'active' as const;
-}
-
-function statusBadgeVariant(status: ReturnType<typeof getKeyStatus>) {
-  switch (status) {
-    case 'active':
-      return 'success' as const;
-    case 'revoked':
-      return 'destructive' as const;
-    case 'expired':
-      return 'warning' as const;
-  }
-}
 
 interface ScopeCheckboxRowProps<T extends string> {
   id: string;
@@ -112,83 +74,6 @@ function ScopeCheckboxRow<T extends string>({
       <Checkbox id={id} checked={isChecked} onCheckedChange={handleChange} />
       <span>{label}</span>
     </label>
-  );
-}
-
-interface ApiKeyRowProps {
-  apiKey: {
-    id: string;
-    name: string;
-    prefix: string;
-    scopes: readonly string[];
-    createdBy: { name: string | null } | null;
-    createdAt: string | Date;
-    lastUsedAt: string | Date | null;
-    revokedAt: string | Date | null;
-    expiresAt: string | Date | null;
-  };
-  t: (key: string) => string;
-  onEdit: (target: { id: string; name: string; scopes: readonly string[] }) => void;
-  onRevoke: (target: { id: string; name: string }) => void;
-}
-
-function ApiKeyRow({ apiKey: key, t, onEdit, onRevoke }: ApiKeyRowProps) {
-  const status = getKeyStatus(key);
-  const handleEdit = useCallback(
-    () => onEdit({ id: key.id, name: key.name, scopes: key.scopes }),
-    [onEdit, key.id, key.name, key.scopes],
-  );
-  const handleRevoke = useCallback(
-    () => onRevoke({ id: key.id, name: key.name }),
-    [onRevoke, key.id, key.name],
-  );
-
-  return (
-    <TableRow>
-      <TableCell className="font-medium">{key.name}</TableCell>
-      <TableCell>
-        <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-          co_live_{key.prefix}...
-        </code>
-      </TableCell>
-      <TableCell>
-        <div className="flex flex-wrap gap-1">
-          {key.scopes.map(scope => (
-            <Badge key={scope} variant="outline" className="text-[10px]">
-              {scope}
-            </Badge>
-          ))}
-        </div>
-      </TableCell>
-      <TableCell className="text-muted-foreground">{key.createdBy?.name ?? '—'}</TableCell>
-      <TableCell className="text-muted-foreground text-xs">{formatDate(key.createdAt)}</TableCell>
-      <TableCell className="text-muted-foreground text-xs">{formatDate(key.lastUsedAt)}</TableCell>
-      <TableCell>
-        <Badge variant={statusBadgeVariant(status)} className="capitalize">
-          {status}
-        </Badge>
-      </TableCell>
-      <TableCell>
-        {status === 'active' && (
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon-sm" aria-label={t('aria.keyActions')} />}>
-              <MoreHorizontal className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleEdit}>
-                <Pencil className="mr-2 size-4" />
-                {t('editAction')}
-              </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive" onClick={handleRevoke}>
-                <Trash2 className="mr-2 size-4" />
-                {t('revokeAction')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </TableCell>
-    </TableRow>
   );
 }
 
@@ -244,7 +129,7 @@ export function CreateKeyDialog({
             <DialogDescription>{t('createdDialog.description')}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
+          <DialogBody className="space-y-3">
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <code className="flex-1 break-all text-xs font-mono">{createdKey}</code>
               <Button
@@ -264,7 +149,7 @@ export function CreateKeyDialog({
               <ShieldAlert className="mt-0.5 size-4 shrink-0" />
               <span>{t('createdDialog.securityWarning')}</span>
             </div>
-          </div>
+          </DialogBody>
 
           <DialogFooter>
             <DialogClose render={<Button />}>{t('createdDialog.doneButton')}</DialogClose>
@@ -286,7 +171,7 @@ export function CreateKeyDialog({
           <DialogDescription>{t('createDialog.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor={`${id}-key-name`}>{t('createDialog.nameLabel')}</Label>
             <Input
@@ -324,7 +209,7 @@ export function CreateKeyDialog({
               min={new Date().toISOString().split('T')[0]}
             />
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
@@ -431,7 +316,7 @@ export function EditKeyDialog({
           <DialogDescription>{t('editDialog.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor={`${id}-edit-name`}>{t('createDialog.nameLabel')}</Label>
             <Input
@@ -458,7 +343,7 @@ export function EditKeyDialog({
               ))}
             </div>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tCommon('cancel')}</DialogClose>
@@ -480,12 +365,8 @@ export type ApiKeysTabProps = ReturnType<typeof useApiKeysTab>;
 
 export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
   const [createOpen, setCreateOpen] = useState(false);
-  const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
-  const [editTarget, setEditTarget] = useState<{
-    id: string;
-    name: string;
-    scopes: readonly string[];
-  } | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<RevokeTarget | null>(null);
+  const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
 
   const openCreate = useCallback(() => setCreateOpen(true), []);
   const handleEditOpenChange = useCallback((open: boolean) => {
@@ -509,51 +390,14 @@ export function ApiKeysTab({ t, keys, isLoading }: ApiKeysTabProps) {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : keys?.length ? (
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('tableHeaders.name')}</TableHead>
-                  <TableHead>{t('tableHeaders.key')}</TableHead>
-                  <TableHead>{t('tableHeaders.scopes')}</TableHead>
-                  <TableHead>{t('tableHeaders.createdBy')}</TableHead>
-                  <TableHead>{t('tableHeaders.created')}</TableHead>
-                  <TableHead>{t('tableHeaders.lastUsed')}</TableHead>
-                  <TableHead>{t('tableHeaders.status')}</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {keys.map(key => (
-                  <ApiKeyRow
-                    key={key.id}
-                    apiKey={key}
-                    t={t}
-                    onEdit={setEditTarget}
-                    onRevoke={setRevokeTarget}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-12 text-center">
-            <div className="rounded-lg bg-muted p-2.5">
-              <Key className="size-5 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-medium">{t('emptyHeading')}</p>
-            <p className="text-xs text-muted-foreground">{t('emptyBody')}</p>
-            <Button size="sm" variant="outline" className="mt-2" onClick={openCreate}>
-              <Plus className="mr-1.5 size-4" />
-              {t('createKeyButton')}
-            </Button>
-          </div>
-        )}
+        <ApiKeysDataTable
+          t={t}
+          keys={keys ?? []}
+          isLoading={isLoading}
+          onCreate={openCreate}
+          onEdit={setEditTarget}
+          onRevoke={setRevokeTarget}
+        />
 
         <CreateKeyDialogContainer open={createOpen} onOpenChange={setCreateOpen} />
 

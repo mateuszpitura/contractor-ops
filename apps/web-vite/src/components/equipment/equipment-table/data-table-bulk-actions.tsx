@@ -10,7 +10,6 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import type { Table } from '@tanstack/react-table';
 import { Archive, Download, Loader2, UserMinus } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
@@ -19,17 +18,18 @@ import type { EquipmentBulkActionsHandlers } from '../hooks/use-equipment-bulk-a
 import type { EquipmentRow } from './equipment-columns.js';
 
 interface DataTableBulkActionsProps {
-  table: Table<EquipmentRow>;
+  selectedRows: EquipmentRow[];
   bulkActions: EquipmentBulkActionsHandlers;
   onComplete: () => void;
 }
 
 /**
- * Bulk action toolbar for the equipment table. Visible only when at least one
- * row is selected. Mutations are wired via `useEquipmentBulkActions`.
+ * Bulk action toolbar for the equipment table. Receives the selected row
+ * originals directly from the canonical `DataTable` host. Mutations are
+ * wired via `useEquipmentBulkActions`.
  */
 export function DataTableBulkActions({
-  table,
+  selectedRows,
   bulkActions,
   onComplete,
 }: DataTableBulkActionsProps) {
@@ -38,9 +38,8 @@ export function DataTableBulkActions({
   const [showRetireDialog, setShowRetireDialog] = useState(false);
   const [showUnassignDialog, setShowUnassignDialog] = useState(false);
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map(row => row.original.id);
-  const selectedData = selectedRows.map(row => row.original);
+  const selectedIds = selectedRows.map(row => row.id);
+  const selectedData = selectedRows;
   const count = selectedIds.length;
 
   const finish = useCallback(() => {

@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -111,7 +112,7 @@ export function PaczkomatPicker({
           <DialogTitle>{t('selectPaczkomat')}</DialogTitle>
         </DialogHeader>
 
-        <div className="px-4">
+        <DialogBody className="px-4">
           {iframeError ? (
             <div className="flex h-[400px] items-center justify-center rounded-md border border-dashed text-center">
               <div className="space-y-2">
@@ -151,7 +152,7 @@ export function PaczkomatPicker({
               </div>
             </div>
           )}
-        </div>
+        </DialogBody>
 
         <DialogFooter className="px-4 pb-4">
           <Button variant="outline" onClick={handleCancel}>

@@ -1,21 +1,17 @@
 /**
- * Invoice selection data table — ported from
- * apps/web/src/components/payments/invoice-selection-table/data-table.tsx.
+ * Invoice selection data table — host for the canonical `DataTable` primitive.
+ *
+ * Used inside the new payment-run wizard. Parent owns the selection state
+ * (the controlled `rowSelection` map is derived from `selectedInvoiceIds`),
+ * and rows already attached to another run are non-selectable via the
+ * canonical primitive's `isRowSelectable` predicate.
  */
 
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import { DataTable } from '@contractor-ops/ui';
 import type { ColumnDef, RowSelectionState } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ReadyInvoiceRow } from './columns.js';
 
 interface InvoiceSelectionDataTableProps {
@@ -33,72 +29,54 @@ export function InvoiceSelectionDataTable({
   rowSelection,
   onRowSelectionChange,
 }: InvoiceSelectionDataTableProps) {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    state: { rowSelection },
-    onRowSelectionChange: updater => {
+  const t = useTranslations('Payments');
+  const tInvoices = useTranslations('Invoices');
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const handleRowSelectionChange = useCallback(
+    (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
       const next = typeof updater === 'function' ? updater(rowSelection) : updater;
       onRowSelectionChange(next);
     },
-    enableRowSelection: row => !row.original._inRunNumber,
-    getRowId: row => row.id,
-  });
+    [rowSelection, onRowSelectionChange],
+  );
 
-  const visibleColumns = useMemo(() => table.getVisibleLeafColumns(), [table]);
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
+  const rowClassName = useCallback(
+    (row: ReadyInvoiceRow) => (row._inRunNumber ? 'bg-yellow-500/5' : ''),
+    [],
+  );
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-background min-h-[320px]">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map(headerGroup => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <TableHead
-                  key={header.id}
-                  style={
-                    header.column.getSize() === 150 ? undefined : { width: header.column.getSize() }
-                  }>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                <TableRow key={`skeleton-${i}`}>
-                  {visibleColumns.map(col => (
-                    <TableCell key={col.id}>
-                      <Skeleton className="h-4 w-full max-w-[100px]" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            : table.getRowModel().rows.length > 0
-              ? table.getRowModel().rows.map(row => {
-                  const inRun = !!row.original._inRunNumber;
-                  return (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() ? 'selected' : undefined}
-                      className={inRun ? 'bg-yellow-500/5' : ''}>
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell key={cell.id}>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  );
-                })
-              : null}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable
+      columns={columns}
+      data={data}
+      totalRows={data.length}
+      clientPagination
+      pageIndex={pageIndex}
+      pageSize={pageSize}
+      onPageChange={setPageIndex}
+      onPageSizeChange={handlePageSizeChange}
+      isLoading={isLoading}
+      hideDensityToggle
+      constrainHeight={false}
+      entityLabel={tInvoices('entityLabel', { count: data.length })}
+      emptyTitle={t('step1.noInvoicesHeading')}
+      emptyDescription={t('step1.noInvoicesBody')}
+      noResultsTitle={t('step1.noInvoicesHeading')}
+      noResultsDescription={t('step1.noInvoicesBody')}
+      enableRowSelection
+      rowSelection={rowSelection}
+      onRowSelectionChange={handleRowSelectionChange}
+      isRowSelectable={row => !row.original._inRunNumber}
+      getRowId={row => row.id}
+      rowClassName={rowClassName}
+      skeletonRows={6}
+    />
   );
 }

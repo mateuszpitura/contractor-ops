@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -35,13 +36,13 @@ export function SoftBlockModal({ isOpen, onSelectPlan, isSelecting = false }: So
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4">
+        <DialogBody className="mt-4">
           <PlanComparisonGrid
             compact={true}
             onSelectPlan={onSelectPlan}
             isSelecting={isSelecting}
           />
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

@@ -30,9 +30,8 @@ export function InvoiceDetailLayout({ pdfUrl, children }: InvoiceDetailLayoutPro
           </div>
         )}
       </div>
-      <div className="max-h-none lg:max-h-[calc(100vh-64px)] overflow-y-auto space-y-6 py-4 lg:py-0">
-        {children}
-      </div>
+      {/* No nested scroll — main scrolls; avoids clipping card shadows (incl. hover). */}
+      <div className="min-w-0 space-y-6 py-4 lg:py-0 lg:pe-3">{children}</div>
     </div>
   );
 }

@@ -3,17 +3,18 @@
  * apps/web/src/app/[locale]/(dashboard)/settings/integrations/zatca/page.tsx.
  */
 
-import { AtelierPageHeader, IntegrationsIllustration } from '@contractor-ops/ui';
+import { IntegrationsIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from '../../i18n/navigation.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { EnvironmentToggle } from './environment-toggle.js';
 import { useZatcaIntegrationSettings } from './hooks/use-zatca-integration-settings.js';
 import { OnboardingWizard } from './onboarding-wizard-container.js';
 import { ZatcaComplianceWidget } from './zatca-compliance-widget-container.js';
 import { ZatcaConnectionPill } from './zatca-connection-pill-container.js';
-import { ZatcaInvoiceChainTable } from './zatca-invoice-chain-table-container.js';
+import { ZatcaInvoiceChainTable } from './invoice-chain/container.js';
 import { ZatcaStatsCards } from './zatca-stats-cards-container.js';
 
 export function ZatcaIntegrationContainer() {
@@ -33,7 +34,7 @@ export function ZatcaIntegrationContainer() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('title')}
           description={t('description')}
           actions={

@@ -1,17 +1,12 @@
 /**
- * Ported from apps/web/src/components/workflows/workflow-runs-table/__tests__/data-table.test.tsx.
- *
- * Web-vite WorkflowRunsDataTable spreads the full `useWorkflowRunsDataTable`
- * bag (including a real `react-table` instance). We build a real table in
- * the test and pass shaped stubs for the rest.
+ * Ported from apps/web/.../data-table.test.tsx. View now delegates to the
+ * canonical `DataTable` primitive; the hook bag no longer carries a
+ * `useReactTable` instance, so we shape the props directly.
  */
 
-import type { ColumnDef } from '@tanstack/react-table';
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { findByText, mount } from '../../__tests__/_render.js';
 import type { WorkflowRunRow } from '../columns.js';
-import { getColumns } from '../columns.js';
 import { WorkflowRunsDataTable } from '../data-table.js';
 
 afterEach(() => {
@@ -19,7 +14,6 @@ afterEach(() => {
 });
 
 const t = ((key: string) => key) as (key: string, values?: Record<string, unknown>) => string;
-const columns: ColumnDef<WorkflowRunRow>[] = getColumns(t);
 
 const sampleRow: WorkflowRunRow = {
   id: 'run-1',
@@ -37,16 +31,7 @@ function Harness(props: { overrides?: Partial<Parameters<typeof WorkflowRunsData
   const overrides = props.overrides ?? {};
   const data = overrides.data ?? [];
   const totalRows = overrides.totalRows ?? data.length;
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    enableRowSelection: true,
-    getRowId: row => row.id,
-  });
-  const merged = {
+  const merged: Parameters<typeof WorkflowRunsDataTable>[0] = {
     t,
     tAria: t,
     filters: {
@@ -59,9 +44,10 @@ function Harness(props: { overrides?: Partial<Parameters<typeof WorkflowRunsData
       templateId: [],
       overdueOnly: false,
     },
-    table,
     data,
     totalRows,
+    sorting: [{ id: 'dueAt', desc: false }],
+    onSortingChange: vi.fn(),
     isLoading: false,
     isRefetching: false,
     activeFilterCount: 0,
@@ -71,22 +57,13 @@ function Harness(props: { overrides?: Partial<Parameters<typeof WorkflowRunsData
     handlePageChange: vi.fn(),
     handlePageSizeChange: vi.fn(),
     clearFilters: vi.fn(),
-    rowClassName: undefined,
+    rowClassName: () => '',
     templates: [],
     onRowClick: vi.fn(),
     onStartWorkflow: vi.fn(),
     ...overrides,
   };
-  const finalProps = {
-    ...merged,
-    tableLoading:
-      merged.tableLoading ??
-      (merged.isLoading || merged.isRefetching || merged.parentLoading === true),
-    toolbarDisabled: merged.toolbarDisabled ?? (merged.isLoading || merged.parentLoading === true),
-    showPaginationFooter:
-      merged.showPaginationFooter ?? (!merged.isLoading && merged.totalRows > 0),
-  } as Parameters<typeof WorkflowRunsDataTable>[0];
-  return <WorkflowRunsDataTable {...finalProps} />;
+  return <WorkflowRunsDataTable {...merged} />;
 }
 
 describe('WorkflowRunsDataTable (web-vite)', () => {

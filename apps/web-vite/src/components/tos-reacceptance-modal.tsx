@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -50,7 +51,7 @@ export function TosReacceptanceModalView({
           <DialogDescription>{t('description', { version: currentVersion })}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <ScrollArea className="max-h-72 rounded-md border p-4">
             <p className="text-xs leading-relaxed text-muted-foreground">
               {SOFTWARE_NOT_LEGAL_ADVICE_EN}
@@ -68,7 +69,7 @@ export function TosReacceptanceModalView({
               <ExternalLink className="ml-1 inline h-3 w-3" />
             </Link>
           </p>
-        </div>
+        </DialogBody>
 
         <DialogFooter className="flex-col sm:flex-col">
           <Button size="lg" onClick={onAccept} disabled={isPending} className="w-full">

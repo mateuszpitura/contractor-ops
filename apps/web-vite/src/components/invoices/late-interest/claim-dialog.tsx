@@ -2,6 +2,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -48,7 +49,7 @@ export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimD
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-start gap-3 py-4">
+        <DialogBody className="flex items-start gap-3 py-4">
           <Checkbox
             id="issue-secondary-invoice"
             checked={issueSecondaryInvoice}
@@ -57,7 +58,7 @@ export function ClaimDialog({ open, onOpenChange, onConfirm, isPending }: ClaimD
           <Label htmlFor="issue-secondary-invoice" className="text-sm leading-relaxed">
             {t('issueSecondaryInvoice')}
           </Label>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>

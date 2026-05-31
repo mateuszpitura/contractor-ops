@@ -1,13 +1,15 @@
-/**
- * Weekly timesheet grid. Ported from
- * apps/web/src/components/time/timesheet-grid.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- *   - @/lib/utils → ../../lib/utils.js
- */
-
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { ScrollArea, ScrollBar } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { AlertTriangle } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -332,40 +334,40 @@ export function TimesheetGrid({
       <Card>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px] min-w-[200px] px-4 py-3 text-sm">
                     {t('grid.project')}
-                  </th>
+                  </TableHead>
                   {DAY_LABELS.map((day, i) => (
-                    <th
+                    <TableHead
                       key={day}
-                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold">
+                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm">
                       <div>{day}</div>
                       <div className="text-xs font-normal text-muted-foreground">
                         {format(addDays(startOfISOWeek(weekStartDate), i), 'd')}
                       </div>
-                    </th>
+                    </TableHead>
                   ))}
-                  <th className="w-16 min-w-[64px] px-2 py-3 text-center text-sm font-semibold">
+                  <TableHead className="w-16 min-w-[64px] px-2 py-3 text-center text-sm">
                     {t('grid.total')}
-                  </th>
-                </tr>
-              </thead>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
 
-              <tbody>
+              <TableBody>
                 {contracts.map((contract, contractIdx) => {
                   const rowTotal = getRowTotal(contract.id);
                   return (
-                    <tr key={contract.id} className="border-b last:border-b-0">
-                      <td className="px-4 py-2">
+                    <TableRow key={contract.id}>
+                      <TableCell className="px-4 py-2">
                         <span
                           className="block max-w-[200px] truncate text-sm"
                           title={contract.title}>
                           {contract.title}
                         </span>
-                      </td>
+                      </TableCell>
                       {DAY_LABELS.map((_, dayIdx) => {
                         const cellKey = getCellKey(contract.id, dayIdx);
                         const imported = isCellImported(contract.id, dayIdx);
@@ -374,7 +376,9 @@ export function TimesheetGrid({
 
                         return (
                           // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
-                          <td key={dayIdx} className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
+                          <TableCell
+                            key={dayIdx}
+                            className={cn('px-1 py-1.5', imported && 'bg-muted/50')}>
                             <div className="relative">
                               <TimesheetCellInput
                                 contractId={contract.id}
@@ -401,35 +405,39 @@ export function TimesheetGrid({
                                 </div>
                               )}
                             </div>
-                          </td>
+                          </TableCell>
                         );
                       })}
-                      <td className="px-2 py-2 text-center text-sm font-medium">
+                      <TableCell className="px-2 py-2 text-center text-sm font-medium">
                         {minutesToHours(rowTotal) || '0'}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
+              </TableBody>
 
-              <tfoot>
-                <tr className="border-t">
-                  <td className="px-4 py-3 text-sm font-semibold">{t('grid.total')}</td>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="px-4 py-3 text-sm font-semibold">
+                    {t('grid.total')}
+                  </TableCell>
                   {DAY_LABELS.map((_, dayIdx) => {
                     const colTotal = getColumnTotal(dayIdx);
                     return (
                       // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
-                      <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
+                      <TableCell
+                        key={dayIdx}
+                        className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
-                      </td>
+                      </TableCell>
                     );
                   })}
-                  <td className="px-2 py-3 text-center text-sm font-semibold text-primary">
+                  <TableCell className="px-2 py-3 text-center text-sm font-semibold text-primary">
                     {minutesToHours(grandTotal) || '0'}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </CardContent>

@@ -14,6 +14,7 @@ import {
   SETTINGS_TABS,
 } from '../../../lib/settings-tabs.js';
 import { useFlagBag } from '../feature-flag-context.js';
+import type { NavBadgeKey } from './use-nav-badges.js';
 
 function settingsTabFromSearch(searchParams: URLSearchParams): string {
   return searchParams.get('tab') ?? 'general';
@@ -84,9 +85,16 @@ export type NavItemsGroupView = {
     label: string;
     isActive: boolean;
     icon: NavItem['icon'];
-    showWorkflowBadge: boolean;
+    navBadgeKey: NavBadgeKey | null;
   }>;
   pinnedTabs: NavItemsPinnedTab[];
+};
+
+const NAV_BADGE_BY_ITEM_KEY: Partial<Record<string, NavBadgeKey>> = {
+  workflows: 'workflows',
+  approvals: 'approvals',
+  time: 'time',
+  notifications: 'notifications',
 };
 
 export function useNavItems(pathname: string, searchParams: URLSearchParams) {
@@ -137,7 +145,7 @@ export function useNavItems(pathname: string, searchParams: URLSearchParams) {
           label: t(item.key),
           isActive: isNavItemActive(pathname, searchParams, item, pinnedKeys),
           icon: item.icon,
-          showWorkflowBadge: item.key === 'workflows',
+          navBadgeKey: NAV_BADGE_BY_ITEM_KEY[item.key] ?? null,
         })),
         pinnedTabs: group.key === 'system' ? visiblePinnedTabs : [],
       });

@@ -2,6 +2,7 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -9,7 +10,6 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import {
   Select,
   SelectContent,
@@ -161,121 +161,117 @@ export function SendForSignatureDialog({
           <DialogDescription>{tSend('description')}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(80vh-120px)]">
-          <div className="space-y-4 px-6 pb-2">
-            <div className="space-y-2">
-              <Label>{tSend('providerLabel')}</Label>
-              {connectionsLoading ? (
-                <Skeleton className="h-9 w-full" />
-              ) : (
-                <Select value={selectedConnectionId} onValueChange={handleConnectionChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={tSend('providerPlaceholder')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {esignConnections.map(conn => (
-                      <SelectItem key={conn.id} value={conn.id}>
-                        {conn.provider === 'DOCUSIGN' ? 'DocuSign' : 'Autenti'}
-                      </SelectItem>
-                    ))}
-                    {esignConnections.length === 0 && (
-                      <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                        {tSend('noProviders')}
-                      </div>
-                    )}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>{tSend('signersLabel')}</Label>
-              {signers.length > 0 ? (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}>
-                  <SortableContext
-                    items={signers.map(s => s.id)}
-                    strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2">
-                      {signers.map((signer, index) => (
-                        <SortableSignerRow key={signer.id} signer={signer} index={index} />
-                      ))}
+        <DialogBody className="space-y-4 px-6 pb-2">
+          <div className="space-y-2">
+            <Label>{tSend('providerLabel')}</Label>
+            {connectionsLoading ? (
+              <Skeleton className="h-9 w-full" />
+            ) : (
+              <Select value={selectedConnectionId} onValueChange={handleConnectionChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={tSend('providerPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {esignConnections.map(conn => (
+                    <SelectItem key={conn.id} value={conn.id}>
+                      {conn.provider === 'DOCUSIGN' ? 'DocuSign' : 'Autenti'}
+                    </SelectItem>
+                  ))}
+                  {esignConnections.length === 0 && (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      {tSend('noProviders')}
                     </div>
-                  </SortableContext>
-                </DndContext>
-              ) : (
-                <p className="text-sm text-muted-foreground">{tSend('noSigners')}</p>
-              )}
+                  )}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
 
-              {!signers.some(s => s.role === 'countersigner') && (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  onClick={addCountersigner}>
-                  <Plus className="size-3.5" />
-                  {tSend('addCountersigner')}
-                </button>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label>{tSend('signersLabel')}</Label>
+            {signers.length > 0 ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}>
+                <SortableContext
+                  items={signers.map(s => s.id)}
+                  strategy={verticalListSortingStrategy}>
+                  <div className="space-y-2">
+                    {signers.map((signer, index) => (
+                      <SortableSignerRow key={signer.id} signer={signer} index={index} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            ) : (
+              <p className="text-sm text-muted-foreground">{tSend('noSigners')}</p>
+            )}
 
-            <div className="space-y-2">
-              <Label>{tSend('messageLabel')}</Label>
-              <Textarea
-                rows={3}
-                placeholder={tSend('messagePlaceholder')}
-                value={message}
-                onChange={handleMessageChange}
-              />
-            </div>
+            {!signers.some(s => s.role === 'countersigner') && (
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                onClick={addCountersigner}>
+                <Plus className="size-3.5" />
+                {tSend('addCountersigner')}
+              </button>
+            )}
+          </div>
 
-            <div className="space-y-2">
-              <Label>{tSend('documentLabel')}</Label>
-              <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
-                <div className="flex size-10 items-center justify-center rounded-md bg-background">
-                  <FileText className="size-5 text-muted-foreground" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {documentId || tSend('noDocument')}
-                  </p>
-                </div>
+          <div className="space-y-2">
+            <Label>{tSend('messageLabel')}</Label>
+            <Textarea
+              rows={3}
+              placeholder={tSend('messagePlaceholder')}
+              value={message}
+              onChange={handleMessageChange}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{tSend('documentLabel')}</Label>
+            <div className="flex items-center gap-3 rounded-lg bg-muted p-3">
+              <div className="flex size-10 items-center justify-center rounded-md bg-background">
+                <FileText className="size-5 text-muted-foreground" />
               </div>
-            </div>
-
-            <div className="flex gap-2">
-              <div className="flex-1 space-y-2">
-                <Label>{tSend('expiresLabel')}</Label>
-                <Select value={expiresInDays} onValueChange={handleExpiresChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7">{tSend('expires7')}</SelectItem>
-                    <SelectItem value="14">{tSend('expires14')}</SelectItem>
-                    <SelectItem value="30">{tSend('expires30')}</SelectItem>
-                    <SelectItem value="60">{tSend('expires60')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex-1 space-y-2">
-                <Label>{tSend('remindersLabel')}</Label>
-                <Select value={reminderInterval} onValueChange={handleReminderChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">{tSend('reminderNone')}</SelectItem>
-                    <SelectItem value="3">{tSend('reminderEvery3')}</SelectItem>
-                    <SelectItem value="7">{tSend('reminderEvery7')}</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{documentId || tSend('noDocument')}</p>
               </div>
             </div>
           </div>
-        </ScrollArea>
+
+          <div className="flex gap-2">
+            <div className="flex-1 space-y-2">
+              <Label>{tSend('expiresLabel')}</Label>
+              <Select value={expiresInDays} onValueChange={handleExpiresChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">{tSend('expires7')}</SelectItem>
+                  <SelectItem value="14">{tSend('expires14')}</SelectItem>
+                  <SelectItem value="30">{tSend('expires30')}</SelectItem>
+                  <SelectItem value="60">{tSend('expires60')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1 space-y-2">
+              <Label>{tSend('remindersLabel')}</Label>
+              <Select value={reminderInterval} onValueChange={handleReminderChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{tSend('reminderNone')}</SelectItem>
+                  <SelectItem value="3">{tSend('reminderEvery3')}</SelectItem>
+                  <SelectItem value="7">{tSend('reminderEvery7')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </DialogBody>
 
         <DialogFooter className="px-6 pb-6">
           <Button variant="outline" onClick={handleDiscard}>

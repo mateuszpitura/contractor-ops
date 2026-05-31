@@ -3,7 +3,7 @@ import {
   EquipmentIllustration,
   QueryErrorPanel,
   SectionLabel,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
@@ -117,7 +117,7 @@ export function EquipmentListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+      <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
         <AnimateIn delay={0}>
           <WorkbenchPageHeader title={t('title')} description={t('pageDescription')} />
         </AnimateIn>
@@ -140,7 +140,7 @@ export function EquipmentListContainer() {
   }
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
         <WorkbenchPageHeader title={t('title')} description={t('pageDescription')} />
       </AnimateIn>

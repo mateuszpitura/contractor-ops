@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
+import { DEFAULT_REPORT_PAGE_SIZE } from '../report-constants.js';
 
 export type TeamSpendRow = {
   teamId: string | null;
@@ -19,7 +20,7 @@ export function useSpendTeamReport(dateFrom: string, dateTo: string) {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(DEFAULT_REPORT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState('totalSpend');
   const [sortOrder, setSortOrder] = useState('desc');
   const [drillDownTeamId, setDrillDownTeamId] = useState<string | null>(null);

@@ -57,7 +57,7 @@ export function InvoiceDetailContainer() {
 
   if (isLoading) {
     return (
-      <div className="space-y-section-gap">
+      <div className="space-y-section-gap min-w-0">
         <InvoiceDetailSkeleton />
       </div>
     );
@@ -86,7 +86,7 @@ export function InvoiceDetailContainer() {
   const SourceIcon = sourceIconMap[invoice.source] ?? Inbox;
 
   return (
-    <div className="space-y-section-gap">
+    <div className="space-y-section-gap min-w-0">
       <div className="flex items-center gap-3">
         <h1 className="font-mono text-[24px] font-semibold leading-tight tracking-tight">
           {invoice.invoiceNumber}

@@ -9,11 +9,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
@@ -93,41 +95,43 @@ export function AddBoeRateDialog({
           <DialogTitle>{t('addDialogTitle')}</DialogTitle>
           <DialogDescription>{t('addDialogDesc')}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="add-effective-from">{t('colEffectiveFrom')}</Label>
-            <Input
-              id="add-effective-from"
-              type="date"
-              value={effectiveFrom}
-              onChange={handleEffectiveFromChange}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="add-rate-percent">{t('colRatePercent')}</Label>
-            <Input
-              id="add-rate-percent"
-              type="number"
-              step="0.01"
-              min="0"
-              max="99.99"
-              value={ratePercent}
-              onChange={handleRatePercentChange}
-              className="tabular-nums"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="add-notes">{t('notesOptionalLabel')}</Label>
-            <Textarea
-              id="add-notes"
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder={t('notesPlaceholder')}
-              rows={3}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={dialogFormLayoutClassName}>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="add-effective-from">{t('colEffectiveFrom')}</Label>
+              <Input
+                id="add-effective-from"
+                type="date"
+                value={effectiveFrom}
+                onChange={handleEffectiveFromChange}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-rate-percent">{t('colRatePercent')}</Label>
+              <Input
+                id="add-rate-percent"
+                type="number"
+                step="0.01"
+                min="0"
+                max="99.99"
+                value={ratePercent}
+                onChange={handleRatePercentChange}
+                className="tabular-nums"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="add-notes">{t('notesOptionalLabel')}</Label>
+              <Textarea
+                id="add-notes"
+                value={notes}
+                onChange={handleNotesChange}
+                placeholder={t('notesPlaceholder')}
+                rows={3}
+              />
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}

@@ -15,7 +15,7 @@ import { useCallback, useId } from 'react';
 import { tDynLoose } from '../../i18n/typed-keys';
 import { enumKey } from '../../lib/enum-key';
 import { renderEmptyStateAction } from '../shared/atelier-bridges';
-import { AuditLogTable } from './audit-log-table';
+import { AuditLogTable } from './audit-log/data-table.js';
 import type { useAuditLogTab } from './hooks/use-audit-log-tab.js';
 import { AUDIT_LOG_PAGE_SIZE } from './hooks/use-audit-log-tab.js';
 
@@ -247,7 +247,7 @@ export function AuditLogTab({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       <SectionLabel icon={Shield}>{t('title')}</SectionLabel>
       <div className="flex items-center gap-3">
         <div className="relative flex-1">

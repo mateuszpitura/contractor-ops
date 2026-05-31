@@ -1,12 +1,12 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/components/shadcn/avatar';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { getAvatarInitials } from '../../lib/avatar-initials';
-import { SimpleDataTable } from '../shared/simple-data-table.js';
 import type { UserMapping, useSlackUserMapping } from './hooks/use-slack-user-mapping.js';
 import { LinkUserPopoverContainer } from './link-user-popover-container.js';
 
@@ -83,6 +83,9 @@ export function SlackUserMapping({
   handleUnlink,
   isUnlinkPending,
 }: SlackUserMappingProps) {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
   const columns = useMemo<ColumnDef<UserMapping, unknown>[]>(
     () => [
       {
@@ -176,11 +179,20 @@ export function SlackUserMapping({
         })}
       </p>
 
-      <SimpleDataTable
+      <DataTable
         columns={columns}
         data={mappings}
+        totalRows={mappings.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={size => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
         constrainHeight={false}
-        pageSize={25}
+        hideDensityToggle
         entityLabel={t('integrations.userMapping.entityLabel', { count: mappings.length })}
         emptyTitle={t('integrations.userMapping.emptyTitle')}
         emptyDescription={t('integrations.userMapping.emptyBody')}

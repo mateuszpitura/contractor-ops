@@ -1,7 +1,7 @@
 import { useEquipmentBulkActions } from '../hooks/use-equipment-bulk-actions.js';
 import { useEquipmentTable } from '../hooks/use-equipment-table.js';
+import { EquipmentTableView } from './data-table.js';
 import type { EquipmentRow } from './equipment-columns.js';
-import { EquipmentTableView } from './equipment-table.js';
 
 interface EquipmentTableContainerProps {
   onEdit: (equipment: EquipmentRow) => void;

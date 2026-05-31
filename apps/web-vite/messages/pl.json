@@ -866,7 +866,16 @@
       "moveDown": "Przesuń w dół",
       "removeStep": "Usuń krok",
       "loading": "Ładowanie",
-      "profileMenu": "Menu profilu"
+      "profileMenu": "Menu profilu",
+      "toggleSelectAll": "Zaznacz wszystkie wiersze",
+      "toggleSelectRow": "Zaznacz wiersz",
+      "clearFilters": "Wyczyść filtry",
+      "bulkActions": "Akcje zbiorcze",
+      "clearSelection": "Wyczyść zaznaczenie"
+    },
+    "dataTable": {
+      "noResultsTitle": "Brak wyników",
+      "noResultsDescription": "Spróbuj dostosować filtry lub wyszukiwanie, aby znaleźć to, czego szukasz."
     },
     "srOnly": {
       "actions": "Akcje",
@@ -4020,7 +4029,9 @@
     "equipment": "Sprzęt",
     "time": "Czas",
     "classification": "Klasyfikacja",
-    "organization": "Organizacja"
+    "organization": "Organizacja",
+    "tax": "Podatki",
+    "workflow-roles": "Role workflow"
   },
   "Notifications": {
     "popover": {
@@ -6382,6 +6393,7 @@
       "title": "Klucze API",
       "description": "Zarządzaj kluczami API dla Enterprise REST API.",
       "createKeyButton": "Utwórz klucz",
+      "entityLabel": "{count, plural, one {klucz API} few {klucze API} many {kluczy API} other {klucza API}}",
       "tableHeaders": {
         "name": "Nazwa",
         "key": "Klucz",

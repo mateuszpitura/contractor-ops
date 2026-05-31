@@ -1,19 +1,18 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   ContractorsIllustration,
   SectionLabel,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
 import { Plus, Upload, Users } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useState } from 'react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ImportWizardDialogContainer } from '../import/import-wizard-dialog-container.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { ContractorSidePanel } from './contractor-side-panel.js';
 import type { ContractorRow } from './contractor-table/columns.js';
 import { ContractorDataTable } from './contractor-table/data-table.js';
@@ -57,11 +56,11 @@ export function ContractorListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className="space-y-section-gap">
+      <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
         <AnimateIn delay={0}>
-          <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+          <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
         </AnimateIn>
-        <AnimateIn delay={1}>
+        <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
           <AtelierEmptyState
             illustration={ContractorsIllustration}
             heading={list.emptyProps.heading}
@@ -90,9 +89,9 @@ export function ContractorListContainer() {
   }
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
 
       <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">

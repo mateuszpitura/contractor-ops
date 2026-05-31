@@ -19,7 +19,11 @@ export const stagger = {
   slow: { staggerChildren: 0.12 },
 } as const;
 
+// Entrance variant for `AnimateIn` — the single entrance system across the
+// web-vite app. Opacity + short slide only: no `filter: blur`, which compounds
+// badly when an AnimateIn wrapper nests over a card that also animates, and is
+// expensive on the GPU during a staggered multi-widget reveal.
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 12, filter: 'blur(4px)' },
-  visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
 };

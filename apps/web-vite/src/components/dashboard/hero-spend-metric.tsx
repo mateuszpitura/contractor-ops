@@ -81,7 +81,7 @@ export function HeroSpendMetric() {
   });
 
   return (
-    <TiltCard glow shimmer className="group/hero w-full">
+    <TiltCard entrance={false} glow shimmer className="group/hero w-full">
       <Link href="/reports" className="block" aria-label={t('viewReports')}>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">

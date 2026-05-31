@@ -11,8 +11,9 @@ import { LayoutDashboard, Settings, Users } from 'lucide-react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../workflows/workflow-nav-badge-container.js', () => ({
-  WorkflowNavBadgeContainer: () => <span data-testid="workflow-badge" />,
+vi.mock('../nav-action-badge.js', () => ({
+  NavActionBadge: ({ count }: { count: number }) =>
+    count > 0 ? <span data-testid="nav-action-badge" /> : null,
 }));
 
 vi.mock('@contractor-ops/ui/components/shadcn/sidebar', () => ({
@@ -74,7 +75,7 @@ const sampleGroups: NavItemsGroupView[] = [
         label: 'Dashboard',
         icon: LayoutDashboard,
         isActive: true,
-        showWorkflowBadge: false,
+        navBadgeKey: null,
       },
     ],
     pinnedTabs: [],
@@ -89,7 +90,7 @@ const sampleGroups: NavItemsGroupView[] = [
         label: 'Contractors',
         icon: Users,
         isActive: false,
-        showWorkflowBadge: false,
+        navBadgeKey: null,
       },
       {
         key: 'workflows',
@@ -97,7 +98,7 @@ const sampleGroups: NavItemsGroupView[] = [
         label: 'Workflows',
         icon: Users,
         isActive: false,
-        showWorkflowBadge: true,
+        navBadgeKey: 'workflows',
       },
     ],
     pinnedTabs: [],
@@ -112,16 +113,25 @@ const sampleGroups: NavItemsGroupView[] = [
         label: 'Settings',
         icon: Settings,
         isActive: false,
-        showWorkflowBadge: false,
+        navBadgeKey: null,
       },
     ],
     pinnedTabs: [],
   },
 ];
 
+const zeroBadges = {
+  workflows: 0,
+  approvals: 0,
+  time: 0,
+  notifications: 0,
+} as const;
+
 describe('NavItems (web-vite)', () => {
   it('renders one item per provided group item', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={sampleGroups} />));
+    const { container } = await mount(
+      withRouter(<NavItems groups={sampleGroups} badgeCounts={zeroBadges} />),
+    );
     expect(container.textContent).toContain('Dashboard');
     expect(container.textContent).toContain('Contractors');
     expect(container.textContent).toContain('Workflows');
@@ -129,7 +139,9 @@ describe('NavItems (web-vite)', () => {
   });
 
   it('renders the human-readable label for non-overview groups', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={sampleGroups} />));
+    const { container } = await mount(
+      withRouter(<NavItems groups={sampleGroups} badgeCounts={zeroBadges} />),
+    );
     const labels = Array.from(container.querySelectorAll('[data-testid="group-label"]')).map(
       el => el.textContent ?? '',
     );
@@ -138,7 +150,9 @@ describe('NavItems (web-vite)', () => {
   });
 
   it('omits the group label for the overview group', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={sampleGroups} />));
+    const { container } = await mount(
+      withRouter(<NavItems groups={sampleGroups} badgeCounts={zeroBadges} />),
+    );
     const labels = Array.from(container.querySelectorAll('[data-testid="group-label"]')).map(
       el => el.textContent ?? '',
     );
@@ -146,14 +160,18 @@ describe('NavItems (web-vite)', () => {
     expect(labels.every(l => l !== '')).toBe(true);
   });
 
-  it('renders the workflow badge slot only for items that opt in', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={sampleGroups} />));
-    const badges = container.querySelectorAll('[data-testid="workflow-badge"]');
+  it('renders a nav badge when count is positive for keyed items', async () => {
+    const { container } = await mount(
+      withRouter(<NavItems groups={sampleGroups} badgeCounts={{ ...zeroBadges, workflows: 2 }} />),
+    );
+    const badges = container.querySelectorAll('[data-testid="nav-action-badge"]');
     expect(badges.length).toBe(1);
   });
 
   it('passes aria-current="page" to the active item link', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={sampleGroups} />));
+    const { container } = await mount(
+      withRouter(<NavItems groups={sampleGroups} badgeCounts={zeroBadges} />),
+    );
     const activeLink = Array.from(container.querySelectorAll('a')).find(
       a => a.getAttribute('aria-current') === 'page',
     );
@@ -162,7 +180,9 @@ describe('NavItems (web-vite)', () => {
   });
 
   it('renders nothing extra for an empty groups array', async () => {
-    const { container } = await mount(withRouter(<NavItems groups={[]} />));
+    const { container } = await mount(
+      withRouter(<NavItems groups={[]} badgeCounts={zeroBadges} />),
+    );
     expect(container.querySelectorAll('li').length).toBe(0);
   });
 });

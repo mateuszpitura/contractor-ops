@@ -1,4 +1,5 @@
 import type { Ir35Outcome, ScheinselbstandigkeitOutcome } from '@contractor-ops/classification';
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -8,21 +9,12 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableCaption,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { DataTableBody } from '../../shared/data-table-body.js';
-import { SortableTableHead } from '../../shared/sortable-table-head.js';
 import type { AssessmentRow } from './hooks/use-classification-assessment-list.js';
 
 export interface ClassificationAssessmentListViewProps {
@@ -109,14 +101,20 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
   const t = useTranslations('Classification');
   const { formatDateTime } = useDateFormatter();
 
-  const columns = useMemo<ColumnDef<AssessmentRow, unknown>[]>(() => {
-    const formatDate = (raw: Date | string | null): string => {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const formatDate = useCallback(
+    (raw: Date | string | null): string => {
       if (!raw) return t('list.notCompleted');
       const d = raw instanceof Date ? raw : new Date(raw);
       return formatDateTime(d);
-    };
+    },
+    [t, formatDateTime],
+  );
 
-    return [
+  const columns = useMemo<ColumnDef<AssessmentRow, unknown>[]>(
+    () => [
       {
         id: 'engagement',
         accessorKey: 'contractorAssignmentId',
@@ -194,21 +192,18 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
           );
         },
       },
-    ];
-  }, [t, contractorId, formatDateTime]);
-
-  const formatDate = (raw: Date | string | null): string => {
-    if (!raw) return t('list.notCompleted');
-    const d = raw instanceof Date ? raw : new Date(raw);
-    return formatDateTime(d);
-  };
+    ],
+    [t, contractorId, formatDate],
+  );
 
   const data = rows as AssessmentRow[];
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setPageIndex(0);
+  }, []);
+
+  const getRowId = useCallback((row: AssessmentRow) => row.id, []);
 
   return (
     <div className="flex flex-col gap-4">
@@ -218,26 +213,23 @@ export function ClassificationAssessmentListView(props: ClassificationAssessment
       </div>
 
       {/* Desktop table (≥ 1024 px) */}
-      <div className="hidden rounded-lg border lg:block">
-        <Table>
-          <TableCaption className="sr-only">{t('list.caption')}</TableCaption>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <SortableTableHead key={header.id} header={header} />
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={false}
-            hasFiltersOrSearch={false}
-            emptyTitle={t('list.empty')}
-            noResultsTitle={t('list.empty')}
-          />
-        </Table>
+      <div className="hidden lg:block">
+        <DataTable
+          columns={columns}
+          data={data}
+          totalRows={data.length}
+          clientPagination
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={setPageIndex}
+          onPageSizeChange={handlePageSizeChange}
+          constrainHeight={false}
+          hideDensityToggle
+          getRowId={getRowId}
+          entityLabel={t('list.heading')}
+          emptyTitle={t('list.empty')}
+          noResultsTitle={t('list.empty')}
+        />
       </div>
 
       {/* Mobile card list (< 1024 px) */}

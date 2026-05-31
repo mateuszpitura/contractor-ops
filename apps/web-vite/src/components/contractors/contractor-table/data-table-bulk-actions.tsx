@@ -21,7 +21,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@contractor-ops/ui/components/shadcn/popover';
-import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 import type { HTMLAttributes } from 'react';
 import { memo, useCallback, useState } from 'react';
@@ -36,17 +35,20 @@ import type { ContractorUserOption } from '../hooks/use-contractor-list.js';
 import type { ContractorRow } from './columns.js';
 
 interface DataTableBulkActionsProps {
-  table: Table<ContractorRow>;
+  selectedRows: ContractorRow[];
   users: ContractorUserOption[];
   bulkActions: ContractorBulkActionsHandlers;
   onComplete: () => void;
 }
 
 /**
- * Presentational bulk action toolbar. Mutations wired via `useContractorBulkActions`.
+ * Custom contractors bulk-action bar. Sits above the canonical DataTable via
+ * its `toolbar` slot. Selection state owned by the primitive via
+ * `enableRowSelection` + `onSelectionChange`; this component receives the
+ * row originals directly.
  */
 export function DataTableBulkActions({
-  table,
+  selectedRows,
   users,
   bulkActions,
   onComplete,
@@ -58,8 +60,7 @@ export function DataTableBulkActions({
   const [ownerPopoverOpen, setOwnerPopoverOpen] = useState(false);
   const [workflowPickerOpen, setWorkflowPickerOpen] = useState(false);
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map(row => row.original.id);
+  const selectedIds = selectedRows.map(row => row.id);
   const count = selectedIds.length;
 
   const actions = getBulkContractorActions();

@@ -1,11 +1,8 @@
-import type { ColumnDef } from '@tanstack/react-table';
-import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useCallback, useMemo, useState } from 'react';
+import type { SortingState } from '@tanstack/react-table';
+import { useCallback, useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { formatDate } from '../../../lib/format-date.js';
 import type { WorkflowRunRow } from '../workflow-runs-table/columns.js';
-import { getColumns } from '../workflow-runs-table/columns.js';
 import { useWorkflowFilters } from '../workflow-runs-table/use-workflow-filters.js';
 import { useWorkflowRunsTable, useWorkflowRunsTableTemplates } from './use-workflow-ui.js';
 
@@ -14,7 +11,6 @@ export function useWorkflowRunsDataTable() {
   const tAria = useTranslations('Common.aria');
 
   const [filters, setFilters] = useWorkflowFilters();
-  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
 
   const queryInput = useMemo(
     () => ({
@@ -48,27 +44,14 @@ export function useWorkflowRunsDataTable() {
     return result?.total ?? 0;
   }, [runsQuery.data]);
 
-  const columns: ColumnDef<WorkflowRunRow>[] = useMemo(() => getColumns(t, formatDate), [t]);
+  const sorting = useMemo<SortingState>(
+    () => [{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }],
+    [filters.sortBy, filters.sortOrder],
+  );
 
-  const table = useReactTable({
-    data,
-    columns,
-    pageCount: Math.ceil(totalRows / filters.pageSize),
-    state: {
-      rowSelection,
-      sorting: [
-        {
-          id: filters.sortBy,
-          desc: filters.sortOrder === 'desc',
-        },
-      ],
-    },
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: updater => {
-      const next =
-        typeof updater === 'function'
-          ? updater([{ id: filters.sortBy, desc: filters.sortOrder === 'desc' }])
-          : updater;
+  const handleSortingChange = useCallback(
+    (updater: SortingState | ((old: SortingState) => SortingState)) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater;
       const first = next[0];
       if (first) {
         void setFilters({
@@ -80,14 +63,8 @@ export function useWorkflowRunsDataTable() {
         void setFilters({ sortBy: 'dueAt', sortOrder: 'asc', page: 1 });
       }
     },
-    enableSortingRemoval: true,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    manualSorting: true,
-    manualFiltering: true,
-    enableRowSelection: true,
-    getRowId: row => row.id,
-  });
+    [sorting, setFilters],
+  );
 
   const handleFiltersChange = useCallback(
     (
@@ -110,8 +87,8 @@ export function useWorkflowRunsDataTable() {
   );
 
   const handlePageChange = useCallback(
-    (page: number) => {
-      void setFilters({ page });
+    (pageIndex: number) => {
+      void setFilters({ page: pageIndex + 1 });
     },
     [setFilters],
   );
@@ -152,9 +129,10 @@ export function useWorkflowRunsDataTable() {
     t,
     tAria,
     filters,
-    table,
     data,
     totalRows,
+    sorting,
+    onSortingChange: handleSortingChange,
     isLoading,
     isRefetching,
     activeFilterCount,

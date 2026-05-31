@@ -1,24 +1,17 @@
 /**
- * `useReconciliationTable` — flattens the reconciliation infinite-query
- * pages into a single `items` array and exposes a `totalCount` plus the
- * decisive variant flags (`isLoading` / `isError` / `isEmpty` /
- * `showData`) the container consumes to pick a render path.
- *
- * Covers:
- *   - flattens items across pages
- *   - total comes from the last page when present
- *   - total falls back to items.length when missing
- *   - empty data → isEmpty flag flips, zero count
- *   - loading + error flags pass through from the inner query
- *   - onRetry / onLoadMore proxy to the inner query
+ * `useReconciliationTable` — cursor-paginated reconciliation list for the
+ * table container (`isLoading` / `isError` / `isEmpty` / `showData`,
+ * page size, prev/next via `onPageChange`).
  */
 
+import { act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const useReconciliationListMock = vi.fn();
 
 vi.mock('../use-reconciliation.js', () => ({
-  useReconciliationList: () => useReconciliationListMock(),
+  useReconciliationList: (options: { cursor?: string; limit: number }) =>
+    useReconciliationListMock(options),
 }));
 
 import { renderHookWithProviders } from '../../../../test-utils/render-hook.js';
@@ -56,37 +49,29 @@ beforeEach(() => {
 });
 
 describe('useReconciliationTable', () => {
-  it('flattens items across pages and reports the last-page total', () => {
+  it('returns items from the current page and estimates total when more pages exist', () => {
     useReconciliationListMock.mockReturnValue({
-      data: {
-        pages: [
-          { items: [makeItem('a'), makeItem('b')], nextCursor: 'cursor-1', total: 5 },
-          { items: [makeItem('c')], nextCursor: null, total: 5 },
-        ],
-      },
+      data: { items: [makeItem('a'), makeItem('b')], nextCursor: 'cursor-1' },
       isLoading: false,
       isError: false,
-      hasNextPage: false,
+      isFetching: false,
       refetch: vi.fn(),
-      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
-    expect(result.current.items.map(i => i.invoice.id)).toEqual(['a', 'b', 'c']);
-    expect(result.current.totalCount).toBe(5);
+    expect(result.current.items.map(i => i.invoice.id)).toEqual(['a', 'b']);
+    expect(result.current.totalCount).toBe(3);
+    expect(result.current.currentPage).toBe(1);
     expect(result.current.showData).toBe(true);
     expect(result.current.isEmpty).toBe(false);
   });
 
-  it('falls back to items.length when last page lacks total', () => {
+  it('uses item count as total when there is no next page', () => {
     useReconciliationListMock.mockReturnValue({
-      data: {
-        pages: [{ items: [makeItem('only'), makeItem('two')], nextCursor: null }],
-      },
+      data: { items: [makeItem('only'), makeItem('two')], nextCursor: null },
       isLoading: false,
       isError: false,
-      hasNextPage: false,
+      isFetching: false,
       refetch: vi.fn(),
-      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.totalCount).toBe(2);
@@ -94,12 +79,11 @@ describe('useReconciliationTable', () => {
 
   it('returns empty list and flips isEmpty when the data set is empty', () => {
     useReconciliationListMock.mockReturnValue({
-      data: { pages: [{ items: [], nextCursor: null }] },
+      data: { items: [], nextCursor: null },
       isLoading: false,
       isError: false,
-      hasNextPage: false,
+      isFetching: false,
       refetch: vi.fn(),
-      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.items).toEqual([]);
@@ -113,9 +97,8 @@ describe('useReconciliationTable', () => {
       data: undefined,
       isLoading: true,
       isError: false,
-      hasNextPage: false,
+      isFetching: false,
       refetch: vi.fn(),
-      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.isLoading).toBe(true);
@@ -130,9 +113,8 @@ describe('useReconciliationTable', () => {
       isLoading: false,
       isError: true,
       error: new Error('boom'),
-      hasNextPage: false,
+      isFetching: false,
       refetch: vi.fn(),
-      fetchNextPage: vi.fn(),
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     expect(result.current.isError).toBe(true);
@@ -141,23 +123,24 @@ describe('useReconciliationTable', () => {
     expect(result.current.items).toEqual([]);
   });
 
-  it('onRetry and onLoadMore proxy to the inner query', () => {
+  it('onRetry and onPageChange proxy to the inner query', () => {
     const refetch = vi.fn();
-    const fetchNextPage = vi.fn();
     useReconciliationListMock.mockReturnValue({
-      data: { pages: [{ items: [makeItem('a')], nextCursor: 'c1' }] },
+      data: { items: [makeItem('a')], nextCursor: 'c1' },
       isLoading: false,
       isError: false,
-      hasNextPage: true,
-      isFetchingNextPage: false,
+      isFetching: false,
       refetch,
-      fetchNextPage,
     });
     const { result } = renderHookWithProviders(() => useReconciliationTable());
     result.current.onRetry();
-    result.current.onLoadMore();
     expect(refetch).toHaveBeenCalledTimes(1);
-    expect(fetchNextPage).toHaveBeenCalledTimes(1);
-    expect(result.current.hasNextPage).toBe(true);
+
+    act(() => {
+      result.current.onPageChange(2);
+    });
+    expect(useReconciliationListMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cursor: 'c1', limit: 10 }),
+    );
   });
 });

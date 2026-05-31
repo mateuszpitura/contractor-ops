@@ -15,7 +15,7 @@ import type {
   useExpiringContractsReport,
 } from './hooks/use-expiring-contracts-report.js';
 import { ReportChart } from './report-chart.js';
-import { ReportTable } from './report-table.js';
+import { ReportTable } from './report-table/data-table.js';
 
 interface ExpiringContractsReportProps {
   report: ReturnType<typeof useExpiringContractsReport>;

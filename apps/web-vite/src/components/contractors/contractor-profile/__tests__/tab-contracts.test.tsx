@@ -178,7 +178,7 @@ describe('TabContractsView', () => {
         })}
       />,
     );
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    expect(screen.getByText(/Page 1 of 3/i)).toBeInTheDocument();
   });
 
   it('does not render pagination when totalPages == 1', () => {
@@ -200,7 +200,7 @@ describe('TabContractsView', () => {
         })}
       />,
     );
-    expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
   });
 
   it('invokes setWizardOpen(true) when the empty-state CTA is clicked', () => {

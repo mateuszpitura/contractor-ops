@@ -9,7 +9,7 @@ import { useOrganizationTeams } from './hooks/use-organization-teams.js';
 import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
 import { TeamFormSheetContainer } from './teams/team-form-sheet-container.js';
-import { TeamTable } from './teams/team-table.js';
+import { TeamTable } from './teams/data-table.js';
 
 export function OrganizationTeamsContainer() {
   const t = useTranslations('Organization');

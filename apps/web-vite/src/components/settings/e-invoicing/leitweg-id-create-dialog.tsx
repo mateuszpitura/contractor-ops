@@ -24,11 +24,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
@@ -231,130 +233,129 @@ export function LeitwegIdCreateDialog({
           <DialogDescription>{t('valueHelper')}</DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 max-h-[70vh] overflow-y-auto pr-1"
-          noValidate>
-          <div className="space-y-1.5">
-            <Label htmlFor={valueId}>{t('valueLabel')}</Label>
-            <Input
-              id={valueId}
-              name="value"
-              value={value}
-              onChange={handleValueChange}
-              aria-invalid={!valueValidation.ok && !!value}
-              aria-describedby={cn(valueErrId)}
-              autoComplete="off"
-              spellCheck={false}
-              className="font-mono"
-            />
-            <p className="text-sm text-muted-foreground">{t('valueHelper')}</p>
-            {!valueValidation.ok && value && mappedValueMessage ? (
-              <p id={valueErrId} role="alert" className="text-sm text-destructive">
-                {mappedValueMessage}
+        <form onSubmit={handleSubmit} className={dialogFormLayoutClassName} noValidate>
+          <DialogBody className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor={valueId}>{t('valueLabel')}</Label>
+              <Input
+                id={valueId}
+                name="value"
+                value={value}
+                onChange={handleValueChange}
+                aria-invalid={!valueValidation.ok && !!value}
+                aria-describedby={cn(valueErrId)}
+                autoComplete="off"
+                spellCheck={false}
+                className="font-mono"
+              />
+              <p className="text-sm text-muted-foreground">{t('valueHelper')}</p>
+              {!valueValidation.ok && value && mappedValueMessage ? (
+                <p id={valueErrId} role="alert" className="text-sm text-destructive">
+                  {mappedValueMessage}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor={descriptionId}>{t('descriptionLabel')}</Label>
+              <Input
+                id={descriptionId}
+                name="description"
+                value={description}
+                onChange={handleDescriptionChange}
+                maxLength={200}
+              />
+              <p className="text-sm text-muted-foreground">{t('descriptionHelper')}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor={contractorSelectId}>{t('contractorLabel')}</Label>
+                <select
+                  id={contractorSelectId}
+                  name="contractorId"
+                  value={contractorId}
+                  onChange={handleContractorChange}
+                  className={cn(
+                    'flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm',
+                    'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none',
+                  )}>
+                  <option value="">—</option>
+                  {contractors.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.displayName ?? c.id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor={contractSelectId}>{t('contractLabel')}</Label>
+                <Input
+                  id={contractSelectId}
+                  name="contractId"
+                  value={contractId}
+                  onChange={handleContractChange}
+                  placeholder={t('contractIdPlaceholder')}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor={defaultToggleId} className="text-sm">
+                {t('defaultToggle')}
+              </Label>
+              <Switch
+                id={defaultToggleId}
+                name="isDefaultForContractor"
+                checked={!!(contractorId && isDefault)}
+                disabled={defaultToggleDisabled}
+                onCheckedChange={handleDefaultChange}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor={validFromId}>{t('validFromLabel')}</Label>
+                <Input
+                  id={validFromId}
+                  name="validFrom"
+                  type="date"
+                  value={validFrom}
+                  onChange={handleValidFromChange}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor={validToId}>{t('validToLabel')}</Label>
+                <Input
+                  id={validToId}
+                  name="validTo"
+                  type="date"
+                  value={validTo}
+                  onChange={handleValidToChange}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor={notesId}>{t('notesLabel')}</Label>
+              <Textarea
+                id={notesId}
+                name="notes"
+                value={notes}
+                onChange={handleNotesChange}
+                maxLength={2000}
+                rows={3}
+              />
+            </div>
+
+            {formError ? (
+              <p id={formErrId} role="alert" className="text-sm text-destructive">
+                {formError}
               </p>
             ) : null}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor={descriptionId}>{t('descriptionLabel')}</Label>
-            <Input
-              id={descriptionId}
-              name="description"
-              value={description}
-              onChange={handleDescriptionChange}
-              maxLength={200}
-            />
-            <p className="text-sm text-muted-foreground">{t('descriptionHelper')}</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={contractorSelectId}>{t('contractorLabel')}</Label>
-              <select
-                id={contractorSelectId}
-                name="contractorId"
-                value={contractorId}
-                onChange={handleContractorChange}
-                className={cn(
-                  'flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm',
-                  'focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 outline-none',
-                )}>
-                <option value="">—</option>
-                {contractors.map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.displayName ?? c.id}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor={contractSelectId}>{t('contractLabel')}</Label>
-              <Input
-                id={contractSelectId}
-                name="contractId"
-                value={contractId}
-                onChange={handleContractChange}
-                placeholder={t('contractIdPlaceholder')}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3">
-            <Label htmlFor={defaultToggleId} className="text-sm">
-              {t('defaultToggle')}
-            </Label>
-            <Switch
-              id={defaultToggleId}
-              name="isDefaultForContractor"
-              checked={!!(contractorId && isDefault)}
-              disabled={defaultToggleDisabled}
-              onCheckedChange={handleDefaultChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor={validFromId}>{t('validFromLabel')}</Label>
-              <Input
-                id={validFromId}
-                name="validFrom"
-                type="date"
-                value={validFrom}
-                onChange={handleValidFromChange}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor={validToId}>{t('validToLabel')}</Label>
-              <Input
-                id={validToId}
-                name="validTo"
-                type="date"
-                value={validTo}
-                onChange={handleValidToChange}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor={notesId}>{t('notesLabel')}</Label>
-            <Textarea
-              id={notesId}
-              name="notes"
-              value={notes}
-              onChange={handleNotesChange}
-              maxLength={2000}
-              rows={3}
-            />
-          </div>
-
-          {formError ? (
-            <p id={formErrId} role="alert" className="text-sm text-destructive">
-              {formError}
-            </p>
-          ) : null}
+          </DialogBody>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>

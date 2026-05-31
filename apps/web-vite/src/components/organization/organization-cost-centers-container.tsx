@@ -7,7 +7,7 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { CostCenterCsvImportDialogContainer } from './cost-centers/cost-center-csv-import-dialog-container.js';
 import { CostCenterFormSheetContainer } from './cost-centers/cost-center-form-sheet-container.js';
-import { CostCenterTable } from './cost-centers/cost-center-table.js';
+import { CostCenterTable } from './cost-centers/data-table.js';
 import { useOrganizationCostCenters } from './hooks/use-organization-cost-centers.js';
 import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';

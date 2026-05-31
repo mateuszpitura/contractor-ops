@@ -4,20 +4,15 @@
  *   - `next-intl` → `../../../i18n/useTranslations.js`
  */
 
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@contractor-ops/ui/components/shadcn/collapsible';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useMemo } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
@@ -50,6 +45,99 @@ function normaliseSeverity(raw: string): SvrlSeverity {
   return 'error';
 }
 
+interface LayerTableProps {
+  issues: SvrlIssue[];
+  xpathLabel: string;
+  severityHeader: string;
+  ruleIdHeader: string;
+  messageHeader: string;
+}
+
+function LayerTable({
+  issues,
+  xpathLabel,
+  severityHeader,
+  ruleIdHeader,
+  messageHeader,
+}: LayerTableProps) {
+  const noop = () => undefined;
+
+  const columns = useMemo<ColumnDef<SvrlIssue, unknown>[]>(
+    () => [
+      {
+        id: 'severity',
+        header: () => severityHeader,
+        size: 96,
+        enableSorting: false,
+        cell: ({ row }) => {
+          const severity = normaliseSeverity(row.original.severity);
+          return (
+            <span data-slot="svrl-issue-row" className="inline-block">
+              <Badge variant="outline" className={`capitalize ${SEVERITY_VARIANT[severity]}`}>
+                {severity}
+              </Badge>
+            </span>
+          );
+        },
+      },
+      {
+        id: 'ruleId',
+        header: () => ruleIdHeader,
+        size: 160,
+        enableSorting: false,
+        cell: ({ row }) => <code className="font-mono text-sm">{row.original.ruleId}</code>,
+      },
+      {
+        id: 'message',
+        header: () => messageHeader,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Collapsible>
+            <CollapsibleTrigger
+              className="text-start text-sm hover:underline"
+              data-slot="svrl-issue-toggle">
+              {row.original.message.length > 100
+                ? `${row.original.message.slice(0, 100)}…`
+                : row.original.message}
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 space-y-2 rounded-md bg-muted/30 p-3">
+                <p className="text-sm">{row.original.message}</p>
+                <p>
+                  <span className="text-xs text-muted-foreground">{xpathLabel}</span>{' '}
+                  <code className="font-mono text-xs break-all">{row.original.xpath}</code>
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        ),
+      },
+    ],
+    [xpathLabel, severityHeader, ruleIdHeader, messageHeader],
+  );
+
+  return (
+    <DataTable
+      columns={columns}
+      data={issues}
+      totalRows={issues.length}
+      clientPagination
+      pageIndex={0}
+      pageSize={issues.length || 1}
+      onPageChange={noop}
+      onPageSizeChange={noop}
+      getRowId={(row, idx) => `${row.ruleId}-${idx}`}
+      hideChrome
+      hideFooter
+      hideDensityToggle
+      constrainHeight={false}
+      entityLabel="issues"
+      emptyTitle=""
+      noResultsTitle=""
+    />
+  );
+}
+
 export function SvrlIssueList({ issues }: SvrlIssueListProps) {
   const t = useTranslations('EInvoice.InvoiceTab');
 
@@ -68,59 +156,13 @@ export function SvrlIssueList({ issues }: SvrlIssueListProps) {
       {Array.from(byLayer.entries()).map(([layer, layerIssues]) => (
         <div key={layer} className="space-y-2">
           <h5 className="text-sm font-medium text-muted-foreground">{layer}</h5>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-24">{t('svrlSeverityHeader')}</TableHead>
-                <TableHead className="w-40">{t('svrlRuleIdHeader')}</TableHead>
-                <TableHead>{t('svrlMessageHeader')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {layerIssues.map((issue, idx) => {
-                const severity = normaliseSeverity(issue.severity);
-                return (
-                  <TableRow
-                    // biome-ignore lint/suspicious/noArrayIndexKey: stable order from server
-                    key={`${issue.ruleId}-${idx}`}
-                    data-slot="svrl-issue-row">
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={`capitalize ${SEVERITY_VARIANT[severity]}`}>
-                        {severity}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <code className="font-mono text-sm">{issue.ruleId}</code>
-                    </TableCell>
-                    <TableCell>
-                      <Collapsible>
-                        <CollapsibleTrigger
-                          className="text-start text-sm hover:underline"
-                          data-slot="svrl-issue-toggle">
-                          {issue.message.length > 100
-                            ? `${issue.message.slice(0, 100)}…`
-                            : issue.message}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="mt-2 space-y-2 rounded-md bg-muted/30 p-3">
-                            <p className="text-sm">{issue.message}</p>
-                            <p>
-                              <span className="text-xs text-muted-foreground">
-                                {t('xpathLabel')}
-                              </span>{' '}
-                              <code className="font-mono text-xs break-all">{issue.xpath}</code>
-                            </p>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <LayerTable
+            issues={layerIssues}
+            xpathLabel={t('xpathLabel')}
+            severityHeader={t('svrlSeverityHeader')}
+            ruleIdHeader={t('svrlRuleIdHeader')}
+            messageHeader={t('svrlMessageHeader')}
+          />
         </div>
       ))}
     </div>

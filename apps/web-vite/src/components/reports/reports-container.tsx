@@ -1,8 +1,7 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Navigate } from 'react-router-dom';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { ComplianceGapsReport } from './compliance-gaps-report.js';
 import { DateRangeFilter } from './date-range-filter.js';
 import { ExpiringContractsReport } from './expiring-contracts-report.js';
@@ -81,7 +80,7 @@ export function ReportsContainer() {
 
         <div className="min-w-0 flex-1 space-y-card-gap">
           <AnimateIn delay={0}>
-            <AtelierPageHeader title={t('title')} />
+            <WorkbenchPageHeader title={t('title')} />
           </AnimateIn>
 
           <AnimateIn delay={1}>

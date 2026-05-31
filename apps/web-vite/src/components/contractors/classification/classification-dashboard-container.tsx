@@ -1,10 +1,9 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Navigate } from 'react-router-dom';
-
 import { useLocale } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { ClassificationAdvisoryBanner } from '../../classification/advisory-banner.js';
+import { WorkbenchPageHeader } from '../../shared/workbench-page-header.js';
 import { MarketCardContainer } from './dashboard/market-card-container.js';
 import { RefreshDashboardButtonContainer } from './dashboard/refresh-dashboard-button-container.js';
 import {
@@ -69,7 +68,7 @@ export function ClassificationDashboardContainer() {
     <>
       <ClassificationAdvisoryBanner jurisdiction={dashboard.jurisdiction} />
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 md:py-12">
-        <AtelierPageHeader title={t('pageH1')} description={t('pageSubline')} />
+        <WorkbenchPageHeader title={t('pageH1')} description={t('pageSubline')} />
 
         <ClassificationGlobalHeader />
 

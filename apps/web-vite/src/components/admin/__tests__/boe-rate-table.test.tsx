@@ -24,7 +24,7 @@ vi.mock('../../../i18n/useTranslations.js', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-import { BoeRateTable } from '../boe-rate/boe-rate-table.js';
+import { BoeRateTable } from '../boe-rate/data-table.js';
 import type { BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
 
 interface Harness {

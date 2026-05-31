@@ -4,6 +4,7 @@
 
 /* Shared design system — see packages/ui/src/styles/ */
 @import "@contractor-ops/ui/styles/tokens.css";
+@import "@contractor-ops/ui/styles/form-control.css";
 @import "@contractor-ops/ui/styles/glass.css";
 @import "@contractor-ops/ui/styles/motion.css";
 @import "@contractor-ops/ui/styles/status.css";
@@ -749,7 +750,9 @@ html.theme-transition *::after {
  * (see packages/ui/src/components/workbench/table-page-layout.ts). When
  * the active route renders one, we pin SidebarInset to the viewport so
  * AtelierTableShell can hand a flex-constrained height to its scrollable
- * table body. Other workbench routes (settings, forms, detail pages)
+ * table body (min 300 px — see WORKBENCH_TABLE_BODY_MIN_HEIGHT_*). When
+ * pre-table chrome leaves less than that in the viewport slot, main scrolls
+ * instead of collapsing the table body. Other workbench routes (settings, forms, detail pages)
  * keep document-level scroll so the footer breathes with the content
  * instead of getting clipped at a flex-1 box edge.
  *
@@ -768,6 +771,23 @@ body[data-intensity="workbench"]
   flex: 1 1 0%;
   min-height: 0;
   overflow-y: auto;
+}
+
+/*
+ * CAP pages only (NOT .workbench-list-fill): the table card is content-height
+ * with a 300px scroll body, so the page must scroll. The shell wraps <Outlet/>
+ * in a `flex-1 min-h-0` div that would otherwise lock the page to the viewport
+ * and clip/overlap the footer. Relaxing it to grow-but-never-shrink-below-
+ * content lets the content push <AppFooter> down and `main` scroll cleanly.
+ * FILL pages keep the locked wrapper so the table fills the viewport instead.
+ * (`> div` targets only the Outlet wrapper; AppFooter is a <footer>.)
+ */
+body[data-intensity="workbench"]
+  [data-slot="sidebar-inset"]:has(.workbench-list-page):not(:has(.workbench-list-fill))
+  > main#main-content
+  > div {
+  flex: 1 0 auto;
+  min-height: 0;
 }
 
 /* ─── Sidebar Gradient Accent ────────────────────────────────────────── */
@@ -849,17 +869,17 @@ body[data-intensity="workbench"]
 
 /* ─── Input Focus Glow ─────────────────────────────────────────────── */
 
-[data-slot="input"]:focus-visible {
+[data-form-control]:focus-visible {
   border-color: var(--ring);
   box-shadow:
-    0 0 0 3px color-mix(in oklch, var(--ring) 15%, transparent),
-    0 0 20px color-mix(in oklch, var(--ring) 10%, transparent);
+    0 0 0 2px color-mix(in oklch, var(--ring) 28%, transparent),
+    0 0 16px color-mix(in oklch, var(--ring) 8%, transparent);
 }
 
-.dark [data-slot="input"]:focus-visible {
+.dark [data-form-control]:focus-visible {
   box-shadow:
-    0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent),
-    0 0 25px color-mix(in oklch, var(--ring) 12%, transparent);
+    0 0 0 2px color-mix(in oklch, var(--ring) 32%, transparent),
+    0 0 20px color-mix(in oklch, var(--ring) 10%, transparent);
 }
 
 /* ─── Primary Button — Gradient & Shimmer ──────────────────────────── */

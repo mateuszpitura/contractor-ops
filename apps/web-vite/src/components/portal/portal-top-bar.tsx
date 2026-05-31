@@ -19,6 +19,7 @@ import { Link } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { getAvatarInitials } from '../../lib/avatar-initials.js';
 import { PORTAL_NAV_ITEMS } from '../../lib/portal-navigation.js';
+import { prefetchRoute } from '../../lib/route-prefetch.js';
 import { cn } from '../../lib/utils.js';
 import type { usePortalTopBar } from './hooks/use-portal-top-bar.js';
 import { OrgSwitcherList } from './org-switcher-list.js';
@@ -91,6 +92,8 @@ export function PortalTopBar({
                 key={item.href}
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
+                onPointerEnter={() => prefetchRoute(item.href)}
+                onFocus={() => prefetchRoute(item.href)}
                 className={cn(
                   'inline-flex items-center gap-1.5 border-b-2 pb-[calc(theme(spacing.4)-2px)] pt-4 text-[13px] transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   active

@@ -6,6 +6,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/collapsible';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -268,11 +269,13 @@ export function ZatcaSubmissionDetailView({
                       {t('signedXmlDialogTitle', { uuid: submission.zatcaUuid })}
                     </DialogTitle>
                   </DialogHeader>
-                  <pre className="overflow-x-auto rounded-lg bg-muted/30 p-4 font-mono text-xs">
-                    {responseData?.signedXml
-                      ? String(responseData.signedXml)
-                      : t('signedXmlNotAvailable')}
-                  </pre>
+                  <DialogBody>
+                    <pre className="overflow-x-auto rounded-lg bg-muted/30 p-4 font-mono text-xs">
+                      {responseData?.signedXml
+                        ? String(responseData.signedXml)
+                        : t('signedXmlNotAvailable')}
+                    </pre>
+                  </DialogBody>
                 </DialogContent>
               </Dialog>
 

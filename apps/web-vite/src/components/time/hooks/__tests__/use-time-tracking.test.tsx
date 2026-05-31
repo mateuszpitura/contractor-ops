@@ -42,7 +42,7 @@ import {
   setTRPCMock,
   waitFor,
 } from '../../../../test-utils/render-hook.js';
-import { useTimeTracking } from '../use-time-tracking.js';
+import { TIME_STATUS_FILTER_ALL, useTimeTracking } from '../use-time-tracking.js';
 
 const baseProxy = createTRPCProxy();
 
@@ -121,7 +121,7 @@ describe('useTimeTracking', () => {
     await waitFor(() => expect(result.current.pendingTimesheets.length).toBe(2));
     expect(result.current.pendingTimesheets[0]?.id).toBe('ts-1');
     expect(result.current.tab).toBe('pending');
-    expect(result.current.statusFilter).toBe('all');
+    expect(result.current.statusFilter).toBe(TIME_STATUS_FILTER_ALL);
   });
 
   it('approve mutation forwards id and emits success toast', async () => {

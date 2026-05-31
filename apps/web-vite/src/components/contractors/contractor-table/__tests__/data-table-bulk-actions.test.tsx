@@ -7,7 +7,6 @@
  * the raw "{count} selected" string.
  */
 
-import type { Table } from '@tanstack/react-table';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../workflows/template-picker-container.js', () => ({
@@ -19,14 +18,11 @@ import type { ContractorBulkActionsHandlers } from '../../hooks/use-contractor-b
 import type { ContractorRow } from '../columns.js';
 import { DataTableBulkActions } from '../data-table-bulk-actions.js';
 
-function makeMockTable(selectedCount: number): Table<ContractorRow> {
-  const rows = Array.from({ length: selectedCount }, (_, i) => ({
-    original: { id: `c${i}` } as ContractorRow,
-  }));
-  return {
-    getFilteredSelectedRowModel: () => ({ rows }),
-    toggleAllPageRowsSelected: vi.fn(),
-  } as unknown as Table<ContractorRow>;
+function makeSelectedRows(selectedCount: number): ContractorRow[] {
+  return Array.from(
+    { length: selectedCount },
+    (_, i) => ({ id: `c${i}` }) as ContractorRow,
+  );
 }
 
 function makeBulkActions(
@@ -51,7 +47,7 @@ const sampleUsers = [
 function renderActions(selectedCount: number, bulkActions = makeBulkActions()) {
   return render(
     <DataTableBulkActions
-      table={makeMockTable(selectedCount)}
+      selectedRows={makeSelectedRows(selectedCount)}
       users={sampleUsers as never}
       bulkActions={bulkActions}
       onComplete={vi.fn()}
@@ -85,7 +81,7 @@ describe('DataTableBulkActions', () => {
   it('opens archive confirmation dialog on archive click', async () => {
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(3)}
+        selectedRows={makeSelectedRows(3)}
         users={sampleUsers as never}
         bulkActions={makeBulkActions()}
         onComplete={vi.fn()}
@@ -98,7 +94,7 @@ describe('DataTableBulkActions', () => {
   it('archive dialog has a Cancel button', async () => {
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(3)}
+        selectedRows={makeSelectedRows(3)}
         users={sampleUsers as never}
         bulkActions={makeBulkActions()}
         onComplete={vi.fn()}
@@ -118,7 +114,7 @@ describe('DataTableBulkActions', () => {
   it('opens export dropdown with CSV + XLSX entries', async () => {
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         users={sampleUsers as never}
         bulkActions={makeBulkActions()}
         onComplete={vi.fn()}
@@ -135,7 +131,7 @@ describe('DataTableBulkActions', () => {
     const bulkActions = makeBulkActions();
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         users={sampleUsers as never}
         bulkActions={bulkActions}
         onComplete={vi.fn()}
@@ -156,7 +152,7 @@ describe('DataTableBulkActions', () => {
   it('opens assign-owner popover listing supplied users', async () => {
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         users={sampleUsers as never}
         bulkActions={makeBulkActions()}
         onComplete={vi.fn()}
@@ -173,7 +169,7 @@ describe('DataTableBulkActions', () => {
     const bulkActions = makeBulkActions();
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         users={sampleUsers as never}
         bulkActions={bulkActions}
         onComplete={vi.fn()}
@@ -191,7 +187,7 @@ describe('DataTableBulkActions', () => {
     const bulkActions = makeBulkActions();
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         users={sampleUsers as never}
         bulkActions={bulkActions}
         onComplete={vi.fn()}

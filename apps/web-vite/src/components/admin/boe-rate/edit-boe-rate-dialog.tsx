@@ -9,11 +9,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
@@ -93,42 +95,43 @@ export function EditBoeRateDialog({
           <DialogDescription>{t('editDialogDesc', { date: effectiveDate })}</DialogDescription>
         </DialogHeader>
 
-        {entry.source === 'BOE_API' && (
-          <div className="flex items-start gap-2 rounded-md bg-warning/10 p-3 text-sm text-warning">
-            <AlertTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>{t('editApiSourceWarning')}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t('colEffectiveFrom')}</Label>
-            <Input type="date" value={effectiveDate} disabled className="bg-muted" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-rate-percent">{t('colRatePercent')}</Label>
-            <Input
-              id="edit-rate-percent"
-              type="number"
-              step="0.01"
-              min="0"
-              max="99.99"
-              value={ratePercent}
-              onChange={handleRatePercentChange}
-              className="tabular-nums"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-notes">{t('colNotes')}</Label>
-            <Textarea
-              id="edit-notes"
-              value={notes}
-              onChange={handleNotesChange}
-              placeholder={t('editNotesPlaceholder')}
-              rows={3}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={dialogFormLayoutClassName}>
+          <DialogBody className="space-y-4">
+            {entry.source === 'BOE_API' && (
+              <div className="flex items-start gap-2 rounded-md bg-warning/10 p-3 text-sm text-warning">
+                <AlertTriangleIcon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{t('editApiSourceWarning')}</span>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>{t('colEffectiveFrom')}</Label>
+              <Input type="date" value={effectiveDate} disabled className="bg-muted" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-rate-percent">{t('colRatePercent')}</Label>
+              <Input
+                id="edit-rate-percent"
+                type="number"
+                step="0.01"
+                min="0"
+                max="99.99"
+                value={ratePercent}
+                onChange={handleRatePercentChange}
+                className="tabular-nums"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-notes">{t('colNotes')}</Label>
+              <Textarea
+                id="edit-notes"
+                value={notes}
+                onChange={handleNotesChange}
+                placeholder={t('editNotesPlaceholder')}
+                rows={3}
+              />
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>
               {tCommon('cancel')}

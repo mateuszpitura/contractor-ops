@@ -1,16 +1,9 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { usePermissions } from '../../hooks/use-permissions.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { canViewSensitivePii, maskTaxId } from '../../lib/mask-pii.js';
@@ -82,13 +75,16 @@ export function StepDuplicates({
   const t = useTranslations('Import');
   const { role } = usePermissions();
   const showPii = canViewSensitivePii(role);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
 
-  const getAction = (rowNumber: number): 'skip' | 'update' | 'create' => {
-    return duplicateActions[String(rowNumber)] ?? 'skip';
-  };
+  const getAction = useCallback(
+    (rowNumber: number): DuplicateAction => duplicateActions[String(rowNumber)] ?? 'skip',
+    [duplicateActions],
+  );
 
   const handleActionChange = useCallback(
-    (rowNumber: number, action: 'skip' | 'update' | 'create') => {
+    (rowNumber: number, action: DuplicateAction) => {
       onActionsChange({
         ...duplicateActions,
         [String(rowNumber)]: action,
@@ -99,7 +95,7 @@ export function StepDuplicates({
 
   const handleBulkAction = useCallback(
     (action: 'skip' | 'update') => {
-      const newActions: Record<string, 'skip' | 'update' | 'create'> = {};
+      const newActions: Record<string, DuplicateAction> = {};
       for (const row of duplicateRows) {
         newActions[String(row.rowNumber)] = action;
       }
@@ -110,6 +106,54 @@ export function StepDuplicates({
 
   const handleSkipAll = useCallback(() => handleBulkAction('skip'), [handleBulkAction]);
   const handleUpdateAll = useCallback(() => handleBulkAction('update'), [handleBulkAction]);
+
+  const columns = useMemo<ColumnDef<ImportRow, unknown>[]>(
+    () => [
+      {
+        id: 'taxId',
+        accessorFn: row => String(row.data.taxId ?? row.data.contractorTaxId ?? ''),
+        header: t('duplicates.taxId'),
+        cell: ({ row }) => {
+          const taxId = String(row.original.data.taxId ?? row.original.data.contractorTaxId ?? '');
+          return <span className="font-mono text-sm">{showPii ? taxId : maskTaxId(taxId)}</span>;
+        },
+      },
+      {
+        id: 'nameFromFile',
+        accessorFn: row => String(row.data.legalName ?? row.data.title ?? ''),
+        header: t('duplicates.nameFromFile'),
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {String(row.original.data.legalName ?? row.original.data.title ?? '')}
+          </span>
+        ),
+      },
+      {
+        id: 'nameExisting',
+        accessorFn: row => row.duplicateOf ?? '',
+        header: t('duplicates.nameExisting'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">{row.original.duplicateOf ?? '-'}</span>
+        ),
+      },
+      {
+        id: 'action',
+        header: t('duplicates.action'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <DuplicateActionRadio
+            rowNumber={row.original.rowNumber}
+            action={getAction(row.original.rowNumber)}
+            onActionChange={handleActionChange}
+            labelSkip={t('duplicates.skip')}
+            labelUpdate={t('duplicates.update')}
+            labelCreate={t('duplicates.create')}
+          />
+        ),
+      },
+    ],
+    [t, showPii, getAction, handleActionChange],
+  );
 
   return (
     <div className="space-y-4">
@@ -131,47 +175,26 @@ export function StepDuplicates({
         </Button>
       </div>
 
-      {/* Duplicates table */}
-      <ScrollArea className="max-h-[320px] overflow-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('duplicates.taxId')}</TableHead>
-              <TableHead>{t('duplicates.nameFromFile')}</TableHead>
-              <TableHead>{t('duplicates.nameExisting')}</TableHead>
-              <TableHead>{t('duplicates.action')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {duplicateRows.map(row => {
-              const taxId = String(row.data.taxId ?? row.data.contractorTaxId ?? '');
-              const name = String(row.data.legalName ?? row.data.title ?? '');
-              const existingName = row.duplicateOf ?? '-';
-              const action = getAction(row.rowNumber);
-
-              return (
-                <TableRow key={row.rowNumber}>
-                  <TableCell className="font-mono text-sm">
-                    {showPii ? taxId : maskTaxId(taxId)}
-                  </TableCell>
-                  <TableCell className="text-sm">{name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{existingName}</TableCell>
-                  <TableCell>
-                    <DuplicateActionRadio
-                      rowNumber={row.rowNumber}
-                      action={action}
-                      onActionChange={handleActionChange}
-                      labelSkip={t('duplicates.skip')}
-                      labelUpdate={t('duplicates.update')}
-                      labelCreate={t('duplicates.create')}
-                    />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+      <DataTable
+        columns={columns}
+        data={duplicateRows}
+        totalRows={duplicateRows.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={size => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        constrainHeight={false}
+        hideDensityToggle
+        hideChrome
+        getRowId={row => String(row.rowNumber)}
+        entityLabel={t('duplicates.banner', { count: duplicateRows.length })}
+        emptyTitle={t('duplicates.banner', { count: 0 })}
+        noResultsTitle={t('duplicates.banner', { count: 0 })}
+      />
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
 import { AuditLogTab } from '../audit-log-tab';
-import type { AuditLogEntry } from '../audit-log-table';
+import type { AuditLogEntry } from '../audit-log/data-table.js';
 import type { useAuditLogTab } from '../hooks/use-audit-log-tab';
 
 type HookReturn = ReturnType<typeof useAuditLogTab>;

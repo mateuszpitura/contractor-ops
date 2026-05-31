@@ -10,7 +10,7 @@ import { isFeaturedEmptyList } from './is-featured-empty-list.js';
 import { OrganizationLayout } from './organization-layout.js';
 import { PendingMergesInboxContainer } from './projects/pending-merges-inbox-container.js';
 import { ProjectFormSheetContainer } from './projects/project-form-sheet-container.js';
-import { ProjectTable } from './projects/project-table.js';
+import { ProjectTable } from './projects/data-table.js';
 
 type SyncConnection = { id: string; provider: string };
 

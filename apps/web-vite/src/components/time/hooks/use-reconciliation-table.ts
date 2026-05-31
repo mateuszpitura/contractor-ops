@@ -1,6 +1,9 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
+import { cursorPaginationTotalRows } from '../../shared/cursor-pagination.js';
 import { useReconciliationList } from './use-reconciliation.js';
+
+const DEFAULT_PAGE_SIZE = 10;
 
 interface ReconciliationItem {
   invoice: {
@@ -31,28 +34,44 @@ interface ReconciliationItem {
 }
 
 export function useReconciliationTable() {
-  const query = useReconciliationList();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [cursors, setCursors] = useState<string[]>([]);
+  const currentCursor = cursors[cursors.length - 1];
 
-  const items = useMemo(() => {
-    const pages = query.data?.pages ?? [];
-    return pages.flatMap(page => (page.items ?? []) as ReconciliationItem[]);
-  }, [query.data]);
+  const query = useReconciliationList({ cursor: currentCursor, limit: pageSize });
 
-  const totalCount = useMemo(() => {
-    const lastPage = query.data?.pages.at(-1) as
-      | { items: ReconciliationItem[]; nextCursor?: string; total?: number }
-      | undefined;
-    if (typeof lastPage?.total === 'number') return lastPage.total;
-    return items.length;
-  }, [query.data, items.length]);
+  const items = useMemo(() => (query.data?.items ?? []) as ReconciliationItem[], [query.data]);
+
+  const nextCursor = query.data?.nextCursor;
+  const hasNextPage = Boolean(nextCursor);
+  const currentPage = cursors.length + 1;
+
+  const totalCount = useMemo(
+    () => cursorPaginationTotalRows(cursors.length, pageSize, items.length, hasNextPage),
+    [cursors.length, pageSize, items.length, hasNextPage],
+  );
 
   const onRetry = useCallback(() => {
     void query.refetch();
   }, [query]);
 
-  const onLoadMore = useCallback(() => {
-    void query.fetchNextPage();
-  }, [query]);
+  const onPageChange = useCallback(
+    (page: number) => {
+      if (page < currentPage) {
+        setCursors(prev => prev.slice(0, page - 1));
+        return;
+      }
+      if (page > currentPage && nextCursor) {
+        setCursors(prev => [...prev, nextCursor]);
+      }
+    },
+    [currentPage, nextCursor],
+  );
+
+  const onPageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setCursors([]);
+  }, []);
 
   const isLoading = query.isLoading;
   const isError = query.isError;
@@ -65,11 +84,13 @@ export function useReconciliationTable() {
     isEmpty,
     showData,
     onRetry,
-    onLoadMore,
-    hasNextPage: Boolean(query.hasNextPage),
-    isFetchingNextPage: Boolean(query.isFetchingNextPage),
     items,
     totalCount,
+    pageSize,
+    currentPage,
+    onPageChange,
+    onPageSizeChange,
+    isFetching: query.isFetching,
   } as const;
 }
 

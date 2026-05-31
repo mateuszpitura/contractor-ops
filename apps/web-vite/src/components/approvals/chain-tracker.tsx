@@ -124,64 +124,58 @@ export function ChainTrackerSkeleton() {
   );
 }
 
-function StepCircle({
-  step,
-  isAfterRejected,
-  isVertical,
-}: {
-  step: StepData;
-  isAfterRejected: boolean;
-  isVertical: boolean;
-}) {
+function getApproverName(step: StepData) {
+  return step.approver?.name ?? step.approverRole ?? `Step ${step.stepOrder + 1}`;
+}
+
+function StepCircle({ step, isAfterRejected }: { step: StepData; isAfterRejected: boolean }) {
   const styles = getStepStyles(step.status, isAfterRejected);
   const Icon = styles.showIcon ? styles.icon : null;
 
-  const approverName = step.approver?.name ?? step.approverRole ?? `Step ${step.stepOrder + 1}`;
-
-  const tooltipLabel = `${step.name} - ${approverName}${
+  const tooltipLabel = `${step.name} - ${getApproverName(step)}${
     step.slaDeadline ? ` - SLA: ${new Date(step.slaDeadline).toLocaleString()}` : ''
   }`;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger
+    <Tooltip>
+      <TooltipTrigger
+        className={cn(
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+          styles.circleBg,
+          styles.circleText,
+        )}>
+        {Icon ? <Icon className="h-4 w-4" /> : step.stepOrder + 1}
+      </TooltipTrigger>
+      <TooltipContent>{tooltipLabel}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function StepLabel({ step, align }: { step: StepData; align: 'center' | 'start' }) {
+  return (
+    <div className={cn('flex flex-col gap-1', align === 'center' ? 'items-center' : 'items-start')}>
+      <div className="flex items-center gap-1.5">
+        {!!step.approver && (
+          <Avatar size="sm">
+            {!!step.approver.image && <AvatarImage src={step.approver.image} />}
+            <AvatarFallback>
+              {getAvatarInitials(step.approver.name, step.approver.email)}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <span
           className={cn(
-            'flex gap-2',
-            isVertical ? 'flex-row items-start' : 'flex-col items-center',
+            'truncate text-[12px] text-muted-foreground',
+            align === 'center' ? 'max-w-[88px]' : 'max-w-[160px]',
           )}>
-          <div
-            className={cn(
-              'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-              styles.circleBg,
-              styles.circleText,
-            )}>
-            {Icon ? <Icon className="h-4 w-4" /> : step.stepOrder + 1}
-          </div>
+          {getApproverName(step)}
+        </span>
+      </div>
 
-          <div className={cn('flex flex-col gap-0.5', isVertical ? 'items-start' : 'items-center')}>
-            <div className="flex items-center gap-1">
-              {!!step.approver && (
-                <Avatar size="sm">
-                  {!!step.approver.image && <AvatarImage src={step.approver.image} />}
-                  <AvatarFallback>
-                    {getAvatarInitials(step.approver.name, step.approver.email)}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <span className="max-w-[80px] truncate text-[12px] text-muted-foreground">
-                {approverName}
-              </span>
-            </div>
-
-            {step.status === 'PENDING' && step.slaDeadline && (
-              <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
-            )}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>{tooltipLabel}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+      {step.status === 'PENDING' && !!step.slaDeadline && (
+        <SlaBadge slaDeadline={step.slaDeadline} status={step.status} />
+      )}
+    </div>
   );
 }
 
@@ -201,43 +195,73 @@ export function ChainTracker({ steps, chainName }: ChainTrackerProps) {
     }
   }
 
+  const lastIndex = steps.length - 1;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-sm font-semibold">{t('chainTracker.heading')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-0">
-          {steps.map((step, idx) => {
-            const isAfterRejected = rejectedIndex >= 0 && idx > rejectedIndex;
+        <TooltipProvider>
+          {/* Desktop: horizontal stepper — connector halves live on the circle row so circles stay aligned regardless of label height */}
+          <div className="hidden lg:flex lg:items-start">
+            {steps.map((step, idx) => {
+              const isAfterRejected = rejectedIndex >= 0 && idx > rejectedIndex;
 
-            return (
-              <div key={step.id} className={cn('flex items-start', 'lg:flex-col lg:items-center')}>
-                {idx > 0 && (
-                  <>
-                    <div
+              return (
+                <div key={step.id} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                  <div className="flex w-full items-center">
+                    <span
                       className={cn(
-                        'hidden lg:block',
-                        'h-[2px] w-8 flex-shrink-0 border-t-2',
-                        'self-center lg:self-auto lg:mt-4',
-                        getConnectorStyle(steps[idx - 1].status, step.status),
+                        'h-0 flex-1 border-t-2',
+                        idx > 0
+                          ? getConnectorStyle(steps[idx - 1].status, step.status)
+                          : 'border-transparent',
                       )}
                     />
-                    <div
+                    <StepCircle step={step} isAfterRejected={isAfterRejected} />
+                    <span
                       className={cn(
-                        'lg:hidden',
-                        'ms-[15px] h-6 w-[2px] border-s-2',
-                        getConnectorStyle(steps[idx - 1].status, step.status),
+                        'h-0 flex-1 border-t-2',
+                        idx < lastIndex
+                          ? getConnectorStyle(step.status, steps[idx + 1].status)
+                          : 'border-transparent',
                       )}
                     />
-                  </>
-                )}
+                  </div>
+                  <StepLabel step={step} align="center" />
+                </div>
+              );
+            })}
+          </div>
 
-                <StepCircle step={step} isAfterRejected={isAfterRejected} isVertical={false} />
-              </div>
-            );
-          })}
-        </div>
+          {/* Mobile: vertical rail — circle + connector share a fixed-width column so the line stays centered under each circle */}
+          <ol className="flex flex-col lg:hidden">
+            {steps.map((step, idx) => {
+              const isAfterRejected = rejectedIndex >= 0 && idx > rejectedIndex;
+
+              return (
+                <li key={step.id} className="flex gap-3">
+                  <div className="flex w-8 shrink-0 flex-col items-center">
+                    <StepCircle step={step} isAfterRejected={isAfterRejected} />
+                    {idx < lastIndex && (
+                      <span
+                        className={cn(
+                          'my-1 w-0 flex-1 border-s-2',
+                          getConnectorStyle(step.status, steps[idx + 1].status),
+                        )}
+                      />
+                    )}
+                  </div>
+                  <div className={cn('min-w-0', idx < lastIndex && 'pb-4')}>
+                    <StepLabel step={step} align="start" />
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </TooltipProvider>
 
         {!!chainName && (
           <p className="text-[12px] text-muted-foreground">

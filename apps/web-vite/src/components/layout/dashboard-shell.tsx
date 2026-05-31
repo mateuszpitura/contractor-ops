@@ -54,7 +54,7 @@ export function DashboardShell({
                    */}
                   <main
                     id="main-content"
-                    className="atelier-main-surface flex min-w-0 flex-1 flex-col overflow-x-hidden p-6">
+                    className="atelier-main-surface flex min-w-0 flex-1 flex-col p-6">
                     {/*
                      * Wrapper participates in the flex chain. List/table pages
                      * declare a `.workbench-list-page` marker on their root

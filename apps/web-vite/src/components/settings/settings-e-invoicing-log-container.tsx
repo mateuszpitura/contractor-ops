@@ -1,4 +1,3 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,8 +6,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@contractor-ops/ui/components/shadcn/breadcrumb';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { TransmissionsLogCardContainer } from './e-invoicing/transmissions-log-card-container.js';
 
 // Decision: composition — orchestrates breadcrumb, page header, and
@@ -36,7 +35,7 @@ export function SettingsEInvoicingLogContainer() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <AtelierPageHeader title={t('h1')} description={t('subline')} />
+      <WorkbenchPageHeader title={t('h1')} description={t('subline')} />
 
       <TransmissionsLogCardContainer />
     </div>

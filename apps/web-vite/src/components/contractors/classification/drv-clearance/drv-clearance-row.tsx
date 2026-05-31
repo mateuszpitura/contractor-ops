@@ -1,8 +1,6 @@
-// Phase 60 · CLASS-09 — DRV clearance row (table row + outcome badge + expiry countdown).
-// See .planning/phases/60-classification-polish/60-UI-SPEC.md §CLASS-09.
-
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
 import { CircleCheck, ShieldAlert, ShieldQuestion, ShieldX } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 import { useLocale } from '../../../../i18n/navigation.js';
@@ -48,7 +46,6 @@ function daysBetween(a: Date, b: Date): number {
   return Math.round(ms / (24 * 60 * 60 * 1000));
 }
 
-// memo: rendered per row in DRV clearance table — re-renders driven only by row data + parent panel state
 export const DrvClearanceRow = memo(function DrvClearanceRow({
   clearance,
   onEdit,
@@ -83,24 +80,24 @@ export const DrvClearanceRow = memo(function DrvClearanceRow({
   const handleEditClick = useCallback(() => onEdit(clearance), [onEdit, clearance]);
 
   return (
-    <tr className="border-b">
-      <td className="py-3 pr-4 text-sm">{filedAtLabel}</td>
-      <td className="py-3 pr-4 font-mono text-sm">{clearance.drvReference}</td>
-      <td className="py-3 pr-4">
+    <TableRow>
+      <TableCell className="text-sm">{filedAtLabel}</TableCell>
+      <TableCell className="font-mono text-sm">{clearance.drvReference}</TableCell>
+      <TableCell>
         <Badge variant={visual.variant} className="gap-1">
           <Icon aria-hidden className="size-3.5" />
           <span>{t(visual.labelKey)}</span>
         </Badge>
-      </td>
-      <td className="py-3 pr-4 text-sm">
+      </TableCell>
+      <TableCell className="text-sm">
         <div>{validToLabel}</div>
         {countdownLabel ? (
           <div aria-live="polite" className="text-xs text-muted-foreground">
             {countdownLabel}
           </div>
         ) : null}
-      </td>
-      <td className="py-3 text-right">
+      </TableCell>
+      <TableCell className="text-right">
         <Button
           type="button"
           variant="ghost"
@@ -109,7 +106,7 @@ export const DrvClearanceRow = memo(function DrvClearanceRow({
           aria-label={t('editAction')}>
           {t('editAction')}
         </Button>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 });

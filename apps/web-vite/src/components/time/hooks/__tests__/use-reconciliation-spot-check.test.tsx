@@ -173,7 +173,7 @@ describe('useReconciliationSpotCheck', () => {
     expect(toastError.mock.calls[0]?.[0]).toContain('rate-limit');
   });
 
-  it('hasResult is true once the wrapped query has fetched and is idle', () => {
+  it('hasResult is true once handleRun completes and the wrapped query is idle', async () => {
     useContractorsMock.mockReturnValue({ data: [], isLoading: false });
     useContractsMock.mockReturnValue({ data: { items: [] }, isLoading: false });
     useReconciliationQueryMock.mockReturnValue({
@@ -181,9 +181,14 @@ describe('useReconciliationSpotCheck', () => {
       isFetching: false,
       isFetched: true,
       isError: false,
-      refetch: vi.fn(),
+      refetch: vi.fn().mockResolvedValue({ data: { withinThreshold: false } }),
     });
     const { result } = renderHookWithProviders(() => useReconciliationSpotCheck());
+    act(() => result.current.handleContractChange('k-1'));
+    act(() => result.current.setInvoicedInput('100'));
+    await act(async () => {
+      await result.current.handleRun();
+    });
     expect(result.current.hasResult).toBe(true);
     expect(result.current.result).toEqual({ withinThreshold: false });
   });

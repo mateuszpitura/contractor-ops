@@ -10,15 +10,9 @@ import type {
   RuleSetQuestion,
   ScheinCategory,
 } from '@contractor-ops/classification';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import { DataTable } from '@contractor-ops/ui';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useMemo, useState } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 
 type Locale = 'en' | 'pl' | 'de' | 'ar';
@@ -79,44 +73,96 @@ function readAnswer(raw: unknown, t: ReturnType<typeof useTranslations>): Answer
   return { label: t('outcome.drv.answerMissing'), score: '—' };
 }
 
+type CriterionRow = {
+  id: string;
+  prompt: string;
+  drvReference: string | undefined;
+  answerLabel: string;
+  answerScore: string;
+};
+
 export function DrvCriterionBreakdownList(props: DrvCriterionBreakdownListProps) {
   const { category, categoryLabel, questionsSnapshot, answers, locale } = props;
   const t = useTranslations('Classification');
-  const criteria = questionsSnapshot.questions.filter(q => q.category === category);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const data = useMemo<CriterionRow[]>(() => {
+    return questionsSnapshot.questions
+      .filter(q => q.category === category)
+      .map(q => {
+        const answer = readAnswer(answers[q.id], t);
+        return {
+          id: q.id,
+          prompt: readPrompt(q, locale),
+          drvReference: q.drvReference,
+          answerLabel: answer.label,
+          answerScore: answer.score,
+        };
+      });
+  }, [questionsSnapshot, category, answers, locale, t]);
+
+  const columns = useMemo<ColumnDef<CriterionRow, unknown>[]>(
+    () => [
+      {
+        id: 'criterion',
+        accessorKey: 'prompt',
+        header: t('outcome.drv.criterion'),
+        cell: ({ row }) => (
+          <div className="align-top text-sm">
+            <span className="font-medium">{row.original.prompt}</span>
+            {row.original.drvReference ? (
+              <span className="mt-1 block text-xs text-muted-foreground">
+                {row.original.drvReference}
+              </span>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        id: 'answer',
+        accessorKey: 'answerLabel',
+        header: t('outcome.drv.answer'),
+        cell: ({ row }) => <span className="align-top text-sm">{row.original.answerLabel}</span>,
+      },
+      {
+        id: 'score',
+        accessorKey: 'answerScore',
+        header: () => <span className="block text-end">{t('outcome.drv.score')}</span>,
+        cell: ({ row }) => (
+          <span className="block align-top text-end text-sm tabular-nums">
+            {row.original.answerScore}
+          </span>
+        ),
+      },
+    ],
+    [t],
+  );
 
   return (
-    <Table data-testid="drv-criterion-table" data-category={category}>
-      <TableCaption className="sr-only">
-        {t('outcome.criteriaCaption', { category: categoryLabel })}
-      </TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead scope="col">{t('outcome.drv.criterion')}</TableHead>
-          <TableHead scope="col">{t('outcome.drv.answer')}</TableHead>
-          <TableHead scope="col" className="text-end">
-            {t('outcome.drv.score')}
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {criteria.map(q => {
-          const answer = readAnswer(answers[q.id], t);
-          return (
-            <TableRow key={q.id}>
-              <TableCell className="align-top text-sm">
-                <span className="font-medium">{readPrompt(q, locale)}</span>
-                {q.drvReference ? (
-                  <span className="mt-1 block text-xs text-muted-foreground">{q.drvReference}</span>
-                ) : null}
-              </TableCell>
-              <TableCell className="align-top text-sm">{answer.label}</TableCell>
-              <TableCell className="align-top text-end text-sm tabular-nums">
-                {answer.score}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <div data-testid="drv-criterion-table" data-category={category}>
+      <p className="sr-only">{t('outcome.criteriaCaption', { category: categoryLabel })}</p>
+      <DataTable
+        columns={columns}
+        data={data}
+        totalRows={data.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={size => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        constrainHeight={false}
+        hideDensityToggle
+        hideChrome
+        hideFooter
+        getRowId={row => row.id}
+        entityLabel={categoryLabel}
+        emptyTitle={t('outcome.criteriaCaption', { category: categoryLabel })}
+        noResultsTitle={t('outcome.criteriaCaption', { category: categoryLabel })}
+      />
+    </div>
   );
 }

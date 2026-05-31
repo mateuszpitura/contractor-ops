@@ -4,11 +4,10 @@
  *   - `next-intl` → `../../../i18n/useTranslations.js`
  */
 
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Alert, AlertDescription } from '@contractor-ops/ui/components/shadcn/alert';
 import { useState } from 'react';
-
 import { useTranslations } from '../../../i18n/useTranslations.js';
+import { WorkbenchPageHeader } from '../../shared/workbench-page-header.js';
 import { IntakeDetailActionsBarContainer } from './intake-detail-actions-bar-container.js';
 import { IntakeDetailFieldsPane } from './intake-detail-fields-pane.js';
 import { IntakeDetailMatchPaneContainer } from './intake-detail-match-pane-container.js';
@@ -57,7 +56,7 @@ export function IntakeDetailClient({ intake, pageTitle }: IntakeDetailClientProp
 
   return (
     <div className="space-y-6 pb-28 md:pb-6">
-      <AtelierPageHeader
+      <WorkbenchPageHeader
         title={pageTitle}
         description={intake.extractedSupplierName ?? undefined}
       />

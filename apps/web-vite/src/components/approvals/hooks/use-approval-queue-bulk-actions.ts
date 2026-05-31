@@ -14,6 +14,9 @@ export function useApprovalQueueBulkActions(onClearSelection: () => void) {
     void queryClient.invalidateQueries({
       queryKey: [['approval', 'listPending']],
     });
+    void queryClient.invalidateQueries({
+      queryKey: [['approval', 'actionableCount']],
+    });
   }, [queryClient]);
 
   const bulkApproveMutation = useMutation(

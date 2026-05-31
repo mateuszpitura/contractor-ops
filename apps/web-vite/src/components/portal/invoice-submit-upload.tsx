@@ -1,6 +1,7 @@
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
-import { ExternalLink, FileText, UploadCloud, X } from 'lucide-react';
+import { ExternalLink, FileText, X } from 'lucide-react';
 import { useCallback } from 'react';
 
 import type { LooseTranslator } from '../../i18n/typed-keys.js';
@@ -60,22 +61,13 @@ export function UploadSection({
       <h2 className="text-sm font-semibold">{t('invoicePdf')}</h2>
 
       {upload.status === 'idle' || upload.status === 'error' ? (
-        <div
+        <DropZoneSurface
           {...getRootProps()}
-          className={`flex min-h-[140px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
-            isDragActive
-              ? 'border-primary bg-primary/[0.03]'
-              : 'border-border bg-muted/50 hover:border-muted-foreground/30'
-          }`}>
+          isDragActive={isDragActive}
+          label={t('dropText')}
+          description={t('dropSubtext')}>
           <input {...getInputProps()} />
-          <UploadCloud
-            className={`mb-3 h-8 w-8 text-muted-foreground transition-transform ${
-              isDragActive ? 'scale-110 text-primary' : ''
-            }`}
-          />
-          <p className="text-center text-sm text-muted-foreground">{t('dropText')}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{t('dropSubtext')}</p>
-        </div>
+        </DropZoneSurface>
       ) : upload.status === 'uploading' ? (
         <div className="space-y-3 rounded-lg border p-4">
           <div className="flex items-center gap-3">

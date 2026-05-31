@@ -138,14 +138,16 @@ export function usePaymentsList(options: { onOpenSidePanel: (runId: string) => v
   );
 
   const isLoading = runsQuery.isLoading;
+  const isFetching = runsQuery.isFetching;
   const hasActiveFilters = statuses.length > 0 || !!dateFrom || !!dateTo;
   const showEmptyState =
-    !isLoading && data.length === 0 && !hasActiveFilters && cursors.length === 0;
+    !(isLoading || isFetching) && data.length === 0 && !hasActiveFilters && cursors.length === 0;
 
   return {
     showEmptyState,
     contractorCount,
     isLoading,
+    isFetching,
     hasActiveFilters,
     toolbarProps: {
       activeStatuses: statuses,

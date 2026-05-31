@@ -1,6 +1,6 @@
 import { render, screen, setup } from '@/test/test-utils';
-import type { DirectoryUser } from '../directory-preview-table';
-import { DirectoryPreviewTable } from '../directory-preview-table';
+import type { DirectoryUser } from '../data-table';
+import { DirectoryPreviewTable } from '../data-table';
 
 const mockUsers: DirectoryUser[] = [
   {

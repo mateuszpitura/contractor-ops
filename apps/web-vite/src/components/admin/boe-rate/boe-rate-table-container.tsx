@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { BoeRateEntry } from '../hooks/use-admin-boe-rate.js';
 import { useBoeRateList } from '../hooks/use-admin-boe-rate.js';
-import { BoeRateTable } from './boe-rate-table.js';
+import { BoeRateTable } from './data-table.js';
 import { DeleteBoeRateDialogContainer } from './delete-boe-rate-dialog-container.js';
 import { EditBoeRateDialogContainer } from './edit-boe-rate-dialog-container.js';
 

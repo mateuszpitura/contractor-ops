@@ -4,12 +4,21 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent, CardHeader } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { Textarea } from '@contractor-ops/ui/components/shadcn/textarea';
 import { formatDistanceToNow } from 'date-fns';
 import { XCircle } from 'lucide-react';
@@ -105,39 +114,27 @@ export function ChangeRequestDiffCard({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto rounded-md border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-muted/30">
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t('table.field')}
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t('table.currentValue')}
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-2 text-start text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {t('table.requestedValue')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('table.field')}</TableHead>
+                  <TableHead>{t('table.currentValue')}</TableHead>
+                  <TableHead>{t('table.requestedValue')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {changedFields.map(key => (
-                  <tr key={key} className="border-b last:border-b-0 bg-muted">
-                    <td className="px-3 py-2 text-muted-foreground">{getFieldLabel(key)}</td>
-                    <td className="px-3 py-2">{String(request.previousValues[key] ?? '-')}</td>
-                    <td className="px-3 py-2 font-semibold">
+                  <TableRow key={key} className="bg-muted">
+                    <TableCell className="text-muted-foreground">{getFieldLabel(key)}</TableCell>
+                    <TableCell>{String(request.previousValues[key] ?? '-')}</TableCell>
+                    <TableCell className="font-semibold">
                       {String(request.requestedChanges[key] ?? '-')}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           {request.status === 'PENDING' && (
@@ -168,12 +165,14 @@ export function ChangeRequestDiffCard({
             </DialogTitle>
             <DialogDescription>{t('rejectDescription')}</DialogDescription>
           </DialogHeader>
-          <Textarea
-            placeholder={t('rejectPlaceholder')}
-            value={rejectComment}
-            onChange={handleRejectCommentChange}
-            rows={3}
-          />
+          <DialogBody>
+            <Textarea
+              placeholder={t('rejectPlaceholder')}
+              value={rejectComment}
+              onChange={handleRejectCommentChange}
+              rows={3}
+            />
+          </DialogBody>
           <DialogFooter>
             <Button
               variant="destructive"

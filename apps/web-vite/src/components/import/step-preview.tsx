@@ -1,24 +1,10 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@contractor-ops/ui/components/shadcn/tooltip';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 
 import type { ImportRow } from './import-wizard-dialog.js';
+import { ImportPreviewDataTable } from './step-preview/data-table.js';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -40,17 +26,6 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
   );
 
   const displayRows = showErrorsOnly ? invalidRows : allRows;
-
-  // Collect all data field keys from rows
-  const columns = useMemo(() => {
-    const keys = new Set<string>();
-    for (const row of allRows) {
-      for (const key of Object.keys(row.data)) {
-        keys.add(key);
-      }
-    }
-    return Array.from(keys);
-  }, [allRows]);
 
   // Build a set of (rowNumber, field) pairs that have errors
   const errorCells = useMemo(() => {
@@ -128,59 +103,14 @@ export function StepPreview({ validRows, invalidRows, totalRows }: StepPreviewPr
       )}
 
       {/* Data table */}
-      <ScrollArea className="max-h-[360px] overflow-auto">
-        <TooltipProvider>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">#</TableHead>
-                {columns.map(col => (
-                  <TableHead key={col}>{col}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {displayRows.map(row => {
-                const isInvalid = row.status === 'invalid';
-                return (
-                  <TableRow key={row.rowNumber} className={isInvalid ? 'bg-destructive/5' : ''}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {row.rowNumber}
-                    </TableCell>
-                    {columns.map(col => {
-                      const cellKey = `${row.rowNumber}:${col}`;
-                      const hasError = errorCells.has(cellKey);
-                      const errMsg = errorMessages.get(cellKey);
-
-                      return (
-                        <TableCell
-                          key={col}
-                          className={hasError ? 'border-l-2 border-destructive' : ''}>
-                          <div className="flex items-center gap-1">
-                            <span className="truncate max-w-[160px] text-sm">
-                              {String(row.data[col] ?? '')}
-                            </span>
-                            {!!hasError && !!errMsg && (
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <AlertCircle className="size-3.5 shrink-0 text-destructive" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{errMsg}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </div>
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TooltipProvider>
-      </ScrollArea>
+      {totalRows > 0 && (
+        <ImportPreviewDataTable
+          rows={displayRows}
+          allRows={allRows}
+          errorCells={errorCells}
+          errorMessages={errorMessages}
+        />
+      )}
     </div>
   );
 }

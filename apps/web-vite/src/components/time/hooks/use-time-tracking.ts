@@ -6,7 +6,7 @@ import { useRouter } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import { cursorPaginationTotalRows } from '../../shared/cursor-pagination.js';
-import type { TimesheetRow } from '../approval-queue-table.js';
+import type { TimesheetRow } from '../approval-queue/data-table.js';
 
 /** Query-param value for “no status filter” (all entries). */
 export const TIME_STATUS_FILTER_ALL = 'ALL';

@@ -9,6 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/card';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -218,91 +219,93 @@ export function WhtCertificatesSection({
             <DialogDescription>{t('detail.description')}</DialogDescription>
           </DialogHeader>
 
-          {detailQuery.isFetching ? (
-            <div className="space-y-2 py-4">
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="h-6 w-1/2" />
-              <Skeleton className="h-6 w-3/4" />
-            </div>
-          ) : detail ? (
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-3 py-2 text-sm">
-              <div className="col-span-2">
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.certificateNumber')}
-                </dt>
-                <dd className="font-mono">{detail.certificateNumber}</dd>
+          <DialogBody>
+            {detailQuery.isFetching ? (
+              <div className="space-y-2 py-4">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-6 w-3/4" />
               </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.contractor')}
-                </dt>
-                <dd>{detail.contractorName}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.country')}
-                </dt>
-                <dd className="font-mono">{detail.contractorCountry}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.gross')}
-                </dt>
-                <dd className="tabular-nums">
-                  {formatMinorUnits(detail.grossAmountMinor, detail.currency, locale)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.rate')}
-                </dt>
-                <dd className="tabular-nums">{Number(detail.whtRate).toFixed(2)}%</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.withheld')}
-                </dt>
-                <dd className="tabular-nums">
-                  {formatMinorUnits(detail.whtAmountMinor, detail.currency, locale)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.net')}
-                </dt>
-                <dd className="tabular-nums">
-                  {formatMinorUnits(detail.netAmountMinor, detail.currency, locale)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.paymentDate')}
-                </dt>
-                <dd>{format.dateTime(new Date(detail.paymentDate), { dateStyle: 'medium' })}</dd>
-              </div>
-              <div>
-                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {t('detail.generatedAt')}
-                </dt>
-                <dd>
-                  {format.dateTime(new Date(detail.generatedAt), {
-                    dateStyle: 'medium',
-                    timeStyle: 'short',
-                  })}
-                </dd>
-              </div>
-              {detail.treatyApplied && (
+            ) : detail ? (
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3 py-2 text-sm">
                 <div className="col-span-2">
                   <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {t('detail.treaty')}
+                    {t('detail.certificateNumber')}
                   </dt>
-                  <dd>{detail.treatyReference ?? t('detail.treatyApplied')}</dd>
+                  <dd className="font-mono">{detail.certificateNumber}</dd>
                 </div>
-              )}
-            </dl>
-          ) : (
-            <p className="py-4 text-sm text-muted-foreground">{t('detail.notFound')}</p>
-          )}
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.contractor')}
+                  </dt>
+                  <dd>{detail.contractorName}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.country')}
+                  </dt>
+                  <dd className="font-mono">{detail.contractorCountry}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.gross')}
+                  </dt>
+                  <dd className="tabular-nums">
+                    {formatMinorUnits(detail.grossAmountMinor, detail.currency, locale)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.rate')}
+                  </dt>
+                  <dd className="tabular-nums">{Number(detail.whtRate).toFixed(2)}%</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.withheld')}
+                  </dt>
+                  <dd className="tabular-nums">
+                    {formatMinorUnits(detail.whtAmountMinor, detail.currency, locale)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.net')}
+                  </dt>
+                  <dd className="tabular-nums">
+                    {formatMinorUnits(detail.netAmountMinor, detail.currency, locale)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.paymentDate')}
+                  </dt>
+                  <dd>{format.dateTime(new Date(detail.paymentDate), { dateStyle: 'medium' })}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t('detail.generatedAt')}
+                  </dt>
+                  <dd>
+                    {format.dateTime(new Date(detail.generatedAt), {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </dd>
+                </div>
+                {detail.treatyApplied && (
+                  <div className="col-span-2">
+                    <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {t('detail.treaty')}
+                    </dt>
+                    <dd>{detail.treatyReference ?? t('detail.treatyApplied')}</dd>
+                  </div>
+                )}
+              </dl>
+            ) : (
+              <p className="py-4 text-sm text-muted-foreground">{t('detail.notFound')}</p>
+            )}
+          </DialogBody>
 
           <DialogFooter>
             {detail?.documentId ? (

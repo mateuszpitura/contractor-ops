@@ -1,19 +1,8 @@
-import {
-  AtelierEmptyState,
-  AtelierTableShell,
-  ContractorsIllustration,
-  TableChrome,
-} from '@contractor-ops/ui';
+import { AtelierEmptyState, ContractorsIllustration, DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { format, formatDistanceStrict } from 'date-fns';
+import { useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
@@ -41,7 +30,85 @@ interface TabAssignmentsProps {
 export function TabAssignments({ assignments, currentAssignmentId }: TabAssignmentsProps) {
   const t = useTranslations('Equipment');
   const tContractors = useTranslations('Contractors');
-  const tAria = useTranslations('Common.aria');
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const columns = useMemo<ColumnDef<Assignment, unknown>[]>(
+    () => [
+      {
+        id: 'contractor',
+        accessorFn: row => row.contractor.displayName ?? row.contractor.legalName,
+        header: t('detail.colContractor'),
+        cell: ({ row }) => {
+          const isCurrent = row.original.id === currentAssignmentId;
+          return (
+            <>
+              <Link
+                href={`/contractors/${row.original.contractor.id}`}
+                className="font-medium hover:underline">
+                {row.original.contractor.displayName ?? row.original.contractor.legalName}
+              </Link>
+              {isCurrent && (
+                <Badge variant="success" className="ms-2">
+                  {t('detail.badgeCurrent')}
+                </Badge>
+              )}
+            </>
+          );
+        },
+      },
+      {
+        id: 'assigned',
+        accessorFn: row => new Date(row.assignedAt).getTime(),
+        header: t('detail.colAssigned'),
+        cell: ({ row }) => (
+          <span className="text-sm">{format(new Date(row.original.assignedAt), 'MMM d, yyyy')}</span>
+        ),
+      },
+      {
+        id: 'unassigned',
+        accessorFn: row => (row.unassignedAt ? new Date(row.unassignedAt).getTime() : 0),
+        header: t('detail.colUnassigned'),
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.unassignedAt
+              ? format(new Date(row.original.unassignedAt), 'MMM d, yyyy')
+              : '\u2014'}
+          </span>
+        ),
+      },
+      {
+        id: 'duration',
+        header: t('detail.colDuration'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const duration = row.original.unassignedAt
+            ? formatDistanceStrict(
+                new Date(row.original.assignedAt),
+                new Date(row.original.unassignedAt),
+              )
+            : `${formatDistanceStrict(new Date(row.original.assignedAt), new Date())}${t('detail.activeSuffix')}`;
+          return <span className="text-sm text-muted-foreground">{duration}</span>;
+        },
+      },
+      {
+        id: 'notes',
+        accessorKey: 'notes',
+        header: t('detail.colNotes'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="block max-w-[200px] text-sm text-muted-foreground">
+            {row.original.notes ? (
+              <span className="line-clamp-2">{row.original.notes}</span>
+            ) : (
+              '\u2014'
+            )}
+          </span>
+        ),
+      },
+    ],
+    [t, currentAssignmentId],
+  );
 
   if (assignments.length === 0) {
     return (
@@ -56,72 +123,26 @@ export function TabAssignments({ assignments, currentAssignmentId }: TabAssignme
   }
 
   return (
-    <AtelierTableShell
-      chrome={
-        <TableChrome
-          totalCount={assignments.length}
-          entityLabel={tContractors('entityLabel', { count: assignments.length })}
-          densityLabels={{
-            comfortable: tAria('densityComfortable'),
-            compact: tAria('densityCompact'),
-          }}
-        />
-      }>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('detail.colContractor')}</TableHead>
-            <TableHead>{t('detail.colAssigned')}</TableHead>
-            <TableHead>{t('detail.colUnassigned')}</TableHead>
-            <TableHead>{t('detail.colDuration')}</TableHead>
-            <TableHead>{t('detail.colNotes')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {assignments.map(assignment => {
-            const isCurrent = assignment.id === currentAssignmentId;
-            const duration = assignment.unassignedAt
-              ? formatDistanceStrict(
-                  new Date(assignment.assignedAt),
-                  new Date(assignment.unassignedAt),
-                )
-              : `${formatDistanceStrict(new Date(assignment.assignedAt), new Date())}${t('detail.activeSuffix')}`;
-
-            return (
-              <TableRow key={assignment.id} className={isCurrent ? 'bg-primary/5' : ''}>
-                <TableCell>
-                  <Link
-                    href={`/contractors/${assignment.contractor.id}`}
-                    className="font-medium hover:underline">
-                    {assignment.contractor.displayName ?? assignment.contractor.legalName}
-                  </Link>
-                  {isCurrent && (
-                    <Badge variant="success" className="ms-2">
-                      {t('detail.badgeCurrent')}
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {format(new Date(assignment.assignedAt), 'MMM d, yyyy')}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {assignment.unassignedAt
-                    ? format(new Date(assignment.unassignedAt), 'MMM d, yyyy')
-                    : '\u2014'}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{duration}</TableCell>
-                <TableCell className="max-w-[200px] text-sm text-muted-foreground">
-                  {assignment.notes ? (
-                    <span className="line-clamp-2">{assignment.notes}</span>
-                  ) : (
-                    '\u2014'
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </AtelierTableShell>
+    <DataTable
+      columns={columns}
+      data={assignments}
+      totalRows={assignments.length}
+      clientPagination
+      pageIndex={pageIndex}
+      pageSize={pageSize}
+      onPageChange={setPageIndex}
+      onPageSizeChange={size => {
+        setPageSize(size);
+        setPageIndex(0);
+      }}
+      constrainHeight={false}
+      hideDensityToggle
+      getRowId={row => row.id}
+      rowClassName={row => (row.id === currentAssignmentId ? 'bg-primary/5' : '')}
+      entityLabel={tContractors('entityLabel', { count: assignments.length })}
+      emptyTitle={t('detail.assignmentsEmpty')}
+      emptyDescription={t('detail.assignmentsEmptyDescription')}
+      noResultsTitle={t('detail.assignmentsEmpty')}
+    />
   );
 }

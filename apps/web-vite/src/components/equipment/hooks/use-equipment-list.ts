@@ -12,7 +12,7 @@ export function useEquipmentList() {
 
   const countQuery = useQuery(trpc.equipment.list.queryOptions({ page: 1, pageSize: 10 }));
   const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
-  const isCountLoading = countQuery.isLoading;
+  const isCountLoading = countQuery.isLoading || countQuery.isFetching;
 
   const retireMutation = useMutation(
     trpc.equipment.retire.mutationOptions({

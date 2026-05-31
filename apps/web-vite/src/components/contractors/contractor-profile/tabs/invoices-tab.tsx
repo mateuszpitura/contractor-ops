@@ -1,25 +1,18 @@
 import {
   AtelierEmptyState,
-  AtelierTableShell,
+  DataTable,
   InvoicesIllustration,
   SectionLabel,
-  TableChrome,
 } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Receipt, Upload } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
@@ -28,8 +21,9 @@ import type { InvoiceRow } from '../../../invoices/invoice-table/columns.js';
 import { getColumns } from '../../../invoices/invoice-table/columns.js';
 import { InvoiceUploadAreaContainer } from '../../../invoices/invoice-upload-area-container.js';
 import { renderEmptyStateAction } from '../../../shared/atelier-bridges.js';
-import { DataTableBody } from '../../../shared/data-table-body.js';
 import type { useContractorTabInvoices } from '../../hooks/use-contractor-tab-invoices.js';
+
+const PAGE_SIZE = 25;
 
 type InvoicesTabViewProps = {
   contractorId: string;
@@ -70,7 +64,9 @@ export function InvoicesTabEmpty({
           <DialogHeader>
             <DialogTitle>{t('upload.heading')}</DialogTitle>
           </DialogHeader>
-          <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+          <DialogBody>
+            <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </>
@@ -78,7 +74,7 @@ export function InvoicesTabEmpty({
 }
 
 export function InvoicesTabView({
-  contractorId,
+  contractorId: _contractorId,
   uploadOpen,
   setUploadOpen,
   page,
@@ -90,7 +86,6 @@ export function InvoicesTabView({
   handleUploadComplete,
 }: InvoicesTabViewProps) {
   const t = useTranslations('Invoices');
-  const tAria = useTranslations('Common.aria');
   const { formatDate } = useDateFormatter();
 
   const columns: ColumnDef<InvoiceRow>[] = useMemo(() => {
@@ -98,20 +93,13 @@ export function InvoicesTabView({
     return allColumns.filter(col => col.id !== 'contractor');
   }, [t, formatDate]);
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    getRowId: row => row.id,
-  });
-
   const handleOpenUpload = useCallback(() => setUploadOpen(true), [setUploadOpen]);
-  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
-  const handleNextPage = useCallback(
-    () => setPage(p => Math.min(totalPages, p + 1)),
+  const handlePageChange = useCallback(
+    (nextIndex: number) => setPage(Math.max(1, Math.min(totalPages, nextIndex + 1))),
     [setPage, totalPages],
   );
+
+  const getRowId = useCallback((row: InvoiceRow) => row.id, []);
 
   return (
     <div className="space-y-4">
@@ -125,72 +113,33 @@ export function InvoicesTabView({
         </Button>
       </div>
 
-      <AtelierTableShell
+      <DataTable
+        columns={columns}
+        data={data}
+        totalRows={data.length}
+        pageIndex={Math.max(0, page - 1)}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onPageSizeChange={() => undefined}
         isLoading={isLoading}
-        chrome={
-          <TableChrome
-            totalCount={totalRows}
-            entityLabel={t('entityLabel', { count: totalRows })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={isLoading}
-            hasFiltersOrSearch={false}
-            emptyTitle={t('tab.noInvoicesHeading')}
-            emptyDescription={t('tab.noInvoicesBody')}
-            noResultsTitle={t('tab.noInvoicesHeading')}
-            skeletonRows={6}
-          />
-        </Table>
-      </AtelierTableShell>
-
-      {totalPages > 1 ? (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page <= 1}
-            onClick={handlePrevPage}>
-            &laquo;
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page >= totalPages}
-            onClick={handleNextPage}>
-            &raquo;
-          </Button>
-        </div>
-      ) : null}
+        constrainHeight={false}
+        hideDensityToggle
+        getRowId={getRowId}
+        entityLabel={t('entityLabel', { count: data.length })}
+        emptyTitle={t('tab.noInvoicesHeading')}
+        emptyDescription={t('tab.noInvoicesBody')}
+        noResultsTitle={t('tab.noInvoicesHeading')}
+        skeletonRows={6}
+      />
 
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t('upload.heading')}</DialogTitle>
           </DialogHeader>
-          <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+          <DialogBody>
+            <InvoiceUploadAreaContainer onUploadComplete={handleUploadComplete} />
+          </DialogBody>
         </DialogContent>
       </Dialog>
     </div>

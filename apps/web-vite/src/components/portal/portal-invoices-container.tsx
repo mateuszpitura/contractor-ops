@@ -1,8 +1,7 @@
 import type { AtelierStatusVariant } from '@contractor-ops/ui';
 import {
-  AtelierEmptyState,
   AtelierStatusPill,
-  AtelierTableShell,
+  DataTable,
   InvoicesIllustration,
   SectionLabel,
   WORKBENCH_TABLE_PAGE_CLASS,
@@ -10,23 +9,14 @@ import {
 } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
-import type { KeyboardEvent, MouseEvent } from 'react';
-import { useCallback } from 'react';
+import type { MouseEvent } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Link, useRouter } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { usePortalDateFormatter } from '../../lib/format/use-portal-date-formatter.js';
 import { AnimateIn } from '../shared/animate-in.js';
-import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { usePortalInvoicesList } from './hooks/use-portal-invoices-list.js';
 
@@ -67,146 +57,16 @@ function getStatusDisplay(
   return { label: t('invoices.status.submitted'), variant: 'info' };
 }
 
-function InvoiceListSkeleton({ t }: { t: ReturnType<typeof useTranslations> }) {
-  return (
-    <>
-      <div className="hidden md:block">
-        <AtelierTableShell isLoading constrainHeight={false}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('invoices.columns.invoiceNumber')}</TableHead>
-                <TableHead>{t('invoices.columns.contract')}</TableHead>
-                <TableHead>{t('invoices.columns.amount')}</TableHead>
-                <TableHead>{t('invoices.columns.dateSubmitted')}</TableHead>
-                <TableHead>{t('invoices.columns.status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={`skel-${i}`}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-20 rounded-full" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </AtelierTableShell>
-      </div>
-      <div className="space-y-3 md:hidden">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={`skel-${i}`}>
-            <CardContent className="space-y-2 pt-4">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-              <Skeleton className="h-3 w-36" />
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-5 w-20 rounded-full" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </>
-  );
-}
-
-function InvoicesEmptyState({ t }: { t: ReturnType<typeof useTranslations> }) {
-  return (
-    <AtelierEmptyState
-      illustration={InvoicesIllustration}
-      heading={t('invoices.emptyTitle')}
-      body={t('invoices.emptyBody')}
-      primaryAction={{
-        label: t('invoices.submitInvoice'),
-        href: '/portal/invoices/submit',
-        icon: Plus,
-      }}
-      renderAction={renderEmptyStateAction}
-    />
-  );
-}
-
-interface InvoiceRowProps {
-  href: string;
-  ariaLabel: string;
+interface InvoiceRow {
+  id: string;
   invoiceNumber: string;
-  contractTitle: string | null | undefined;
-  fallback: string;
+  contract?: { title?: string | null } | null;
   totalMinor: number;
   currency: string;
   receivedAt: Date | string | null | undefined;
-  formatDate: (value: Date | string | null | undefined) => string;
-  statusDisplay: InvoiceStatusDisplay;
-  onNavigate: (href: string) => void;
-}
-
-function InvoiceRow({
-  href,
-  ariaLabel,
-  invoiceNumber,
-  contractTitle,
-  fallback,
-  totalMinor,
-  currency,
-  receivedAt,
-  formatDate,
-  statusDisplay,
-  onNavigate,
-}: InvoiceRowProps) {
-  const handleClick = useCallback(() => onNavigate(href), [onNavigate, href]);
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent<HTMLTableRowElement>) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        onNavigate(href);
-      }
-    },
-    [onNavigate, href],
-  );
-
-  return (
-    <TableRow
-      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-      role="link"
-      tabIndex={0}
-      aria-label={ariaLabel}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}>
-      <TableCell>
-        <Link
-          href={href}
-          className="font-medium text-primary hover:underline"
-          onClick={stopPropagation}>
-          {invoiceNumber}
-        </Link>
-      </TableCell>
-      <TableCell className="text-muted-foreground">{contractTitle ?? fallback}</TableCell>
-      <TableCell>{formatAmount(totalMinor, currency)}</TableCell>
-      <TableCell className="text-muted-foreground">
-        {receivedAt ? formatDate(receivedAt) : fallback}
-      </TableCell>
-      <TableCell>
-        <AtelierStatusPill variant={statusDisplay.variant}>{statusDisplay.label}</AtelierStatusPill>
-      </TableCell>
-    </TableRow>
-  );
+  status: string;
+  approvalStatus: string;
+  paymentStatus: string;
 }
 
 export function PortalInvoicesContainer() {
@@ -216,6 +76,71 @@ export function PortalInvoicesContainer() {
   const { invoices, isLoading } = usePortalInvoicesList();
 
   const handleNavigate = useCallback((href: string) => router.push(href), [router]);
+
+  const rows = (invoices ?? []) as InvoiceRow[];
+
+  const columns = useMemo<ColumnDef<InvoiceRow>[]>(
+    () => [
+      {
+        id: 'invoiceNumber',
+        header: () => t('invoices.columns.invoiceNumber'),
+        cell: ({ row }) => (
+          <Link
+            href={`/portal/invoices/${row.original.id}`}
+            className="font-medium text-primary hover:underline"
+            onClick={stopPropagation}>
+            {row.original.invoiceNumber}
+          </Link>
+        ),
+      },
+      {
+        id: 'contract',
+        header: () => t('invoices.columns.contract'),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.contract?.title ?? t('invoices.fallback')}
+          </span>
+        ),
+      },
+      {
+        id: 'amount',
+        header: () => t('invoices.columns.amount'),
+        cell: ({ row }) => formatAmount(row.original.totalMinor, row.original.currency),
+      },
+      {
+        id: 'dateSubmitted',
+        header: () => t('invoices.columns.dateSubmitted'),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.receivedAt ? formatDate(row.original.receivedAt) : t('invoices.fallback')}
+          </span>
+        ),
+      },
+      {
+        id: 'status',
+        header: () => t('invoices.columns.status'),
+        cell: ({ row }) => {
+          const statusDisplay = getStatusDisplay(row.original, t);
+          return (
+            <AtelierStatusPill variant={statusDisplay.variant}>
+              {statusDisplay.label}
+            </AtelierStatusPill>
+          );
+        },
+      },
+    ],
+    [t, formatDate],
+  );
+
+  const handleRowClick = useCallback(
+    (row: InvoiceRow) => handleNavigate(`/portal/invoices/${row.id}`),
+    [handleNavigate],
+  );
+
+  const handleSubmitInvoice = useCallback(
+    () => handleNavigate('/portal/invoices/submit'),
+    [handleNavigate],
+  );
 
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
@@ -236,87 +161,74 @@ export function PortalInvoicesContainer() {
       <AnimateIn delay={1} className="flex min-h-0 flex-1 flex-col">
         <section className={WORKBENCH_TABLE_SECTION_CLASS}>
           <SectionLabel variant="portal">{t('invoices.title')}</SectionLabel>
-          {isLoading ? (
-            <InvoiceListSkeleton t={t} />
-          ) : !invoices || invoices.length === 0 ? (
-            <InvoicesEmptyState t={t} />
-          ) : (
-            <>
-              <div className="hidden min-h-0 flex-1 flex-col md:flex">
-                <AtelierTableShell isLoading={isLoading} constrainHeight={false}>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{t('invoices.columns.invoiceNumber')}</TableHead>
-                        <TableHead>{t('invoices.columns.contract')}</TableHead>
-                        <TableHead>{t('invoices.columns.amount')}</TableHead>
-                        <TableHead>{t('invoices.columns.dateSubmitted')}</TableHead>
-                        <TableHead>{t('invoices.columns.status')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {invoices.map(invoice => {
-                        const statusDisplay = getStatusDisplay(invoice, t);
-                        const href = `/portal/invoices/${invoice.id}`;
-                        return (
-                          <InvoiceRow
-                            key={invoice.id}
-                            href={href}
-                            ariaLabel={`${t('invoices.viewInvoice')} ${invoice.invoiceNumber}`}
-                            invoiceNumber={invoice.invoiceNumber}
-                            contractTitle={invoice.contract?.title}
-                            fallback={t('invoices.fallback')}
-                            totalMinor={invoice.totalMinor}
-                            currency={invoice.currency}
-                            receivedAt={invoice.receivedAt}
-                            formatDate={formatDate}
-                            statusDisplay={statusDisplay}
-                            onNavigate={handleNavigate}
-                          />
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </AtelierTableShell>
-              </div>
 
-              <div className="space-y-3 md:hidden">
-                {invoices.map(invoice => {
-                  const statusDisplay = getStatusDisplay(invoice, t);
-                  return (
-                    <Link
-                      key={invoice.id}
-                      href={`/portal/invoices/${invoice.id}`}
-                      className="block">
-                      <Card className="transition-colors hover:bg-muted/50">
-                        <CardContent className="space-y-2 pt-4">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{invoice.invoiceNumber}</span>
-                            <span className="text-sm font-medium">
-                              {formatAmount(invoice.totalMinor, invoice.currency)}
-                            </span>
-                          </div>
-                          <p className="text-[13px] text-muted-foreground">
-                            {invoice.contract?.title ?? t('invoices.fallback')}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <AtelierStatusPill variant={statusDisplay.variant}>
-                              {statusDisplay.label}
-                            </AtelierStatusPill>
-                            <span className="text-[13px] text-muted-foreground">
-                              {invoice.receivedAt
-                                ? formatDate(invoice.receivedAt)
-                                : t('invoices.fallback')}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  );
-                })}
-              </div>
-            </>
-          )}
+          <div className="hidden min-h-0 flex-1 flex-col md:flex">
+            <DataTable
+              columns={columns}
+              data={rows}
+              totalRows={rows.length}
+              clientPagination
+              pageIndex={0}
+              pageSize={rows.length || 1}
+              onPageChange={() => undefined}
+              onPageSizeChange={() => undefined}
+              isLoading={isLoading}
+              entityLabel={t('invoices.title')}
+              hideChrome
+              hideFooter
+              hideDensityToggle
+              constrainHeight={false}
+              skeletonRows={5}
+              emptyIllustration={InvoicesIllustration}
+              emptyTitle={t('invoices.emptyTitle')}
+              emptyDescription={t('invoices.emptyBody')}
+              emptyCta={t('invoices.submitInvoice')}
+              onEmptyCta={handleSubmitInvoice}
+              emptyCtaIcon={Plus}
+              noResultsTitle={t('invoices.emptyTitle')}
+              noResultsDescription={t('invoices.emptyBody')}
+              onRowClick={handleRowClick}
+              getRowId={row => row.id}
+            />
+          </div>
+
+          {!isLoading && rows.length > 0 ? (
+            <div className="space-y-3 md:hidden">
+              {rows.map(invoice => {
+                const statusDisplay = getStatusDisplay(invoice, t);
+                return (
+                  <Link
+                    key={invoice.id}
+                    href={`/portal/invoices/${invoice.id}`}
+                    className="block">
+                    <Card className="transition-colors hover:bg-muted/50">
+                      <CardContent className="space-y-2 pt-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{invoice.invoiceNumber}</span>
+                          <span className="text-sm font-medium">
+                            {formatAmount(invoice.totalMinor, invoice.currency)}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-muted-foreground">
+                          {invoice.contract?.title ?? t('invoices.fallback')}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <AtelierStatusPill variant={statusDisplay.variant}>
+                            {statusDisplay.label}
+                          </AtelierStatusPill>
+                          <span className="text-[13px] text-muted-foreground">
+                            {invoice.receivedAt
+                              ? formatDate(invoice.receivedAt)
+                              : t('invoices.fallback')}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </section>
       </AnimateIn>
     </div>

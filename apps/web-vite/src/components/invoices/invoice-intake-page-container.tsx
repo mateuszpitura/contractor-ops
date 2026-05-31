@@ -1,5 +1,4 @@
 import {
-  AtelierPageHeader,
   SectionLabel,
   WORKBENCH_TABLE_PAGE_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
@@ -8,9 +7,9 @@ import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Inbox } from 'lucide-react';
 import { Suspense } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-
 import { useLocale } from '../../i18n/navigation.js';
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useEinvoiceImportEnabled } from './hooks/use-einvoice-import-enabled.js';
 import { IntakeListContainer } from './intake/intake-list-container.js';
 
@@ -27,7 +26,7 @@ export function InvoiceIntakePageContainer() {
 
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
-      <AtelierPageHeader title={t('pageTitle')} description={t('pageSubtitle')} />
+      <WorkbenchPageHeader title={t('pageTitle')} description={t('pageSubtitle')} />
       <section className={WORKBENCH_TABLE_SECTION_CLASS}>
         <SectionLabel icon={Inbox}>{t('pageTitle')}</SectionLabel>
         <Suspense

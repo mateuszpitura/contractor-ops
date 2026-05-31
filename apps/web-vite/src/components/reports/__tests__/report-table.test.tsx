@@ -15,7 +15,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ReportTable } from '../report-table.js';
+import { ReportTable } from '../report-table/data-table.js';
 import { click, findButton, findByText, mount } from './_render.js';
 
 afterEach(() => {
@@ -177,11 +177,14 @@ describe('ReportTable (web-vite)', () => {
     expect(overlay?.className ?? '').toContain('absolute');
   });
 
-  it('does not show refetch overlay when isLoading (skeleton branch wins)', async () => {
+  it('renders aria-busy overlay when isLoading via canonical DataTable shell', async () => {
+    // Canonical workbench DataTable renders the AtelierTableShell overlay
+    // (aria-busy="true") whenever loading||refetching is true — the skeleton
+    // body and the shell overlay coexist. Adapter follows the primitive.
     const { container } = await mount(
       <ReportTable<TestRow> {...defaultProps} data={[]} isLoading isFetching={false} />,
     );
-    expect(container.querySelector('[aria-busy="true"]')).toBeNull();
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
   });
 
   it('uses the default i18n No data title when empty without explicit title', async () => {

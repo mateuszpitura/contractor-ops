@@ -172,6 +172,64 @@ Allowed page imports from paths containing `/components/`:
 - Same screen fetching from page + table + toolbar (duplicate boundaries)
 - **Passthrough container** — `const x = useFoo(); return <FooView {...x} />`. Container must decide (permission gate, variant pick, Suspense + section fallback, redirect, composition, or side-effect setup). If it cannot, the section is mis-grained — collapse it or push decision logic in. See [Container responsibility](#container-responsibility--the-decision-rule).
 - View internally branching on `isLoading`/`isError`/`isEmpty` — the branch belongs in the container, view stays single-render-path per variant.
+- Raw `<Table>` / `<TableBody>` / `<TableHead>` from `@contractor-ops/ui/components/shadcn/table` outside the canonical `DataTable` primitive — every web-vite table goes through the workbench `DataTable` (see [Canonical `DataTable`](#canonical-datatable)). The lint gate `pnpm check:web-vite-table-pattern` enforces this.
+- `useReactTable` imported directly from `@tanstack/react-table` in app code — the canonical `DataTable` owns the TanStack instance. Pass `columns`, `data`, controlled selection, sorting, and visibility through props instead.
+- `*-table.tsx` filenames — every table file is `data-table.tsx` inside a dedicated folder (`<name>/data-table.tsx`).
+
+## Canonical `DataTable`
+
+The single workbench table primitive lives at `packages/ui/src/components/workbench/data-table/` and is re-exported from `@contractor-ops/ui`. Every list, sub-table, dialog/wizard step, and reporting grid in `apps/web-vite` composes this component — no app-side `<Table>` rendering, no app-side `useReactTable`. It wraps `AtelierTableShell` with chrome + sortable headers + body + pagination + bulk-action bar and owns the TanStack table instance internally.
+
+```tsx
+import { DataTable } from '@contractor-ops/ui';
+
+<DataTable
+  columns={columns}
+  data={rows}
+  totalRows={totalCount}
+  pageIndex={pageIndex}
+  pageSize={pageSize}
+  onPageChange={setPageIndex}
+  onPageSizeChange={setPageSize}
+  sorting={sorting}
+  onSortingChange={setSorting}
+  entityLabel={t('entityLabel', { count: totalCount })}
+  emptyTitle={t('empty.heading')}
+  noResultsTitle={t('noResults.heading')}
+/>
+```
+
+### Modes
+
+- **Server pagination + sorting (default).** Caller passes `pageIndex` / `pageSize` / `totalRows` / `onPageChange` / `onPageSizeChange` and optionally `sorting` / `onSortingChange`. Data is assumed pre-paginated and pre-sorted by the server. Use for first-class list pages (contractors, contracts, invoices, payments, approvals, time, audit log).
+- **Client pagination.** Pass `clientPagination`. The primitive installs `getPaginationRowModel` and slices `data` locally; `totalRows` defaults to `data.length` for footer auto-hide math. Use when the dataset is already loaded fully (sub-tabs, embedded breakdowns, wizard steps).
+
+### Row selection
+
+- **Bulk-action bar (built-in).** Pass `bulkActions` — the primitive enables row selection automatically and renders the selection bar above the table.
+- **Custom bar / parent-owned selection.** Use `enableRowSelection` + controlled `rowSelection` / `onRowSelectionChange` to drive selection from a parent (cross-component select-all-matching, parent-owned IDs in a wizard).
+- **Selection callback.** Pass `onSelectionChange` to receive the selected row originals whenever selection changes (also fires for controlled mode).
+- **Per-row predicate.** Pass `isRowSelectable` to disable selection of rows already part of another set (e.g. invoices already attached to a payment run).
+
+### Expandable rows
+
+- Pass `renderSubRow={(row) => <SubView />}` plus `expandedRowIds` (controlled) and `getRowId` to render a sub-row immediately after each expanded row. `getRowId` must be stable across pagination.
+
+### Column visibility
+
+- Pass controlled `columnVisibility` + `onColumnVisibilityChange` and a `rightSlot` render-prop (`(table) => <ColumnToggle table={table} />`) to expose a column visibility dropdown in the chrome.
+
+### Sub-tables (dialogs, wizards, breakdowns)
+
+For embedded tables that already live inside a `Card` / `Dialog` / `Sheet` with its own header context, opt out of the workbench chrome and footer:
+
+- `hideChrome` — drop the count + entity label + clear-filters chip + density toggle strip.
+- `hideFooter` — drop the pagination footer entirely (caller owns "Load more" or none).
+- `hideDensityToggle` — keep chrome but hide the comfortable/compact toggle.
+- `constrainHeight={false}` — let the table grow with its content instead of locking to the viewport.
+- `fill` — pass-through to `AtelierTableShell.fill` for full-bleed sections.
+
+Two-tier empty state: pass `emptyIllustration={IconComponent}` to render the full `AtelierEmptyState variant="page"` panel for zero-row first-class lists. Sub-tables omit the prop and fall back to the compact in-table empty row.
 
 ## CI
 

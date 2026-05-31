@@ -4,6 +4,7 @@
  *   - `next-intl` → `../../../i18n/useTranslations.js`
  */
 
+import { DataTable } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,24 +19,25 @@ import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Loader2, Send, SendHorizontal } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { TransmissionEventRow } from './transmission-event-row.js';
 import type { EInvoiceLifecycleShape, PeppolParticipantLike } from './types.js';
+
+export interface LifecycleEvent {
+  id: string;
+  eventType: string;
+  createdAt: string | Date;
+  detailsJson?: unknown;
+}
 
 interface TransmissionSectionProps {
   lifecycle: EInvoiceLifecycleShape | null;
@@ -67,6 +69,29 @@ function computeSendGate(
   return null;
 }
 
+function formatEventTimestamp(raw: string | Date, locale: string): string {
+  try {
+    const date = typeof raw === 'string' ? new Date(raw) : raw;
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  } catch {
+    return String(raw);
+  }
+}
+
+function oneLinerFromDetails(details: unknown): string {
+  if (!details || typeof details !== 'object') return '';
+  const d = details as Record<string, unknown>;
+  if (typeof d.messageId === 'string') return `msg ${d.messageId.slice(0, 16)}`;
+  if (typeof d.errorCode === 'string') return String(d.errorCode);
+  return '';
+}
+
 export function TransmissionSection({
   lifecycle,
   peppolParticipant,
@@ -76,6 +101,7 @@ export function TransmissionSection({
 }: TransmissionSectionProps) {
   const t = useTranslations('EInvoice.InvoiceTab');
   const tErr = useTranslations('EInvoice.Errors');
+  const { i18n } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleOpenConfirm = useCallback(() => setConfirmOpen(true), []);
@@ -100,6 +126,54 @@ export function TransmissionSection({
       {t('sendCta')}
     </Button>
   );
+
+  const events = lifecycle?.events ?? [];
+
+  const columns = useMemo<ColumnDef<LifecycleEvent, unknown>[]>(
+    () => [
+      {
+        id: 'when',
+        header: () => 'When',
+        size: 192,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span
+            data-slot="transmission-event-row"
+            className="text-sm tabular-nums text-muted-foreground whitespace-nowrap">
+            {formatEventTimestamp(row.original.createdAt, i18n.language)}
+          </span>
+        ),
+      },
+      {
+        id: 'event',
+        header: () => 'Event',
+        size: 160,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Badge variant="outline" className="font-mono text-xs">
+            {row.original.eventType}
+          </Badge>
+        ),
+      },
+      {
+        id: 'details',
+        header: () => 'Details',
+        enableSorting: false,
+        cell: ({ row }) => {
+          const detailsOneLiner = oneLinerFromDetails(row.original.detailsJson);
+          return (
+            <span className="text-sm">
+              {detailsOneLiner || <span className="text-muted-foreground">—</span>}
+            </span>
+          );
+        },
+      },
+    ],
+    [i18n.language],
+  );
+
+  const getRowId = useCallback((row: LifecycleEvent) => row.id, []);
+  const noop = useCallback(() => undefined, []);
 
   return (
     <Card>
@@ -145,23 +219,27 @@ export function TransmissionSection({
           )}
         </div>
 
-        {lifecycle && lifecycle.events.length > 0 ? (
+        {lifecycle && events.length > 0 ? (
           <div className="space-y-2">
             <h4 className="text-base font-semibold">{t('transmissionHistoryHeading')}</h4>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-48">When</TableHead>
-                  <TableHead className="w-40">Event</TableHead>
-                  <TableHead>Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {lifecycle.events.map(event => (
-                  <TransmissionEventRow key={event.id} event={event} />
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={columns}
+              data={events}
+              totalRows={events.length}
+              clientPagination
+              pageIndex={0}
+              pageSize={events.length || 1}
+              onPageChange={noop}
+              onPageSizeChange={noop}
+              getRowId={getRowId}
+              hideChrome
+              hideFooter
+              hideDensityToggle
+              constrainHeight={false}
+              entityLabel="events"
+              emptyTitle=""
+              noResultsTitle=""
+            />
           </div>
         ) : null}
       </CardContent>

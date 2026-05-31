@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
+import { DEFAULT_REPORT_PAGE_SIZE } from '../report-constants.js';
 
 export type ExpiringRow = {
   contractId: string;
@@ -22,7 +23,7 @@ export function useExpiringContractsReport() {
 
   const [days, setDays] = useState<'30' | '60' | '90'>('30');
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
+  const [pageSize, setPageSize] = useState(DEFAULT_REPORT_PAGE_SIZE);
   const [sortBy, setSortBy] = useState('endDate');
   const [sortOrder, setSortOrder] = useState('asc');
 

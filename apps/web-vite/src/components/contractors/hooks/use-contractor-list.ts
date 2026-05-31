@@ -76,7 +76,7 @@ export function useContractorList(options: { onAddContractor: () => void; onImpo
 
   const countQuery = useQuery(trpc.contractor.list.queryOptions({ page: 1, pageSize: 10 }));
   const totalCount = (countQuery.data as { total: number } | undefined)?.total ?? 0;
-  const isCountLoading = countQuery.isLoading;
+  const isCountLoading = countQuery.isLoading || countQuery.isFetching;
   const showEmptyState = !isCountLoading && totalCount === 0;
 
   const queryInput = useMemo(

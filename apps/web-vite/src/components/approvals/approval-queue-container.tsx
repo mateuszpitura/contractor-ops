@@ -3,7 +3,7 @@ import {
   AtelierEmptyState,
   SectionLabel,
   WORKBENCH_DATA_TABLE_CLASS,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
   WORKBENCH_TABLE_TAB_PANEL_CLASS,
   WORKBENCH_TABLE_TABS_CLASS,
@@ -79,13 +79,15 @@ export function ApprovalQueueContainer() {
             isSearching={isSearching}
             isLoading={isLoading}
           />
-          <div className="shrink-0">
-            <ApprovalBulkActions
-              selectedIds={selectedIds}
-              onClearSelection={onClearSelection}
-              bulkActions={bulkActions}
-            />
-          </div>
+          {selectedIds.length > 0 ? (
+            <div className="shrink-0">
+              <ApprovalBulkActions
+                selectedIds={selectedIds}
+                onClearSelection={onClearSelection}
+                bulkActions={bulkActions}
+              />
+            </div>
+          ) : null}
           <ApprovalQueueTable
             data={data}
             columns={columns}
@@ -108,7 +110,7 @@ export function ApprovalQueueContainer() {
   };
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
         <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>

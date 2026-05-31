@@ -866,7 +866,16 @@
       "moveDown": "Nach unten",
       "removeStep": "Schritt entfernen",
       "loading": "Laden",
-      "profileMenu": "Profil-Menü"
+      "profileMenu": "Profil-Menü",
+      "toggleSelectAll": "Alle Zeilen auswählen",
+      "toggleSelectRow": "Zeile auswählen",
+      "clearFilters": "Filter zurücksetzen",
+      "bulkActions": "Sammelaktionen",
+      "clearSelection": "Auswahl aufheben"
+    },
+    "dataTable": {
+      "noResultsTitle": "Keine Ergebnisse gefunden",
+      "noResultsDescription": "Passe die Filter oder die Suche an, um das Gesuchte zu finden."
     },
     "srOnly": {
       "actions": "Aktionen",
@@ -4020,7 +4029,9 @@
     "equipment": "Ausstattung",
     "time": "Zeiterfassung",
     "classification": "Klassifizierung",
-    "organization": "Organisation"
+    "organization": "Organisation",
+    "tax": "Steuern",
+    "workflow-roles": "Workflow-Rollen"
   },
   "Notifications": {
     "popover": {
@@ -6382,6 +6393,7 @@
       "title": "API-Schlüssel",
       "description": "API-Schlüssel für die Enterprise REST API verwalten.",
       "createKeyButton": "Schlüssel erstellen",
+      "entityLabel": "{count, plural, one {API-Schlüssel} other {API-Schlüssel}}",
       "tableHeaders": {
         "name": "Name",
         "key": "Schlüssel",

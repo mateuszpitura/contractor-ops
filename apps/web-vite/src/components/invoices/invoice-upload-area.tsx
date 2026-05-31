@@ -6,6 +6,7 @@
  *   - Data layer → `hooks/use-invoice-upload.ts` + `invoice-upload-area-container.tsx`
  */
 
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import {
@@ -15,7 +16,6 @@ import {
   FileText,
   Loader2,
   RotateCcw,
-  UploadCloud,
   XCircle,
 } from 'lucide-react';
 import type { ChangeEvent, DragEvent, ReactNode, RefObject } from 'react';
@@ -128,7 +128,7 @@ export function InvoiceUploadArea({
         </div>
       )}
 
-      <div
+      <DropZoneSurface
         role="button"
         tabIndex={0}
         aria-label={t('body')}
@@ -137,11 +137,9 @@ export function InvoiceUploadArea({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`flex min-h-[160px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-          isDragActive
-            ? 'border-primary bg-primary/[0.03]'
-            : 'border-border bg-muted/50 hover:border-muted-foreground/30'
-        }`}>
+        isDragActive={isDragActive}
+        label={t('body')}
+        description={t('accepted')}>
         <input
           ref={fileInputRef}
           type="file"
@@ -150,14 +148,7 @@ export function InvoiceUploadArea({
           className="sr-only"
           onChange={handleFileInput}
         />
-        <UploadCloud
-          className={`mb-3 size-8 text-muted-foreground transition-transform ${
-            isDragActive ? 'scale-110 text-primary' : ''
-          }`}
-        />
-        <p className="text-center text-sm text-muted-foreground">{t('body')} </p>
-        <p className="mt-1 text-xs text-muted-foreground">{t('accepted')}</p>
-      </div>
+      </DropZoneSurface>
 
       {!!creditExhausted && (
         <CreditExhaustedInline

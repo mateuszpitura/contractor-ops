@@ -12,7 +12,7 @@ import { AlertTriangle, Check } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { FeatureGateContainer } from '../../billing/feature-gate-container.js';
-import { DirectoryPreviewTable } from './directory-preview-table.js';
+import { DirectoryPreviewTable } from './directory-preview/data-table.js';
 import { DirectorySummaryBar } from './directory-summary-bar.js';
 import { GroupRoleMappingStep } from './group-role-mapping-step.js';
 import type { useDirectoryImportWizard, WizardStep } from './hooks/use-directory-import-wizard.js';

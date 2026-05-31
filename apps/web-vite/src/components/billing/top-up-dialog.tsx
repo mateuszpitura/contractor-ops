@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -61,7 +62,7 @@ export function TopUpDialog({
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <DialogBody className="space-y-4 py-2">
           <Select value={selectedBundle} onValueChange={handleBundleChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={t('selectPlaceholder')} />
@@ -76,7 +77,7 @@ export function TopUpDialog({
           </Select>
 
           <p className="text-xs text-muted-foreground">{t('priceNote')}</p>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={closeDialog} disabled={isPending}>

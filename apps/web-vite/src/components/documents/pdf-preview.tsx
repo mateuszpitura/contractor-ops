@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -70,23 +71,25 @@ export function PdfPreviewView({
           )}
         </DialogHeader>
 
-        <div className="min-h-[480px] flex-1 overflow-hidden rounded-md border bg-muted">
-          {loading ? (
-            <div className="flex h-full min-h-[480px] items-center justify-center">
-              <Loader2 className="size-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : pdfUrl ? (
-            <object data={pdfUrl} type="application/pdf" className="h-full min-h-[480px] w-full">
+        <DialogBody>
+          <div className="min-h-[480px] flex-1 overflow-hidden rounded-md border bg-muted">
+            {loading ? (
               <div className="flex h-full min-h-[480px] items-center justify-center">
-                <p className="text-sm text-muted-foreground">{t('pdfFallback')}</p>
+                <Loader2 className="size-8 animate-spin text-muted-foreground" />
               </div>
-            </object>
-          ) : (
-            <div className="flex h-full min-h-[480px] items-center justify-center">
-              <p className="text-sm text-muted-foreground">{t('pdfLoadError')}</p>
-            </div>
-          )}
-        </div>
+            ) : pdfUrl ? (
+              <object data={pdfUrl} type="application/pdf" className="h-full min-h-[480px] w-full">
+                <div className="flex h-full min-h-[480px] items-center justify-center">
+                  <p className="text-sm text-muted-foreground">{t('pdfFallback')}</p>
+                </div>
+              </object>
+            ) : (
+              <div className="flex h-full min-h-[480px] items-center justify-center">
+                <p className="text-sm text-muted-foreground">{t('pdfLoadError')}</p>
+              </div>
+            )}
+          </div>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

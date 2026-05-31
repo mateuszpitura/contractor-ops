@@ -1,10 +1,5 @@
 import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
-import {
-  AtelierEmptyState,
-  AtelierTableShell,
-  EquipmentIllustration,
-  TableChrome,
-} from '@contractor-ops/ui';
+import { AtelierEmptyState, DataTable, EquipmentIllustration } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,17 +19,10 @@ import {
   SheetTitle,
 } from '@contractor-ops/ui/components/shadcn/sheet';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Download, Eye, Loader2, Trash2, Truck } from 'lucide-react';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
@@ -66,7 +54,7 @@ export type TabShipmentsViewProps = TabShipmentsProps &
     setSelectedShipmentId: (id: string | null) => void;
   };
 
-interface ShipmentRowProps {
+interface ShipmentActionsCellProps {
   shipment: Shipment;
   labelLoadingId: string | null;
   viewLabel: string;
@@ -77,8 +65,7 @@ interface ShipmentRowProps {
   onDelete: (id: string) => void;
 }
 
-// memo: rerendered per shipment row in shipments table
-const ShipmentRow = memo(function ShipmentRow({
+const ShipmentActionsCell = memo(function ShipmentActionsCell({
   shipment,
   labelLoadingId,
   viewLabel,
@@ -87,7 +74,7 @@ const ShipmentRow = memo(function ShipmentRow({
   onView,
   onFetchLabel,
   onDelete,
-}: ShipmentRowProps) {
+}: ShipmentActionsCellProps) {
   const canLabel = shipment.carrier === 'InPost';
   const isCreated = shipment.currentStatus === 'CREATED';
   const isLabelLoading = labelLoadingId === shipment.id;
@@ -100,54 +87,35 @@ const ShipmentRow = memo(function ShipmentRow({
   const handleDelete = useCallback(() => onDelete(shipment.id), [onDelete, shipment.id]);
 
   return (
-    <TableRow>
-      <TableCell className="font-mono text-xs">
-        {shipment.trackingNumber ?? <span className="text-muted-foreground">&mdash;</span>}
-      </TableCell>
-      <TableCell className="text-sm">
-        {shipment.carrier}
-        {!!shipment.carrierCustom && (
-          <span className="ms-1 text-xs text-muted-foreground">({shipment.carrierCustom})</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <ShipmentStatusBadge status={shipment.currentStatus} />
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {format(new Date(shipment.createdAt), 'MMM d, yyyy')}
-      </TableCell>
-      <TableCell className="text-end">
-        <div className="inline-flex items-center gap-1">
-          <Button variant="ghost" size="icon-sm" aria-label={viewLabel} onClick={handleView}>
-            <Eye className="size-3.5" />
-          </Button>
-          {canLabel && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={labelActionLabel}
-              disabled={isLabelLoading}
-              onClick={handleFetchLabel}>
-              {isLabelLoading ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Download className="size-3.5" />
-              )}
-            </Button>
+    <div className="inline-flex items-center gap-1">
+      <Button variant="ghost" size="icon-sm" aria-label={viewLabel} onClick={handleView}>
+        <Eye className="size-3.5" />
+      </Button>
+      {canLabel && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={labelActionLabel}
+          disabled={isLabelLoading}
+          onClick={handleFetchLabel}>
+          {isLabelLoading ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Download className="size-3.5" />
           )}
-          {isCreated && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={deleteLabel}
-              className="text-destructive hover:text-destructive"
-              onClick={handleDelete}>
-              <Trash2 className="size-3.5" />
-            </Button>
-          )}
-        </div>
-      </TableCell>
-    </TableRow>
+        </Button>
+      )}
+      {isCreated && (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={deleteLabel}
+          className="text-destructive hover:text-destructive"
+          onClick={handleDelete}>
+          <Trash2 className="size-3.5" />
+        </Button>
+      )}
+    </div>
   );
 });
 
@@ -242,10 +210,11 @@ export function TabShipmentsView({
   setSelectedShipmentId,
 }: TabShipmentsViewProps) {
   const t = useTranslations('Equipment');
-  const tAria = useTranslations('Common.aria');
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [labelLoadingId, setLabelLoadingId] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
 
   const handleFetchLabel = useCallback(
     async (shipmentId: string) => {
@@ -291,6 +260,83 @@ export function TabShipmentsView({
   const labelActionLabel = t('shipmentsTable.action.label');
   const deleteLabel = t('shipment.deleteTitle');
 
+  const columns = useMemo<ColumnDef<Shipment, unknown>[]>(
+    () => [
+      {
+        id: 'trackingNumber',
+        accessorKey: 'trackingNumber',
+        header: t('shipmentsTable.col.trackingNumber'),
+        cell: ({ row }) => (
+          <span className="font-mono text-xs">
+            {row.original.trackingNumber ?? (
+              <span className="text-muted-foreground">&mdash;</span>
+            )}
+          </span>
+        ),
+      },
+      {
+        id: 'carrier',
+        accessorKey: 'carrier',
+        header: t('shipmentsTable.col.carrier'),
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.carrier}
+            {!!row.original.carrierCustom && (
+              <span className="ms-1 text-xs text-muted-foreground">
+                ({row.original.carrierCustom})
+              </span>
+            )}
+          </span>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'currentStatus',
+        header: t('shipmentsTable.col.status'),
+        cell: ({ row }) => <ShipmentStatusBadge status={row.original.currentStatus} />,
+      },
+      {
+        id: 'created',
+        accessorFn: row => new Date(row.createdAt).getTime(),
+        header: t('shipmentsTable.col.created'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {format(new Date(row.original.createdAt), 'MMM d, yyyy')}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: () => <span className="block text-end">{t('shipmentsTable.col.actions')}</span>,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="text-end">
+            <ShipmentActionsCell
+              shipment={row.original}
+              labelLoadingId={labelLoadingId}
+              viewLabel={viewLabel}
+              labelActionLabel={labelActionLabel}
+              deleteLabel={deleteLabel}
+              onView={handleViewShipment}
+              onFetchLabel={handleFetchLabelById}
+              onDelete={handleStartDelete}
+            />
+          </div>
+        ),
+      },
+    ],
+    [
+      t,
+      labelLoadingId,
+      viewLabel,
+      labelActionLabel,
+      deleteLabel,
+      handleViewShipment,
+      handleFetchLabelById,
+      handleStartDelete,
+    ],
+  );
+
   return (
     <div className="space-y-4">
       <PendingReturnBanner pendingReturn={pendingReturn} />
@@ -302,44 +348,26 @@ export function TabShipmentsView({
         </Button>
       </div>
 
-      <AtelierTableShell
-        chrome={
-          <TableChrome
-            totalCount={shipments.length}
-            entityLabel={t('shipmentsEntityLabel', { count: shipments.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('shipmentsTable.col.trackingNumber')}</TableHead>
-              <TableHead>{t('shipmentsTable.col.carrier')}</TableHead>
-              <TableHead>{t('shipmentsTable.col.status')}</TableHead>
-              <TableHead>{t('shipmentsTable.col.created')}</TableHead>
-              <TableHead className="text-end">{t('shipmentsTable.col.actions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {shipments.map(shipment => (
-              <ShipmentRow
-                key={shipment.id}
-                shipment={shipment}
-                labelLoadingId={labelLoadingId}
-                viewLabel={viewLabel}
-                labelActionLabel={labelActionLabel}
-                deleteLabel={deleteLabel}
-                onView={handleViewShipment}
-                onFetchLabel={handleFetchLabelById}
-                onDelete={handleStartDelete}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </AtelierTableShell>
+      <DataTable
+        columns={columns}
+        data={shipments}
+        totalRows={shipments.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={size => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
+        constrainHeight={false}
+        hideDensityToggle
+        getRowId={row => row.id}
+        entityLabel={t('shipmentsEntityLabel', { count: shipments.length })}
+        emptyTitle={t('detail.shipmentsEmpty')}
+        emptyDescription={t('detail.shipmentsEmptyDescription')}
+        noResultsTitle={t('detail.shipmentsEmpty')}
+      />
 
       <Sheet open={!!selectedShipmentId} onOpenChange={handleCloseSheet}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">

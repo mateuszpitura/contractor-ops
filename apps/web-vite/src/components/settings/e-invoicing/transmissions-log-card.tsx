@@ -4,6 +4,7 @@
 // E-invoicing → Log). Consumes `einvoice.listByOrg` for filtered server-
 // side pagination via cursor + status enum.
 
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -13,16 +14,9 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import { Tabs, TabsList, TabsTrigger } from '@contractor-ops/ui/components/shadcn/tabs';
-import { useCallback } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
+import { useCallback, useMemo } from 'react';
 import type { LooseTranslator } from '../../../i18n/typed-keys.js';
 import { tDynLoose } from '../../../i18n/typed-keys.js';
 import type {
@@ -49,51 +43,6 @@ const transmissionPillClass: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Row (extracted to keep CardContent below the cognitive-complexity ceiling)
-// ---------------------------------------------------------------------------
-
-function TransmissionRow({
-  row,
-  formatDate,
-  t,
-}: {
-  row: LifecycleRow;
-  formatDate: (value: Date | string | null | undefined) => string;
-  t: LooseTranslator;
-}) {
-  const validation = row.eInvoiceLifecycle?.validationStatus ?? null;
-  const transmission = row.eInvoiceLifecycle?.transmissionStatus ?? null;
-  const updatedAt = row.eInvoiceLifecycle?.updatedAt ?? row.createdAt ?? null;
-  const updatedAtStr = updatedAt ? formatDate(updatedAt) : '—';
-  return (
-    <TableRow>
-      <TableCell className="font-mono text-sm">
-        {row.invoiceNumber ?? t('unknownInvoice')}
-      </TableCell>
-      <TableCell>
-        {validation ? (
-          <Badge variant="secondary" className={validationPillClass[validation] ?? ''}>
-            {tDynLoose(t, 'validation', validation)}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">{t('validation.notGenerated')}</span>
-        )}
-      </TableCell>
-      <TableCell>
-        {transmission ? (
-          <Badge variant="secondary" className={transmissionPillClass[transmission] ?? ''}>
-            {tDynLoose(t, 'transmission', transmission)}
-          </Badge>
-        ) : (
-          <span className="text-muted-foreground text-sm">&mdash;</span>
-        )}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground tabular-nums">{updatedAtStr}</TableCell>
-    </TableRow>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Card
 // ---------------------------------------------------------------------------
 
@@ -114,6 +63,69 @@ export function TransmissionsLogCard({
   const handleLoadMore = useCallback(() => {
     listQuery.fetchNextPage();
   }, [listQuery]);
+
+  const columns = useMemo<ColumnDef<LifecycleRow, unknown>[]>(
+    () => [
+      {
+        id: 'invoice',
+        header: () => t('col.invoice'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="font-mono text-sm">
+            {row.original.invoiceNumber ?? t('unknownInvoice')}
+          </span>
+        ),
+      },
+      {
+        id: 'validation',
+        header: () => t('col.validation'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const validation = row.original.eInvoiceLifecycle?.validationStatus ?? null;
+          return validation ? (
+            <Badge variant="secondary" className={validationPillClass[validation] ?? ''}>
+              {tDynLoose(t as LooseTranslator, 'validation', validation)}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground text-sm">{t('validation.notGenerated')}</span>
+          );
+        },
+      },
+      {
+        id: 'transmission',
+        header: () => t('col.transmission'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const transmission = row.original.eInvoiceLifecycle?.transmissionStatus ?? null;
+          return transmission ? (
+            <Badge variant="secondary" className={transmissionPillClass[transmission] ?? ''}>
+              {tDynLoose(t as LooseTranslator, 'transmission', transmission)}
+            </Badge>
+          ) : (
+            <span className="text-muted-foreground text-sm">&mdash;</span>
+          );
+        },
+      },
+      {
+        id: 'updated',
+        header: () => t('col.updated'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const updatedAt =
+            row.original.eInvoiceLifecycle?.updatedAt ?? row.original.createdAt ?? null;
+          return (
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {updatedAt ? formatDate(updatedAt) : '—'}
+            </span>
+          );
+        },
+      },
+    ],
+    [t, formatDate],
+  );
+
+  const getRowId = useCallback((row: LifecycleRow) => row.id, []);
+  const noop = useCallback(() => undefined, []);
 
   return (
     <Card data-testid="einvoice-transmissions-log">
@@ -149,21 +161,24 @@ export function TransmissionsLogCard({
           </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('col.invoice')}</TableHead>
-                  <TableHead>{t('col.validation')}</TableHead>
-                  <TableHead>{t('col.transmission')}</TableHead>
-                  <TableHead>{t('col.updated')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map(row => (
-                  <TransmissionRow key={row.id} row={row} formatDate={formatDate} t={t} />
-                ))}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={columns}
+              data={rows}
+              totalRows={rows.length}
+              clientPagination
+              pageIndex={0}
+              pageSize={rows.length || 1}
+              onPageChange={noop}
+              onPageSizeChange={noop}
+              getRowId={getRowId}
+              hideChrome
+              hideFooter
+              hideDensityToggle
+              constrainHeight={false}
+              entityLabel="transmissions"
+              emptyTitle=""
+              noResultsTitle=""
+            />
 
             {listQuery.hasNextPage ? (
               <div className="flex justify-center pt-4">

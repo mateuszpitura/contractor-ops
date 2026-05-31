@@ -1,13 +1,8 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import type { ClassificationEngineRow } from '../hooks/use-admin-classification-engine.js';
@@ -108,41 +103,84 @@ interface DisclaimerRegistryTableProps {
 
 export function DisclaimerRegistryTable({ rows }: DisclaimerRegistryTableProps) {
   const t = useTranslations('Admin.ClassificationEngineFlag');
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const columns = useMemo<ColumnDef<ClassificationEngineRow, unknown>[]>(
+    () => [
+      {
+        id: 'key',
+        accessorKey: 'key',
+        header: t('colDisclaimerKey'),
+        cell: ({ row }) => <span className="font-mono text-xs">{row.original.key}</span>,
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: 'Status',
+        cell: ({ row }) => (
+          <Badge variant={row.original.isPending ? 'destructive' : 'default'}>
+            {row.original.status}
+          </Badge>
+        ),
+      },
+      {
+        id: 'approvedBy',
+        accessorKey: 'approvedBy',
+        header: t('colApprovedBy'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">{row.original.approvedBy ?? '—'}</span>
+        ),
+      },
+      {
+        id: 'approvedAt',
+        accessorKey: 'approvedAt',
+        header: t('colApprovedAt'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {row.original.approvedAt
+              ? new Date(row.original.approvedAt).toLocaleDateString('en-GB')
+              : '—'}
+          </span>
+        ),
+      },
+      {
+        id: 'approverRole',
+        accessorKey: 'approverRole',
+        header: t('colApproverRole'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">{row.original.approverRole ?? '—'}</span>
+        ),
+      },
+    ],
+    [t],
+  );
+
   return (
     <div>
       <h2 className="text-lg font-semibold">{t('disclaimerRegistryTitle')}</h2>
       <p className="mt-1 text-sm text-muted-foreground">{t('allKeysMustBeApproved')}</p>
-      <div className="mt-4 rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colDisclaimerKey')}</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>{t('colApprovedBy')}</TableHead>
-              <TableHead>{t('colApprovedAt')}</TableHead>
-              <TableHead>{t('colApproverRole')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map(row => (
-              <TableRow key={row.key}>
-                <TableCell className="font-mono text-xs">{row.key}</TableCell>
-                <TableCell>
-                  <Badge variant={row.isPending ? 'destructive' : 'default'}>{row.status}</Badge>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {row.approvedBy ?? '—'}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {row.approvedAt ? new Date(row.approvedAt).toLocaleDateString('en-GB') : '—'}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {row.approverRole ?? '—'}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="mt-4">
+        <DataTable
+          columns={columns}
+          data={rows}
+          totalRows={rows.length}
+          clientPagination
+          pageIndex={pageIndex}
+          pageSize={pageSize}
+          onPageChange={setPageIndex}
+          onPageSizeChange={size => {
+            setPageSize(size);
+            setPageIndex(0);
+          }}
+          constrainHeight={false}
+          hideDensityToggle
+          hideChrome
+          getRowId={row => row.key}
+          entityLabel={t('disclaimerRegistryTitle')}
+          emptyTitle={t('disclaimerRegistryTitle')}
+          noResultsTitle={t('disclaimerRegistryTitle')}
+        />
       </div>
     </div>
   );

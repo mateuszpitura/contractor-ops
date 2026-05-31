@@ -1,12 +1,7 @@
-/**
- * Cost center CSV import — Step 10 batch 6 / Step 11 codemod port from
- * apps/web/src/components/organization/cost-centers/cost-center-csv-import-dialog.tsx:
- *   - `@/trpc/init` → `../../../providers/trpc-provider.js#useTRPC`
- */
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -14,6 +9,14 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { AlertTriangle, FileUp } from 'lucide-react';
 import { memo, useCallback, useEffect, useState } from 'react';
 
@@ -100,21 +103,21 @@ const CsvImportRow = memo(function CsvImportRow({ row, onToggle }: CsvImportRowP
     [onToggle, row.index],
   );
   return (
-    <tr className={row.errors.length > 0 ? 'bg-destructive/5' : undefined}>
-      <td className="px-2 py-1">
+    <TableRow className={row.errors.length > 0 ? 'bg-destructive/5' : undefined}>
+      <TableCell>
         <input
           type="checkbox"
           checked={row.selected}
           onChange={handleToggle}
           disabled={row.errors.length > 0}
         />
-      </td>
-      <td className="px-2 py-1">{row.name || <em className="text-muted-foreground">—</em>}</td>
-      <td className="px-2 py-1 font-mono">
+      </TableCell>
+      <TableCell>{row.name || <em className="text-muted-foreground">—</em>}</TableCell>
+      <TableCell className="font-mono">
         {row.code || <em className="text-muted-foreground">—</em>}
-      </td>
-      <td className="px-2 py-1 text-destructive text-xs">{row.errors.join('; ')}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="text-destructive text-xs">{row.errors.join('; ')}</TableCell>
+    </TableRow>
   );
 });
 
@@ -203,7 +206,7 @@ export function CostCenterCsvImportDialog({
             MB. All selected rows are imported in a single transaction.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <DialogBody className="space-y-4 py-2">
           <Input type="file" accept=".csv,text/csv" onChange={handleFileInputChange} />
           {fileError && (
             <div role="alert" className="text-destructive flex items-center gap-2 text-sm">
@@ -212,24 +215,24 @@ export function CostCenterCsvImportDialog({
           )}
           {rows.length > 0 && (
             <div className="max-h-72 overflow-y-auto rounded-md border">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/40 sticky top-0">
-                  <tr className="text-left">
-                    <th className="w-8 px-2 py-2"></th>
-                    <th className="px-2 py-2">Name</th>
-                    <th className="px-2 py-2">Code</th>
-                    <th className="px-2 py-2">Errors</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table>
+                <TableHeader className="sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead className="w-8" />
+                    <TableHead>Name</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Errors</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {rows.map(r => (
                     <CsvImportRow key={r.index} row={r} onToggle={handleRowToggle} />
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
-        </div>
+        </DialogBody>
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={handleCancel}>
             Cancel

@@ -1,8 +1,8 @@
 import { useTranslations } from '../../i18n/useTranslations.js';
-import { PageLoadingSpinner } from '../shared/page-loading-spinner.js';
 import { usePortalShell } from './hooks/use-portal-shell.js';
 import { usePortalShellRedirect } from './hooks/use-portal-shell-redirect.js';
 import { PortalShell } from './portal-shell.js';
+import { PortalShellSkeleton } from './portal-shell-skeleton.js';
 
 export function PortalShellContainer() {
   const tLayout = useTranslations('Layout');
@@ -11,7 +11,7 @@ export function PortalShellContainer() {
   usePortalShellRedirect(shouldRedirectToLogin);
 
   if (isLoading) {
-    return <PageLoadingSpinner />;
+    return <PortalShellSkeleton />;
   }
   if (!topBarProps) {
     return null;

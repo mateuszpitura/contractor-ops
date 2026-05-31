@@ -186,7 +186,7 @@ function SettingsContent() {
           )}
 
           {canViewAuditLog && (
-            <TabsContent value="audit-log" className="mt-6 flex min-h-[60vh] flex-col">
+            <TabsContent value="audit-log" className="mt-6 flex min-h-0 flex-1 flex-col">
               <AuditLogTabContainer />
             </TabsContent>
           )}

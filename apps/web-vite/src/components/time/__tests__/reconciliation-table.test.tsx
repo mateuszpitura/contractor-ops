@@ -58,11 +58,13 @@ function makeHookValue(
     isEmpty: false,
     showData: true,
     onRetry: vi.fn(),
-    onLoadMore: vi.fn(),
-    hasNextPage: false,
-    isFetchingNextPage: false,
     items: [makeItem()] as never,
     totalCount: 1,
+    pageSize: 10,
+    currentPage: 1,
+    onPageChange: vi.fn(),
+    onPageSizeChange: vi.fn(),
+    isFetching: false,
     ...over,
   } as UseReconciliationTableReturn;
 }

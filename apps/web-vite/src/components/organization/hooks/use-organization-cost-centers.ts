@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { CostCenterRow } from '../cost-centers/cost-center-form-sheet.js';
-import type { CostCenterTableRow } from '../cost-centers/cost-center-table.js';
+import type { CostCenterTableRow } from '../cost-centers/data-table.js';
 
 export function useOrganizationCostCenters() {
   const trpc = useTRPC();
@@ -23,6 +23,9 @@ export function useOrganizationCostCenters() {
     updatedAt: item.updatedAt as Date | string,
   }));
 
+  const isLoading = listQuery.isLoading;
+  const isFetching = listQuery.isFetching;
+
   return {
     search,
     setSearch,
@@ -33,6 +36,7 @@ export function useOrganizationCostCenters() {
     editing,
     setEditing,
     rows,
-    isLoading: listQuery.isLoading,
+    isLoading,
+    isFetching,
   } as const;
 }

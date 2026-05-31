@@ -10,6 +10,7 @@
 import { PaymentsIllustration } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Calendar } from '@contractor-ops/ui/components/shadcn/calendar';
+import { DialogBody, DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
 import {
@@ -94,80 +95,82 @@ export function StepSelect({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 flex-wrap">
-        <Select value={filters.currency} onValueChange={handleCurrencyChange}>
-          <SelectTrigger className="w-[160px] h-8">
-            <SelectValue placeholder={t('step1.allCurrencies')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('step1.allCurrencies')}</SelectItem>
-            <SelectItem value="PLN">PLN</SelectItem>
-            <SelectItem value="EUR">EUR</SelectItem>
-            <SelectItem value="USD">USD</SelectItem>
-          </SelectContent>
-        </Select>
+    <>
+      <DialogBody className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Select value={filters.currency} onValueChange={handleCurrencyChange}>
+            <SelectTrigger className="w-[160px] h-8">
+              <SelectValue placeholder={t('step1.allCurrencies')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('step1.allCurrencies')}</SelectItem>
+              <SelectItem value="PLN">PLN</SelectItem>
+              <SelectItem value="EUR">EUR</SelectItem>
+              <SelectItem value="USD">USD</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <Popover>
-          <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5" />}>
-            <CalendarIcon className="h-3.5 w-3.5" />
-            <span className="text-xs">
-              {filters.dueDateFrom
-                ? formatDateRange(filters.dueDateFrom, filters.dueDateTo)
-                : t('step1.dueDate')}
-            </span>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <div className="flex gap-2 p-3">
-              <div>
-                <p className="text-xs font-medium mb-2 text-muted-foreground">From</p>
-                <Calendar
-                  mode="single"
-                  selected={filters.dueDateFrom}
-                  onSelect={filters.setDueDateFrom}
-                  initialFocus
-                />
+          <Popover>
+            <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5" />}>
+              <CalendarIcon className="h-3.5 w-3.5" />
+              <span className="text-xs">
+                {filters.dueDateFrom
+                  ? formatDateRange(filters.dueDateFrom, filters.dueDateTo)
+                  : t('step1.dueDate')}
+              </span>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <div className="flex gap-2 p-3">
+                <div>
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">From</p>
+                  <Calendar
+                    mode="single"
+                    selected={filters.dueDateFrom}
+                    onSelect={filters.setDueDateFrom}
+                    initialFocus
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-medium mb-2 text-muted-foreground">To</p>
+                  <Calendar
+                    mode="single"
+                    selected={filters.dueDateTo}
+                    onSelect={filters.setDueDateTo}
+                  />
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-medium mb-2 text-muted-foreground">To</p>
-                <Calendar
-                  mode="single"
-                  selected={filters.dueDateTo}
-                  onSelect={filters.setDueDateTo}
-                />
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
 
-        <Input
-          placeholder={t('step1.searchContractors')}
-          value={filters.contractorSearch}
-          onChange={handleContractorSearchChange}
-          className="h-8 w-[200px] text-xs"
-        />
-      </div>
-
-      {selectAllMatching ? (
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            className="text-xs text-primary hover:underline"
-            onClick={selectAllMatching.onClick}>
-            {t('step1.selectAllMatching')} ({selectAllMatching.count})
-          </button>
+          <Input
+            placeholder={t('step1.searchContractors')}
+            value={filters.contractorSearch}
+            onChange={handleContractorSearchChange}
+            className="h-8 w-[200px] text-xs"
+          />
         </div>
-      ) : null}
 
-      {children}
+        {selectAllMatching ? (
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              className="text-xs text-primary hover:underline"
+              onClick={selectAllMatching.onClick}>
+              {t('step1.selectAllMatching')} ({selectAllMatching.count})
+            </button>
+          </div>
+        ) : null}
 
-      <div className="flex items-start justify-between border-t pt-4">
+        {children}
+      </DialogBody>
+
+      <DialogFooter className="sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">
             {footer.selectedInvoiceIds.length > 0
               ? footer.selectedInvoiceCountsByCurrency.map(({ currency, count, totalMinor }) => (
                   <span key={currency} className="block">
-                    {count} {t('step1.invoicesSelected')} &mdash;{' '}
+                    {t('step1.invoicesSelected', { count })} &mdash;{' '}
                     {formatAmount(totalMinor, currency, 'pl-PL')}
                   </span>
                 ))
@@ -201,8 +204,8 @@ export function StepSelect({
             {t('step1.reviewSelection')}
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogFooter>
+    </>
   );
 }
 

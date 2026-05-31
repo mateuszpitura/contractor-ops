@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -72,7 +73,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor={`${id}-title`}>{t('fields.title')}</Label>
             <Input
@@ -138,7 +139,7 @@ export function EditContractDialog({ open, onOpenChange, edit }: EditContractDia
               <p className="text-xs text-muted-foreground">{t('fields.valueHint')}</p>
             </div>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isPending}>

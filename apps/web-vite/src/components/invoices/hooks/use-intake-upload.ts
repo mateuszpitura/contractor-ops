@@ -133,7 +133,7 @@ export function useIntakeUpload(onOpenChange: (open: boolean) => void) {
   );
 
   const handleDrop = useCallback(
-    (event: DragEvent<HTMLLabelElement>) => {
+    (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       setIsDragOver(false);
       const file = event.dataTransfer.files?.[0];

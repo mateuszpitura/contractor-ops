@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -35,10 +36,10 @@ export function TeamsFallbackApproverDialogView({
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-2">
+        <DialogBody className="space-y-3 py-2">
           <Label htmlFor="teams-fallback-approver-picker">{t('approverLabel')}</Label>
           <RuleUserPickerContainer value={selectedUserId} onChange={setSelectedUserId} />
-        </div>
+        </DialogBody>
 
         <DialogFooter className="gap-2 sm:gap-2">
           <Button

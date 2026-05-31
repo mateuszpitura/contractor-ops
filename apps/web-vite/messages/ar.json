@@ -866,7 +866,16 @@
       "moveDown": "تحريك للأسفل",
       "removeStep": "إزالة الخطوة",
       "loading": "جارٍ التحميل",
-      "profileMenu": "قائمة الملف الشخصي"
+      "profileMenu": "قائمة الملف الشخصي",
+      "toggleSelectAll": "تحديد كل الصفوف",
+      "toggleSelectRow": "تحديد الصف",
+      "clearFilters": "مسح عوامل التصفية",
+      "bulkActions": "إجراءات جماعية",
+      "clearSelection": "مسح التحديد"
+    },
+    "dataTable": {
+      "noResultsTitle": "لا توجد نتائج",
+      "noResultsDescription": "حاول تعديل عوامل التصفية أو البحث للعثور على ما تبحث عنه."
     },
     "srOnly": {
       "actions": "الإجراءات",
@@ -4020,7 +4029,9 @@
     "equipment": "المعدات",
     "time": "تتبع الوقت",
     "classification": "التصنيف",
-    "organization": "المؤسسة"
+    "organization": "المؤسسة",
+    "tax": "الضرائب",
+    "workflow-roles": "أدوار سير العمل"
   },
   "Notifications": {
     "popover": {
@@ -6382,6 +6393,7 @@
       "title": "مفاتيح API",
       "description": "إدارة مفاتيح API لواجهة برمجة تطبيقات المؤسسة.",
       "createKeyButton": "إنشاء مفتاح",
+      "entityLabel": "{count, plural, zero {مفتاح API} one {مفتاح API} two {مفتاحا API} few {مفاتيح API} many {مفتاحًا API} other {مفتاح API}}",
       "tableHeaders": {
         "name": "الاسم",
         "key": "المفتاح",

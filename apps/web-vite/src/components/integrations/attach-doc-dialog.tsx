@@ -1,13 +1,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
 import { Search } from 'lucide-react';
 import { memo, useCallback } from 'react';
@@ -115,30 +115,30 @@ export function AttachDocDialogView({
           <DialogDescription>{t('docs.attachDialog.description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="relative">
-          <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t('docs.attachDialog.searchPlaceholder')}
-            value={query}
-            onChange={handleQueryChange}
-            className="ps-9"
-          />
-        </div>
-
-        <div className="flex gap-1">
-          {filterButtons.map(btn => (
-            <FilterButton
-              key={btn.value}
-              value={btn.value}
-              label={btn.label}
-              icon={btn.icon}
-              active={providerFilter === btn.value}
-              onSelect={setProviderFilter}
+        <DialogBody className="space-y-4">
+          <div className="relative">
+            <Search className="absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t('docs.attachDialog.searchPlaceholder')}
+              value={query}
+              onChange={handleQueryChange}
+              className="ps-9"
             />
-          ))}
-        </div>
+          </div>
 
-        <ScrollArea className="max-h-80">
+          <div className="flex gap-1">
+            {filterButtons.map(btn => (
+              <FilterButton
+                key={btn.value}
+                value={btn.value}
+                label={btn.label}
+                icon={btn.icon}
+                active={providerFilter === btn.value}
+                onSelect={setProviderFilter}
+              />
+            ))}
+          </div>
+
           {searchQuery.isLoading && debouncedQuery.length > 0 ? (
             <div className="space-y-2 p-1">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -166,7 +166,7 @@ export function AttachDocDialogView({
               ))}
             </div>
           )}
-        </ScrollArea>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

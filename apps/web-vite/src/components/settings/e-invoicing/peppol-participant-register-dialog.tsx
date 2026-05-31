@@ -20,11 +20,13 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
@@ -123,48 +125,50 @@ export function PeppolParticipantRegisterDialog({
           <DialogDescription>{t('registerBody')}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div className="space-y-1.5">
-            <Label htmlFor={schemeId}>{t('schemeLabel')}</Label>
-            <Input
-              id={schemeId}
-              name="scheme"
-              value={scheme}
-              onChange={handleSchemeChange}
-              pattern="\d{4}"
-              inputMode="numeric"
-              maxLength={4}
-              aria-invalid={!validation.ok && 'scheme' in validation && !!validation.scheme}
-              aria-describedby={cn(schemeErrId)}
-              className="font-mono"
-            />
-            <p className="text-sm text-muted-foreground">{t('schemeHelper')}</p>
-            {!validation.ok && 'scheme' in validation && validation.scheme ? (
-              <p id={schemeErrId} role="alert" className="text-sm text-destructive">
-                {validation.scheme}
-              </p>
-            ) : null}
-          </div>
+        <form onSubmit={handleSubmit} className={dialogFormLayoutClassName} noValidate>
+          <DialogBody className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor={schemeId}>{t('schemeLabel')}</Label>
+              <Input
+                id={schemeId}
+                name="scheme"
+                value={scheme}
+                onChange={handleSchemeChange}
+                pattern="\d{4}"
+                inputMode="numeric"
+                maxLength={4}
+                aria-invalid={!validation.ok && 'scheme' in validation && !!validation.scheme}
+                aria-describedby={cn(schemeErrId)}
+                className="font-mono"
+              />
+              <p className="text-sm text-muted-foreground">{t('schemeHelper')}</p>
+              {!validation.ok && 'scheme' in validation && validation.scheme ? (
+                <p id={schemeErrId} role="alert" className="text-sm text-destructive">
+                  {validation.scheme}
+                </p>
+              ) : null}
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor={valueId}>{t('valueLabel')}</Label>
-            <Input
-              id={valueId}
-              name="value"
-              value={value}
-              onChange={handleValueChange}
-              maxLength={64}
-              aria-invalid={!validation.ok && 'value' in validation && !!validation.value}
-              aria-describedby={cn(valueErrId)}
-              className="font-mono"
-            />
-            <p className="text-sm text-muted-foreground">{t('valueHelper')}</p>
-            {!validation.ok && 'value' in validation && validation.value ? (
-              <p id={valueErrId} role="alert" className="text-sm text-destructive">
-                {validation.value}
-              </p>
-            ) : null}
-          </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={valueId}>{t('valueLabel')}</Label>
+              <Input
+                id={valueId}
+                name="value"
+                value={value}
+                onChange={handleValueChange}
+                maxLength={64}
+                aria-invalid={!validation.ok && 'value' in validation && !!validation.value}
+                aria-describedby={cn(valueErrId)}
+                className="font-mono"
+              />
+              <p className="text-sm text-muted-foreground">{t('valueHelper')}</p>
+              {!validation.ok && 'value' in validation && validation.value ? (
+                <p id={valueErrId} role="alert" className="text-sm text-destructive">
+                  {validation.value}
+                </p>
+              ) : null}
+            </div>
+          </DialogBody>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>

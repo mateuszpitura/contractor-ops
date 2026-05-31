@@ -6,6 +6,7 @@
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { DialogBody, DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
 import { CheckCircle2 } from 'lucide-react';
 import { useCallback } from 'react';
 
@@ -68,38 +69,40 @@ export function StepConfirmation({
     exportFormat === 'CSV' ? 'CSV' : exportFormat === 'BANK_FILE' ? 'Elixir' : 'SEPA XML';
 
   return (
-    <div className="flex flex-col items-center gap-6 py-4">
-      <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+    <>
+      <DialogBody className="flex flex-col items-center gap-6 py-4">
+        <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
 
-      <h3 className="text-[20px] font-semibold text-center">
-        {t('step3.successHeading', { runNumber })}
-      </h3>
+        <h3 className="text-[20px] font-semibold text-center">
+          {t('step3.successHeading', { runNumber })}
+        </h3>
 
-      <div className="text-center space-y-1">
-        <p className="text-sm text-muted-foreground">
-          {invoiceCount} {t('step3.invoices')}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {t('step3.total')}: {formatMinorUnits(totalMinor, null, 'pl-PL')} {currency}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {t('step3.format')}: {formatLabel}
-        </p>
-      </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm text-muted-foreground">
+            {t('step3.invoices', { count: invoiceCount })}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t('step3.total')}: {formatMinorUnits(totalMinor, null, 'pl-PL')} {currency}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {t('step3.format')}: {formatLabel}
+          </p>
+        </div>
 
-      <Button variant="outline" onClick={handleDownload}>
-        {t('step3.downloadExport')}
-      </Button>
+        <Button variant="outline" onClick={handleDownload}>
+          {t('step3.downloadExport')}
+        </Button>
 
-      <button type="button" className="text-sm text-primary hover:underline" onClick={onViewRun}>
-        {t('step3.viewPaymentRun')}
-      </button>
+        <button type="button" className="text-sm text-primary hover:underline" onClick={onViewRun}>
+          {t('step3.viewPaymentRun')}
+        </button>
+      </DialogBody>
 
-      <div className="w-full border-t pt-4 flex justify-end">
+      <DialogFooter>
         <Button variant="ghost" onClick={onClose}>
           {t('step3.close')}
         </Button>
-      </div>
-    </div>
+      </DialogFooter>
+    </>
   );
 }

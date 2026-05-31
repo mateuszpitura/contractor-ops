@@ -26,10 +26,14 @@ export function useWorkflowRolesTable() {
     }),
   );
 
+  const rows = listQuery.data ?? [];
+  const showFeaturedEmpty = !(listQuery.isLoading || listQuery.isFetching) && rows.length === 0;
+
   return {
     t,
     listQuery,
-    rows: listQuery.data ?? [],
+    rows,
+    showFeaturedEmpty,
     editing,
     setEditing,
     deleting,

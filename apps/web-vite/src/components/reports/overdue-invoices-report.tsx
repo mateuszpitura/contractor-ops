@@ -10,7 +10,7 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../lib/format/use-date-formatter.js';
 import { ExportButtons } from './export-buttons.js';
 import type { OverdueRow, useOverdueInvoicesReport } from './hooks/use-overdue-invoices-report.js';
-import { ReportTable } from './report-table.js';
+import { ReportTable } from './report-table/data-table.js';
 
 function formatCurrency(minor: number): string {
   return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');

@@ -1,12 +1,15 @@
-/**
- * Per-contractor timesheet review view. Ported from
- * apps/web/src/components/time/contractor-timesheet-review.tsx:
- *   - next-intl → ../../i18n/useTranslations.js
- */
-
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { ScrollArea, ScrollBar } from '@contractor-ops/ui/components/shadcn/scroll-area';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
@@ -152,44 +155,44 @@ export function ContractorTimesheetReview({
       <Card>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="w-[200px] min-w-[200px] px-4 py-3 text-start text-sm font-semibold">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[200px] min-w-[200px] px-4 py-3 text-sm">
                     {t('review.project')}
-                  </th>
+                  </TableHead>
                   {DAY_LABELS.map((day, i) => (
-                    <th
+                    <TableHead
                       key={day}
-                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm font-semibold">
+                      className="w-16 min-w-[64px] px-1 py-3 text-center text-sm">
                       <div>{day}</div>
                       <div className="text-xs font-normal text-muted-foreground">
                         {format(addDays(startOfISOWeek(weekStart), i), 'd')}
                       </div>
-                    </th>
+                    </TableHead>
                   ))}
-                  <th className="w-16 min-w-[64px] px-2 py-3 text-center text-sm font-semibold">
+                  <TableHead className="w-16 min-w-[64px] px-2 py-3 text-center text-sm">
                     {t('review.total')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {contracts.map(([contractId, { title, entries }]) => {
                   let rowTotal = 0;
                   return (
-                    <tr key={contractId} className="border-b last:border-b-0">
-                      <td className="px-4 py-2">
+                    <TableRow key={contractId}>
+                      <TableCell className="px-4 py-2">
                         <span className="block max-w-[200px] truncate text-sm" title={title}>
                           {title}
                         </span>
-                      </td>
+                      </TableCell>
                       {DAY_LABELS.map((_, dayIdx) => {
                         const entry = entries.get(dayIdx);
                         const mins = entry?.minutes ?? 0;
                         rowTotal += mins;
                         return (
                           // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
-                          <td key={dayIdx} className="px-1 py-2 text-center text-sm">
+                          <TableCell key={dayIdx} className="px-1 py-2 text-center text-sm">
                             <div className="relative inline-flex items-center justify-center">
                               <span className={mins > 0 ? 'font-medium' : 'text-muted-foreground'}>
                                 {mins > 0 ? minutesToHours(mins) : '-'}
@@ -203,19 +206,21 @@ export function ContractorTimesheetReview({
                                 </div>
                               )}
                             </div>
-                          </td>
+                          </TableCell>
                         );
                       })}
-                      <td className="px-2 py-2 text-center text-sm font-medium">
+                      <TableCell className="px-2 py-2 text-center text-sm font-medium">
                         {minutesToHours(rowTotal) || '0'}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-              <tfoot>
-                <tr className="border-t">
-                  <td className="px-4 py-3 text-sm font-semibold">{t('review.total')}</td>
+              </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell className="px-4 py-3 text-sm font-semibold">
+                    {t('review.total')}
+                  </TableCell>
                   {DAY_LABELS.map((_, dayIdx) => {
                     let colTotal = 0;
                     for (const [, { entries }] of contracts) {
@@ -223,17 +228,19 @@ export function ContractorTimesheetReview({
                     }
                     return (
                       // biome-ignore lint/suspicious/noArrayIndexKey: fixed weekday columns
-                      <td key={dayIdx} className="px-1 py-3 text-center text-sm font-semibold">
+                      <TableCell
+                        key={dayIdx}
+                        className="px-1 py-3 text-center text-sm font-semibold">
                         {minutesToHours(colTotal) || '0'}
-                      </td>
+                      </TableCell>
                     );
                   })}
-                  <td className="px-2 py-3 text-center text-sm font-semibold text-primary">
+                  <TableCell className="px-2 py-3 text-center text-sm font-semibold text-primary">
                     {minutesToHours(timesheet.totalMinutes) || '0'}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </CardContent>

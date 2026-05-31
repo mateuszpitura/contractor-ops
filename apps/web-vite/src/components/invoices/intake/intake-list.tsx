@@ -1,19 +1,11 @@
-import { AtelierTableShell, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
+import { DataTable, WORKBENCH_DATA_TABLE_CLASS } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Inbox, RefreshCw, Upload } from 'lucide-react';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
-import { DataTableBody } from '../../shared/data-table-body.js';
 import type { IntakeRow, useIntakeList } from '../hooks/use-intake-list.js';
 import { IntakeFilterChips } from './intake-filter-chips.js';
 import { IntakeProfileLevelBadge } from './intake-profile-level-badge.js';
@@ -62,10 +54,14 @@ function formatTotalMinor(amountMinor: unknown, currency: string | null): string
   }
 }
 
+const LOAD_MORE_PAGE_SIZE = 100;
+
 export function IntakeList({ list }: IntakeListProps) {
   const t = useTranslations('EInvoice.intake');
   const tColumn = useTranslations('EInvoice.intake.column');
   const { formatDate } = useDateFormatter();
+
+  const [pageIndex, setPageIndex] = useState(0);
 
   const columns: ColumnDef<IntakeRow>[] = useMemo(
     () => [
@@ -132,66 +128,59 @@ export function IntakeList({ list }: IntakeListProps) {
     [tColumn, formatDate],
   );
 
-  const table = useReactTable({
-    data: list.rows,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getRowId: row => row.id,
-  });
+  const getRowId = useCallback((row: IntakeRow) => row.id, []);
 
-  const loadMoreFooter = list.nextCursor ? (
-    <div className="flex w-full justify-center border-t p-4">
-      <Button type="button" variant="ghost" onClick={list.onLoadMore}>
-        {t('loadMore')}
-      </Button>
+  const filtersToolbar = (
+    <div className="shrink-0">
+      <IntakeFilterChips />
     </div>
-  ) : null;
+  );
 
   return (
     <div className={`${WORKBENCH_DATA_TABLE_CLASS} gap-6`} data-slot="intake-list">
-      <div className="shrink-0">
-        <IntakeFilterChips />
-      </div>
+      <DataTable
+        columns={columns}
+        data={list.rows}
+        totalRows={list.rows.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={LOAD_MORE_PAGE_SIZE}
+        onPageChange={setPageIndex}
+        onPageSizeChange={() => undefined}
+        isLoading={list.isLoading}
+        isRefetching={list.isFetching && !list.isLoading}
+        toolbar={filtersToolbar}
+        hideDensityToggle
+        getRowId={getRowId}
+        hasFiltersOrSearch={!!list.statusFilter}
+        entityLabel={t('pageSubtitle')}
+        emptyIcon={<Inbox className="h-5 w-5" />}
+        emptyTitle={t('emptyStateHeading')}
+        emptyDescription={t('emptyStateBody')}
+        emptyCta={t('splitButtonImport')}
+        onEmptyCta={list.onEmptyCta}
+        emptyCtaIcon={Upload}
+        noResultsTitle={t('emptyStateHeading')}
+        noResultsDescription={t('emptyStateBody')}
+        skeletonRows={8}
+        skeletonColumns={{
+          supplier: { shape: 'text', width: 'w-40' },
+          invoiceNumber: { shape: 'text', width: 'w-28' },
+          date: { shape: 'text', width: 'w-24' },
+          total: { shape: 'text', width: 'w-20' },
+          level: { shape: 'badge' },
+          status: { shape: 'badge' },
+          validation: { shape: 'badge' },
+        }}
+      />
 
-      <AtelierTableShell isLoading={list.isFetching && !list.isLoading} footer={loadMoreFooter}>
-        <Table>
-          <caption className="sr-only">{t('pageSubtitle')}</caption>
-          <TableHeader>
-            {table.getHeaderGroups().map(hg => (
-              <TableRow key={hg.id}>
-                {hg.headers.map(h => (
-                  <TableHead key={h.id}>
-                    {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={list.isLoading}
-            hasFiltersOrSearch={!!list.statusFilter}
-            emptyIcon={<Inbox className="h-5 w-5" />}
-            emptyTitle={t('emptyStateHeading')}
-            emptyDescription={t('emptyStateBody')}
-            emptyCta={t('splitButtonImport')}
-            onEmptyCta={list.onEmptyCta}
-            emptyCtaIcon={Upload}
-            noResultsTitle={t('emptyStateHeading')}
-            noResultsDescription={t('emptyStateBody')}
-            skeletonRows={8}
-            skeletonColumns={{
-              supplier: { shape: 'text', width: 'w-40' },
-              invoiceNumber: { shape: 'text', width: 'w-28' },
-              date: { shape: 'text', width: 'w-24' },
-              total: { shape: 'text', width: 'w-20' },
-              level: { shape: 'badge' },
-              status: { shape: 'badge' },
-              validation: { shape: 'badge' },
-            }}
-          />
-        </Table>
-      </AtelierTableShell>
+      {list.nextCursor ? (
+        <div className="flex w-full justify-center">
+          <Button type="button" variant="ghost" onClick={list.onLoadMore}>
+            {t('loadMore')}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

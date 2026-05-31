@@ -866,7 +866,16 @@
       "moveDown": "Move down",
       "removeStep": "Remove step",
       "loading": "Loading",
-      "profileMenu": "Profile menu"
+      "profileMenu": "Profile menu",
+      "toggleSelectAll": "Select all rows",
+      "toggleSelectRow": "Select row",
+      "clearFilters": "Clear filters",
+      "bulkActions": "Bulk actions",
+      "clearSelection": "Clear selection"
+    },
+    "dataTable": {
+      "noResultsTitle": "No results found",
+      "noResultsDescription": "Try adjusting your filters or search to find what you are looking for."
     },
     "srOnly": {
       "actions": "Actions",
@@ -4020,7 +4029,9 @@
     "equipment": "Equipment",
     "time": "Time",
     "classification": "Classification",
-    "organization": "Organization"
+    "organization": "Organization",
+    "tax": "Tax",
+    "workflow-roles": "Workflow roles"
   },
   "Notifications": {
     "popover": {
@@ -6387,6 +6398,7 @@
       "title": "API Keys",
       "description": "Manage API keys for the Enterprise REST API.",
       "createKeyButton": "Create Key",
+      "entityLabel": "{count, plural, one {API key} other {API keys}}",
       "tableHeaders": {
         "name": "Name",
         "key": "Key",

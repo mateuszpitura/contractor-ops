@@ -1,10 +1,4 @@
-// Phase 60 · CLASS-09 — Statusfeststellungsverfahren panel.
-// See .planning/phases/60-classification-polish/60-UI-SPEC.md §CLASS-09.
-//
-// Renders on the engagement detail page for DE contractors only (gating is
-// performed by the parent page based on contractor.countryCode).
-//
-// Phase 64 · D-27 — Extended with DRV decision letter upload + unverified disclaimer.
+// Gated to DE contractors by parent (contractor.countryCode).
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
@@ -14,6 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE } from '@contractor-ops/validators';
 import { FileText, Upload } from 'lucide-react';
 import { useCallback, useId, useRef, useState } from 'react';
@@ -177,32 +178,24 @@ export function StatusfeststellungsverfahrenPanelView({
               <p className="max-w-md text-sm text-muted-foreground">{t('emptyBody')}</p>
             </div>
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b text-xs uppercase text-muted-foreground">
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    {t('filedAtLabel')}
-                  </th>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    {t('drvReferenceLabel')}
-                  </th>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    {t('outcomeLabel')}
-                  </th>
-                  <th scope="col" className="py-2 pr-4 font-medium">
-                    {t('validToLabel')}
-                  </th>
-                  <th scope="col" className="py-2 text-right font-medium">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('filedAtLabel')}</TableHead>
+                  <TableHead>{t('drvReferenceLabel')}</TableHead>
+                  <TableHead>{t('outcomeLabel')}</TableHead>
+                  <TableHead>{t('validToLabel')}</TableHead>
+                  <TableHead className="text-right">
                     <span className="sr-only">{t('editAction')}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {clearanceRows.map(row => (
                   <DrvClearanceRow key={row.id} clearance={row} onEdit={handleEdit} />
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>

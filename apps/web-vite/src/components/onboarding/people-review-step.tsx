@@ -1,3 +1,4 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
@@ -10,14 +11,6 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
-import {
   Tabs,
   TabsContent,
   TabsList,
@@ -26,8 +19,9 @@ import {
 import type { MergedPerson } from '@contractor-ops/validators';
 import type { InvitableMemberRole } from '@contractor-ops/validators/roles';
 import { invitableMemberRoleValues } from '@contractor-ops/validators/roles';
+import type { ColumnDef } from '@tanstack/react-table';
 import { RefreshCw, Users } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConflictResolutionPopover } from './conflict-resolution-popover.js';
@@ -72,124 +66,110 @@ interface RoleOption {
   label: string;
 }
 
-interface PersonRowProps {
+interface PersonSelectCellProps {
   person: MergedPerson;
-  selection: PersonSelection | undefined;
   checked: boolean;
-  roleOptions: RoleOption[];
+  isExisting: boolean;
   onRowCheck: (email: string) => void;
-  onSkipRow: (email: string) => void;
-  onRoleChange: (email: string, role: InvitableMemberRole) => void;
-  onResolveConflict: (email: string, field: string, value: string) => void;
-  labels: {
-    statusNew: string;
-    statusExists: string;
-    skipRow: string;
-  };
 }
 
-function PersonRow({
+function PersonSelectCell({ person, checked, isExisting, onRowCheck }: PersonSelectCellProps) {
+  const handleCheck = useCallback(() => onRowCheck(person.email), [person.email, onRowCheck]);
+  if (isExisting) {
+    return <Checkbox checked={false} disabled aria-hidden="true" />;
+  }
+  return (
+    <Checkbox
+      checked={checked}
+      onCheckedChange={handleCheck}
+      aria-label={`Select ${person.name}`}
+    />
+  );
+}
+
+interface PersonStatusCellProps {
+  person: MergedPerson;
+  selection: PersonSelection | undefined;
+  labels: { statusNew: string; statusExists: string };
+  onResolveConflict: (email: string, field: string, value: string) => void;
+}
+
+function PersonStatusCell({
   person,
   selection,
-  checked,
-  roleOptions,
-  onRowCheck,
-  onSkipRow,
-  onRoleChange,
-  onResolveConflict,
   labels,
-}: PersonRowProps) {
-  const isSkipped = selection?.skip ?? false;
-  const isExisting = person.status === 'exists';
-
-  const handleCheck = useCallback(() => onRowCheck(person.email), [person.email, onRowCheck]);
-  const handleSkip = useCallback(() => onSkipRow(person.email), [person.email, onSkipRow]);
+  onResolveConflict,
+}: PersonStatusCellProps) {
   const handleResolve = useCallback(
     (field: string, value: string) => onResolveConflict(person.email, field, value),
     [person.email, onResolveConflict],
   );
+  if (person.status === 'new') return <Badge variant="success">{labels.statusNew}</Badge>;
+  if (person.status === 'conflict') {
+    return (
+      <ConflictResolutionPopover
+        conflicts={person.conflicts ?? []}
+        resolvedConflicts={selection?.resolvedConflicts ?? {}}
+        onResolve={handleResolve}
+      />
+    );
+  }
+  return <Badge variant="info">{labels.statusExists}</Badge>;
+}
+
+interface PersonRoleCellProps {
+  person: MergedPerson;
+  selection: PersonSelection | undefined;
+  roleOptions: RoleOption[];
+  disabled: boolean;
+  onRoleChange: (email: string, role: InvitableMemberRole) => void;
+}
+
+function PersonRoleCell({
+  person,
+  selection,
+  roleOptions,
+  disabled,
+  onRoleChange,
+}: PersonRoleCellProps) {
   const handleRoleChange = useCallback(
     (val: string | null) => {
       if (val) onRoleChange(person.email, val as InvitableMemberRole);
     },
     [person.email, onRoleChange],
   );
-
   return (
-    <TableRow className={isSkipped || isExisting ? 'opacity-50' : ''}>
-      <TableCell>
-        {isExisting ? (
-          <Checkbox checked={false} disabled aria-hidden="true" />
-        ) : (
-          <Checkbox
-            checked={checked}
-            onCheckedChange={handleCheck}
-            aria-label={`Select ${person.name}`}
-          />
-        )}
-      </TableCell>
+    <Select
+      value={selection?.role ?? 'readonly'}
+      onValueChange={handleRoleChange}
+      disabled={disabled}>
+      <SelectTrigger size="sm" className="w-32">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {roleOptions.map(r => (
+          <SelectItem key={r.value} value={r.value}>
+            {r.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
-      <TableCell>
-        <span className={`text-sm font-medium ${isSkipped ? 'line-through' : ''}`}>
-          {person.name}
-        </span>
-      </TableCell>
+interface PersonSkipCellProps {
+  email: string;
+  isSkipped: boolean;
+  skipLabel: string;
+  onSkipRow: (email: string) => void;
+}
 
-      <TableCell>
-        <span className="text-sm text-muted-foreground">{person.email}</span>
-      </TableCell>
-
-      <TableCell className="hidden md:table-cell">
-        <div className="flex flex-wrap gap-1">
-          {person.sources.map(s => (
-            <Badge
-              key={s.source}
-              variant="secondary"
-              className={`text-[10px] ${SOURCE_COLORS[s.source] ?? ''}`}>
-              {SOURCE_LABELS[s.source] ?? s.source}
-            </Badge>
-          ))}
-        </div>
-      </TableCell>
-
-      <TableCell>
-        {person.status === 'new' && <Badge variant="success">{labels.statusNew}</Badge>}
-        {person.status === 'conflict' && (
-          <ConflictResolutionPopover
-            conflicts={person.conflicts ?? []}
-            resolvedConflicts={selection?.resolvedConflicts ?? {}}
-            onResolve={handleResolve}
-          />
-        )}
-        {person.status === 'exists' && <Badge variant="info">{labels.statusExists}</Badge>}
-      </TableCell>
-
-      <TableCell>
-        <Select
-          value={selection?.role ?? 'readonly'}
-          onValueChange={handleRoleChange}
-          disabled={isExisting || isSkipped}>
-          <SelectTrigger size="sm" className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {roleOptions.map(r => (
-              <SelectItem key={r.value} value={r.value}>
-                {r.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </TableCell>
-
-      <TableCell>
-        {!isExisting && (
-          <Button variant="ghost" size="sm" onClick={handleSkip} disabled={isSkipped}>
-            {labels.skipRow}
-          </Button>
-        )}
-      </TableCell>
-    </TableRow>
+function PersonSkipCell({ email, isSkipped, skipLabel, onSkipRow }: PersonSkipCellProps) {
+  const handleSkip = useCallback(() => onSkipRow(email), [email, onSkipRow]);
+  return (
+    <Button variant="ghost" size="sm" onClick={handleSkip} disabled={isSkipped}>
+      {skipLabel}
+    </Button>
   );
 }
 
@@ -241,6 +221,149 @@ export function PeopleReviewStep({
     statusExists: t('statusExists'),
     skipRow: t('skipRow'),
   };
+
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const columns = useMemo<ColumnDef<MergedPerson, unknown>[]>(
+    () => [
+      {
+        id: 'select',
+        header: () => (
+          <Checkbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onCheckedChange={onSelectAll}
+            aria-label={tAria('selectAll')}
+          />
+        ),
+        enableSorting: false,
+        size: 40,
+        cell: ({ row }) => (
+          <PersonSelectCell
+            person={row.original}
+            checked={checkedEmails.has(row.original.email)}
+            isExisting={row.original.status === 'exists'}
+            onRowCheck={onRowCheck}
+          />
+        ),
+      },
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: t('columnName'),
+        cell: ({ row }) => {
+          const isSkipped = personSelections.get(row.original.email)?.skip ?? false;
+          return (
+            <span className={`text-sm font-medium ${isSkipped ? 'line-through' : ''}`}>
+              {row.original.name}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'email',
+        accessorKey: 'email',
+        header: t('columnEmail'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">{row.original.email}</span>
+        ),
+      },
+      {
+        id: 'sources',
+        header: t('columnSources'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="hidden flex-wrap gap-1 md:flex">
+            {row.original.sources.map(s => (
+              <Badge
+                key={s.source}
+                variant="secondary"
+                className={`text-[10px] ${SOURCE_COLORS[s.source] ?? ''}`}>
+                {SOURCE_LABELS[s.source] ?? s.source}
+              </Badge>
+            ))}
+          </div>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: t('columnStatus'),
+        cell: ({ row }) => (
+          <PersonStatusCell
+            person={row.original}
+            selection={personSelections.get(row.original.email)}
+            labels={{ statusNew: rowLabels.statusNew, statusExists: rowLabels.statusExists }}
+            onResolveConflict={onResolveConflict}
+          />
+        ),
+      },
+      {
+        id: 'role',
+        header: t('columnRole'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const selection = personSelections.get(row.original.email);
+          const isSkipped = selection?.skip ?? false;
+          const isExisting = row.original.status === 'exists';
+          return (
+            <PersonRoleCell
+              person={row.original}
+              selection={selection}
+              roleOptions={ROLE_OPTIONS}
+              disabled={isExisting || isSkipped}
+              onRoleChange={onRoleChange}
+            />
+          );
+        },
+      },
+      {
+        id: 'action',
+        header: t('columnAction'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          if (row.original.status === 'exists') return null;
+          const selection = personSelections.get(row.original.email);
+          return (
+            <PersonSkipCell
+              email={row.original.email}
+              isSkipped={selection?.skip ?? false}
+              skipLabel={rowLabels.skipRow}
+              onSkipRow={onSkipRow}
+            />
+          );
+        },
+      },
+    ],
+    [
+      t,
+      tAria,
+      allSelected,
+      someSelected,
+      onSelectAll,
+      checkedEmails,
+      onRowCheck,
+      personSelections,
+      rowLabels.statusNew,
+      rowLabels.statusExists,
+      rowLabels.skipRow,
+      onResolveConflict,
+      ROLE_OPTIONS,
+      onRoleChange,
+      onSkipRow,
+    ],
+  );
+
+  const rowClassName = useCallback(
+    (row: MergedPerson) => {
+      const selection = personSelections.get(row.email);
+      const isSkipped = selection?.skip ?? false;
+      const isExisting = row.status === 'exists';
+      return isSkipped || isExisting ? 'opacity-50' : '';
+    },
+    [personSelections],
+  );
 
   return (
     <div className="space-y-6">
@@ -314,52 +437,29 @@ export function PeopleReviewStep({
         )}
 
         <TabsContent value={activeFilter}>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10">
-                    <Checkbox
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onCheckedChange={onSelectAll}
-                      aria-label={tAria('selectAll')}
-                    />
-                  </TableHead>
-                  <TableHead>{t('columnName')}</TableHead>
-                  <TableHead>{t('columnEmail')}</TableHead>
-                  <TableHead className="hidden md:table-cell">{t('columnSources')}</TableHead>
-                  <TableHead>{t('columnStatus')}</TableHead>
-                  <TableHead>{t('columnRole')}</TableHead>
-                  <TableHead>{t('columnAction')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPeople.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                      {t('emptyHeading')}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredPeople.map(person => (
-                    <PersonRow
-                      key={person.email}
-                      person={person}
-                      selection={personSelections.get(person.email)}
-                      checked={checkedEmails.has(person.email)}
-                      roleOptions={ROLE_OPTIONS}
-                      onRowCheck={onRowCheck}
-                      onSkipRow={onSkipRow}
-                      onRoleChange={onRoleChange}
-                      onResolveConflict={onResolveConflict}
-                      labels={rowLabels}
-                    />
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={filteredPeople}
+            totalRows={filteredPeople.length}
+            clientPagination
+            pageIndex={pageIndex}
+            pageSize={pageSize}
+            onPageChange={setPageIndex}
+            onPageSizeChange={size => {
+              setPageSize(size);
+              setPageIndex(0);
+            }}
+            constrainHeight={false}
+            hideDensityToggle
+            hideChrome
+            getRowId={row => row.email}
+            rowClassName={rowClassName}
+            entityLabel={t('summaryTotal')}
+            emptyTitle={t('emptyHeading')}
+            emptyDescription={t('emptyBody')}
+            noResultsTitle={t('emptyHeading')}
+            noResultsDescription={t('emptyBody')}
+          />
         </TabsContent>
       </Tabs>
     </div>

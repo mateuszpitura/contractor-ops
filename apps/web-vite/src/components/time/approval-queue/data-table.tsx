@@ -1,4 +1,4 @@
-import { iconSize } from '@contractor-ops/ui';
+import { DataTable, iconSize } from '@contractor-ops/ui';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,10 +16,9 @@ import { addDays, format, startOfISOWeek } from 'date-fns';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
 
-import { useTranslations } from '../../i18n/useTranslations.js';
-import { SimpleDataTable } from '../shared/simple-data-table.js';
-import { RejectionReasonDialog } from './rejection-reason-dialog.js';
-import { TimeEntryStatusBadge } from './time-entry-status-badge.js';
+import { useTranslations } from '../../../i18n/useTranslations.js';
+import { RejectionReasonDialog } from '../rejection-reason-dialog.js';
+import { TimeEntryStatusBadge } from '../time-entry-status-badge.js';
 
 export interface TimesheetRow {
   id: string;
@@ -165,6 +164,8 @@ export function ApprovalQueueTable({
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
   const [bulkApproveOpen, setBulkApproveOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
 
   const allSelected = timesheets.length > 0 && selectedIds.size === timesheets.length;
   const someSelected = selectedIds.size > 0;
@@ -368,10 +369,20 @@ export function ApprovalQueueTable({
         </div>
       ) : null}
 
-      <SimpleDataTable
+      <DataTable
         columns={columns}
         data={timesheets}
+        totalRows={timesheets.length}
+        clientPagination
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        onPageChange={setPageIndex}
+        onPageSizeChange={size => {
+          setPageSize(size);
+          setPageIndex(0);
+        }}
         isLoading={isLoading}
+        fill
         entityLabel={t('timesheetEntityLabel', { count: timesheets.length })}
         emptyTitle={t('approvalQueue.empty.heading')}
         emptyDescription={t('approvalQueue.empty.body')}

@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -160,13 +161,13 @@ export function CarrierShipmentFormView({
           <DialogHeader>
             <DialogTitle>{t('createShipment')}</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
+          <DialogBody className="flex flex-col items-center gap-3 py-8 text-center">
             <Truck className="h-10 w-10 text-muted-foreground" />
             <div className="space-y-1">
               <p className="text-sm font-medium">{t('noCarriers')}</p>
               <p className="text-sm text-muted-foreground">{t('noCarriersBody')}</p>
             </div>
-          </div>
+          </DialogBody>
         </DialogContent>
       </Dialog>
     );
@@ -180,7 +181,7 @@ export function CarrierShipmentFormView({
             <DialogTitle>{t('createShipment')}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label>{t('selectCarrier')}</Label>
               <Select value={selectedCarrier ?? ''} onValueChange={handleCarrierChange}>
@@ -262,7 +263,7 @@ export function CarrierShipmentFormView({
                 onServiceCodeChange={setServiceCode}
               />
             )}
-          </div>
+          </DialogBody>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleCancel} disabled={isPending}>

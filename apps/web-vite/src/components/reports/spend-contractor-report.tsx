@@ -14,7 +14,7 @@ import type {
   useSpendContractorReport,
 } from './hooks/use-spend-contractor-report.js';
 import { ReportChart } from './report-chart.js';
-import { ReportTable } from './report-table.js';
+import { ReportTable } from './report-table/data-table.js';
 
 function formatCurrency(minor: number): string {
   return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');

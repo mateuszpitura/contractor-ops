@@ -1,6 +1,6 @@
 import {
   AtelierEmptyState,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
   WORKBENCH_TABLE_TAB_PANEL_CLASS,
   WORKBENCH_TABLE_TABS_CLASS,
@@ -71,7 +71,7 @@ export function WorkflowsListContainer() {
 
   if (list.showEmptyState) {
     return (
-      <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+      <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
         <AnimateIn delay={0}>
           <WorkbenchPageHeader
             title={t('pageTitle')}
@@ -109,7 +109,7 @@ export function WorkflowsListContainer() {
   }
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
         <WorkbenchPageHeader
           title={t('pageTitle')}

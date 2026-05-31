@@ -4,7 +4,6 @@
  * tRPC mutations are wired in `useInvoiceBulkActions` and injected via props here.
  */
 
-import type { Table } from '@tanstack/react-table';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '../../../../test/test-utils.js';
@@ -12,14 +11,11 @@ import type { InvoiceBulkActionsHandlers } from '../../hooks/use-invoice-bulk-ac
 import type { InvoiceRow } from '../columns.js';
 import { DataTableBulkActions } from '../data-table-bulk-actions.js';
 
-function makeMockTable(selectedCount: number): Table<InvoiceRow> {
-  const rows = Array.from({ length: selectedCount }, (_, i) => ({
-    original: { id: `inv-${i}` } as InvoiceRow,
-  }));
-  return {
-    getFilteredSelectedRowModel: () => ({ rows }),
-    toggleAllPageRowsSelected: vi.fn(),
-  } as unknown as Table<InvoiceRow>;
+function makeSelectedRows(selectedCount: number): InvoiceRow[] {
+  return Array.from(
+    { length: selectedCount },
+    (_, i) => ({ id: `inv-${i}` }) as InvoiceRow,
+  );
 }
 
 function makeBulkActions(
@@ -37,7 +33,7 @@ function makeBulkActions(
 function renderActions(selectedCount: number, bulkActions = makeBulkActions()) {
   return render(
     <DataTableBulkActions
-      table={makeMockTable(selectedCount)}
+      selectedRows={makeSelectedRows(selectedCount)}
       bulkActions={bulkActions}
       onComplete={vi.fn()}
     />,
@@ -70,7 +66,7 @@ describe('Invoice DataTableBulkActions', () => {
     const bulkActions = makeBulkActions();
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         bulkActions={bulkActions}
         onComplete={vi.fn()}
       />,
@@ -88,7 +84,7 @@ describe('Invoice DataTableBulkActions', () => {
   it('clicking Void opens the confirmation dialog', async () => {
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(3)}
+        selectedRows={makeSelectedRows(3)}
         bulkActions={makeBulkActions()}
         onComplete={vi.fn()}
       />,
@@ -102,7 +98,7 @@ describe('Invoice DataTableBulkActions', () => {
     const bulkActions = makeBulkActions();
     const { user } = setup(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         bulkActions={bulkActions}
         onComplete={vi.fn()}
       />,

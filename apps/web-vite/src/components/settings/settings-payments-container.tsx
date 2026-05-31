@@ -1,4 +1,3 @@
-import { AtelierPageHeader } from '@contractor-ops/ui';
 import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/components/shadcn/alert';
 import {
   Breadcrumb,
@@ -17,6 +16,7 @@ import {
 import { AlertTriangle, ShieldOff } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { BacsSubmitterFormContainer } from '../payments/bacs/bacs-submitter-form-container.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useSettingsPayments } from './hooks/use-settings-payments.js';
 
 export function SettingsPaymentsContainer() {
@@ -67,7 +67,7 @@ export function SettingsPaymentsContainer() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <AtelierPageHeader title={t('settingsPageTitle')} description={t('settingsPageSubtitle')} />
+      <WorkbenchPageHeader title={t('settingsPageTitle')} description={t('settingsPageSubtitle')} />
 
       {!bacsEnabled && (
         <Alert variant="default" className="border-amber-300/50 bg-amber-500/5">

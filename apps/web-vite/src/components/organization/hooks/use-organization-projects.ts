@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { ProjectRow } from '../projects/project-form-sheet.js';
-import type { ProjectTableRow } from '../projects/project-table.js';
+import type { ProjectTableRow } from '../projects/data-table.js';
 
 export function useOrganizationProjects() {
   const trpc = useTRPC();
@@ -53,6 +53,9 @@ export function useOrganizationProjects() {
     }),
   );
 
+  const isLoading = listQuery.isLoading;
+  const isFetching = listQuery.isFetching;
+
   return {
     search,
     setSearch,
@@ -62,7 +65,8 @@ export function useOrganizationProjects() {
     setEditing,
     rows,
     teamNamesById,
-    isLoading: listQuery.isLoading,
+    isLoading,
+    isFetching,
     connections: connectionsQuery.data ?? [],
     syncMutation,
   } as const;

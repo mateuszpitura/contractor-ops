@@ -9,7 +9,7 @@ import { DrillDownBreadcrumb } from './drill-down-breadcrumb.js';
 import { ExportButtons } from './export-buttons.js';
 import type { TeamSpendRow, useSpendTeamReport } from './hooks/use-spend-team-report.js';
 import { ReportChart } from './report-chart.js';
-import { ReportTable } from './report-table.js';
+import { ReportTable } from './report-table/data-table.js';
 
 function formatCurrency(minor: number): string {
   return formatMinorAsCurrency(minor, 'PLN', 'pl-PL');

@@ -214,7 +214,7 @@ describe('TabPaymentsView', () => {
 
   it('does not render pagination when totalPages == 1', () => {
     render(<TabPaymentsView {...buildProps({ items: [baseRow()], allItems: [baseRow()] })} />);
-    expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
   });
 
   it('renders pagination when totalPages > 1', () => {
@@ -226,6 +226,6 @@ describe('TabPaymentsView', () => {
         {...buildProps({ items: rows.slice(0, 10), allItems: rows, totalPages: 3 })}
       />,
     );
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    expect(screen.getByText(/Page 1 of 3/i)).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 import type { TeamRow } from '../teams/team-form-sheet.js';
-import type { TeamTableRow } from '../teams/team-table.js';
+import type { TeamTableRow } from '../teams/data-table.js';
 
 export function useOrganizationTeams() {
   const trpc = useTRPC();
@@ -22,6 +22,9 @@ export function useOrganizationTeams() {
     updatedAt: item.updatedAt as Date | string,
   }));
 
+  const isLoading = listQuery.isLoading;
+  const isFetching = listQuery.isFetching;
+
   return {
     search,
     setSearch,
@@ -30,7 +33,8 @@ export function useOrganizationTeams() {
     editing,
     setEditing,
     rows,
-    isLoading: listQuery.isLoading,
+    isLoading,
+    isFetching,
     isError: listQuery.isError,
     refetch: listQuery.refetch,
   } as const;

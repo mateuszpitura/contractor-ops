@@ -86,7 +86,7 @@ export function useContractList(options: { onNewContract: () => void; onImport?:
   );
   const contractTotal = (contractCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
-  const isCountLoading = contractCountQuery.isLoading;
+  const isCountLoading = contractCountQuery.isLoading || contractCountQuery.isFetching;
   const showEmptyState = !isCountLoading && contractTotal === 0;
 
   const queryInput = useMemo(

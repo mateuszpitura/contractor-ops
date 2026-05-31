@@ -10,14 +10,8 @@ import { vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import { DataTableBulkActions } from '../data-table-bulk-actions';
 
-function makeMockTable(selectedCount: number) {
-  const rows = Array.from({ length: selectedCount }, (_, i) => ({
-    original: { id: `ct${i}` },
-  }));
-  return {
-    getFilteredSelectedRowModel: () => ({ rows }),
-    toggleAllPageRowsSelected: vi.fn(),
-  } as unknown as never;
+function makeSelectedRows(selectedCount: number) {
+  return Array.from({ length: selectedCount }, (_, i) => ({ id: `ct${i}` })) as never;
 }
 
 const noopHandlers = {
@@ -29,7 +23,7 @@ describe('DataTableBulkActions (contracts)', () => {
   it('returns null when no rows selected', () => {
     const { container } = render(
       <DataTableBulkActions
-        table={makeMockTable(0)}
+        selectedRows={makeSelectedRows(0)}
         bulkActions={noopHandlers}
         onComplete={vi.fn()}
       />,
@@ -40,7 +34,7 @@ describe('DataTableBulkActions (contracts)', () => {
   it('renders action buttons when rows are selected', () => {
     render(
       <DataTableBulkActions
-        table={makeMockTable(2)}
+        selectedRows={makeSelectedRows(2)}
         bulkActions={noopHandlers}
         onComplete={vi.fn()}
       />,
@@ -52,7 +46,7 @@ describe('DataTableBulkActions (contracts)', () => {
   it('renders the selected-count text', () => {
     render(
       <DataTableBulkActions
-        table={makeMockTable(3)}
+        selectedRows={makeSelectedRows(3)}
         bulkActions={noopHandlers}
         onComplete={vi.fn()}
       />,

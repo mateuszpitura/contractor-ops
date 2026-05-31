@@ -11,7 +11,7 @@ import { DrillDownBreadcrumb } from './drill-down-breadcrumb.js';
 import { ExportButtons } from './export-buttons.js';
 import type { ComplianceRow, useComplianceGapsReport } from './hooks/use-compliance-gaps-report.js';
 import { ReportChart } from './report-chart.js';
-import { ReportTable } from './report-table.js';
+import { ReportTable } from './report-table/data-table.js';
 
 const HEALTH_BADGE: Record<
   string,

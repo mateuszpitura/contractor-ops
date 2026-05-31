@@ -1,4 +1,6 @@
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { LegalDocumentLayout } from './legal-document-layout.js';
+import { H1, H2, P } from './privacy-prose.js';
 
 const SECTIONS = [
   'introduction',
@@ -18,16 +20,16 @@ export function LegalBreachNotificationContainer() {
   const t = useTranslations('Legal.breachNotification');
 
   return (
-    <article className="prose prose-neutral dark:prose-invert max-w-none">
-      <h1>{t('title')}</h1>
-      <p className="text-muted-foreground">{t('lastUpdated')}</p>
+    <LegalDocumentLayout current="breach-notification">
+      <H1>{t('title')}</H1>
+      <P className="text-muted-foreground">{t('lastUpdated')}</P>
 
       {SECTIONS.map(section => (
         <section key={section}>
-          <h2>{t(`sections.${section}.heading`)}</h2>
-          <p>{t(`sections.${section}.body`)}</p>
+          <H2 id={section}>{t(`sections.${section}.heading`)}</H2>
+          <P>{t(`sections.${section}.body`)}</P>
         </section>
       ))}
-    </article>
+    </LegalDocumentLayout>
   );
 }

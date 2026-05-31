@@ -1,21 +1,13 @@
 import type { AtelierEmptyStateAction } from '@contractor-ops/ui';
 import {
   AtelierEmptyState,
-  AtelierTableShell,
   ContractsIllustration,
+  DataTable,
   SectionLabel,
-  TableChrome,
 } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { FileText, Plus } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { useRouter } from '../../../i18n/navigation.js';
@@ -25,7 +17,6 @@ import { enumKey } from '../../../lib/enum-key.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { formatAmount } from '../../../lib/format-currency.js';
 import { ContractWizardDialogContainer } from '../../contracts/contract-wizard/wizard-dialog-container.js';
-import { DataTableBody } from '../../shared/data-table-body.js';
 import type {
   ContractorTabContractRow,
   useContractorTabContracts,
@@ -101,12 +92,13 @@ export function TabContractsView({
   setWizardOpen,
   page,
   setPage,
+  pageSize,
   items,
+  totalCount,
   totalPages,
   isLoading,
 }: TabContractsViewProps) {
   const t = useTranslations('Contracts');
-  const tAria = useTranslations('Common.aria');
   const { formatDate } = useDateFormatter();
   const router = useRouter();
 
@@ -169,22 +161,13 @@ export function TabContractsView({
     [t, formatDate],
   );
 
-  const table = useReactTable({
-    data: items,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: totalPages,
-  });
-
   const handleOpenWizard = useCallback(() => setWizardOpen(true), [setWizardOpen]);
   const handleRowClick = useCallback(
     (row: ContractorTabContractRow) => router.push(`/contracts/${row.id}`),
     [router],
   );
-  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
-  const handleNextPage = useCallback(
-    () => setPage(p => Math.min(totalPages, p + 1)),
+  const handlePageChange = useCallback(
+    (nextIndex: number) => setPage(Math.max(1, Math.min(totalPages, nextIndex + 1))),
     [setPage, totalPages],
   );
 
@@ -200,66 +183,24 @@ export function TabContractsView({
         </Button>
       </div>
 
-      <AtelierTableShell
+      <DataTable
+        columns={columns}
+        data={items}
+        totalRows={totalCount}
+        pageIndex={Math.max(0, page - 1)}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={() => undefined}
         isLoading={isLoading}
-        chrome={
-          <TableChrome
-            totalCount={items.length}
-            entityLabel={t('entityLabel', { count: items.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={isLoading}
-            hasFiltersOrSearch={false}
-            emptyTitle={t('contractorTab.emptyHeading')}
-            emptyDescription={t('contractorTab.emptyBody')}
-            noResultsTitle={t('contractorTab.emptyHeading')}
-            skeletonRows={5}
-            onRowClick={handleRowClick}
-          />
-        </Table>
-      </AtelierTableShell>
-
-      {totalPages > 1 ? (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page <= 1}
-            onClick={handlePrevPage}>
-            &laquo;
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page >= totalPages}
-            onClick={handleNextPage}>
-            &raquo;
-          </Button>
-        </div>
-      ) : null}
+        constrainHeight={false}
+        hideDensityToggle
+        entityLabel={t('entityLabel', { count: totalCount })}
+        emptyTitle={t('contractorTab.emptyHeading')}
+        emptyDescription={t('contractorTab.emptyBody')}
+        noResultsTitle={t('contractorTab.emptyHeading')}
+        skeletonRows={5}
+        onRowClick={handleRowClick}
+      />
 
       <ContractWizardDialogContainer
         open={wizardOpen}

@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogSection,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { CreditCard } from 'lucide-react';
@@ -48,15 +49,20 @@ export function NewPaymentRunDialogView({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent size="2xl" className="max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="size-4" />
             {t('dialog.title')}
           </DialogTitle>
-          <StepIndicator currentStep={step} />
         </DialogHeader>
 
+        <DialogSection>
+          <StepIndicator currentStep={step} />
+        </DialogSection>
+
+        {/* Each step renders its own DialogBody (scrolls) + DialogFooter
+            (sticky) as direct children of DialogContent. */}
         {children}
       </DialogContent>
     </Dialog>

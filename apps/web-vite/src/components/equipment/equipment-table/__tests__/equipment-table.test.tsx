@@ -11,7 +11,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '../../../../test/test-utils.js';
 import type { EquipmentRow } from '../equipment-columns.js';
-import { EquipmentTableView } from '../equipment-table.js';
+import { EquipmentTableView } from '../data-table.js';
 
 type ViewProps = React.ComponentProps<typeof EquipmentTableView>;
 
@@ -59,6 +59,7 @@ function makeViewProps(overrides: Partial<ViewProps> = {}): ViewProps {
     onSearchChange: vi.fn(),
     onFiltersChange: vi.fn(),
     onPageChange: vi.fn(),
+    onPageSizeChange: vi.fn(),
     onSortChange: vi.fn(),
     onClearFilters: vi.fn(),
     isLoading: false,
@@ -100,12 +101,20 @@ describe('EquipmentTableView (web-vite)', () => {
   });
 
   it('renders the table element', () => {
-    render(<EquipmentTableView {...makeViewProps()} />);
+    render(
+      <EquipmentTableView
+        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
+      />,
+    );
     expect(document.querySelector('table')).toBeInTheDocument();
   });
 
   it('renders toolbar with a search input', () => {
-    render(<EquipmentTableView {...makeViewProps()} />);
+    render(
+      <EquipmentTableView
+        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
+      />,
+    );
     expect(document.querySelector('input')).toBeInTheDocument();
   });
 
@@ -145,11 +154,13 @@ describe('EquipmentTableView (web-vite)', () => {
   });
 
   it('disables next button on last page', () => {
+    // Use totalRows > smallest page-size option so the canonical primitive
+    // renders the footer (it auto-hides for very small lists).
     render(
       <EquipmentTableView
         {...makeViewProps({
-          data: [makeRow()],
-          totalRows: 5,
+          data: Array.from({ length: 11 }, (_, i) => makeRow({ id: `eq-${i}` })),
+          totalRows: 11,
           totalPages: 1,
           page: 1,
         })}
@@ -158,7 +169,7 @@ describe('EquipmentTableView (web-vite)', () => {
     expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
   });
 
-  it('renders pagination controls even with a single item', () => {
+  it('hides pagination footer when total rows fit a single small page', () => {
     render(
       <EquipmentTableView
         {...makeViewProps({
@@ -168,9 +179,9 @@ describe('EquipmentTableView (web-vite)', () => {
         })}
       />,
     );
-    // Total row count is now in TableChrome (top-left), not the footer.
-    expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /next page/i })).toBeDisabled();
+    // Canonical DataTable hides the footer when totalRows <= smallest page-size.
+    expect(screen.queryByRole('button', { name: /previous page/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /next page/i })).not.toBeInTheDocument();
   });
 
   it('renders page indicator', () => {
@@ -219,7 +230,11 @@ describe('EquipmentTableView (web-vite)', () => {
   });
 
   it('handles search input changes (controlled via local state)', async () => {
-    const { user } = setup(<EquipmentTableView {...makeViewProps()} />);
+    const { user } = setup(
+      <EquipmentTableView
+        {...makeViewProps({ data: [makeRow()], totalRows: 1, totalPages: 1 })}
+      />,
+    );
     const searchInput = document.querySelector('input') as HTMLInputElement;
     await user.type(searchInput, 'laptop');
     expect(searchInput.value).toBe('laptop');

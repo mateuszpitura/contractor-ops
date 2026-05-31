@@ -1,17 +1,11 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Card, CardContent } from '@contractor-ops/ui/components/shadcn/card';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowLeft, Download } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { Link } from '../../i18n/navigation.js';
@@ -253,29 +247,17 @@ export function PortalContractDetailContainer() {
       </Card>
 
       {contract.ratePeriods && contract.ratePeriods.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-xl font-semibold">{t('contracts.ratePeriods')}</h2>
-          <Table className="mt-4">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('contracts.columns.rate')}</TableHead>
-                <TableHead>{t('contracts.columns.type')}</TableHead>
-                <TableHead>{t('contracts.columns.validFrom')}</TableHead>
-                <TableHead>{t('contracts.columns.validTo')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {contract.ratePeriods.map(period => (
-                <TableRow key={`${period.validFrom}-${period.rateType}`}>
-                  <TableCell>{formatAmount(period.rateValueMinor, period.currency)}</TableCell>
-                  <TableCell>{formatContractType(period.rateType)}</TableCell>
-                  <TableCell>{formatDate(period.validFrom)}</TableCell>
-                  <TableCell>{formatDate(period.validTo)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <RatePeriodsSection
+          ratePeriods={contract.ratePeriods}
+          tableHeading={t('contracts.ratePeriods')}
+          rateLabel={t('contracts.columns.rate')}
+          typeLabel={t('contracts.columns.type')}
+          validFromLabel={t('contracts.columns.validFrom')}
+          validToLabel={t('contracts.columns.validTo')}
+          entityLabel={t('contracts.ratePeriods')}
+          emptyTitle={t('contracts.ratePeriods')}
+          formatDate={formatDate}
+        />
       )}
 
       <div className="mt-6">
@@ -296,6 +278,90 @@ export function PortalContractDetailContainer() {
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">{t('contracts.noDocuments')}</p>
         )}
+      </div>
+    </div>
+  );
+}
+
+interface RatePeriodRow {
+  validFrom: string | Date;
+  validTo: string | Date | null;
+  rateType: string;
+  rateValueMinor: number;
+  currency: string;
+}
+
+interface RatePeriodsSectionProps {
+  ratePeriods: RatePeriodRow[];
+  tableHeading: string;
+  rateLabel: string;
+  typeLabel: string;
+  validFromLabel: string;
+  validToLabel: string;
+  entityLabel: string;
+  emptyTitle: string;
+  formatDate: (value: Date | string | null | undefined) => string;
+}
+
+function RatePeriodsSection({
+  ratePeriods,
+  tableHeading,
+  rateLabel,
+  typeLabel,
+  validFromLabel,
+  validToLabel,
+  entityLabel,
+  emptyTitle,
+  formatDate,
+}: RatePeriodsSectionProps) {
+  const columns = useMemo<ColumnDef<RatePeriodRow>[]>(
+    () => [
+      {
+        id: 'rate',
+        header: () => rateLabel,
+        cell: ({ row }) => formatAmount(row.original.rateValueMinor, row.original.currency),
+      },
+      {
+        id: 'type',
+        header: () => typeLabel,
+        cell: ({ row }) => formatContractType(row.original.rateType),
+      },
+      {
+        id: 'validFrom',
+        header: () => validFromLabel,
+        cell: ({ row }) => formatDate(row.original.validFrom),
+      },
+      {
+        id: 'validTo',
+        header: () => validToLabel,
+        cell: ({ row }) => formatDate(row.original.validTo),
+      },
+    ],
+    [rateLabel, typeLabel, validFromLabel, validToLabel, formatDate],
+  );
+
+  return (
+    <div className="mt-6">
+      <h2 className="text-xl font-semibold">{tableHeading}</h2>
+      <div className="mt-4">
+        <DataTable
+          columns={columns}
+          data={ratePeriods}
+          totalRows={ratePeriods.length}
+          clientPagination
+          pageIndex={0}
+          pageSize={ratePeriods.length || 1}
+          onPageChange={() => undefined}
+          onPageSizeChange={() => undefined}
+          entityLabel={entityLabel}
+          emptyTitle={emptyTitle}
+          noResultsTitle={emptyTitle}
+          hideChrome
+          hideFooter
+          hideDensityToggle
+          constrainHeight={false}
+          getRowId={row => `${String(row.validFrom)}-${row.rateType}`}
+        />
       </div>
     </div>
   );

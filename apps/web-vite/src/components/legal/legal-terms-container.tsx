@@ -5,6 +5,9 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { useTranslations } from '../../i18n/useTranslations.js';
+import { LegalDocumentCallout } from './legal-document-callout.js';
+import { LegalDocumentLayout } from './legal-document-layout.js';
+import { H1, H2, P } from './privacy-prose.js';
 
 const SECTIONS = [
   'acceptance',
@@ -27,29 +30,29 @@ export function LegalTermsContainer() {
     i18n.language === 'de' ? SOFTWARE_NOT_LEGAL_ADVICE_DE : SOFTWARE_NOT_LEGAL_ADVICE_EN;
 
   return (
-    <article className="prose prose-neutral dark:prose-invert max-w-none">
-      <h1>{t('title')}</h1>
-      <p className="text-muted-foreground">{t('lastUpdated')}</p>
+    <LegalDocumentLayout current="terms">
+      <H1>{t('title')}</H1>
+      <P className="text-muted-foreground">{t('lastUpdated')}</P>
 
       {SECTIONS.map(section => (
         <section key={section}>
-          <h2>{t(`sections.${section}.heading`)}</h2>
-          <p>{t(`sections.${section}.body`)}</p>
+          <H2 id={section}>{t(`sections.${section}.heading`)}</H2>
+          <P>{t(`sections.${section}.body`)}</P>
         </section>
       ))}
 
       <section>
-        <h2>{t('sections.softwareNotLegalAdvice.heading')}</h2>
-        <p className="text-muted-foreground">{t('sections.softwareNotLegalAdvice.subheading')}</p>
-        <blockquote className="not-italic border-l-4 border-amber-400 bg-amber-50 py-3 pl-4 text-sm text-amber-900">
-          {softwareNotLegalAdvice}
-        </blockquote>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: stable anchor for TOC + deep links */}
+        <H2 id="software-not-legal-advice">{t('sections.softwareNotLegalAdvice.heading')}</H2>
+        <P className="text-muted-foreground">{t('sections.softwareNotLegalAdvice.subheading')}</P>
+        <LegalDocumentCallout>{softwareNotLegalAdvice}</LegalDocumentCallout>
       </section>
 
       <section>
-        <h2>{t('sections.contact.heading')}</h2>
-        <p>{t('sections.contact.body')}</p>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: stable anchor for TOC + deep links */}
+        <H2 id="contact">{t('sections.contact.heading')}</H2>
+        <P>{t('sections.contact.body')}</P>
       </section>
-    </article>
+    </LegalDocumentLayout>
   );
 }

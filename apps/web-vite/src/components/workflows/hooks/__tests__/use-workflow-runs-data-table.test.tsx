@@ -93,7 +93,7 @@ describe('useWorkflowRunsDataTable', () => {
     const { result } = renderHookWithProviders(() => useWorkflowRunsDataTable());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    act(() => result.current.handlePageChange(3));
+    act(() => result.current.handlePageChange(2));
     await waitFor(() => expect(result.current.filters.page).toBe(3));
 
     act(() => result.current.handlePageSizeChange(50));

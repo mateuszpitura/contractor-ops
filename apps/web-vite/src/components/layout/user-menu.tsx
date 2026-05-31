@@ -2,9 +2,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@contractor-ops/ui/componen
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import {
   DropdownMenu,
@@ -220,18 +223,20 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
               {t('editName')}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleNameSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor={`${reactId}-user-name`}>{t('editNamePrompt')}</Label>
-              <Input
-                ref={nameInputRef}
-                id={`${reactId}-user-name`}
-                value={nameValue}
-                onChange={handleNameInputChange}
-                placeholder={t('editNamePrompt')}
-              />
-            </div>
-            <div className="flex justify-end gap-2">
+          <form onSubmit={handleNameSubmit} className={dialogFormLayoutClassName}>
+            <DialogBody>
+              <div className="space-y-2">
+                <Label htmlFor={`${reactId}-user-name`}>{t('editNamePrompt')}</Label>
+                <Input
+                  ref={nameInputRef}
+                  id={`${reactId}-user-name`}
+                  value={nameValue}
+                  onChange={handleNameInputChange}
+                  placeholder={t('editNamePrompt')}
+                />
+              </div>
+            </DialogBody>
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={closeNameDialog}>
                 {t('cancel')}
               </Button>
@@ -243,7 +248,7 @@ export function UserMenu({ user, displayName, initials, onSignOut, onSaveName }:
                 )}
                 {t('save')}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

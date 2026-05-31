@@ -1,6 +1,7 @@
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { RadioGroup, RadioGroupItem } from '@contractor-ops/ui/components/shadcn/radio-group';
-import { FileSpreadsheet, Upload, X } from 'lucide-react';
+import { FileSpreadsheet, X } from 'lucide-react';
 import { useCallback, useId } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
@@ -161,33 +162,23 @@ export function StepUpload({
           </Button>
         </div>
       ) : (
-        <button
-          type="button"
+        <DropZoneSurface
           {...getRootProps()}
           aria-label={t('upload.dropHeading')}
-          className={`flex w-full min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
-            isDragActive
-              ? 'border-primary bg-primary/[0.03]'
-              : 'border-border bg-muted/50 hover:border-muted-foreground/30'
-          }`}>
+          isDragActive={isDragActive}
+          label={t('upload.dropHeading')}
+          description={t('upload.dropBody')}>
           <input {...getInputProps()} />
-          <Upload
-            className={`mb-3 size-12 text-muted-foreground transition-transform ${
-              isDragActive ? 'scale-110 text-primary' : ''
-            }`}
-          />
-          <p className="text-sm font-medium">{t('upload.dropHeading')}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{t('upload.dropBody')}</p>
           <Button
             render={<span />}
             variant="secondary"
             size="sm"
-            className="mt-4"
+            className="mt-2"
             aria-hidden="true"
             tabIndex={-1}>
             {t('upload.browse')}
           </Button>
-        </button>
+        </DropZoneSurface>
       )}
     </div>
   );

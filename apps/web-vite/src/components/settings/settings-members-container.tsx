@@ -1,27 +1,27 @@
 import {
-  AtelierPageHeader,
   SectionLabel,
   WORKBENCH_DATA_TABLE_CLASS,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { UserPlus, Users } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { useSettingsMembers } from './hooks/use-settings-members.js';
 import { InviteDialogContainer } from './invite-dialog-container.js';
 import { PinActionButton } from './pin-action-button.js';
-import { UsersTableContainer } from './users-table-container.js';
+import { UsersTableContainer } from './members/container.js';
 
 export function SettingsMembersContainer() {
   const t = useTranslations('Users');
   const { inviteOpen, setInviteOpen, openInvite, canInvite } = useSettingsMembers();
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('title')}
           description={t('subtitle')}
           actions={

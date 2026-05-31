@@ -1,6 +1,8 @@
+import { DataTable } from '@contractor-ops/ui';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -8,7 +10,6 @@ import {
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import {
   Select,
   SelectContent,
@@ -17,21 +18,14 @@ import {
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@contractor-ops/ui/components/shadcn/tooltip';
+import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { tKey } from '../../i18n/typed-keys.js';
 import type { useLinearStatusMappingDialog } from './hooks/use-linear-status-mapping-dialog.js';
@@ -41,29 +35,51 @@ export type LinearStatusMappingDialogViewProps = ReturnType<typeof useLinearStat
 
 type LinearTeamState = LinearStatusMappingDialogViewProps['teamStates'][number];
 
-interface StateMappingRowProps {
-  workflowStatusValue: string;
+interface WorkflowStatusCellProps {
   workflowStatusLabel: string;
   isUnmapped: boolean;
   unmappedTooltip: string;
+}
+
+const WorkflowStatusCell = memo(function WorkflowStatusCell({
+  workflowStatusLabel,
+  isUnmapped,
+  unmappedTooltip,
+}: WorkflowStatusCellProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-medium">{workflowStatusLabel}</span>
+      {isUnmapped && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <AlertTriangle className="size-3.5 text-warning" />
+            </TooltipTrigger>
+            <TooltipContent>{unmappedTooltip}</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
+  );
+});
+
+interface LinearStateSelectCellProps {
+  workflowStatusValue: string;
+  mappedId: string | undefined;
   isExistingMappingLoading: boolean;
   teamStates: LinearTeamState[];
-  mappedId: string | undefined;
   notMappedLabel: string;
   onStateSelect: (workflowStatus: string, stateId: string) => void;
 }
 
-const StateMappingRow = memo(function StateMappingRow({
+const LinearStateSelectCell = memo(function LinearStateSelectCell({
   workflowStatusValue,
-  workflowStatusLabel,
-  isUnmapped,
-  unmappedTooltip,
+  mappedId,
   isExistingMappingLoading,
   teamStates,
-  mappedId,
   notMappedLabel,
   onStateSelect,
-}: StateMappingRowProps) {
+}: LinearStateSelectCellProps) {
   const handleValueChange = useCallback(
     (v: string | null) => {
       if (v) onStateSelect(workflowStatusValue, v);
@@ -71,42 +87,28 @@ const StateMappingRow = memo(function StateMappingRow({
     [workflowStatusValue, onStateSelect],
   );
   return (
-    <TableRow>
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{workflowStatusLabel}</span>
-          {isUnmapped && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <AlertTriangle className="size-3.5 text-warning" />
-                </TooltipTrigger>
-                <TooltipContent>{unmappedTooltip}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
-      </TableCell>
-      <TableCell>
-        <Select value={mappedId ?? undefined} onValueChange={handleValueChange}>
-          <SelectTrigger className="w-full" loading={isExistingMappingLoading}>
-            <SelectValue placeholder={notMappedLabel} />
-          </SelectTrigger>
-          <SelectContent>
-            {teamStates.map(state => (
-              <SelectItem key={state.id} value={state.id}>
-                <div className="flex items-center gap-2">
-                  <span className="size-2 shrink-0 rounded-full" aria-hidden="true" />
-                  {state.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </TableCell>
-    </TableRow>
+    <Select value={mappedId ?? undefined} onValueChange={handleValueChange}>
+      <SelectTrigger className="w-full" loading={isExistingMappingLoading}>
+        <SelectValue placeholder={notMappedLabel} />
+      </SelectTrigger>
+      <SelectContent>
+        {teamStates.map(state => (
+          <SelectItem key={state.id} value={state.id}>
+            <div className="flex items-center gap-2">
+              <span className="size-2 shrink-0 rounded-full" aria-hidden="true" />
+              {state.name}
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 });
+
+interface WorkflowStatusRow {
+  value: string;
+  label: string;
+}
 
 const WS_LABEL_KEYS: Record<string, string> = {
   TODO: 'workflowStatus.todo',
@@ -145,6 +147,63 @@ export function LinearStatusMappingDialogView({
   const notMappedLabel = tI('notMapped');
   const isExistingMappingLoading = existingMappingQuery.isLoading;
 
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
+
+  const tableData = useMemo<WorkflowStatusRow[]>(
+    () =>
+      WORKFLOW_STATUS_VALUES.map(wsValue => ({
+        value: wsValue,
+        label: tKey(tI, WS_LABEL_KEYS[wsValue] ?? ''),
+      })),
+    [tI],
+  );
+
+  const columns = useMemo<ColumnDef<WorkflowStatusRow, unknown>[]>(
+    () => [
+      {
+        id: 'workflowStatus',
+        accessorKey: 'label',
+        header: t('workflowStatus'),
+        enableSorting: false,
+        cell: ({ row }) => {
+          const mappedId = getMappedStateId(row.original.value);
+          return (
+            <WorkflowStatusCell
+              workflowStatusLabel={row.original.label}
+              isUnmapped={!mappedId}
+              unmappedTooltip={unmappedTooltip}
+            />
+          );
+        },
+      },
+      {
+        id: 'linearState',
+        header: t('linearState'),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <LinearStateSelectCell
+            workflowStatusValue={row.original.value}
+            mappedId={getMappedStateId(row.original.value)}
+            isExistingMappingLoading={isExistingMappingLoading}
+            teamStates={teamStates}
+            notMappedLabel={notMappedLabel}
+            onStateSelect={handleStateSelect}
+          />
+        ),
+      },
+    ],
+    [
+      t,
+      unmappedTooltip,
+      notMappedLabel,
+      isExistingMappingLoading,
+      teamStates,
+      getMappedStateId,
+      handleStateSelect,
+    ],
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
@@ -155,61 +214,56 @@ export function LinearStatusMappingDialogView({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2">
-          <Label>{t('selectTeam')}</Label>
-          <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamChange}>
-            <SelectTrigger className="w-full" loading={teamsQuery.isLoading}>
-              <SelectValue placeholder={t('selectTeam')} />
-            </SelectTrigger>
-            <SelectContent>
-              {teams.map(team => (
-                <SelectItem key={team.id} value={team.id}>
-                  {team.name} ({team.key})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {!teamsQuery.isLoading && teams.length === 0 && (
-          <div className="rounded-md border border-dashed p-6 text-center">
-            <p className="text-sm font-medium">{t('noTeams')}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{t('noTeamsBody')}</p>
+        <DialogBody className="space-y-4">
+          <div className="space-y-2">
+            <Label>{t('selectTeam')}</Label>
+            <Select value={selectedTeamId ?? undefined} onValueChange={handleTeamChange}>
+              <SelectTrigger className="w-full" loading={teamsQuery.isLoading}>
+                <SelectValue placeholder={t('selectTeam')} />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map(team => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name} ({team.key})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        {selectedTeamId && teamStates.length > 0 && (
-          <ScrollArea className="max-h-[400px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('workflowStatus')}</TableHead>
-                  <TableHead>{t('linearState')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {WORKFLOW_STATUS_VALUES.map(wsValue => {
-                  const mappedId = getMappedStateId(wsValue);
-                  const wsLabelKey = WS_LABEL_KEYS[wsValue] ?? '';
-                  return (
-                    <StateMappingRow
-                      key={wsValue}
-                      workflowStatusValue={wsValue}
-                      workflowStatusLabel={tKey(tI, wsLabelKey)}
-                      isUnmapped={!mappedId}
-                      unmappedTooltip={unmappedTooltip}
-                      isExistingMappingLoading={isExistingMappingLoading}
-                      teamStates={teamStates}
-                      mappedId={mappedId}
-                      notMappedLabel={notMappedLabel}
-                      onStateSelect={handleStateSelect}
-                    />
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </ScrollArea>
-        )}
+          {!teamsQuery.isLoading && teams.length === 0 && (
+            <div className="rounded-md border border-dashed p-6 text-center">
+              <p className="text-sm font-medium">{t('noTeams')}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t('noTeamsBody')}</p>
+            </div>
+          )}
+
+          {selectedTeamId && teamStates.length > 0 && (
+            <div className="max-h-[400px] overflow-auto">
+              <DataTable
+                columns={columns}
+                data={tableData}
+                totalRows={tableData.length}
+                clientPagination
+                pageIndex={pageIndex}
+                pageSize={pageSize}
+                onPageChange={setPageIndex}
+                onPageSizeChange={size => {
+                  setPageSize(size);
+                  setPageIndex(0);
+                }}
+                constrainHeight={false}
+                hideDensityToggle
+                hideChrome
+                hideFooter
+                getRowId={row => row.value}
+                entityLabel={t('workflowStatus')}
+                emptyTitle={t('workflowStatus')}
+                noResultsTitle={t('workflowStatus')}
+              />
+            </div>
+          )}
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleDiscard}>

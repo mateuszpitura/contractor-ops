@@ -10,8 +10,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { render, screen, setup } from '@/test/test-utils';
-import type { AuditLogEntry } from '../audit-log-table';
-import { AuditLogTable } from '../audit-log-table';
+import type { AuditLogEntry } from '../audit-log/data-table.js';
+import { AuditLogTable } from '../audit-log/data-table.js';
 
 function makeEntry(overrides: Partial<AuditLogEntry> = {}): AuditLogEntry {
   return {

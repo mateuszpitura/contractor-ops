@@ -2,8 +2,10 @@ import { Alert, AlertDescription, AlertTitle } from '@contractor-ops/ui/componen
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
@@ -94,13 +96,15 @@ export function PeppolWizardShell({
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <StepIndicator current={step} />
-        </div>
+        <DialogBody>
+          <div className="py-4">
+            <StepIndicator current={step} />
+          </div>
 
-        <div className="min-h-[200px]">{children}</div>
+          <div className="min-h-[200px]">{children}</div>
+        </DialogBody>
 
-        <div className="flex justify-between pt-2">{footer}</div>
+        <DialogFooter className="justify-between">{footer}</DialogFooter>
       </DialogContent>
     </Dialog>
   );

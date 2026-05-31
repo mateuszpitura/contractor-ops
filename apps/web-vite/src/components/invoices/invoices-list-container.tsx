@@ -1,16 +1,16 @@
 import {
   AtelierEmptyState,
-  AtelierPageHeader,
   InvoicesIllustration,
   SectionLabel,
   WORKBENCH_TABLE_PAGE_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
 } from '@contractor-ops/ui';
 import { Check, Copy, Mail, Receipt, Upload, Users } from 'lucide-react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { EInvoiceComplianceFilterChips } from './einvoice-compliance-filter-chips.js';
 import { EInvoiceComplianceSummaryTileContainer } from './einvoice-compliance-summary-tile-container.js';
 import { useInvoicesListPage } from './hooks/use-invoices-list-page.js';
@@ -39,33 +39,18 @@ export function InvoicesListContainer() {
     handleStatusChange,
   } = useInvoicesListPage();
 
+  const controlsDisabled = isListControlsDisabled({ isLoading: list.isCountLoading });
+
   if (list.showEmptyState) {
     return (
       <div className={WORKBENCH_TABLE_PAGE_CLASS}>
         <AnimateIn delay={0}>
-          <AtelierPageHeader
-            title={t('pageTitle')}
-            description={t('pageDescription')}
-            actions={<ImportSplitButtonContainer onCreateNewClick={handleUpload} />}
-          />
+          <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
         </AnimateIn>
 
-        <AnimateIn delay={1} className="shrink-0">
-          <EInvoiceComplianceSummaryTileContainer
-            onReviewFilterRequested={handleComplianceReview}
-          />
-        </AnimateIn>
-        <AnimateIn delay={2} className="shrink-0">
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">
-              {t('complianceFilterLabel')}
-            </h3>
-            <EInvoiceComplianceFilterChips disabled={list.isCountLoading} />
-          </div>
-        </AnimateIn>
-
-        <AnimateIn delay={4}>
+        <AnimateIn delay={1} className="flex min-h-0 min-w-0 flex-1 flex-col">
           <AtelierEmptyState
+            variant="page"
             illustration={InvoicesIllustration}
             heading={list.emptyProps.heading}
             body={list.emptyProps.body}
@@ -101,22 +86,29 @@ export function InvoicesListContainer() {
   return (
     <div className={WORKBENCH_TABLE_PAGE_CLASS}>
       <AnimateIn delay={0}>
-        <AtelierPageHeader
+        <WorkbenchPageHeader
           title={t('pageTitle')}
           description={t('pageDescription')}
-          actions={<ImportSplitButtonContainer onCreateNewClick={handleUpload} />}
+          actions={
+            <ImportSplitButtonContainer
+              disabled={controlsDisabled}
+              onCreateNewClick={handleUpload}
+            />
+          }
         />
       </AnimateIn>
 
-      <AnimateIn delay={1} className="shrink-0">
+      <AnimateIn delay={1} className="w-full min-w-0 shrink-0">
         <EInvoiceComplianceSummaryTileContainer onReviewFilterRequested={handleComplianceReview} />
       </AnimateIn>
-      <AnimateIn delay={2} className="shrink-0">
-        <div className="space-y-2">
+      <AnimateIn delay={2} className="min-w-0 shrink-0">
+        <div className="min-w-0 space-y-2">
           <h3 className="text-sm font-medium text-muted-foreground">
             {t('complianceFilterLabel')}
           </h3>
-          <EInvoiceComplianceFilterChips disabled={list.isCountLoading} />
+          <div className="min-w-0 overflow-x-auto">
+            <EInvoiceComplianceFilterChips disabled={controlsDisabled} />
+          </div>
         </div>
       </AnimateIn>
 
@@ -145,13 +137,13 @@ export function InvoicesListContainer() {
           <StatusChipBarContainer
             activeStatuses={list.tableProps.filters.status}
             onStatusChange={handleStatusChange}
-            disabled={list.isCountLoading}
+            disabled={controlsDisabled}
           />
           <InvoiceDataTable
             {...list.tableProps}
             onRowClick={handleRowClick}
             onUpload={handleUpload}
-            parentLoading={list.isCountLoading}
+            parentLoading={controlsDisabled}
             toolbar={<DataTableToolbar {...list.toolbarProps} />}
           />
         </section>

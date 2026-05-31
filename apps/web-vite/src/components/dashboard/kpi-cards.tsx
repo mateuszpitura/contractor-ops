@@ -137,7 +137,7 @@ export function KpiCards() {
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {KPI_CARDS.map((card, index) => {
+      {KPI_CARDS.map(card => {
         const kpiData = data?.[card.key as keyof NonNullable<typeof data>];
         let value = 0;
         let prevValue = 0;
@@ -159,11 +159,7 @@ export function KpiCards() {
             href={card.href}
             className={`group/kpi block ${card.isHero ? 'xl:col-span-2' : ''}`}
             aria-label={cardLabel}>
-            <TiltCard
-              shimmer={!card.isHero}
-              glow={card.isHero}
-              delay={index * 60}
-              className="h-full">
+            <TiltCard entrance={false} shimmer={!card.isHero} glow={card.isHero} className="h-full">
               <div className="flex h-full flex-col justify-between gap-3">
                 <div className="flex items-start justify-between">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

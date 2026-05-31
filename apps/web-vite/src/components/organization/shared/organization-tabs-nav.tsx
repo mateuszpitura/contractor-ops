@@ -17,6 +17,7 @@
  * Absolute hrefs side-step the whole ambiguity.
  */
 
+import { Tabs, TabsList, tabsTriggerClassName } from '@contractor-ops/ui/components/shadcn/tabs';
 import { useLocation } from 'react-router-dom';
 
 import { Link } from '../../../i18n/navigation.js';
@@ -38,28 +39,29 @@ const TABS: OrganizationTab[] = [
 export function OrganizationTabsNav() {
   const t = useTranslations('Organization');
   const location = useLocation();
-  // Match the last path segment under /<locale>/organization/...
   const activeSegment = location.pathname.split('/').filter(Boolean).at(-1);
+  const activeValue = TABS.find(tab => tab.segment === activeSegment)?.segment ?? '';
 
   return (
-    <nav aria-label="Organization tabs" className="border-border flex gap-1 border-b">
-      {TABS.map(tab => {
-        const isActive = activeSegment === tab.segment;
-        return (
-          <Link
-            key={tab.segment}
-            href={tab.href}
-            aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              'border-b-2 px-4 py-2 text-sm font-medium transition-colors',
-              isActive
-                ? 'border-foreground text-foreground'
-                : 'text-muted-foreground hover:text-foreground border-transparent',
-            )}>
-            {t(tab.i18nKey)}
-          </Link>
-        );
-      })}
+    <nav aria-label="Organization tabs">
+      <Tabs value={activeValue}>
+        <TabsList>
+          {TABS.map(tab => {
+            const isActive = activeSegment === tab.segment;
+            return (
+              <Link
+                key={tab.segment}
+                href={tab.href}
+                aria-current={isActive ? 'page' : undefined}
+                data-slot="tabs-trigger"
+                {...(isActive ? { 'data-active': '' } : {})}
+                className={cn(tabsTriggerClassName, 'no-underline')}>
+                {t(tab.i18nKey)}
+              </Link>
+            );
+          })}
+        </TabsList>
+      </Tabs>
     </nav>
   );
 }

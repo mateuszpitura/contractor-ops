@@ -32,6 +32,7 @@ import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Checkbox } from '@contractor-ops/ui/components/shadcn/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -122,7 +123,7 @@ export function OverrideDialog({
             </DialogTitle>
             <DialogDescription>{t('description')}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor={reasonId}>{t('reasonLabel')}</Label>
               <Textarea
@@ -160,7 +161,7 @@ export function OverrideDialog({
                 {serverError}
               </p>
             )}
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancelClick} disabled={pending}>
               {t('cancel')}

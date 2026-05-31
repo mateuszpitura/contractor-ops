@@ -7,6 +7,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -117,7 +118,7 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
             </DialogDescription>
           </DialogHeader>
           {activeMerge && (
-            <div className="space-y-3 py-2">
+            <DialogBody className="space-y-3 py-2">
               <p className="text-muted-foreground text-sm">
                 Existing project(s) with the same name:
               </p>
@@ -132,7 +133,7 @@ export function PendingMergesInbox({ inbox }: { inbox: ReturnType<typeof usePend
                   />
                 ))}
               </div>
-            </div>
+            </DialogBody>
           )}
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={keepSeparate} disabled={resolveMutation.isPending}>

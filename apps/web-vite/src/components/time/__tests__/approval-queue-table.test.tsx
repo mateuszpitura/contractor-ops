@@ -60,8 +60,8 @@ vi.mock('../rejection-reason-dialog', () => {
   };
 });
 
-import type { TimesheetRow } from '../approval-queue-table.js';
-import { ApprovalQueueTable } from '../approval-queue-table.js';
+import type { TimesheetRow } from '../approval-queue/data-table.js';
+import { ApprovalQueueTable } from '../approval-queue/data-table.js';
 import { click, findAllByText, findButton, findByText, mount } from './_render.js';
 
 afterEach(() => {

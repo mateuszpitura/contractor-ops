@@ -14,7 +14,7 @@ export function useWorkflowsList() {
 
   const runsTotal = (runsCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
-  const isCountLoading = runsCountQuery.isLoading;
+  const isCountLoading = runsCountQuery.isLoading || runsCountQuery.isFetching;
   const canManageTemplates = can('workflow', ['create']);
 
   const showEmptyState = !isCountLoading && runsTotal === 0 && !canManageTemplates;

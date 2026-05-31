@@ -21,6 +21,7 @@ vi.mock('@contractor-ops/ui/components/shadcn/dialog', () => {
     DialogHeader: passthrough,
     DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
     DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+    DialogBody: passthrough,
     DialogFooter: passthrough,
   };
 });

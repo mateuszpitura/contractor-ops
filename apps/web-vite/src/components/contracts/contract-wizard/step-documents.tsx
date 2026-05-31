@@ -1,3 +1,4 @@
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Progress } from '@contractor-ops/ui/components/shadcn/progress';
 import {
@@ -6,7 +7,6 @@ import {
   ShieldAlert,
   ShieldCheck,
   ShieldQuestion,
-  UploadCloud,
   X,
 } from 'lucide-react';
 import { memo, useCallback } from 'react';
@@ -135,23 +135,18 @@ export function StepDocuments({ onSkip, files, onDrop, removeFile }: StepDocumen
 
   return (
     <div className="space-y-4">
-      <div
+      <DropZoneSurface
         {...getRootProps()}
-        className={`flex min-h-[160px] flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors cursor-pointer ${
-          isDragActive ? 'border-primary bg-primary/[0.03]' : 'border-border bg-muted/50'
-        }`}>
+        isDragActive={isDragActive}
+        label={
+          <>
+            {t('dropZone.body')}{' '}
+            <span className="font-medium text-primary">{t('dropZone.browse')}</span>
+          </>
+        }
+        description={t('dropZone.accepted')}>
         <input {...getInputProps()} />
-        <UploadCloud
-          className={`mb-3 h-8 w-8 text-muted-foreground transition-transform ${
-            isDragActive ? 'scale-110 text-primary' : ''
-          }`}
-        />
-        <p className="text-sm text-center text-muted-foreground">
-          {t('dropZone.body')}{' '}
-          <span className="text-primary font-medium cursor-pointer">{t('dropZone.browse')}</span>
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">{t('dropZone.accepted')}</p>
-      </div>
+      </DropZoneSurface>
 
       {files.length > 0 && (
         <div className="space-y-2">

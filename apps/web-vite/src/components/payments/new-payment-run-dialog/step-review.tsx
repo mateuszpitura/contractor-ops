@@ -7,9 +7,9 @@
  */
 
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
+import { DialogBody, DialogFooter } from '@contractor-ops/ui/components/shadcn/dialog';
 import { Input } from '@contractor-ops/ui/components/shadcn/input';
 import { Label } from '@contractor-ops/ui/components/shadcn/label';
-import { ScrollArea } from '@contractor-ops/ui/components/shadcn/scroll-area';
 import {
   Select,
   SelectContent,
@@ -83,101 +83,105 @@ export function StepReview({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-center">
-        <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
-        <p className="text-xs text-muted-foreground">{t('step2.runNumberLabel')}</p>
-      </div>
-
-      <div className="grid gap-3">
-        <div className="space-y-1.5">
-          <Label className="text-xs">{t('step2.nameLabel')}</Label>
-          <Input
-            placeholder={t('step2.namePlaceholder')}
-            value={name}
-            onChange={handleNameChange}
-            maxLength={100}
-            className="h-8 text-sm"
-          />
+    <>
+      <DialogBody className="flex flex-col gap-4">
+        <div className="text-center">
+          <p className="text-[20px] font-semibold">PR-{new Date().getFullYear()}-XXX</p>
+          <p className="text-xs text-muted-foreground">{t('step2.runNumberLabel')}</p>
         </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs">{t('step2.descriptionLabel')}</Label>
-          <Textarea
-            placeholder={t('step2.descriptionPlaceholder')}
-            value={notes}
-            onChange={handleNotesChange}
-            maxLength={500}
-            className="h-16 text-sm resize-none"
-          />
+
+        <div className="grid gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t('step2.nameLabel')}</Label>
+            <Input
+              placeholder={t('step2.namePlaceholder')}
+              value={name}
+              onChange={handleNameChange}
+              maxLength={100}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">{t('step2.descriptionLabel')}</Label>
+            <Textarea
+              placeholder={t('step2.descriptionPlaceholder')}
+              value={notes}
+              onChange={handleNotesChange}
+              maxLength={500}
+              className="h-16 text-sm resize-none"
+            />
+          </div>
         </div>
-      </div>
 
-      <Separator />
+        <Separator />
 
-      <ScrollArea className="max-h-[300px]">
-        {currencies.map(curr => {
-          const group = groupedByCurrency[curr];
-          if (!group) return null;
-          return (
-            <div key={curr} className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">
-                  {curr} &mdash; {group.invoices.length} {t('step2.invoices')}
-                </span>
-                <span className="text-[20px] font-semibold tabular-nums">
-                  {formatMinorUnits(group.totalMinor, null, 'pl-PL')} {curr}
-                </span>
+        <div className="flex flex-col">
+          {currencies.map(curr => {
+            const group = groupedByCurrency[curr];
+            if (!group) return null;
+            return (
+              <div key={curr} className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">
+                    {curr} &mdash; {t('step2.invoices', { count: group.invoices.length })}
+                  </span>
+                  <span className="text-[20px] font-semibold tabular-nums">
+                    {formatMinorUnits(group.totalMinor, null, 'pl-PL')} {curr}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {group.invoices.slice(0, 10).map(inv => (
+                    <div
+                      key={inv.id}
+                      className="flex items-center justify-between py-1 px-2 text-xs">
+                      <span className="font-medium">{inv.invoiceNumber}</span>
+                      <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
+                      <span className="font-mono tabular-nums">
+                        {formatMinorUnits(inv.amountToPayMinor, null, 'pl-PL')}
+                      </span>
+                    </div>
+                  ))}
+                  {group.invoices.length > 10 && (
+                    <p className="text-xs text-muted-foreground text-center py-1">
+                      +{group.invoices.length - 10} more
+                    </p>
+                  )}
+                </div>
+                {currencies.length > 1 && <Separator className="mt-3" />}
               </div>
-              <div className="space-y-1">
-                {group.invoices.slice(0, 10).map(inv => (
-                  <div key={inv.id} className="flex items-center justify-between py-1 px-2 text-xs">
-                    <span className="font-medium">{inv.invoiceNumber}</span>
-                    <span className="text-muted-foreground">{inv.contractor?.legalName}</span>
-                    <span className="font-mono tabular-nums">
-                      {formatMinorUnits(inv.amountToPayMinor, null, 'pl-PL')}
-                    </span>
-                  </div>
-                ))}
-                {group.invoices.length > 10 && (
-                  <p className="text-xs text-muted-foreground text-center py-1">
-                    +{group.invoices.length - 10} more
-                  </p>
-                )}
-              </div>
-              {currencies.length > 1 && <Separator className="mt-3" />}
-            </div>
-          );
-        })}
-      </ScrollArea>
-
-      <div className="flex items-center justify-between border-t-2 pt-3">
-        <span className="text-sm font-medium">{t('step2.grandTotal')}</span>
-        <div className="text-end">
-          {currencies.map(curr => (
-            <p key={curr} className="text-[20px] font-semibold tabular-nums">
-              {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0, null, 'pl-PL')} {curr}
-            </p>
-          ))}
+            );
+          })}
         </div>
-      </div>
 
-      <Separator />
+        <div className="flex items-center justify-between border-t-2 pt-3">
+          <span className="text-sm font-medium">{t('step2.grandTotal')}</span>
+          <div className="text-end">
+            {currencies.map(curr => (
+              <p key={curr} className="text-[20px] font-semibold tabular-nums">
+                {formatMinorUnits(groupedByCurrency[curr]?.totalMinor ?? 0, null, 'pl-PL')} {curr}
+              </p>
+            ))}
+          </div>
+        </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
-        <Select value={exportFormat} onValueChange={handleExportFormatChange}>
-          <SelectTrigger className="w-full h-8">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CSV">{t('step2.formatCsv')}</SelectItem>
-            {hasPLN && <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem>}
-            {hasEUR && <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem>}
-          </SelectContent>
-        </Select>
-      </div>
+        <Separator />
 
-      <div className="flex items-center justify-end gap-2 border-t pt-4">
+        <div className="space-y-1.5">
+          <Label className="text-xs">{t('step2.exportFormatLabel')}</Label>
+          <Select value={exportFormat} onValueChange={handleExportFormatChange}>
+            <SelectTrigger className="w-full h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CSV">{t('step2.formatCsv')}</SelectItem>
+              {hasPLN && <SelectItem value="BANK_FILE">{t('step2.formatElixir')}</SelectItem>}
+              {hasEUR && <SelectItem value="SEPA_XML">{t('step2.formatSepa')}</SelectItem>}
+            </SelectContent>
+          </Select>
+        </div>
+      </DialogBody>
+
+      <DialogFooter>
         <Button variant="ghost" onClick={onBack} disabled={isLocking}>
           {t('step2.back')}
         </Button>
@@ -191,7 +195,7 @@ export function StepReview({
             t('step2.lockAndExport')
           )}
         </Button>
-      </div>
-    </div>
+      </DialogFooter>
+    </>
   );
 }

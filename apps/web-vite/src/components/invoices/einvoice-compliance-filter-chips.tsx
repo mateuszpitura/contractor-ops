@@ -92,8 +92,9 @@ export function EInvoiceComplianceFilterChips({
   );
 
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange}>
-      <TabsList className={tabsDisabled ? 'opacity-50 pointer-events-none' : ''}>
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="min-w-0">
+      <TabsList
+        className={`no-scrollbar max-w-full justify-start overflow-x-auto [&>*]:shrink-0 ${tabsDisabled ? 'pointer-events-none opacity-50' : ''}`}>
         {TABS.map(tab => (
           <TabsTrigger key={tab.value} value={tab.value} disabled={tabsDisabled}>
             {t(tab.labelKey)}

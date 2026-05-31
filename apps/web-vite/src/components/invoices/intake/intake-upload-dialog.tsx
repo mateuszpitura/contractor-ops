@@ -1,17 +1,18 @@
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@contractor-ops/ui/components/shadcn/dialog';
-import { AlertCircle, Loader2, UploadCloud } from 'lucide-react';
-import type { ChangeEvent, DragEvent, ReactNode } from 'react';
+import { AlertCircle, UploadCloud } from 'lucide-react';
+import type { ChangeEvent, DragEvent, KeyboardEvent, ReactNode } from 'react';
 import { useCallback } from 'react';
 
 import { useTranslations } from '../../../i18n/useTranslations.js';
-import { cn } from '../../../lib/utils.js';
 import type { IntakeUploadLocalErrorKind, useIntakeUpload } from '../hooks/use-intake-upload.js';
 
 const ACCEPT_ATTR = '.xml,.pdf,application/xml,text/xml,application/pdf';
@@ -33,10 +34,12 @@ export function IntakeUploadDialog({ open, upload, body }: IntakeUploadDialogPro
             <UploadCloud className="size-4" />
             {t('uploadDialogTitle')}
           </DialogTitle>
-          <DialogDescription id="intake-upload-helper">{t('dropZoneSecondary')}</DialogDescription>
+          <DialogDescription id="intake-upload-helper" className="sr-only">
+            {t('dropZoneSecondary')}
+          </DialogDescription>
         </DialogHeader>
 
-        {body}
+        <DialogBody>{body}</DialogBody>
       </DialogContent>
     </Dialog>
   );
@@ -80,10 +83,10 @@ interface IntakeUploadDropzoneProps {
 
 export function IntakeUploadDropzone({ upload }: IntakeUploadDropzoneProps) {
   const t = useTranslations('EInvoice.intake');
-  const setIsDragOver = upload.setIsDragOver;
+  const { setIsDragOver, fileInputRef, isPending } = upload;
 
   const handleDragOver = useCallback(
-    (event: DragEvent<HTMLLabelElement>) => {
+    (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault();
       setIsDragOver(true);
     },
@@ -94,42 +97,47 @@ export function IntakeUploadDropzone({ upload }: IntakeUploadDropzoneProps) {
     setIsDragOver(false);
   }, [setIsDragOver]);
 
+  const handleClick = useCallback(() => {
+    if (!isPending) fileInputRef.current?.click();
+  }, [fileInputRef, isPending]);
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if ((event.key === 'Enter' || event.key === ' ') && !isPending) {
+        event.preventDefault();
+        fileInputRef.current?.click();
+      }
+    },
+    [fileInputRef, isPending],
+  );
+
   return (
-    <label
-      htmlFor="intake-upload-input"
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={upload.handleDrop}
-      aria-describedby="intake-upload-helper"
-      className={cn(
-        'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition-colors',
-        upload.isDragOver
-          ? 'border-primary bg-primary/5'
-          : 'border-muted-foreground/30 hover:border-primary/60 hover:bg-accent/30',
-        upload.isPending && 'pointer-events-none opacity-60',
-      )}
-      data-slot="intake-upload-dropzone">
-      {upload.isPending ? (
-        <>
-          <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-          <p className="text-sm font-medium">{t('uploadValidating')}</p>
-        </>
-      ) : (
-        <>
-          <UploadCloud className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-          <p className="text-sm font-medium">{t('dropZonePrimary')}</p>
-          <p className="text-xs text-muted-foreground">{t('dropZoneSecondary')}</p>
-        </>
-      )}
-      <input
-        ref={upload.fileInputRef}
-        id="intake-upload-input"
-        type="file"
-        accept={ACCEPT_ATTR}
-        className="sr-only"
-        disabled={upload.isPending}
-        onChange={upload.handleChange as (event: ChangeEvent<HTMLInputElement>) => void}
-      />
-    </label>
+    <div data-slot="intake-upload-dropzone">
+      <DropZoneSurface
+        role="button"
+        tabIndex={isPending ? -1 : 0}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={upload.handleDrop}
+        aria-describedby="intake-upload-helper"
+        isDragActive={upload.isDragOver}
+        isLoading={isPending}
+        loadingLabel={t('uploadValidating')}
+        disabled={isPending}
+        label={t('dropZonePrimary')}
+        description={t('dropZoneSecondary')}>
+        <input
+          ref={fileInputRef}
+          id="intake-upload-input"
+          type="file"
+          accept={ACCEPT_ATTR}
+          className="sr-only"
+          disabled={isPending}
+          onChange={upload.handleChange as (event: ChangeEvent<HTMLInputElement>) => void}
+        />
+      </DropZoneSurface>
+    </div>
   );
 }

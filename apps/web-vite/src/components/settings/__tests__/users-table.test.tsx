@@ -36,7 +36,7 @@ vi.mock('../user-consent-sheet-container.js', () => ({
 }));
 
 import type { Member } from '../hooks/use-users-table.js';
-import { UsersTable } from '../users-table.js';
+import { UsersTable } from '../members/data-table.js';
 
 type TableProps = React.ComponentProps<typeof UsersTable>;
 

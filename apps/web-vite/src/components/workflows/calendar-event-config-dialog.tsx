@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -107,7 +108,7 @@ export function CalendarEventConfigDialog({
           <DialogDescription>{t('calendarEventDescription')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor={`${reactId}-calendar-event-title`}>{t('eventTitleLabel')}</Label>
             <Input
@@ -147,7 +148,7 @@ export function CalendarEventConfigDialog({
             />
             <p className="text-xs text-muted-foreground">{t('attendeesHint')}</p>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>

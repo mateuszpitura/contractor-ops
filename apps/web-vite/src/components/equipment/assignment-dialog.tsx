@@ -9,6 +9,7 @@ import {
 } from '@contractor-ops/ui/components/shadcn/command';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -100,34 +101,36 @@ export function AssignmentDialogView({
           <DialogDescription>{equipmentName}</DialogDescription>
         </DialogHeader>
 
-        <Command shouldFilter={false} className="rounded-lg border">
-          <CommandInput
-            placeholder={t('search.placeholder')}
-            value={search}
-            onValueChange={setSearch}
-          />
-          <CommandList>
-            <CommandEmpty>
-              {contractorsQuery.isLoading ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </div>
-              ) : (
-                t('search.notFound')
-              )}
-            </CommandEmpty>
-            <CommandGroup>
-              {contractors.map(contractor => (
-                <ContractorOption
-                  key={contractor.id}
-                  contractor={contractor}
-                  isSelected={selectedContractorId === contractor.id}
-                  onSelect={handleSelectContractor}
-                />
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <DialogBody>
+          <Command shouldFilter={false} className="rounded-lg border">
+            <CommandInput
+              placeholder={t('search.placeholder')}
+              value={search}
+              onValueChange={setSearch}
+            />
+            <CommandList>
+              <CommandEmpty>
+                {contractorsQuery.isLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  t('search.notFound')
+                )}
+              </CommandEmpty>
+              <CommandGroup>
+                {contractors.map(contractor => (
+                  <ContractorOption
+                    key={contractor.id}
+                    contractor={contractor}
+                    isSelected={selectedContractorId === contractor.id}
+                    onSelect={handleSelectContractor}
+                  />
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </DialogBody>
 
         <DialogFooter>
           <Button

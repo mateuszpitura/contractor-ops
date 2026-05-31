@@ -11,7 +11,7 @@ import type { ComponentProps, ReactElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { TemplatesTable } from '../templates-table.js';
+import { TemplatesTable } from '../templates/data-table.js';
 import { findByText, mount } from './_render.js';
 
 function withRouter(ui: ReactElement): ReactElement {

@@ -10,7 +10,6 @@ import {
   AlertDialogTitle,
 } from '@contractor-ops/ui/components/shadcn/alert-dialog';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
-import type { Table } from '@tanstack/react-table';
 import { Loader2 } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
@@ -22,7 +21,7 @@ import type { InvoiceBulkActionsHandlers } from '../hooks/use-invoice-bulk-actio
 import type { InvoiceRow } from './columns.js';
 
 interface DataTableBulkActionsProps {
-  table: Table<InvoiceRow>;
+  selectedRows: InvoiceRow[];
   bulkActions: InvoiceBulkActionsHandlers;
   onComplete: () => void;
 }
@@ -34,7 +33,7 @@ interface DataTableBulkActionsProps {
  * dialog for terminal mutations).
  */
 export function DataTableBulkActions({
-  table,
+  selectedRows,
   bulkActions,
   onComplete,
 }: DataTableBulkActionsProps) {
@@ -42,8 +41,7 @@ export function DataTableBulkActions({
 
   const [showVoidDialog, setShowVoidDialog] = useState(false);
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows;
-  const selectedIds = selectedRows.map(row => row.original.id);
+  const selectedIds = selectedRows.map(row => row.id);
   const count = selectedIds.length;
 
   const actions = getBulkInvoiceActions();

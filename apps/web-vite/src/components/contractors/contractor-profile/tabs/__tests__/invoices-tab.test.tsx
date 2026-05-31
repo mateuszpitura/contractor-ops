@@ -156,7 +156,7 @@ describe('InvoicesTabView', () => {
 
   it('does not render pagination when totalPages == 1', () => {
     render(<InvoicesTabView {...buildProps({ data: [sampleInvoice()], totalRows: 1 })} />);
-    expect(screen.queryByText('1 / 1')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
   });
 
   it('renders pagination when totalPages > 1', () => {
@@ -165,6 +165,6 @@ describe('InvoicesTabView', () => {
         {...buildProps({ data: [sampleInvoice()], totalRows: 60, totalPages: 3 })}
       />,
     );
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    expect(screen.getByText(/Page 1 of 3/i)).toBeInTheDocument();
   });
 });

@@ -39,7 +39,7 @@ function parseLocalDate(s: string): Date {
 // Types
 // ---------------------------------------------------------------------------
 
-interface FilterState {
+export interface FilterState {
   status: string[];
   type: string[];
   billingModel: string[];

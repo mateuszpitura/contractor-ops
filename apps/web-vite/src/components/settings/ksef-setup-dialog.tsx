@@ -1,6 +1,8 @@
+import { DropZoneSurface } from '@contractor-ops/ui/components/origin/drop-zone-surface';
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -15,9 +17,9 @@ import {
   TabsList,
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
-import { Loader2, ShieldCheck, Upload } from 'lucide-react';
-import type { ChangeEvent } from 'react';
-import { useCallback } from 'react';
+import { Loader2, ShieldCheck } from 'lucide-react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
+import { useCallback, useRef } from 'react';
 import type { useKsefSetupDialog } from './hooks/use-ksef-setup-dialog.js';
 
 interface KsefSetupDialogBaseProps {
@@ -75,7 +77,7 @@ export function KsefSetupDialog({
           <DialogDescription>{t('connectDescription')}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <DialogBody className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor={`${id}-ksef-nip`}>{t('orgNipLabel')}</Label>
             <Input
@@ -120,29 +122,14 @@ export function KsefSetupDialog({
 
             <TabsContent value="certificate">
               <div className="space-y-4 pt-2">
-                <div className="space-y-2">
-                  <Label>{t('certificateFileLabel')}</Label>
-                  <label
-                    htmlFor={`${id}-ksef-cert-file`}
-                    className="flex h-20 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/25 bg-muted/30 text-sm text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted/50">
-                    {certificateFile ? (
-                      <span className="font-medium text-foreground">{certificateFile.name}</span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        <Upload className="size-4" aria-hidden="true" />
-                        {t('certificateDropZone')}
-                      </span>
-                    )}
-                    <input
-                      id={`${id}-ksef-cert-file`}
-                      type="file"
-                      accept=".p12,.pem"
-                      disabled={isFormDisabled}
-                      onChange={handleCertificateFileChange}
-                      className="sr-only"
-                    />
-                  </label>
-                </div>
+                <KsefCertificateField
+                  id={id}
+                  label={t('certificateFileLabel')}
+                  placeholder={t('certificateDropZone')}
+                  certificateFile={certificateFile}
+                  disabled={isFormDisabled}
+                  onChange={handleCertificateFileChange}
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor={`${id}-ksef-cert-password`}>
@@ -160,7 +147,7 @@ export function KsefSetupDialog({
               </div>
             </TabsContent>
           </Tabs>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={resetAndClose}>
@@ -173,5 +160,67 @@ export function KsefSetupDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface KsefCertificateFieldProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  certificateFile: File | null;
+  disabled: boolean;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
+function KsefCertificateField({
+  id,
+  label,
+  placeholder,
+  certificateFile,
+  disabled,
+  onChange,
+}: KsefCertificateFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const handleClick = useCallback(() => {
+    if (!disabled) inputRef.current?.click();
+  }, [disabled]);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if ((event.key === 'Enter' || event.key === ' ') && !disabled) {
+        event.preventDefault();
+        inputRef.current?.click();
+      }
+    },
+    [disabled],
+  );
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`${id}-ksef-cert-file`}>{label}</Label>
+      <DropZoneSurface
+        variant="compact"
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        disabled={disabled}
+        label={
+          certificateFile ? (
+            <span className="font-medium text-foreground">{certificateFile.name}</span>
+          ) : (
+            placeholder
+          )
+        }>
+        <input
+          ref={inputRef}
+          id={`${id}-ksef-cert-file`}
+          type="file"
+          accept=".p12,.pem"
+          disabled={disabled}
+          onChange={onChange}
+          className="sr-only"
+        />
+      </DropZoneSurface>
+    </div>
   );
 }

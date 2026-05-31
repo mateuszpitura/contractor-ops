@@ -4,6 +4,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -69,7 +70,7 @@ export function ReassessmentTriggerDismissDialog({
           <DialogTitle>{t('dismissHeading')}</DialogTitle>
           <DialogDescription>{t('dismissBody')}</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2">
+        <DialogBody className="flex flex-col gap-2">
           <Label htmlFor="rt-dismiss-reason">{t('dismissReasonLabel')}</Label>
           <Textarea
             id="rt-dismiss-reason"
@@ -86,7 +87,7 @@ export function ReassessmentTriggerDismissDialog({
               {t('dismissReasonMinLength')}
             </p>
           ) : null}
-        </div>
+        </DialogBody>
         <DialogFooter>
           <Button
             type="button"

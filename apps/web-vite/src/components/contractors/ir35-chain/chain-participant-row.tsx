@@ -1,6 +1,6 @@
-// Phase 59 · Plan 03 Task 3 — individual chain row with row-level actions.
-
 import { useCallback } from 'react';
+import { TableCell, TableRow } from '@contractor-ops/ui/components/shadcn/table';
+
 import { tDyn } from '../../../i18n/typed-keys.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
@@ -40,16 +40,16 @@ export function ChainParticipantRow({
     : t('notAcknowledged');
 
   return (
-    <tr className="border-b last:border-0">
-      <td className="py-2 pr-2 font-medium">{tDyn(t, 'role', row.role)}</td>
-      <td className="py-2 pr-2">{row.displayName}</td>
-      <td className="py-2 pr-2">
+    <TableRow>
+      <TableCell className="font-medium">{tDyn(t, 'role', row.role)}</TableCell>
+      <TableCell>{row.displayName}</TableCell>
+      <TableCell>
         <span>{deliveredLabel}</span>
-      </td>
-      <td className="py-2 pr-2">
+      </TableCell>
+      <TableCell>
         <span>{acknowledgedLabel}</span>
-      </td>
-      <td className="py-2 pr-2 text-right">
+      </TableCell>
+      <TableCell className="text-right">
         <div className="inline-flex gap-2">
           <button
             type="button"
@@ -78,7 +78,7 @@ export function ChainParticipantRow({
             </button>
           )}
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }

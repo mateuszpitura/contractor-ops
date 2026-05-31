@@ -8,15 +8,15 @@
 
 import {
   AtelierEmptyState,
+  DataTable,
   QueryErrorPanel,
   SectionLabel,
   TimeTrackingIllustration,
-  WORKBENCH_TABLE_PAGE_CLASS,
+  WORKBENCH_TABLE_PAGE_FILL_CLASS,
   WORKBENCH_TABLE_SECTION_CLASS,
   WORKBENCH_TABLE_TAB_PANEL_CLASS,
   WORKBENCH_TABLE_TABS_CLASS,
 } from '@contractor-ops/ui';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Select,
   SelectContent,
@@ -24,31 +24,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@contractor-ops/ui/components/shadcn/select';
-import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@contractor-ops/ui/components/shadcn/tabs';
+import type { ColumnDef } from '@tanstack/react-table';
 import { addDays, format, startOfISOWeek } from 'date-fns';
 import { Clock } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
-import { DataTablePagination } from '../shared/data-table-pagination.js';
 import { isListControlsDisabled } from '../shared/list-controls-disabled.js';
 import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
-import { ApprovalQueueTable } from './approval-queue-table.js';
+import { ApprovalQueueTable } from './approval-queue/data-table.js';
+import type { TimesheetRow } from './approval-queue/data-table.js';
 import { TIME_STATUS_FILTER_ALL, useTimeTracking } from './hooks/use-time-tracking.js';
 import { ReconciliationSpotCheck } from './reconciliation-spot-check-container.js';
 import { ReconciliationTable } from './reconciliation-table-container.js';
@@ -116,6 +108,51 @@ export function TimeTrackingContainer() {
       REJECTED: t('filters.rejected'),
     }[statusFilter] ?? t('filters.statusPlaceholder');
 
+  const allColumns = useMemo<ColumnDef<TimesheetRow, unknown>[]>(
+    () => [
+      {
+        id: 'contractor',
+        accessorFn: row => row.contractor.legalName,
+        header: t('columns.contractor'),
+        cell: ({ row }) => (
+          <span className="text-sm font-medium">{row.original.contractor.legalName}</span>
+        ),
+      },
+      {
+        id: 'period',
+        accessorFn: row => new Date(row.weekStartDate).getTime(),
+        header: t('columns.period'),
+        cell: ({ row }) => (
+          <span className="text-sm text-muted-foreground">
+            {formatPeriod(row.original.weekStartDate)}
+          </span>
+        ),
+      },
+      {
+        id: 'totalHours',
+        accessorKey: 'totalMinutes',
+        header: () => <span className="block text-end">{t('columns.totalHours')}</span>,
+        cell: ({ row }) => (
+          <span className="block text-end text-sm font-medium">
+            {minutesToDisplay(row.original.totalMinutes)}
+          </span>
+        ),
+      },
+      {
+        id: 'status',
+        accessorKey: 'status',
+        header: t('columns.status'),
+        cell: ({ row }) => <TimeEntryStatusBadge status={row.original.status} />,
+      },
+    ],
+    [t],
+  );
+
+  const handleAllPageIndexChange = useCallback(
+    (next: number) => handleAllPageChange(next + 1),
+    [handleAllPageChange],
+  );
+
   const handleTabChange = useCallback((value: string) => void setTab(value), [setTab]);
   const handleStatusFilterChange = useCallback(
     (v: string | null) => {
@@ -127,7 +164,7 @@ export function TimeTrackingContainer() {
   const handleRefetchAll = useCallback(() => void allQuery.refetch(), [allQuery]);
 
   return (
-    <div className={WORKBENCH_TABLE_PAGE_CLASS}>
+    <div className={WORKBENCH_TABLE_PAGE_FILL_CLASS}>
       <AnimateIn delay={0}>
         <WorkbenchPageHeader title={t('pageTitle')} description={t('pageDescription')} />
       </AnimateIn>
@@ -237,63 +274,23 @@ export function TimeTrackingContainer() {
                     renderAction={renderEmptyStateAction}
                   />
                 ) : (
-                  <div className="rounded-xl border bg-background">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('columns.contractor')}</TableHead>
-                          <TableHead>{t('columns.period')}</TableHead>
-                          <TableHead className="text-end">{t('columns.totalHours')}</TableHead>
-                          <TableHead>{t('columns.status')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {allQuery.isLoading
-                          ? Array.from({ length: 8 }).map((_, i) => (
-                              // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-                              <TableRow key={`all-skeleton-${i}`}>
-                                <TableCell>
-                                  <Skeleton className="h-4 w-32" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="h-4 w-24" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="ms-auto h-4 w-16" />
-                                </TableCell>
-                                <TableCell>
-                                  <Skeleton className="h-5 w-16 rounded-full" />
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          : allTimesheets.map(ts => (
-                              <TableRow key={ts.id}>
-                                <TableCell className="text-sm font-medium">
-                                  {ts.contractor.legalName}
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground">
-                                  {formatPeriod(ts.weekStartDate)}
-                                </TableCell>
-                                <TableCell className="text-end text-sm font-medium">
-                                  {minutesToDisplay(ts.totalMinutes)}
-                                </TableCell>
-                                <TableCell>
-                                  <TimeEntryStatusBadge status={ts.status} />
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                      </TableBody>
-                    </Table>
-                    {!allQuery.isLoading && allTimesheets.length > 0 ? (
-                      <DataTablePagination
-                        totalRows={allTotalCount}
-                        pageSize={allPageSize}
-                        currentPage={allCurrentPage}
-                        onPageChange={handleAllPageChange}
-                        onPageSizeChange={handleAllPageSizeChange}
-                      />
-                    ) : null}
-                  </div>
+                  <DataTable
+                    columns={allColumns}
+                    data={allTimesheets}
+                    totalRows={allTotalCount}
+                    pageIndex={Math.max(0, allCurrentPage - 1)}
+                    pageSize={allPageSize}
+                    onPageChange={handleAllPageIndexChange}
+                    onPageSizeChange={handleAllPageSizeChange}
+                    isLoading={allQuery.isLoading}
+                    fill
+                    getRowId={row => row.id}
+                    entityLabel={t('timesheetEntityLabel', { count: allTotalCount })}
+                    emptyTitle={t('emptyStates.noTimeEntriesHeading')}
+                    emptyDescription={t('emptyStates.noTimeEntriesBody')}
+                    noResultsTitle={t('filters.noResultsHeading')}
+                    noResultsDescription={t('filters.noResultsBody')}
+                  />
                 )}
               </section>
             )}

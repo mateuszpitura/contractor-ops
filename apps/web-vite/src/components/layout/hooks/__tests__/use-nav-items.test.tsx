@@ -74,14 +74,14 @@ describe('useNavItems', () => {
     expect(contractors?.isActive).toBe(true);
   });
 
-  it('flags showWorkflowBadge only on the workflows nav item', () => {
+  it('assigns navBadgeKey on actionable sidebar items', () => {
     canMock.mockReturnValue(true);
     const { result } = renderHookWithProviders(() => useNavItems('/', new URLSearchParams()));
     const items = result.current.groups.flatMap(g => g.items);
-    const workflows = items.find(i => i.key === 'workflows');
-    if (workflows) {
-      expect(workflows.showWorkflowBadge).toBe(true);
-    }
-    expect(items.filter(i => i.showWorkflowBadge).length).toBeLessThanOrEqual(1);
+    expect(items.find(i => i.key === 'workflows')?.navBadgeKey).toBe('workflows');
+    expect(items.find(i => i.key === 'approvals')?.navBadgeKey).toBe('approvals');
+    expect(items.find(i => i.key === 'time')?.navBadgeKey).toBe('time');
+    expect(items.find(i => i.key === 'notifications')?.navBadgeKey).toBe('notifications');
+    expect(items.find(i => i.key === 'contractors')?.navBadgeKey).toBeNull();
   });
 });

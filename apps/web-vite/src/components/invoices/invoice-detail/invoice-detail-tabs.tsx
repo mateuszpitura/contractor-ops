@@ -5,6 +5,7 @@
  *   - EInvoiceTab → EInvoiceTabContainer (web-vite data layer)
  */
 
+import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
 import {
   Tabs,
   TabsContent,
@@ -52,13 +53,18 @@ export function InvoiceDetailTabs({ invoiceId, details }: InvoiceDetailTabsProps
   );
 
   return (
-    <Tabs value={value} onValueChange={handleValueChange}>
-      <TabsList>
-        <TabsTrigger value={TAB_DETAILS}>Details</TabsTrigger>
-        <TabsTrigger value={TAB_EINVOICE}>{t('tabLabel')}</TabsTrigger>
-      </TabsList>
-      <TabsContent value={TAB_DETAILS}>{details}</TabsContent>
-      <TabsContent value={TAB_EINVOICE}>
+    <Tabs value={value} onValueChange={handleValueChange} className="flex flex-col gap-0">
+      <div className="flex flex-col gap-6">
+        <TabsList className="shrink-0">
+          <TabsTrigger value={TAB_DETAILS}>Details</TabsTrigger>
+          <TabsTrigger value={TAB_EINVOICE}>{t('tabLabel')}</TabsTrigger>
+        </TabsList>
+        <Separator />
+      </div>
+      <TabsContent value={TAB_DETAILS} className="mt-6">
+        {details}
+      </TabsContent>
+      <TabsContent value={TAB_EINVOICE} className="mt-6">
         <EInvoiceTabContainer invoiceId={invoiceId} />
       </TabsContent>
     </Tabs>

@@ -26,12 +26,28 @@ export function useInvoiceManualMatch(
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (!enabled) return;
+    void queryClient.prefetchQuery(
+      trpc.invoice.searchContractors.queryOptions({ query: '', take: 10 }),
+    );
+  }, [enabled, queryClient, trpc]);
+
   const contractorsQuery = useQuery({
     ...trpc.invoice.searchContractors.queryOptions({
-      query: debouncedQuery,
+      query: debouncedQuery.trim(),
+      take: 10,
     }),
-    enabled: enabled && debouncedQuery.length >= 1,
+    enabled: enabled && contractorPopoverOpen,
   });
+
+  const handleContractorPopoverOpenChange = useCallback((open: boolean) => {
+    setContractorPopoverOpen(open);
+    if (open) {
+      setSearchQuery('');
+      setDebouncedQuery('');
+    }
+  }, []);
 
   const contractsQuery = useQuery({
     ...trpc.invoice.contractsForContractor.queryOptions({
@@ -73,15 +89,18 @@ export function useInvoiceManualMatch(
     });
   }, [invoiceId, manualMatchMutation, selectedContractId, selectedContractorId]);
 
+  const isContractorSearchActive = debouncedQuery.trim().length > 0;
+
   return {
     searchQuery,
+    isContractorSearchActive,
     onSearchChange: handleSearchChange,
     selectedContractorId,
     selectedContractorName,
     selectedContractId,
     onSelectContractId: setSelectedContractId,
     contractorPopoverOpen,
-    onContractorPopoverOpenChange: setContractorPopoverOpen,
+    onContractorPopoverOpenChange: handleContractorPopoverOpenChange,
     onSelectContractor: handleSelectContractor,
     contractors: (contractorsQuery.data ?? []) as Array<{
       id: string;
@@ -96,6 +115,7 @@ export function useInvoiceManualMatch(
       status: string;
     }>,
     isContractorsLoading: contractorsQuery.isLoading,
+    isContractorsFetching: contractorsQuery.isFetching,
     isContractsLoading: contractsQuery.isLoading,
     onConfirmMatch: handleConfirmMatch,
     isConfirmPending: manualMatchMutation.isPending,

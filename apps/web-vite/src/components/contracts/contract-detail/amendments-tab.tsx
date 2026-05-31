@@ -12,10 +12,12 @@ import {
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  dialogFormLayoutClassName,
 } from '@contractor-ops/ui/components/shadcn/dialog';
 import { ChevronDown, ChevronRight, FileText, Plus } from 'lucide-react';
 import type { ChangeEvent } from 'react';
@@ -114,47 +116,49 @@ export function AddAmendmentDialog({
             {t('addTitle')}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor={`${id}-amendment-title`} className="text-sm font-medium">
-              {t('fields.title')}
-            </label>
-            <input
-              id={`${id}-amendment-title`}
-              type="text"
-              value={title}
-              onChange={handleTitleChange}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder={t('fields.titlePlaceholder')}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor={`${id}-amendment-effective-date`} className="text-sm font-medium">
-              {t('fields.effectiveDate')}
-            </label>
-            <input
-              id={`${id}-amendment-effective-date`}
-              type="date"
-              value={effectiveDate}
-              onChange={handleEffectiveDateChange}
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor={`${id}-amendment-description`} className="text-sm font-medium">
-              {t('fields.description')}
-            </label>
-            <textarea
-              id={`${id}-amendment-description`}
-              value={description}
-              onChange={handleDescriptionChange}
-              className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              rows={3}
-              placeholder={t('fields.descriptionPlaceholder')}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={dialogFormLayoutClassName}>
+          <DialogBody className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor={`${id}-amendment-title`} className="text-sm font-medium">
+                {t('fields.title')}
+              </label>
+              <input
+                id={`${id}-amendment-title`}
+                type="text"
+                value={title}
+                onChange={handleTitleChange}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder={t('fields.titlePlaceholder')}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={`${id}-amendment-effective-date`} className="text-sm font-medium">
+                {t('fields.effectiveDate')}
+              </label>
+              <input
+                id={`${id}-amendment-effective-date`}
+                type="date"
+                value={effectiveDate}
+                onChange={handleEffectiveDateChange}
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor={`${id}-amendment-description`} className="text-sm font-medium">
+                {t('fields.description')}
+              </label>
+              <textarea
+                id={`${id}-amendment-description`}
+                value={description}
+                onChange={handleDescriptionChange}
+                className="w-full resize-none rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                rows={3}
+                placeholder={t('fields.descriptionPlaceholder')}
+              />
+            </div>
+          </DialogBody>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel}>
               {t('cancel')}

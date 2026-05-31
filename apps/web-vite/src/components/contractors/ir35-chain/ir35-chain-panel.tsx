@@ -1,7 +1,12 @@
-// Phase 59 · Plan 03 Task 3 — IR35 chain panel.
-// Renders chain participants as a semantic <table> with per-row actions.
-
 import { useCallback, useId, useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
+
 import { useTranslations } from '../../../i18n/useTranslations.js';
 
 import { AddParticipantDialogContainer } from './add-participant-dialog-container';
@@ -82,27 +87,17 @@ export function Ir35ChainPanelView({
         </button>
       </header>
 
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b text-xs uppercase text-muted-foreground">
-            <th scope="col" className="py-2 pr-2">
-              {t('columnRole')}
-            </th>
-            <th scope="col" className="py-2 pr-2">
-              {t('columnDisplayName')}
-            </th>
-            <th scope="col" className="py-2 pr-2">
-              {t('columnDelivered')}
-            </th>
-            <th scope="col" className="py-2 pr-2">
-              {t('columnAcknowledged')}
-            </th>
-            <th scope="col" className="py-2 pr-2 text-right">
-              {t('columnActions')}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('columnRole')}</TableHead>
+            <TableHead>{t('columnDisplayName')}</TableHead>
+            <TableHead>{t('columnDelivered')}</TableHead>
+            <TableHead>{t('columnAcknowledged')}</TableHead>
+            <TableHead className="text-right">{t('columnActions')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {rows.map(row => (
             <ConnectedParticipantRow
               key={row.id}
@@ -112,8 +107,8 @@ export function Ir35ChainPanelView({
               removeParticipant={removeParticipant}
             />
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       <AddParticipantDialogContainer
         engagementId={engagementId}

@@ -8,6 +8,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -159,127 +160,129 @@ export function DrvClearanceFormView({
           <DialogTitle>{initial ? t('editHeading') : t('createHeading')}</DialogTitle>
           <DialogDescription>{t('panelSubline')}</DialogDescription>
         </DialogHeader>
-        <form id={formId} onSubmit={handleSubmit} className="grid gap-4 py-2" noValidate>
-          <div className="grid gap-2">
-            <Label htmlFor={`${formId}-filedAt`}>{t('filedAtLabel')}</Label>
-            <Input
-              id={`${formId}-filedAt`}
-              type="date"
-              value={filedAt}
-              onChange={handleFiledAtChange}
-              aria-invalid={Boolean(errors.filedAt)}
-              aria-describedby={errors.filedAt ? `${formId}-filedAt-error` : undefined}
-              required
-            />
-            {errors.filedAt ? (
-              <p id={`${formId}-filedAt-error`} role="alert" className="text-sm text-destructive">
-                {errors.filedAt}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor={`${formId}-drvReference`}>{t('drvReferenceLabel')}</Label>
-            <Input
-              id={`${formId}-drvReference`}
-              value={drvReference}
-              onChange={handleDrvReferenceChange}
-              maxLength={100}
-              aria-invalid={Boolean(errors.drvReference)}
-              aria-describedby={`${formId}-drvReference-helper ${
-                errors.drvReference ? `${formId}-drvReference-error` : ''
-              }`.trim()}
-              required
-            />
-            <p id={`${formId}-drvReference-helper`} className="text-xs text-muted-foreground">
-              {t('drvReferenceHelper')}{' '}
-              <a
-                href="https://www.deutsche-rentenversicherung.de/DRV/DE/Experten/Arbeitgeber-und-Steuerberater/Versicherung-und-Beitraege/Statusfeststellung/statusfeststellung_node.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline">
-                {t('helpTextLink')}
-              </a>
-            </p>
-            {errors.drvReference ? (
-              <p
-                id={`${formId}-drvReference-error`}
-                role="alert"
-                className="text-sm text-destructive">
-                {errors.drvReference}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor={`${formId}-outcome`}>{t('outcomeLabel')}</Label>
-            <Select value={outcome} onValueChange={handleOutcomeChange}>
-              <SelectTrigger id={`${formId}-outcome`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="PENDING">{t('outcomePending')}</SelectItem>
-                <SelectItem value="SELBSTANDIG">{t('outcomeSelbstandig')}</SelectItem>
-                <SelectItem value="ABHANGIG">{t('outcomeAbhangig')}</SelectItem>
-                <SelectItem value="WITHDRAWN">{t('outcomeWithdrawn')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {showValidityDates ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor={`${formId}-validFrom`}>{t('validFromLabel')}</Label>
-                <Input
-                  id={`${formId}-validFrom`}
-                  type="date"
-                  value={validFrom}
-                  onChange={handleValidFromChange}
-                  aria-invalid={Boolean(errors.validFrom)}
-                  aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
-                />
-                {errors.validFrom ? (
-                  <p
-                    id={`${formId}-validFrom-error`}
-                    role="alert"
-                    className="text-sm text-destructive">
-                    {errors.validFrom}
-                  </p>
-                ) : null}
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor={`${formId}-validTo`}>{t('validToLabel')}</Label>
-                <Input
-                  id={`${formId}-validTo`}
-                  type="date"
-                  value={validTo}
-                  onChange={handleValidToChange}
-                  aria-invalid={Boolean(errors.validTo)}
-                  aria-describedby={errors.validTo ? `${formId}-validTo-error` : undefined}
-                />
-                {errors.validTo ? (
-                  <p
-                    id={`${formId}-validTo-error`}
-                    role="alert"
-                    className="text-sm text-destructive">
-                    {errors.validTo}
-                  </p>
-                ) : null}
-              </div>
+        <DialogBody>
+          <form id={formId} onSubmit={handleSubmit} className="grid gap-4 py-2" noValidate>
+            <div className="grid gap-2">
+              <Label htmlFor={`${formId}-filedAt`}>{t('filedAtLabel')}</Label>
+              <Input
+                id={`${formId}-filedAt`}
+                type="date"
+                value={filedAt}
+                onChange={handleFiledAtChange}
+                aria-invalid={Boolean(errors.filedAt)}
+                aria-describedby={errors.filedAt ? `${formId}-filedAt-error` : undefined}
+                required
+              />
+              {errors.filedAt ? (
+                <p id={`${formId}-filedAt-error`} role="alert" className="text-sm text-destructive">
+                  {errors.filedAt}
+                </p>
+              ) : null}
             </div>
-          ) : null}
 
-          <div className="grid gap-2">
-            <Label htmlFor={`${formId}-notes`}>{t('notesLabel')}</Label>
-            <Textarea
-              id={`${formId}-notes`}
-              value={notes}
-              onChange={handleNotesChange}
-              maxLength={2000}
-              rows={3}
-            />
-          </div>
-        </form>
+            <div className="grid gap-2">
+              <Label htmlFor={`${formId}-drvReference`}>{t('drvReferenceLabel')}</Label>
+              <Input
+                id={`${formId}-drvReference`}
+                value={drvReference}
+                onChange={handleDrvReferenceChange}
+                maxLength={100}
+                aria-invalid={Boolean(errors.drvReference)}
+                aria-describedby={`${formId}-drvReference-helper ${
+                  errors.drvReference ? `${formId}-drvReference-error` : ''
+                }`.trim()}
+                required
+              />
+              <p id={`${formId}-drvReference-helper`} className="text-xs text-muted-foreground">
+                {t('drvReferenceHelper')}{' '}
+                <a
+                  href="https://www.deutsche-rentenversicherung.de/DRV/DE/Experten/Arbeitgeber-und-Steuerberater/Versicherung-und-Beitraege/Statusfeststellung/statusfeststellung_node.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline">
+                  {t('helpTextLink')}
+                </a>
+              </p>
+              {errors.drvReference ? (
+                <p
+                  id={`${formId}-drvReference-error`}
+                  role="alert"
+                  className="text-sm text-destructive">
+                  {errors.drvReference}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor={`${formId}-outcome`}>{t('outcomeLabel')}</Label>
+              <Select value={outcome} onValueChange={handleOutcomeChange}>
+                <SelectTrigger id={`${formId}-outcome`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PENDING">{t('outcomePending')}</SelectItem>
+                  <SelectItem value="SELBSTANDIG">{t('outcomeSelbstandig')}</SelectItem>
+                  <SelectItem value="ABHANGIG">{t('outcomeAbhangig')}</SelectItem>
+                  <SelectItem value="WITHDRAWN">{t('outcomeWithdrawn')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {showValidityDates ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor={`${formId}-validFrom`}>{t('validFromLabel')}</Label>
+                  <Input
+                    id={`${formId}-validFrom`}
+                    type="date"
+                    value={validFrom}
+                    onChange={handleValidFromChange}
+                    aria-invalid={Boolean(errors.validFrom)}
+                    aria-describedby={errors.validFrom ? `${formId}-validFrom-error` : undefined}
+                  />
+                  {errors.validFrom ? (
+                    <p
+                      id={`${formId}-validFrom-error`}
+                      role="alert"
+                      className="text-sm text-destructive">
+                      {errors.validFrom}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor={`${formId}-validTo`}>{t('validToLabel')}</Label>
+                  <Input
+                    id={`${formId}-validTo`}
+                    type="date"
+                    value={validTo}
+                    onChange={handleValidToChange}
+                    aria-invalid={Boolean(errors.validTo)}
+                    aria-describedby={errors.validTo ? `${formId}-validTo-error` : undefined}
+                  />
+                  {errors.validTo ? (
+                    <p
+                      id={`${formId}-validTo-error`}
+                      role="alert"
+                      className="text-sm text-destructive">
+                      {errors.validTo}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="grid gap-2">
+              <Label htmlFor={`${formId}-notes`}>{t('notesLabel')}</Label>
+              <Textarea
+                id={`${formId}-notes`}
+                value={notes}
+                onChange={handleNotesChange}
+                maxLength={2000}
+                rows={3}
+              />
+            </div>
+          </form>
+        </DialogBody>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={handleCancelClick}>
             {t('cancelAction')}

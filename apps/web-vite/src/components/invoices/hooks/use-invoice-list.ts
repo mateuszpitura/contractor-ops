@@ -63,7 +63,7 @@ export function useInvoiceList(options: { onUpload: () => void }) {
   );
   const invoiceTotal = (invoiceCountQuery.data as { total: number } | undefined)?.total ?? 0;
   const contractorCount = (contractorCountQuery.data as { total: number } | undefined)?.total ?? 0;
-  const isCountLoading = invoiceCountQuery.isLoading;
+  const isCountLoading = invoiceCountQuery.isLoading || invoiceCountQuery.isFetching;
   const showEmptyState = !isCountLoading && invoiceTotal === 0;
 
   const queryInput = useMemo(

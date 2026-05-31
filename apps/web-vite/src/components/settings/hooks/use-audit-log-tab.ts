@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useCommonToasts } from '../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
-import type { AuditLogEntry } from '../audit-log-table.js';
+import type { AuditLogEntry } from '../audit-log/data-table.js';
 
 export const AUDIT_LOG_PAGE_SIZE = 25;
 const AUDIT_LOG_PAGE_SIZE_OPTIONS = [10, 25, 50];

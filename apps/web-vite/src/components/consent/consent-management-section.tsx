@@ -8,6 +8,14 @@ import {
   CardTitle,
 } from '@contractor-ops/ui/components/shadcn/card';
 import { Separator } from '@contractor-ops/ui/components/shadcn/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@contractor-ops/ui/components/shadcn/table';
 import { Download, FileText, Globe, History, Loader2 } from 'lucide-react';
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { ConsentPurposeToggle } from './consent-purpose-toggle';
@@ -95,42 +103,34 @@ export function ConsentManagementSectionView({
             </div>
 
             <div className="max-h-[300px] overflow-y-auto rounded-md border">
-              <table className="w-full text-xs">
-                <thead className="sticky top-0 bg-muted">
-                  <tr>
-                    <th className="px-3 py-2 text-start font-medium">
-                      {t('settings.historyPurpose')}
-                    </th>
-                    <th className="px-3 py-2 text-start font-medium">
-                      {t('settings.historyAction')}
-                    </th>
-                    <th className="px-3 py-2 text-start font-medium">
-                      {t('settings.historyDate')}
-                    </th>
-                    <th className="px-3 py-2 text-start font-medium">
-                      {t('settings.historyVersion')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className="text-xs">
+                <TableHeader className="sticky top-0 z-10">
+                  <TableRow>
+                    <TableHead>{t('settings.historyPurpose')}</TableHead>
+                    <TableHead>{t('settings.historyAction')}</TableHead>
+                    <TableHead>{t('settings.historyDate')}</TableHead>
+                    <TableHead>{t('settings.historyVersion')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {consentHistory.map(record => (
-                    <tr key={record.id} className="border-t border-border/50">
-                      <td className="px-3 py-2 font-mono">{record.purpose}</td>
-                      <td className="px-3 py-2">
+                    <TableRow key={record.id}>
+                      <TableCell className="font-mono">{record.purpose}</TableCell>
+                      <TableCell>
                         <Badge
                           variant={record.granted ? 'default' : 'destructive'}
                           className="text-[10px]">
                           {record.granted ? t('settings.granted') : t('settings.revoked')}
                         </Badge>
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
                         {new Date(record.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-3 py-2 text-muted-foreground">v{record.version}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">v{record.version}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
 

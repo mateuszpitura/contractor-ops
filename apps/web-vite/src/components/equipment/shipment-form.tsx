@@ -1,6 +1,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -119,69 +120,73 @@ export function ShipmentFormView({
           <DialogDescription>{equipmentName}</DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t('shipment.direction')}</Label>
-            <Select value={form.watch('direction')} onValueChange={handleDirectionChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="OUTBOUND">{t('shipment.outbound')}</SelectItem>
-                <SelectItem value="RETURN">{t('shipment.return')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('shipment.carrier')}</Label>
-            <Select value={watchedCarrier} onValueChange={handleCarrierChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CARRIERS.map(carrier => (
-                  <SelectItem key={carrier} value={carrier}>
-                    {carrier}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {watchedCarrier === 'Other' && (
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+          <DialogBody className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={`${id}-shipment-carrier-custom`}>{t('shipment.carrierCustom')}</Label>
-              <Input id={`${id}-shipment-carrier-custom`} {...form.register('carrierCustom')} />
+              <Label>{t('shipment.direction')}</Label>
+              <Select value={form.watch('direction')} onValueChange={handleDirectionChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OUTBOUND">{t('shipment.outbound')}</SelectItem>
+                  <SelectItem value="RETURN">{t('shipment.return')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-shipment-tracking`}>{t('shipment.trackingNumber')}</Label>
-            <Input
-              id={`${id}-shipment-tracking`}
-              className="font-mono"
-              {...form.register('trackingNumber')}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label>{t('shipment.carrier')}</Label>
+              <Select value={watchedCarrier} onValueChange={handleCarrierChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CARRIERS.map(carrier => (
+                    <SelectItem key={carrier} value={carrier}>
+                      {carrier}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-shipment-expected-delivery`}>
-              {t('shipment.expectedDelivery')}
-            </Label>
-            <Input
-              id={`${id}-shipment-expected-delivery`}
-              type="date"
-              {...form.register('expectedDeliveryAt', {
-                setValueAs: (v: string) => (v ? new Date(v) : undefined),
-              })}
-            />
-          </div>
+            {watchedCarrier === 'Other' && (
+              <div className="space-y-2">
+                <Label htmlFor={`${id}-shipment-carrier-custom`}>
+                  {t('shipment.carrierCustom')}
+                </Label>
+                <Input id={`${id}-shipment-carrier-custom`} {...form.register('carrierCustom')} />
+              </div>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor={`${id}-shipment-notes`}>{t('shipment.notes')}</Label>
-            <Textarea id={`${id}-shipment-notes`} rows={2} {...form.register('notes')} />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-shipment-tracking`}>{t('shipment.trackingNumber')}</Label>
+              <Input
+                id={`${id}-shipment-tracking`}
+                className="font-mono"
+                {...form.register('trackingNumber')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-shipment-expected-delivery`}>
+                {t('shipment.expectedDelivery')}
+              </Label>
+              <Input
+                id={`${id}-shipment-expected-delivery`}
+                type="date"
+                {...form.register('expectedDeliveryAt', {
+                  setValueAs: (v: string) => (v ? new Date(v) : undefined),
+                })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`${id}-shipment-notes`}>{t('shipment.notes')}</Label>
+              <Textarea id={`${id}-shipment-notes`} rows={2} {...form.register('notes')} />
+            </div>
+          </DialogBody>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancel} disabled={isPending}>

@@ -1,14 +1,9 @@
-import {
-  AtelierEmptyState,
-  AtelierPageHeader,
-  ContractsIllustration,
-  SectionLabel,
-} from '@contractor-ops/ui';
+import { AtelierEmptyState, ContractsIllustration, SectionLabel } from '@contractor-ops/ui';
 import type { ReactNode } from 'react';
-
 import { useTranslations } from '../../i18n/useTranslations.js';
 import { AnimateIn } from '../shared/animate-in.js';
 import { renderEmptyStateAction } from '../shared/atelier-bridges.js';
+import { WorkbenchPageHeader } from '../shared/workbench-page-header.js';
 import { ContractCard, ContractCardSkeleton } from './contract-card.js';
 import { usePortalContracts } from './hooks/use-portal-contracts.js';
 
@@ -48,7 +43,7 @@ export function PortalContractsContainer() {
   return (
     <div className="space-y-6">
       <AnimateIn delay={0}>
-        <AtelierPageHeader title={t('contracts.title')} />
+        <WorkbenchPageHeader title={t('contracts.title')} />
       </AnimateIn>
 
       <AnimateIn delay={1}>

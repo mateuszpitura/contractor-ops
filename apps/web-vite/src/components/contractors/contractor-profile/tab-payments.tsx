@@ -1,28 +1,18 @@
 import {
   AtelierEmptyState,
-  AtelierTableShell,
+  DataTable,
   PaymentsIllustration,
   SectionLabel,
-  TableChrome,
 } from '@contractor-ops/ui';
 import { Badge } from '@contractor-ops/ui/components/shadcn/badge';
-import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import { Skeleton } from '@contractor-ops/ui/components/shadcn/skeleton';
-import {
-  Table,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@contractor-ops/ui/components/shadcn/table';
 import type { ColumnDef } from '@tanstack/react-table';
-import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { CreditCard } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { Link } from '../../../i18n/navigation.js';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useDateFormatter } from '../../../lib/format/use-date-formatter.js';
 import { renderEmptyStateAction } from '../../shared/atelier-bridges.js';
-import { DataTableBody } from '../../shared/data-table-body.js';
 import type {
   ContractorTabPaymentRow,
   useContractorTabPayments,
@@ -35,6 +25,8 @@ const itemStatusBadgeColors: Record<string, string> = {
   EXPORTED: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
 };
 
+const PAGE_SIZE = 10;
+
 export type TabPaymentsViewProps = {
   contractorId: string;
 } & ReturnType<typeof useContractorTabPayments>;
@@ -43,7 +35,6 @@ export function TabPaymentsView({
   contractorId: _contractorId,
   page,
   setPage,
-  items,
   allItems,
   totalPages,
   totalPaidMinor,
@@ -53,7 +44,6 @@ export function TabPaymentsView({
 }: TabPaymentsViewProps) {
   const t = useTranslations('Payments');
   const tInvoices = useTranslations('Invoices');
-  const tAria = useTranslations('Common.aria');
   const { formatDate } = useDateFormatter();
 
   const columns: ColumnDef<ContractorTabPaymentRow>[] = useMemo(
@@ -118,7 +108,7 @@ export function TabPaymentsView({
         header: t('columnReference'),
         cell: ({ row }) => (
           <span className="text-sm text-muted-foreground">
-            {row.original.paymentReference ?? '\u2014'}
+            {row.original.paymentReference ?? '—'}
           </span>
         ),
       },
@@ -126,15 +116,8 @@ export function TabPaymentsView({
     [t, formatAmount, formatDate],
   );
 
-  const table = useReactTable({
-    data: items,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  const handlePrevPage = useCallback(() => setPage(p => Math.max(1, p - 1)), [setPage]);
-  const handleNextPage = useCallback(
-    () => setPage(p => Math.min(totalPages, p + 1)),
+  const handlePageChange = useCallback(
+    (nextIndex: number) => setPage(Math.max(1, Math.min(totalPages, nextIndex + 1))),
     [setPage, totalPages],
   );
 
@@ -168,65 +151,24 @@ export function TabPaymentsView({
         </div>
       </div>
 
-      <AtelierTableShell
+      <DataTable
+        columns={columns}
+        data={allItems}
+        totalRows={allItems.length}
+        clientPagination
+        pageIndex={Math.max(0, page - 1)}
+        pageSize={PAGE_SIZE}
+        onPageChange={handlePageChange}
+        onPageSizeChange={() => undefined}
         isLoading={isLoading}
-        chrome={
-          <TableChrome
-            totalCount={allItems.length}
-            entityLabel={tInvoices('entityLabel', { count: allItems.length })}
-            densityLabels={{
-              comfortable: tAria('densityComfortable'),
-              compact: tAria('densityCompact'),
-            }}
-          />
-        }>
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <DataTableBody
-            table={table}
-            isLoading={isLoading}
-            hasFiltersOrSearch={false}
-            emptyTitle={t('contractorEmptyHeading')}
-            emptyDescription={t('contractorEmptyBody')}
-            noResultsTitle={t('contractorEmptyHeading')}
-            skeletonRows={5}
-          />
-        </Table>
-      </AtelierTableShell>
-
-      {totalPages > 1 ? (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page <= 1}
-            onClick={handlePrevPage}>
-            &laquo;
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={isLoading || page >= totalPages}
-            onClick={handleNextPage}>
-            &raquo;
-          </Button>
-        </div>
-      ) : null}
+        constrainHeight={false}
+        hideDensityToggle
+        entityLabel={tInvoices('entityLabel', { count: allItems.length })}
+        emptyTitle={t('contractorEmptyHeading')}
+        emptyDescription={t('contractorEmptyBody')}
+        noResultsTitle={t('contractorEmptyHeading')}
+        skeletonRows={5}
+      />
     </div>
   );
 }

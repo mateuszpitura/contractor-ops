@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useCommonToasts } from '../../../../i18n/use-common-toasts.js';
 import { useTranslations } from '../../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../../providers/trpc-provider.js';
-import type { DirectoryUser } from '../directory-preview-table.js';
+import type { DirectoryUser } from '../directory-preview/data-table.js';
 
 export type WizardStep = 1 | 2 | 3;
 

@@ -7,6 +7,7 @@
 import { Button } from '@contractor-ops/ui/components/shadcn/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -85,7 +86,7 @@ export function RejectionReasonDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2 py-2">
+        <DialogBody className="space-y-2 py-2">
           <Label htmlFor={`${id}-rejection-reason`}>{t('rejectionDialog.reasonLabel')}</Label>
           <Textarea
             id={`${id}-rejection-reason`}
@@ -100,7 +101,7 @@ export function RejectionReasonDialog({
             {error ? <p className="text-xs text-destructive">{error}</p> : <span />}
             <p className="text-xs text-muted-foreground">{reason.length}/500</p>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={handleCancelClick} disabled={isSubmitting}>

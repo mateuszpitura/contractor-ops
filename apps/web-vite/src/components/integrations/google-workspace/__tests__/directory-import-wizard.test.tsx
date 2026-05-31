@@ -17,7 +17,7 @@ vi.mock('../../../billing/feature-gate-container', () => ({
   FeatureGateContainer: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../directory-preview-table', () => ({
+vi.mock('../directory-preview/data-table', () => ({
   DirectoryPreviewTable: () => <div data-testid="preview-table" />,
 }));
 

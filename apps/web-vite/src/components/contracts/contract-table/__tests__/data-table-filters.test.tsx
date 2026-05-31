@@ -9,14 +9,14 @@
 
 import { vi } from 'vitest';
 import { render, screen, setup } from '@/test/test-utils';
-import { ActiveFilterBadges, DataTableFilters } from '../data-table-filters';
+import { ActiveFilterBadges, DataTableFilters, type FilterState } from '../data-table-filters';
 
 const users = [
   { id: 'u1', userId: 'u1', name: 'Alice', email: 'alice@test.com' },
   { id: 'u2', userId: 'u2', name: 'Bob', email: 'bob@test.com' },
 ];
 
-const emptyFilters = {
+const emptyFilters: FilterState = {
   status: [],
   type: [],
   billingModel: [],
@@ -28,7 +28,7 @@ const emptyFilters = {
   complianceRiskLevel: [],
 };
 
-type Filters = typeof emptyFilters;
+type Filters = FilterState;
 
 function renderToolbar(props: {
   filters: Filters;
