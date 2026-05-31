@@ -1,6 +1,7 @@
 import {
   registerAdapter,
   registerCompanyRegistryAdapter,
+  registerDeprovisionableAdapter,
   registerOcrAdapter,
 } from '../registry.js';
 import { ClaudeOcrAdapter } from './claude-ocr-adapter.js';
@@ -103,7 +104,12 @@ function startHeavyLoad(): Promise<void> {
     registerAdapter(new NotionAdapter());
     registerAdapter(new ConfluenceAdapter());
     registerAdapter(new GoogleCalendarAdapter());
-    registerAdapter(new GoogleWorkspaceAdapter());
+    // Phase 76 D-13 — register the SAME GWS instance with both registries:
+    // the provider registry (connection lifecycle) and the Deprovisionable
+    // registry (saga step execution). They are separate Maps.
+    const gwsAdapter = new GoogleWorkspaceAdapter();
+    registerAdapter(gwsAdapter);
+    registerDeprovisionableAdapter('GOOGLE_WORKSPACE', gwsAdapter);
     registerAdapter(new OutlookCalendarAdapter());
     registerAdapter(new LinearAdapter());
     registerAdapter(new TeamsAdapter());

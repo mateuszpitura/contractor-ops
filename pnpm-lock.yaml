@@ -1092,6 +1092,9 @@ importers:
       '@contractor-ops/einvoice':
         specifier: workspace:*
         version: link:../einvoice
+      '@contractor-ops/idp-saga':
+        specifier: workspace:*
+        version: link:../idp-saga
       '@contractor-ops/logger':
         specifier: workspace:*
         version: link:../logger

@@ -137,6 +137,7 @@
     "@anthropic-ai/sdk": "^0.95.0",
     "@contractor-ops/db": "workspace:*",
     "@contractor-ops/einvoice": "workspace:*",
+    "@contractor-ops/idp-saga": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/secrets": "workspace:*",
     "@infisical/sdk": "^5.0.2",

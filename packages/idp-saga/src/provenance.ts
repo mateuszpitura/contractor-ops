@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@contractor-ops/db';
-import type { ProvenanceLookupInput, ProvenanceMatchResult } from './types';
+import type { ProvenanceLookupInput, ProvenanceMatchResult } from './types.js';
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 

@@ -1,6 +1,6 @@
 import type { PrismaClient } from '@contractor-ops/db';
-import type { RunStatus, StepRow } from './types';
-import { MAX_ATTEMPTS } from './types';
+import type { RunStatus, StepRow } from './types.js';
+import { MAX_ATTEMPTS } from './types.js';
 
 /**
  * Phase 76 D-02 — Aggregate run-status derivation rule.

@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@contractor-ops/db';
-import type { GcResult } from './types';
+import type { GcResult } from './types.js';
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 

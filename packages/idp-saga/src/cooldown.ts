@@ -1,7 +1,7 @@
 import { TZDate } from '@date-fns/tz';
 import { startOfDay } from 'date-fns';
-import type { CooldownDecision, CooldownInput } from './types';
-import { COOLDOWN_DAYS } from './types';
+import type { CooldownDecision, CooldownInput } from './types.js';
+import { COOLDOWN_DAYS } from './types.js';
 
 /**
  * Phase 76 D-05/D-06/D-08 — Single source-of-truth cooldown gate.

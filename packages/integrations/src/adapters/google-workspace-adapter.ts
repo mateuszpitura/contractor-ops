@@ -1,9 +1,17 @@
+import { prisma } from '@contractor-ops/db';
+import { provenanceLookup } from '@contractor-ops/idp-saga';
 import { z } from 'zod';
 import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
+import {
+  canonicalizeRequest,
+  canonicalizeResponse,
+  sha256Hex,
+} from '../services/saga-canonicalize.js';
 import type { CredentialBlob } from '../types/credentials.js';
+import type { Deprovisionable, DeprovisionResult } from '../types/deprovisionable.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
 
@@ -109,7 +117,7 @@ const GOOGLE_WORKSPACE_OAUTH_CONFIG: OAuthConfig = {
 // Google Workspace Adapter
 // ---------------------------------------------------------------------------
 
-export class GoogleWorkspaceAdapter extends BaseAdapter {
+export class GoogleWorkspaceAdapter extends BaseAdapter implements Deprovisionable {
   /**
    * Slug uses underscore so `.toUpperCase()` produces `GOOGLE_WORKSPACE`
    * matching the Prisma IntegrationProvider enum value.
@@ -118,6 +126,22 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
   readonly displayName = 'Google Workspace';
   readonly supportsOAuth = true;
   readonly supportsWebhooks = false;
+
+  /**
+   * Phase 76 — access token used by the Deprovisionable methods. The saga
+   * step-runner (Plan 76-06) resolves the connection credential and configures
+   * it via {@link withAccessToken} before invoking suspend/revoke. Existing
+   * read methods (listAllDirectoryUsers / listUserGroups) keep taking the token
+   * as a parameter; the Deprovisionable interface signatures take only
+   * externalUserId, so the token is carried on the instance.
+   */
+  #deprovisionAccessToken = '';
+
+  /** Configure the access token for the Deprovisionable methods (saga step-runner). */
+  withAccessToken(accessToken: string): this {
+    this.#deprovisionAccessToken = accessToken;
+    return this;
+  }
 
   // -------------------------------------------------------------------------
   // OAuth
@@ -350,6 +374,163 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
   }
 
   // -------------------------------------------------------------------------
+  // Deprovisionable (Phase 76 D-13) — first concrete implementation.
+  // Phase 77 refines real-traffic quirks against a GWS sandbox; Phase 76 ships
+  // the typed implementation + the D-16 test template.
+  // -------------------------------------------------------------------------
+
+  async suspendAccount(externalUserId: string): Promise<DeprovisionResult> {
+    const requestPayload = { suspended: true };
+    const requestSha256 = sha256Hex(canonicalizeRequest(requestPayload));
+    const url = `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}`;
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${this.#deprovisionAccessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestPayload),
+      });
+    } catch (err) {
+      return {
+        status: 'FAILED',
+        failureKind: 'NETWORK',
+        errorMessage: String(err instanceof Error ? err.message : err).slice(0, 1024),
+        requestSha256,
+        responseSha256: sha256Hex(canonicalizeResponse({ error: 'network' })),
+      };
+    }
+
+    const responseBody = await res.json().catch(() => ({}));
+    const responseSha256 = sha256Hex(canonicalizeResponse(responseBody));
+    return mapStatus(res.status, requestSha256, responseSha256, 'suspendAccount');
+  }
+
+  async revokeAllSessions(externalUserId: string): Promise<DeprovisionResult> {
+    const requestSha256 = sha256Hex(canonicalizeRequest({ method: 'POST', target: 'signOut' }));
+    const url = `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}/signOut`;
+
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${this.#deprovisionAccessToken}` },
+      });
+    } catch (err) {
+      return {
+        status: 'FAILED',
+        failureKind: 'NETWORK',
+        errorMessage: String(err instanceof Error ? err.message : err).slice(0, 1024),
+        requestSha256,
+        responseSha256: sha256Hex(canonicalizeResponse({ error: 'network' })),
+      };
+    }
+
+    const responseText = await res.text().catch(() => '');
+    const responseSha256 = sha256Hex(
+      canonicalizeResponse({ status: res.status, bodyLength: responseText.length }),
+    );
+    return mapStatus(res.status, requestSha256, responseSha256, 'revokeAllSessions');
+  }
+
+  async verifyDeprovisioned(externalUserId: string): Promise<boolean> {
+    try {
+      const res = await fetch(
+        `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(externalUserId)}`,
+        { headers: { Authorization: `Bearer ${this.#deprovisionAccessToken}` } },
+      );
+      if (res.status === 404) return true; // user gone is also "deprovisioned"
+      const data = (await res.json().catch(() => ({}))) as { suspended?: boolean };
+      return Boolean(data?.suspended);
+    } catch {
+      return false;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Webhook self-trigger filter (Phase 76 D-09..D-12)
+  // -------------------------------------------------------------------------
+
+  override async handleWebhook(
+    payload: unknown,
+    organizationId: string,
+    _connectionId: string,
+  ): Promise<unknown> {
+    if (typeof payload === 'object' && payload !== null && 'event' in payload) {
+      const event = payload as { event: string; userId?: string };
+      if (event.event === 'user.suspended' && event.userId) {
+        const matched = await provenanceLookup(prisma, {
+          organizationId,
+          provider: 'GOOGLE_WORKSPACE',
+          externalUserId: event.userId,
+          actionKind: 'SUSPEND',
+        });
+        if (matched) {
+          // D-09 — suppress our own deprovision call from re-firing the v3.0 path.
+          return { suppressed: true, provenanceId: matched.id };
+        }
+      }
+    }
+    // D-11 — non-match (or non-suspend event) flows through to the default path.
+    return;
+  }
+
+  // -------------------------------------------------------------------------
   // Health Status — uses BaseAdapter default (no custom behavior).
   // -------------------------------------------------------------------------
+}
+
+/**
+ * Maps a Google Admin SDK HTTP status to a DeprovisionResult.
+ * USER_NOT_FOUND (404) is success-equivalent — the goal state (no active account) is met.
+ */
+function mapStatus(
+  status: number,
+  requestSha256: string,
+  responseSha256: string,
+  op: string,
+): DeprovisionResult {
+  if (status === 404) {
+    return {
+      status: 'SUCCEEDED',
+      failureKind: 'USER_NOT_FOUND',
+      errorMessage: 'User not found at provider — already absent',
+      requestSha256,
+      responseSha256,
+    };
+  }
+  if (status === 429) {
+    return { status: 'FAILED', failureKind: 'RATE_LIMITED', requestSha256, responseSha256 };
+  }
+  if (status === 401 || status === 403) {
+    return {
+      status: 'FAILED',
+      failureKind: 'AUTH_REVOKED',
+      errorMessage: 'Auth rejected by provider — re-OAuth required',
+      requestSha256,
+      responseSha256,
+    };
+  }
+  if (status >= 500) {
+    return {
+      status: 'FAILED',
+      failureKind: 'PROVIDER_ERROR',
+      errorMessage: `Provider error ${status}`,
+      requestSha256,
+      responseSha256,
+    };
+  }
+  if (status >= 200 && status < 300) {
+    return { status: 'SUCCEEDED', requestSha256, responseSha256 };
+  }
+  return {
+    status: 'FAILED',
+    failureKind: 'UNKNOWN',
+    errorMessage: `Unexpected status ${status} from ${op}`,
+    requestSha256,
+    responseSha256,
+  };
 }
