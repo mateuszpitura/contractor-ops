@@ -1,6 +1,8 @@
 import type { Prisma } from '@contractor-ops/db';
 import { getFlagSignoff } from '@contractor-ops/feature-flags';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
+import { DEPROVISIONING_PROVIDER_SIGNOFF_PENDING } from '../../errors';
 import { router } from '../../init';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
@@ -50,7 +52,10 @@ export const githubRouter = router({
     .input(z.object({ enabled: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       if (input.enabled && !isFlagSignoffSatisfied()) {
-        throw new Error('idp-deprovisioning-github signoff is PENDING — cannot enable');
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: DEPROVISIONING_PROVIDER_SIGNOFF_PENDING,
+        });
       }
       const org = await ctx.db.organization.findUnique({
         where: { id: ctx.organizationId },

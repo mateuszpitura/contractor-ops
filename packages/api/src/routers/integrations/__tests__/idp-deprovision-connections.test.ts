@@ -145,7 +145,12 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('IdP deprovisioning per-provider connection routers (Phase 78 D-12)', () => {
+// The appRouter (full root namespace graph) is heavy to import per test; the
+// default 5s timeout is occasionally hit on a cold fork worker. 20s mirrors the
+// idp-provider-enable.test.ts precedent.
+describe('IdP deprovisioning per-provider connection routers (Phase 78 D-12)', {
+  timeout: 20000,
+}, () => {
   for (const provider of ['entra', 'okta', 'github'] as const) {
     describe(`${provider} router`, () => {
       it('setEnabled REJECTS while the signoff flag is PENDING and no bypass', async () => {
