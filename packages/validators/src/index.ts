@@ -365,6 +365,24 @@ export {
   LPCDA_STATUTORY_RATE_LABEL,
   RESERVED_GB_LEGAL_KEYS,
 } from './legal/gb.js';
+// Phase 75 D-13/D-14 — IP-clause phrase libraries + aggregate registry
+export type { IpClausePhraseId, Jurisdiction } from './legal/ip-clauses-index.js';
+export {
+  ALL_IP_CLAUSES,
+  getPhraseJurisdiction,
+  IP_CLAUSE_PHRASE_LIBRARY_VERSION,
+  IP_CLAUSES_BY_JURISDICTION,
+} from './legal/ip-clauses-index.js';
+// Phase 75 D-06 — verdict results Zod schema
+export type { IpAssignmentResults } from './legal/ip-clauses-results-schema.js';
+export {
+  citedClauseSchema,
+  crossJurisdictionMismatchSchema,
+  evaluatedAgainstSchema,
+  ipAssignmentInnerSchema,
+  ipAssignmentResultsSchema,
+  PHRASE_ID_REGEX,
+} from './legal/ip-clauses-results-schema.js';
 export {
   getAllPending,
   getDisclaimerStatus,
