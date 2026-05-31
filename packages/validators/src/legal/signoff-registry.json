@@ -10,5 +10,79 @@
   "SDS_APPROVAL_STATEMENT_EN": { "status": "PENDING" },
   "DRV_UNVERIFIED_ENTRY_DISCLAIMER_DE": { "status": "PENDING" },
   "SOFTWARE_NOT_LEGAL_ADVICE_EN": { "status": "PENDING" },
-  "SOFTWARE_NOT_LEGAL_ADVICE_DE": { "status": "PENDING" }
+  "SOFTWARE_NOT_LEGAL_ADVICE_DE": { "status": "PENDING" },
+
+  "legal-signoff.ip_clauses.uk.hereby_assigns@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 D-14 — UK CDPA 1988 s.90(1). Flip to APPROVED post-deploy via PR with upstreamRef from UK adviser."
+  },
+  "legal-signoff.ip_clauses.uk.assignment_present_and_future@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — CDPA 1988 s.91. UK adviser sign-off required."
+  },
+  "legal-signoff.ip_clauses.uk.moral_rights_waiver@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — CDPA 1988 s.87. UK adviser sign-off required."
+  },
+
+  "legal-signoff.ip_clauses.de.urheberrecht_einraeumung@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 D-15 — UrhG §31. Steuerberater + Werkvertrag-aware adviser sign-off REQUIRED before production deploy."
+  },
+  "legal-signoff.ip_clauses.de.ausschliessliches_nutzungsrecht@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 D-15 — UrhG §31 Abs. 3. Steuerberater sign-off."
+  },
+  "legal-signoff.ip_clauses.de.einfaches_nutzungsrecht@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 D-15 — UrhG §31 Abs. 2. Steuerberater sign-off."
+  },
+  "legal-signoff.ip_clauses.de.werkvertrag_zweckuebertragung@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 D-15 — UrhG §31 Abs. 5 (Zweckübertragungsregel). Steuerberater sign-off."
+  },
+
+  "legal-signoff.ip_clauses.pl.przeniesienie_majatkowych@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — Ustawa o prawie autorskim art. 41. Doradca podatkowy sign-off."
+  },
+  "legal-signoff.ip_clauses.pl.pola_eksploatacji@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — Ustawa o prawie autorskim art. 50."
+  },
+  "legal-signoff.ip_clauses.pl.licencja_wylaczna@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — Ustawa o prawie autorskim art. 67 ust. 2."
+  },
+
+  "legal-signoff.ip_clauses.us.work_made_for_hire@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — 17 U.S.C. §201(b). US tax/IP adviser sign-off."
+  },
+  "legal-signoff.ip_clauses.us.assignment_in_lieu@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — 17 U.S.C. §204(a) assignment fallback."
+  },
+  "legal-signoff.ip_clauses.us.further_assurances@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — 17 U.S.C. §204(a) writing requirement."
+  },
+
+  "legal-signoff.ip_clauses.ksa.transfer_of_economic_rights@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — Saudi Copyright Law (Royal Decree M/41) Art. 22. Local adviser sign-off."
+  },
+  "legal-signoff.ip_clauses.ksa.scope_and_term@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — Saudi Copyright Law Art. 22 (writing requirement)."
+  },
+
+  "legal-signoff.ip_clauses.uae.disposition_of_economic_rights@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — UAE Federal Law No. 38 of 2021 Art. 9. Local adviser sign-off."
+  },
+  "legal-signoff.ip_clauses.uae.written_form@v1": {
+    "status": "PENDING",
+    "notes": "Phase 75 — UAE Federal Law No. 38 of 2021 Art. 9 (form requirements)."
+  }
 }

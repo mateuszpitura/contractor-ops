@@ -573,9 +573,18 @@ describe('Phase 64 — Signoff registry CI guard (D-14 Layer 1)', () => {
     }
   });
 
-  it('getAllPending() returns 12 keys initially (all PENDING)', () => {
+  it('getAllPending() returns all registry keys while every entry is PENDING (12 Phase 64 disclaimers + 17 Phase 75 IP clauses)', () => {
     const pending = getAllPending();
-    expect(pending).toHaveLength(12);
+    // 12 Phase 64 disclaimer keys (all PENDING) + 17 Phase 75 IP-clause keys
+    // (legal-signoff.ip_clauses.*, all PENDING pending adviser sign-off).
+    expect(pending).toHaveLength(29);
+    // The 12 base disclaimer keys must still be PENDING.
+    for (const key of Object.keys(LOCKED_DISCLAIMERS)) {
+      expect(pending, `disclaimer key "${key}" no longer PENDING`).toContain(key);
+    }
+    // All 17 Phase 75 IP-clause sign-offs must be PENDING (legal review outstanding).
+    const ipClausePending = pending.filter(k => k.startsWith('legal-signoff.ip_clauses.'));
+    expect(ipClausePending).toHaveLength(17);
   });
 
   it('isAllApproved() returns false when all entries are PENDING', () => {
