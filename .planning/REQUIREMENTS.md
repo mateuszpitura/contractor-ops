@@ -210,6 +210,43 @@ Positioning: *One tool for your whole workforce — contractors AND employees. P
 - **HR-DASH-04**: Probation-end watchlist (14/7/0 days)
 - **HR-DASH-05**: Saudization / Emiratisation rollup composes with v6.0 F3 Gulf operational polish
 
+### v7.0 — Integration Marketplace (Public API + Webhooks + Zapier / n8n / Make)
+
+Positioning: *Deepest multi-market compliance + widest integration reach — connect Contractor Ops to 9,000+ apps without engineering.* Theme C in [`milestones/v7.0-BACKLOG.md`](milestones/v7.0-BACKLOG.md). Strategic rationale: neutralises Rippling 600+ integrations threat via three marketplace listings (Zapier 7000+ / Make.com 1700+ / n8n 500+) on one backend implementation. API access tier-gated within base tier (Starter read-only / Pro read+write / Enterprise unlimited), NOT add-on. Reuses `apps/public-api` (Hono).
+
+- **INTEG-API-01**: Extend `apps/public-api` (Hono) with read+write REST endpoints covering contractors / invoices / payments / payment_runs / workflows / workflow_tasks / classifications / compliance_documents / audit_log; Zod input validation; tenant-scoped via API key
+- **INTEG-API-02**: OpenAPI 3.1 spec auto-generated from Zod schemas; published to Mintlify / Scalar developer portal
+- **INTEG-API-03**: API versioning policy `/v1/*` base path; Sunset header per RFC 8594; major-version-bump only on breaking changes
+- **INTEG-API-04**: Cursor-based pagination, standardized filter/sort syntax across all list endpoints
+- **INTEG-API-05**: Auto-generated TypeScript + Python SDKs published to npm + PyPI as `@contractor-ops/sdk` and `contractor-ops-sdk`
+- **INTEG-AUTH-01**: `ApiKey` Prisma model — org-scoped, named labels, rotation/revocation audit, bcrypt + per-key salt storage, `co_live_xxx` prefix display
+- **INTEG-AUTH-02**: Per-key scopes (`contractors:read/write`, `invoices:read/write`, `payments:read/write`, `webhooks:manage`, `classifications:read`, `compliance:read`, `audit:read`); least-privilege default
+- **INTEG-AUTH-03**: Settings → Developer page — key CRUD UI, last-used-at, source IP log, scope picker, rotation grace period
+- **INTEG-AUTH-04**: Redis (Upstash) token-bucket rate limiting per key; per-tier limits (Starter 1k req/mc + 1 webhook sub, Pro 10k + 5, Enterprise unlimited)
+- **INTEG-AUTH-05**: Every external mutation audit-logged with `apiKeyId` + `sourceIp` + `userAgent` (extends v3.0 `writeAuditLog`)
+- **INTEG-WEBHOOK-01**: `WebhookSubscription` Prisma model — per-org, per-event-filter, target URL, HMAC secret, retry policy, last-success/failure timestamps
+- **INTEG-WEBHOOK-02**: Event catalog initial: `contractor.{created,updated,offboarded,compliance_blocked}`, `invoice.{received,matched,approved,rejected,paid}`, `payment_run.{created,completed}`, `workflow.{task.completed,completed}`, `classification.outcome`, `compliance_doc.{expiring_soon,expired}` (composes with v6.0 F1 band-state-machine). Zod-typed discriminated-union payloads.
+- **INTEG-WEBHOOK-03**: QStash-queued dispatcher (reuse v2.0 infra); exponential backoff (1m/5m/30m/2h/12h/24h); 6 max retries; DLQ to `webhook_failures`; admin alert on 5 failures in 1h
+- **INTEG-WEBHOOK-04**: HMAC-SHA256 signature header (`X-CO-Signature` = `t={unix_ms},v1={hex_hmac}`) Stripe-convention; per-subscription secret
+- **INTEG-WEBHOOK-05**: Replay protection — signed timestamp + 5-min acceptance window; sample verifier in TS/Python/Go/PHP
+- **INTEG-WEBHOOK-06**: Webhook subscription mgmt API + UI Settings → Developer → Webhooks with test-fire button + last-100-deliveries log
+- **INTEG-WEBHOOK-07**: PII redaction opt-in per subscription (`include_pii: false` default); strips PESEL/SSN/NI/Steuer-IdNr/Emirates ID/Iqama/email/phone unless flag set (RODO-defensible)
+- **INTEG-SEC-01**: SSRF guard — pre-flight reject private IPs (RFC 1918, loopback, link-local, AWS metadata `169.254.169.254`, cloud equivalents); DNS-rebind protection (verify resolved IP at connect time)
+- **INTEG-SEC-02**: HTTPS-only target URLs default; HTTP only via per-org admin override + warning banner
+- **INTEG-SEC-03**: Per-org webhook dispatch rate limit (100 events/min per subscription) — anti-fanout-DDoS
+- **INTEG-SEC-04**: OWASP API Security Top 10 review checklist as phase gate (BOLA/BFLA/SSRF/mass-assignment/security-misconfig/injection)
+- **INTEG-SEC-05**: API key leak alarm — alert org admins if key shows usage from >3 distinct source IPs in 24h
+- **INTEG-ZAPIER-01**: Zapier app — auth (API key or OAuth 2.0), 8+ triggers (event-catalog-mapped), 6+ actions (create contractor, create invoice, approve invoice, mark payment paid, create workflow task, lookup contractor by tax ID); Zapier sandbox bundle test
+- **INTEG-ZAPIER-02**: Zapier public listing submission + 2–4 wk review cycle tracked as separate phase milestone
+- **INTEG-N8N-01**: n8n community node package `@contractor-ops/n8n-nodes` published to npm; nodes mirror Zapier trigger/action surface; installable via n8n community-nodes UI
+- **INTEG-N8N-02**: n8n docs page + example workflows (invoice-to-Slack, contractor-onboard-from-Personio, compliance-expiry-to-PagerDuty)
+- **INTEG-MAKE-01**: Make.com app submission to Make App Directory; same trigger/action surface as Zapier; ~1–2 wk review
+- **INTEG-MARKETPLACE-01**: Internal listing-status dashboard — track all three marketplace approval states, version pins, last review feedback
+- **INTEG-DX-01**: Developer portal site (`developers.contractor-ops.{tld}`) — Mintlify or Scalar — OpenAPI reference, webhook event catalog, SDK install guides, sample apps (Zapier/n8n/Make recipes), changelog, deprecation notices
+- **INTEG-DX-02**: Postman collection (auto-generated from OpenAPI) + Insomnia workspace download
+- **INTEG-DX-03**: Public status page (`status.contractor-ops.{tld}`) — API + webhook dispatcher uptime + incident history (reuse v2.0 health-monitoring pattern)
+- **INTEG-DX-04**: Sandbox environment + free-forever public-API tier (100 req/day, no real data writes — auto-seed fresh test org per developer signup)
+
 ## Out of Scope
 
 Explicitly excluded. Documented to prevent scope creep.
