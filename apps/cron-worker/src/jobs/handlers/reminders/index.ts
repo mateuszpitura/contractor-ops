@@ -18,6 +18,7 @@
  */
 
 import { tryAcquireXactLock } from '@contractor-ops/api/lib/advisory-lock';
+import { runComplianceReminderScan } from '@contractor-ops/api/services/compliance-reminder-scan';
 import { dispatch } from '@contractor-ops/api/services/notification-service';
 import { prisma, prismaRaw } from '@contractor-ops/db';
 import { gcExpiredProvenance } from '@contractor-ops/idp-saga';
@@ -362,17 +363,27 @@ export const remindersHandler: JobHandler = async ctx => {
             overdueTasksNotified: 0,
             drvExpiriesNotified: 0,
             idpProvenanceGced: 0,
+            complianceReminderFires: 0,
+            complianceReminderDigests: 0,
           };
         }
 
-        const [ruleResults, overdueTasksNotified, drvExpiriesNotified, idpProvenanceGced] =
-          await Promise.all([
-            evaluateReminderRules(),
-            detectOverdueTasks(),
-            detectDrvClearanceExpiries(),
-            // Phase 76 D-12 — never rejects (internal try/catch), so it can't abort the others.
-            gcIdpProvenance(ctx.log),
-          ]);
+        const [
+          ruleResults,
+          overdueTasksNotified,
+          drvExpiriesNotified,
+          idpProvenanceGced,
+          complianceReminderResult,
+        ] = await Promise.all([
+          evaluateReminderRules(),
+          detectOverdueTasks(),
+          detectDrvClearanceExpiries(),
+          // Phase 76 D-12 — never rejects (internal try/catch), so it can't abort the others.
+          gcIdpProvenance(ctx.log),
+          // Phase 72 COMPL-03 — never rejects (top-level try/catch in the helper),
+          // so it can't abort the shared reminders transaction.
+          runComplianceReminderScan(),
+        ]);
 
         return {
           skipped: false as const,
@@ -381,6 +392,8 @@ export const remindersHandler: JobHandler = async ctx => {
           overdueTasksNotified,
           drvExpiriesNotified,
           idpProvenanceGced,
+          complianceReminderFires: complianceReminderResult.fires,
+          complianceReminderDigests: complianceReminderResult.digests,
         };
       },
       { timeout: 60_000, maxWait: 10_000 },
@@ -392,6 +405,8 @@ export const remindersHandler: JobHandler = async ctx => {
       metrics.gauge('cron.reminders.overdue_tasks', result.overdueTasksNotified);
       metrics.gauge('cron.reminders.drv_expiries', result.drvExpiriesNotified);
       metrics.gauge('cron.reminders.idp_provenance_gced', result.idpProvenanceGced);
+      metrics.gauge('cron.reminders.compliance_reminder_fires', result.complianceReminderFires);
+      metrics.gauge('cron.reminders.compliance_reminder_digests', result.complianceReminderDigests);
     }
 
     return {

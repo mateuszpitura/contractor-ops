@@ -7,6 +7,10 @@
     "status": "PENDING",
     "notes": "F4 Offboarding workflow foundation + KT templates + override permission. Werkvertrag wording deferred to Phase 75; this flag gates the workflow:override_blocking_task permission and PTO-aware fallback routing. Needs verification by legal entity before production deploy (override-dialog acknowledgement copy)."
   },
+  "compliance-payment-block": {
+    "status": "PENDING",
+    "notes": "F1 Compliance hard payment-block at every payment-write entry point (payment.create + payment.lockAndExport). Blocks a contractor with severity=BLOCKING AND status=EXPIRED items. Legal-sensitive admin lockout posture per ROADMAP Phase 72. Engineers develop with FLAG_SIGNOFF_BYPASS=local; production stays OFF (would-block soft-warn) until the legal entity verifies admin lockout copy. Standing Constraint: legal review DEFERRED post-deploy."
+  },
   "compliance-policy-engine.uk.right_to_work": {
     "status": "PENDING",
     "notes": "UK Right-to-Work share code (90-day generation expiry); legal review deferred per Standing Constraint"
