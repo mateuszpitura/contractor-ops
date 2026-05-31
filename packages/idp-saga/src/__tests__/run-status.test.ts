@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { deriveRunStatus } from '../run-status';
+import { describe, expect, it, vi } from 'vitest';
+import { deriveRunStatus, recomputeRunStatus } from '../run-status';
 
 describe('deriveRunStatus (Phase 76 D-02)', () => {
   it('all SUCCEEDED → COMPLETED', () => {
@@ -44,5 +44,42 @@ describe('deriveRunStatus (Phase 76 D-02)', () => {
   });
   it('empty steps → PENDING', () => {
     expect(deriveRunStatus([])).toBe('PENDING');
+  });
+});
+
+describe('recomputeRunStatus (Phase 76 D-02 async wrapper)', () => {
+  it('reads steps + UPDATEs run.status + sets finishedAt when terminal', async () => {
+    const findManyMock = vi.fn().mockResolvedValue([
+      { status: 'SUCCEEDED', attempts: 1 },
+      { status: 'SUCCEEDED', attempts: 1 },
+    ]);
+    const updateMock = vi.fn().mockResolvedValue({});
+    const db = {
+      deprovisioningStep: { findMany: findManyMock },
+      deprovisioningRun: { update: updateMock },
+    } as unknown as Parameters<typeof recomputeRunStatus>[0];
+
+    const result = await recomputeRunStatus(db, 'run-1');
+    expect(result).toBe('COMPLETED');
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: 'run-1' },
+      data: { status: 'COMPLETED', finishedAt: expect.any(Date) },
+    });
+  });
+
+  it('does NOT set finishedAt when status is IN_PROGRESS', async () => {
+    const updateMock = vi.fn().mockResolvedValue({});
+    const db = {
+      deprovisioningStep: {
+        findMany: vi.fn().mockResolvedValue([{ status: 'IN_PROGRESS', attempts: 0 }]),
+      },
+      deprovisioningRun: { update: updateMock },
+    } as unknown as Parameters<typeof recomputeRunStatus>[0];
+
+    await recomputeRunStatus(db, 'run-2');
+    expect(updateMock).toHaveBeenCalledWith({
+      where: { id: 'run-2' },
+      data: { status: 'IN_PROGRESS', finishedAt: null },
+    });
   });
 });
