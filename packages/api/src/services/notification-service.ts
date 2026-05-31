@@ -407,9 +407,11 @@ async function dispatchToUser(
   if (prefs.channelEmail) {
     try {
       await sendNotificationEmail(userId, event, options.outboxEventId);
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-    } catch (_error) {
-      /* fire-and-forget */
+    } catch (err) {
+      log.warn(
+        { err, userId, type: event.type, entityId: event.entityId },
+        'notification email dispatch failed',
+      );
     }
   }
 
@@ -451,9 +453,11 @@ async function dispatchToMessagingProviders(
       if (!recipientId) continue;
 
       await sendProviderMessage(provider, event, recipientId);
-      // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-    } catch (_error) {
-      /* fire-and-forget */
+    } catch (err) {
+      log.warn(
+        { err, userId, platform: provider.platform, type: event.type, entityId: event.entityId },
+        'messaging provider dispatch failed',
+      );
     }
   }
 }

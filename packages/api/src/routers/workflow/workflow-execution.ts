@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'node:crypto';
 import type { Prisma } from '@contractor-ops/db';
+import { createLogger } from '@contractor-ops/logger';
 import {
   addCommentSchema,
   calendarTaskConfigSchema,
@@ -119,6 +120,8 @@ function buildIntegrationEligibility(
   };
 }
 
+const log = createLogger({ service: 'workflow-execution' });
+
 /**
  * Fire-and-forget: syncs task status to external Jira and Linear integrations.
  */
@@ -139,9 +142,11 @@ function syncTaskToExternalSystems(
         if (connection) {
           await transitionJiraIssue(db, organizationId, connection.id, task.id, targetStatus);
         }
-        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-      } catch (_err) {
-        /* fire-and-forget */
+      } catch (err) {
+        log.warn(
+          { err, organizationId, taskId: task.id, targetStatus },
+          'Jira task status sync failed',
+        );
       }
     })();
   }
@@ -151,9 +156,11 @@ function syncTaskToExternalSystems(
       try {
         const { syncTaskStatusToLinear } = await import('../../services/linear-issue-sync');
         await syncTaskStatusToLinear(db, task.id, targetStatus);
-        // safe-swallow: pre-existing — see goals/production-hardening/ phase B.7.b
-      } catch (_err) {
-        /* fire-and-forget */
+      } catch (err) {
+        log.warn(
+          { err, organizationId, taskId: task.id, targetStatus },
+          'Linear task status sync failed',
+        );
       }
     })();
   }
