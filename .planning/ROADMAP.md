@@ -149,7 +149,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   2. Contractor receives a portal-side notification "Right-to-Work share code expires in 30 days"; clicking through opens a one-click upload-replacement flow that auto-marks the requirement `SATISFIED` with refreshed `expiresAt` from the template
   3. Admin can manually mark a requirement as overridden with reason text (audit-logged); status flips to `WAIVED` with the override appearing in the requirement history
   4. Every COMPL UI surface ships en/pl/de message-key parity at 100%; jurisdiction-specific document type names ("Right-to-Work share code", "A1-Bescheinigung", "Iqama") added to locked-phrase registry — *Needs verification by legal entity before production deploy* on the locked-phrase additions per Standing Constraints
-**Plans:** 1/8 plans executed
+**Plans:** 2/8 plans executed
 **Research flag:** STANDARD
 **Feature flags:** `compliance-portal-self-service` PENDING
 **UI hint:** yes
@@ -383,7 +383,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 70. v6.0 Foundation — CI Guards                | v6.0      | 0/?            | Not started | -          |
 | 71. F1 Compliance — Policy Package + Schema   | v6.0      | 7/7 | Complete   | 2026-04-27 |
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 8/8 | Complete    | 2026-05-31 |
-| 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 1/8 | In Progress|  |
+| 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 2/8 | In Progress|  |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
