@@ -1,0 +1,26 @@
+Phase 75 Wave 0 RED baseline (executed 2026-05-31, inline executor):
+
+Path-drift adaptations vs PLAN (see 75-DRIFT-MAP.md):
+- health-check-panel.test.tsx -> apps/web-vite/... (was apps/web/...); filter @contractor-ops/web-vite (was @contractor-ops/web)
+- push-all-regions-phase-75.test.ts -> packages/db/src/__tests__/ (was packages/db/scripts/__tests__/, which the db vitest glob `src/**/__tests__/**` does NOT cover -> would silently skip; threat T-75-01-01)
+
+Per-package RED results (vitest run, filtered):
+- Validators:
+  - secret-shape-detector.test.ts: file FAILS (imports absent ../secret-shape-detector.js; ships 75-05) — 12-row matrix x2 + 2 extra = 26 blocks once module lands
+  - ip-clauses-parity.test.ts: 1 failed (expect.fail placeholder) + 4 todo
+  - ip-clauses-results-schema.test.ts: 1 failed (expect.fail placeholder) + 9 todo
+- DB:
+  - phase-75-schema.test.ts: 1 failed (expect.fail placeholder) + 18 todo
+  - push-all-regions-phase-75.test.ts: 4 todo (now discovered under src/__tests__)
+- Integrations: contract-health-tools (8 todo) + esign-webhook-ip-ratification (7 todo) = 15 todo
+- API: dedup (6) + materialise (9) + cross-jurisdiction (6) + workflow-execution-ip-block (7) + workflow-execution-credential-warning (7) + bulk-rerun-contract-health (7) = 42 todo
+- Web (web-vite): health-check-panel (9 todo)
+
+Totals: 4 RED placeholders/failing-import files + 102 it.todo scaffolds across 14 NEW test files.
+
+Gates:
+- pnpm typecheck: GREEN (42/42 turbo tasks; __tests__ excluded from tsc include in each package)
+- pnpm --filter @contractor-ops/validators test locked-phrases-guard: GREEN (78/78; count assertion updated 12 -> 29 for the 17 new IP-clause PENDING entries)
+
+Plans 75-02..75-08 flip these GREEN incrementally; the bidirectional parity + schema
++ secret-shape modules ship in 75-02/04/05, the engine + routers in 75-06/07, UI + webhook in 75-08.
