@@ -2,6 +2,8 @@
 
 For each new/modified file, lists the closest in-repo analog and the concrete code shape to mirror. Read this before any plan executes.
 
+> ⚠️ **POST-MIGRATION PATH NOTICE (2026-05-31).** Written pre-web-migration. Stale paths below (`apps/web/...`, `routers/payment.ts`, `routers/approval.ts`, `routers/classification.ts`) are superseded by the **PLAN.md files (72-01..08)** and **`72-REPLAN-DRIFT-MAP.md`** (authoritative). Current targets: `apps/web-vite` (modal: `components/payments/`, analog `.../new-payment-run-dialog/step-review.tsx` + drv-clearance container; i18n flat `apps/web-vite/messages/{en,de,pl,ar}.json`); cron → `apps/cron-worker/src/jobs/handlers/reminders/index.ts`; payment → `routers/finance/payment.ts`; approval → `routers/core/approval.ts`; classification → `routers/compliance/classification.ts`; lint-guard → per-guard subdir `lint-guards/src/payment-gate-guard/`.
+
 ---
 
 ## New: `packages/db/prisma/schema/contractor.prisma` (additive — `ContractorComplianceReminderState` model + `ReminderBand` enum)

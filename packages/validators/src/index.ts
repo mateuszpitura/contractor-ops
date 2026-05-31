@@ -568,6 +568,13 @@ export {
   workflowAssignableRoleEnum,
   workflowAssignableRoleValues,
 } from './roles.js';
+// Phase 75 D-11 — secret-shape detector (credential-vault structural defence)
+export type { LooksLikeSecretResult, SecretPattern } from './secret-shape-detector.js';
+export {
+  looksLikeSecret,
+  looksLikeSecretRefinement,
+  SECRET_PATTERNS,
+} from './secret-shape-detector.js';
 export type {
   BundeslandCode,
   SteuernummerFormat,

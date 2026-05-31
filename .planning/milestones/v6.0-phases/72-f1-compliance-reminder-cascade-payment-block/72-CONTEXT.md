@@ -3,6 +3,8 @@
 **Gathered:** 2026-04-27
 **Status:** Ready for planning
 
+> ⚠️ **POST-MIGRATION PATH NOTICE (2026-05-31).** Decisions (D-01..D-19) are unchanged and authoritative. Some file paths in `<canonical_refs>` / `<code_context>` are pre-web-migration and stale (`apps/web/...`, `routers/payment-run.ts`, `routers/payment.ts`, `routers/approval.ts`, `routers/classification.ts`, the `claimCronNotificationDedup` location). The **PLAN.md files (72-01..08)** + **`72-REPLAN-DRIFT-MAP.md`** carry the corrected current-tree paths and win on any path conflict. Current targets: `apps/web` → `apps/web-vite`; cron → `apps/cron-worker/src/jobs/handlers/reminders/`; payment-run router → `packages/api/src/routers/finance/payment.ts` (`payment.create` / `payment.lockAndExport`); approval → `routers/core/approval.ts`; classification → `routers/compliance/classification.ts`. The decisions themselves (table shapes, enum values, audit actions, eligibility logic) are correct as written.
+
 <domain>
 ## Phase Boundary
 
@@ -183,7 +185,7 @@ Phase 73 owns the admin dashboard, the contractor portal one-click upload-replac
 - `packages/db/prisma/schema/contractor.prisma` — `ContractorComplianceItem` model (Phase 71-extended with `severity`, `policyRuleId`, `expiryJurisdictionTz`, `waivedReason`). Phase 72 adds `ContractorComplianceReminderState` 1:1 sibling table.
 - `packages/db/prisma/schema/approval.prisma` — `ApprovalFlow`, `ApprovalChainConfig`, `ApprovalStatus` enum. Phase 72 adds `PENDING_COMPLIANCE` enum value (D-12) and `complianceHoldsJson` column on `ApprovalFlow` (D-14).
 - `packages/db/prisma/schema/payment.prisma` — `PaymentRun`, `PaymentRunItem`, `PaymentExport`. Phase 72 adds `PaymentRunComplianceCheck` table + `EligibilityVerdict` enum (D-16).
-- `packages/db/scripts/push-all-regions.ts` — multi-region migration tool. Phase 72 schema migration carries the same Standing Constraint (manual post-deploy run per region).
+- `packages/db/scripts/migrate-all-regions.ts` (script `db:migrate:all`) — multi-region migration tool. Phase 72 schema migration carries the same Standing Constraint (manual post-deploy run per region).
 
 ### Phase 70 dependencies (feature-flag gating)
 - `packages/feature-flags/src/signoff-registry-flags.ts` — Phase 70 D-09 parallel signoff registry. `compliance-payment-block` lives here as PENDING per ROADMAP. Engineers develop with `FLAG_SIGNOFF_BYPASS=local`.
@@ -234,7 +236,7 @@ Phase 73 owns the admin dashboard, the contractor portal one-click upload-replac
 - **`packages/api/src/services/approval-engine.ts`** — existing condition-evaluator. Phase 72 extends with plugin registry (D-13).
 - **`packages/db/prisma/schema/approval.prisma` `ApprovalStatus` enum** — additive `PENDING_COMPLIANCE` value (D-12).
 - **`packages/db/prisma/schema/payment.prisma` `PaymentRun`/`PaymentExport` tables** — `PaymentRunComplianceCheck` joins via `paymentRunId` + `paymentExportId?`.
-- **`packages/db/scripts/push-all-regions.ts`** — multi-region migration runner; Phase 72 migration carries Standing Constraint.
+- **`packages/db/scripts/migrate-all-regions.ts`** (script `db:migrate:all`) — multi-region migration runner; Phase 72 migration carries Standing Constraint.
 
 ### Established Patterns
 

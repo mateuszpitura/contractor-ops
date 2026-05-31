@@ -11,6 +11,8 @@ created: 2026-04-27
 
 > Per-phase validation contract for feedback sampling during execution.
 
+> ⚠️ **POST-MIGRATION PATH NOTICE (2026-05-31).** Written pre-web-migration. Path/identifier references below are stale where they cite `apps/web/...`, `apps/web/vitest.config.ts`, `paymentRun.create`/`paymentRun.export`. Current targets (authoritative in the PLAN.md files + `72-REPLAN-DRIFT-MAP.md`): web tests run under `@contractor-ops/web-vite` (config `apps/web-vite/vitest.config.ts`); the cron orchestrator wiring + test live in `@contractor-ops/cron-worker`; the payment procedures are `payment.create` / `payment.lockAndExport` in `routers/finance/payment.ts`; the lint guard is `payment-gate-guard`. The validation *intent* (what each `it(...)` proves) is unchanged.
+
 ---
 
 ## Test Infrastructure
