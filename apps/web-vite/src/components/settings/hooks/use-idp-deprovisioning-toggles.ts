@@ -11,7 +11,10 @@ import { toast } from 'sonner';
 import { useTranslations } from '../../../i18n/useTranslations.js';
 import { useTRPC } from '../../../providers/trpc-provider.js';
 
-export type ToggleProvider = 'GOOGLE_WORKSPACE' | 'SLACK';
+// Phase 78 D-12 — widened to the five Deprovisionable providers. The server's
+// getProviderToggleState now returns ENTRA/OKTA/GITHUB alongside GWS/Slack; the
+// full per-provider UI (labels, cards) is built in 78-07.
+export type ToggleProvider = 'GOOGLE_WORKSPACE' | 'SLACK' | 'ENTRA' | 'OKTA' | 'GITHUB';
 
 export interface ProviderToggleRow {
   provider: ToggleProvider;
