@@ -30,6 +30,11 @@ export {
   registerCompanyRegistryAdapter,
   registerOcrAdapter,
 } from './registry.js';
+// Phase 76 D-14 — per-provider deprovision scope/capability typed-consts
+export {
+  GOOGLE_WORKSPACE_DEPROVISION_CAPABILITIES,
+  GOOGLE_WORKSPACE_DEPROVISION_SCOPES,
+} from './scopes/index.js';
 // Company Registry Service
 export {
   getCompanyRegistryAdapter,

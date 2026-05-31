@@ -27,11 +27,11 @@ describe('GoogleWorkspaceReconnectBanner (FOUND6-05 — D-16)', () => {
     expect(screen.getByRole('region')).toBeInTheDocument();
   });
 
-  it('hides when capabilities include user.deprovision', () => {
+  it('hides only when capabilities include BOTH user.deprovision AND directory.write (Phase 76 3-state)', () => {
     const caps: ScopeCapabilities = {
       provider: 'google',
-      scopes: ['https://www.googleapis.com/auth/admin.directory.user.readonly'],
-      capabilities: ['directory.read', 'user.deprovision'],
+      scopes: ['https://www.googleapis.com/auth/admin.directory.user'],
+      capabilities: ['directory.read', 'user.deprovision', 'directory.write'],
       grantedAt: '2026-04-26T00:00:00.000Z',
     };
     const { container } = render(<GoogleWorkspaceReconnectBanner scopeCapabilities={caps} />);

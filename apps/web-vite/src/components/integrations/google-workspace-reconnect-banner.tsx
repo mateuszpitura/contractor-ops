@@ -23,6 +23,13 @@ import { useTranslations } from '../../i18n/useTranslations.js';
 const REQUIRED_CAPABILITY = 'user.deprovision' as const;
 
 /**
+ * Phase 76 SC#3 — write capability granted by the additive `admin.directory.user`
+ * scope. A connection that has `user.deprovision` (opted in) but lacks `directory.write`
+ * is a v3.0 connection that still needs the write-access re-OAuth.
+ */
+const WRITE_CAPABILITY = 'directory.write' as const;
+
+/**
  * Default OAuth start endpoint for the existing Google Workspace v3.0
  * connection flow. The Reconnect button just routes here with the EXISTING
  * scope set — Phase 70 ships ZERO new OAuth scopes (T-70-10-01).
@@ -74,17 +81,29 @@ export function GoogleWorkspaceReconnectBanner({
 }: GoogleWorkspaceReconnectBannerProps) {
   const t = useTranslations('Integrations.GoogleWorkspaceReconnect');
 
-  const needsReconnect =
-    scopeCapabilities === null || !scopeCapabilities.capabilities.includes(REQUIRED_CAPABILITY);
+  const capabilities = scopeCapabilities?.capabilities ?? [];
+  const hasDeprovision = capabilities.includes(REQUIRED_CAPABILITY);
+  const hasWrite = capabilities.includes(WRITE_CAPABILITY);
 
-  if (!needsReconnect) {
+  // State decision tree (Phase 76 SC#3 / T-76-08-04):
+  //   1. null OR no `user.deprovision`        → "Reconnect required" (Phase 70 D-16; UNCHANGED)
+  //   2. has `user.deprovision`, no `directory.write` → "Write access required" (Phase 76 NEW)
+  //   3. has both                              → hidden
+  const needsReconnect = scopeCapabilities === null || !hasDeprovision;
+  const needsWriteAccess = hasDeprovision && !hasWrite;
+
+  if (!(needsReconnect || needsWriteAccess)) {
     return null;
   }
+
+  const titleKey = needsWriteAccess ? 'writeAccessTitle' : 'bannerTitle';
+  const bodyKey = needsWriteAccess ? 'writeAccessBody' : 'bannerBody';
+  const buttonKey = needsWriteAccess ? 'writeAccessButton' : 'reconnectButton';
 
   return (
     <Card
       role="region"
-      aria-label={t('bannerTitle')}
+      aria-label={t(titleKey)}
       className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/30">
       <CardHeader className="flex flex-row items-start gap-3">
         <AlertCircle
@@ -92,12 +111,12 @@ export function GoogleWorkspaceReconnectBanner({
           aria-hidden="true"
         />
         <div className="flex-1">
-          <CardTitle className="text-base">{t('bannerTitle')}</CardTitle>
-          <CardDescription className="mt-1">{t('bannerBody')}</CardDescription>
+          <CardTitle className="text-base">{t(titleKey)}</CardTitle>
+          <CardDescription className="mt-1">{t(bodyKey)}</CardDescription>
         </div>
       </CardHeader>
       <CardFooter>
-        <Button render={<a href={reconnectHref} />}>{t('reconnectButton')}</Button>
+        <Button render={<a href={reconnectHref} />}>{t(buttonKey)}</Button>
       </CardFooter>
     </Card>
   );

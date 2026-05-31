@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GOOGLE_WORKSPACE_DEPROVISION_SCOPES } from '../scopes/google-workspace-deprovision-scopes.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
@@ -92,6 +93,10 @@ const GOOGLE_WORKSPACE_OAUTH_CONFIG: OAuthConfig = {
   scopes: [
     'https://www.googleapis.com/auth/admin.directory.user.readonly',
     'https://www.googleapis.com/auth/admin.directory.group.readonly',
+    // Phase 76 SC#3 — additive write scope for contractor deprovisioning.
+    // Read-only directory-import continues working; prompt=consent forces re-OAuth
+    // for the new scope. Traced by lint:scopes (D-15) to the typed-const.
+    ...GOOGLE_WORKSPACE_DEPROVISION_SCOPES,
   ],
   redirectPath: '/api/oauth/google_workspace/callback',
   extraAuthParams: {

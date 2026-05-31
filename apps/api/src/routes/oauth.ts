@@ -42,10 +42,12 @@ import {
 } from '@contractor-ops/api/services/oauth-challenge';
 import { syncJiraProjectsToOrgDefinitions } from '@contractor-ops/api/services/org-definition-sync';
 import { auth } from '@contractor-ops/auth';
-import type { Prisma } from '@contractor-ops/db';
+import type { CapabilityEnum, Prisma, ScopeCapabilities } from '@contractor-ops/db';
 import { createTenantClientFrom, getRegionalClient, prisma, tenantStore } from '@contractor-ops/db';
 import {
   encryptCredentials,
+  GOOGLE_WORKSPACE_DEPROVISION_CAPABILITIES,
+  GOOGLE_WORKSPACE_DEPROVISION_SCOPES,
   generateOAuthState,
   getAdapter,
   registerAllAdapters,
@@ -65,6 +67,32 @@ registerAllAdapters();
 
 function noStore(reply: FastifyReply): FastifyReply {
   return reply.header('cache-control', 'no-store, private');
+}
+
+/**
+ * Phase 76 SC#3 — derive the Google Workspace scopeCapabilities JSONB from the
+ * space-separated scope string Google returns on token exchange. Read capabilities
+ * are the baseline; write capabilities (user.deprovision + directory.write) are
+ * appended only when the additive admin.directory.user (non-readonly) scope was
+ * granted. Existing read-only directory-import is preserved either way.
+ */
+export function buildGoogleWorkspaceScopeCapabilities(
+  scope: string | undefined,
+): ScopeCapabilities {
+  const grantedScopes = scope?.split(/\s+/).filter(Boolean) ?? [];
+  const hasWriteScope = GOOGLE_WORKSPACE_DEPROVISION_SCOPES.every(s => grantedScopes.includes(s));
+  const capabilities: CapabilityEnum[] = ['directory.read', 'group.read'];
+  if (hasWriteScope) {
+    for (const cap of GOOGLE_WORKSPACE_DEPROVISION_CAPABILITIES) {
+      if (!capabilities.includes(cap)) capabilities.push(cap);
+    }
+  }
+  return {
+    provider: 'google',
+    scopes: grantedScopes,
+    capabilities,
+    grantedAt: new Date().toISOString(),
+  };
 }
 
 function buildHeaders(headers: Record<string, string | string[] | undefined>): Headers {
@@ -263,6 +291,15 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
           (credentials.extra?.displayName as string) ??
           adapter.displayName;
 
+        // Phase 76 SC#3 — for Google Workspace, derive the scopeCapabilities JSONB from
+        // the granted OAuth scopes. The write capabilities (user.deprovision + directory.write)
+        // are appended ONLY when the additive admin.directory.user scope was granted, so an
+        // existing read-only v3.0 connection that re-OAuths gains write access additively.
+        const gwsScopeCapabilities =
+          provider === 'google_workspace'
+            ? buildGoogleWorkspaceScopeCapabilities(credentials.scope)
+            : undefined;
+
         const connectionData = {
           status: (provider === 'linear' ? 'PENDING_MAPPING' : 'CONNECTED') as never,
           displayName,
@@ -273,6 +310,9 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
           tokenExpiresAt: credentials.expiresAt ? new Date(credentials.expiresAt) : null,
           lastErrorAt: null,
           lastErrorMessage: null,
+          ...(gwsScopeCapabilities
+            ? { scopeCapabilities: gwsScopeCapabilities as unknown as Prisma.InputJsonValue }
+            : {}),
         };
 
         let upsertedConnectionId: string;
