@@ -33,6 +33,7 @@
  * special exempt prefix is needed.
  */
 
+import { writeAuditLog } from '@contractor-ops/api/services/audit-writer';
 import {
   consumeOAuthChallenge,
   createOAuthChallenge,
@@ -291,6 +292,37 @@ export function registerOAuthRoutes(app: FastifyInstance): void {
             },
           });
           upsertedConnectionId = created.id;
+        }
+
+        // Audit the credential upsert. The connection is already persisted,
+        // so a failed audit write must not fail the user's connect flow —
+        // log + Sentry best-effort rather than rolling back.
+        try {
+          await writeAuditLog({
+            organizationId: targetOrgId,
+            actorType: 'USER',
+            actorId: challenge.userId,
+            action: wasFirstConnect
+              ? 'integration.connection.connected'
+              : 'integration.connection.updated',
+            resourceType: 'ORGANIZATION',
+            resourceId: targetOrgId,
+            resourceName: displayName,
+            metadata: {
+              provider: adapter.slug,
+              connectionId: upsertedConnectionId,
+              firstConnect: wasFirstConnect,
+            },
+          });
+        } catch (auditErr) {
+          callbackLog.error(
+            { err: auditErr, provider, organizationId: targetOrgId },
+            'oauth callback: audit-log write failed (connection already persisted)',
+          );
+          Sentry.captureException(auditErr, {
+            tags: { 'audit.kind': 'integration.connection.upsert', provider },
+            extra: { organizationId: targetOrgId, connectionId: upsertedConnectionId },
+          });
         }
 
         // First-time Jira connect → seed Organization > Projects. Errors
