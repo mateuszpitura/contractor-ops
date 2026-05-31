@@ -7,6 +7,8 @@ function mockFetch(ok: boolean, body: unknown) {
     ok,
     status: ok ? 200 : 400,
     json: () => Promise.resolve(body),
+    // parseJsonResponse (OAuth credential validation) reads the body via text().
+    text: () => Promise.resolve(JSON.stringify(body)),
   });
 }
 

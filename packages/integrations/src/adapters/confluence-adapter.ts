@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -16,6 +16,43 @@ const confluenceTokenResponseSchema = z.object({
   expires_in: z.number().int().nonnegative(),
   token_type: z.string().min(1),
   scope: z.string(),
+});
+
+/**
+ * Atlassian accessible-resources response — only the fields `discoverCloudId`
+ * reads. Validated as a transient data-fetch so a drifted body surfaces a clear
+ * error rather than crashing on the `resources[0]` property access below.
+ */
+const atlassianAccessibleResourcesSchema = z.array(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    url: z.string(),
+  }),
+);
+
+/**
+ * Confluence CQL search response — only the fields `searchPages` reads. Most
+ * fields are optional (mirroring the optional-chained access in the mapping),
+ * and a drifted body degrades to an empty result set.
+ */
+const confluenceSearchResponseSchema = z.object({
+  results: z.array(
+    z.object({
+      content: z.object({
+        id: z.string(),
+        title: z.string(),
+        _links: z.object({ webui: z.string().optional() }).optional(),
+      }),
+      resultGlobalContainer: z
+        .object({
+          title: z.string().optional(),
+          displayUrl: z.string().optional(),
+        })
+        .optional(),
+    }),
+  ),
+  _links: z.object({ base: z.string().optional() }).optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -229,12 +266,15 @@ export class ConfluenceAdapter extends BaseAdapter {
       throw new Error(`Confluence accessible-resources discovery failed: ${text}`);
     }
 
-    const resources = (await response.json()) as Array<{
-      id: string;
-      name: string;
-      url: string;
-      scopes: string[];
-    }>;
+    const parsed = await safeParseJsonResponse(
+      response,
+      atlassianAccessibleResourcesSchema,
+      'confluence:discoverCloudId',
+    );
+    if (!parsed.success) {
+      throw new Error('Confluence accessible-resources returned an unexpected response body');
+    }
+    const resources = parsed.data;
 
     if (resources.length === 0) {
       throw new Error(
@@ -299,20 +339,14 @@ export class ConfluenceAdapter extends BaseAdapter {
       throw new Error(`Confluence search failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      results: Array<{
-        content: {
-          id: string;
-          title: string;
-          _links?: { webui?: string };
-        };
-        resultGlobalContainer?: {
-          title: string;
-          displayUrl?: string;
-        };
-      }>;
-      _links?: { base?: string };
-    };
+    const parsed = await safeParseJsonResponse(
+      response,
+      confluenceSearchResponseSchema,
+      'confluence:searchPages',
+    );
+    // A drifted body degrades to "no pages" rather than surfacing junk.
+    if (!parsed.success) return [];
+    const data = parsed.data;
 
     const baseUrl = data._links?.base ?? `https://${cloudId}.atlassian.net/wiki`;
 

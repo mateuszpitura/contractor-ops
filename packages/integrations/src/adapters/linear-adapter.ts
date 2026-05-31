@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { ProviderHealthStatus } from '../types/health.js';
@@ -21,6 +21,42 @@ const linearTokenResponseSchema = z.object({
   expires_in: z.number().int().nonnegative(),
   token_type: z.string().min(1),
   scope: z.union([z.array(z.string()), z.string()]),
+});
+
+/**
+ * Linear GraphQL workspace-discovery response — only the fields
+ * `discoverWorkspace` reads. Validated as a transient data-fetch so a drifted
+ * body surfaces a clear error instead of throwing on an undefined property
+ * access deep in the mapping below.
+ */
+const linearWorkspaceSchema = z.object({
+  data: z.object({
+    teams: z.object({
+      nodes: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          key: z.string(),
+          states: z.object({
+            nodes: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                type: z.string(),
+                color: z.string(),
+                position: z.number(),
+              }),
+            ),
+          }),
+        }),
+      ),
+    }),
+    organization: z.object({
+      id: z.string(),
+      name: z.string(),
+      urlKey: z.string(),
+    }),
+  }),
 });
 
 // ---------------------------------------------------------------------------
@@ -372,31 +408,15 @@ export class LinearAdapter extends BaseAdapter {
       throw new Error(`Linear workspace discovery failed: ${text}`);
     }
 
-    const result = (await response.json()) as {
-      data: {
-        teams: {
-          nodes: Array<{
-            id: string;
-            name: string;
-            key: string;
-            states: {
-              nodes: Array<{
-                id: string;
-                name: string;
-                type: string;
-                color: string;
-                position: number;
-              }>;
-            };
-          }>;
-        };
-        organization: {
-          id: string;
-          name: string;
-          urlKey: string;
-        };
-      };
-    };
+    const parsed = await safeParseJsonResponse(
+      response,
+      linearWorkspaceSchema,
+      'linear:discoverWorkspace',
+    );
+    if (!parsed.success) {
+      throw new Error('Linear workspace discovery returned an unexpected response body');
+    }
+    const result = parsed.data;
 
     return {
       organizationId: result.data.organization.id,

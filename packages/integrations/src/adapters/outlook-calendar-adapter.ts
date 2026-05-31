@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -17,6 +17,31 @@ const outlookTokenResponseSchema = z.object({
   expires_in: z.number().int().nonnegative(),
   token_type: z.string().min(1),
   scope: z.string(),
+});
+
+/**
+ * Microsoft Graph `getSchedule` response — only the fields getFreeBusy reads.
+ * Validated as a transient read so a drifted body degrades to an empty busy
+ * list rather than coercing junk.
+ */
+const graphScheduleSchema = z.object({
+  value: z
+    .array(
+      z.object({
+        scheduleItems: z
+          .array(
+            z.object({
+              status: z.string(),
+              subject: z.string().optional(),
+              start: z.object({ dateTime: z.string() }),
+              end: z.object({ dateTime: z.string() }),
+              isAllDay: z.boolean().optional(),
+            }),
+          )
+          .optional(),
+      }),
+    )
+    .optional(),
 });
 
 // ---------------------------------------------------------------------------
@@ -504,18 +529,9 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       const body = await resp.text();
       throw new Error(`Outlook getSchedule failed (${resp.status}): ${body}`);
     }
-    const data = (await resp.json()) as {
-      value?: Array<{
-        scheduleItems?: Array<{
-          status: string;
-          subject?: string;
-          start: { dateTime: string };
-          end: { dateTime: string };
-          isAllDay?: boolean;
-        }>;
-      }>;
-    };
-    const items = data.value?.[0]?.scheduleItems ?? [];
+    const parsed = await safeParseJsonResponse(resp, graphScheduleSchema, 'outlook-calendar:getFreeBusy');
+    // A drifted body degrades to "no busy ranges" rather than surfacing junk.
+    const items = parsed.success ? (parsed.data.value?.[0]?.scheduleItems ?? []) : [];
     return {
       busy: items
         .filter(i => i.status === 'busy' || i.status === 'oof')

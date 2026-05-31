@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -24,6 +24,37 @@ const notionTokenExchangeSchema = z.object({
 const notionTokenRefreshSchema = z.object({
   access_token: z.string().min(1),
   token_type: z.string().min(1),
+});
+
+/**
+ * Notion Search API response — only the fields `searchPages` reads. Validated
+ * as a transient data-fetch: a drifted body degrades to an empty result set
+ * rather than coercing into the cast type.
+ */
+const notionSearchResponseSchema = z.object({
+  results: z.array(
+    z.object({
+      id: z.string(),
+      last_edited_time: z.string(),
+      icon: z
+        .object({
+          type: z.string(),
+          emoji: z.string().optional(),
+          external: z.object({ url: z.string() }).optional(),
+        })
+        .nullable()
+        .optional(),
+      properties: z
+        .object({
+          title: z
+            .object({
+              title: z.array(z.object({ plain_text: z.string() })).optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+    }),
+  ),
 });
 
 // ---------------------------------------------------------------------------
@@ -255,19 +286,14 @@ export class NotionAdapter extends BaseAdapter {
       throw new Error(`Notion search failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      results: Array<{
-        id: string;
-        object: string;
-        last_edited_time: string;
-        icon?: { type: string; emoji?: string; external?: { url: string } } | null;
-        properties?: {
-          title?: {
-            title?: Array<{ plain_text: string }>;
-          };
-        };
-      }>;
-    };
+    const parsed = await safeParseJsonResponse(
+      response,
+      notionSearchResponseSchema,
+      'notion:searchPages',
+    );
+    // A drifted body degrades to "no pages" rather than surfacing junk.
+    if (!parsed.success) return [];
+    const data = parsed.data;
 
     return data.results.map(page => {
       const titleProp = page.properties?.title?.title;

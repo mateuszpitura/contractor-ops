@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -57,6 +57,19 @@ const jiraTokenResponseSchema = z.object({
   token_type: z.string().min(1),
   scope: z.string(),
 });
+
+/**
+ * Atlassian accessible-resources response — only the fields `discoverCloudId`
+ * reads. Validated as a transient data-fetch so a drifted body surfaces a clear
+ * error rather than crashing on the `resources[0]` property access below.
+ */
+const atlassianAccessibleResourcesSchema = z.array(
+  z.object({
+    id: z.string(),
+    name: z.string(),
+    url: z.string(),
+  }),
+);
 
 // ---------------------------------------------------------------------------
 // Jira Adapter
@@ -333,12 +346,15 @@ export class JiraAdapter extends BaseAdapter {
       throw new Error(`Jira accessible-resources discovery failed: ${text}`);
     }
 
-    const resources = (await response.json()) as Array<{
-      id: string;
-      name: string;
-      url: string;
-      scopes: string[];
-    }>;
+    const parsed = await safeParseJsonResponse(
+      response,
+      atlassianAccessibleResourcesSchema,
+      'jira:discoverCloudId',
+    );
+    if (!parsed.success) {
+      throw new Error('Jira accessible-resources returned an unexpected response body');
+    }
+    const resources = parsed.data;
 
     if (resources.length === 0) {
       throw new Error(

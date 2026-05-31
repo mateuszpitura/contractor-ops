@@ -79,17 +79,20 @@ async function loadConnection(db: TenantScopedDb, connectionId: string, organiza
 
 /**
  * Issues an authenticated GET against Jira Cloud REST API v3 for the given
- * connection and parses the JSON body as `T`. Throws INTERNAL_SERVER_ERROR
- * with the upstream response text on non-2xx.
+ * connection and validates the JSON body against `schema`. Throws
+ * INTERNAL_SERVER_ERROR with the upstream response text on non-2xx, and on a
+ * body that does not match `schema` (the Jira response is external input —
+ * never coerced via an unchecked cast).
  *
- * Centralises the load-context → fetch → ok-check → text-on-error → json
+ * Centralises the load-context → fetch → ok-check → text-on-error → validate
  * pipeline that the list procedures previously duplicated.
  */
-async function jiraApiGet<T>(
+async function jiraApiGet<S extends z.ZodType>(
   connection: { configJson: unknown; credentialsRef: string },
   path: string,
   errorLabel: string,
-): Promise<T> {
+  schema: S,
+): Promise<z.infer<S>> {
   const { baseUrl, authHeaders } = buildJiraApiContext(
     connection.configJson,
     connection.credentialsRef,
@@ -105,7 +108,15 @@ async function jiraApiGet<T>(
     });
   }
 
-  return (await response.json()) as T;
+  const parsed = schema.safeParse(await response.json());
+  if (!parsed.success) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: `Failed to ${errorLabel}: unexpected response shape`,
+    });
+  }
+
+  return parsed.data;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,10 +186,11 @@ export const jiraRouter = router({
     .input(z.object({ connectionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      const projects = await jiraApiGet<Array<{ id: string; key: string; name: string }>>(
+      const projects = await jiraApiGet(
         connection,
         '/project',
         'list Jira projects',
+        z.array(z.object({ id: z.string(), key: z.string(), name: z.string() })),
       );
       return projects.map(p => ({ id: p.id, key: p.key, name: p.name }));
     }),
@@ -196,10 +208,13 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      const project = await jiraApiGet<{ issueTypes?: Array<{ id: string; name: string }> }>(
+      const project = await jiraApiGet(
         connection,
         `/project/${input.projectId}`,
         'list Jira issue types',
+        z.object({
+          issueTypes: z.array(z.object({ id: z.string(), name: z.string() })).optional(),
+        }),
       );
       return (project.issueTypes ?? []).map(t => ({ id: t.id, name: t.name }));
     }),
@@ -217,9 +232,18 @@ export const jiraRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const connection = await loadConnection(ctx.db, input.connectionId, ctx.organizationId);
-      return jiraApiGet<
-        Array<{ id: string; name: string; statusCategory: { key: string; name: string } }>
-      >(connection, `/status/project/${input.projectId}`, 'list Jira project statuses');
+      return jiraApiGet(
+        connection,
+        `/status/project/${input.projectId}`,
+        'list Jira project statuses',
+        z.array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            statusCategory: z.object({ key: z.string(), name: z.string() }),
+          }),
+        ),
+      );
     }),
 
   /**

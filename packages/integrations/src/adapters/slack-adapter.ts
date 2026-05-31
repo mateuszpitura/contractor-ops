@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { LimitFunction } from '../services/concurrency.js';
 import { pLimit } from '../services/concurrency.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
-import { parseJsonResponse } from '../services/parse-json-response.js';
+import { parseJsonResponse, safeParseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
@@ -19,6 +19,18 @@ const SlackOAuthAccessResponse = z.object({
   ok: z.boolean(),
   access_token: z.string().optional(),
   team: z.object({ id: z.string().optional(), name: z.string().optional() }).optional(),
+  error: z.string().optional(),
+});
+
+/**
+ * Slack `chat.postMessage` response — only the fields the caller reads.
+ * Validated as a transient data-fetch so a drifted body fails the call locally
+ * (the outer resilience layer treats the throw as a retryable failure) rather
+ * than silently coercing into the cast type.
+ */
+const SlackPostMessageResponse = z.object({
+  ok: z.boolean(),
+  ts: z.string().optional(),
   error: z.string().optional(),
 });
 
@@ -287,7 +299,17 @@ export class SlackAdapter extends BaseAdapter {
             },
             { timeoutMs: 15_000, retries: 0 },
           );
-          const data = (await response.json()) as { ok: boolean; ts?: string; error?: string };
+          const parsed = await safeParseJsonResponse(
+            response,
+            SlackPostMessageResponse,
+            'slack:postMessage',
+          );
+          if (!parsed.success) {
+            // A malformed/drifted body cannot be trusted — surface as a throw so
+            // the outer breaker / retry loop can react.
+            throw new Error('slack chat.postMessage returned an unexpected response body');
+          }
+          const data = parsed.data;
           if (!data.ok) {
             // Surface known transient errors as throws so the outer breaker
             // / retry loop can react. Permanent errors (`channel_not_found`,
