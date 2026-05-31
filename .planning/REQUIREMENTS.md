@@ -34,17 +34,17 @@ Requirements for the v6.0 milestone. Each maps to exactly one phase (filled by r
 
 ### Compliance Document Lifecycle (F1)
 
-- [ ] **COMPL-01**: Admin can view a per-org compliance dashboard showing at-risk contractor count, upcoming-renewal queue, and currently-blocked-payments queue
+- [x] **COMPL-01**: Admin can view a per-org compliance dashboard showing at-risk contractor count, upcoming-renewal queue, and currently-blocked-payments queue
 - [ ] **COMPL-02**: System auto-resolves required documents per contractor based on country + engagement type + classification outcome (IR35 / Scheinselbständigkeit), persisting them as `ContractorComplianceItem` rows
 - [x] **COMPL-03**: System sends reminder cascades at 90 / 60 / 30 / 15 / 7 days before document expiry, with per-recipient daily-digest throttle and per-band idempotency
-- [ ] **COMPL-04**: Contractor receives portal-side notification of upcoming expiry with one-click upload-replacement flow that auto-marks the requirement satisfied with a refreshed expiry date
+- [x] **COMPL-04**: Contractor receives portal-side notification of upcoming expiry with one-click upload-replacement flow that auto-marks the requirement satisfied with a refreshed expiry date
 - [x] **COMPL-05**: Admin payment-run creation is hard-blocked when any selected contractor has an EXPIRED CRITICAL compliance item, with structured per-contractor reason and deep link to the affected document
 - [x] **COMPL-06**: Approval engine evaluates a `complianceCritical(EXPIRED)` condition operator and holds the approval in `PENDING_COMPLIANCE` state when triggered, preventing back-door auto-`READY` transitions
 - [x] **COMPL-07**: System writes an immutable `PaymentRunComplianceCheck` audit row in the same transaction as the bank-file export (mid-batch race protection)
 - [ ] **COMPL-08**: Document expiry dates are stored as `@db.Date` (not `DateTime`) with explicit `expiry_jurisdiction_tz` field — "expires today" resolves in contractor jurisdiction, not org HQ
 - [ ] **COMPL-09**: Per-jurisdiction policy registry seeds (PL/UK/DE/UAE/SA) cover at minimum: UK Right-to-Work share code (90-day generation expiry), UK UTR, DE A1-Bescheinigung (24-month max), DE Aufenthaltstitel, DE §48b EStG (construction conditional), PL ZUS A1 (12-month max), PL UDT, KSA Iqama (1-year), KSA work permit + Qiwa-auth boolean, UAE Emirates ID, UAE free-zone trade license
 - [ ] **COMPL-10**: Admin can trigger `recreateComplianceAssessment(reason)` to regenerate requirements when the compliance-policy rule set version changes (mirrors v5.0 `recreateDraftAfterDrift`); operation is audit-logged and never auto-runs
-- [ ] **COMPL-11**: All COMPL surfaces ship en/pl/de parity at message-key level; locked-phrase registry extended with jurisdiction-specific document type names
+- [x] **COMPL-11**: All COMPL surfaces ship en/pl/de parity at message-key level; locked-phrase registry extended with jurisdiction-specific document type names
 
 ### IdP Deprovisioning (F2)
 
@@ -283,17 +283,17 @@ Which phases cover which requirements. Filled by roadmapper on 2026-04-26.
 | FOUND6-04 | Phase 70 | Pending |
 | FOUND6-05 | Phase 70 | Pending |
 | FOUND6-06 | Phase 70 | Pending |
-| COMPL-01 | Phase 73 | Pending |
+| COMPL-01 | Phase 73 | Complete |
 | COMPL-02 | Phase 71 | Pending |
 | COMPL-03 | Phase 72 | Complete |
-| COMPL-04 | Phase 73 | Pending |
+| COMPL-04 | Phase 73 | Complete |
 | COMPL-05 | Phase 72 | Complete |
 | COMPL-06 | Phase 72 | Complete |
 | COMPL-07 | Phase 72 | Complete |
 | COMPL-08 | Phase 71 | Pending |
 | COMPL-09 | Phase 71 | Pending |
 | COMPL-10 | Phase 71 | Pending |
-| COMPL-11 | Phase 73 | Pending |
+| COMPL-11 | Phase 73 | Complete |
 | IDP-01 | Phase 77 | Complete |
 | IDP-02 | Phase 76 | Complete |
 | IDP-03 | Phase 77 | Complete |

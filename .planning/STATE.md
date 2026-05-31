@@ -4,8 +4,8 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-31)
-last_updated: "2026-05-31T21:41:13.659Z"
-last_activity: 2026-05-31 -- Phase 73 planning complete
+last_updated: "2026-05-31T21:45:03.698Z"
+last_activity: 2026-05-31 -- Phase 73 execution started
 progress:
   total_phases: 11
   completed_phases: 8
@@ -38,6 +38,7 @@ progress:
 ### RESOLVED (2026-05-31): Phase 73 RE-PLANNED against `apps/web-vite` — the `apps/web` drift blocker below is cleared; 8 plans regenerated/corrected, all gates pass
 
 **Resolution (`gsd:plan-phase 73 --auto`, background re-plan):** All 8 PLAN.md regenerated/corrected for the current tree. Subagent spawning was unavailable in the background runtime (same as Phase 77 RESOLVED note), so the orchestrator performed researcher/planner/checker roles inline against the live tree (paths verified via semble + Read). Outcome:
+
 - **CONTEXT.md + RESEARCH.md + PATTERNS.md + VALIDATION.md** refreshed with re-plan banners + authoritative `<web_vite_binding>`/`<phase72_binding>`/`<ar_parity_amendment>` blocks (verified live paths).
 - **Faithful backend (light-touch):** 73-03 (auth + override/audit-trail) unchanged-faithful; 73-04 (validators locked-phrase + parity) amended for **ar parity** (en+pl+de+ar; was "ar=Phase 79"); 73-05 fixed `createServiceLogger`→`createLogger({ service })`.
 - **73-02 (schema, `autonomous: false`):** kept as a FLAG but SOFTENED — multi-region apply (`pnpm db:migrate:all` via `migrate-all-regions.ts`, NOT `push-all-regions.ts`) is a DEFERRED post-deploy item under LOCAL-ONLY (Phase 70/74/76 precedent), NOT a hard gate; downstream Wave 2 runs against a local `prisma db push`. Removed the "Wave 2/3 MUST NOT land" hard-block.
@@ -53,7 +54,7 @@ progress:
 
 **Phase:** 73 (F1 Compliance — Admin Dashboard + Portal Self-Service + i18n)
 **Workflow:** `gsd:execute-phase 73` (autonomous background run)
-**Status:** RESOLVED — re-planned 2026-05-31 (see above)
+**Status:** Executing Phase 73
 
 **Why halted (per execute-phase rule "if drift is so deep a plan can't be faithfully executed, write specifics to STATE.md as a blocker and stop rather than guessing"):**
 
@@ -263,14 +264,14 @@ The execute-phase pipeline depends on `gsd-tools.cjs` for: init context + model/
 See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 
 **Core value:** The invoice-to-payment flow must work end-to-end: invoice arrives, gets matched to contract, routed through approval, and batched for payment — with full audit trail.
-**Current focus:** Phase 79 — f3 gulf — uae free zone tracking + saudization dashboard + arabic + rtl
+**Current focus:** Phase 73 — f1-compliance-admin-dashboard-portal-self-service-i18n
 
 ## Current Position
 
-Phase: 78 (f2-idp-entra-id-okta-github-adapters-the-differentiator) — EXECUTING
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-31 -- Phase 73 planning complete
+Phase: 73 (f1-compliance-admin-dashboard-portal-self-service-i18n) — EXECUTING
+Plan: 1 of 8
+Status: Executing Phase 73
+Last activity: 2026-05-31 -- Phase 73 execution started
 
 Progress: [█████████░] 89%
 
