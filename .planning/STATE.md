@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: Platform Maturity & Operational Hardening
 status: executing
 stopped_at: context exhaustion at 75% (2026-05-27)
-last_updated: "2026-05-31T12:33:06.473Z"
-last_activity: 2026-05-31 -- Phase 75 execution started
+last_updated: "2026-05-31T12:45:38.386Z"
+last_activity: 2026-05-31
 progress:
   total_phases: 11
   completed_phases: 3
-  total_plans: 59
-  completed_plans: 25
+  total_plans: 64
+  completed_plans: 26
   percent: 27
 ---
 
@@ -18,11 +18,15 @@ progress:
 
 ## Blockers
 
-### BLOCKER (2026-05-31): Phase 77 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
+### RESOLVED (2026-05-31): Phase 77 plan-phase — GSD tooling break (missing model-catalog.json) no longer reproduces
 
 **Phase:** 77 — F2 IdP — GWS + Slack Adapters (the wedge)
 **Workflow:** `gsd:plan-phase 77 --auto`
-**Status:** Executing Phase 75
+**Resolution:** `gsd-sdk query init.plan-phase 77` and `roadmap.get-phase 77` now return valid JSON in this environment — the `model-catalog.json` crash no longer reproduces. plan-phase 77 ran end-to-end; RESEARCH.md, VALIDATION.md, PATTERNS.md and PLAN.md files were generated. NOTE: subagent (`gsd-phase-researcher` / `gsd-planner` / `gsd-plan-checker`) spawning was unavailable in the background-agent runtime, so the orchestrator performed those roles inline against the live tree (verified paths via semble + Read). Two upstream caveats recorded in 77-RESEARCH.md: (a) Phase 76 is PLANNED but NOT executed — none of its infra exists yet, so Phase 77 plans treat it as an upstream dependency; (b) Phase 76 plans + 77-CONTEXT.md reference the now-deleted `apps/web` (Next.js) — Phase 77 anchors all server routes to `apps/api` Fastify routes and all UI to `apps/web-vite` (Page→Container→Hook→Component).
+
+<details><summary>Original blocker note (stale — kept for history)</summary>
+
+**Status (original):** Executing Phase 75
 
 **What happened:**
 
@@ -60,13 +64,15 @@ The entire plan-phase pipeline routes through `gsd-sdk query`: init context + mo
 
 **No `.planning/` files were modified** beyond this blocker note. Phase 77 CONTEXT.md and DISCUSSION-LOG.md remain intact and ready for planning once the tooling is repaired.
 
+</details>
+
 ---
 
 ### BLOCKER (2026-05-31): Phase 78 plan-phase aborted — same GSD tooling break (missing model-catalog.json)
 
 **Phase:** 78 — F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)
 **Workflow:** `gsd:plan-phase 78 --auto`
-**Status:** Discuss-phase complete (`78-CONTEXT.md` + `78-DISCUSSION-LOG.md` present). No RESEARCH.md / VALIDATION.md / PLAN.md yet — ready to plan, but BLOCKED on environment.
+**Status:** Ready to execute
 
 **What happened:** Identical root cause to the Phase 75 blocker below. `gsd:plan-phase` step 1 (`gsd-sdk query init.plan-phase 78`) crashes at module load:
 
@@ -186,11 +192,11 @@ See: .planning/PROJECT.md (updated 2026-04-26 — v6.0 milestone started)
 ## Current Position
 
 Phase: 75 (f4-offboarding-contract-health-check-ip-verification-credent) — EXECUTING
-Plan: 1 of 8
-Status: Executing Phase 75
-Last activity: 2026-05-31 -- Phase 75 execution started
+Plan: 2 of 8
+Status: Ready to execute
+Last activity: 2026-05-31
 
-Progress: [███████░░░] 71%
+Progress: [████░░░░░░] 41%
 
 **Active Phase:** none (Phase 70 closed)
 **Next Phase candidates (parallel-ready):**

@@ -182,7 +182,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   3. Admin attempts to mark `WorkflowRun.completedAt` while `IP_VERIFICATION` task is open; system hard-blocks; admin signs the IP-assignment ratification document via existing v2.0 e-sign integration (DocuSign for UK/PL/US, Autenti for DE); on signing-completion webhook, task auto-completes and offboarding can finalise
   4. Admin records a credential-rotation task with `CredentialReference` row containing label, vault URL, successor user; content-validation regex rejects any string shaped like `AKIA*`, GitHub PAT, JWT structure, or hex≥32 (system stores POINTERS only, NEVER secrets) — paste of an actual AWS access key returns 400 with explanation
   5. After offboarding completes with no IP-block override, `Contract.complianceFlagsJson.ipAssignment` history shows the verdict that drove the gate; admin can drill into the cited clause text from the audit log
-**Plans:** TBD
+**Plans:** 1/8 plans executed
 **Research flag:** NEEDS RESEARCH — Werkvertrag wording lawyer-dependent; Anthropic SDK tool_use schema requires Context7 validation at implementation time
 **Feature flags:** `offboarding-ip-clause-scanner` PENDING (legal-sensitive — AI verdict on legal-adjacent surface)
 **UI hint:** yes
@@ -385,7 +385,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 72. F1 Compliance — Reminder + Payment Block  | v6.0      | 0/?            | Not started | -          |
 | 73. F1 Compliance — Dashboard + Portal + i18n | v6.0      | 0/?            | Not started | -          |
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
-| 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 0/?            | Not started | -          |
+| 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 1/8 | In Progress|  |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 0/?            | Not started | -          |
 | 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 0/?            | Not started | -          |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |
