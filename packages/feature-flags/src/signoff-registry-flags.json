@@ -1,4 +1,8 @@
 {
+  "idp-deprovisioning": {
+    "status": "PENDING",
+    "notes": "F2 IdP deprovisioning rollout — flip to APPROVED post-deploy after legal review of cooldown semantics + cross-border data-handling implications of suspendAccount + revokeAllSessions"
+  },
   "offboarding-ip-foundation": {
     "status": "PENDING",
     "notes": "F4 Offboarding workflow foundation + KT templates + override permission. Werkvertrag wording deferred to Phase 75; this flag gates the workflow:override_blocking_task permission and PTO-aware fallback routing. Needs verification by legal entity before production deploy (override-dialog acknowledgement copy)."
