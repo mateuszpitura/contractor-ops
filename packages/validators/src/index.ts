@@ -506,6 +506,7 @@ export type {
 export {
   bankStatementConfirmSchema,
   markAllPaidSchema,
+  orgBankInfoSchema,
   paymentExportFormatEnum,
   paymentRunCancelSchema,
   paymentRunCreateSchema,

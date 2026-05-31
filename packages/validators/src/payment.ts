@@ -1,8 +1,34 @@
+import { isValidBIC, isValidIBAN } from 'ibantools';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Prisma enum mirrors (string unions -- validators package has no Prisma dep)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Organization bank info (org settingsJson.bankAccount) — validated before it
+// feeds the SEPA / Elixir / SWIFT export serializers. An IBAN/BIC that fails
+// modulus/format checks would silently produce an unusable or misrouted bank
+// file, so the export path treats malformed org bank data as absent rather
+// than passing the raw string through.
+// ---------------------------------------------------------------------------
+
+export const orgBankInfoSchema = z.object({
+  iban: z
+    .string()
+    .refine(val => isValidIBAN(val.replace(/\s/g, '').toUpperCase()), {
+      message: 'Invalid organization IBAN',
+    })
+    .optional(),
+  bic: z
+    .string()
+    .refine(val => isValidBIC(val.replace(/\s/g, '').toUpperCase()), {
+      message: 'Invalid organization BIC',
+    })
+    .optional(),
+});
+
+export type OrgBankInfoInput = z.infer<typeof orgBankInfoSchema>;
 
 export const paymentRunStatusEnum = z.enum([
   'DRAFT',

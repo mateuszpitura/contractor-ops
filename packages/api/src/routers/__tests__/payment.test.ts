@@ -79,6 +79,10 @@ const { mockPrisma } = vi.hoisted(() => {
         ...opts.data,
       })),
     },
+    auditLog: {
+      create: vi.fn(async () => ({})),
+      createMany: vi.fn(async () => ({ count: 0 })),
+    },
     organization: {
       findUnique: vi.fn(async () => ({
         name: 'Test Org',

@@ -1,8 +1,10 @@
 import type { Prisma } from '@contractor-ops/db';
 import type { PaymentRun } from '@contractor-ops/db/generated/prisma/client';
+import { createLogger } from '@contractor-ops/logger';
 import {
   bankStatementConfirmSchema,
   markAllPaidSchema,
+  orgBankInfoSchema,
   paymentRunCancelSchema,
   paymentRunCreateSchema,
   paymentRunItemStatusSchema,
@@ -23,6 +25,7 @@ import {
 } from '../../lib/idempotency';
 import { requirePermission } from '../../middleware/rbac';
 import { tenantProcedure } from '../../middleware/tenant';
+import { writeAuditLog, writeAuditLogMany } from '../../services/audit-writer';
 import { matchStatementToRun, parseBankStatement } from '../../services/bank-statement';
 import type { ExportItem, OrgBankInfo } from '../../services/payment-export';
 import {
@@ -36,6 +39,8 @@ import { detectFormat } from '../../services/payment-format-detection';
 import { evaluateSkontoEligibility, resolveSkontoTerm } from '../../services/skonto';
 import { calculateWht } from '../../services/tax-rate.service';
 import type { DbClient } from '../../services/types';
+
+const log = createLogger({ service: 'payment-router' });
 
 /** Transaction client derived from the tenant-scoped DbClient. */
 type TxClient = Parameters<Parameters<DbClient['$transaction']>[0]>[0];
@@ -381,15 +386,25 @@ async function _resolveOrgBankInfo(
     ? (JSON.parse(org.metadata) as Record<string, unknown>)
     : null;
   const settingsJson = (parsedMetadata?.settingsJson ?? {}) as Record<string, unknown>;
-  const bankAccount = (settingsJson.bankAccount ?? {}) as Record<string, unknown>;
+
+  const bankAccountParse = orgBankInfoSchema.safeParse(settingsJson.bankAccount ?? {});
+  if (!bankAccountParse.success) {
+    // Malformed IBAN/BIC must not silently flow into the bank-file serializers;
+    // treat invalid fields as absent (downstream export validation rejects empties).
+    log.warn(
+      { organizationId, issues: bankAccountParse.error.issues },
+      'organization bank info failed IBAN/BIC validation; omitting from export',
+    );
+  }
+  const bankAccount = bankAccountParse.success ? bankAccountParse.data : {};
 
   return {
     transferTitleTemplate:
       (settingsJson.paymentTransferTitleTemplate as string | undefined) ?? '{invoice_number}',
     orgBank: {
       name: org?.name ?? '',
-      iban: (bankAccount.iban as string | undefined) ?? '',
-      bic: (bankAccount.bic as string | undefined) ?? '',
+      iban: bankAccount.iban ?? '',
+      bic: bankAccount.bic ?? '',
     },
   };
 }
@@ -554,6 +569,25 @@ export const paymentRouter = router({
 
             runs.push(run);
           }
+
+          await writeAuditLogMany({
+            tx,
+            rows: runs.map(run => ({
+              organizationId: ctx.organizationId,
+              actorType: 'USER' as const,
+              actorId: ctx.user.id,
+              action: 'payment_run.create',
+              resourceType: 'PAYMENT_RUN' as const,
+              resourceId: run.id,
+              resourceName: run.runNumber,
+              newValues: {
+                status: run.status,
+                currency: run.currency,
+                totalMinor: run.totalMinor,
+                invoiceCount: run.invoiceCount,
+              },
+            })),
+          });
 
           return runs;
         });
@@ -872,6 +906,24 @@ export const paymentRouter = router({
           },
         });
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.lock_and_export',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: prepared.run.id,
+          resourceName: prepared.run.runNumber ?? prepared.run.id,
+          oldValues: { status: prepared.run.status },
+          newValues: {
+            status: 'EXPORTED',
+            exportFormat: input.exportFormat,
+            totalMinor: prepared.freshTotalMinor,
+            invoiceCount: prepared.freshInvoiceCount,
+          },
+        });
+
         return updated;
       });
 
@@ -934,6 +986,24 @@ export const paymentRouter = router({
         // Check if all items in run are terminal -> auto-complete
         await autoCompleteRunIfTerminal(tx, item.paymentRunId);
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.item_status_update',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: item.paymentRunId,
+          oldValues: { itemStatus: item.status },
+          newValues: {
+            itemId: updatedItem.id,
+            itemStatus: updatedItem.status,
+            invoiceId: item.invoiceId,
+            paymentReference: updatedItem.paymentReference,
+            failureReason: updatedItem.failureReason,
+          },
+        });
+
         return updatedItem;
       });
 
@@ -994,6 +1064,24 @@ export const paymentRouter = router({
           data: {
             status: 'COMPLETED',
             completedAt: now,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.mark_all_paid',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: run.id,
+          resourceName: run.runNumber,
+          oldValues: { status: run.status },
+          newValues: {
+            status: 'COMPLETED',
+            itemCount: itemIds.length,
+            invoiceIds,
+            batchReference: input.batchReference ?? null,
           },
         });
 
@@ -1069,6 +1157,22 @@ export const paymentRouter = router({
         const updatedRun = await tx.paymentRun.update({
           where: { id: run.id },
           data: { status: 'CANCELLED' },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.cancel',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: run.id,
+          resourceName: run.runNumber,
+          oldValues: { status: run.status },
+          newValues: {
+            status: 'CANCELLED',
+            releasedInvoiceIds: unpaidInvoiceIds,
+          },
         });
 
         return updatedRun;
@@ -1192,6 +1296,22 @@ export const paymentRouter = router({
         // Check if all items terminal -> auto-complete
         await autoCompleteRunIfTerminal(tx, run.id);
 
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.confirm_statement_matches',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: run.id,
+          resourceName: run.runNumber,
+          newValues: {
+            confirmedItemIds: validItems.map(i => i.id),
+            confirmedInvoiceIds: validItems.map(i => i.invoiceId),
+            matchCount: validItems.length,
+          },
+        });
+
         // Return updated run
         const updatedRun = await tx.paymentRun.findUnique({
           where: { id: run.id },
@@ -1274,7 +1394,7 @@ export const paymentRouter = router({
 
           // If no items remain, auto-cancel the run
           if (newInvoiceCount === 0) {
-            return tx.paymentRun.update({
+            const cancelledRun = await tx.paymentRun.update({
               where: { id: run.id },
               data: {
                 totalMinor: 0,
@@ -1282,15 +1402,41 @@ export const paymentRouter = router({
                 status: 'CANCELLED',
               },
             });
+            await writeAuditLog({
+              tx,
+              organizationId: ctx.organizationId,
+              actorType: 'USER',
+              actorId: ctx.user.id,
+              action: 'payment_run.remove_item',
+              resourceType: 'PAYMENT_RUN',
+              resourceId: run.id,
+              resourceName: run.runNumber,
+              metadata: { removedInvoiceId: input.invoiceId, autoCancelled: true },
+              newValues: { status: 'CANCELLED', totalMinor: 0, invoiceCount: 0 },
+            });
+            return cancelledRun;
           }
 
-          return tx.paymentRun.update({
+          const updatedRun = await tx.paymentRun.update({
             where: { id: run.id },
             data: {
               totalMinor: newTotalMinor,
               invoiceCount: newInvoiceCount,
             },
           });
+          await writeAuditLog({
+            tx,
+            organizationId: ctx.organizationId,
+            actorType: 'USER',
+            actorId: ctx.user.id,
+            action: 'payment_run.remove_item',
+            resourceType: 'PAYMENT_RUN',
+            resourceId: run.id,
+            resourceName: run.runNumber,
+            metadata: { removedInvoiceId: input.invoiceId },
+            newValues: { totalMinor: newTotalMinor, invoiceCount: newInvoiceCount },
+          });
+          return updatedRun;
         },
         { isolationLevel: 'Serializable' },
       );
@@ -1441,6 +1587,24 @@ export const paymentRouter = router({
             skontoTermId: skontoTermRecord.id,
             discountPercentApplied: effectiveTerm.discountPercent,
             discountAmountMinor: eligibility.discountAmountMinor,
+          },
+        });
+
+        await writeAuditLog({
+          tx,
+          organizationId: ctx.organizationId,
+          actorType: 'USER',
+          actorId: ctx.user.id,
+          action: 'payment_run.apply_skonto',
+          resourceType: 'PAYMENT_RUN',
+          resourceId: item.paymentRunId,
+          oldValues: { itemAmountMinor: item.amountMinor },
+          newValues: {
+            itemId: input.paymentRunItemId,
+            itemAmountMinor: updatedItem.amountMinor,
+            discountAmountMinor: eligibility.discountAmountMinor,
+            discountPercentApplied: effectiveTerm.discountPercent,
+            skontoTermId: skontoTermRecord.id,
           },
         });
 
