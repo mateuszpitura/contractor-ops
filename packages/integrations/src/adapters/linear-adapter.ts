@@ -1,5 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { ProviderHealthStatus } from '../types/health.js';
@@ -7,6 +9,19 @@ import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
 import type { GetHealthStatusOptions } from './base-adapter.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Linear OAuth 2.0 token response (exchange + refresh share the same shape).
+ * `scope` may be an array or a comma-joinable string. Validated at the
+ * credential-persist boundary (fail closed).
+ */
+const linearTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.union([z.array(z.string()), z.string()]),
+});
 
 // ---------------------------------------------------------------------------
 // Linear OAuth 2.0 Configuration
@@ -102,13 +117,11 @@ export class LinearAdapter extends BaseAdapter {
       throw new Error(`Linear OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string[] | string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      linearTokenResponseSchema,
+      'linear:exchangeCodeForTokens',
+    );
 
     // Linear returns scope as an array of strings — join with comma for storage
     const scope = Array.isArray(data.scope) ? data.scope.join(',') : data.scope;
@@ -164,13 +177,11 @@ export class LinearAdapter extends BaseAdapter {
       throw new Error(`Linear token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string[] | string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      linearTokenResponseSchema,
+      'linear:refreshToken',
+    );
 
     const scope = Array.isArray(data.scope) ? data.scope.join(',') : data.scope;
 

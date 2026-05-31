@@ -1,8 +1,30 @@
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Notion OAuth token responses (oauth/token). Validated at the
+ * credential-persist boundary so a malformed payload fails closed before it is
+ * encrypted into the stored CredentialBlob.
+ */
+const notionTokenExchangeSchema = z.object({
+  access_token: z.string().min(1),
+  token_type: z.string().min(1),
+  bot_id: z.string(),
+  workspace_id: z.string(),
+  workspace_name: z.string(),
+  workspace_icon: z.string().nullable(),
+  duplicated_template_id: z.string().nullable(),
+  owner: z.unknown(),
+});
+const notionTokenRefreshSchema = z.object({
+  access_token: z.string().min(1),
+  token_type: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // Timeout budgets (F-INT-01 / F-INT-02)
@@ -109,16 +131,11 @@ export class NotionAdapter extends BaseAdapter {
       throw new Error(`Notion OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      token_type: string;
-      bot_id: string;
-      workspace_id: string;
-      workspace_name: string;
-      workspace_icon: string | null;
-      duplicated_template_id: string | null;
-      owner: unknown;
-    };
+    const data = await parseJsonResponse(
+      response,
+      notionTokenExchangeSchema,
+      'notion:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -175,10 +192,7 @@ export class NotionAdapter extends BaseAdapter {
       throw new Error(`Notion token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      token_type: string;
-    };
+    const data = await parseJsonResponse(response, notionTokenRefreshSchema, 'notion:refreshToken');
 
     return {
       accessToken: data.access_token,

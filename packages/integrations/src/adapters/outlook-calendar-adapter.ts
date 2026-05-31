@@ -1,9 +1,23 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Microsoft identity-platform OAuth 2.0 token response (exchange + refresh share
+ * the same shape). Validated at the credential-persist boundary (fail closed).
+ */
+const outlookTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
 
 // ---------------------------------------------------------------------------
 // Timeout budgets (F-INT-01 / F-INT-02)
@@ -160,13 +174,11 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       throw new Error(`Outlook Calendar OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      outlookTokenResponseSchema,
+      'outlook-calendar:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -219,13 +231,11 @@ export class OutlookCalendarAdapter extends BaseAdapter {
       throw new Error(`Outlook Calendar token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      outlookTokenResponseSchema,
+      'outlook-calendar:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

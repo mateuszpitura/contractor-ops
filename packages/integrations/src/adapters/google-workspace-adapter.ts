@@ -1,8 +1,29 @@
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Google OAuth 2.0 token responses. Validated at the credential-persist
+ * boundary (fail closed). Refresh responses omit refresh_token (Google does
+ * not re-issue it), so it has its own schema.
+ */
+const googleTokenExchangeSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
+const googleTokenRefreshSchema = z.object({
+  access_token: z.string().min(1),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
 
 // ---------------------------------------------------------------------------
 // Timeout budgets (F-INT-01 / F-INT-02)
@@ -139,13 +160,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       throw new Error(`Google Workspace OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      googleTokenExchangeSchema,
+      'google-workspace:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -196,12 +215,11 @@ export class GoogleWorkspaceAdapter extends BaseAdapter {
       throw new Error(`Google Workspace token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      googleTokenRefreshSchema,
+      'google-workspace:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

@@ -1,8 +1,22 @@
+import { z } from 'zod';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type { OAuthConfig } from '../types/provider.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * Atlassian Confluence OAuth 2.0 token response (exchange + refresh share the
+ * same shape). Validated at the credential-persist boundary (fail closed).
+ */
+const confluenceTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1).optional(),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+  scope: z.string(),
+});
 
 // ---------------------------------------------------------------------------
 // Timeout budgets (F-INT-01 / F-INT-02)
@@ -107,13 +121,11 @@ export class ConfluenceAdapter extends BaseAdapter {
       throw new Error(`Confluence OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      confluenceTokenResponseSchema,
+      'confluence:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -164,13 +176,11 @@ export class ConfluenceAdapter extends BaseAdapter {
       throw new Error(`Confluence token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token?: string;
-      expires_in: number;
-      token_type: string;
-      scope: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      confluenceTokenResponseSchema,
+      'confluence:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,

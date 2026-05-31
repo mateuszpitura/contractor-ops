@@ -1,10 +1,12 @@
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@contractor-ops/db';
 import { createIntegrationLogger } from '@contractor-ops/logger';
+import { z } from 'zod';
 import { decryptCredentials } from '../services/credential-service.js';
 import { handleSigningWebhook } from '../services/esign-webhook-handler.js';
 import { fetchWithTimeout } from '../services/fetch-helpers.js';
 import { deriveIdempotencyKey } from '../services/idempotency.js';
+import { parseJsonResponse } from '../services/parse-json-response.js';
 import { withResilience } from '../services/resilience.js';
 import type { CredentialBlob } from '../types/credentials.js';
 import type {
@@ -18,6 +20,18 @@ import type {
 import type { OAuthConfig } from '../types/provider.js';
 import type { WebhookVerificationResult } from '../types/webhook.js';
 import { BaseAdapter } from './base-adapter.js';
+
+/**
+ * DocuSign OAuth 2.0 token response (exchange + refresh share the same shape;
+ * DocuSign always returns a rotated refresh_token). Validated at the
+ * credential-persist boundary (fail closed).
+ */
+const docusignTokenResponseSchema = z.object({
+  access_token: z.string().min(1),
+  refresh_token: z.string().min(1),
+  expires_in: z.number().int().nonnegative(),
+  token_type: z.string().min(1),
+});
 
 // ---------------------------------------------------------------------------
 // DocuSign SDK types (untyped JS SDK — declare minimal shapes we use)
@@ -215,12 +229,11 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`DocuSign OAuth exchange failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token: string;
-      expires_in: number;
-      token_type: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      docusignTokenResponseSchema,
+      'docusign:exchangeCodeForTokens',
+    );
 
     return {
       accessToken: data.access_token,
@@ -272,12 +285,11 @@ export class DocuSignAdapter extends BaseAdapter implements ESignAdapter {
       throw new Error(`DocuSign token refresh failed: ${text}`);
     }
 
-    const data = (await response.json()) as {
-      access_token: string;
-      refresh_token: string;
-      expires_in: number;
-      token_type: string;
-    };
+    const data = await parseJsonResponse(
+      response,
+      docusignTokenResponseSchema,
+      'docusign:refreshToken',
+    );
 
     return {
       accessToken: data.access_token,
