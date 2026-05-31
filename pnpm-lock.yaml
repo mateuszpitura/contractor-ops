@@ -686,6 +686,9 @@ importers:
       '@contractor-ops/gov-api':
         specifier: workspace:*
         version: link:../gov-api
+      '@contractor-ops/idp-saga':
+        specifier: workspace:*
+        version: link:../idp-saga
       '@contractor-ops/integrations':
         specifier: workspace:*
         version: link:../integrations

@@ -2,6 +2,7 @@
 // Intra-folder helpers (types, constants, shared utilities) are imported directly
 // via relative paths (e.g. `./equipment-shared.js`), not through this barrel.
 
+export { deprovisioningRouter } from './deprovisioning';
 export { googleWorkspaceRouter } from './google-workspace';
 export { jiraRouter } from './jira';
 export { ksefRouter } from './ksef';

@@ -59,6 +59,7 @@ import {
   skontoRouter,
 } from './routers/finance/index';
 import {
+  deprovisioningRouter,
   googleWorkspaceRouter,
   jiraRouter,
   ksefRouter,
@@ -190,6 +191,7 @@ export const appRouter = router({
   docs: docsRouter,
   calendar: calendarRouter,
   billing: billingRouter,
+  deprovisioning: deprovisioningRouter, // Phase 76 F2 IdP — deprovisioning eligibility (14-day cooldown gate)
   equipment: equipmentRouter,
   googleWorkspace: googleWorkspaceRouter, // Google Workspace directory import, group resolution, bulk import, sync
   gdpr: gdprRouter, // GDPR: right to erasure (Art. 17), data portability/export (Art. 20)

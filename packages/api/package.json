@@ -265,6 +265,7 @@
     "@contractor-ops/einvoice": "workspace:*",
     "@contractor-ops/feature-flags": "workspace:*",
     "@contractor-ops/gov-api": "workspace:*",
+    "@contractor-ops/idp-saga": "workspace:*",
     "@contractor-ops/integrations": "workspace:*",
     "@contractor-ops/logger": "workspace:*",
     "@contractor-ops/offboarding-templates": "workspace:*",
