@@ -88,7 +88,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 - [x] **Phase 74: F4 Offboarding — Workflow Foundation + KT Templates + Override Permission** — IP_VERIFICATION + CONTRACT_HEALTH_CHECK enums, OWNER override with reason, 4 role-typed KT seed templates, OOO-aware routing (completed 2026-04-27)
 - [ ] **Phase 75: F4 Offboarding — Contract Health Check + IP Verification + Credential Vault** — Claude Vision tool_use with regex-first phrase library, tristate verdict, e-sign-backed IP ratification, `CredentialReference` (no secrets) with content-validation regex — **PARTIAL (75-01..07 complete; 75-08 UI/templates/i18n done, e-sign signing mutation + webhook IP-ratification atomic flow DEFERRED — STATE.md blocker)** (2026-05-31)
 - [x] **Phase 76: F2 IdP — Capability Mixin + Saga Schema + Cooldown Gate + GWS Scope Migration** — `Deprovisionable` interface, `DeprovisioningRun/Step` saga, 14-day cooldown referencing F4 final-invoice-paid, scope-capabilities JSONB, webhook-loop guard (completed 2026-05-31)
-- [ ] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue
+- [x] **Phase 77: F2 IdP — GWS + Slack Adapters (the wedge)** — Google Workspace suspend+OAuth-revoke+sign-out, Slack session-invalidate+SCIM-deactivate, per-IdP `describeImpact` preview, partial-failure reconcile queue (completed 2026-05-31)
 - [ ] **Phase 78: F2 IdP — Entra ID + Okta + GitHub Adapters (the differentiator)** — Entra disable+revokeSignInSessions with CA pre-flight, Okta deactivate+session-clear, GitHub member-remove+per-PAT-revoke+outside-collab manual flag
 - [ ] **Phase 79: F3 Gulf — UAE Free-Zone Tracking + Saudization Dashboard + Arabic + RTL** — `packages/gulf-regulatory`, 10-zone seed enum, Saudization manual-band entry, pre-offboarding impact banner, Qiwa-auth, ms-/me-/ps-/pe- ESLint guard
 - [ ] **Phase 80: v6.0 Verification + Hardening + Manual UAT** — cross-feature integration tests (F1+F3+F4 composition), manual-UAT checkpoints document, consolidated post-deploy legal sign-off list, v6.0 retrospective
@@ -216,7 +216,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
   3. Admin executes deprovision on a Slack contractor; system invalidates active sessions (`admin.users.session.invalidate`) and SCIM-deactivates the user (`SCIM PATCH active=false` via raw `fetch` with org-token); both steps succeed independently — Slack deactivation success is NOT blocked by GWS partial failure
   4. Admin sees one provider step in `MANUAL_ESCALATION` after final retry exhaustion; admin clicks "Mark complete" with a written reason ("verified-via-vendor-console: GWS user already suspended manually"); failure record preserved, override audit-logged, offboarding workflow unblocks
   5. After deprovisioning, second click of the same `ACCESS_REVOKE` task returns `LIKELY_GONE` per provider (idempotent semantic) without errors; calling deprovision twice is safe
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 **Research flag:** NEEDS RESEARCH — GWS `tokens.delete` behaviour, Slack SCIM `scim:write` org-token requirement, current rate-limits via Context7
 **Feature flags:** `idp-deprovisioning-gws` PENDING, `idp-deprovisioning-slack` PENDING
 **UI hint:** yes
@@ -387,7 +387,7 @@ Phase artifacts: `.planning/milestones/v5.0-phases/`
 | 74. F4 Offboarding — Workflow + KT            | v6.0      | 8/8 | Complete    | 2026-04-27 |
 | 75. F4 Offboarding — IP Verify + Credentials  | v6.0      | 7.x/8 | Partial (esign deferred) | 2026-05-31 |
 | 76. F2 IdP — Capability + Saga + Cooldown     | v6.0      | 10/10 | Complete    | 2026-05-31 |
-| 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 4/5 | In Progress|  |
+| 77. F2 IdP — GWS + Slack (the wedge)          | v6.0      | 5/5 | Complete   | 2026-05-31 |
 | 78. F2 IdP — Entra + Okta + GitHub            | v6.0      | 0/?            | Not started | -          |
 | 79. F3 Gulf — UAE Free-Zone + Saudization     | v6.0      | 0/?            | Not started | -          |
 | 80. v6.0 Verification + Hardening + UAT       | v6.0      | 0/?            | Not started | -          |
